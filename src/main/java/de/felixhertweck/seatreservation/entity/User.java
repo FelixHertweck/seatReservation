@@ -1,4 +1,4 @@
-package de.felixhertweck.seatreservation.model;
+package de.felixhertweck.seatreservation.entity;
 
 import java.util.HashSet;
 import java.util.Set;

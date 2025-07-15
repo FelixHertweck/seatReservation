@@ -1,22 +1,21 @@
 package de.felixhertweck.seatreservation.security;
 
 import java.util.Set;
-
-import de.felixhertweck.seatreservation.model.User;
-import de.felixhertweck.seatreservation.repository.UserRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import de.felixhertweck.seatreservation.entity.User;
+import de.felixhertweck.seatreservation.repository.UserRepository;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import io.quarkus.security.AuthenticationFailedException;
+import jakarta.transaction.Transactional;
 
 @ApplicationScoped
 public class AuthService {
 
     @Inject TokenService tokenService;
 
-    @Inject
-    UserRepository userRepository;
+    @Inject UserRepository userRepository;
 
     public String authenticate(String username, String password)
             throws AuthenticationFailedException {
@@ -37,6 +36,7 @@ public class AuthService {
         return userRepository.findByUsername(username) == null;
     }
 
+    @Transactional
     public void registerUser(
             String username,
             String password,
@@ -47,8 +47,11 @@ public class AuthService {
         String passwordHash = BcryptUtil.bcryptHash(password);
 
         User user = new User(username, email, passwordHash, firstname, lastname, roles);
-        if (!userRepository.createUser(user)) {
-            throw new UserFailedRegistration(username);
+
+        if( !isUsernameAvailable(username)) {
+            throw new AuthenticationFailedException("Username already exists: " + username);
         }
+
+        userRepository.persist(user);
     }
 }

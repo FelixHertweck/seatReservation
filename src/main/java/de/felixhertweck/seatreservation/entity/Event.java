@@ -1,15 +1,15 @@
-package de.felixhertweck.seatreservation.model;
-
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.FetchType;
+package de.felixhertweck.seatreservation.entity;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
 
 @Entity
 public class Event extends PanacheEntity {

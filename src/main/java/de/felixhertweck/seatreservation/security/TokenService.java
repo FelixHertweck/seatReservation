@@ -1,10 +1,9 @@
 package de.felixhertweck.seatreservation.security;
 
 import java.time.Duration;
-
-import de.felixhertweck.seatreservation.model.User;
 import jakarta.enterprise.context.ApplicationScoped;
 
+import de.felixhertweck.seatreservation.entity.User;
 import io.smallrye.jwt.build.Jwt;
 import org.eclipse.microprofile.jwt.Claims;
 
