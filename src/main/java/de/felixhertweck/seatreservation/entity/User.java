@@ -29,7 +29,7 @@ public class User extends PanacheEntity {
     private Set<String> roles = new HashSet<>();
 
     /** Constructor for JPA. */
-    protected User() {}
+    public User() {}
 
     /** Creates a new user. Constructor for application. */
     public User(
@@ -51,6 +51,10 @@ public class User extends PanacheEntity {
 
     public String getUsername() {
         return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getPasswordHash() {
