@@ -3,11 +3,9 @@ package de.felixhertweck.seatreservation.security;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import de.felixhertweck.seatreservation.entity.User;
-import de.felixhertweck.seatreservation.repository.UserRepository;
+import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import io.quarkus.elytron.security.common.BcryptUtil;
-
-// import org.mindrot.jbcrypt.BCrypt; // In a real app, use a proper bcrypt library
 
 @ApplicationScoped
 public class AuthService {

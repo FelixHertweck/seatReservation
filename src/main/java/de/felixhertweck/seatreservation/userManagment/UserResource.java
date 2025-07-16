@@ -8,9 +8,10 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.*;
 
-import de.felixhertweck.seatreservation.entity.User;
+import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.security.Roles;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
+import de.felixhertweck.seatreservation.userManagment.dto.UserDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.exceptions.DuplicateUserException;
 import de.felixhertweck.seatreservation.userManagment.exceptions.InvalidUserException;
@@ -62,8 +63,8 @@ public class UserResource {
     }
 
     @GET
-    @RolesAllowed(Roles.ADMIN)
-    public List<User> getAllUsers() {
+    @RolesAllowed({Roles.ADMIN, Roles.MANAGER})
+    public List<UserDTO> getAllUsers() {
         return userService.getAllUsers();
     }
 

@@ -1,8 +1,8 @@
-package de.felixhertweck.seatreservation.repository;
+package de.felixhertweck.seatreservation.model.repository;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
-import de.felixhertweck.seatreservation.entity.User;
+import de.felixhertweck.seatreservation.model.entity.User;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 
 @ApplicationScoped

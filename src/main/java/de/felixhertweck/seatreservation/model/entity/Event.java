@@ -1,0 +1,171 @@
+package de.felixhertweck.seatreservation.model.entity;
+
+import java.time.LocalDateTime;
+import java.util.*;
+import jakarta.persistence.*;
+
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
+
+@Entity
+@Table(name = "events")
+public class Event extends PanacheEntity {
+
+    private String name;
+    private String description;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+    private LocalDateTime bookingDeadline;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private EventLocation event_location;
+
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<EventUserAllowance> userAllowances = new HashSet<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private User manager;
+
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Reservation> reservations = new ArrayList<>();
+
+    public Event() {}
+
+    public Long getId() {
+        return id;
+    }
+
+    public Event(
+            String name,
+            String description,
+            LocalDateTime startTime,
+            LocalDateTime endTime,
+            LocalDateTime bookingDeadline,
+            EventLocation location,
+            User manager) {
+        this.name = name;
+        this.description = description;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.bookingDeadline = bookingDeadline;
+        this.event_location = location;
+        this.manager = manager;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public LocalDateTime getBookingDeadline() {
+        return bookingDeadline;
+    }
+
+    public void setBookingDeadline(LocalDateTime bookingDeadline) {
+        this.bookingDeadline = bookingDeadline;
+    }
+
+    public EventLocation getEventLocation() {
+        return event_location;
+    }
+
+    public void setEventLocation(EventLocation event_location) {
+        this.event_location = event_location;
+    }
+
+    public Set<EventUserAllowance> getUserAllowances() {
+        return userAllowances;
+    }
+
+    public void setUserAllowances(Set<EventUserAllowance> userAllowances) {
+        this.userAllowances = userAllowances;
+    }
+
+    public User getManager() {
+        return manager;
+    }
+
+    public void setManager(User manager) {
+        this.manager = manager;
+    }
+
+    public List<Reservation> getReservations() {
+        return reservations;
+    }
+
+    public void setReservations(List<Reservation> reservations) {
+        this.reservations = reservations;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Event event = (Event) o;
+        return Objects.equals(name, event.name)
+                && Objects.equals(description, event.description)
+                && Objects.equals(startTime, event.startTime)
+                && Objects.equals(endTime, event.endTime)
+                && Objects.equals(bookingDeadline, event.bookingDeadline)
+                && Objects.equals(event_location, event.event_location)
+                && Objects.equals(
+                        manager, event.manager); // userAllowances and reservations excluded
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                name, description, startTime, endTime, bookingDeadline, event_location, manager);
+    }
+
+    @Override
+    public String toString() {
+        return "Event{"
+                + "name='"
+                + name
+                + '\''
+                + ", description='"
+                + description
+                + '\''
+                + ", startTime="
+                + startTime
+                + ", endTime="
+                + endTime
+                + ", bookingDeadline="
+                + bookingDeadline
+                + ", event_location="
+                + event_location
+                + ", userAllowances="
+                + userAllowances
+                + ", manager="
+                + manager
+                + ", reservations="
+                + reservations
+                + '}';
+    }
+}

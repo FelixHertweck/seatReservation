@@ -2,10 +2,10 @@ package de.felixhertweck.seatreservation.security;
 
 import java.time.Duration;
 import jakarta.enterprise.context.ApplicationScoped;
-import org.eclipse.microprofile.config.inject.ConfigProperty; // Added for ConfigProperty
 
-import de.felixhertweck.seatreservation.entity.User;
+import de.felixhertweck.seatreservation.model.entity.User;
 import io.smallrye.jwt.build.Jwt;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.jwt.Claims;
 
 @ApplicationScoped
