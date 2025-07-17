@@ -1,0 +1,64 @@
+name: maven.yml
+on:
+  # Build container according to ref input:
+  workflow_call:
+    inputs:
+      maven-args:
+        description: "Additional Maven arguments to pass"
+        required: false
+        type: string
+      build-artifact-name:
+        description: "Name of the build artifact to download"
+        required: true
+        type: string
+      build-artifact-path:
+        description: "Path of the build artifact to download"
+        required: true
+        type: string
+
+jobs:
+  maven:
+    name: Maven Build & Test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Maven Cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Run Spotless Check
+        run: ./mvnw -B spotless:check
+
+      - name: Build & Test Backend
+        run: ./mvnw -B ${{ inputs.maven-args }} package
+
+      - name: Update dependency graph
+        if: github.repository == 'FelixHertweck/seatReservation' && github.event_name == 'push' && github.ref_name == 'main'
+        uses: advanced-security/maven-dependency-submission-action@v5
+
+      - name: Upload Backend Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.build-artifact-name }}
+          path: ${{ inputs.build-artifact-path }}
+
+      - name: Upload OpenAPI schema
+        uses: actions/upload-artifact@v4
+        with:
+          name: openapi-schema
+          path: |
+            target/openapi

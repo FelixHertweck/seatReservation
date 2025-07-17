@@ -1,65 +1,100 @@
 name: docker.yml
+
 on:
-  workflow_run:
-    workflows: ["Build"]
-    types:
-      - completed
-  workflow_dispatch:
+  # Build container according to ref input:
+  workflow_call:
+    inputs:
+      docker-file-path:
+        description: "DockerFile Path"
+        required: true
+        type: string
+      container-image-title:
+        description: "Image title"
+        required: true
+        type: string
+      build-artifact-name:
+        description: "Name of the build artifact to download"
+        required: true
+        type: string
+      build-artifact-path:
+        description: "Path of the build artifact to download"
+        required: true
+        type: string
+      image-name:
+        description: "Name of the Docker image to build and push"
+        required: false
+        type: string
+        default: ${{ github.repository }}
+
+permissions:
+  contents: write
+
 jobs:
   docker:
     name: Docker Build & Publish
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    runs-on: "ubuntu-24.04"
+    timeout-minutes: 30
 
     env:
       REGISTRY: ghcr.io
-      IMAGE_NAME: ${{ github.repository }}
+      DOCKER_IMAGE_PUSH: ${{ github.event_name != 'pull_request' }}
+
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Download packaged application
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.build-artifact-name }}
+          path: ${{ inputs.build-artifact-path }}
+
+      - name: Install cosign
+        if: ${{ env.DOCKER_IMAGE_PUSH }}
+        uses: sigstore/cosign-installer@v3.9.1
+        with:
+          cosign-release: "v2.4.3"
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log into registry
+      - name: Log into registry ${{ env.REGISTRY }}
+        if: ${{ env.DOCKER_IMAGE_PUSH }}
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.github-token || secrets.GITHUB_TOKEN }}
 
       - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-
-      - name: Download Backend Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-app
-          path: target/quarkus-app
+          images: ${{ env.REGISTRY }}/${{ inputs.image-name }}
+          labels: |
+            org.opencontainers.image.title=${{ inputs.container-image-title }}
+            org.opencontainers.image.authors=Felix Hertweck
 
       - name: Build and push Docker image
+        id: build-and-push
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64,linux/arm64
-          file: src/main/docker/Dockerfile.jvm
+          file: ${{ inputs.docker-file-path }}
           context: .
-          push: ${{ github.ref == 'refs/heads/main' }}
+          push: ${{ env.DOCKER_IMAGE_PUSH }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Install cosign
-        uses: sigstore/cosign-installer@v3.9.1
-        with:
-          cosign-release: "v2.4.3"
-
-      - name: Sign Docker image
-        if: ${{ github.ref == 'refs/heads/main' }}
+      - name: Sign the published Docker image
+        if: ${{ env.DOCKER_IMAGE_PUSH }}
         env:
           TAGS: ${{ steps.meta.outputs.tags }}
           DIGEST: ${{ steps.build-and-push.outputs.digest }}

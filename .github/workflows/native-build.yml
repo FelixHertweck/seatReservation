@@ -1,4 +1,4 @@
-name: build.yml
+name: native-build.yml
 on:
   push:
     branches: ["main"]
@@ -16,23 +16,24 @@ permissions:
   packages: write
   id-token: write
 
-
 jobs:
-  maven:
+  maven-native:
     uses: ./.github/workflows/maven.yml
     with:
-      build-artifact-name: quarkus-app
-      build-artifact-path: target/quarkus-app
+      maven-args: "-Dnative"
+      build-artifact-name: quarkus-app-native
+      build-artifact-path: target/*-runner
 
-  docker:
-    needs: maven
+  docker-native:
+    needs: maven-native
     permissions:
       contents: write
       packages: write
       id-token: write
     uses: ./.github/workflows/docker.yml
     with:
-      build-artifact-name: quarkus-app
-      build-artifact-path: target/quarkus-app
-      docker-file-path: ./src/main/docker/Dockerfile.jvm
-      container-image-title: Backend
+      build-artifact-name: quarkus-app-native
+      build-artifact-path: target
+      docker-file-path: ./src/main/docker/Dockerfile.native
+      container-image-title: Backend-Native
+      image-name: ${{ github.repository }}-native
