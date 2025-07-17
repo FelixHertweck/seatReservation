@@ -1,0 +1,60 @@
+name: build.yml
+on:
+  push:
+    branches: ["main"]
+    paths-ignore: ["**/*.md"]
+    tags:
+      - "v*.*"
+      - "v*.*.*"
+  pull_request:
+    branches: ["main"]
+    paths-ignore: ["**/*.md"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+jobs:
+  maven:
+    name: Maven Build & Test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Maven Cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Run Spotless Check
+        run: ./mvnw -B spotless:check
+
+      - name: Build & Test Backend
+        run: ./mvnw -B package
+
+      - name: Upload Backend Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-app
+          path: target/quarkus-app
+
+      - name: Upload Test Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: target/jacoco-report
+

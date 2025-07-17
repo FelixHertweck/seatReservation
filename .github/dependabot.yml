@@ -1,0 +1,33 @@
+version: 2
+updates:
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    open-pull-requests-limit: 20
+    schedule:
+      interval: "weekly"
+
+  # npm for frontend
+  - package-ecosystem: "npm"
+    directory: "/webapp"
+    open-pull-requests-limit: 20
+    schedule:
+      interval: "weekly"
+    # For all deps ignore all major updates
+    ignore:
+      - dependency-name: "*"
+        update-types: [ "version-update:semver-patch" ]
+
+  # maven for backend
+  - package-ecosystem: "maven"
+    directory: "/"
+    open-pull-requests-limit: 20
+    schedule:
+      interval: "weekly"
+
+  # Docker images
+  - package-ecosystem: "docker"
+    directory: "src/main/docker"
+    open-pull-requests-limit: 20
+    schedule:
+      interval: "weekly"
