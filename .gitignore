@@ -36,3 +36,6 @@ release.properties
 
 # rsa keys
 keys/
+
+# environment variables
+.env
