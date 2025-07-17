@@ -1,6 +1,5 @@
 name: maven.yml
 on:
-  # Build container according to ref input:
   workflow_call:
     inputs:
       maven-args:
@@ -25,6 +24,15 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Download frontend artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: vite-dist
+          path: dist
+
+      - name: Copy frontend to backend resources
+        run: cp -r dist/* src/main/resources/META-INF/resources/
 
       - name: Set up Maven Cache
         uses: actions/cache@v4

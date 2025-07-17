@@ -1,23 +1,35 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import tseslint from 'typescript-eslint'
-import { globalIgnores } from 'eslint/config'
+// @ts-check
+import tseslint from "typescript-eslint";
+import react from "eslint-plugin-react";
+import prettierlint from "eslint-config-prettier";
+import unusedImports from "eslint-plugin-unused-imports";
 
-export default tseslint.config([
-  globalIgnores(['dist']),
+export default tseslint.config(
+  tseslint.configs.recommended,
+  tseslint.configs.strictTypeChecked,
+  tseslint.configs.stylisticTypeChecked,
   {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      js.configs.recommended,
-      tseslint.configs.recommended,
-      reactHooks.configs['recommended-latest'],
-      reactRefresh.configs.vite,
-    ],
     languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
+      parserOptions: {
+        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    settings: { react: { version: "18.0" } },
+    plugins: {
+      react,
+      "unused-imports": unusedImports,
+    },
+    rules: {
+      ...react.configs.recommended.rules,
+      ...react.configs["jsx-runtime"].rules,
+      ...prettierlint.rules,
+      "@typescript-eslint/restrict-template-expressions": "warn",
+      "@typescript-eslint/restrict-plus-operands": "warn",
+      "@typescript-eslint/use-unknown-in-catch-callback-variable": "off",
+      // Need to deactivate this, otherwise eslint replace all type to interface (also inside api client) what can lead to errors in the data types
+      "@typescript-eslint/consistent-type-definitions": "off",
+      "@typescript-eslint/no-unused-vars": "error",
     },
   },
-])
+);

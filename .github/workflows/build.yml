@@ -1,14 +1,14 @@
 name: build.yml
 on:
   push:
-    branches: ["main"]
-    paths-ignore: ["**/*.md"]
+    branches: [ "main" ]
+    paths-ignore: [ "**/*.md" ]
     tags:
       - "v*.*"
       - "v*.*.*"
   pull_request:
-    branches: ["main"]
-    paths-ignore: ["**/*.md"]
+    branches: [ "main" ]
+    paths-ignore: [ "**/*.md" ]
   workflow_dispatch:
 
 permissions:
@@ -18,7 +18,11 @@ permissions:
 
 
 jobs:
+  vite:
+    uses: ./.github/workflows/vite.yml
+
   maven:
+    needs: vite
     uses: ./.github/workflows/maven.yml
     with:
       build-artifact-name: quarkus-app

@@ -5,7 +5,6 @@ import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.*;
 
 import de.felixhertweck.seatreservation.eventManagement.dto.EventRequestDTO;
@@ -45,10 +44,9 @@ public class EventResource {
             responseCode = "200",
             description = "OK",
             content = @Content(schema = @Schema(implementation = EventResponseDTO.class)))
-    public Response updateEvent(@PathParam("id") Long id, @Valid EventRequestDTO dto) {
+    public EventResponseDTO updateEvent(@PathParam("id") Long id, @Valid EventRequestDTO dto) {
         User currentUser = userSecurityContext.getCurrentUser();
-        EventResponseDTO event = eventService.updateEvent(id, dto, currentUser);
-        return Response.ok(event).build();
+        return eventService.updateEvent(id, dto, currentUser);
     }
 
     @GET

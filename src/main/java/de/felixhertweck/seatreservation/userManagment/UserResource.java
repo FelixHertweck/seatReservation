@@ -8,8 +8,8 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.*;
 
-import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.security.Roles;
+import de.felixhertweck.seatreservation.userManagment.dto.LimitedUserDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
@@ -29,7 +29,7 @@ public class UserResource {
     @RolesAllowed(Roles.ADMIN)
     public Response createUser(UserCreationDTO userCreationDTO) {
         try {
-            User createdUser = userService.createUser(userCreationDTO);
+            UserDTO createdUser = userService.createUser(userCreationDTO);
             return Response.status(Response.Status.CREATED).entity(createdUser).build();
         } catch (InvalidUserException | DuplicateUserException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
@@ -39,9 +39,9 @@ public class UserResource {
     @PUT
     @Path("/{id}")
     @RolesAllowed(Roles.ADMIN)
-    public Response updateUser(@PathParam("id") Long id, User user) {
+    public Response updateUser(@PathParam("id") Long id, UserProfileUpdateDTO user) {
         try {
-            User updatedUser = userService.updateUser(id, user);
+            UserDTO updatedUser = userService.updateUser(id, user);
             return Response.ok(updatedUser).build();
         } catch (UserNotFoundException e) {
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
@@ -64,7 +64,7 @@ public class UserResource {
 
     @GET
     @RolesAllowed({Roles.ADMIN, Roles.MANAGER})
-    public List<UserDTO> getAllUsers() {
+    public List<LimitedUserDTO> getAllUsers() {
         return userService.getAllUsers();
     }
 
@@ -80,7 +80,7 @@ public class UserResource {
     @RolesAllowed(Roles.ADMIN)
     public Response getUserById(@PathParam("id") Long id) {
         try {
-            User user = userService.getUserById(id);
+            UserDTO user = userService.getUserById(id);
             return Response.ok(user).build();
         } catch (UserNotFoundException e) {
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
@@ -93,7 +93,7 @@ public class UserResource {
     public Response updateCurrentUserProfile(UserProfileUpdateDTO userProfileUpdateDTO) {
         try {
             String username = securityContext.getUserPrincipal().getName();
-            User updatedUser = userService.updateUserProfile(username, userProfileUpdateDTO);
+            UserDTO updatedUser = userService.updateUserProfile(username, userProfileUpdateDTO);
             return Response.ok(updatedUser).build();
         } catch (UserNotFoundException e) {
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();

@@ -10,6 +10,7 @@ import jakarta.transaction.Transactional;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.security.Roles;
+import de.felixhertweck.seatreservation.userManagment.dto.LimitedUserDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
@@ -24,7 +25,7 @@ public class UserService {
     @Inject UserRepository userRepository;
 
     @Transactional
-    public User createUser(UserCreationDTO userCreationDTO) {
+    public UserDTO createUser(UserCreationDTO userCreationDTO) {
         if (userCreationDTO == null
                 || userCreationDTO.getUsername() == null
                 || userCreationDTO.getUsername().trim().isEmpty()
@@ -53,11 +54,11 @@ public class UserService {
         user.setRoles(new HashSet<>(List.of(Roles.USER))); // Default role for new users
 
         userRepository.persist(user);
-        return user;
+        return new UserDTO(user);
     }
 
     @Transactional
-    public User updateUser(Long id, User user) {
+    public UserDTO updateUser(Long id, UserProfileUpdateDTO user) {
         User existingUser = userRepository.findById(id);
         if (existingUser == null) {
             throw new UserNotFoundException("User with id " + id + " not found.");
@@ -67,12 +68,9 @@ public class UserService {
         }
 
         // Check for duplicate username if changed
-        if (user.getUsername() != null && !user.getUsername().equals(existingUser.getUsername())) {
-            if (userRepository.findByUsername(user.getUsername()) != null) {
-                throw new DuplicateUserException(
-                        "User with username " + user.getUsername() + " already exists.");
-            }
-            existingUser.setUsername(user.getUsername());
+        if (userRepository.findByUsername(existingUser.getUsername()) != null) {
+            throw new DuplicateUserException(
+                    "User with username " + existingUser.getUsername() + " already exists.");
         }
 
         // Check for duplicate email if changed
@@ -98,7 +96,7 @@ public class UserService {
             existingUser.setRoles(user.getRoles());
         }
         userRepository.persist(existingUser); // Panache persist handles update if entity is managed
-        return existingUser;
+        return new UserDTO(existingUser);
     }
 
     @Transactional
@@ -109,16 +107,16 @@ public class UserService {
         }
     }
 
-    public User getUserById(Long id) {
+    public UserDTO getUserById(Long id) {
         User user = userRepository.findById(id);
         if (user == null) {
             throw new UserNotFoundException("User with id " + id + " not found.");
         }
-        return user;
+        return new UserDTO(user);
     }
 
-    public List<UserDTO> getAllUsers() {
-        return userRepository.listAll().stream().map(UserDTO::new).toList();
+    public List<LimitedUserDTO> getAllUsers() {
+        return userRepository.listAll().stream().map(LimitedUserDTO::new).toList();
     }
 
     public List<String> getAvailableRoles() {
@@ -126,7 +124,7 @@ public class UserService {
     }
 
     @Transactional
-    public User updateUserProfile(String username, UserProfileUpdateDTO userProfileUpdateDTO) {
+    public UserDTO updateUserProfile(String username, UserProfileUpdateDTO userProfileUpdateDTO) {
         User existingUser = userRepository.findByUsername(username);
         if (existingUser == null) {
             throw new UserNotFoundException("User with username " + username + " not found.");
@@ -161,13 +159,14 @@ public class UserService {
         }
 
         // Update password if provided (in a real app, hash this!)
-        if (userProfileUpdateDTO.getPassword() != null
-                && !userProfileUpdateDTO.getPassword().trim().isEmpty()) {
+        if (userProfileUpdateDTO.getPasswordHash() != null
+                && !userProfileUpdateDTO.getPasswordHash().trim().isEmpty()) {
             existingUser.setPasswordHash(
-                    BcryptUtil.bcryptHash(userProfileUpdateDTO.getPassword())); // Hash the password
+                    BcryptUtil.bcryptHash(
+                            userProfileUpdateDTO.getPasswordHash())); // Hash the password
         }
 
         userRepository.persist(existingUser);
-        return existingUser;
+        return new UserDTO(existingUser);
     }
 }

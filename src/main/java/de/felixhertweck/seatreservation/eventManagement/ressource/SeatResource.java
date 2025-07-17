@@ -4,7 +4,6 @@ import java.util.List;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.*;
 
 import de.felixhertweck.seatreservation.eventManagement.dto.SeatRequestDTO;
@@ -13,6 +12,10 @@ import de.felixhertweck.seatreservation.eventManagement.service.SeatService;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.security.Roles;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 @Path("/api/manager/seats")
 @RolesAllowed({Roles.MANAGER, Roles.ADMIN})
@@ -25,13 +28,25 @@ public class SeatResource {
     @Inject UserSecurityContext userSecurityContext;
 
     @POST
-    public Response createSeat(SeatRequestDTO seatRequestDTO) {
+    @APIResponse(
+            responseCode = "200",
+            description = "OK",
+            content = @Content(schema = @Schema(implementation = SeatResponseDTO.class)))
+    public SeatResponseDTO createSeat(SeatRequestDTO seatRequestDTO) {
         User currentUser = userSecurityContext.getCurrentUser();
-        SeatResponseDTO seat = seatService.createSeatManager(seatRequestDTO, currentUser);
-        return Response.status(Response.Status.CREATED).entity(seat).build();
+        return seatService.createSeatManager(seatRequestDTO, currentUser);
     }
 
     @GET
+    @APIResponse(
+            responseCode = "200",
+            description = "OK",
+            content =
+                    @Content(
+                            schema =
+                                    @Schema(
+                                            type = SchemaType.ARRAY,
+                                            implementation = SeatResponseDTO.class)))
     public List<SeatResponseDTO> getAllManagerSeats() {
         User currentUser = userSecurityContext.getCurrentUser();
         return seatService.findAllSeatsForManager(currentUser);
@@ -39,6 +54,10 @@ public class SeatResource {
 
     @GET
     @Path("/{id}")
+    @APIResponse(
+            responseCode = "200",
+            description = "OK",
+            content = @Content(schema = @Schema(implementation = SeatResponseDTO.class)))
     public SeatResponseDTO getManagerSeatById(@PathParam("id") Long id) {
         User currentUser = userSecurityContext.getCurrentUser();
         return seatService.findSeatByIdForManager(id, currentUser);
@@ -46,6 +65,10 @@ public class SeatResource {
 
     @PUT
     @Path("/{id}")
+    @APIResponse(
+            responseCode = "200",
+            description = "OK",
+            content = @Content(schema = @Schema(implementation = SeatResponseDTO.class)))
     public SeatResponseDTO updateManagerSeat(
             @PathParam("id") Long id, SeatRequestDTO seatUpdateDTO) {
         User currentUser = userSecurityContext.getCurrentUser();
@@ -54,9 +77,9 @@ public class SeatResource {
 
     @DELETE
     @Path("/{id}")
-    public Response deleteManagerSeat(@PathParam("id") Long id) {
+    @APIResponse(responseCode = "200", description = "OK")
+    public void deleteManagerSeat(@PathParam("id") Long id) {
         User currentUser = userSecurityContext.getCurrentUser();
         seatService.deleteSeatForManager(id, currentUser);
-        return Response.noContent().build();
     }
 }

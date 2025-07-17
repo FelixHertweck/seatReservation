@@ -227,5 +227,14 @@
         <quarkus.native.enabled>true</quarkus.native.enabled>
       </properties>
     </profile>
+    <profile>
+      <id>openapi-only</id>
+      <properties>
+        <skipTests>true</skipTests>
+        <maven.test.skip>true</maven.test.skip>
+        <checkstyle.skip>true</checkstyle.skip>
+        <spotbugs.skip>true</spotbugs.skip>
+      </properties>
+    </profile>
   </profiles>
 </project>

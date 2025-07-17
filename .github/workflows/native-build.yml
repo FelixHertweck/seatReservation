@@ -1,14 +1,14 @@
 name: native-build.yml
 on:
   push:
-    branches: ["main"]
-    paths-ignore: ["**/*.md"]
+    branches: [ "main" ]
+    paths-ignore: [ "**/*.md" ]
     tags:
       - "v*.*"
       - "v*.*.*"
   pull_request:
-    branches: ["main"]
-    paths-ignore: ["**/*.md"]
+    branches: [ "main" ]
+    paths-ignore: [ "**/*.md" ]
   workflow_dispatch:
 
 permissions:
@@ -17,10 +17,14 @@ permissions:
   id-token: write
 
 jobs:
+  vite:
+    uses: ./.github/workflows/vite.yml
+
   maven-native:
+    needs: vite
     uses: ./.github/workflows/maven.yml
     with:
-      maven-args: "-Dnative"
+      maven-args: "-Pnative"
       build-artifact-name: quarkus-app-native
       build-artifact-path: target/*-runner
 

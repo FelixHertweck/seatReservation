@@ -1,18 +1,23 @@
 package de.felixhertweck.seatreservation.userManagment.dto;
 
+import java.util.Set;
+
 public class UserProfileUpdateDTO {
     private String email;
     private String firstname;
     private String lastname;
-    private String password;
+    private String passwordHash;
+    private Set<String> roles;
 
     public UserProfileUpdateDTO() {}
 
-    public UserProfileUpdateDTO(String email, String firstname, String lastname, String password) {
+    public UserProfileUpdateDTO(
+            String email, String firstname, String lastname, String password, Set<String> roles) {
         this.email = email;
         this.firstname = firstname;
         this.lastname = lastname;
-        this.password = password;
+        this.passwordHash = password;
+        this.roles = roles;
     }
 
     public String getEmail() {
@@ -27,7 +32,11 @@ public class UserProfileUpdateDTO {
         return lastname;
     }
 
-    public String getPassword() {
-        return password;
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public Set<String> getRoles() {
+        return roles;
     }
 }
