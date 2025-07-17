@@ -8,10 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.core.MediaType;
 
-
-
-
-public class HttpForwardFilter extends HttpFilter{
+public class HttpForwardFilter extends HttpFilter {
     public static final String API_ROOT_PATH = "/api";
     public static final String QUARKUS_ROOT_PATH = "/q";
 

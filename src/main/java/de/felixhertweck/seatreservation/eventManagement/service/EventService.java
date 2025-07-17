@@ -18,8 +18,8 @@ import de.felixhertweck.seatreservation.model.repository.EventLocationRepository
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
-import de.felixhertweck.seatreservation.security.Roles;
 import de.felixhertweck.seatreservation.reservation.EventNotFoundException;
+import de.felixhertweck.seatreservation.security.Roles;
 import de.felixhertweck.seatreservation.userManagment.exceptions.UserNotFoundException;
 
 @ApplicationScoped

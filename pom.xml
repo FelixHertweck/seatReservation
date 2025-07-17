@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>de.felixhertweck.seatreservation</groupId>
   <artifactId>seat-reservation</artifactId>
@@ -168,8 +169,8 @@
                 <include>.gitignore</include>
               </includes>
               <!-- define the steps to apply to those files -->
-              <trimTrailingWhitespace />
-              <endWithNewline />
+              <trimTrailingWhitespace/>
+              <endWithNewline/>
               <indent>
                 <tabs>true</tabs>
                 <spacesPerTab>4</spacesPerTab>
@@ -196,8 +197,8 @@
               <expandEmptyElements>false</expandEmptyElements>
               <indentAttribute>schemaLocation</indentAttribute>
               <predefinedSortOrder>recommended_2008_06</predefinedSortOrder>
-              <sortDependencyExclusions />
-              <sortDependencyManagement />
+              <sortDependencyExclusions/>
+              <sortDependencyManagement/>
             </sortPom>
           </pom>
         </configuration>
