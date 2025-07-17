@@ -7,12 +7,12 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
+import de.felixhertweck.seatreservation.common.dto.UserDTO;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.security.Roles;
-import de.felixhertweck.seatreservation.userManagment.dto.LimitedUserDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
-import de.felixhertweck.seatreservation.userManagment.dto.UserDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.exceptions.DuplicateUserException;
 import de.felixhertweck.seatreservation.userManagment.exceptions.InvalidUserException;
@@ -115,8 +115,8 @@ public class UserService {
         return new UserDTO(user);
     }
 
-    public List<LimitedUserDTO> getAllUsers() {
-        return userRepository.listAll().stream().map(LimitedUserDTO::new).toList();
+    public List<LimitedUserInfoDTO> getAllUsers() {
+        return userRepository.listAll().stream().map(LimitedUserInfoDTO::new).toList();
     }
 
     public List<String> getAvailableRoles() {

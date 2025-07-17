@@ -1,4 +1,4 @@
-package de.felixhertweck.seatreservation.eventManagement.dto;
+package de.felixhertweck.seatreservation.common.dto;
 
 import java.util.List;
 
@@ -9,7 +9,7 @@ public record EventLocationResponseDTO(
         String name,
         String address,
         Integer capacity,
-        UserDTO manager,
+        LimitedUserInfoDTO manager,
         List<SeatDTO> seats) {
     public EventLocationResponseDTO(EventLocation eventLocation) {
         this(
@@ -17,7 +17,9 @@ public record EventLocationResponseDTO(
                 eventLocation.getName(),
                 eventLocation.getAddress(),
                 eventLocation.getCapacity(),
-                eventLocation.getManager() != null ? new UserDTO(eventLocation.getManager()) : null,
+                eventLocation.getManager() != null
+                        ? new LimitedUserInfoDTO(eventLocation.getManager())
+                        : null,
                 eventLocation.getSeats() != null
                         ? eventLocation.getSeats().stream().map(SeatDTO::new).toList()
                         : List.of());

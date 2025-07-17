@@ -74,8 +74,8 @@ public class ReservationResource {
     @APIResponse(
             responseCode = "200",
             description = "OK",
-            content = @Content(schema = @Schema(implementation = ReservationResponseDTO.class)))
-    public ReservationResponseDTO updateReservation(
+            content = @Content(schema = @Schema(implementation = DetailedReservationResponseDTO.class)))
+    public DetailedReservationResponseDTO updateReservation(
             @PathParam("id") Long id, ReservationRequestUpdateDTO dto) {
         User currentUser = userSecurityContext.getCurrentUser();
         return reservationService.updateReservationForUser(id, dto, currentUser);

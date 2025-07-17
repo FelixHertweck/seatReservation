@@ -2,6 +2,7 @@ package de.felixhertweck.seatreservation.reservation.dto;
 
 import java.time.LocalDateTime;
 
+import de.felixhertweck.seatreservation.common.dto.SeatDTO;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 
 public record ReservationResponseDTO(

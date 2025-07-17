@@ -7,8 +7,8 @@ import jakarta.validation.Valid;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.*;
 
+import de.felixhertweck.seatreservation.common.dto.EventLocationResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventLocationRequestDTO;
-import de.felixhertweck.seatreservation.eventManagement.dto.EventLocationResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.service.EventLocationService;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.security.Roles;

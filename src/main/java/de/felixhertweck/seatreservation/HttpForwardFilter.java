@@ -3,11 +3,13 @@ package de.felixhertweck.seatreservation;
 import java.io.IOException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.core.MediaType;
 
+@WebFilter("/*")
 public class HttpForwardFilter extends HttpFilter {
     public static final String API_ROOT_PATH = "/api";
     public static final String QUARKUS_ROOT_PATH = "/q";

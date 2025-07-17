@@ -101,7 +101,7 @@ public class ReservationService {
     // Maybe remove this method, only expose delete and create methods
     /*
     @Transactional
-    public ReservationResponseDTO updateReservationForUser(
+    public DetailedReservationResponseDTO updateReservationForUser(
             Long id, ReservationRequestUpdateDTO dto, User currentUser) {
         Reservation reservation = reservationRepository.findById(id);
         if (reservation == null) {
@@ -126,7 +126,7 @@ public class ReservationService {
         reservation.setReservationDate(LocalDateTime.now());
         reservationRepository.persist(reservation);
 
-        return new ReservationResponseDTO(reservation);
+        return new DetailedReservationResponseDTO(reservation);
     }*/
 
     public void deleteReservationForUser(Long id, User currentUser) {

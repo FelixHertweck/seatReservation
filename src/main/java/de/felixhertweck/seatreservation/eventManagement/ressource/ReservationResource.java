@@ -6,8 +6,8 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.*;
 
+import de.felixhertweck.seatreservation.eventManagement.dto.DetailedReservationResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.ReservationRequestDTO;
-import de.felixhertweck.seatreservation.eventManagement.dto.ReservationResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.service.ReservationService;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.security.Roles;
@@ -36,8 +36,8 @@ public class ReservationResource {
                             schema =
                                     @Schema(
                                             type = SchemaType.ARRAY,
-                                            implementation = ReservationResponseDTO.class)))
-    public List<ReservationResponseDTO> getAllReservations() {
+                                            implementation = DetailedReservationResponseDTO.class)))
+    public List<DetailedReservationResponseDTO> getAllReservations() {
         User currentUser = userSecurityContext.getCurrentUser();
         return reservationService.findAllReservations(currentUser);
     }
@@ -47,8 +47,11 @@ public class ReservationResource {
     @APIResponse(
             responseCode = "200",
             description = "OK",
-            content = @Content(schema = @Schema(implementation = ReservationResponseDTO.class)))
-    public ReservationResponseDTO getReservationById(@PathParam("id") Long id) {
+            content =
+                    @Content(
+                            schema =
+                                    @Schema(implementation = DetailedReservationResponseDTO.class)))
+    public DetailedReservationResponseDTO getReservationById(@PathParam("id") Long id) {
         User currentUser = userSecurityContext.getCurrentUser();
         return reservationService.findReservationById(id, currentUser);
     }
@@ -57,8 +60,11 @@ public class ReservationResource {
     @APIResponse(
             responseCode = "200",
             description = "OK",
-            content = @Content(schema = @Schema(implementation = ReservationResponseDTO.class)))
-    public ReservationResponseDTO createReservation(ReservationRequestDTO dto) {
+            content =
+                    @Content(
+                            schema =
+                                    @Schema(implementation = DetailedReservationResponseDTO.class)))
+    public DetailedReservationResponseDTO createReservation(ReservationRequestDTO dto) {
         User currentUser = userSecurityContext.getCurrentUser();
         return reservationService.createReservation(dto, currentUser);
     }
@@ -68,8 +74,11 @@ public class ReservationResource {
     @APIResponse(
             responseCode = "200",
             description = "OK",
-            content = @Content(schema = @Schema(implementation = ReservationResponseDTO.class)))
-    public ReservationResponseDTO updateReservation(
+            content =
+                    @Content(
+                            schema =
+                                    @Schema(implementation = DetailedReservationResponseDTO.class)))
+    public DetailedReservationResponseDTO updateReservation(
             @PathParam("id") Long id, ReservationRequestDTO dto) {
         User currentUser = userSecurityContext.getCurrentUser();
         return reservationService.updateReservation(id, dto, currentUser);

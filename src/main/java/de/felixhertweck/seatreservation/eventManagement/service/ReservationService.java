@@ -13,8 +13,8 @@ import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.SecurityContext;
 
+import de.felixhertweck.seatreservation.eventManagement.dto.DetailedReservationResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.ReservationRequestDTO;
-import de.felixhertweck.seatreservation.eventManagement.dto.ReservationResponseDTO;
 import de.felixhertweck.seatreservation.model.entity.*;
 import de.felixhertweck.seatreservation.model.repository.*;
 import de.felixhertweck.seatreservation.security.Roles;
@@ -40,10 +40,10 @@ public class ReservationService {
      * @throws ForbiddenException If the current user does not have the necessary permissions.
      * @throws UserNotFoundException If the current user cannot be found.
      */
-    public List<ReservationResponseDTO> findAllReservations(User currentUser) {
+    public List<DetailedReservationResponseDTO> findAllReservations(User currentUser) {
         if (securityContext.isUserInRole(Roles.ADMIN)) {
             return reservationRepository.listAll().stream()
-                    .map(ReservationResponseDTO::new)
+                    .map(DetailedReservationResponseDTO::new)
                     .toList();
         }
         List<Long> allowedEventIds =
@@ -55,7 +55,7 @@ public class ReservationService {
             return Collections.emptyList();
         }
         return reservationRepository.find("event.id IN ?1", allowedEventIds).list().stream()
-                .map(ReservationResponseDTO::new)
+                .map(DetailedReservationResponseDTO::new)
                 .toList();
     }
 
@@ -70,7 +70,7 @@ public class ReservationService {
      * @throws ForbiddenException If the current user does not have the necessary permissions.
      * @throws UserNotFoundException If the current user cannot be found.
      */
-    public ReservationResponseDTO findReservationById(Long id, User currentUser) {
+    public DetailedReservationResponseDTO findReservationById(Long id, User currentUser) {
         Reservation reservation =
                 reservationRepository
                         .findByIdOptional(id)
@@ -81,11 +81,11 @@ public class ReservationService {
 
         // Admins können jede Reservierung sehen
         if (securityContext.isUserInRole(Roles.ADMIN)) {
-            return new ReservationResponseDTO(reservation);
+            return new DetailedReservationResponseDTO(reservation);
         }
 
         if (isManagerAllowedToAccessEvent(currentUser, reservation.getEvent())) {
-            return new ReservationResponseDTO(reservation);
+            return new DetailedReservationResponseDTO(reservation);
         }
 
         throw new ForbiddenException("You are not allowed to access this reservation.");
@@ -104,8 +104,8 @@ public class ReservationService {
      * @throws BadRequestException If the user has no reservation allowance for the event.
      */
     @Transactional
-    public ReservationResponseDTO createReservation(ReservationRequestDTO dto, User currentUser)
-            throws ForbiddenException {
+    public DetailedReservationResponseDTO createReservation(
+            ReservationRequestDTO dto, User currentUser) throws ForbiddenException {
         User targetUser =
                 userRepository
                         .findByIdOptional(dto.getUserId())
@@ -154,7 +154,7 @@ public class ReservationService {
 
         Reservation reservation = new Reservation(targetUser, event, seat, LocalDateTime.now());
         reservationRepository.persist(reservation);
-        return new ReservationResponseDTO(reservation);
+        return new DetailedReservationResponseDTO(reservation);
     }
 
     /**
@@ -171,7 +171,7 @@ public class ReservationService {
      * @throws UserNotFoundException If the current user cannot be found.
      */
     @Transactional
-    public ReservationResponseDTO updateReservation(
+    public DetailedReservationResponseDTO updateReservation(
             Long id, ReservationRequestDTO dto, User currentUser) {
         Reservation reservation =
                 reservationRepository
@@ -230,7 +230,7 @@ public class ReservationService {
         reservation.setUser(user);
         reservation.setSeat(seat);
         reservationRepository.persist(reservation);
-        return new ReservationResponseDTO(reservation);
+        return new DetailedReservationResponseDTO(reservation);
     }
 
     /**

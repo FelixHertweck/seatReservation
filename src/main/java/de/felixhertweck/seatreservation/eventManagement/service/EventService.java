@@ -7,8 +7,8 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 
+import de.felixhertweck.seatreservation.eventManagement.dto.DetailedEventResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventRequestDTO;
-import de.felixhertweck.seatreservation.eventManagement.dto.EventResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesDto;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
@@ -43,7 +43,7 @@ public class EventService {
      * @return A DTO representing the newly created Event.
      */
     @Transactional
-    public EventResponseDTO createEvent(EventRequestDTO dto, User manager) {
+    public DetailedEventResponseDTO createEvent(EventRequestDTO dto, User manager) {
         EventLocation location =
                 eventLocationRepository
                         .findByIdOptional(dto.getEventLocationId())
@@ -64,7 +64,7 @@ public class EventService {
                         location,
                         manager);
         eventRepository.persist(event);
-        return new EventResponseDTO(event);
+        return new DetailedEventResponseDTO(event);
     }
 
     /**
@@ -78,7 +78,7 @@ public class EventService {
      * @throws ForbiddenException If the user is not authorized to update the Event.
      */
     @Transactional
-    public EventResponseDTO updateEvent(Long id, EventRequestDTO dto, User manager) {
+    public DetailedEventResponseDTO updateEvent(Long id, EventRequestDTO dto, User manager) {
         Event event =
                 eventRepository
                         .findByIdOptional(id)
@@ -110,7 +110,7 @@ public class EventService {
         event.setBookingDeadline(dto.getBookingDeadline());
         event.setEventLocation(location);
         eventRepository.persist(event);
-        return new EventResponseDTO(event);
+        return new DetailedEventResponseDTO(event);
     }
 
     /**
@@ -121,7 +121,7 @@ public class EventService {
      * @return A list of DTOs representing the Events.
      * @throws ForbiddenException If no authenticated user is found.
      */
-    public List<EventResponseDTO> getEventsByCurrentManager(User manager)
+    public List<DetailedEventResponseDTO> getEventsByCurrentManager(User manager)
             throws ForbiddenException {
         List<Event> events;
         // Access control: If the user is an ADMIN, all Events are returned.
@@ -131,7 +131,7 @@ public class EventService {
         } else {
             events = eventRepository.findByManager(manager);
         }
-        return events.stream().map(EventResponseDTO::new).collect(Collectors.toList());
+        return events.stream().map(DetailedEventResponseDTO::new).collect(Collectors.toList());
     }
 
     @Transactional

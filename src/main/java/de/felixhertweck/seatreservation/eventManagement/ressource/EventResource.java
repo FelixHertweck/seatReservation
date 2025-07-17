@@ -7,8 +7,8 @@ import jakarta.validation.Valid;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.*;
 
+import de.felixhertweck.seatreservation.eventManagement.dto.DetailedEventResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventRequestDTO;
-import de.felixhertweck.seatreservation.eventManagement.dto.EventResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.service.EventService;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.security.Roles;
@@ -32,8 +32,8 @@ public class EventResource {
     @APIResponse(
             responseCode = "200",
             description = "OK",
-            content = @Content(schema = @Schema(implementation = EventResponseDTO.class)))
-    public EventResponseDTO createEvent(@Valid EventRequestDTO dto) {
+            content = @Content(schema = @Schema(implementation = DetailedEventResponseDTO.class)))
+    public DetailedEventResponseDTO createEvent(@Valid EventRequestDTO dto) {
         User currentUser = userSecurityContext.getCurrentUser();
         return eventService.createEvent(dto, currentUser);
     }
@@ -43,8 +43,9 @@ public class EventResource {
     @APIResponse(
             responseCode = "200",
             description = "OK",
-            content = @Content(schema = @Schema(implementation = EventResponseDTO.class)))
-    public EventResponseDTO updateEvent(@PathParam("id") Long id, @Valid EventRequestDTO dto) {
+            content = @Content(schema = @Schema(implementation = DetailedEventResponseDTO.class)))
+    public DetailedEventResponseDTO updateEvent(
+            @PathParam("id") Long id, @Valid EventRequestDTO dto) {
         User currentUser = userSecurityContext.getCurrentUser();
         return eventService.updateEvent(id, dto, currentUser);
     }
@@ -58,8 +59,8 @@ public class EventResource {
                             schema =
                                     @Schema(
                                             type = SchemaType.ARRAY,
-                                            implementation = EventResponseDTO.class)))
-    public List<EventResponseDTO> getEventsByCurrentManager() {
+                                            implementation = DetailedEventResponseDTO.class)))
+    public List<DetailedEventResponseDTO> getEventsByCurrentManager() {
         User currentUser = userSecurityContext.getCurrentUser();
         return eventService.getEventsByCurrentManager(currentUser);
     }

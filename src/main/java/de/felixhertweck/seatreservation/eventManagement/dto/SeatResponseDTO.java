@@ -1,5 +1,6 @@
 package de.felixhertweck.seatreservation.eventManagement.dto;
 
+import de.felixhertweck.seatreservation.common.dto.EventLocationResponseDTO;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 
 public record SeatResponseDTO(

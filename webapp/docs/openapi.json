@@ -2,6 +2,64 @@
   "openapi" : "3.1.0",
   "components" : {
     "schemas" : {
+      "DetailedEventResponseDTO" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "startTime" : {
+            "$ref" : "#/components/schemas/LocalDateTime"
+          },
+          "endTime" : {
+            "$ref" : "#/components/schemas/LocalDateTime"
+          },
+          "bookingDeadline" : {
+            "$ref" : "#/components/schemas/LocalDateTime"
+          },
+          "location" : {
+            "$ref" : "#/components/schemas/EventLocationResponseDTO"
+          },
+          "manager" : {
+            "$ref" : "#/components/schemas/LimitedUserInfoDTO"
+          },
+          "eventUserAllowances" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "$ref" : "#/components/schemas/EventUserAllowancesDto"
+            }
+          }
+        }
+      },
+      "DetailedReservationResponseDTO" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "user" : {
+            "$ref" : "#/components/schemas/UserDTO"
+          },
+          "event" : {
+            "$ref" : "#/components/schemas/DetailedEventResponseDTO"
+          },
+          "seat" : {
+            "$ref" : "#/components/schemas/SeatDTO"
+          },
+          "reservationDateTime" : {
+            "$ref" : "#/components/schemas/LocalDateTime"
+          }
+        }
+      },
       "EventLocationRequestDTO" : {
         "type" : "object",
         "required" : [ "name", "address", "capacity" ],
@@ -36,35 +94,7 @@
             "format" : "int32"
           },
           "manager" : {
-            "$ref" : "#/components/schemas/UserDTO"
-          },
-          "seats" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/SeatDTO"
-            }
-          }
-        }
-      },
-      "EventLocationResponseDTO1" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "name" : {
-            "type" : "string"
-          },
-          "address" : {
-            "type" : "string"
-          },
-          "capacity" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "manager" : {
-            "$ref" : "#/components/schemas/UserDTO"
+            "$ref" : "#/components/schemas/LimitedUserInfoDTO"
           },
           "seats" : {
             "type" : "array",
@@ -123,43 +153,6 @@
           },
           "location" : {
             "$ref" : "#/components/schemas/EventLocationResponseDTO"
-          },
-          "manager" : {
-            "$ref" : "#/components/schemas/UserDTO1"
-          },
-          "eventUserAllowances" : {
-            "type" : "array",
-            "uniqueItems" : true,
-            "items" : {
-              "$ref" : "#/components/schemas/EventUserAllowancesDto"
-            }
-          }
-        }
-      },
-      "EventResponseDTO1" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "name" : {
-            "type" : "string"
-          },
-          "description" : {
-            "type" : "string"
-          },
-          "startTime" : {
-            "$ref" : "#/components/schemas/LocalDateTime"
-          },
-          "endTime" : {
-            "$ref" : "#/components/schemas/LocalDateTime"
-          },
-          "bookingDeadline" : {
-            "$ref" : "#/components/schemas/LocalDateTime"
-          },
-          "location" : {
-            "$ref" : "#/components/schemas/EventLocationResponseDTO1"
           }
         }
       },
@@ -180,7 +173,7 @@
           }
         }
       },
-      "LimitedUserDTO" : {
+      "LimitedUserInfoDTO" : {
         "type" : "object",
         "properties" : {
           "id" : {
@@ -251,27 +244,6 @@
             "type" : "integer",
             "format" : "int64"
           },
-          "user" : {
-            "$ref" : "#/components/schemas/UserDTO"
-          },
-          "event" : {
-            "$ref" : "#/components/schemas/EventResponseDTO"
-          },
-          "seat" : {
-            "$ref" : "#/components/schemas/SeatDTO1"
-          },
-          "reservationDateTime" : {
-            "$ref" : "#/components/schemas/LocalDateTime"
-          }
-        }
-      },
-      "ReservationResponseDTO1" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
           "userId" : {
             "type" : "integer",
             "format" : "int64"
@@ -281,7 +253,7 @@
             "format" : "int64"
           },
           "seat" : {
-            "$ref" : "#/components/schemas/SeatDTO1"
+            "$ref" : "#/components/schemas/SeatDTO"
           },
           "reservationDateTime" : {
             "$ref" : "#/components/schemas/LocalDateTime"
@@ -289,30 +261,6 @@
         }
       },
       "SeatDTO" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "seatNumber" : {
-            "type" : "string"
-          },
-          "locationId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "xCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "yCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        }
-      },
-      "SeatDTO1" : {
         "type" : "object",
         "properties" : {
           "id" : {
@@ -417,18 +365,6 @@
             "type" : "string"
           },
           "email" : {
-            "type" : "string"
-          }
-        }
-      },
-      "UserDTO1" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "username" : {
             "type" : "string"
           }
         }
@@ -646,7 +582,7 @@
                 "schema" : {
                   "type" : "array",
                   "items" : {
-                    "$ref" : "#/components/schemas/EventResponseDTO"
+                    "$ref" : "#/components/schemas/DetailedEventResponseDTO"
                   }
                 }
               }
@@ -682,7 +618,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/EventResponseDTO"
+                  "$ref" : "#/components/schemas/DetailedEventResponseDTO"
                 }
               }
             }
@@ -731,7 +667,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/EventResponseDTO"
+                  "$ref" : "#/components/schemas/DetailedEventResponseDTO"
                 }
               }
             }
@@ -796,7 +732,7 @@
                 "schema" : {
                   "type" : "array",
                   "items" : {
-                    "$ref" : "#/components/schemas/ReservationResponseDTO"
+                    "$ref" : "#/components/schemas/DetailedReservationResponseDTO"
                   }
                 }
               }
@@ -832,7 +768,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ReservationResponseDTO"
+                  "$ref" : "#/components/schemas/DetailedReservationResponseDTO"
                 }
               }
             }
@@ -881,7 +817,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ReservationResponseDTO"
+                  "$ref" : "#/components/schemas/DetailedReservationResponseDTO"
                 }
               }
             }
@@ -918,7 +854,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ReservationResponseDTO"
+                  "$ref" : "#/components/schemas/DetailedReservationResponseDTO"
                 }
               }
             }
@@ -1152,7 +1088,7 @@
                 "schema" : {
                   "type" : "array",
                   "items" : {
-                    "$ref" : "#/components/schemas/EventResponseDTO1"
+                    "$ref" : "#/components/schemas/EventResponseDTO"
                   }
                 }
               }
@@ -1219,7 +1155,7 @@
                 "schema" : {
                   "type" : "array",
                   "items" : {
-                    "$ref" : "#/components/schemas/ReservationResponseDTO1"
+                    "$ref" : "#/components/schemas/ReservationResponseDTO"
                   }
                 }
               }
@@ -1257,7 +1193,7 @@
                 "schema" : {
                   "type" : "array",
                   "items" : {
-                    "$ref" : "#/components/schemas/ReservationResponseDTO1"
+                    "$ref" : "#/components/schemas/ReservationResponseDTO"
                   }
                 }
               }
@@ -1297,7 +1233,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ReservationResponseDTO1"
+                  "$ref" : "#/components/schemas/ReservationResponseDTO"
                 }
               }
             }
@@ -1353,7 +1289,7 @@
                 "schema" : {
                   "type" : "array",
                   "items" : {
-                    "$ref" : "#/components/schemas/LimitedUserDTO"
+                    "$ref" : "#/components/schemas/LimitedUserInfoDTO"
                   }
                 }
               }
