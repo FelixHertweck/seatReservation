@@ -1,4 +1,4 @@
-package de.felixhertweck.seatreservation.eventmanagement.dto;
+package de.felixhertweck.seatreservation.eventManagement.dto;
 
 import java.util.List;
 

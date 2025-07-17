@@ -1,4 +1,4 @@
-package de.felixhertweck.seatreservation.eventmanagement.dto;
+package de.felixhertweck.seatreservation.eventManagement.dto;
 
 import de.felixhertweck.seatreservation.model.entity.User;
 

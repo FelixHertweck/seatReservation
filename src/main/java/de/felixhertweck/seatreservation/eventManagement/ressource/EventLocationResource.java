@@ -1,4 +1,4 @@
-package de.felixhertweck.seatreservation.eventmanagement.ressource;
+package de.felixhertweck.seatreservation.eventManagement.ressource;
 
 import java.util.List;
 import jakarta.annotation.security.RolesAllowed;
@@ -7,9 +7,9 @@ import jakarta.validation.Valid;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.*;
 
-import de.felixhertweck.seatreservation.eventmanagement.dto.EventLocationRequestDTO;
-import de.felixhertweck.seatreservation.eventmanagement.dto.EventLocationResponseDTO;
-import de.felixhertweck.seatreservation.eventmanagement.service.EventLocationService;
+import de.felixhertweck.seatreservation.eventManagement.dto.EventLocationRequestDTO;
+import de.felixhertweck.seatreservation.eventManagement.dto.EventLocationResponseDTO;
+import de.felixhertweck.seatreservation.eventManagement.service.EventLocationService;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.security.Roles;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;

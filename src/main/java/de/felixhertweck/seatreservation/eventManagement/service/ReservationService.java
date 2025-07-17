@@ -1,4 +1,4 @@
-package de.felixhertweck.seatreservation.eventmanagement.service;
+package de.felixhertweck.seatreservation.eventManagement.service;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -13,8 +13,8 @@ import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.SecurityContext;
 
-import de.felixhertweck.seatreservation.eventmanagement.dto.ReservationRequestDTO;
-import de.felixhertweck.seatreservation.eventmanagement.dto.ReservationResponseDTO;
+import de.felixhertweck.seatreservation.eventManagement.dto.ReservationRequestDTO;
+import de.felixhertweck.seatreservation.eventManagement.dto.ReservationResponseDTO;
 import de.felixhertweck.seatreservation.model.entity.*;
 import de.felixhertweck.seatreservation.model.repository.*;
 import de.felixhertweck.seatreservation.security.Roles;

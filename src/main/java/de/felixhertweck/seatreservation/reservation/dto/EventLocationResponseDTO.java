@@ -2,8 +2,8 @@ package de.felixhertweck.seatreservation.reservation.dto;
 
 import java.util.List;
 
-import de.felixhertweck.seatreservation.eventmanagement.dto.SeatDTO;
-import de.felixhertweck.seatreservation.eventmanagement.dto.UserDTO;
+import de.felixhertweck.seatreservation.eventManagement.dto.SeatDTO;
+import de.felixhertweck.seatreservation.eventManagement.dto.UserDTO;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 
 public record EventLocationResponseDTO(
