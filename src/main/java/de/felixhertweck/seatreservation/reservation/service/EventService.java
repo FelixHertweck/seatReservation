@@ -46,7 +46,7 @@ public class EventService {
 
     @Transactional
     public int getAvailableSeatsForCurrentUser(Long eventId, String username)
-            throws UserNotFoundException {
+            throws UserNotFoundException, NotFoundException, ForbiddenException {
         User user = userRepository.findByUsername(username);
 
         if (user == null) {

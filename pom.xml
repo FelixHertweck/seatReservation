@@ -188,7 +188,6 @@
               <reflowLongStrings>true</reflowLongStrings>
               <formatJavadoc>true</formatJavadoc>
             </googleJavaFormat>
-
             <importOrder>
               <wildcardsLast>true</wildcardsLast>
               <order>\#de.felixhertweck.seatreservation,java|jakarta,\#</order>

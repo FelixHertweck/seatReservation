@@ -4,11 +4,19 @@ import java.util.List;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
-public class ReservationRequestCreateDTO {
+public class ReservationsRequestCreateDTO {
     @NotNull(message = "Event ID must not be null")
-    public Long eventId;
+    private Long eventId;
 
     @NotNull(message = "Seat IDs must not be null")
     @NotEmpty(message = "Seat IDs must not be empty")
-    public List<Long> seatIds;
+    private List<Long> seatIds;
+
+    public Long getEventId() {
+        return eventId;
+    }
+
+    public List<Long> getSeatIds() {
+        return seatIds;
+    }
 }

@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 import de.felixhertweck.seatreservation.common.dto.EventLocationResponseDTO;
-import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
+import de.felixhertweck.seatreservation.common.dto.UserDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;
 
 public record DetailedEventResponseDTO(
@@ -15,7 +15,7 @@ public record DetailedEventResponseDTO(
         LocalDateTime endTime,
         LocalDateTime bookingDeadline,
         EventLocationResponseDTO location,
-        LimitedUserInfoDTO manager,
+        UserDTO manager,
         Set<EventUserAllowancesDto> eventUserAllowances) {
     public DetailedEventResponseDTO(Event event) {
         this(
@@ -26,7 +26,7 @@ public record DetailedEventResponseDTO(
                 event.getEndTime(),
                 event.getBookingDeadline(),
                 new EventLocationResponseDTO(event.getEventLocation()),
-                event.getManager() != null ? new LimitedUserInfoDTO(event.getManager()) : null,
+                event.getManager() != null ? new UserDTO(event.getManager()) : null,
                 event.getUserAllowances() != null
                         ? event.getUserAllowances().stream()
                                 .map(EventUserAllowancesDto::new)

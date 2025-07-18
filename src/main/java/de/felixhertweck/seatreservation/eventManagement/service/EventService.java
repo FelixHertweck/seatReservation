@@ -78,7 +78,8 @@ public class EventService {
      * @throws ForbiddenException If the user is not authorized to update the Event.
      */
     @Transactional
-    public DetailedEventResponseDTO updateEvent(Long id, EventRequestDTO dto, User manager) {
+    public DetailedEventResponseDTO updateEvent(Long id, EventRequestDTO dto, User manager)
+            throws EventNotFoundException, ForbiddenException, IllegalArgumentException {
         Event event =
                 eventRepository
                         .findByIdOptional(id)

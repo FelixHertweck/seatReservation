@@ -11,11 +11,15 @@ import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 
 import de.felixhertweck.seatreservation.model.entity.*;
-import de.felixhertweck.seatreservation.model.repository.*;
+import de.felixhertweck.seatreservation.model.repository.EventRepository;
+import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
+import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
+import de.felixhertweck.seatreservation.model.repository.SeatRepository;
+import de.felixhertweck.seatreservation.reservation.EventBookingClosedException;
 import de.felixhertweck.seatreservation.reservation.NoSeatsAvailableException;
 import de.felixhertweck.seatreservation.reservation.SeatAlreadyReservedException;
-import de.felixhertweck.seatreservation.reservation.dto.ReservationRequestCreateDTO;
 import de.felixhertweck.seatreservation.reservation.dto.ReservationResponseDTO;
+import de.felixhertweck.seatreservation.reservation.dto.ReservationsRequestCreateDTO;
 
 @ApplicationScoped
 public class ReservationService {
@@ -44,21 +48,26 @@ public class ReservationService {
 
     @Transactional
     public List<ReservationResponseDTO> createReservationForUser(
-            ReservationRequestCreateDTO dto, User currentUser)
-            throws NoSeatsAvailableException, ForbiddenException, NotFoundException {
-        Event event = eventRepository.findById(dto.eventId);
-
+            ReservationsRequestCreateDTO dto, User currentUser)
+            throws NoSeatsAvailableException,
+                    ForbiddenException,
+                    NotFoundException,
+                    EventBookingClosedException {
+        // Validate the eventId, ensure it exists
+        Event event = eventRepository.findById(dto.getEventId());
         if (event == null) {
             throw new NotFoundException("Event or Seat not found");
         }
 
+        // Validate the seatIds, ensure they exist
         List<Seat> seats =
-                dto.seatIds.stream().map(seatId -> seatRepository.findById(seatId)).toList();
-
+                dto.getSeatIds().stream().map(seatId -> seatRepository.findById(seatId)).toList();
         if (seats.contains(null)) {
             throw new NotFoundException("Minimum one seat not found");
         }
 
+        // Check if the user has an allowance for this event
+        // And if the user is allowed to reserve that amount of seats
         List<EventUserAllowance> allowances = eventUserAllowanceRepository.findByUser(currentUser);
         EventUserAllowance eventUserAllowance =
                 allowances.stream()
@@ -77,6 +86,12 @@ public class ReservationService {
 
         LocalDateTime reservationTime = LocalDateTime.now();
 
+        // Check if the event is still bookable
+        if (event.getBookingDeadline() != null
+                && reservationTime.isAfter(event.getBookingDeadline())) {
+            throw new EventBookingClosedException("Event is no longer bookable");
+        }
+
         // Check if seats are already reserved
         List<Reservation> existingReservations = reservationRepository.findByEventId(event.id);
         List<Reservation> newReservations = new ArrayList<>();
@@ -87,6 +102,7 @@ public class ReservationService {
             newReservations.add(new Reservation(currentUser, event, seat, reservationTime));
         }
 
+        // Persist the new reservations
         reservationRepository.persistAll(newReservations);
         // Update the user's allowance
         eventUserAllowance.setReservationsAllowedCount(
@@ -129,7 +145,8 @@ public class ReservationService {
         return new DetailedReservationResponseDTO(reservation);
     }*/
 
-    public void deleteReservationForUser(Long id, User currentUser) {
+    public void deleteReservationForUser(Long id, User currentUser)
+            throws NotFoundException, ForbiddenException {
         Reservation reservation = reservationRepository.findById(id);
         if (reservation == null) {
             throw new NotFoundException("Reservation not found");

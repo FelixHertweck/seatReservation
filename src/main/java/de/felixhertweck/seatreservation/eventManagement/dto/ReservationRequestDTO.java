@@ -12,12 +12,6 @@ public class ReservationRequestDTO {
     @NotNull(message = "Seat ID must not be null")
     private Long seatId;
 
-    public ReservationRequestDTO(Long eventId, Long userId, Long seatId) {
-        this.eventId = eventId;
-        this.userId = userId;
-        this.seatId = seatId;
-    }
-
     public Long getEventId() {
         return eventId;
     }

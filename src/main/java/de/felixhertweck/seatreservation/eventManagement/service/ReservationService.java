@@ -40,7 +40,8 @@ public class ReservationService {
      * @throws ForbiddenException If the current user does not have the necessary permissions.
      * @throws UserNotFoundException If the current user cannot be found.
      */
-    public List<DetailedReservationResponseDTO> findAllReservations(User currentUser) {
+    public List<DetailedReservationResponseDTO> findAllReservations(User currentUser)
+            throws ForbiddenException, UserNotFoundException {
         if (securityContext.isUserInRole(Roles.ADMIN)) {
             return reservationRepository.listAll().stream()
                     .map(DetailedReservationResponseDTO::new)
@@ -70,7 +71,8 @@ public class ReservationService {
      * @throws ForbiddenException If the current user does not have the necessary permissions.
      * @throws UserNotFoundException If the current user cannot be found.
      */
-    public DetailedReservationResponseDTO findReservationById(Long id, User currentUser) {
+    public DetailedReservationResponseDTO findReservationById(Long id, User currentUser)
+            throws NotFoundException, ForbiddenException, UserNotFoundException {
         Reservation reservation =
                 reservationRepository
                         .findByIdOptional(id)
@@ -105,7 +107,11 @@ public class ReservationService {
      */
     @Transactional
     public DetailedReservationResponseDTO createReservation(
-            ReservationRequestDTO dto, User currentUser) throws ForbiddenException {
+            ReservationRequestDTO dto, User currentUser)
+            throws ForbiddenException,
+                    UserNotFoundException,
+                    NotFoundException,
+                    BadRequestException {
         User targetUser =
                 userRepository
                         .findByIdOptional(dto.getUserId())
@@ -172,7 +178,8 @@ public class ReservationService {
      */
     @Transactional
     public DetailedReservationResponseDTO updateReservation(
-            Long id, ReservationRequestDTO dto, User currentUser) {
+            Long id, ReservationRequestDTO dto, User currentUser)
+            throws NotFoundException, ForbiddenException, UserNotFoundException {
         Reservation reservation =
                 reservationRepository
                         .findByIdOptional(id)
@@ -244,7 +251,8 @@ public class ReservationService {
      * @throws UserNotFoundException If the current user cannot be found.
      */
     @Transactional
-    public void deleteReservation(Long id, User currentUser) {
+    public void deleteReservation(Long id, User currentUser)
+            throws NotFoundException, ForbiddenException, UserNotFoundException {
         Reservation reservation =
                 reservationRepository
                         .findByIdOptional(id)

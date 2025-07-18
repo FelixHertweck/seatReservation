@@ -7,6 +7,29 @@ Execute the following command to create the database schema:
 openssl genpkey -algorithm RSA -out keys/privateKey.pem -pkeyopt rsa_keygen_bits:2048 && openssl rsa -pubout -in keys/privateKey.pem -out keys/publicKey.pem
 ```
 
+## Environment Variables
+
+The application requires certain environment variables to be set for proper functionality, especially for email services. These variables are loaded from a `.env` file in the project root.
+
+### Setting up your environment
+
+1. Copy the `.env.example` file to create your own `.env` file:
+   ```shell script
+   cp .env.example .env
+   ```
+
+2. Edit the `.env` file and replace the placeholder values with your actual configuration:
+   ```
+   mail-host=your-mail-host         # e.g., smtp.gmail.com
+   mail-port=your-mail-port         # e.g., 465 for SSL
+   mail-username=your-mail-username # Your email username/address
+   mail-password=your-mail-password # Your email password or app password
+   mail-from=your-mail-from-address # The "from" address for sent emails
+   ```
+
+> **_IMPORTANT:_** The `.env` file contains sensitive information and is not committed to the repository. It is listed in `.gitignore` to prevent accidental commits. Never commit your actual `.env` file with real credentials.
+
+
 ## Running the application in dev mode
 
 You can run your application in dev mode that enables live coding using:

@@ -38,4 +38,4 @@ release.properties
 keys/
 
 # environment variables
-.env
+#.env
