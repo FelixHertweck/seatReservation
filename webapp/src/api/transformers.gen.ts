@@ -56,6 +56,13 @@ const localDateTimeSchemaResponseTransformer = (data: any) => {
     return data;
 };
 
+const userDtoSchemaResponseTransformer = (data: any) => {
+    if (data.id) {
+        data.id = BigInt(data.id.toString());
+    }
+    return data;
+};
+
 const eventUserAllowancesDtoSchemaResponseTransformer = (data: any) => {
     if (data.eventId) {
         data.eventId = BigInt(data.eventId.toString());
@@ -83,7 +90,7 @@ const detailedEventResponseDtoSchemaResponseTransformer = (data: any) => {
         data.location = eventLocationResponseDtoSchemaResponseTransformer(data.location);
     }
     if (data.manager) {
-        data.manager = limitedUserInfoDtoSchemaResponseTransformer(data.manager);
+        data.manager = userDtoSchemaResponseTransformer(data.manager);
     }
     if (data.eventUserAllowances) {
         data.eventUserAllowances = data.eventUserAllowances.map((item: any) => {
@@ -107,13 +114,6 @@ export const postApiManagerEventsResponseTransformer = async (data: any): Promis
 
 export const putApiManagerEventsByIdResponseTransformer = async (data: any): Promise<PutApiManagerEventsByIdResponse> => {
     data = detailedEventResponseDtoSchemaResponseTransformer(data);
-    return data;
-};
-
-const userDtoSchemaResponseTransformer = (data: any) => {
-    if (data.id) {
-        data.id = BigInt(data.id.toString());
-    }
     return data;
 };
 

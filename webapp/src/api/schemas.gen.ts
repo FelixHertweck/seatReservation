@@ -26,7 +26,7 @@ export const DetailedEventResponseDTOSchema = {
             '$ref': '#/components/schemas/EventLocationResponseDTO'
         },
         manager: {
-            '$ref': '#/components/schemas/LimitedUserInfoDTO'
+            '$ref': '#/components/schemas/UserDTO'
         },
         eventUserAllowances: {
             type: 'array',
@@ -56,6 +56,17 @@ export const DetailedReservationResponseDTOSchema = {
         },
         reservationDateTime: {
             '$ref': '#/components/schemas/LocalDateTime'
+        }
+    }
+} as const;
+
+export const EmailRequestSchema = {
+    type: 'object',
+    required: ['email'],
+    properties: {
+        email: {
+            type: 'string',
+            pattern: '\\S'
         }
     }
 } as const;
@@ -199,31 +210,13 @@ export const LocalDateTimeSchema = {
 
 export const LoginRequestDTOSchema = {
     type: 'object',
+    required: ['username', 'password'],
     properties: {
         username: {
             type: 'string'
         },
         password: {
             type: 'string'
-        }
-    }
-} as const;
-
-export const ReservationRequestCreateDTOSchema = {
-    type: 'object',
-    required: ['eventId', 'seatIds'],
-    properties: {
-        eventId: {
-            type: 'integer',
-            format: 'int64'
-        },
-        seatIds: {
-            type: 'array',
-            items: {
-                type: 'integer',
-                format: 'int64'
-            },
-            minItems: 1
         }
     }
 } as const;
@@ -267,6 +260,25 @@ export const ReservationResponseDTOSchema = {
         },
         reservationDateTime: {
             '$ref': '#/components/schemas/LocalDateTime'
+        }
+    }
+} as const;
+
+export const ReservationsRequestCreateDTOSchema = {
+    type: 'object',
+    required: ['eventId', 'seatIds'],
+    properties: {
+        eventId: {
+            type: 'integer',
+            format: 'int64'
+        },
+        seatIds: {
+            type: 'array',
+            items: {
+                type: 'integer',
+                format: 'int64'
+            },
+            minItems: 1
         }
     }
 } as const;
@@ -344,6 +356,7 @@ export const SeatResponseDTOSchema = {
 
 export const UserCreationDTOSchema = {
     type: 'object',
+    required: ['username', 'email', 'password', 'firstname', 'lastname'],
     properties: {
         username: {
             type: 'string'
@@ -387,6 +400,7 @@ export const UserDTOSchema = {
 
 export const UserProfileUpdateDTOSchema = {
     type: 'object',
+    required: ['email', 'firstname', 'lastname', 'passwordHash', 'roles'],
     properties: {
         email: {
             type: 'string'
@@ -405,7 +419,8 @@ export const UserProfileUpdateDTOSchema = {
             uniqueItems: true,
             items: {
                 type: 'string'
-            }
+            },
+            minItems: 1
         }
     }
 } as const;

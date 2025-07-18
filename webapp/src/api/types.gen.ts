@@ -8,7 +8,7 @@ export type DetailedEventResponseDto = {
     endTime?: LocalDateTime;
     bookingDeadline?: LocalDateTime;
     location?: EventLocationResponseDto;
-    manager?: LimitedUserInfoDto;
+    manager?: UserDto;
     eventUserAllowances?: EventUserAllowancesDto[];
 };
 
@@ -18,6 +18,10 @@ export type DetailedReservationResponseDto = {
     event?: DetailedEventResponseDto;
     seat?: SeatDto;
     reservationDateTime?: LocalDateTime;
+};
+
+export type EmailRequest = {
+    email: string;
 };
 
 export type EventLocationRequestDto = {
@@ -68,13 +72,8 @@ export type LimitedUserInfoDto = {
 export type LocalDateTime = Date;
 
 export type LoginRequestDto = {
-    username?: string;
-    password?: string;
-};
-
-export type ReservationRequestCreateDto = {
-    eventId: bigint;
-    seatIds: bigint[];
+    username: string;
+    password: string;
 };
 
 export type ReservationRequestDto = {
@@ -89,6 +88,11 @@ export type ReservationResponseDto = {
     eventId?: bigint;
     seat?: SeatDto;
     reservationDateTime?: LocalDateTime;
+};
+
+export type ReservationsRequestCreateDto = {
+    eventId: bigint;
+    seatIds: bigint[];
 };
 
 export type SeatDto = {
@@ -115,11 +119,11 @@ export type SeatResponseDto = {
 };
 
 export type UserCreationDto = {
-    username?: string;
-    email?: string;
-    password?: string;
-    firstname?: string;
-    lastname?: string;
+    username: string;
+    email: string;
+    password: string;
+    firstname: string;
+    lastname: string;
 };
 
 export type UserDto = {
@@ -131,11 +135,11 @@ export type UserDto = {
 };
 
 export type UserProfileUpdateDto = {
-    email?: string;
-    firstname?: string;
-    lastname?: string;
-    passwordHash?: string;
-    roles?: string[];
+    email: string;
+    firstname: string;
+    lastname: string;
+    passwordHash: string;
+    roles: string[];
 };
 
 export type PostApiAuthLoginData = {
@@ -155,6 +159,39 @@ export type PostApiAuthLoginErrors = {
 export type PostApiAuthLoginResponses = {
     /**
      * OK
+     */
+    200: unknown;
+};
+
+export type PostApiEmailSendHelloData = {
+    body: EmailRequest;
+    path?: never;
+    query?: never;
+    url: '/api/email/send-hello';
+};
+
+export type PostApiEmailSendHelloErrors = {
+    /**
+     * Invalid email address
+     */
+    400: unknown;
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+    /**
+     * Error sending email
+     */
+    500: unknown;
+};
+
+export type PostApiEmailSendHelloResponses = {
+    /**
+     * Email sent successfully
      */
     200: unknown;
 };
@@ -775,7 +812,7 @@ export type GetApiUserReservationsResponses = {
 export type GetApiUserReservationsResponse = GetApiUserReservationsResponses[keyof GetApiUserReservationsResponses];
 
 export type PostApiUserReservationsData = {
-    body: ReservationRequestCreateDto;
+    body: ReservationsRequestCreateDto;
     path?: never;
     query?: never;
     url: '/api/user/reservations';

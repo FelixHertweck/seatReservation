@@ -1,5 +1,9 @@
 {
   "openapi" : "3.1.0",
+  "tags" : [ {
+    "name" : "Email",
+    "description" : "Email operations"
+  } ],
   "components" : {
     "schemas" : {
       "DetailedEventResponseDTO" : {
@@ -28,7 +32,7 @@
             "$ref" : "#/components/schemas/EventLocationResponseDTO"
           },
           "manager" : {
-            "$ref" : "#/components/schemas/LimitedUserInfoDTO"
+            "$ref" : "#/components/schemas/UserDTO"
           },
           "eventUserAllowances" : {
             "type" : "array",
@@ -57,6 +61,16 @@
           },
           "reservationDateTime" : {
             "$ref" : "#/components/schemas/LocalDateTime"
+          }
+        }
+      },
+      "EmailRequest" : {
+        "type" : "object",
+        "required" : [ "email" ],
+        "properties" : {
+          "email" : {
+            "type" : "string",
+            "pattern" : "\\S"
           }
         }
       },
@@ -192,30 +206,13 @@
       },
       "LoginRequestDTO" : {
         "type" : "object",
+        "required" : [ "username", "password" ],
         "properties" : {
           "username" : {
             "type" : "string"
           },
           "password" : {
             "type" : "string"
-          }
-        }
-      },
-      "ReservationRequestCreateDTO" : {
-        "type" : "object",
-        "required" : [ "eventId", "seatIds" ],
-        "properties" : {
-          "eventId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "seatIds" : {
-            "type" : "array",
-            "items" : {
-              "type" : "integer",
-              "format" : "int64"
-            },
-            "minItems" : 1
           }
         }
       },
@@ -257,6 +254,24 @@
           },
           "reservationDateTime" : {
             "$ref" : "#/components/schemas/LocalDateTime"
+          }
+        }
+      },
+      "ReservationsRequestCreateDTO" : {
+        "type" : "object",
+        "required" : [ "eventId", "seatIds" ],
+        "properties" : {
+          "eventId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "seatIds" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            },
+            "minItems" : 1
           }
         }
       },
@@ -330,6 +345,7 @@
       },
       "UserCreationDTO" : {
         "type" : "object",
+        "required" : [ "username", "email", "password", "firstname", "lastname" ],
         "properties" : {
           "username" : {
             "type" : "string"
@@ -371,6 +387,7 @@
       },
       "UserProfileUpdateDTO" : {
         "type" : "object",
+        "required" : [ "email", "firstname", "lastname", "passwordHash", "roles" ],
         "properties" : {
           "email" : {
             "type" : "string"
@@ -389,7 +406,8 @@
             "uniqueItems" : true,
             "items" : {
               "type" : "string"
-            }
+            },
+            "minItems" : 1
           }
         }
       }
@@ -426,6 +444,43 @@
         },
         "summary" : "Login",
         "tags" : [ "Auth Resource" ]
+      }
+    },
+    "/api/email/send-hello" : {
+      "post" : {
+        "summary" : "Send a hello world email",
+        "description" : "Sends a test email with a hello world message to the specified email address",
+        "tags" : [ "Email" ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/EmailRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Email sent successfully"
+          },
+          "400" : {
+            "description" : "Invalid email address"
+          },
+          "500" : {
+            "description" : "Error sending email"
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "security" : [ {
+          "SecurityScheme" : [ "ADMIN" ]
+        } ]
       }
     },
     "/api/manager/eventlocations" : {
@@ -1179,7 +1234,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/ReservationRequestCreateDTO"
+                "$ref" : "#/components/schemas/ReservationsRequestCreateDTO"
               }
             }
           },
