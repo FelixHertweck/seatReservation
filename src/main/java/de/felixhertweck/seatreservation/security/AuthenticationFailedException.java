@@ -1,6 +1,8 @@
 package de.felixhertweck.seatreservation.security;
 
-public class AuthenticationFailedException extends RuntimeException {
+import jakarta.ws.rs.ForbiddenException;
+
+public class AuthenticationFailedException extends ForbiddenException {
     public AuthenticationFailedException(String message) {
         super(message);
     }

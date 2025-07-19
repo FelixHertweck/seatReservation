@@ -20,10 +20,6 @@ export type DetailedReservationResponseDto = {
     reservationDateTime?: LocalDateTime;
 };
 
-export type EmailRequest = {
-    email: string;
-};
-
 export type EventLocationRequestDto = {
     name: string;
     address: string;
@@ -120,7 +116,7 @@ export type SeatResponseDto = {
 
 export type UserCreationDto = {
     username: string;
-    email: string;
+    email?: string;
     password: string;
     firstname: string;
     lastname: string;
@@ -159,39 +155,6 @@ export type PostApiAuthLoginErrors = {
 export type PostApiAuthLoginResponses = {
     /**
      * OK
-     */
-    200: unknown;
-};
-
-export type PostApiEmailSendHelloData = {
-    body: EmailRequest;
-    path?: never;
-    query?: never;
-    url: '/api/email/send-hello';
-};
-
-export type PostApiEmailSendHelloErrors = {
-    /**
-     * Invalid email address
-     */
-    400: unknown;
-    /**
-     * Not Authorized
-     */
-    401: unknown;
-    /**
-     * Not Allowed
-     */
-    403: unknown;
-    /**
-     * Error sending email
-     */
-    500: unknown;
-};
-
-export type PostApiEmailSendHelloResponses = {
-    /**
-     * Email sent successfully
      */
     200: unknown;
 };
@@ -727,6 +690,38 @@ export type PutApiManagerSeatsByIdResponses = {
 };
 
 export type PutApiManagerSeatsByIdResponse = PutApiManagerSeatsByIdResponses[keyof PutApiManagerSeatsByIdResponses];
+
+export type GetApiUserConfirmEmailData = {
+    body?: never;
+    path?: never;
+    query?: {
+        id?: bigint;
+        token?: string;
+    };
+    url: '/api/user/confirm-email';
+};
+
+export type GetApiUserConfirmEmailErrors = {
+    /**
+     * Invalid token
+     */
+    400: unknown;
+    /**
+     * Token not found
+     */
+    404: unknown;
+    /**
+     * Token expired
+     */
+    410: unknown;
+};
+
+export type GetApiUserConfirmEmailResponses = {
+    /**
+     * Email confirmed successfully
+     */
+    200: unknown;
+};
 
 export type GetApiUserEventsData = {
     body?: never;

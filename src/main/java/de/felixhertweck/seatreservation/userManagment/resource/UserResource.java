@@ -1,4 +1,4 @@
-package de.felixhertweck.seatreservation.userManagment;
+package de.felixhertweck.seatreservation.userManagment.resource;
 
 import java.util.List;
 import jakarta.annotation.security.RolesAllowed;
@@ -16,6 +16,7 @@ import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.exceptions.DuplicateUserException;
 import de.felixhertweck.seatreservation.userManagment.exceptions.InvalidUserException;
 import de.felixhertweck.seatreservation.userManagment.exceptions.UserNotFoundException;
+import de.felixhertweck.seatreservation.userManagment.service.UserService;
 
 @Path("/api/users")
 @Produces(MediaType.APPLICATION_JSON)

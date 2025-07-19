@@ -1,6 +1,8 @@
 package de.felixhertweck.seatreservation.userManagment.exceptions;
 
-public class InvalidUserException extends RuntimeException {
+import jakarta.ws.rs.NotAcceptableException;
+
+public class InvalidUserException extends NotAcceptableException {
     public InvalidUserException(String message) {
         super(message);
     }

@@ -21,8 +21,9 @@ public class User extends PanacheEntity {
 
     @Column private String passwordHash;
 
-    @Column(unique = true)
-    private String email;
+    @Column private String email;
+
+    @Column private boolean emailVerified = false;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
@@ -39,19 +40,19 @@ public class User extends PanacheEntity {
     public User(
             String username,
             String email,
+            boolean emailVerified,
             String passwordHash,
             String firstname,
             String lastname,
             Set<String> roles) {
         this.username = username;
         this.email = email;
+        this.emailVerified = emailVerified;
         this.passwordHash = passwordHash;
         this.firstname = firstname;
         this.lastname = lastname;
         this.roles = new HashSet<>(roles);
     }
-
-    // Getter and Setter
 
     public Long getId() {
         return id;
@@ -83,6 +84,14 @@ public class User extends PanacheEntity {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public boolean isEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
     }
 
     public String getFirstname() {

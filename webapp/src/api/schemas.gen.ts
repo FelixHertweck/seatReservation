@@ -60,17 +60,6 @@ export const DetailedReservationResponseDTOSchema = {
     }
 } as const;
 
-export const EmailRequestSchema = {
-    type: 'object',
-    required: ['email'],
-    properties: {
-        email: {
-            type: 'string',
-            pattern: '\\S'
-        }
-    }
-} as const;
-
 export const EventLocationRequestDTOSchema = {
     type: 'object',
     required: ['name', 'address', 'capacity'],
@@ -356,7 +345,7 @@ export const SeatResponseDTOSchema = {
 
 export const UserCreationDTOSchema = {
     type: 'object',
-    required: ['username', 'email', 'password', 'firstname', 'lastname'],
+    required: ['username', 'password', 'firstname', 'lastname'],
     properties: {
         username: {
             type: 'string'

@@ -145,6 +145,7 @@ public class ReservationService {
         return new DetailedReservationResponseDTO(reservation);
     }*/
 
+    @Transactional
     public void deleteReservationForUser(Long id, User currentUser)
             throws NotFoundException, ForbiddenException {
         Reservation reservation = reservationRepository.findById(id);

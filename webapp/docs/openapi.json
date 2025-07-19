@@ -1,9 +1,5 @@
 {
   "openapi" : "3.1.0",
-  "tags" : [ {
-    "name" : "Email",
-    "description" : "Email operations"
-  } ],
   "components" : {
     "schemas" : {
       "DetailedEventResponseDTO" : {
@@ -61,16 +57,6 @@
           },
           "reservationDateTime" : {
             "$ref" : "#/components/schemas/LocalDateTime"
-          }
-        }
-      },
-      "EmailRequest" : {
-        "type" : "object",
-        "required" : [ "email" ],
-        "properties" : {
-          "email" : {
-            "type" : "string",
-            "pattern" : "\\S"
           }
         }
       },
@@ -345,7 +331,7 @@
       },
       "UserCreationDTO" : {
         "type" : "object",
-        "required" : [ "username", "email", "password", "firstname", "lastname" ],
+        "required" : [ "username", "password", "firstname", "lastname" ],
         "properties" : {
           "username" : {
             "type" : "string"
@@ -444,43 +430,6 @@
         },
         "summary" : "Login",
         "tags" : [ "Auth Resource" ]
-      }
-    },
-    "/api/email/send-hello" : {
-      "post" : {
-        "summary" : "Send a hello world email",
-        "description" : "Sends a test email with a hello world message to the specified email address",
-        "tags" : [ "Email" ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/EmailRequest"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "Email sent successfully"
-          },
-          "400" : {
-            "description" : "Invalid email address"
-          },
-          "500" : {
-            "description" : "Error sending email"
-          },
-          "401" : {
-            "description" : "Not Authorized"
-          },
-          "403" : {
-            "description" : "Not Allowed"
-          }
-        },
-        "security" : [ {
-          "SecurityScheme" : [ "ADMIN" ]
-        } ]
       }
     },
     "/api/manager/eventlocations" : {
@@ -1133,6 +1082,41 @@
         } ]
       }
     },
+    "/api/user/confirm-email" : {
+      "get" : {
+        "summary" : "Confirm email address",
+        "description" : "Confirms a user's email address using the provided token",
+        "tags" : [ "User" ],
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "token",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Email confirmed successfully"
+          },
+          "400" : {
+            "description" : "Invalid token"
+          },
+          "404" : {
+            "description" : "Token not found"
+          },
+          "410" : {
+            "description" : "Token expired"
+          }
+        }
+      }
+    },
     "/api/user/events" : {
       "get" : {
         "responses" : {
@@ -1555,6 +1539,10 @@
       }
     }
   },
+  "tags" : [ {
+    "name" : "User",
+    "description" : "User operations"
+  } ],
   "info" : {
     "title" : "Seat Reservation API",
     "version" : "1.0.0-SNAPSHOT",

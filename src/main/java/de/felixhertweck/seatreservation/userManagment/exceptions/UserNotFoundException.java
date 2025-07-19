@@ -1,6 +1,8 @@
 package de.felixhertweck.seatreservation.userManagment.exceptions;
 
-public class UserNotFoundException extends RuntimeException {
+import jakarta.ws.rs.NotFoundException;
+
+public class UserNotFoundException extends NotFoundException {
     public UserNotFoundException(String message) {
         super(message);
     }
