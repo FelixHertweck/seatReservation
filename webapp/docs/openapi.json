@@ -195,10 +195,12 @@
         "required" : [ "username", "password" ],
         "properties" : {
           "username" : {
-            "type" : "string"
+            "type" : "string",
+            "pattern" : "\\S"
           },
           "password" : {
-            "type" : "string"
+            "type" : "string",
+            "pattern" : "\\S"
           }
         }
       },
@@ -1318,35 +1320,7 @@
         } ]
       }
     },
-    "/api/users" : {
-      "get" : {
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "type" : "array",
-                  "items" : {
-                    "$ref" : "#/components/schemas/LimitedUserInfoDTO"
-                  }
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Not Authorized"
-          },
-          "403" : {
-            "description" : "Not Allowed"
-          }
-        },
-        "summary" : "Get All Users",
-        "tags" : [ "User Resource" ],
-        "security" : [ {
-          "SecurityScheme" : [ "ADMIN", "MANAGER" ]
-        } ]
-      },
+    "/api/users/admin" : {
       "post" : {
         "requestBody" : {
           "content" : {
@@ -1360,7 +1334,14 @@
         },
         "responses" : {
           "200" : {
-            "description" : "OK"
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserDTO"
+                }
+              }
+            }
           },
           "401" : {
             "description" : "Not Authorized"
@@ -1379,40 +1360,7 @@
         } ]
       }
     },
-    "/api/users/me" : {
-      "put" : {
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/UserProfileUpdateDTO"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "OK"
-          },
-          "401" : {
-            "description" : "Not Authorized"
-          },
-          "403" : {
-            "description" : "Not Allowed"
-          },
-          "400" : {
-            "description" : "Bad Request"
-          }
-        },
-        "summary" : "Update Current User Profile",
-        "tags" : [ "User Resource" ],
-        "security" : [ {
-          "SecurityScheme" : [ "USER" ]
-        } ]
-      }
-    },
-    "/api/users/roles" : {
+    "/api/users/admin/roles" : {
       "get" : {
         "responses" : {
           "200" : {
@@ -1442,7 +1390,7 @@
         } ]
       }
     },
-    "/api/users/{id}" : {
+    "/api/users/admin/{id}" : {
       "put" : {
         "parameters" : [ {
           "name" : "id",
@@ -1465,7 +1413,14 @@
         },
         "responses" : {
           "200" : {
-            "description" : "OK"
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserDTO"
+                }
+              }
+            }
           },
           "401" : {
             "description" : "Not Authorized"
@@ -1495,7 +1450,14 @@
         } ],
         "responses" : {
           "200" : {
-            "description" : "OK"
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserDTO"
+                }
+              }
+            }
           },
           "401" : {
             "description" : "Not Authorized"
@@ -1521,8 +1483,8 @@
           }
         } ],
         "responses" : {
-          "200" : {
-            "description" : "OK"
+          "204" : {
+            "description" : "No Content"
           },
           "401" : {
             "description" : "Not Authorized"
@@ -1535,6 +1497,76 @@
         "tags" : [ "User Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "ADMIN" ]
+        } ]
+      }
+    },
+    "/api/users/manager" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/LimitedUserInfoDTO"
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Get All Users",
+        "tags" : [ "User Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "ADMIN", "MANAGER" ]
+        } ]
+      }
+    },
+    "/api/users/me" : {
+      "put" : {
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UserProfileUpdateDTO"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserDTO"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          },
+          "400" : {
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "Update Current User Profile",
+        "tags" : [ "User Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "USER" ]
         } ]
       }
     }

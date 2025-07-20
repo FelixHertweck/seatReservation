@@ -893,41 +893,14 @@ export type GetApiUserReservationsByIdResponses = {
 
 export type GetApiUserReservationsByIdResponse = GetApiUserReservationsByIdResponses[keyof GetApiUserReservationsByIdResponses];
 
-export type GetApiUsersData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/users';
-};
-
-export type GetApiUsersErrors = {
-    /**
-     * Not Authorized
-     */
-    401: unknown;
-    /**
-     * Not Allowed
-     */
-    403: unknown;
-};
-
-export type GetApiUsersResponses = {
-    /**
-     * OK
-     */
-    200: LimitedUserInfoDto[];
-};
-
-export type GetApiUsersResponse = GetApiUsersResponses[keyof GetApiUsersResponses];
-
-export type PostApiUsersData = {
+export type PostApiUsersAdminData = {
     body: UserCreationDto;
     path?: never;
     query?: never;
-    url: '/api/users';
+    url: '/api/users/admin';
 };
 
-export type PostApiUsersErrors = {
+export type PostApiUsersAdminErrors = {
     /**
      * Bad Request
      */
@@ -942,12 +915,159 @@ export type PostApiUsersErrors = {
     403: unknown;
 };
 
-export type PostApiUsersResponses = {
+export type PostApiUsersAdminResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: UserDto;
 };
+
+export type PostApiUsersAdminResponse = PostApiUsersAdminResponses[keyof PostApiUsersAdminResponses];
+
+export type GetApiUsersAdminRolesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/users/admin/roles';
+};
+
+export type GetApiUsersAdminRolesErrors = {
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type GetApiUsersAdminRolesResponses = {
+    /**
+     * OK
+     */
+    200: string[];
+};
+
+export type GetApiUsersAdminRolesResponse = GetApiUsersAdminRolesResponses[keyof GetApiUsersAdminRolesResponses];
+
+export type DeleteApiUsersAdminByIdData = {
+    body?: never;
+    path: {
+        id: bigint;
+    };
+    query?: never;
+    url: '/api/users/admin/{id}';
+};
+
+export type DeleteApiUsersAdminByIdErrors = {
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type DeleteApiUsersAdminByIdResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type DeleteApiUsersAdminByIdResponse = DeleteApiUsersAdminByIdResponses[keyof DeleteApiUsersAdminByIdResponses];
+
+export type GetApiUsersAdminByIdData = {
+    body?: never;
+    path: {
+        id: bigint;
+    };
+    query?: never;
+    url: '/api/users/admin/{id}';
+};
+
+export type GetApiUsersAdminByIdErrors = {
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type GetApiUsersAdminByIdResponses = {
+    /**
+     * OK
+     */
+    200: UserDto;
+};
+
+export type GetApiUsersAdminByIdResponse = GetApiUsersAdminByIdResponses[keyof GetApiUsersAdminByIdResponses];
+
+export type PutApiUsersAdminByIdData = {
+    body: UserProfileUpdateDto;
+    path: {
+        id: bigint;
+    };
+    query?: never;
+    url: '/api/users/admin/{id}';
+};
+
+export type PutApiUsersAdminByIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: unknown;
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type PutApiUsersAdminByIdResponses = {
+    /**
+     * OK
+     */
+    200: UserDto;
+};
+
+export type PutApiUsersAdminByIdResponse = PutApiUsersAdminByIdResponses[keyof PutApiUsersAdminByIdResponses];
+
+export type GetApiUsersManagerData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/users/manager';
+};
+
+export type GetApiUsersManagerErrors = {
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type GetApiUsersManagerResponses = {
+    /**
+     * OK
+     */
+    200: LimitedUserInfoDto[];
+};
+
+export type GetApiUsersManagerResponse = GetApiUsersManagerResponses[keyof GetApiUsersManagerResponses];
 
 export type PutApiUsersMeData = {
     body: UserProfileUpdateDto;
@@ -975,120 +1095,10 @@ export type PutApiUsersMeResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: UserDto;
 };
 
-export type GetApiUsersRolesData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/users/roles';
-};
-
-export type GetApiUsersRolesErrors = {
-    /**
-     * Not Authorized
-     */
-    401: unknown;
-    /**
-     * Not Allowed
-     */
-    403: unknown;
-};
-
-export type GetApiUsersRolesResponses = {
-    /**
-     * OK
-     */
-    200: string[];
-};
-
-export type GetApiUsersRolesResponse = GetApiUsersRolesResponses[keyof GetApiUsersRolesResponses];
-
-export type DeleteApiUsersByIdData = {
-    body?: never;
-    path: {
-        id: bigint;
-    };
-    query?: never;
-    url: '/api/users/{id}';
-};
-
-export type DeleteApiUsersByIdErrors = {
-    /**
-     * Not Authorized
-     */
-    401: unknown;
-    /**
-     * Not Allowed
-     */
-    403: unknown;
-};
-
-export type DeleteApiUsersByIdResponses = {
-    /**
-     * OK
-     */
-    200: unknown;
-};
-
-export type GetApiUsersByIdData = {
-    body?: never;
-    path: {
-        id: bigint;
-    };
-    query?: never;
-    url: '/api/users/{id}';
-};
-
-export type GetApiUsersByIdErrors = {
-    /**
-     * Not Authorized
-     */
-    401: unknown;
-    /**
-     * Not Allowed
-     */
-    403: unknown;
-};
-
-export type GetApiUsersByIdResponses = {
-    /**
-     * OK
-     */
-    200: unknown;
-};
-
-export type PutApiUsersByIdData = {
-    body: UserProfileUpdateDto;
-    path: {
-        id: bigint;
-    };
-    query?: never;
-    url: '/api/users/{id}';
-};
-
-export type PutApiUsersByIdErrors = {
-    /**
-     * Bad Request
-     */
-    400: unknown;
-    /**
-     * Not Authorized
-     */
-    401: unknown;
-    /**
-     * Not Allowed
-     */
-    403: unknown;
-};
-
-export type PutApiUsersByIdResponses = {
-    /**
-     * OK
-     */
-    200: unknown;
-};
+export type PutApiUsersMeResponse = PutApiUsersMeResponses[keyof PutApiUsersMeResponses];
 
 export type ClientOptions = {
     baseUrl: 'http://localhost:8080' | 'http://0.0.0.0:8080' | (string & {});

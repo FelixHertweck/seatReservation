@@ -202,10 +202,12 @@ export const LoginRequestDTOSchema = {
     required: ['username', 'password'],
     properties: {
         username: {
-            type: 'string'
+            type: 'string',
+            pattern: '\\S'
         },
         password: {
-            type: 'string'
+            type: 'string',
+            pattern: '\\S'
         }
     }
 } as const;
