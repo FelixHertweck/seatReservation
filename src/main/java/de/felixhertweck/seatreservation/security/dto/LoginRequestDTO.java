@@ -1,12 +1,12 @@
 package de.felixhertweck.seatreservation.security.dto;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 
 public class LoginRequestDTO {
-    @NotNull(message = "Username must not be null")
+    @NotBlank(message = "Username must not be blank")
     private String username;
 
-    @NotNull(message = "Password must not be null")
+    @NotBlank(message = "Password must not be blank")
     private String password;
 
     public String getUsername() {
@@ -15,5 +15,13 @@ public class LoginRequestDTO {
 
     public String getPassword() {
         return password;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

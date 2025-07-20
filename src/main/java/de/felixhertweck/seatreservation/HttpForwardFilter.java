@@ -18,14 +18,14 @@ public class HttpForwardFilter extends HttpFilter {
     protected void doFilter(
             HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        super.doFilter(request, response, chain);
-
         if (response.getStatus() != 404) {
+            chain.doFilter(request, response);
             return;
         }
 
         String path = request.getRequestURI();
         if (path.startsWith(API_ROOT_PATH) || path.startsWith(QUARKUS_ROOT_PATH)) {
+            chain.doFilter(request, response);
             return;
         }
 

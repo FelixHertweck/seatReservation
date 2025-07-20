@@ -40,4 +40,17 @@ public class UserProfileUpdateDTO {
     public Set<String> getRoles() {
         return roles;
     }
+
+    public UserProfileUpdateDTO(
+            String firstname,
+            String lastname,
+            String passwordHash,
+            String email,
+            Set<String> roles) {
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.passwordHash = passwordHash;
+        this.email = email;
+        this.roles = roles;
+    }
 }

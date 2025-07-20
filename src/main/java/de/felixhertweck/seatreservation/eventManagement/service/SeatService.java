@@ -45,9 +45,18 @@ public class SeatService {
             throw new ForbiddenException("Manager does not own this EventLocation");
         }
 
+        if (dto.getSeatNumber() == null || dto.getSeatNumber().trim().isEmpty()) {
+            throw new IllegalArgumentException("Seat number cannot be empty");
+        }
+        if (dto.getXCoordinate() < 0 || dto.getYCoordinate() < 0) {
+            throw new IllegalArgumentException("Coordinates cannot be negative");
+        }
+
         Seat seat = new Seat();
         seat.setSeatNumber(dto.getSeatNumber());
         seat.setLocation(eventLocation);
+        seat.setXCoordinate(dto.getXCoordinate());
+        seat.setYCoordinate(dto.getYCoordinate());
         seatRepository.persist(seat);
         return new SeatResponseDTO(seat);
     }
@@ -89,6 +98,13 @@ public class SeatService {
             throw new ForbiddenException("Manager does not own the new EventLocation");
         }
 
+        if (dto.getSeatNumber() == null || dto.getSeatNumber().trim().isEmpty()) {
+            throw new IllegalArgumentException("Seat number cannot be empty");
+        }
+        if (dto.getXCoordinate() < 0 || dto.getYCoordinate() < 0) {
+            throw new IllegalArgumentException("Coordinates cannot be negative");
+        }
+
         seat.setSeatNumber(dto.getSeatNumber());
         seat.setLocation(newEventLocation);
         seat.setXCoordinate(dto.getXCoordinate());
@@ -106,7 +122,7 @@ public class SeatService {
         seatRepository.delete(seat);
     }
 
-    private Seat findSeatEntityById(Long id, User currentUser) throws ForbiddenException {
+    public Seat findSeatEntityById(Long id, User currentUser) throws ForbiddenException {
         // Check if user has access to linked location
         Seat seat =
                 seatRepository

@@ -45,4 +45,12 @@ public class EventRequestDTO {
     public Long getEventLocationId() {
         return eventLocationId;
     }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

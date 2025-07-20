@@ -1,6 +1,7 @@
 package de.felixhertweck.seatreservation.security;
 
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -20,7 +21,7 @@ public class AuthResource {
 
     @POST
     @Path("/login")
-    public Response login(LoginRequestDTO loginRequest) {
+    public Response login(@Valid LoginRequestDTO loginRequest) {
         try {
             String token =
                     authService.authenticate(

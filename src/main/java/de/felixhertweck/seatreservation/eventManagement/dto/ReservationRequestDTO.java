@@ -23,4 +23,8 @@ public class ReservationRequestDTO {
     public Long getSeatId() {
         return seatId;
     }
+
+    public void setEventId(Long eventId) {
+        this.eventId = eventId;
+    }
 }

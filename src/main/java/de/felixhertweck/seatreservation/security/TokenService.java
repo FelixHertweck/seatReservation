@@ -18,7 +18,7 @@ public class TokenService {
         return Jwt.upn(user.getUsername())
                 .groups(user.getRoles())
                 .claim(Claims.email, user.getEmail())
-                .expiresIn(Duration.ofHours(expirationMinutes))
+                .expiresIn(Duration.ofMinutes(expirationMinutes))
                 .sign();
     }
 }

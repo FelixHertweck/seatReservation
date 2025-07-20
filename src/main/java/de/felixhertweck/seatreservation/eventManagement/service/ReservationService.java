@@ -271,10 +271,6 @@ public class ReservationService {
         reservationRepository.delete(reservation);
     }
 
-    // ######################################################################################
-    // Private Helper Methods
-    // ######################################################################################
-
     /**
      * Checks if a manager is allowed to access a specific event. A manager is allowed if they have
      * an EventUserAllowance for that event.
@@ -283,7 +279,7 @@ public class ReservationService {
      * @param event The Event entity to check access for.
      * @return true if the manager is allowed to access the event, false otherwise.
      */
-    private boolean isManagerAllowedToAccessEvent(User manager, Event event) {
+    public boolean isManagerAllowedToAccessEvent(User manager, Event event) {
         return eventUserAllowanceRepository
                 .find("user = ?1 and event = ?2", manager, event)
                 .firstResultOptional()

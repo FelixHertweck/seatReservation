@@ -27,8 +27,6 @@ import de.felixhertweck.seatreservation.userManagment.exceptions.TokenExpiredExc
 import de.felixhertweck.seatreservation.userManagment.exceptions.UserNotFoundException;
 import io.quarkus.elytron.security.common.BcryptUtil;
 
-// TODO: Add Throws
-
 @ApplicationScoped
 public class UserService {
 
@@ -38,24 +36,34 @@ public class UserService {
 
     @Inject EmailVerificationRepository emailVerificationRepository;
 
+    /**
+     * Creates a new user with the provided dto.
+     *
+     * @param userCreationDTO The DTO containing user creation dto.
+     * @return The created UserDTO.
+     * @throws InvalidUserException If the provided data is invalid.
+     * @throws DuplicateUserException If a user with the same username or email already exists.
+     * @throws InternalServerErrorException If an error occurs while sending email confirmation.
+     */
     @Transactional
-    public UserDTO createUser(UserCreationDTO userCreationDTO) {
-        if (userCreationDTO == null
-                || userCreationDTO.getUsername() == null
-                || userCreationDTO.getUsername().trim().isEmpty()
-                || userCreationDTO.getPassword() == null
-                || userCreationDTO.getPassword().trim().isEmpty()) {
-            throw new InvalidUserException("Username, email, and password cannot be empty.");
+    public UserDTO createUser(UserCreationDTO userCreationDTO)
+            throws InvalidUserException, DuplicateUserException, InternalServerErrorException {
+        if (userCreationDTO == null) {
+            throw new InvalidUserException("User creation data cannot be null.");
         }
-        if (userRepository.findByUsername(userCreationDTO.getUsername()) != null) {
+        if (userCreationDTO.getUsername() == null
+                || userCreationDTO.getUsername().trim().isEmpty()) {
+            throw new InvalidUserException("Username cannot be empty.");
+        }
+        if (userCreationDTO.getPassword() == null
+                || userCreationDTO.getPassword().trim().isEmpty()) {
+            throw new InvalidUserException("Password cannot be empty.");
+        }
+
+        if (userRepository.findByUsernameOptional(userCreationDTO.getUsername()).isPresent()) {
             throw new DuplicateUserException(
                     "User with username " + userCreationDTO.getUsername() + " already exists.");
         }
-        if (userRepository.find("email", userCreationDTO.getEmail()).firstResult() != null) {
-            throw new DuplicateUserException(
-                    "User with email " + userCreationDTO.getEmail() + " already exists.");
-        }
-
         User user = new User();
         user.setUsername(userCreationDTO.getUsername());
         if (userCreationDTO.getEmail() != null && !userCreationDTO.getEmail().trim().isEmpty()) {
@@ -70,8 +78,6 @@ public class UserService {
         userRepository.persist(user);
 
         if (user.getEmail() != null && !user.getEmail().trim().isEmpty()) {
-            System.out.println("Sending email confirmation to: " + user.getEmail());
-            // Send email confirmation
             try {
                 emailService.sendEmailConfirmation(user);
             } catch (IOException e) {
@@ -83,25 +89,17 @@ public class UserService {
         return new UserDTO(user);
     }
 
-    @Transactional
-    public UserDTO updateUser(Long id, UserProfileUpdateDTO user) {
-        User existingUser = userRepository.findById(id);
-        if (existingUser == null) {
-            throw new UserNotFoundException("User with id " + id + " not found.");
-        }
-        if (user == null) {
+    private void updateUserCore(User existingUser, UserProfileUpdateDTO updateDTO)
+            throws InvalidUserException, DuplicateUserException, InternalServerErrorException {
+        if (updateDTO == null) {
             throw new InvalidUserException("User data cannot be null.");
         }
 
-        // Check for duplicate username if changed
-        if (userRepository.findByUsername(existingUser.getUsername()) != null) {
-            throw new DuplicateUserException(
-                    "User with username " + existingUser.getUsername() + " already exists.");
-        }
-
-        // Check for duplicate email if changed
-        if (user.getEmail() != null && !user.getEmail().equals(existingUser.getEmail())) {
-            existingUser.setEmail(user.getEmail());
+        // Update email if provided and different
+        if (updateDTO.getEmail() != null
+                && !updateDTO.getEmail().trim().isEmpty()
+                && !updateDTO.getEmail().equals(existingUser.getEmail())) {
+            existingUser.setEmail(updateDTO.getEmail());
             // Reset email verification status and send confirmation email
             existingUser.setEmailVerified(false);
             try {
@@ -112,25 +110,65 @@ public class UserService {
             }
         }
 
-        if (user.getFirstname() != null) {
-            existingUser.setFirstname(user.getFirstname());
+        // Update firstname if provided
+        if (updateDTO.getFirstname() != null && !updateDTO.getFirstname().trim().isEmpty()) {
+            existingUser.setFirstname(updateDTO.getFirstname());
         }
-        if (user.getLastname() != null) {
-            existingUser.setLastname(user.getLastname());
+
+        // Update lastname if provided
+        if (updateDTO.getLastname() != null && !updateDTO.getLastname().trim().isEmpty()) {
+            existingUser.setLastname(updateDTO.getLastname());
         }
-        if (user.getPasswordHash() != null && !user.getPasswordHash().trim().isEmpty()) {
+
+        // Update password if provided (in a real app, hash this!)
+        if (updateDTO.getPasswordHash() != null && !updateDTO.getPasswordHash().trim().isEmpty()) {
             existingUser.setPasswordHash(
-                    BcryptUtil.bcryptHash(user.getPasswordHash())); // Hash the password
+                    BcryptUtil.bcryptHash(updateDTO.getPasswordHash())); // Hash the password
         }
+    }
+
+    /**
+     * Updates an existing user with the provided dto.
+     *
+     * @param id The ID of the user to update.
+     * @param user The DTO containing user profile update data.
+     * @return The updated UserDTO.
+     * @throws UserNotFoundException If the user with the given ID does not exist.
+     * @throws InvalidUserException If the provided data is invalid.
+     * @throws DuplicateUserException If a user with the same username or email already exists.
+     * @throws InternalServerErrorException If an error occurs while sending email confirmation.
+     */
+    @Transactional
+    public UserDTO updateUser(Long id, UserProfileUpdateDTO user)
+            throws UserNotFoundException,
+                    InvalidUserException,
+                    DuplicateUserException,
+                    InternalServerErrorException {
+        User existingUser =
+                userRepository
+                        .findByIdOptional(id)
+                        .orElseThrow(
+                                () ->
+                                        new UserNotFoundException(
+                                                "User with id " + id + " not found."));
+
+        updateUserCore(existingUser, user);
+
         if (user.getRoles() != null) {
             existingUser.setRoles(user.getRoles());
         }
-        userRepository.persist(existingUser); // Panache persist handles update if entity is managed
+        userRepository.persist(existingUser);
         return new UserDTO(existingUser);
     }
 
+    /**
+     * Deletes a user by ID.
+     *
+     * @param id The ID of the user to delete.
+     * @throws UserNotFoundException If the user with the given ID does not exist.
+     */
     @Transactional
-    public void deleteUser(Long id) {
+    public void deleteUser(Long id) throws UserNotFoundException {
         boolean deleted = userRepository.deleteById(id);
         if (!deleted) {
             throw new UserNotFoundException("User with id " + id + " not found.");
@@ -138,10 +176,13 @@ public class UserService {
     }
 
     public UserDTO getUserById(Long id) {
-        User user = userRepository.findById(id);
-        if (user == null) {
-            throw new UserNotFoundException("User with id " + id + " not found.");
-        }
+        User user =
+                userRepository
+                        .findByIdOptional(id)
+                        .orElseThrow(
+                                () ->
+                                        new UserNotFoundException(
+                                                "User with id " + id + " not found."));
         return new UserDTO(user);
     }
 
@@ -154,72 +195,48 @@ public class UserService {
     }
 
     @Transactional
-    public UserDTO updateUserProfile(String username, UserProfileUpdateDTO userProfileUpdateDTO) {
-        User existingUser = userRepository.findByUsername(username);
-        if (existingUser == null) {
-            throw new UserNotFoundException("User with username " + username + " not found.");
-        }
+    public UserDTO updateUserProfile(String username, UserProfileUpdateDTO userProfileUpdateDTO)
+            throws UserNotFoundException,
+                    InvalidUserException,
+                    DuplicateUserException,
+                    InternalServerErrorException {
+        User existingUser =
+                userRepository
+                        .findByUsernameOptional(username)
+                        .orElseThrow(
+                                () ->
+                                        new UserNotFoundException(
+                                                "User with username " + username + " not found."));
 
-        if (userProfileUpdateDTO == null) {
-            throw new InvalidUserException("User profile data cannot be null.");
-        }
-
-        // Update email if provided and different
-        if (userProfileUpdateDTO.getEmail() != null
-                && !userProfileUpdateDTO.getEmail().trim().isEmpty()
-                && !userProfileUpdateDTO.getEmail().equals(existingUser.getEmail())) {
-            if (userRepository.find("email", userProfileUpdateDTO.getEmail()).firstResult()
-                    != null) {
-                throw new DuplicateUserException(
-                        "User with email " + userProfileUpdateDTO.getEmail() + " already exists.");
-            }
-            existingUser.setEmail(userProfileUpdateDTO.getEmail());
-            // Reset email verification status and send confirmation email
-            existingUser.setEmailVerified(false);
-            try {
-                emailService.sendEmailConfirmation(existingUser);
-            } catch (IOException e) {
-                throw new InternalServerErrorException(
-                        "Failed to send email confirmation: " + e.getMessage());
-            }
-        }
-
-        // Update firstname if provided
-        if (userProfileUpdateDTO.getFirstname() != null
-                && !userProfileUpdateDTO.getFirstname().trim().isEmpty()) {
-            existingUser.setFirstname(userProfileUpdateDTO.getFirstname());
-        }
-
-        // Update lastname if provided
-        if (userProfileUpdateDTO.getLastname() != null
-                && !userProfileUpdateDTO.getLastname().trim().isEmpty()) {
-            existingUser.setLastname(userProfileUpdateDTO.getLastname());
-        }
-
-        // Update password if provided (in a real app, hash this!)
-        if (userProfileUpdateDTO.getPasswordHash() != null
-                && !userProfileUpdateDTO.getPasswordHash().trim().isEmpty()) {
-            existingUser.setPasswordHash(
-                    BcryptUtil.bcryptHash(
-                            userProfileUpdateDTO.getPasswordHash())); // Hash the password
-        }
+        updateUserCore(existingUser, userProfileUpdateDTO);
 
         userRepository.persist(existingUser);
         return new UserDTO(existingUser);
     }
 
+    /**
+     * Verifies the email address of a user using the provided token.
+     *
+     * @param id The ID of the email verification record.
+     * @param token The token to verify.
+     * @return The email address of the user if verification is successful.
+     * @throws BadRequestException If the ID or token is invalid.
+     * @throws NotFoundException If the email verification record is not found.
+     * @throws TokenExpiredException If the token has expired.
+     */
     @Transactional
-    public String verifyEmail(Long id, String token) throws BadRequestException, NotFoundException {
+    public String verifyEmail(Long id, String token)
+            throws BadRequestException, NotFoundException, TokenExpiredException {
         // Validate id and token
-        if (id == null || token == null || token.isEmpty()) {
+        if (id == null || token == null || token.trim().isEmpty()) {
             throw new BadRequestException("Invalid id or token");
         }
 
         // Get the email verification record
-        EmailVerification emailVerification = emailVerificationRepository.findById(id);
-        if (emailVerification == null) {
-            throw new NotFoundException("Token not found");
-        }
+        EmailVerification emailVerification =
+                emailVerificationRepository
+                        .findByIdOptional(id)
+                        .orElseThrow(() -> new NotFoundException("Token not found"));
 
         // Check if the token is correct
         if (!emailVerification.getToken().equals(token)) {

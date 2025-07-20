@@ -2,6 +2,7 @@ package de.felixhertweck.seatreservation.model.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
@@ -10,6 +11,11 @@ import io.quarkus.hibernate.orm.panache.PanacheRepository;
 
 @ApplicationScoped
 public class EmailVerificationRepository implements PanacheRepository<EmailVerification> {
+
+    public Optional<EmailVerification> findByUser(
+            de.felixhertweck.seatreservation.model.entity.User user) {
+        return find("user", user).firstResultOptional();
+    }
 
     /**
      * Finds all expired email verification entries.
