@@ -614,6 +614,26 @@ Dieser Test stellt sicher, dass ein Manager eine Reservierung für eines seiner 
 
 ---
 
+#### GET /event/{id}
+
+Ruft alle Reservierungen für ein bestimmtes Event ab.
+
+**Beschreibung:**
+
+Dieser Test stellt sicher, dass ein Manager alle Reservierungen für ein bestimmtes Event einsehen kann, das er verwaltet.
+
+**Testfälle:**
+
+*   **Erfolg:**
+    *   Ein Manager ruft die Liste der Reservierungen für ein von ihm verwaltetes Event ab und erhält `200 OK` mit den korrekten Daten.
+*   **Fehler:**
+    *   Ein Manager versucht, Reservierungen für ein Event abzurufen, das er nicht verwaltet, und erhält einen `403 Forbidden`-Status.
+    *   Ein Manager versucht, Reservierungen für ein nicht existierendes Event abzurufen, und erhält einen `400 Bad Request`-Status.
+    *   Ein nicht authentifizierter Benutzer versucht, auf den Endpunkt zuzugreifen, und erhält einen `401 Unauthorized`-Status.
+    *   Ein Benutzer mit einer anderen Rolle (z. B. `USER`) versucht, auf den Endpunkt zuzugreifen, und erhält einen `403 Forbidden`-Status.
+
+---
+
 ### SeatResource (Manager)
 
 Basispfad: `/api/manager/seats`

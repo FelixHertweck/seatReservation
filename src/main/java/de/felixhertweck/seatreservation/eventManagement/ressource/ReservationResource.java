@@ -56,6 +56,23 @@ public class ReservationResource {
         return reservationService.findReservationById(id, currentUser);
     }
 
+    @GET
+    @Path("/event/{id}")
+    @APIResponse(
+            responseCode = "200",
+            description = "OK",
+            content =
+                    @Content(
+                            schema =
+                                    @Schema(
+                                            type = SchemaType.ARRAY,
+                                            implementation = DetailedReservationResponseDTO.class)))
+    public List<DetailedReservationResponseDTO> getReservationsByEventId(
+            @PathParam("id") Long eventId) {
+        User currentUser = userSecurityContext.getCurrentUser();
+        return reservationService.findReservationsByEventId(eventId, currentUser);
+    }
+
     @POST
     @APIResponse(
             responseCode = "200",

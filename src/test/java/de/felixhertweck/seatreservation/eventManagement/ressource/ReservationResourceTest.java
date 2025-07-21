@@ -206,4 +206,43 @@ public class ReservationResourceTest {
     void testDeleteReservationNotFound() {
         given().when().delete("/api/manager/reservations/999").then().statusCode(404);
     }
+
+    @Test
+    @TestSecurity(
+            user = "manager",
+            roles = {"MANAGER"})
+    void testGetReservationsByEventId() {
+        given().when()
+                .get("/api/manager/reservations/event/" + testEvent.id)
+                .then()
+                .statusCode(200)
+                .body("size()", is(1));
+    }
+
+    @Test
+    @TestSecurity(
+            user = "manager",
+            roles = {"MANAGER"})
+    void testGetReservationsByEventIdNotFound() {
+        given().when().get("/api/manager/reservations/event/999").then().statusCode(400);
+    }
+
+    @Test
+    @TestSecurity(
+            user = "testUser",
+            roles = {"USER"})
+    void testGetReservationsByEventIdForbidden() {
+        given().when()
+                .get("/api/manager/reservations/event/" + testEvent.id)
+                .then()
+                .statusCode(403);
+    }
+
+    @Test
+    void testGetReservationsByEventIdUnauthorized() {
+        given().when()
+                .get("/api/manager/reservations/event/" + testEvent.id)
+                .then()
+                .statusCode(401);
+    }
 }

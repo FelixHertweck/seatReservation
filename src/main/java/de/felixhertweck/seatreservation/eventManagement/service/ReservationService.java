@@ -77,6 +77,26 @@ public class ReservationService {
         throw new SecurityException("You are not allowed to access this reservation.");
     }
 
+    public List<DetailedReservationResponseDTO> findReservationsByEventId(
+            Long eventId, User currentUser) {
+        Event event =
+                eventRepository
+                        .findByIdOptional(eventId)
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "Event with id " + eventId + " not found"));
+
+        if (!currentUser.getRoles().contains(Roles.ADMIN)
+                && !isManagerAllowedToAccessEvent(currentUser, event)) {
+            throw new SecurityException("You are not allowed to access this event.");
+        }
+
+        return reservationRepository.find("event", event).list().stream()
+                .map(DetailedReservationResponseDTO::new)
+                .toList();
+    }
+
     /**
      * Creates a new reservation. Access is restricted based on user roles: - ADMIN: Allows creation
      * for any user and event. - MANAGER: Allows creation only for events the manager is allowed to

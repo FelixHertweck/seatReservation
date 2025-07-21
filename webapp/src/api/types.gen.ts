@@ -484,6 +484,35 @@ export type PostApiManagerReservationsResponses = {
 
 export type PostApiManagerReservationsResponse = PostApiManagerReservationsResponses[keyof PostApiManagerReservationsResponses];
 
+export type GetApiManagerReservationsEventByIdData = {
+    body?: never;
+    path: {
+        id: bigint;
+    };
+    query?: never;
+    url: '/api/manager/reservations/event/{id}';
+};
+
+export type GetApiManagerReservationsEventByIdErrors = {
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type GetApiManagerReservationsEventByIdResponses = {
+    /**
+     * OK
+     */
+    200: DetailedReservationResponseDto[];
+};
+
+export type GetApiManagerReservationsEventByIdResponse = GetApiManagerReservationsEventByIdResponses[keyof GetApiManagerReservationsEventByIdResponses];
+
 export type DeleteApiManagerReservationsByIdData = {
     body?: never;
     path: {
