@@ -18,6 +18,7 @@
     <spotless.version>2.44.5</spotless.version>
     <license-plugin.version>2.6.0</license-plugin.version>
     <skipITs>true</skipITs>
+    <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/jacoco-report/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
   </properties>
 
   <dependencyManagement>
@@ -121,6 +122,11 @@
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <version>5.12.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-jacoco</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -231,6 +237,20 @@
               <goal>check</goal>
             </goals>
             <phase>validate</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.8.12</version>
+        <executions>
+          <execution>
+            <id>report</id>
+            <goals>
+              <goal>report</goal>
+            </goals>
+            <phase>verify</phase>
           </execution>
         </executions>
       </plugin>

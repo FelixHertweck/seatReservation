@@ -358,6 +358,36 @@ public class EventServiceTest {
     }
 
     @Test
+    void setReservationsAllowedForUser_Success_AsAdmin()
+            throws EventNotFoundException, UserNotFoundException {
+        EventUserAllowancesDto dto =
+                new EventUserAllowancesDto(existingEvent.id, regularUser.id, 5);
+
+        when(eventRepository.findByIdOptional(existingEvent.id))
+                .thenReturn(Optional.of(existingEvent));
+        when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
+        @SuppressWarnings("unchecked")
+        io.quarkus.hibernate.orm.panache.PanacheQuery<EventUserAllowance> mockQueryNewAllowance =
+                mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
+        when(eventUserAllowanceRepository.find(
+                        "user = ?1 and event = ?2", regularUser, existingEvent))
+                .thenReturn(mockQueryNewAllowance);
+        when(mockQueryNewAllowance.firstResultOptional()).thenReturn(Optional.empty());
+        doAnswer(
+                        invocation -> {
+                            EventUserAllowance allowance = invocation.getArgument(0);
+                            allowance.id = 1L; // Simulate ID generation
+                            return null;
+                        })
+                .when(eventUserAllowanceRepository)
+                .persist(any(EventUserAllowance.class));
+
+        eventService.setReservationsAllowedForUser(dto, adminUser);
+
+        verify(eventUserAllowanceRepository, times(1)).persist(any(EventUserAllowance.class));
+    }
+
+    @Test
     void setReservationsAllowedForUser_EventNotFoundException() {
         EventUserAllowancesDto dto = new EventUserAllowancesDto(99L, regularUser.id, 5);
 
@@ -396,5 +426,18 @@ public class EventServiceTest {
                 SecurityException.class,
                 () -> eventService.setReservationsAllowedForUser(dto, regularUser));
         verify(eventUserAllowanceRepository, never()).persist(any(EventUserAllowance.class));
+    }
+
+    @Test
+    void updateEvent_NotFound() {
+        EventRequestDTO dto = new EventRequestDTO();
+        dto.setName("Updated Event");
+        dto.setEventLocationId(eventLocation.id);
+
+        when(eventRepository.findByIdOptional(99L)).thenReturn(Optional.empty());
+
+        assertThrows(
+                EventNotFoundException.class,
+                () -> eventService.updateEvent(99L, dto, managerUser));
     }
 }

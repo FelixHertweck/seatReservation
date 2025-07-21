@@ -345,11 +345,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void updateUser_UserNotFoundException()
-            throws IOException,
-                    UserNotFoundException,
-                    InvalidUserException,
-                    DuplicateUserException {
+    void updateUser_UserNotFoundException() throws IOException {
         final UserProfileUpdateDTO dto = new UserProfileUpdateDTO("New", null, null, null, null);
         when(userRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
 
@@ -359,11 +355,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void updateUser_InvalidUserException_NullDTO()
-            throws IOException,
-                    UserNotFoundException,
-                    InvalidUserException,
-                    DuplicateUserException {
+    void updateUser_InvalidUserException_NullDTO() throws IOException {
         assertThrows(UserNotFoundException.class, () -> userService.updateUser(1L, null));
         verify(userRepository, never()).persist(any(User.class));
         verify(emailService, never()).sendEmailConfirmation(any(User.class));
@@ -663,11 +655,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void updateUserProfile_UserNotFoundException()
-            throws IOException,
-                    UserNotFoundException,
-                    InvalidUserException,
-                    DuplicateUserException {
+    void updateUserProfile_UserNotFoundException() throws IOException {
         final UserProfileUpdateDTO dto = new UserProfileUpdateDTO("New", null, null, null, null);
         when(userRepository.findByUsernameOptional(anyString())).thenReturn(Optional.empty());
         when(userRepository.findByUsername(anyString())).thenReturn(null); // Mock findByUsername
@@ -680,11 +668,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void updateUserProfile_InvalidUserException_NullDTO()
-            throws IOException,
-                    UserNotFoundException,
-                    InvalidUserException,
-                    DuplicateUserException {
+    void updateUserProfile_InvalidUserException_NullDTO() throws IOException {
         assertThrows(
                 UserNotFoundException.class, () -> userService.updateUserProfile("testuser", null));
         verify(userRepository, never()).persist(any(User.class));
@@ -871,5 +855,37 @@ public class UserServiceTest {
         assertFalse(user.isEmailVerified());
         verify(userRepository, never()).persist(any(User.class));
         verify(emailVerificationRepository, never()).delete(any(EmailVerification.class));
+    }
+
+    @Test
+    void verifyEmail_FailsWithUsedToken() {
+        User user =
+                new User(
+                        "testuser",
+                        "test@example.com",
+                        false,
+                        "hash",
+                        "John",
+                        "Doe",
+                        Collections.singleton(Roles.USER));
+        user.id = 1L;
+        EmailVerification emailVerification =
+                new EmailVerification(user, "validtoken", LocalDateTime.now().plusMinutes(10));
+        emailVerification.id = 100L;
+
+        when(emailVerificationRepository.findByIdOptional(100L))
+                .thenReturn(Optional.of(emailVerification));
+        when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(user));
+
+        // First verification is successful
+        assertDoesNotThrow(() -> userService.verifyEmail(100L, "validtoken"));
+        verify(emailVerificationRepository).deleteById(100L);
+
+        // Now, mock the repository to reflect the deletion
+        when(emailVerificationRepository.findByIdOptional(100L)).thenReturn(Optional.empty());
+
+        // Second attempt should throw an exception because the token is no longer found
+        assertThrows(
+                IllegalArgumentException.class, () -> userService.verifyEmail(100L, "validtoken"));
     }
 }

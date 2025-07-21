@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.Set;
 import jakarta.inject.Inject;
 import jakarta.persistence.NoResultException;
-import jakarta.ws.rs.core.SecurityContext;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -33,7 +32,6 @@ public class ReservationServiceTest {
     @InjectMock SeatRepository seatRepository;
     @InjectMock UserRepository userRepository;
     @InjectMock EventUserAllowanceRepository eventUserAllowanceRepository;
-    @InjectMock SecurityContext securityContext;
 
     @Inject ReservationService reservationService;
 
@@ -44,17 +42,15 @@ public class ReservationServiceTest {
     private Seat seat;
     private Reservation reservation;
     private EventUserAllowance allowance;
-    private EventUserAllowance managerAllowance;
 
     @BeforeEach
     void setUp() {
-        Mockito.reset(
-                reservationRepository,
-                eventRepository,
-                seatRepository,
-                userRepository,
-                eventUserAllowanceRepository,
-                securityContext);
+        Mockito.reset(reservationRepository);
+
+        Mockito.reset(eventRepository);
+        Mockito.reset(seatRepository);
+        Mockito.reset(userRepository);
+        Mockito.reset(eventUserAllowanceRepository);
 
         adminUser =
                 new User(
@@ -109,7 +105,7 @@ public class ReservationServiceTest {
         reservation.id = 1L;
 
         allowance = new EventUserAllowance(regularUser, event, 1);
-        managerAllowance = new EventUserAllowance(managerUser, event, 10);
+        new EventUserAllowance(managerUser, event, 10);
     }
 
     @Test
@@ -122,19 +118,11 @@ public class ReservationServiceTest {
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
         when(seatRepository.findByIdOptional(seat.id)).thenReturn(Optional.of(seat));
-        when(securityContext.isUserInRole(Roles.ADMIN)).thenReturn(true);
-
         @SuppressWarnings("unchecked")
         PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
         when(allowanceQuery.singleResult()).thenReturn(allowance);
         when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", regularUser, event))
                 .thenReturn(allowanceQuery);
-
-        @SuppressWarnings("unchecked")
-        PanacheQuery<EventUserAllowance> adminAllowanceQuery = mock(PanacheQuery.class);
-        when(adminAllowanceQuery.firstResultOptional()).thenReturn(Optional.empty());
-        when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", adminUser, event))
-                .thenReturn(adminAllowanceQuery);
 
         doAnswer(
                         inv -> {
@@ -156,6 +144,32 @@ public class ReservationServiceTest {
     }
 
     @Test
+    void createReservation_Success_AsManager() {
+        ReservationRequestDTO dto = new ReservationRequestDTO();
+        dto.setEventId(event.id);
+        dto.setSeatId(seat.id);
+        dto.setUserId(regularUser.id);
+
+        when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
+        when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
+        when(seatRepository.findByIdOptional(seat.id)).thenReturn(Optional.of(seat));
+        @SuppressWarnings("unchecked")
+        PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
+        when(allowanceQuery.singleResult()).thenReturn(allowance);
+        when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", regularUser, event))
+                .thenReturn(allowanceQuery);
+
+        DetailedReservationResponseDTO created =
+                reservationService.createReservation(dto, managerUser);
+
+        assertNotNull(created);
+        assertEquals(regularUser.id, created.user().id());
+        verify(reservationRepository).persist(any(Reservation.class));
+        verify(eventUserAllowanceRepository).persist(allowance);
+        assertEquals(0, allowance.getReservationsAllowedCount());
+    }
+
+    @Test
     void createReservation_Forbidden_AsUser() {
         ReservationRequestDTO dto = new ReservationRequestDTO();
         dto.setEventId(event.id);
@@ -165,13 +179,6 @@ public class ReservationServiceTest {
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
         when(seatRepository.findByIdOptional(seat.id)).thenReturn(Optional.of(seat));
-        when(securityContext.isUserInRole(Roles.ADMIN)).thenReturn(false);
-
-        @SuppressWarnings("unchecked")
-        PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
-        when(allowanceQuery.firstResultOptional()).thenReturn(Optional.empty());
-        when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", regularUser, event))
-                .thenReturn(allowanceQuery);
 
         assertThrows(
                 SecurityException.class,
@@ -188,19 +195,11 @@ public class ReservationServiceTest {
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
         when(seatRepository.findByIdOptional(seat.id)).thenReturn(Optional.of(seat));
-        when(securityContext.isUserInRole(Roles.ADMIN)).thenReturn(true);
-
         @SuppressWarnings("unchecked")
         PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
         when(allowanceQuery.singleResult()).thenThrow(new NoResultException());
         when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", regularUser, event))
                 .thenReturn(allowanceQuery);
-
-        @SuppressWarnings("unchecked")
-        PanacheQuery<EventUserAllowance> adminAllowanceQuery = mock(PanacheQuery.class);
-        when(adminAllowanceQuery.firstResultOptional()).thenReturn(Optional.empty());
-        when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", adminUser, event))
-                .thenReturn(adminAllowanceQuery);
 
         assertThrows(
                 IllegalArgumentException.class,
@@ -208,10 +207,31 @@ public class ReservationServiceTest {
     }
 
     @Test
+    void createReservation_AllowanceZero() {
+        ReservationRequestDTO dto = new ReservationRequestDTO();
+        dto.setEventId(event.id);
+        dto.setSeatId(seat.id);
+        dto.setUserId(regularUser.id);
+        allowance.setReservationsAllowedCount(0);
+
+        when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
+        when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
+        when(seatRepository.findByIdOptional(seat.id)).thenReturn(Optional.of(seat));
+        @SuppressWarnings("unchecked")
+        PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
+        when(allowanceQuery.singleResult()).thenReturn(allowance);
+        when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", regularUser, event))
+                .thenReturn(allowanceQuery);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> reservationService.createReservation(dto, managerUser));
+    }
+
+    @Test
     void findReservationById_Success_AsAdmin() {
         when(reservationRepository.findByIdOptional(reservation.id))
                 .thenReturn(Optional.of(reservation));
-        when(securityContext.isUserInRole(Roles.ADMIN)).thenReturn(true);
 
         DetailedReservationResponseDTO found =
                 reservationService.findReservationById(reservation.id, adminUser);
@@ -224,11 +244,6 @@ public class ReservationServiceTest {
     void findReservationById_Success_AsManager() {
         when(reservationRepository.findByIdOptional(reservation.id))
                 .thenReturn(Optional.of(reservation));
-        @SuppressWarnings("unchecked")
-        PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
-        when(allowanceQuery.firstResultOptional()).thenReturn(Optional.of(managerAllowance));
-        when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", managerUser, event))
-                .thenReturn(allowanceQuery);
 
         DetailedReservationResponseDTO found =
                 reservationService.findReservationById(reservation.id, managerUser);
@@ -241,22 +256,20 @@ public class ReservationServiceTest {
     void findReservationById_Forbidden() {
         when(reservationRepository.findByIdOptional(reservation.id))
                 .thenReturn(Optional.of(reservation));
-        @SuppressWarnings("unchecked")
-        PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
-        when(allowanceQuery.firstResultOptional()).thenReturn(Optional.empty()); // No allowance
-        when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", regularUser, event))
-                .thenReturn(allowanceQuery);
+        User otherManager = new User();
+        otherManager.id = 4L;
+        otherManager.setRoles(Set.of(Roles.MANAGER));
+        reservation.getEvent().setManager(otherManager);
 
         assertThrows(
                 SecurityException.class,
-                () -> reservationService.findReservationById(reservation.id, regularUser));
+                () -> reservationService.findReservationById(reservation.id, managerUser));
     }
 
     @Test
     void deleteReservation_Success_AsAdmin() {
         when(reservationRepository.findByIdOptional(reservation.id))
                 .thenReturn(Optional.of(reservation));
-        when(securityContext.isUserInRole(Roles.ADMIN)).thenReturn(true);
 
         reservationService.deleteReservation(reservation.id, adminUser);
 
@@ -267,12 +280,6 @@ public class ReservationServiceTest {
     void deleteReservation_Success_AsManager() {
         when(reservationRepository.findByIdOptional(reservation.id))
                 .thenReturn(Optional.of(reservation));
-        when(securityContext.isUserInRole(Roles.MANAGER)).thenReturn(true);
-        @SuppressWarnings("unchecked")
-        PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
-        when(allowanceQuery.firstResultOptional()).thenReturn(Optional.of(managerAllowance));
-        when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", managerUser, event))
-                .thenReturn(allowanceQuery);
 
         reservationService.deleteReservation(reservation.id, managerUser);
 
@@ -283,8 +290,6 @@ public class ReservationServiceTest {
     void deleteReservation_Forbidden() {
         when(reservationRepository.findByIdOptional(reservation.id))
                 .thenReturn(Optional.of(reservation));
-        when(securityContext.isUserInRole(Roles.MANAGER)).thenReturn(false);
-        when(securityContext.isUserInRole(Roles.ADMIN)).thenReturn(false);
 
         assertThrows(
                 SecurityException.class,
@@ -295,7 +300,6 @@ public class ReservationServiceTest {
     @Test
     void findAllReservations_Success_AsAdmin() {
         when(reservationRepository.listAll()).thenReturn(List.of(reservation));
-        when(securityContext.isUserInRole(Roles.ADMIN)).thenReturn(true);
 
         var result = reservationService.findAllReservations(adminUser);
 
@@ -311,9 +315,6 @@ public class ReservationServiceTest {
         PanacheQuery<Reservation> reservationQuery = mock(PanacheQuery.class);
         when(reservationQuery.list()).thenReturn(List.of(reservation));
         when(reservationRepository.find("event.manager", managerUser)).thenReturn(reservationQuery);
-        when(securityContext.isUserInRole(Roles.ADMIN)).thenReturn(false);
-        when(securityContext.isUserInRole(Roles.MANAGER)).thenReturn(true);
-        managerUser.setEventAllowances(Set.of(managerAllowance));
 
         var result = reservationService.findAllReservations(managerUser);
 
@@ -328,8 +329,6 @@ public class ReservationServiceTest {
         PanacheQuery<Reservation> reservationQuery = mock(PanacheQuery.class);
         when(reservationQuery.list()).thenReturn(Collections.emptyList());
         when(reservationRepository.find("event.manager", managerUser)).thenReturn(reservationQuery);
-        when(securityContext.isUserInRole(Roles.ADMIN)).thenReturn(false);
-        when(securityContext.isUserInRole(Roles.MANAGER)).thenReturn(true);
 
         var result = reservationService.findAllReservations(managerUser);
 
@@ -339,8 +338,6 @@ public class ReservationServiceTest {
 
     @Test
     void findAllReservations_ForbiddenException_OtherRoles() {
-        when(securityContext.isUserInRole(Roles.ADMIN)).thenReturn(false);
-        when(securityContext.isUserInRole(Roles.MANAGER)).thenReturn(false);
         @SuppressWarnings("unchecked")
         PanacheQuery<Reservation> reservationQuery = mock(PanacheQuery.class);
         when(reservationQuery.list()).thenReturn(Collections.emptyList());
@@ -371,15 +368,30 @@ public class ReservationServiceTest {
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
         when(seatRepository.findByIdOptional(seat.id)).thenReturn(Optional.of(seat));
-        when(securityContext.isUserInRole(Roles.ADMIN)).thenReturn(true);
-        @SuppressWarnings("unchecked")
-        PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
-        when(allowanceQuery.firstResultOptional()).thenReturn(Optional.empty());
-        when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", adminUser, event))
-                .thenReturn(allowanceQuery);
 
         DetailedReservationResponseDTO updated =
                 reservationService.updateReservation(reservation.id, dto, adminUser);
+
+        assertNotNull(updated);
+        assertEquals(regularUser.id, updated.user().id());
+        verify(reservationRepository).persist(reservation);
+    }
+
+    @Test
+    void updateReservation_Success_AsManager() {
+        ReservationRequestDTO dto = new ReservationRequestDTO();
+        dto.setEventId(event.id);
+        dto.setSeatId(seat.id);
+        dto.setUserId(regularUser.id);
+
+        when(reservationRepository.findByIdOptional(reservation.id))
+                .thenReturn(Optional.of(reservation));
+        when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
+        when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
+        when(seatRepository.findByIdOptional(seat.id)).thenReturn(Optional.of(seat));
+
+        DetailedReservationResponseDTO updated =
+                reservationService.updateReservation(reservation.id, dto, managerUser);
 
         assertNotNull(updated);
         assertEquals(regularUser.id, updated.user().id());
@@ -401,16 +413,23 @@ public class ReservationServiceTest {
         ReservationRequestDTO dto = new ReservationRequestDTO();
         when(reservationRepository.findByIdOptional(reservation.id))
                 .thenReturn(Optional.of(reservation));
-        when(securityContext.isUserInRole(Roles.ADMIN)).thenReturn(false);
-        when(securityContext.isUserInRole(Roles.MANAGER)).thenReturn(false);
-        @SuppressWarnings("unchecked")
-        PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
-        when(allowanceQuery.firstResultOptional()).thenReturn(Optional.empty());
-        when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", regularUser, event))
-                .thenReturn(allowanceQuery);
 
         assertThrows(
                 SecurityException.class,
                 () -> reservationService.updateReservation(reservation.id, dto, regularUser));
+    }
+
+    @Test
+    void deleteReservation_Forbidden_NotManager() {
+        when(reservationRepository.findByIdOptional(reservation.id))
+                .thenReturn(Optional.of(reservation));
+        User otherManager = new User();
+        otherManager.id = 4L;
+        otherManager.setRoles(Set.of(Roles.MANAGER));
+        reservation.getEvent().setManager(otherManager);
+
+        assertThrows(
+                SecurityException.class,
+                () -> reservationService.deleteReservation(reservation.id, managerUser));
     }
 }

@@ -126,6 +126,7 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | `verifyEmail_NotFoundException_TokenNotFound` | Versucht, die E-Mail mit einer ID zu verifizieren, für die kein Verifizierungsdatensatz existiert. Erwartet `NotFoundException`. |
 | `verifyEmail_BadRequestException_InvalidToken` | Versucht, die E-Mail mit einem ungültigen Token zu verifizieren (Token stimmt nicht überein). Erwartet `BadRequestException`. |
 | `verifyEmail_TokenExpiredException` | Versucht, die E-Mail mit einem abgelaufenen Token zu verifizieren. Erwartet `TokenExpiredException`. |
+| `verifyEmail_FailsWithUsedToken` | Stellt sicher, dass ein bereits verwendeter E-Mail-Verifizierungstoken nicht erneut verwendet werden kann. |
 
 ## EventService
 
@@ -163,6 +164,7 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | `setReservationsAllowedForUser_EventNotFoundException` | Versucht, die Reservierungserlaubnis für ein nicht existierendes Event zu setzen. Erwartet `EventNotFoundException`. |
 | `setReservationsAllowedForUser_UserNotFoundException` | Versucht, die Reservierungserlaubnis für einen nicht existierenden Benutzer zu setzen. Erwartet `UserNotFoundException`. |
 | `setReservationsAllowedForUser_ForbiddenException_NotManagerOrAdmin` | Versucht, die Reservierungserlaubnis als Benutzer zu setzen, der weder Manager noch Administrator des Events ist. Erwartet `ForbiddenException`. |
+| `setReservationsAllowedForUser_Success_AsAdmin` | Setzt erfolgreich die erlaubte Anzahl von Reservierungen für einen Benutzer für ein Event durch einen Administrator. |
 
 ## ReservationService
 
@@ -196,6 +198,7 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | `createReservation_NotFoundException_SeatNotFound` | Versucht, eine Reservierung für einen nicht existierenden Sitzplatz zu erstellen. Erwartet `NotFoundException`. |
 | `createReservation_BadRequestException_NoAllowance` | Versucht, eine Reservierung zu erstellen, wenn der Benutzer keine Reservierungserlaubnis für das Event hat. Erwartet `BadRequestException`. |
 | `createReservation_BadRequestException_AllowanceZero` | Versucht, eine Reservierung zu erstellen, wenn die Reservierungserlaubnis des Benutzers 0 ist. Erwartet `BadRequestException`. |
+| `createReservation_Forbidden_AsUser` | Versucht, eine Reservierung als normaler Benutzer zu erstellen, was fehlschlagen sollte. |
 
 ### updateReservation(Long id, ReservationRequestDTO dto, User currentUser)
 
@@ -266,6 +269,7 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | `createReservationForUser_NoSeatsAvailableException_LimitReached` | Versucht, mehr Reservierungen zu erstellen, als die erlaubte Anzahl für den Benutzer. Erwartet `NoSeatsAvailableException`. |
 | `createReservationForUser_EventBookingClosedException` | Versucht, eine Reservierung für ein Event zu erstellen, dessen Buchungsfrist abgelaufen ist. Erwartet `EventBookingClosedException`. |
 | `createReservationForUser_SeatAlreadyReservedException` | Versucht, eine Reservierung für einen bereits reservierten Sitzplatz zu erstellen. Erwartet `SeatAlreadyReservedException`. |
+| `createReservationForUser_IllegalArgumentException_NoSeatIds` | Versucht, eine Reservierung ohne Angabe von Sitzplatz-IDs zu erstellen. |
 
 ### deleteReservationForUser(Long id, User currentUser)
 
@@ -287,10 +291,15 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | `getEventLocationsByCurrentManager_Success_NoEventLocationsForManager` | Ruft eine leere Liste ab, wenn der Manager keine EventLocations verwaltet. |
 | `createEventLocation_Success` | Erstellt erfolgreich eine neue EventLocation mit gültigen Daten. |
 | `createEventLocation_InvalidInput` | Versucht, eine EventLocation mit ungültigen Daten zu erstellen (z.B. leere Felder). |
-| `updateEventLocation_Success` | Aktualisiert erfolgreich eine bestehende EventLocation. |
+| `createEventLocation_InvalidInput_NegativeCapacity` | Versucht, eine EventLocation mit negativer Kapazität zu erstellen. |
+| `updateEventLocation_Success_AsManager` | Aktualisiert erfolgreich eine bestehende EventLocation als Besitzer. |
+| `updateEventLocation_Success_AsAdmin` | Aktualisiert erfolgreich eine bestehende EventLocation als Administrator. |
 | `updateEventLocation_NotFound` | Versucht, eine nicht existierende EventLocation zu aktualisieren. |
-| `deleteEventLocation_Success` | Löscht erfolgreich eine bestehende EventLocation. |
+| `updateEventLocation_ForbiddenException_NotManagerOrAdmin` | Versucht, eine EventLocation zu aktualisieren, ohne die erforderlichen Berechtigungen zu haben. |
+| `deleteEventLocation_Success_AsManager` | Löscht erfolgreich eine bestehende EventLocation als Besitzer. |
+| `deleteEventLocation_Success_AsAdmin` | Löscht erfolgreich eine bestehende EventLocation als Administrator. |
 | `deleteEventLocation_NotFound` | Versucht, eine nicht existierende EventLocation zu löschen. |
+| `deleteEventLocation_ForbiddenException_NotManagerOrAdmin` | Versucht, eine EventLocation zu löschen, ohne die erforderlichen Berechtigungen zu haben. |
 
 ## Seat Service
 
@@ -299,6 +308,9 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | Testfall | Beschreibung |
 | :--- | :--- |
 | `createSeat_Success` | Erstellt erfolgreich einen neuen Sitzplatz mit gültigen Daten. |
+| `createSeat_Success_AsManager` | Erstellt erfolgreich einen neuen Sitzplatz als Manager. |
+| `createSeat_Success_AsAdmin` | Erstellt erfolgreich einen neuen Sitzplatz als Admin. |
+| `createSeat_ForbiddenException_NotManagerOfLocation` | Versucht, einen Sitzplatz für eine Location zu erstellen, die einem nicht gehört. |
 | `createSeat_InvalidInput` | Versucht, einen Sitzplatz mit ungültigen Daten zu erstellen. |
 | `findAllSeatsForManager_Success_AsAdmin` | Ruft alle Sitzplätze als Administrator ab. |
 | `findAllSeatsForManager_Success_AsManager` | Ruft Sitzplätze ab, die dem aktuellen Manager gehören. |
@@ -306,11 +318,17 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | `findSeatByIdForManager_Success_AsAdmin` | Ruft einen Sitzplatz als Administrator ab. |
 | `findSeatByIdForManager_Success_AsManager` | Ruft einen Sitzplatz ab, der dem aktuellen Manager gehört. |
 | `findSeatByIdForManager_NotFound` | Versucht, einen nicht existierenden Sitzplatz abzurufen. |
-| `updateSeat_Success` | Aktualisiert erfolgreich einen bestehenden Sitzplatz. |
+| `findSeatByIdForManager_ForbiddenException` | Versucht, einen Sitzplatz abzurufen, für den keine Berechtigung besteht. |
+| `updateSeat_Success_AsManager` | Aktualisiert erfolgreich einen bestehenden Sitzplatz als Manager. |
+| `updateSeat_Success_AsAdmin` | Aktualisiert erfolgreich einen bestehenden Sitzplatz als Admin. |
 | `updateSeat_NotFound` | Versucht, einen nicht existierenden Sitzplatz zu aktualisieren. |
 | `updateSeat_InvalidInput` | Versucht, einen Sitzplatz mit ungültigen Daten zu aktualisieren. |
-| `deleteSeat_Success` | Löscht erfolgreich einen bestehenden Sitzplatz. |
+| `updateSeat_ForbiddenException_NotManagerOfSeatLocation` | Versucht, einen Sitzplatz zu aktualisieren, der zu einer fremden Location gehört. |
+| `updateSeat_ForbiddenException_NotManagerOfNewLocation` | Versucht, einen Sitzplatz zu einer fremden Location zu verschieben. |
+| `deleteSeat_Success_AsManager` | Löscht erfolgreich einen bestehenden Sitzplatz als Manager. |
+| `deleteSeat_Success_AsAdmin` | Löscht erfolgreich einen bestehenden Sitzplatz als Admin. |
 | `deleteSeat_NotFound` | Versucht, einen nicht existierenden Sitzplatz zu löschen. |
+| `deleteSeat_ForbiddenException_NotManager` | Versucht, einen Sitzplatz zu löschen, für den keine Berechtigung besteht. |
 | `findSeatEntityById_Success` | Ruft eine Sitzplatz-Entität erfolgreich ab. |
 | `findSeatEntityById_ForbiddenException` | Versucht, eine Sitzplatz-Entität abzurufen, für die der Benutzer keine Berechtigung hat. |
 

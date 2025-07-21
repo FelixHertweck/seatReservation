@@ -149,6 +149,17 @@ class ReservationServiceTest {
     }
 
     @Test
+    void createReservationForUser_IllegalArgumentException_NoSeatIds() {
+        ReservationsRequestCreateDTO dto = new ReservationsRequestCreateDTO();
+        dto.setEventId(event.id);
+        dto.setSeatIds(Collections.emptyList());
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> reservationService.createReservationForUser(dto, currentUser));
+    }
+
+    @Test
     void createReservationForUser_NotFoundException_EventNotFound() {
         ReservationsRequestCreateDTO dto = new ReservationsRequestCreateDTO();
         dto.setEventId(99L);

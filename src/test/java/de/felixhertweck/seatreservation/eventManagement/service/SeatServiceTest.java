@@ -96,7 +96,7 @@ public class SeatServiceTest {
     }
 
     @Test
-    void createSeat_Success() {
+    void createSeat_Success_AsManager() {
         SeatRequestDTO dto = new SeatRequestDTO();
         dto.setSeatNumber("B2");
         dto.setEventLocationId(eventLocation.id);
@@ -120,6 +120,50 @@ public class SeatServiceTest {
         assertEquals("B2", createdSeat.seatNumber());
         assertEquals(eventLocation.id, createdSeat.location().id());
         verify(seatRepository, times(1)).persist(any(Seat.class));
+    }
+
+    @Test
+    void createSeat_Success_AsAdmin() {
+        SeatRequestDTO dto = new SeatRequestDTO();
+        dto.setSeatNumber("C3");
+        dto.setEventLocationId(eventLocation.id);
+        dto.setXCoordinate(3);
+        dto.setYCoordinate(3);
+
+        when(eventLocationRepository.findByIdOptional(eventLocation.id))
+                .thenReturn(Optional.of(eventLocation));
+        doAnswer(
+                        invocation -> {
+                            Seat seat = invocation.getArgument(0);
+                            seat.id = 11L; // Simulate ID generation
+                            return null;
+                        })
+                .when(seatRepository)
+                .persist(any(Seat.class));
+
+        SeatResponseDTO createdSeat = seatService.createSeatManager(dto, adminUser);
+
+        assertNotNull(createdSeat);
+        assertEquals("C3", createdSeat.seatNumber());
+        assertEquals(eventLocation.id, createdSeat.location().id());
+        verify(seatRepository, times(1)).persist(any(Seat.class));
+    }
+
+    @Test
+    void createSeat_ForbiddenException_NotManagerOfLocation() {
+        SeatRequestDTO dto = new SeatRequestDTO();
+        dto.setSeatNumber("D4");
+        dto.setEventLocationId(eventLocation.id);
+        dto.setXCoordinate(4);
+        dto.setYCoordinate(4);
+
+        // The eventLocation is managed by managerUser, not regularUser
+        when(eventLocationRepository.findByIdOptional(eventLocation.id))
+                .thenReturn(Optional.of(eventLocation));
+
+        assertThrows(
+                SecurityException.class, () -> seatService.createSeatManager(dto, regularUser));
+        verify(seatRepository, never()).persist(any(Seat.class));
     }
 
     @Test
@@ -236,7 +280,7 @@ public class SeatServiceTest {
     }
 
     @Test
-    void updateSeat_Success() {
+    void updateSeat_Success_AsManager() {
         SeatRequestDTO dto = new SeatRequestDTO();
         dto.setSeatNumber("Updated A1");
         dto.setEventLocationId(eventLocation.id);
@@ -255,6 +299,29 @@ public class SeatServiceTest {
         assertEquals("Updated A1", updatedSeat.seatNumber());
         assertEquals(10, updatedSeat.xCoordinate());
         assertEquals(10, updatedSeat.yCoordinate());
+        verify(seatRepository, times(1)).persist(existingSeat);
+    }
+
+    @Test
+    void updateSeat_Success_AsAdmin() {
+        SeatRequestDTO dto = new SeatRequestDTO();
+        dto.setSeatNumber("Updated A1 by Admin");
+        dto.setEventLocationId(eventLocation.id);
+        dto.setXCoordinate(20);
+        dto.setYCoordinate(20);
+
+        when(seatRepository.findByIdOptional(existingSeat.id))
+                .thenReturn(Optional.of(existingSeat));
+        when(eventLocationRepository.findByIdOptional(eventLocation.id))
+                .thenReturn(Optional.of(eventLocation));
+
+        SeatResponseDTO updatedSeat =
+                seatService.updateSeatForManager(existingSeat.id, dto, adminUser);
+
+        assertNotNull(updatedSeat);
+        assertEquals("Updated A1 by Admin", updatedSeat.seatNumber());
+        assertEquals(20, updatedSeat.xCoordinate());
+        assertEquals(20, updatedSeat.yCoordinate());
         verify(seatRepository, times(1)).persist(existingSeat);
     }
 
@@ -352,12 +419,23 @@ public class SeatServiceTest {
     }
 
     @Test
-    void deleteSeat_Success() {
+    void deleteSeat_Success_AsManager() {
         when(seatRepository.findByIdOptional(existingSeat.id))
                 .thenReturn(Optional.of(existingSeat));
         doNothing().when(seatRepository).delete(any(Seat.class));
 
         seatService.deleteSeatForManager(existingSeat.id, managerUser);
+
+        verify(seatRepository, times(1)).delete(existingSeat);
+    }
+
+    @Test
+    void deleteSeat_Success_AsAdmin() {
+        when(seatRepository.findByIdOptional(existingSeat.id))
+                .thenReturn(Optional.of(existingSeat));
+        doNothing().when(seatRepository).delete(any(Seat.class));
+
+        seatService.deleteSeatForManager(existingSeat.id, adminUser);
 
         verify(seatRepository, times(1)).delete(existingSeat);
     }

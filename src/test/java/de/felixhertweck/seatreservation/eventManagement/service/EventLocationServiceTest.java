@@ -109,7 +109,7 @@ public class EventLocationServiceTest {
     }
 
     @Test
-    void getEventLocationsByCurrentManager_Success_NoEventLocationsForManager() {
+    void getEventLocationsByCurrentManager_Success_AsManagerWithNoLocations() {
         when(eventLocationRepository.findByManager(managerUser))
                 .thenReturn(Collections.emptyList());
 
@@ -165,7 +165,20 @@ public class EventLocationServiceTest {
     }
 
     @Test
-    void updateEventLocation_Success() {
+    void createEventLocation_InvalidInput_NegativeCapacity() {
+        EventLocationRequestDTO dto = new EventLocationRequestDTO();
+        dto.setName("New Hall");
+        dto.setAddress("Some Address");
+        dto.setCapacity(-100); // Invalid input
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> eventLocationService.createEventLocation(dto, managerUser));
+        verify(eventLocationRepository, never()).persist(any(EventLocation.class));
+    }
+
+    @Test
+    void updateEventLocation_Success_AsManager() {
         EventLocationRequestDTO dto = new EventLocationRequestDTO();
         dto.setName("Updated Hall");
         dto.setAddress("Updated Street 1");
@@ -200,6 +213,26 @@ public class EventLocationServiceTest {
     }
 
     @Test
+    void updateEventLocation_Success_AsAdmin() {
+        EventLocationRequestDTO dto = new EventLocationRequestDTO();
+        dto.setName("Updated Hall by Admin");
+        dto.setAddress("Updated Street 1 by Admin");
+        dto.setCapacity(700);
+
+        when(eventLocationRepository.findByIdOptional(1L))
+                .thenReturn(Optional.of(existingLocation));
+
+        EventLocationResponseDTO updatedLocation =
+                eventLocationService.updateEventLocation(1L, dto, adminUser);
+
+        assertNotNull(updatedLocation);
+        assertEquals("Updated Hall by Admin", updatedLocation.name());
+        assertEquals("Updated Street 1 by Admin", updatedLocation.address());
+        assertEquals(700, updatedLocation.capacity());
+        verify(eventLocationRepository, times(1)).persist(existingLocation);
+    }
+
+    @Test
     void updateEventLocation_ForbiddenException_NotManagerOrAdmin() {
         EventLocationRequestDTO dto = new EventLocationRequestDTO();
         dto.setName("Updated Hall");
@@ -216,7 +249,7 @@ public class EventLocationServiceTest {
     }
 
     @Test
-    void deleteEventLocation_Success() {
+    void deleteEventLocation_Success_AsManager() {
         when(eventLocationRepository.findByIdOptional(1L))
                 .thenReturn(Optional.of(existingLocation));
         doNothing().when(eventLocationRepository).delete(any(EventLocation.class));
@@ -234,6 +267,17 @@ public class EventLocationServiceTest {
                 EventLocationNotFoundException.class,
                 () -> eventLocationService.deleteEventLocation(99L, managerUser));
         verify(eventLocationRepository, never()).delete(any(EventLocation.class));
+    }
+
+    @Test
+    void deleteEventLocation_Success_AsAdmin() {
+        when(eventLocationRepository.findByIdOptional(1L))
+                .thenReturn(Optional.of(existingLocation));
+        doNothing().when(eventLocationRepository).delete(any(EventLocation.class));
+
+        eventLocationService.deleteEventLocation(1L, adminUser);
+
+        verify(eventLocationRepository, times(1)).delete(existingLocation);
     }
 
     @Test

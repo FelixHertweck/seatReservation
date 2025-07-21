@@ -75,3 +75,10 @@ jobs:
           name: openapi-schema
           path: |
             target/openapi
+        
+      - name: Upload Jacoco report
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: |
+            target/jacoco-report

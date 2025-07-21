@@ -89,7 +89,8 @@ public class SeatService {
                                                         + dto.getEventLocationId()
                                                         + " not found"));
 
-        if (!manager.getEventLocations().contains(newEventLocation)) {
+        if (!manager.getRoles().contains(Roles.ADMIN)
+                && !manager.getEventLocations().contains(newEventLocation)) {
             throw new SecurityException("Manager does not own the new EventLocation");
         }
 
