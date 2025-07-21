@@ -43,24 +43,24 @@ public class EventResource {
     }
 
     @GET
-    @Path("/available-seats/{id}")
+    @Path("/available-seats/{eventId}")
     @APIResponse(
             responseCode = "200",
             description = "OK",
             content = @Content(schema = @Schema(implementation = Integer.class)))
-    public int getAvailableSeats(@PathParam("id") Long id) {
+    public int getAvailableSeats(@PathParam("eventId") Long eventId) {
         return eventService.getAvailableSeatsForCurrentUser(
-                id, securityIdentity.getPrincipal().getName());
+                eventId, securityIdentity.getPrincipal().getName());
     }
 
     @GET
-    @Path("/available-reservations/{id}")
+    @Path("/available-reservations/{eventId}")
     @APIResponse(
             responseCode = "200",
             description = "OK",
             content = @Content(schema = @Schema(implementation = AvailableReservationsDTO.class)))
-    public AvailableReservationsDTO getAvailableReservations(@PathParam("id") Long id) {
+    public AvailableReservationsDTO getAvailableReservations(@PathParam("eventId") Long eventId) {
         return eventService.getAvailableReservationsForCurrentUser(
-                id, securityIdentity.getPrincipal().getName());
+                eventId, securityIdentity.getPrincipal().getName());
     }
 }

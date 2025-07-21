@@ -6,20 +6,26 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import de.felixhertweck.seatreservation.model.entity.EmailVerification;
-import de.felixhertweck.seatreservation.model.entity.Reservation;
-import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.entity.*;
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
+import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
+import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.utils.RandomUUIDString;
+import de.felixhertweck.seatreservation.utils.SvgRenderer;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
-/** Service for sending emails. */
+/**
+ * EmailService is responsible for sending email confirmations to users. It handles both email
+ * verification and reservation confirmations.
+ */
 @ApplicationScoped
 public class EmailService {
 
@@ -28,6 +34,10 @@ public class EmailService {
     @Inject Mailer mailer;
 
     @Inject EmailVerificationRepository emailVerificationRepository;
+
+    @Inject ReservationRepository reservationRepository;
+
+    @Inject SeatRepository seatRepository;
 
     @ConfigProperty(name = "email.confirmation.base.url", defaultValue = "")
     String baseUrl;
@@ -84,7 +94,27 @@ public class EmailService {
             return;
         }
 
-        String eventName = reservations.get(0).getEvent().getName();
+        Event event = reservations.getFirst().getEvent();
+        String eventName = event.getName();
+
+        // Prepare data for SVG rendering
+        List<Seat> allSeats = seatRepository.findByEventLocation(event.getEventLocation());
+        List<Reservation> allUserReservationsForEvent =
+                reservationRepository.findByUserAndEvent(user, event);
+
+        Set<String> newSeatNumbers =
+                reservations.stream()
+                        .map(r -> r.getSeat().getSeatNumber())
+                        .collect(Collectors.toSet());
+
+        Set<String> existingSeatNumbers =
+                allUserReservationsForEvent.stream()
+                        .map(r -> r.getSeat().getSeatNumber())
+                        .collect(Collectors.toSet());
+        existingSeatNumbers.removeAll(newSeatNumbers); // Keep only previously reserved seats
+
+        String svgContent = SvgRenderer.renderSeats(allSeats, newSeatNumbers, existingSeatNumbers);
+
         StringBuilder seatListHtml = new StringBuilder();
         for (Reservation reservation : reservations) {
             seatListHtml
@@ -98,8 +128,9 @@ public class EmailService {
 
         htmlContent =
                 htmlContent.replace("{userName}", user.getFirstname() + " " + user.getLastname());
-        htmlContent = htmlContent.replace("{eventName}", eventName);
+        htmlContent = htmlContent.replace("{eventName}", eventName != null ? eventName : "");
         htmlContent = htmlContent.replace("{seatList}", seatListHtml.toString());
+        htmlContent = htmlContent.replace("{seatMap}", svgContent);
         htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
 
         Mail mail = Mail.withHtml(user.getEmail(), "Ihre Reservierungsbestätigung", htmlContent);

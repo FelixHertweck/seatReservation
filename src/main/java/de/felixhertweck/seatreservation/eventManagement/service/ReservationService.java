@@ -1,12 +1,16 @@
 package de.felixhertweck.seatreservation.eventManagement.service;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 
+import de.felixhertweck.seatreservation.email.EmailService;
 import de.felixhertweck.seatreservation.eventManagement.dto.DetailedReservationResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.ReservationRequestDTO;
 import de.felixhertweck.seatreservation.eventManagement.exception.ReservationNotFoundException;
@@ -14,15 +18,19 @@ import de.felixhertweck.seatreservation.model.entity.*;
 import de.felixhertweck.seatreservation.model.repository.*;
 import de.felixhertweck.seatreservation.security.Roles;
 import de.felixhertweck.seatreservation.userManagment.exceptions.UserNotFoundException;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class ReservationService {
+
+    private static final Logger LOG = Logger.getLogger(ReservationService.class);
 
     @Inject ReservationRepository reservationRepository;
     @Inject EventRepository eventRepository;
     @Inject UserRepository userRepository;
     @Inject SeatRepository seatRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
+    @Inject EmailService emailService;
 
     /**
      * Retrieves all reservations. Access is restricted based on user roles: - ADMIN: Returns all
@@ -160,6 +168,14 @@ public class ReservationService {
 
         Reservation reservation = new Reservation(targetUser, event, seat, LocalDateTime.now());
         reservationRepository.persist(reservation);
+
+        try {
+            emailService.sendReservationConfirmation(
+                    targetUser, Collections.singletonList(reservation));
+        } catch (IOException | PersistenceException | IllegalStateException e) {
+            LOG.error("Failed to send reservation confirmation email", e);
+        }
+
         return new DetailedReservationResponseDTO(reservation);
     }
 

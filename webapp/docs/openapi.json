@@ -736,7 +736,14 @@
         },
         "responses" : {
           "200" : {
-            "description" : "OK"
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EventUserAllowancesDto"
+                }
+              }
+            }
           },
           "401" : {
             "description" : "Not Authorized"
@@ -1251,10 +1258,10 @@
         } ]
       }
     },
-    "/api/user/events/available-reservations/{id}" : {
+    "/api/user/events/available-reservations/{eventId}" : {
       "get" : {
         "parameters" : [ {
-          "name" : "id",
+          "name" : "eventId",
           "in" : "path",
           "required" : true,
           "schema" : {
@@ -1287,10 +1294,10 @@
         } ]
       }
     },
-    "/api/user/events/available-seats/{id}" : {
+    "/api/user/events/available-seats/{eventId}" : {
       "get" : {
         "parameters" : [ {
-          "name" : "id",
+          "name" : "eventId",
           "in" : "path",
           "required" : true,
           "schema" : {

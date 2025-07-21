@@ -17,6 +17,11 @@ public class ReservationRepository implements PanacheRepository<Reservation> {
         return find("event.id", eventId).list();
     }
 
+    public List<Reservation> findByUserAndEvent(
+            User user, de.felixhertweck.seatreservation.model.entity.Event event) {
+        return find("user = ?1 and event = ?2", user, event).list();
+    }
+
     public void persistAll(List<Reservation> newReservations) {
         newReservations.forEach(this::persist);
     }

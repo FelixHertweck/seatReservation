@@ -61,6 +61,7 @@ class ReservationServiceTest {
 
         event = new Event();
         event.id = 1L;
+        event.setName("Test Event for Reservation");
         event.setBookingDeadline(LocalDateTime.now().plusDays(1));
         event.setEventLocation(location);
 

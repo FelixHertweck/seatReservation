@@ -133,7 +133,8 @@ public class EventService {
     }
 
     @Transactional
-    public void setReservationsAllowedForUser(EventUserAllowancesDto dto, User manager)
+    public EventUserAllowancesDto setReservationsAllowedForUser(
+            EventUserAllowancesDto dto, User manager)
             throws EventNotFoundException, UserNotFoundException {
         Event event = getEventById(dto.eventId());
         User user = getUserById(dto.userId());
@@ -153,6 +154,7 @@ public class EventService {
 
         allowance.setReservationsAllowedCount(dto.reservationsAllowedCount());
         eventUserAllowanceRepository.persist(allowance);
+        return new EventUserAllowancesDto(allowance);
     }
 
     public EventUserAllowancesDto getReservationAllowanceById(Long id, User manager) {

@@ -7,34 +7,81 @@ import de.felixhertweck.seatreservation.model.entity.Seat;
 
 public class SvgRenderer {
 
-    public static String renderSeats(Collection<Seat> seats, Set<String> highlightSeatNumbers) {
-        int width = 800;
-        int height = 600;
-        int radius = 15;
+    public static String renderSeats(
+            Collection<Seat> allSeats,
+            Set<String> newReservedSeatNumbers,
+            Set<String> existingReservedSeatNumbers) {
+
+        if (allSeats == null || allSeats.isEmpty()) {
+            return "";
+        }
+
+        // Configuration
+        int scale = 40; // Each logical unit is 40 SVG units
+        int radius = 15; // Radius of the circle representing a seat
+        int padding = 20; // Padding around the entire seat map
+        int textHeight = 12; // Font size for the seat number
+
+        // Calculate Bounding Box of logical coordinates
+        int minX = Integer.MAX_VALUE;
+        int minY = Integer.MAX_VALUE;
+        int maxX = Integer.MIN_VALUE;
+        int maxY = Integer.MIN_VALUE;
+
+        for (Seat seat : allSeats) {
+            minX = Math.min(minX, seat.getXCoordinate());
+            minY = Math.min(minY, seat.getYCoordinate());
+            maxX = Math.max(maxX, seat.getXCoordinate());
+            maxY = Math.max(maxY, seat.getYCoordinate());
+        }
+
+        // Calculate viewBox dimensions based on scaled coordinates
+        int viewboxX = (minX * scale) - radius - padding;
+        int viewboxY = (minY * scale) - radius - padding;
+        int viewboxWidth = ((maxX - minX) * scale) + 2 * (radius + padding);
+        int viewboxHeight = ((maxY - minY) * scale) + 2 * (radius + padding) + textHeight;
 
         StringBuilder sb = new StringBuilder();
-        sb.append("<svg width=\"")
-                .append(width)
-                .append("\" height=\"")
-                .append(height)
+        sb.append("<svg width=\"100%\" viewBox=\"")
+                .append(viewboxX)
+                .append(" ")
+                .append(viewboxY)
+                .append(" ")
+                .append(viewboxWidth)
+                .append(" ")
+                .append(viewboxHeight)
                 .append("\" xmlns=\"http://www.w3.org/2000/svg\">\n");
 
-        for (Seat seat : seats) {
-            String color = highlightSeatNumbers.contains(seat.getSeatNumber()) ? "red" : "gray";
+        for (Seat seat : allSeats) {
+            String color;
+            if (newReservedSeatNumbers.contains(seat.getSeatNumber())) {
+                color = "red";
+            } else if (existingReservedSeatNumbers.contains(seat.getSeatNumber())) {
+                color = "blue";
+            } else {
+                color = "gray";
+            }
+
+            // Apply scaling to the coordinates when drawing
+            int cx = seat.getXCoordinate() * scale;
+            int cy = seat.getYCoordinate() * scale;
+
             sb.append("<circle cx=\"")
-                    .append(seat.getXCoordinate())
+                    .append(cx)
                     .append("\" cy=\"")
-                    .append(seat.getYCoordinate())
+                    .append(cy)
                     .append("\" r=\"")
                     .append(radius)
                     .append("\" fill=\"")
                     .append(color)
                     .append("\" stroke=\"black\" stroke-width=\"1\" />\n");
             sb.append("<text x=\"")
-                    .append(seat.getXCoordinate())
+                    .append(cx)
                     .append("\" y=\"")
-                    .append(seat.getYCoordinate() + radius + 12)
-                    .append("\" font-size=\"12\" text-anchor=\"middle\">")
+                    .append(cy + radius + textHeight) // Position text below the circle
+                    .append("\" font-size=\"")
+                    .append(textHeight)
+                    .append("\" text-anchor=\"middle\" fill=\"black\">")
                     .append(seat.getSeatNumber())
                     .append("</text>\n");
         }

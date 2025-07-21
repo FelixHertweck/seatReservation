@@ -25,10 +25,10 @@ public class EventUserReservationAllowance {
 
     @POST
     @APIResponse(responseCode = "200", description = "OK")
-    public void setReservationsAllowedForUser(
+    public EventUserAllowancesDto setReservationsAllowedForUser(
             @Valid EventUserAllowancesDto userReservationAllowanceDTO) {
         User currentUser = userSecurityContext.getCurrentUser();
-        eventService.setReservationsAllowedForUser(userReservationAllowanceDTO, currentUser);
+        return eventService.setReservationsAllowedForUser(userReservationAllowanceDTO, currentUser);
     }
 
     @GET

@@ -405,8 +405,10 @@ export type PostApiManagerReservationAllowanceResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: EventUserAllowancesDto;
 };
+
+export type PostApiManagerReservationAllowanceResponse = PostApiManagerReservationAllowanceResponses[keyof PostApiManagerReservationAllowanceResponses];
 
 export type GetApiManagerReservationAllowanceByIdData = {
     body?: never;
@@ -819,16 +821,16 @@ export type GetApiUserEventsResponses = {
 
 export type GetApiUserEventsResponse = GetApiUserEventsResponses[keyof GetApiUserEventsResponses];
 
-export type GetApiUserEventsAvailableReservationsByIdData = {
+export type GetApiUserEventsAvailableReservationsByEventIdData = {
     body?: never;
     path: {
-        id: bigint;
+        eventId: bigint;
     };
     query?: never;
-    url: '/api/user/events/available-reservations/{id}';
+    url: '/api/user/events/available-reservations/{eventId}';
 };
 
-export type GetApiUserEventsAvailableReservationsByIdErrors = {
+export type GetApiUserEventsAvailableReservationsByEventIdErrors = {
     /**
      * Not Authorized
      */
@@ -839,25 +841,25 @@ export type GetApiUserEventsAvailableReservationsByIdErrors = {
     403: unknown;
 };
 
-export type GetApiUserEventsAvailableReservationsByIdResponses = {
+export type GetApiUserEventsAvailableReservationsByEventIdResponses = {
     /**
      * OK
      */
     200: AvailableReservationsDto;
 };
 
-export type GetApiUserEventsAvailableReservationsByIdResponse = GetApiUserEventsAvailableReservationsByIdResponses[keyof GetApiUserEventsAvailableReservationsByIdResponses];
+export type GetApiUserEventsAvailableReservationsByEventIdResponse = GetApiUserEventsAvailableReservationsByEventIdResponses[keyof GetApiUserEventsAvailableReservationsByEventIdResponses];
 
-export type GetApiUserEventsAvailableSeatsByIdData = {
+export type GetApiUserEventsAvailableSeatsByEventIdData = {
     body?: never;
     path: {
-        id: bigint;
+        eventId: bigint;
     };
     query?: never;
-    url: '/api/user/events/available-seats/{id}';
+    url: '/api/user/events/available-seats/{eventId}';
 };
 
-export type GetApiUserEventsAvailableSeatsByIdErrors = {
+export type GetApiUserEventsAvailableSeatsByEventIdErrors = {
     /**
      * Not Authorized
      */
@@ -868,14 +870,14 @@ export type GetApiUserEventsAvailableSeatsByIdErrors = {
     403: unknown;
 };
 
-export type GetApiUserEventsAvailableSeatsByIdResponses = {
+export type GetApiUserEventsAvailableSeatsByEventIdResponses = {
     /**
      * OK
      */
     200: number;
 };
 
-export type GetApiUserEventsAvailableSeatsByIdResponse = GetApiUserEventsAvailableSeatsByIdResponses[keyof GetApiUserEventsAvailableSeatsByIdResponses];
+export type GetApiUserEventsAvailableSeatsByEventIdResponse = GetApiUserEventsAvailableSeatsByEventIdResponses[keyof GetApiUserEventsAvailableSeatsByEventIdResponses];
 
 export type GetApiUserReservationsData = {
     body?: never;

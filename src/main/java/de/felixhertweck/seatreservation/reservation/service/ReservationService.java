@@ -1,11 +1,13 @@
 package de.felixhertweck.seatreservation.reservation.service;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.email.EmailService;
@@ -21,9 +23,12 @@ import de.felixhertweck.seatreservation.reservation.NoSeatsAvailableException;
 import de.felixhertweck.seatreservation.reservation.SeatAlreadyReservedException;
 import de.felixhertweck.seatreservation.reservation.dto.ReservationResponseDTO;
 import de.felixhertweck.seatreservation.reservation.dto.ReservationsRequestCreateDTO;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class ReservationService {
+
+    private static final Logger LOG = Logger.getLogger(ReservationService.class);
 
     @Inject ReservationRepository reservationRepository;
     @Inject EventRepository eventRepository;
@@ -129,9 +134,9 @@ public class ReservationService {
 
         try {
             emailService.sendReservationConfirmation(currentUser, newReservations);
-        } catch (Exception e) {
+        } catch (IOException | PersistenceException | IllegalStateException e) {
             // Log the exception, but don't let it fail the transaction
-            System.err.println("Failed to send reservation confirmation email: " + e.getMessage());
+            LOG.error("Failed to send reservation confirmation email", e);
         }
 
         return newReservations.stream()
