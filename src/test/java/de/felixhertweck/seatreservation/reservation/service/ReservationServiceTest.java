@@ -49,6 +49,8 @@ class ReservationServiceTest {
         currentUser = new User();
         currentUser.id = 1L;
         currentUser.setUsername("testuser");
+        currentUser.setEmail("user@example.com");
+        currentUser.setEmailVerified(true);
 
         otherUser = new User();
         otherUser.id = 2L;
@@ -146,6 +148,23 @@ class ReservationServiceTest {
 
         assertFalse(result.isEmpty());
         assertEquals(1, result.size());
+    }
+
+    @Test
+    void createReservationForUser_IllegalStateException_EmailNotVerified() {
+        currentUser.setEmailVerified(false);
+        ReservationsRequestCreateDTO dto = new ReservationsRequestCreateDTO();
+        dto.setEventId(event.id);
+        dto.setSeatIds(List.of(seat1.id));
+
+        var exception =
+                assertThrows(
+                        IllegalStateException.class,
+                        () -> reservationService.createReservationForUser(dto, currentUser));
+
+        assertEquals(
+                "User must have a verified email address to create a reservation.",
+                exception.getMessage());
     }
 
     @Test

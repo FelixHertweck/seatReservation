@@ -134,7 +134,7 @@ export type UserProfileUpdateDto = {
     email: string;
     firstname: string;
     lastname: string;
-    passwordHash: string;
+    password: string;
     roles: string[];
 };
 
@@ -396,6 +396,35 @@ export type PostApiManagerReservationAllowanceResponses = {
      */
     200: unknown;
 };
+
+export type GetApiManagerReservationAllowanceByIdData = {
+    body?: never;
+    path: {
+        id: bigint;
+    };
+    query?: never;
+    url: '/api/manager/reservationAllowance/{id}';
+};
+
+export type GetApiManagerReservationAllowanceByIdErrors = {
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type GetApiManagerReservationAllowanceByIdResponses = {
+    /**
+     * OK
+     */
+    200: EventUserAllowancesDto;
+};
+
+export type GetApiManagerReservationAllowanceByIdResponse = GetApiManagerReservationAllowanceByIdResponses[keyof GetApiManagerReservationAllowanceByIdResponses];
 
 export type GetApiManagerReservationsData = {
     body?: never;

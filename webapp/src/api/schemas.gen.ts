@@ -391,7 +391,7 @@ export const UserDTOSchema = {
 
 export const UserProfileUpdateDTOSchema = {
     type: 'object',
-    required: ['email', 'firstname', 'lastname', 'passwordHash', 'roles'],
+    required: ['email', 'firstname', 'lastname', 'password', 'roles'],
     properties: {
         email: {
             type: 'string'
@@ -402,7 +402,7 @@ export const UserProfileUpdateDTOSchema = {
         lastname: {
             type: 'string'
         },
-        passwordHash: {
+        password: {
             type: 'string'
         },
         roles: {

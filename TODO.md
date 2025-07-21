@@ -4,3 +4,4 @@
 - [x] Email Service
 - [x] User Email Status
 - [x] Service-Schicht von Web-Exceptions entkoppeln (z.B. `BadRequestException` durch `IllegalArgumentException` ersetzen)
+- [ ] Logging

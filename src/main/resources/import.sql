@@ -7,24 +7,23 @@ INSERT INTO users (id, username, email, passwordHash, firstname, lastname, email
 -- Assign ADMIN role to admin user
 INSERT INTO user_roles (user_id, role) VALUES (1, 'ADMIN');
 
--- Insert regular user
-INSERT INTO users (id, username, email, passwordHash, firstname, lastname, emailVerified) VALUES (2, 'user', 'user@example.com', '$2a$10$x9zL3DyXWpj/.f5WLevXGOVtkvc7JbJ6RwJU.a9VfD1rUgsqLVxMq', 'Regular', 'User', true);
-
--- Assign USER role to regular user
-INSERT INTO user_roles (user_id, role) VALUES (2, 'USER');
-
 -- Insert manager user
-INSERT INTO users (id, username, email, passwordHash, firstname, lastname, emailVerified) VALUES (3, 'manager', 'manager@example.com', '$2a$10$x9zL3DyXWpj/.f5WLevXGOVtkvc7JbJ6RwJU.a9VfD1rUgsqLVxMq', 'Event', 'Manager', true);
+INSERT INTO users (id, username, email, passwordHash, firstname, lastname, emailVerified) VALUES (2, 'manager', 'manager@example.com', '$2a$10$S2ge7FYww8TDwL8z.nvjDujgzJMohwInStimGs349vJXRpH8KFzfm', 'Event', 'Manager', true);
 
 -- Assign MANAGER role to manager user
-INSERT INTO user_roles (user_id, role) VALUES (3, 'MANAGER');
+INSERT INTO user_roles (user_id, role) VALUES (2, 'MANAGER');
 
+-- Insert regular user
+INSERT INTO users (id, username, email, passwordHash, firstname, lastname, emailVerified) VALUES (3, 'user', 'user@example.com', '$2a$10$x9zL3DyXWpj/.f5WLevXGOVtkvc7JbJ6RwJU.a9VfD1rUgsqLVxMq', 'Regular', 'User', true);
+
+-- Assign USER role to regular user
+INSERT INTO user_roles (user_id, role) VALUES (3, 'USER');
 
 -- Insert event_location
-INSERT INTO eventlocations (id, name, address, manager_id) VALUES (1, 'Stadthalle', 'Hauptstraße 1, 12345 Musterstadt', 3);
+INSERT INTO eventlocations (id, name, address, manager_id) VALUES (1, 'Stadthalle', 'Hauptstraße 1, 12345 Musterstadt', 2);
 
 -- Insert event
-INSERT INTO events (id, name, startTime, endTime, bookingDeadline, event_location_id, manager_id) VALUES (1, 'Konzert der Stadtkapelle', '2024-12-31 19:00:00', '2024-12-31 21:00:00', '2026-12-12 17:00:00', 1, 3);
+INSERT INTO events (id, name, startTime, endTime, bookingDeadline, event_location_id, manager_id) VALUES (1, 'Konzert der Stadtkapelle', '2024-12-31 19:00:00', '2024-12-31 21:00:00', '2026-12-12 17:00:00', 1, 2);
 
 -- Insert seats
 INSERT INTO seats (id, seatNumber, location_id, xCoordinate, yCoordinate) VALUES (1, '1', 1, 1, 1);

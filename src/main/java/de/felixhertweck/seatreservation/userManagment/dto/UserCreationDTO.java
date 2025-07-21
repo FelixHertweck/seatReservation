@@ -2,11 +2,13 @@ package de.felixhertweck.seatreservation.userManagment.dto;
 
 import jakarta.validation.constraints.NotNull;
 
+import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
+
 public class UserCreationDTO {
     @NotNull(message = "Username cannot be null")
     private String username;
 
-    private String email;
+    @NoHtmlSanitize private String email;
 
     @NotNull(message = "Password cannot be null")
     private String password;

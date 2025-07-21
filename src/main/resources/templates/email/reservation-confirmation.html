@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservierungsbestätigung</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .header {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            text-align: center;
+            color: #777;
+        }
+        ul {
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">Ihre Reservierungsbestätigung</div>
+        <p>Hallo {userName},</p>
+        <p>vielen Dank für Ihre Reservierung für das Event "{eventName}".</p>
+        <p>Sie haben die folgenden Plätze reserviert:</p>
+        <ul>
+            {seatList}
+        </ul>
+        <p>Wir wünschen Ihnen viel Spaß bei der Veranstaltung!</p>
+        <p>Mit freundlichen Grüßen,<br>Ihr Team</p>
+        <div class="footer">
+            &copy; {currentYear} - Alle Rechte vorbehalten
+        </div>
+    </div>
+</body>
+</html>

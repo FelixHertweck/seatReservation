@@ -8,6 +8,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import de.felixhertweck.seatreservation.email.EmailService;
 import de.felixhertweck.seatreservation.eventManagement.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.*;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
@@ -28,6 +29,7 @@ public class ReservationService {
     @Inject EventRepository eventRepository;
     @Inject SeatRepository seatRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
+    @Inject EmailService emailService;
 
     public List<ReservationResponseDTO> findReservationsByUser(User currentUser) {
         List<Reservation> reservations = reservationRepository.findByUser(currentUser);
@@ -50,6 +52,13 @@ public class ReservationService {
     public List<ReservationResponseDTO> createReservationForUser(
             ReservationsRequestCreateDTO dto, User currentUser)
             throws NoSeatsAvailableException, EventBookingClosedException {
+
+        if (currentUser.getEmail() == null
+                || currentUser.getEmail().trim().isEmpty()
+                || !currentUser.isEmailVerified()) {
+            throw new IllegalStateException(
+                    "User must have a verified email address to create a reservation.");
+        }
 
         if (dto.getSeatIds() == null || dto.getSeatIds().isEmpty()) {
             throw new IllegalArgumentException("At least one seat must be selected");
@@ -117,6 +126,13 @@ public class ReservationService {
         eventUserAllowance.setReservationsAllowedCount(
                 eventUserAllowance.getReservationsAllowedCount() - seats.size());
         eventUserAllowanceRepository.persist(eventUserAllowance);
+
+        try {
+            emailService.sendReservationConfirmation(currentUser, newReservations);
+        } catch (Exception e) {
+            // Log the exception, but don't let it fail the transaction
+            System.err.println("Failed to send reservation confirmation email: " + e.getMessage());
+        }
 
         return newReservations.stream()
                 .map(ReservationResponseDTO::new)

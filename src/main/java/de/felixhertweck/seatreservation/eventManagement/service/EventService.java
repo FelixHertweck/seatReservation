@@ -155,6 +155,20 @@ public class EventService {
         eventUserAllowanceRepository.persist(allowance);
     }
 
+    public EventUserAllowancesDto getReservationAllowanceById(Long id, User manager) {
+        EventUserAllowance allowance =
+                eventUserAllowanceRepository
+                        .findByIdOptional(id)
+                        .orElseThrow(() -> new EventNotFoundException("Allowance not found"));
+
+        if (!allowance.getEvent().getManager().equals(manager)
+                && !manager.getRoles().contains(Roles.ADMIN)) {
+            throw new SecurityException("User is not authorized to view this allowance");
+        }
+
+        return new EventUserAllowancesDto(allowance);
+    }
+
     private Event getEventById(Long id) throws EventNotFoundException {
         return eventRepository
                 .findByIdOptional(id)

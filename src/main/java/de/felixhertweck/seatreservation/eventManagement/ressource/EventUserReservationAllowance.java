@@ -3,11 +3,8 @@ package de.felixhertweck.seatreservation.eventManagement.ressource;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.*;
 
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesDto;
 import de.felixhertweck.seatreservation.eventManagement.service.EventService;
@@ -32,5 +29,12 @@ public class EventUserReservationAllowance {
             @Valid EventUserAllowancesDto userReservationAllowanceDTO) {
         User currentUser = userSecurityContext.getCurrentUser();
         eventService.setReservationsAllowedForUser(userReservationAllowanceDTO, currentUser);
+    }
+
+    @GET
+    @Path("/{id}")
+    public EventUserAllowancesDto getReservationAllowanceById(@PathParam("id") Long id) {
+        User currentUser = userSecurityContext.getCurrentUser();
+        return eventService.getReservationAllowanceById(id, currentUser);
     }
 }

@@ -117,9 +117,9 @@ public class UserService {
         }
 
         // Update password if provided (in a real app, hash this!)
-        if (updateDTO.getPasswordHash() != null && !updateDTO.getPasswordHash().trim().isEmpty()) {
+        if (updateDTO.getPassword() != null && !updateDTO.getPassword().trim().isEmpty()) {
             existingUser.setPasswordHash(
-                    BcryptUtil.bcryptHash(updateDTO.getPasswordHash())); // Hash the password
+                    BcryptUtil.bcryptHash(updateDTO.getPassword())); // Hash the password
         }
     }
 

@@ -164,7 +164,16 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | `setReservationsAllowedForUser_EventNotFoundException` | Versucht, die Reservierungserlaubnis für ein nicht existierendes Event zu setzen. Erwartet `EventNotFoundException`. |
 | `setReservationsAllowedForUser_UserNotFoundException` | Versucht, die Reservierungserlaubnis für einen nicht existierenden Benutzer zu setzen. Erwartet `UserNotFoundException`. |
 | `setReservationsAllowedForUser_ForbiddenException_NotManagerOrAdmin` | Versucht, die Reservierungserlaubnis als Benutzer zu setzen, der weder Manager noch Administrator des Events ist. Erwartet `ForbiddenException`. |
-| `setReservationsAllowedForUser_Success_AsAdmin` | Setzt erfolgreich die erlaubte Anzahl von Reservierungen für einen Benutzer für ein Event durch einen Administrator. |
+| `setReservationsAllowedForUser_Success_AsAdmin` | Setzt erfolgreich die erlaubte Anzahl von Reservierungen für einen Benutzer für ein Event durch einen Administrator und überprüft die korrekte Persistierung der Daten. |
+
+### getReservationAllowanceById(Long id, User manager)
+
+| Testfall | Beschreibung |
+| :--- | :--- |
+| `getReservationAllowanceById_Success_AsManager` | Ruft erfolgreich eine `EventUserAllowance` als der zuständige Manager ab. |
+| `getReservationAllowanceById_Success_AsAdmin` | Ruft erfolgreich eine `EventUserAllowance` als Administrator ab. |
+| `getReservationAllowanceById_ForbiddenException_NotManagerOrAdmin` | Versucht, eine `EventUserAllowance` als nicht autorisierter Benutzer abzurufen. Erwartet `SecurityException`. |
+| `getReservationAllowanceById_EventNotFoundException` | Versucht, eine nicht existierende `EventUserAllowance` abzurufen. Erwartet `EventNotFoundException`. |
 
 ## ReservationService
 
@@ -270,6 +279,7 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | `createReservationForUser_EventBookingClosedException` | Versucht, eine Reservierung für ein Event zu erstellen, dessen Buchungsfrist abgelaufen ist. Erwartet `EventBookingClosedException`. |
 | `createReservationForUser_SeatAlreadyReservedException` | Versucht, eine Reservierung für einen bereits reservierten Sitzplatz zu erstellen. Erwartet `SeatAlreadyReservedException`. |
 | `createReservationForUser_IllegalArgumentException_NoSeatIds` | Versucht, eine Reservierung ohne Angabe von Sitzplatz-IDs zu erstellen. |
+| `createReservationForUser_IllegalStateException_EmailNotVerified` | Versucht, eine Reservierung mit einem Benutzer zu erstellen, dessen E-Mail-Adresse nicht verifiziert ist. Erwartet `IllegalStateException`. |
 
 ### deleteReservationForUser(Long id, User currentUser)
 

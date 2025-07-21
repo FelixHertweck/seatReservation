@@ -5,20 +5,25 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.Year;
+import java.util.List;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import de.felixhertweck.seatreservation.model.entity.EmailVerification;
+import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
 import de.felixhertweck.seatreservation.utils.RandomUUIDString;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jboss.logging.Logger;
 
 /** Service for sending emails. */
 @ApplicationScoped
 public class EmailService {
+
+    private static final Logger LOG = Logger.getLogger(EmailService.class);
 
     @Inject Mailer mailer;
 
@@ -53,6 +58,7 @@ public class EmailService {
         Mail mail =
                 Mail.withHtml(user.getEmail(), "Please Confirm Your Email Address", htmlContent);
 
+        LOG.infof("Sending email confirmation to %s", user.getEmail());
         mailer.send(mail);
     }
 
@@ -70,5 +76,34 @@ public class EmailService {
                 + emailVerification.id
                 + "&token="
                 + token;
+    }
+
+    public void sendReservationConfirmation(User user, List<Reservation> reservations)
+            throws IOException {
+        if (reservations == null || reservations.isEmpty()) {
+            return;
+        }
+
+        String eventName = reservations.get(0).getEvent().getName();
+        StringBuilder seatListHtml = new StringBuilder();
+        for (Reservation reservation : reservations) {
+            seatListHtml
+                    .append("<li>")
+                    .append(reservation.getSeat().getSeatNumber())
+                    .append("</li>");
+        }
+
+        String templatePath = "src/main/resources/templates/email/reservation-confirmation.html";
+        String htmlContent = new String(Files.readAllBytes(Paths.get(templatePath)));
+
+        htmlContent =
+                htmlContent.replace("{userName}", user.getFirstname() + " " + user.getLastname());
+        htmlContent = htmlContent.replace("{eventName}", eventName);
+        htmlContent = htmlContent.replace("{seatList}", seatListHtml.toString());
+        htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
+
+        Mail mail = Mail.withHtml(user.getEmail(), "Ihre Reservierungsbestätigung", htmlContent);
+        LOG.infof("Sending reservation confirmation to %s", user.getEmail());
+        mailer.send(mail);
     }
 }

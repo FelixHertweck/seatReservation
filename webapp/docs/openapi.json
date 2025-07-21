@@ -375,7 +375,7 @@
       },
       "UserProfileUpdateDTO" : {
         "type" : "object",
-        "required" : [ "email", "firstname", "lastname", "passwordHash", "roles" ],
+        "required" : [ "email", "firstname", "lastname", "password", "roles" ],
         "properties" : {
           "email" : {
             "type" : "string"
@@ -386,7 +386,7 @@
           "lastname" : {
             "type" : "string"
           },
-          "passwordHash" : {
+          "password" : {
             "type" : "string"
           },
           "roles" : {
@@ -722,6 +722,42 @@
           }
         },
         "summary" : "Set Reservations Allowed For User",
+        "tags" : [ "Event User Reservation Allowance" ],
+        "security" : [ {
+          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
+        } ]
+      }
+    },
+    "/api/manager/reservationAllowance/{id}" : {
+      "get" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EventUserAllowancesDto"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Get Reservation Allowance By Id",
         "tags" : [ "Event User Reservation Allowance" ],
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]

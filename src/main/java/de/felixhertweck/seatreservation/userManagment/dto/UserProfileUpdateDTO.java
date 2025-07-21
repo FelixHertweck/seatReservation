@@ -4,8 +4,11 @@ import java.util.Set;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
+import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
+
 public class UserProfileUpdateDTO {
     @NotNull(message = "Email cannot be null")
+    @NoHtmlSanitize
     private String email;
 
     @NotNull(message = "Firstname cannot be null")
@@ -15,7 +18,7 @@ public class UserProfileUpdateDTO {
     private String lastname;
 
     @NotNull(message = "Password cannot be null")
-    private String passwordHash;
+    private String password;
 
     @NotNull(message = "Roles cannot be null")
     @NotEmpty(message = "User must have at least one role")
@@ -33,8 +36,8 @@ public class UserProfileUpdateDTO {
         return lastname;
     }
 
-    public String getPasswordHash() {
-        return passwordHash;
+    public String getPassword() {
+        return password;
     }
 
     public Set<String> getRoles() {
@@ -49,7 +52,7 @@ public class UserProfileUpdateDTO {
             Set<String> roles) {
         this.firstname = firstname;
         this.lastname = lastname;
-        this.passwordHash = passwordHash;
+        this.password = passwordHash;
         this.email = email;
         this.roles = roles;
     }

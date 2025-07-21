@@ -5,7 +5,8 @@ import org.owasp.html.PolicyFactory;
 
 public class HtmlSanitizerUtils {
 
-    private static final PolicyFactory POLICY_FACTORY = new HtmlPolicyBuilder().toFactory();
+    private static final PolicyFactory POLICY_FACTORY =
+            new HtmlPolicyBuilder().allowUrlProtocols("mailto").toFactory();
 
     private HtmlSanitizerUtils() {
         // Private constructor to prevent instantiation

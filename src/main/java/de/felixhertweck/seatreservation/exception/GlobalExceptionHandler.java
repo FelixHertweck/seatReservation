@@ -22,62 +22,45 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
 
     @Override
     public Response toResponse(Exception exception) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(exception.getMessage());
+        Response.Status status;
+
         if (exception instanceof EventBookingClosedException) {
-            return Response.status(Response.Status.NOT_ACCEPTABLE)
-                    .entity(exception.getMessage())
-                    .build();
+            status = Response.Status.NOT_ACCEPTABLE;
         } else if (exception instanceof EventNotFoundException) {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity(exception.getMessage())
-                    .build();
+            status = Response.Status.NOT_FOUND;
         } else if (exception instanceof EventLocationNotFoundException) {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity(exception.getMessage())
-                    .build();
+            status = Response.Status.NOT_FOUND;
         } else if (exception instanceof ReservationNotFoundException) {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity(exception.getMessage())
-                    .build();
+            status = Response.Status.NOT_FOUND;
         } else if (exception instanceof SeatNotFoundException) {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity(exception.getMessage())
-                    .build();
+            status = Response.Status.NOT_FOUND;
         } else if (exception instanceof NoSeatsAvailableException) {
-            return Response.status(Response.Status.NOT_ACCEPTABLE)
-                    .entity(exception.getMessage())
-                    .build();
+            status = Response.Status.NOT_ACCEPTABLE;
         } else if (exception instanceof SeatAlreadyReservedException) {
-            return Response.status(Response.Status.CONFLICT).entity(exception.getMessage()).build();
+            status = Response.Status.CONFLICT;
         } else if (exception instanceof AuthenticationFailedException) {
-            return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity(exception.getMessage())
-                    .build();
+            status = Response.Status.UNAUTHORIZED;
         } else if (exception instanceof DuplicateUserException) {
-            return Response.status(Response.Status.CONFLICT).entity(exception.getMessage()).build();
+            status = Response.Status.CONFLICT;
         } else if (exception instanceof InvalidUserException) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(exception.getMessage())
-                    .build();
+            status = Response.Status.BAD_REQUEST;
         } else if (exception instanceof TokenExpiredException) {
-            return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity(exception.getMessage())
-                    .build();
+            status = Response.Status.UNAUTHORIZED;
         } else if (exception instanceof UserNotFoundException) {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity(exception.getMessage())
-                    .build();
+            status = Response.Status.NOT_FOUND;
         } else if (exception instanceof IllegalArgumentException) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(exception.getMessage())
-                    .build();
+            status = Response.Status.BAD_REQUEST;
         } else if (exception instanceof SecurityException) {
-            return Response.status(Response.Status.FORBIDDEN)
-                    .entity(exception.getMessage())
-                    .build();
+            status = Response.Status.FORBIDDEN;
+        } else if (exception instanceof IllegalStateException) {
+            status = Response.Status.BAD_REQUEST;
+        } else {
+            status = Response.Status.INTERNAL_SERVER_ERROR;
+            errorResponse =
+                    new ErrorResponseDTO("An unexpected error occurred: " + exception.getMessage());
         }
-        // Fallback for any other unexpected exceptions
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                .entity("An unexpected error occurred: " + exception.getMessage())
-                .build();
+
+        return Response.status(status).entity(errorResponse).build();
     }
 }
