@@ -2,6 +2,41 @@
   "openapi" : "3.1.0",
   "components" : {
     "schemas" : {
+      "AdminUserUpdateDTO" : {
+        "type" : "object",
+        "required" : [ "email", "firstname", "lastname", "roles" ],
+        "properties" : {
+          "email" : {
+            "type" : "string"
+          },
+          "firstname" : {
+            "type" : "string"
+          },
+          "lastname" : {
+            "type" : "string"
+          },
+          "password" : {
+            "type" : "string"
+          },
+          "roles" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string"
+            },
+            "minItems" : 1
+          }
+        }
+      },
+      "AvailableReservationsDTO" : {
+        "type" : "object",
+        "properties" : {
+          "availableReservations" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
       "DetailedEventResponseDTO" : {
         "type" : "object",
         "properties" : {
@@ -375,7 +410,7 @@
       },
       "UserProfileUpdateDTO" : {
         "type" : "object",
-        "required" : [ "email", "firstname", "lastname", "password", "roles" ],
+        "required" : [ "email", "firstname", "lastname", "password" ],
         "properties" : {
           "email" : {
             "type" : "string"
@@ -388,14 +423,6 @@
           },
           "password" : {
             "type" : "string"
-          },
-          "roles" : {
-            "type" : "array",
-            "uniqueItems" : true,
-            "items" : {
-              "type" : "string"
-            },
-            "minItems" : 1
           }
         }
       }
@@ -1224,6 +1251,42 @@
         } ]
       }
     },
+    "/api/user/events/available-reservations/{id}" : {
+      "get" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AvailableReservationsDTO"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Get Available Reservations",
+        "tags" : [ "Event Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "USER" ]
+        } ]
+      }
+    },
     "/api/user/events/available-seats/{id}" : {
       "get" : {
         "parameters" : [ {
@@ -1480,7 +1543,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/UserProfileUpdateDTO"
+                "$ref" : "#/components/schemas/AdminUserUpdateDTO"
               }
             }
           },

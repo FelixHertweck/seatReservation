@@ -9,6 +9,7 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
+import de.felixhertweck.seatreservation.reservation.dto.AvailableReservationsDTO;
 import de.felixhertweck.seatreservation.reservation.dto.EventResponseDTO;
 import de.felixhertweck.seatreservation.reservation.service.EventService;
 import de.felixhertweck.seatreservation.security.Roles;
@@ -49,6 +50,17 @@ public class EventResource {
             content = @Content(schema = @Schema(implementation = Integer.class)))
     public int getAvailableSeats(@PathParam("id") Long id) {
         return eventService.getAvailableSeatsForCurrentUser(
+                id, securityIdentity.getPrincipal().getName());
+    }
+
+    @GET
+    @Path("/available-reservations/{id}")
+    @APIResponse(
+            responseCode = "200",
+            description = "OK",
+            content = @Content(schema = @Schema(implementation = AvailableReservationsDTO.class)))
+    public AvailableReservationsDTO getAvailableReservations(@PathParam("id") Long id) {
+        return eventService.getAvailableReservationsForCurrentUser(
                 id, securityIdentity.getPrincipal().getName());
     }
 }

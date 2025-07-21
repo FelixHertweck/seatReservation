@@ -60,20 +60,20 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | `createUser_Success_WithDuplicateEmail` | Erstellt einen neuen Benutzer mit einer E-Mail-Adresse, die bereits von einem anderen Benutzer verwendet wird. Überprüft, ob der Benutzer erfolgreich erstellt wird und keine `DuplicateUserException` geworfen wird. |
 | `createUser_InternalServerErrorException_EmailSendFailure` | Simuliert einen Fehler beim Senden der E-Mail-Bestätigung (z.B. durch eine `IOException` im `EmailService`). Erwartet `InternalServerErrorException`. |
 
-### updateUser(Long id, UserProfileUpdateDTO user)
+### updateUser(Long id, AdminUserUpdateDTO user)
 
 | Testfall | Beschreibung |
 | :--- | :--- |
-| `updateUser_Success_UpdateFirstname` | Aktualisiert erfolgreich den Vornamen eines bestehenden Benutzers. |
-| `updateUser_Success_UpdateLastname` | Aktualisiert erfolgreich den Nachnamen eines bestehenden Benutzers. |
-| `updateUser_Success_UpdatePassword` | Aktualisiert erfolgreich das Passwort eines bestehenden Benutzers. |
-| `updateUser_Success_UpdateRoles` | Aktualisiert erfolgreich die Rollen eines bestehenden Benutzers. |
-| `updateUser_Success_NoEmailChange` | Aktualisiert erfolgreich andere Felder eines bestehenden Benutzers (z.B. Vorname, Nachname, Passwort, Rollen), ohne die E-Mail-Adresse zu ändern. Überprüft, ob keine E-Mail-Bestätigung gesendet wird. |
-| `updateUser_Success_UpdateEmail` | Aktualisiert erfolgreich die E-Mail-Adresse eines bestehenden Benutzers und überprüft, ob die E-Mail-Verifizierung zurückgesetzt und eine neue Bestätigungs-E-Mail gesendet wird. |
-| `updateUser_UserNotFoundException` | Versucht, einen nicht existierenden Benutzer zu aktualisieren. Erwartet `UserNotFoundException`. |
-| `updateUser_InvalidUserException_NullDTO` | Versucht, einen Benutzer mit einem `null` `UserProfileUpdateDTO` zu aktualisieren. Erwartet `InvalidUserException`. |
-| `updateUser_Success_WithDuplicateEmail` | Aktualisiert die E-Mail-Adresse eines Benutzers auf eine bereits existierende E-Mail-Adresse. Überprüft, ob die Aktualisierung erfolgreich ist und keine `DuplicateUserException` geworfen wird. |
-| `updateUser_InternalServerErrorException_EmailSendFailure` | Simuliert einen Fehler beim Senden der E-Mail-Bestätigung nach einer E-Mail-Änderung. Erwartet `InternalServerErrorException`. |
+| `updateUser_Success_UpdateFirstname` | Aktualisiert erfolgreich den Vornamen eines bestehenden Benutzers (Admin-Funktion). |
+| `updateUser_Success_UpdateLastname` | Aktualisiert erfolgreich den Nachnamen eines bestehenden Benutzers (Admin-Funktion). |
+| `updateUser_Success_UpdatePassword` | Aktualisiert erfolgreich das Passwort eines bestehenden Benutzers (Admin-Funktion). |
+| `updateUser_Success_UpdateRoles` | Aktualisiert erfolgreich die Rollen eines bestehenden Benutzers (Admin-Funktion). |
+| `updateUser_Success_NoEmailChange` | Aktualisiert erfolgreich andere Felder eines bestehenden Benutzers (z.B. Vorname, Nachname, Passwort, Rollen), ohne die E-Mail-Adresse zu ändern (Admin-Funktion). Überprüft, ob keine E-Mail-Bestätigung gesendet wird. |
+| `updateUser_Success_UpdateEmail` | Aktualisiert erfolgreich die E-Mail-Adresse eines bestehenden Benutzers und überprüft, ob die E-Mail-Verifizierung zurückgesetzt und eine neue Bestätigungs-E-Mail gesendet wird (Admin-Funktion). |
+| `updateUser_UserNotFoundException` | Versucht, einen nicht existierenden Benutzer zu aktualisieren (Admin-Funktion). Erwartet `UserNotFoundException`. |
+| `updateUser_InvalidUserException_NullDTO` | Versucht, einen Benutzer mit einem `null` `AdminUserUpdateDTO` zu aktualisieren (Admin-Funktion). Erwartet `InvalidUserException`. |
+| `updateUser_Success_WithDuplicateEmail` | Aktualisiert die E-Mail-Adresse eines Benutzers auf eine bereits existierende E-Mail-Adresse (Admin-Funktion). Überprüft, ob die Aktualisierung erfolgreich ist und keine `DuplicateUserException` geworfen wird. |
+| `updateUser_InternalServerErrorException_EmailSendFailure` | Simuliert einen Fehler beim Senden der E-Mail-Bestätigung nach einer E-Mail-Änderung (Admin-Funktion). Erwartet `InternalServerErrorException`. |
 
 ### deleteUser(Long id)
 
@@ -110,6 +110,7 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | `updateUserProfile_Success_UpdateLastname` | Aktualisiert erfolgreich den Nachnamen eines bestehenden Benutzers über seinen Benutzernamen. |
 | `updateUserProfile_Success_UpdatePassword` | Aktualisiert erfolgreich das Passwort eines bestehenden Benutzers über seinen Benutzernamen. |
 | `updateUserProfile_Success_UpdateEmail` | Aktualisiert erfolgreich die E-Mail-Adresse eines bestehenden Benutzers über seinen Benutzernamen und überprüft, ob die E-Mail-Verifizierung zurückgesetzt und eine neue Bestätigungs-E-Mail gesendet wird. |
+| `updateUserProfile_DoesNotUpdateRoles` | Stellt sicher, dass ein Versuch, die eigenen Rollen über diesen Endpunkt zu aktualisieren, ignoriert wird. |
 | `updateUserProfile_UserNotFoundException` | Versucht, das Profil eines nicht existierenden Benutzers zu aktualisieren. Erwartet `UserNotFoundException`. |
 | `updateUserProfile_InvalidUserException_NullDTO` | Versucht, ein Benutzerprofil mit einem `null` `UserProfileUpdateDTO` zu aktualisieren. Erwartet `InvalidUserException`. |
 | `updateUserProfile_Success_WithDuplicateEmail` | Aktualisiert die E-Mail-Adresse eines Benutzerprofils auf eine bereits existierende E-Mail-Adresse. Überprüft, ob die Aktualisierung erfolgreich ist und keine `DuplicateUserException` geworfen wird. |
@@ -756,6 +757,25 @@ Dieser Test überprüft, ob die korrekte Anzahl der verbleibenden Plätze für e
 *   **Fehler:**
     *   Ein Benutzer fragt die Plätze für ein Event an, für das er keine Berechtigung hat, und erhält `404 Not Found`.
     *   Ein Benutzer fragt die Plätze für ein nicht existierendes Event an und erhält `404 Not Found`.
+    *   Ein nicht authentifizierter Benutzer versucht, auf den Endpunkt zuzugreifen, und erhält `401 Unauthorized`.
+
+---
+
+#### GET /available-reservations/{id}
+
+Ruft die Anzahl der verfügbaren Reservierungen für ein bestimmtes Event als JSON-Objekt ab.
+
+**Beschreibung:**
+
+Dieser Test überprüft, ob die korrekte Anzahl der verbleibenden Plätze für ein Event zurückgegeben wird, für das der Benutzer eine Berechtigung hat.
+
+**Testfälle:**
+
+*   **Erfolg:**
+    *   Ein Benutzer fragt die verfügbaren Reservierungen für ein Event an, für das er eine Berechtigung hat, und erhält `200 OK` mit einem JSON-Objekt `{"availableReservations": 5}`.
+*   **Fehler:**
+    *   Ein Benutzer fragt die Reservierungen für ein Event an, für das er keine Berechtigung hat, und erhält `404 Not Found`.
+    *   Ein Benutzer fragt die Reservierungen für ein nicht existierendes Event an und erhält `404 Not Found`.
     *   Ein nicht authentifizierter Benutzer versucht, auf den Endpunkt zuzugreifen, und erhält `401 Unauthorized`.
 
 ---

@@ -17,6 +17,7 @@ import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.security.Roles;
+import de.felixhertweck.seatreservation.userManagment.dto.AdminUserUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.exceptions.DuplicateUserException;
@@ -86,17 +87,11 @@ public class UserService {
         return new UserDTO(user);
     }
 
-    private void updateUserCore(User existingUser, UserProfileUpdateDTO updateDTO)
-            throws InvalidUserException, DuplicateUserException {
-        if (updateDTO == null) {
-            throw new InvalidUserException("User data cannot be null.");
-        }
-
+    private void updateUserCore(
+            User existingUser, String email, String firstname, String lastname, String password) {
         // Update email if provided and different
-        if (updateDTO.getEmail() != null
-                && !updateDTO.getEmail().trim().isEmpty()
-                && !updateDTO.getEmail().equals(existingUser.getEmail())) {
-            existingUser.setEmail(updateDTO.getEmail());
+        if (email != null && !email.trim().isEmpty() && !email.equals(existingUser.getEmail())) {
+            existingUser.setEmail(email);
             // Reset email verification status and send confirmation email
             existingUser.setEmailVerified(false);
             try {
@@ -107,19 +102,18 @@ public class UserService {
         }
 
         // Update firstname if provided
-        if (updateDTO.getFirstname() != null && !updateDTO.getFirstname().trim().isEmpty()) {
-            existingUser.setFirstname(updateDTO.getFirstname());
+        if (firstname != null && !firstname.trim().isEmpty()) {
+            existingUser.setFirstname(firstname);
         }
 
         // Update lastname if provided
-        if (updateDTO.getLastname() != null && !updateDTO.getLastname().trim().isEmpty()) {
-            existingUser.setLastname(updateDTO.getLastname());
+        if (lastname != null && !lastname.trim().isEmpty()) {
+            existingUser.setLastname(lastname);
         }
 
-        // Update password if provided (in a real app, hash this!)
-        if (updateDTO.getPassword() != null && !updateDTO.getPassword().trim().isEmpty()) {
-            existingUser.setPasswordHash(
-                    BcryptUtil.bcryptHash(updateDTO.getPassword())); // Hash the password
+        // Update password if provided
+        if (password != null && !password.trim().isEmpty()) {
+            existingUser.setPasswordHash(BcryptUtil.bcryptHash(password)); // Hash the password
         }
     }
 
@@ -135,8 +129,7 @@ public class UserService {
      * @throws RuntimeException If an error occurs while sending email confirmation.
      */
     @Transactional
-    public UserDTO updateUser(Long id, UserProfileUpdateDTO user)
-            throws UserNotFoundException, InvalidUserException, DuplicateUserException {
+    public UserDTO updateUser(Long id, AdminUserUpdateDTO user) throws UserNotFoundException {
         User existingUser =
                 userRepository
                         .findByIdOptional(id)
@@ -145,7 +138,12 @@ public class UserService {
                                         new UserNotFoundException(
                                                 "User with id " + id + " not found."));
 
-        updateUserCore(existingUser, user);
+        updateUserCore(
+                existingUser,
+                user.getEmail(),
+                user.getFirstname(),
+                user.getLastname(),
+                user.getPassword());
 
         if (user.getRoles() != null) {
             existingUser.setRoles(user.getRoles());
@@ -189,7 +187,7 @@ public class UserService {
 
     @Transactional
     public UserDTO updateUserProfile(String username, UserProfileUpdateDTO userProfileUpdateDTO)
-            throws UserNotFoundException, InvalidUserException, DuplicateUserException {
+            throws UserNotFoundException {
         User existingUser =
                 userRepository
                         .findByUsernameOptional(username)
@@ -198,7 +196,12 @@ public class UserService {
                                         new UserNotFoundException(
                                                 "User with username " + username + " not found."));
 
-        updateUserCore(existingUser, userProfileUpdateDTO);
+        updateUserCore(
+                existingUser,
+                userProfileUpdateDTO.getEmail(),
+                userProfileUpdateDTO.getFirstname(),
+                userProfileUpdateDTO.getLastname(),
+                userProfileUpdateDTO.getPassword());
 
         userRepository.persist(existingUser);
         return new UserDTO(existingUser);

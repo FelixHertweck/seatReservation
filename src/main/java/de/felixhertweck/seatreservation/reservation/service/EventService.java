@@ -14,6 +14,7 @@ import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.reservation.EventNotFoundException;
+import de.felixhertweck.seatreservation.reservation.dto.AvailableReservationsDTO;
 import de.felixhertweck.seatreservation.reservation.dto.EventResponseDTO;
 import de.felixhertweck.seatreservation.userManagment.exceptions.UserNotFoundException;
 
@@ -66,5 +67,12 @@ public class EventService {
                                                         + eventId));
 
         return allowance.getReservationsAllowedCount();
+    }
+
+    @Transactional
+    public AvailableReservationsDTO getAvailableReservationsForCurrentUser(
+            Long eventId, String username) throws UserNotFoundException {
+        int availableSeats = getAvailableSeatsForCurrentUser(eventId, username);
+        return new AvailableReservationsDTO(availableSeats);
     }
 }

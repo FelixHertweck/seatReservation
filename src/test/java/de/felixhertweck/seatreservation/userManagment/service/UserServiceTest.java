@@ -21,6 +21,7 @@ import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.security.Roles;
+import de.felixhertweck.seatreservation.userManagment.dto.AdminUserUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.exceptions.DuplicateUserException;
@@ -178,7 +179,8 @@ public class UserServiceTest {
                         "User",
                         Collections.singleton(Roles.USER));
         existingUser.id = 1L;
-        final UserProfileUpdateDTO dto = new UserProfileUpdateDTO("New", null, null, null, null);
+        final AdminUserUpdateDTO dto =
+                new AdminUserUpdateDTO("New", null, null, null, Collections.singleton(Roles.USER));
 
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
 
@@ -208,7 +210,8 @@ public class UserServiceTest {
                         "Old",
                         Collections.singleton(Roles.USER));
         existingUser.id = 1L;
-        final UserProfileUpdateDTO dto = new UserProfileUpdateDTO(null, "New", null, null, null);
+        final AdminUserUpdateDTO dto =
+                new AdminUserUpdateDTO(null, "New", null, null, Collections.singleton(Roles.USER));
 
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
 
@@ -238,8 +241,9 @@ public class UserServiceTest {
                         "Doe",
                         Collections.singleton(Roles.USER));
         existingUser.id = 1L;
-        final UserProfileUpdateDTO dto =
-                new UserProfileUpdateDTO(null, null, "newpassword", null, null);
+        final AdminUserUpdateDTO dto =
+                new AdminUserUpdateDTO(
+                        null, null, "newpassword", null, Collections.singleton(Roles.USER));
 
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
 
@@ -268,7 +272,7 @@ public class UserServiceTest {
                         new HashSet<>(Collections.singletonList(Roles.USER)));
         existingUser.id = 1L;
         Set<String> newRoles = new HashSet<>(Arrays.asList(Roles.USER, Roles.ADMIN));
-        final UserProfileUpdateDTO dto = new UserProfileUpdateDTO(null, null, null, null, newRoles);
+        final AdminUserUpdateDTO dto = new AdminUserUpdateDTO(null, null, null, null, newRoles);
 
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
 
@@ -296,8 +300,9 @@ public class UserServiceTest {
                         "Doe",
                         Collections.singleton(Roles.USER));
         existingUser.id = 1L;
-        final UserProfileUpdateDTO dto =
-                new UserProfileUpdateDTO("New", "Name", "newpass", null, null); // No email change
+        final AdminUserUpdateDTO dto =
+                new AdminUserUpdateDTO(
+                        "New", "Name", "newpass", null, Collections.singleton(Roles.USER));
 
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
 
@@ -328,8 +333,9 @@ public class UserServiceTest {
                         "Doe",
                         Collections.singleton(Roles.USER));
         existingUser.id = 1L;
-        final UserProfileUpdateDTO dto =
-                new UserProfileUpdateDTO(null, null, null, "new@example.com", null);
+        final AdminUserUpdateDTO dto =
+                new AdminUserUpdateDTO(
+                        null, null, null, "new@example.com", Collections.singleton(Roles.USER));
 
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
         when(emailVerificationRepository.findByUser(any(User.class)))
@@ -346,7 +352,8 @@ public class UserServiceTest {
 
     @Test
     void updateUser_UserNotFoundException() throws IOException {
-        final UserProfileUpdateDTO dto = new UserProfileUpdateDTO("New", null, null, null, null);
+        final AdminUserUpdateDTO dto =
+                new AdminUserUpdateDTO("New", null, null, null, Collections.singleton(Roles.USER));
         when(userRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> userService.updateUser(1L, dto));
@@ -377,8 +384,13 @@ public class UserServiceTest {
                         "Doe",
                         Collections.singleton(Roles.USER));
         existingUser.id = 1L;
-        final UserProfileUpdateDTO dto =
-                new UserProfileUpdateDTO(null, null, null, "duplicate@example.com", null);
+        final AdminUserUpdateDTO dto =
+                new AdminUserUpdateDTO(
+                        null,
+                        null,
+                        null,
+                        "duplicate@example.com",
+                        Collections.singleton(Roles.USER));
 
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
         when(emailVerificationRepository.findByUser(any(User.class))).thenReturn(Optional.empty());
@@ -406,8 +418,9 @@ public class UserServiceTest {
                         "Doe",
                         Collections.singleton(Roles.USER));
         existingUser.id = 1L;
-        UserProfileUpdateDTO dto =
-                new UserProfileUpdateDTO(null, null, null, "new@example.com", null);
+        AdminUserUpdateDTO dto =
+                new AdminUserUpdateDTO(
+                        null, null, null, "new@example.com", Collections.singleton(Roles.USER));
 
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
         when(emailVerificationRepository.findByUser(any(User.class))).thenReturn(Optional.empty());
@@ -547,7 +560,7 @@ public class UserServiceTest {
                         "Old",
                         "User",
                         Collections.singleton(Roles.USER));
-        final UserProfileUpdateDTO dto = new UserProfileUpdateDTO("New", null, null, null, null);
+        final UserProfileUpdateDTO dto = new UserProfileUpdateDTO("New", null, null, null);
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
@@ -579,7 +592,7 @@ public class UserServiceTest {
                         "John",
                         "Old",
                         Collections.singleton(Roles.USER));
-        final UserProfileUpdateDTO dto = new UserProfileUpdateDTO(null, "New", null, null, null);
+        final UserProfileUpdateDTO dto = new UserProfileUpdateDTO(null, "New", null, null);
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
@@ -611,8 +624,7 @@ public class UserServiceTest {
                         "John",
                         "Doe",
                         Collections.singleton(Roles.USER));
-        final UserProfileUpdateDTO dto =
-                new UserProfileUpdateDTO(null, null, "newpassword", null, null);
+        final UserProfileUpdateDTO dto = new UserProfileUpdateDTO(null, null, "newpassword", null);
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
@@ -638,8 +650,7 @@ public class UserServiceTest {
                         "John",
                         "Doe",
                         Collections.singleton(Roles.USER));
-        UserProfileUpdateDTO dto =
-                new UserProfileUpdateDTO(null, null, null, "new@example.com", null);
+        UserProfileUpdateDTO dto = new UserProfileUpdateDTO(null, null, null, "new@example.com");
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
@@ -656,7 +667,7 @@ public class UserServiceTest {
 
     @Test
     void updateUserProfile_UserNotFoundException() throws IOException {
-        final UserProfileUpdateDTO dto = new UserProfileUpdateDTO("New", null, null, null, null);
+        final UserProfileUpdateDTO dto = new UserProfileUpdateDTO("New", null, null, null);
         when(userRepository.findByUsernameOptional(anyString())).thenReturn(Optional.empty());
         when(userRepository.findByUsername(anyString())).thenReturn(null); // Mock findByUsername
 
@@ -691,7 +702,7 @@ public class UserServiceTest {
                         "Doe",
                         Collections.singleton(Roles.USER));
         final UserProfileUpdateDTO dto =
-                new UserProfileUpdateDTO(null, null, null, "duplicate@example.com", null);
+                new UserProfileUpdateDTO(null, null, null, "duplicate@example.com");
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
@@ -719,7 +730,7 @@ public class UserServiceTest {
                         "Doe",
                         Collections.singleton(Roles.USER));
         final UserProfileUpdateDTO dto =
-                new UserProfileUpdateDTO(null, null, null, "new@example.com", null);
+                new UserProfileUpdateDTO(null, null, null, "new@example.com");
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));

@@ -125,4 +125,43 @@ public class EventResourceTest {
                 .then()
                 .statusCode(401);
     }
+
+    @Test
+    @TestSecurity(
+            user = "user",
+            roles = {"USER"})
+    void testGetAvailableReservations_Success() {
+        given().when()
+                .get("/api/user/events/available-reservations/" + testEvent.id)
+                .then()
+                .statusCode(200)
+                .body("availableReservations", is(5));
+    }
+
+    @Test
+    @TestSecurity(
+            user = "user",
+            roles = {"USER"})
+    void testGetAvailableReservations_EventNotFound() {
+        given().when().get("/api/user/events/available-reservations/9999").then().statusCode(404);
+    }
+
+    @Test
+    @TestSecurity(
+            user = "user",
+            roles = {"USER"})
+    void testGetAvailableReservations_NoAccessToEvent() {
+        given().when()
+                .get("/api/user/events/available-reservations/" + otherEvent.id)
+                .then()
+                .statusCode(404);
+    }
+
+    @Test
+    void testGetAvailableReservations_Unauthorized() {
+        given().when()
+                .get("/api/user/events/available-reservations/" + testEvent.id)
+                .then()
+                .statusCode(401);
+    }
 }

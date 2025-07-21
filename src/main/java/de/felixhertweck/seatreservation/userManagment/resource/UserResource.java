@@ -10,6 +10,7 @@ import jakarta.ws.rs.*;
 import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
 import de.felixhertweck.seatreservation.common.dto.UserDTO;
 import de.felixhertweck.seatreservation.security.Roles;
+import de.felixhertweck.seatreservation.userManagment.dto.AdminUserUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
@@ -37,7 +38,7 @@ public class UserResource {
     @PUT
     @Path("/admin/{id}")
     @RolesAllowed(Roles.ADMIN)
-    public UserDTO updateUser(@PathParam("id") Long id, UserProfileUpdateDTO user) {
+    public UserDTO updateUser(@PathParam("id") Long id, AdminUserUpdateDTO user) {
         return userService.updateUser(id, user);
     }
 
