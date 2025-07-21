@@ -34,6 +34,11 @@ jobs:
       - name: Copy frontend to backend resources
         run: cp -r dist/* src/main/resources/META-INF/resources/
 
+      - name: Generate keys for JWT tests
+        run: |
+          mkdir keys
+          openssl genpkey -algorithm RSA -out keys/privateKey.pem -pkeyopt rsa_keygen_bits:2048 && openssl rsa -pubout -in keys/privateKey.pem -out keys/publicKey.pem
+
       - name: Set up Maven Cache
         uses: actions/cache@v4
         with:
