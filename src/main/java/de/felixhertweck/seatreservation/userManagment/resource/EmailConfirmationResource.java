@@ -39,7 +39,7 @@ public class EmailConfirmationResource {
         try {
             email = userService.verifyEmail(id, token);
             return Response.ok(getSuccessHtml(email)).build();
-        } catch (BadRequestException e) {
+        } catch (IllegalArgumentException e) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(getErrorHtml(e.getMessage()))
                     .build();

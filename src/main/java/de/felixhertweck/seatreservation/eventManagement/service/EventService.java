@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.ForbiddenException;
 
 import de.felixhertweck.seatreservation.eventManagement.dto.DetailedEventResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventRequestDTO;
@@ -75,11 +74,11 @@ public class EventService {
      * @param dto The DTO containing the updated details of the Event.
      * @return A DTO representing the updated Event.
      * @throws EventNotFoundException If the Event with the specified ID is not found.
-     * @throws ForbiddenException If the user is not authorized to update the Event.
+     * @throws SecurityException If the user is not authorized to update the Event.
      */
     @Transactional
     public DetailedEventResponseDTO updateEvent(Long id, EventRequestDTO dto, User manager)
-            throws EventNotFoundException, ForbiddenException, IllegalArgumentException {
+            throws EventNotFoundException, IllegalArgumentException {
         Event event =
                 eventRepository
                         .findByIdOptional(id)
@@ -91,7 +90,7 @@ public class EventService {
         // Access control: Checks if the current user is the manager of the event
         // or if the user has the ADMIN role.
         if (!event.getManager().equals(manager) && !manager.getRoles().contains(Roles.ADMIN)) {
-            throw new ForbiddenException("User is not the manager of this event");
+            throw new SecurityException("User is not the manager of this event");
         }
 
         EventLocation location =
@@ -120,10 +119,8 @@ public class EventService {
      * manager is the current user are returned.
      *
      * @return A list of DTOs representing the Events.
-     * @throws ForbiddenException If no authenticated user is found.
      */
-    public List<DetailedEventResponseDTO> getEventsByCurrentManager(User manager)
-            throws ForbiddenException {
+    public List<DetailedEventResponseDTO> getEventsByCurrentManager(User manager) {
         List<Event> events;
         // Access control: If the user is an ADMIN, all Events are returned.
         // Otherwise, only Events belonging to this manager are returned.
@@ -137,13 +134,13 @@ public class EventService {
 
     @Transactional
     public void setReservationsAllowedForUser(EventUserAllowancesDto dto, User manager)
-            throws EventNotFoundException, UserNotFoundException, ForbiddenException {
+            throws EventNotFoundException, UserNotFoundException {
         Event event = getEventById(dto.eventId());
         User user = getUserById(dto.userId());
 
         if (!event.getManager().id.equals(manager.getId())
                 && !manager.getRoles().contains(Roles.ADMIN)) {
-            throw new ForbiddenException("User is not the manager of this event");
+            throw new SecurityException("User is not the manager of this event");
         }
 
         EventUserAllowance allowance =

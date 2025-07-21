@@ -1,0 +1,72 @@
+package de.felixhertweck.seatreservation;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import static org.mockito.Mockito.*;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
+public class HttpForwardFilterTest {
+
+    @InjectMocks private HttpForwardFilter filter;
+
+    @Mock private HttpServletRequest request;
+
+    @Mock private HttpServletResponse response;
+
+    @Mock private FilterChain chain;
+
+    @Mock private RequestDispatcher dispatcher;
+
+    @Mock private ServletOutputStream servletOutputStream;
+
+    @Test
+    void doFilter_ForwardToRootPath() throws Exception {
+        when(response.getStatus()).thenReturn(404);
+        when(request.getRequestURI()).thenReturn("/some-path");
+        when(request.getRequestDispatcher("/")).thenReturn(dispatcher);
+        when(response.getOutputStream()).thenReturn(servletOutputStream);
+
+        filter.doFilter(request, response, chain);
+
+        verify(response).setStatus(200);
+        verify(dispatcher).forward(request, response);
+        verify(chain, never()).doFilter(request, response);
+    }
+
+    @Test
+    void doFilter_NoForwardForApiOrQuarkusPath() throws Exception {
+        when(response.getStatus()).thenReturn(404);
+        when(request.getRequestURI()).thenReturn("/api/some-api-path");
+
+        filter.doFilter(request, response, chain);
+
+        verify(chain).doFilter(request, response);
+        verify(dispatcher, never()).forward(request, response);
+
+        reset(chain);
+        when(request.getRequestURI()).thenReturn("/q/some-quarkus-path");
+        filter.doFilter(request, response, chain);
+        verify(chain, times(1)).doFilter(request, response);
+        verify(dispatcher, never()).forward(request, response);
+    }
+
+    @Test
+    void doFilter_NoForwardForNon404Status() throws Exception {
+        when(response.getStatus()).thenReturn(200);
+
+        filter.doFilter(request, response, chain);
+
+        verify(chain).doFilter(request, response);
+        verify(dispatcher, never()).forward(request, response);
+    }
+}

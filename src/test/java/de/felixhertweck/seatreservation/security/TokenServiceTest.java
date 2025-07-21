@@ -2,6 +2,7 @@ package de.felixhertweck.seatreservation.security;
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -87,7 +88,7 @@ public class TokenServiceTest {
         User user = new User();
         user.setUsername("testuser");
         user.setEmail("test@example.com");
-        user.setRoles(new HashSet<>(Arrays.asList("USER")));
+        user.setRoles(new HashSet<>(Collections.singletonList("USER")));
 
         try (MockedStatic<Jwt> mockedJwt = Mockito.mockStatic(Jwt.class)) {
             JwtClaimsBuilder claimsBuilder = mock(JwtClaimsBuilder.class);

@@ -83,7 +83,7 @@ public class ReservationResource {
 
     @DELETE
     @Path("/{id}")
-    @APIResponse(responseCode = "200", description = "OK")
+    @APIResponse(responseCode = "204", description = "No Content")
     public void deleteReservation(@PathParam("id") Long id) {
         User currentUser = userSecurityContext.getCurrentUser();
         reservationService.deleteReservationForUser(id, currentUser);

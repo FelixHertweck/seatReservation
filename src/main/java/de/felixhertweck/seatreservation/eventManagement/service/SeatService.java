@@ -6,12 +6,10 @@ import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.core.SecurityContext;
 
 import de.felixhertweck.seatreservation.eventManagement.dto.SeatRequestDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.SeatResponseDTO;
+import de.felixhertweck.seatreservation.eventManagement.exception.SeatNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
@@ -26,8 +24,6 @@ public class SeatService {
 
     @Inject EventLocationRepository eventLocationRepository;
 
-    @Inject SecurityContext securityContext;
-
     @Transactional
     public SeatResponseDTO createSeatManager(SeatRequestDTO dto, User manager) {
         EventLocation eventLocation =
@@ -35,14 +31,14 @@ public class SeatService {
                         .findByIdOptional(dto.getEventLocationId())
                         .orElseThrow(
                                 () ->
-                                        new NotFoundException(
+                                        new IllegalArgumentException(
                                                 "EventLocation with id "
                                                         + dto.getEventLocationId()
                                                         + " not found"));
 
         if (!manager.getEventLocations().contains(eventLocation)
                 && !manager.getRoles().contains(Roles.ADMIN)) {
-            throw new ForbiddenException("Manager does not own this EventLocation");
+            throw new SecurityException("Manager does not own this EventLocation");
         }
 
         if (dto.getSeatNumber() == null || dto.getSeatNumber().trim().isEmpty()) {
@@ -62,6 +58,11 @@ public class SeatService {
     }
 
     public List<SeatResponseDTO> findAllSeatsForManager(User manager) {
+        if (manager.getRoles().contains(Roles.ADMIN)) {
+            return seatRepository.listAll().stream()
+                    .map(SeatResponseDTO::new)
+                    .collect(Collectors.toList());
+        }
         Set<EventLocation> managerLocations = manager.getEventLocations();
         return seatRepository.listAll().stream()
                 .filter(seat -> managerLocations.contains(seat.getLocation()))
@@ -70,32 +71,26 @@ public class SeatService {
     }
 
     public SeatResponseDTO findSeatByIdForManager(Long id, User manager) {
-        Seat seat = findSeatEntityById(id, manager);
-        if (!manager.getEventLocations().contains(seat.getLocation())) {
-            throw new ForbiddenException("Manager does not own the EventLocation of this seat");
-        }
+        Seat seat = findSeatEntityById(id, manager); // This already checks for ownership
         return new SeatResponseDTO(seat);
     }
 
     @Transactional
     public SeatResponseDTO updateSeatForManager(Long id, SeatRequestDTO dto, User manager) {
-        Seat seat = findSeatEntityById(id, manager);
-        if (!manager.getEventLocations().contains(seat.getLocation())) {
-            throw new ForbiddenException("Manager does not own the EventLocation of this seat");
-        }
+        Seat seat = findSeatEntityById(id, manager); // This already checks for ownership
 
         EventLocation newEventLocation =
                 eventLocationRepository
                         .findByIdOptional(dto.getEventLocationId())
                         .orElseThrow(
                                 () ->
-                                        new NotFoundException(
+                                        new IllegalArgumentException(
                                                 "EventLocation with id "
                                                         + dto.getEventLocationId()
                                                         + " not found"));
 
         if (!manager.getEventLocations().contains(newEventLocation)) {
-            throw new ForbiddenException("Manager does not own the new EventLocation");
+            throw new SecurityException("Manager does not own the new EventLocation");
         }
 
         if (dto.getSeatNumber() == null || dto.getSeatNumber().trim().isEmpty()) {
@@ -115,24 +110,26 @@ public class SeatService {
 
     @Transactional
     public void deleteSeatForManager(Long id, User manager) {
-        Seat seat = findSeatEntityById(id, manager);
-        if (!manager.getEventLocations().contains(seat.getLocation())) {
-            throw new ForbiddenException("Manager does not own the EventLocation of this seat");
-        }
+        Seat seat = findSeatEntityById(id, manager); // This already checks for ownership
         seatRepository.delete(seat);
     }
 
-    public Seat findSeatEntityById(Long id, User currentUser) throws ForbiddenException {
+    public Seat findSeatEntityById(Long id, User currentUser) {
         // Check if user has access to linked location
         Seat seat =
                 seatRepository
                         .findByIdOptional(id)
                         .orElseThrow(
-                                () -> new NotFoundException("Seat with id " + id + " not found"));
-        User manager = seat.getLocation().getManager();
+                                () ->
+                                        new SeatNotFoundException(
+                                                "Seat with id " + id + " not found"));
 
-        if (!manager.equals(currentUser) && !securityContext.isUserInRole(Roles.ADMIN)) {
-            throw new ForbiddenException("You do not have permission to access this seat");
+        if (currentUser.getRoles().contains(Roles.ADMIN)) {
+            return seat; // Admin can access any seat
+        }
+
+        if (!seat.getLocation().getManager().getId().equals(currentUser.getId())) {
+            throw new SecurityException("You do not have permission to access this seat");
         }
 
         return seat;

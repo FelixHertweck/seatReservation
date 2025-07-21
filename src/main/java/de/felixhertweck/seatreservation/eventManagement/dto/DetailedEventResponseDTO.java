@@ -2,6 +2,7 @@ package de.felixhertweck.seatreservation.eventManagement.dto;
 
 import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import de.felixhertweck.seatreservation.common.dto.EventLocationResponseDTO;
 import de.felixhertweck.seatreservation.common.dto.UserDTO;
@@ -30,7 +31,7 @@ public record DetailedEventResponseDTO(
                 event.getUserAllowances() != null
                         ? event.getUserAllowances().stream()
                                 .map(EventUserAllowancesDto::new)
-                                .collect(java.util.stream.Collectors.toSet())
+                                .collect(Collectors.toSet())
                         : Set.of());
     }
 }

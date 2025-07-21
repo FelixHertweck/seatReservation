@@ -30,4 +30,20 @@ public class SeatRequestDTO {
     public int getYCoordinate() {
         return yCoordinate;
     }
+
+    public void setSeatNumber(String seatNumber) {
+        this.seatNumber = seatNumber;
+    }
+
+    public void setEventLocationId(Long eventLocationId) {
+        this.eventLocationId = eventLocationId;
+    }
+
+    public void setXCoordinate(int xCoordinate) {
+        this.xCoordinate = xCoordinate;
+    }
+
+    public void setYCoordinate(int yCoordinate) {
+        this.yCoordinate = yCoordinate;
+    }
 }

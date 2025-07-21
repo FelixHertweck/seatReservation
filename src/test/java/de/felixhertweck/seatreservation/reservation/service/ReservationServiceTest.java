@@ -1,0 +1,284 @@
+package de.felixhertweck.seatreservation.reservation.service;
+
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import jakarta.inject.Inject;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
+
+import de.felixhertweck.seatreservation.eventManagement.exception.ReservationNotFoundException;
+import de.felixhertweck.seatreservation.model.entity.*;
+import de.felixhertweck.seatreservation.model.repository.*;
+import de.felixhertweck.seatreservation.reservation.EventBookingClosedException;
+import de.felixhertweck.seatreservation.reservation.EventNotFoundException;
+import de.felixhertweck.seatreservation.reservation.NoSeatsAvailableException;
+import de.felixhertweck.seatreservation.reservation.SeatAlreadyReservedException;
+import de.felixhertweck.seatreservation.reservation.dto.ReservationResponseDTO;
+import de.felixhertweck.seatreservation.reservation.dto.ReservationsRequestCreateDTO;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+class ReservationServiceTest {
+
+    @Inject ReservationService reservationService;
+
+    @InjectMock ReservationRepository reservationRepository;
+
+    @InjectMock EventRepository eventRepository;
+
+    @InjectMock SeatRepository seatRepository;
+
+    @InjectMock EventUserAllowanceRepository eventUserAllowanceRepository;
+
+    private User currentUser;
+    private User otherUser;
+    private Event event;
+    private Seat seat1;
+    private Seat seat2;
+    private Reservation reservation;
+    private EventUserAllowance allowance;
+
+    @BeforeEach
+    void setUp() {
+        currentUser = new User();
+        currentUser.id = 1L;
+        currentUser.setUsername("testuser");
+
+        otherUser = new User();
+        otherUser.id = 2L;
+        otherUser.setUsername("otheruser");
+
+        var location = new EventLocation();
+        location.id = 1L;
+
+        event = new Event();
+        event.id = 1L;
+        event.setBookingDeadline(LocalDateTime.now().plusDays(1));
+        event.setEventLocation(location);
+
+        seat1 = new Seat();
+        seat1.id = 1L;
+        seat1.setLocation(location);
+
+        seat2 = new Seat();
+        seat2.id = 2L;
+        seat2.setLocation(location);
+
+        reservation = new Reservation(currentUser, event, seat1, LocalDateTime.now());
+        reservation.id = 1L;
+
+        allowance = new EventUserAllowance();
+        allowance.setEvent(event);
+        allowance.setUser(currentUser);
+        allowance.setReservationsAllowedCount(2);
+    }
+
+    @Test
+    void findReservationsByUser_Success() {
+        when(reservationRepository.findByUser(currentUser)).thenReturn(List.of(reservation));
+
+        List<ReservationResponseDTO> result =
+                reservationService.findReservationsByUser(currentUser);
+
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
+        assertEquals(reservation.id, result.getFirst().id());
+    }
+
+    @Test
+    void findReservationsByUser_Success_NoReservations() {
+        when(reservationRepository.findByUser(currentUser)).thenReturn(Collections.emptyList());
+
+        List<ReservationResponseDTO> result =
+                reservationService.findReservationsByUser(currentUser);
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void findReservationByIdForUser_Success() {
+        when(reservationRepository.findByIdOptional(1L)).thenReturn(Optional.of(reservation));
+
+        ReservationResponseDTO result =
+                reservationService.findReservationByIdForUser(1L, currentUser);
+
+        assertNotNull(result);
+        assertEquals(reservation.id, result.id());
+    }
+
+    @Test
+    void findReservationByIdForUser_NotFoundException() {
+        when(reservationRepository.findByIdOptional(1L)).thenReturn(Optional.empty());
+
+        assertThrows(
+                ReservationNotFoundException.class,
+                () -> reservationService.findReservationByIdForUser(1L, currentUser));
+    }
+
+    @Test
+    void findReservationByIdForUser_ForbiddenException() {
+        when(reservationRepository.findByIdOptional(1L)).thenReturn(Optional.of(reservation));
+
+        assertThrows(
+                SecurityException.class,
+                () -> reservationService.findReservationByIdForUser(1L, otherUser));
+    }
+
+    @Test
+    void createReservationForUser_Success() {
+        ReservationsRequestCreateDTO dto = new ReservationsRequestCreateDTO();
+        dto.setEventId(event.id);
+        dto.setSeatIds(List.of(seat1.id));
+
+        when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
+        when(seatRepository.findByIdOptional(seat1.id)).thenReturn(Optional.of(seat1));
+        when(eventUserAllowanceRepository.findByUser(currentUser)).thenReturn(List.of(allowance));
+        when(reservationRepository.findByEventId(event.id)).thenReturn(Collections.emptyList());
+
+        List<ReservationResponseDTO> result =
+                reservationService.createReservationForUser(dto, currentUser);
+
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    void createReservationForUser_NotFoundException_EventNotFound() {
+        ReservationsRequestCreateDTO dto = new ReservationsRequestCreateDTO();
+        dto.setEventId(99L);
+        dto.setSeatIds(List.of(seat1.id));
+
+        when(eventRepository.findByIdOptional(99L)).thenReturn(Optional.empty());
+
+        assertThrows(
+                EventNotFoundException.class,
+                () -> reservationService.createReservationForUser(dto, currentUser));
+    }
+
+    @Test
+    void createReservationForUser_NotFoundException_SeatNotFound() {
+        ReservationsRequestCreateDTO dto = new ReservationsRequestCreateDTO();
+        dto.setEventId(event.id);
+        dto.setSeatIds(List.of(99L));
+
+        when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
+        when(seatRepository.findByIdOptional(99L)).thenReturn(Optional.empty());
+
+        assertThrows(
+                de.felixhertweck.seatreservation.reservation.EventNotFoundException.class,
+                () -> reservationService.createReservationForUser(dto, currentUser));
+    }
+
+    @Test
+    void createReservationForUser_ForbiddenException_NoAllowance() {
+        ReservationsRequestCreateDTO dto = new ReservationsRequestCreateDTO();
+        dto.setEventId(event.id);
+        dto.setSeatIds(List.of(seat1.id));
+
+        when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
+        when(seatRepository.findByIdOptional(seat1.id)).thenReturn(Optional.of(seat1));
+        when(eventUserAllowanceRepository.findByUser(currentUser))
+                .thenReturn(Collections.emptyList());
+
+        assertThrows(
+                de.felixhertweck.seatreservation.reservation.EventNotFoundException.class,
+                () -> reservationService.createReservationForUser(dto, currentUser));
+    }
+
+    @Test
+    void createReservationForUser_NoSeatsAvailableException_LimitReached() {
+        ReservationsRequestCreateDTO dto = new ReservationsRequestCreateDTO();
+        dto.setEventId(event.id);
+        dto.setSeatIds(List.of(seat1.id, seat2.id, 3L)); // 3 seats, but only 2 allowed
+
+        allowance.setReservationsAllowedCount(2);
+
+        when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
+        when(seatRepository.findByIdOptional(seat1.id)).thenReturn(Optional.of(seat1));
+        when(seatRepository.findByIdOptional(seat2.id)).thenReturn(Optional.of(seat2));
+        when(seatRepository.findByIdOptional(3L)).thenReturn(Optional.of(new Seat()));
+        when(eventUserAllowanceRepository.findByUser(currentUser)).thenReturn(List.of(allowance));
+
+        assertThrows(
+                NoSeatsAvailableException.class,
+                () -> reservationService.createReservationForUser(dto, currentUser));
+    }
+
+    @Test
+    void createReservationForUser_EventBookingClosedException() {
+        event.setBookingDeadline(LocalDateTime.now().minusDays(1));
+        ReservationsRequestCreateDTO dto = new ReservationsRequestCreateDTO();
+        dto.setEventId(event.id);
+        dto.setSeatIds(List.of(seat1.id));
+
+        when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
+        when(seatRepository.findByIdOptional(seat1.id)).thenReturn(Optional.of(seat1));
+        when(eventUserAllowanceRepository.findByUser(currentUser)).thenReturn(List.of(allowance));
+
+        assertThrows(
+                EventBookingClosedException.class,
+                () -> reservationService.createReservationForUser(dto, currentUser));
+    }
+
+    @Test
+    void createReservationForUser_SeatAlreadyReservedException() {
+        ReservationsRequestCreateDTO dto = new ReservationsRequestCreateDTO();
+        dto.setEventId(event.id);
+        dto.setSeatIds(List.of(seat1.id));
+
+        Reservation existingReservation =
+                new Reservation(otherUser, event, seat1, LocalDateTime.now());
+        when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
+        when(seatRepository.findByIdOptional(seat1.id)).thenReturn(Optional.of(seat1));
+        when(eventUserAllowanceRepository.findByUser(currentUser)).thenReturn(List.of(allowance));
+        when(reservationRepository.findByEventId(event.id))
+                .thenReturn(List.of(existingReservation));
+
+        assertThrows(
+                SeatAlreadyReservedException.class,
+                () -> reservationService.createReservationForUser(dto, currentUser));
+    }
+
+    @Test
+    void deleteReservationForUser_Success() {
+        when(reservationRepository.findByIdOptional(1L)).thenReturn(Optional.of(reservation));
+        when(eventUserAllowanceRepository.findByUser(currentUser)).thenReturn(List.of(allowance));
+
+        assertDoesNotThrow(() -> reservationService.deleteReservationForUser(1L, currentUser));
+    }
+
+    @Test
+    void deleteReservationForUser_NotFoundException() {
+        when(reservationRepository.findByIdOptional(1L)).thenReturn(Optional.empty());
+
+        assertThrows(
+                ReservationNotFoundException.class,
+                () -> reservationService.deleteReservationForUser(1L, currentUser));
+    }
+
+    @Test
+    void deleteReservationForUser_ForbiddenException_NotOwner() {
+        when(reservationRepository.findByIdOptional(1L)).thenReturn(Optional.of(reservation));
+
+        assertThrows(
+                SecurityException.class,
+                () -> reservationService.deleteReservationForUser(1L, otherUser));
+    }
+
+    @Test
+    void deleteReservationForUser_ForbiddenException_NoAllowance() {
+        when(reservationRepository.findByIdOptional(1L)).thenReturn(Optional.of(reservation));
+        when(eventUserAllowanceRepository.findByUser(currentUser))
+                .thenReturn(Collections.emptyList());
+
+        assertThrows(
+                SecurityException.class,
+                () -> reservationService.deleteReservationForUser(1L, currentUser));
+    }
+}

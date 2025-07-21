@@ -12,6 +12,13 @@ public class ReservationsRequestCreateDTO {
     @NotEmpty(message = "Seat IDs must not be empty")
     private List<Long> seatIds;
 
+    public ReservationsRequestCreateDTO() {}
+
+    public ReservationsRequestCreateDTO(Long eventId, List<Long> seatIds) {
+        this.eventId = eventId;
+        this.seatIds = seatIds;
+    }
+
     public Long getEventId() {
         return eventId;
     }
@@ -22,5 +29,9 @@ public class ReservationsRequestCreateDTO {
 
     public List<Long> getSeatIds() {
         return seatIds;
+    }
+
+    public void setSeatIds(List<Long> seatIds) {
+        this.seatIds = seatIds;
     }
 }

@@ -1,15 +1,13 @@
 package de.felixhertweck.seatreservation.userManagment.service;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.InternalServerErrorException;
-import jakarta.ws.rs.NotFoundException;
 
 import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
 import de.felixhertweck.seatreservation.common.dto.UserDTO;
@@ -43,11 +41,11 @@ public class UserService {
      * @return The created UserDTO.
      * @throws InvalidUserException If the provided data is invalid.
      * @throws DuplicateUserException If a user with the same username or email already exists.
-     * @throws InternalServerErrorException If an error occurs while sending email confirmation.
+     * @throws RuntimeException If an error occurs while sending email confirmation.
      */
     @Transactional
     public UserDTO createUser(UserCreationDTO userCreationDTO)
-            throws InvalidUserException, DuplicateUserException, InternalServerErrorException {
+            throws InvalidUserException, DuplicateUserException {
         if (userCreationDTO == null) {
             throw new InvalidUserException("User creation data cannot be null.");
         }
@@ -81,8 +79,7 @@ public class UserService {
             try {
                 emailService.sendEmailConfirmation(user);
             } catch (IOException e) {
-                throw new InternalServerErrorException(
-                        "Failed to send email confirmation: " + e.getMessage());
+                throw new RuntimeException("Failed to send email confirmation: " + e.getMessage());
             }
         }
 
@@ -90,7 +87,7 @@ public class UserService {
     }
 
     private void updateUserCore(User existingUser, UserProfileUpdateDTO updateDTO)
-            throws InvalidUserException, DuplicateUserException, InternalServerErrorException {
+            throws InvalidUserException, DuplicateUserException {
         if (updateDTO == null) {
             throw new InvalidUserException("User data cannot be null.");
         }
@@ -105,8 +102,7 @@ public class UserService {
             try {
                 emailService.sendEmailConfirmation(existingUser);
             } catch (IOException e) {
-                throw new InternalServerErrorException(
-                        "Failed to send email confirmation: " + e.getMessage());
+                throw new RuntimeException("Failed to send email confirmation: " + e.getMessage());
             }
         }
 
@@ -136,14 +132,11 @@ public class UserService {
      * @throws UserNotFoundException If the user with the given ID does not exist.
      * @throws InvalidUserException If the provided data is invalid.
      * @throws DuplicateUserException If a user with the same username or email already exists.
-     * @throws InternalServerErrorException If an error occurs while sending email confirmation.
+     * @throws RuntimeException If an error occurs while sending email confirmation.
      */
     @Transactional
     public UserDTO updateUser(Long id, UserProfileUpdateDTO user)
-            throws UserNotFoundException,
-                    InvalidUserException,
-                    DuplicateUserException,
-                    InternalServerErrorException {
+            throws UserNotFoundException, InvalidUserException, DuplicateUserException {
         User existingUser =
                 userRepository
                         .findByIdOptional(id)
@@ -196,10 +189,7 @@ public class UserService {
 
     @Transactional
     public UserDTO updateUserProfile(String username, UserProfileUpdateDTO userProfileUpdateDTO)
-            throws UserNotFoundException,
-                    InvalidUserException,
-                    DuplicateUserException,
-                    InternalServerErrorException {
+            throws UserNotFoundException, InvalidUserException, DuplicateUserException {
         User existingUser =
                 userRepository
                         .findByUsernameOptional(username)
@@ -220,31 +210,29 @@ public class UserService {
      * @param id The ID of the email verification record.
      * @param token The token to verify.
      * @return The email address of the user if verification is successful.
-     * @throws BadRequestException If the ID or token is invalid.
-     * @throws NotFoundException If the email verification record is not found.
+     * @throws IllegalArgumentException If the ID or token is invalid.
      * @throws TokenExpiredException If the token has expired.
      */
     @Transactional
-    public String verifyEmail(Long id, String token)
-            throws BadRequestException, NotFoundException, TokenExpiredException {
+    public String verifyEmail(Long id, String token) throws TokenExpiredException {
         // Validate id and token
         if (id == null || token == null || token.trim().isEmpty()) {
-            throw new BadRequestException("Invalid id or token");
+            throw new IllegalArgumentException("Invalid id or token");
         }
 
         // Get the email verification record
         EmailVerification emailVerification =
                 emailVerificationRepository
                         .findByIdOptional(id)
-                        .orElseThrow(() -> new NotFoundException("Token not found"));
+                        .orElseThrow(() -> new IllegalArgumentException("Token not found"));
 
         // Check if the token is correct
         if (!emailVerification.getToken().equals(token)) {
-            throw new BadRequestException("Invalid token");
+            throw new IllegalArgumentException("Invalid token");
         }
 
         // Check if the token has expired
-        if (emailVerification.getExpirationTime().isBefore(java.time.LocalDateTime.now())) {
+        if (emailVerification.getExpirationTime().isBefore(LocalDateTime.now())) {
             throw new TokenExpiredException("Token expired");
         }
 

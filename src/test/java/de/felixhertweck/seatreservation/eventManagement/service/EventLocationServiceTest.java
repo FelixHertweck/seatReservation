@@ -1,0 +1,249 @@
+package de.felixhertweck.seatreservation.eventManagement.service;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import jakarta.inject.Inject;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import de.felixhertweck.seatreservation.common.dto.EventLocationResponseDTO;
+import de.felixhertweck.seatreservation.eventManagement.dto.EventLocationRequestDTO;
+import de.felixhertweck.seatreservation.eventManagement.exception.EventLocationNotFoundException;
+import de.felixhertweck.seatreservation.model.entity.EventLocation;
+import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
+import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.security.Roles;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+@QuarkusTest
+public class EventLocationServiceTest {
+
+    @InjectMock EventLocationRepository eventLocationRepository;
+    @InjectMock UserRepository userRepository;
+
+    @Inject EventLocationService eventLocationService;
+
+    private User adminUser;
+    private User managerUser;
+    private User regularUser;
+    private EventLocation existingLocation;
+
+    @BeforeEach
+    void setUp() {
+        Mockito.reset(eventLocationRepository);
+        Mockito.reset(userRepository);
+
+        adminUser =
+                new User(
+                        "admin",
+                        "admin@example.com",
+                        true,
+                        "hash",
+                        "Admin",
+                        "User",
+                        Set.of(Roles.ADMIN));
+        adminUser.id = 1L;
+        managerUser =
+                new User(
+                        "manager",
+                        "manager@example.com",
+                        true,
+                        "hash",
+                        "Event",
+                        "Manager",
+                        Set.of(Roles.MANAGER));
+        managerUser.id = 3L;
+        regularUser =
+                new User(
+                        "user",
+                        "user@example.com",
+                        true,
+                        "hash",
+                        "Regular",
+                        "User",
+                        Set.of(Roles.USER));
+        regularUser.id = 2L;
+
+        existingLocation = new EventLocation("Stadthalle", "Hauptstraße 1", managerUser, 100);
+        existingLocation.id = 1L;
+    }
+
+    @Test
+    void getEventLocationsByCurrentManager_Success_AsAdmin() {
+        List<EventLocation> allLocations =
+                List.of(
+                        existingLocation,
+                        new EventLocation("Another Hall", "Another Street", regularUser, 200));
+        when(eventLocationRepository.listAll()).thenReturn(allLocations);
+
+        List<EventLocationResponseDTO> result =
+                eventLocationService.getEventLocationsByCurrentManager(adminUser);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        verify(eventLocationRepository, times(1)).listAll();
+        verify(eventLocationRepository, never()).findByManager(any(User.class));
+    }
+
+    @Test
+    void getEventLocationsByCurrentManager_Success_AsManager() {
+        List<EventLocation> managerLocations = List.of(existingLocation);
+        when(eventLocationRepository.findByManager(managerUser)).thenReturn(managerLocations);
+
+        List<EventLocationResponseDTO> result =
+                eventLocationService.getEventLocationsByCurrentManager(managerUser);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(existingLocation.getName(), result.getFirst().name());
+        verify(eventLocationRepository, times(1)).findByManager(managerUser);
+        verify(eventLocationRepository, never()).listAll();
+    }
+
+    @Test
+    void getEventLocationsByCurrentManager_Success_NoEventLocationsForManager() {
+        when(eventLocationRepository.findByManager(managerUser))
+                .thenReturn(Collections.emptyList());
+
+        List<EventLocationResponseDTO> result =
+                eventLocationService.getEventLocationsByCurrentManager(managerUser);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(eventLocationRepository, times(1)).findByManager(managerUser);
+        verify(eventLocationRepository, never()).listAll();
+    }
+
+    @Test
+    void createEventLocation_Success() {
+        EventLocationRequestDTO dto = new EventLocationRequestDTO();
+        dto.setName("New Hall");
+        dto.setAddress("New Street 1");
+        dto.setCapacity(500);
+
+        new EventLocation(dto.getName(), dto.getAddress(), managerUser, dto.getCapacity());
+        // Mock persist to do nothing or return the object itself if needed for further operations
+        doAnswer(
+                        invocation -> {
+                            EventLocation loc = invocation.getArgument(0);
+                            loc.id = 10L; // Simulate ID generation
+                            return null;
+                        })
+                .when(eventLocationRepository)
+                .persist(any(EventLocation.class));
+
+        EventLocationResponseDTO createdLocation =
+                eventLocationService.createEventLocation(dto, managerUser);
+
+        assertNotNull(createdLocation);
+        assertEquals("New Hall", createdLocation.name());
+        assertEquals("New Street 1", createdLocation.address());
+        assertEquals(500, createdLocation.capacity());
+        assertEquals(managerUser.getUsername(), createdLocation.manager().username());
+        verify(eventLocationRepository, times(1)).persist(any(EventLocation.class));
+    }
+
+    @Test
+    void createEventLocation_InvalidInput() {
+        EventLocationRequestDTO dto = new EventLocationRequestDTO();
+        dto.setName(null); // Invalid input
+        dto.setAddress("Some Address");
+        dto.setCapacity(100);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> eventLocationService.createEventLocation(dto, managerUser));
+        verify(eventLocationRepository, never()).persist(any(EventLocation.class));
+    }
+
+    @Test
+    void updateEventLocation_Success() {
+        EventLocationRequestDTO dto = new EventLocationRequestDTO();
+        dto.setName("Updated Hall");
+        dto.setAddress("Updated Street 1");
+        dto.setCapacity(600);
+
+        when(eventLocationRepository.findByIdOptional(1L))
+                .thenReturn(Optional.of(existingLocation));
+
+        EventLocationResponseDTO updatedLocation =
+                eventLocationService.updateEventLocation(1L, dto, managerUser);
+
+        assertNotNull(updatedLocation);
+        assertEquals("Updated Hall", updatedLocation.name());
+        assertEquals("Updated Street 1", updatedLocation.address());
+        assertEquals(600, updatedLocation.capacity());
+        verify(eventLocationRepository, times(1)).persist(existingLocation);
+    }
+
+    @Test
+    void updateEventLocation_NotFound() {
+        EventLocationRequestDTO dto = new EventLocationRequestDTO();
+        dto.setName("Updated Hall");
+        dto.setAddress("Updated Street 1");
+        dto.setCapacity(600);
+
+        when(eventLocationRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
+
+        assertThrows(
+                EventLocationNotFoundException.class,
+                () -> eventLocationService.updateEventLocation(99L, dto, managerUser));
+        verify(eventLocationRepository, never()).persist(any(EventLocation.class));
+    }
+
+    @Test
+    void updateEventLocation_ForbiddenException_NotManagerOrAdmin() {
+        EventLocationRequestDTO dto = new EventLocationRequestDTO();
+        dto.setName("Updated Hall");
+        dto.setAddress("Updated Street 1");
+        dto.setCapacity(600);
+
+        when(eventLocationRepository.findByIdOptional(1L))
+                .thenReturn(Optional.of(existingLocation));
+
+        assertThrows(
+                SecurityException.class,
+                () -> eventLocationService.updateEventLocation(1L, dto, regularUser));
+        verify(eventLocationRepository, never()).persist(any(EventLocation.class));
+    }
+
+    @Test
+    void deleteEventLocation_Success() {
+        when(eventLocationRepository.findByIdOptional(1L))
+                .thenReturn(Optional.of(existingLocation));
+        doNothing().when(eventLocationRepository).delete(any(EventLocation.class));
+
+        eventLocationService.deleteEventLocation(1L, managerUser);
+
+        verify(eventLocationRepository, times(1)).delete(existingLocation);
+    }
+
+    @Test
+    void deleteEventLocation_NotFound() {
+        when(eventLocationRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
+
+        assertThrows(
+                EventLocationNotFoundException.class,
+                () -> eventLocationService.deleteEventLocation(99L, managerUser));
+        verify(eventLocationRepository, never()).delete(any(EventLocation.class));
+    }
+
+    @Test
+    void deleteEventLocation_ForbiddenException_NotManagerOrAdmin() {
+        when(eventLocationRepository.findByIdOptional(1L))
+                .thenReturn(Optional.of(existingLocation));
+
+        assertThrows(
+                SecurityException.class,
+                () -> eventLocationService.deleteEventLocation(1L, regularUser));
+        verify(eventLocationRepository, never()).delete(any(EventLocation.class));
+    }
+}

@@ -9,13 +9,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.InternalServerErrorException;
-import jakarta.ws.rs.NotFoundException;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
@@ -55,7 +50,6 @@ public class UserServiceTest {
         Mockito.reset(userRepository, emailService, emailVerificationRepository);
     }
 
-    // Testfälle für createUser(UserCreationDTO userCreationDTO)
     @Test
     void createUser_Success_WithEmail() throws IOException {
         UserCreationDTO dto =
@@ -163,19 +157,17 @@ public class UserServiceTest {
                 .when(emailService)
                 .sendEmailConfirmation(any(User.class));
 
-        assertThrows(InternalServerErrorException.class, () -> userService.createUser(dto));
-        verify(userRepository, times(1)).persist(any(User.class)); // User should still be persisted
+        assertThrows(RuntimeException.class, () -> userService.createUser(dto));
+        verify(userRepository, times(1)).persist(any(User.class));
         verify(emailService, times(1)).sendEmailConfirmation(any(User.class));
     }
 
-    // Testfälle für updateUser(Long id, UserProfileUpdateDTO user)
     @Test
     void updateUser_Success_UpdateFirstname()
             throws IOException,
                     UserNotFoundException,
                     InvalidUserException,
-                    DuplicateUserException,
-                    InternalServerErrorException {
+                    DuplicateUserException {
         User existingUser =
                 new User(
                         "testuser",
@@ -196,7 +188,7 @@ public class UserServiceTest {
         assertEquals("New", updatedUser.firstName());
         assertEquals("User", updatedUser.lastName());
         assertEquals("old@example.com", updatedUser.email());
-        verify(userRepository, times(1)).persist(existingUser); // Panache handles merge/persist
+        verify(userRepository, times(1)).persist(existingUser);
         verify(emailService, never()).sendEmailConfirmation(any(User.class));
     }
 
@@ -205,8 +197,7 @@ public class UserServiceTest {
             throws IOException,
                     UserNotFoundException,
                     InvalidUserException,
-                    DuplicateUserException,
-                    InternalServerErrorException {
+                    DuplicateUserException {
         User existingUser =
                 new User(
                         "testuser",
@@ -236,8 +227,7 @@ public class UserServiceTest {
             throws IOException,
                     UserNotFoundException,
                     InvalidUserException,
-                    DuplicateUserException,
-                    InternalServerErrorException {
+                    DuplicateUserException {
         User existingUser =
                 new User(
                         "testuser",
@@ -266,8 +256,7 @@ public class UserServiceTest {
             throws IOException,
                     UserNotFoundException,
                     InvalidUserException,
-                    DuplicateUserException,
-                    InternalServerErrorException {
+                    DuplicateUserException {
         User existingUser =
                 new User(
                         "testuser",
@@ -286,7 +275,7 @@ public class UserServiceTest {
         UserDTO updatedUser = userService.updateUser(1L, dto);
 
         assertNotNull(updatedUser);
-        assertEquals(newRoles, existingUser.getRoles()); // Check on existingUser
+        assertEquals(newRoles, existingUser.getRoles());
         verify(userRepository, times(1)).persist(existingUser);
         verify(emailService, never()).sendEmailConfirmation(any(User.class));
     }
@@ -296,8 +285,7 @@ public class UserServiceTest {
             throws IOException,
                     UserNotFoundException,
                     InvalidUserException,
-                    DuplicateUserException,
-                    InternalServerErrorException {
+                    DuplicateUserException {
         User existingUser =
                 new User(
                         "testuser",
@@ -318,9 +306,7 @@ public class UserServiceTest {
         assertNotNull(updatedUser);
         assertEquals("New", updatedUser.firstName());
         assertEquals("Name", updatedUser.lastName());
-        assertTrue(
-                BcryptUtil.matches(
-                        "newpass", existingUser.getPasswordHash())); // Check on existingUser
+        assertTrue(BcryptUtil.matches("newpass", existingUser.getPasswordHash()));
         assertEquals("old@example.com", updatedUser.email());
         verify(userRepository, times(1)).persist(existingUser);
         verify(emailService, never()).sendEmailConfirmation(any(User.class));
@@ -331,8 +317,7 @@ public class UserServiceTest {
             throws IOException,
                     UserNotFoundException,
                     InvalidUserException,
-                    DuplicateUserException,
-                    InternalServerErrorException {
+                    DuplicateUserException {
         User existingUser =
                 new User(
                         "testuser",
@@ -354,7 +339,7 @@ public class UserServiceTest {
 
         assertNotNull(updatedUser);
         assertEquals("new@example.com", updatedUser.email());
-        assertFalse(existingUser.isEmailVerified()); // Email verification reset
+        assertFalse(existingUser.isEmailVerified());
         verify(userRepository, times(1)).persist(existingUser);
         verify(emailService, times(1)).sendEmailConfirmation(existingUser);
     }
@@ -364,8 +349,7 @@ public class UserServiceTest {
             throws IOException,
                     UserNotFoundException,
                     InvalidUserException,
-                    DuplicateUserException,
-                    InternalServerErrorException {
+                    DuplicateUserException {
         final UserProfileUpdateDTO dto = new UserProfileUpdateDTO("New", null, null, null, null);
         when(userRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
 
@@ -379,13 +363,8 @@ public class UserServiceTest {
             throws IOException,
                     UserNotFoundException,
                     InvalidUserException,
-                    DuplicateUserException,
-                    InternalServerErrorException {
-        assertThrows(
-                UserNotFoundException.class,
-                () -> {
-                    userService.updateUser(1L, null);
-                });
+                    DuplicateUserException {
+        assertThrows(UserNotFoundException.class, () -> userService.updateUser(1L, null));
         verify(userRepository, never()).persist(any(User.class));
         verify(emailService, never()).sendEmailConfirmation(any(User.class));
     }
@@ -395,8 +374,7 @@ public class UserServiceTest {
             throws IOException,
                     UserNotFoundException,
                     InvalidUserException,
-                    DuplicateUserException,
-                    InternalServerErrorException {
+                    DuplicateUserException {
         User existingUser =
                 new User(
                         "testuser",
@@ -445,13 +423,10 @@ public class UserServiceTest {
                 .when(emailService)
                 .sendEmailConfirmation(any(User.class));
 
-        assertThrows(InternalServerErrorException.class, () -> userService.updateUser(1L, dto));
-        // verify(userRepository, times(1)).persist(any(User.class)); // Removed as it causes issues
-        // with Mockito and transactions
+        assertThrows(RuntimeException.class, () -> userService.updateUser(1L, dto));
         verify(emailService, times(1)).sendEmailConfirmation(existingUser);
     }
 
-    // Testfälle für deleteUser(Long id)
     @Test
     void deleteUser_Success() throws UserNotFoundException {
         User existingUser =
@@ -482,7 +457,6 @@ public class UserServiceTest {
         verify(userRepository, never()).delete(any(User.class));
     }
 
-    // Testfälle für getUserById(Long id)
     @Test
     void getUserById_Success() throws UserNotFoundException {
         User existingUser =
@@ -512,7 +486,6 @@ public class UserServiceTest {
         assertThrows(UserNotFoundException.class, () -> userService.getUserById(1L));
     }
 
-    // Testfälle für getAllUsers()
     @Test
     void getAllUsers_Success_WithUsers() {
         User user1 =
@@ -553,7 +526,6 @@ public class UserServiceTest {
         assertTrue(users.isEmpty());
     }
 
-    // Testfälle für getAvailableRoles()
     @Test
     void getAvailableRoles_Success() {
         // Directly test the method without mocking it
@@ -568,14 +540,12 @@ public class UserServiceTest {
         assertTrue(roles.contains(Roles.MANAGER));
     }
 
-    // Testfälle für updateUserProfile(String username, UserProfileUpdateDTO userProfileUpdateDTO)
     @Test
     void updateUserProfile_Success_UpdateFirstname()
             throws IOException,
                     UserNotFoundException,
                     InvalidUserException,
-                    DuplicateUserException,
-                    InternalServerErrorException {
+                    DuplicateUserException {
         User existingUser =
                 new User(
                         "testuser",
@@ -607,8 +577,7 @@ public class UserServiceTest {
             throws IOException,
                     UserNotFoundException,
                     InvalidUserException,
-                    DuplicateUserException,
-                    InternalServerErrorException {
+                    DuplicateUserException {
         User existingUser =
                 new User(
                         "testuser",
@@ -640,8 +609,7 @@ public class UserServiceTest {
             throws IOException,
                     UserNotFoundException,
                     InvalidUserException,
-                    DuplicateUserException,
-                    InternalServerErrorException {
+                    DuplicateUserException {
         User existingUser =
                 new User(
                         "testuser",
@@ -662,9 +630,7 @@ public class UserServiceTest {
         UserDTO updatedUser = userService.updateUserProfile("testuser", dto);
 
         assertNotNull(updatedUser);
-        assertTrue(
-                BcryptUtil.matches(
-                        "newpassword", existingUser.getPasswordHash())); // Check on existingUser
+        assertTrue(BcryptUtil.matches("newpassword", existingUser.getPasswordHash()));
         verify(userRepository, times(1)).persist(existingUser);
         verify(emailService, never()).sendEmailConfirmation(any(User.class));
     }
@@ -691,7 +657,7 @@ public class UserServiceTest {
 
         assertNotNull(updatedUser);
         assertEquals("new@example.com", updatedUser.email());
-        assertFalse(existingUser.isEmailVerified()); // Check on existingUser
+        assertFalse(existingUser.isEmailVerified());
         verify(userRepository, times(1)).persist(existingUser);
         verify(emailService, times(1)).sendEmailConfirmation(existingUser);
     }
@@ -701,8 +667,7 @@ public class UserServiceTest {
             throws IOException,
                     UserNotFoundException,
                     InvalidUserException,
-                    DuplicateUserException,
-                    InternalServerErrorException {
+                    DuplicateUserException {
         final UserProfileUpdateDTO dto = new UserProfileUpdateDTO("New", null, null, null, null);
         when(userRepository.findByUsernameOptional(anyString())).thenReturn(Optional.empty());
         when(userRepository.findByUsername(anyString())).thenReturn(null); // Mock findByUsername
@@ -719,13 +684,9 @@ public class UserServiceTest {
             throws IOException,
                     UserNotFoundException,
                     InvalidUserException,
-                    DuplicateUserException,
-                    InternalServerErrorException {
+                    DuplicateUserException {
         assertThrows(
-                UserNotFoundException.class,
-                () -> {
-                    userService.updateUserProfile("testuser", null);
-                });
+                UserNotFoundException.class, () -> userService.updateUserProfile("testuser", null));
         verify(userRepository, never()).persist(any(User.class));
         verify(emailService, never()).sendEmailConfirmation(any(User.class));
     }
@@ -735,8 +696,7 @@ public class UserServiceTest {
             throws IOException,
                     UserNotFoundException,
                     InvalidUserException,
-                    DuplicateUserException,
-                    InternalServerErrorException {
+                    DuplicateUserException {
         User existingUser =
                 new User(
                         "testuser",
@@ -764,12 +724,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void updateUserProfile_InternalServerErrorException_EmailSendFailure()
-            throws IOException,
-                    UserNotFoundException,
-                    InvalidUserException,
-                    DuplicateUserException,
-                    InternalServerErrorException {
+    void updateUserProfile_InternalServerErrorException_EmailSendFailure() throws IOException {
         User existingUser =
                 new User(
                         "testuser",
@@ -791,18 +746,12 @@ public class UserServiceTest {
                 .when(emailService)
                 .sendEmailConfirmation(any(User.class));
 
-        assertThrows(
-                InternalServerErrorException.class,
-                () -> userService.updateUserProfile("testuser", dto));
-        // verify(userRepository, times(1)).persist(any(User.class)); // Removed as it causes issues
-        // with Mockito and transactions
+        assertThrows(RuntimeException.class, () -> userService.updateUserProfile("testuser", dto));
         verify(emailService, times(1)).sendEmailConfirmation(existingUser);
     }
 
-    // Testfälle für verifyEmail(Long id, String token)
     @Test
-    void verifyEmail_Success()
-            throws BadRequestException, NotFoundException, TokenExpiredException {
+    void verifyEmail_Success() throws TokenExpiredException {
         User user =
                 new User(
                         "testuser",
@@ -828,47 +777,43 @@ public class UserServiceTest {
 
         assertTrue(user.isEmailVerified());
         verify(userRepository, times(1)).persist(user);
-        verify(emailVerificationRepository, times(1)).deleteById(100L); // Changed to deleteById
+        verify(emailVerificationRepository, times(1)).deleteById(100L);
     }
 
     @Test
-    void verifyEmail_BadRequestException_NullId()
-            throws BadRequestException, NotFoundException, TokenExpiredException {
-        assertThrows(BadRequestException.class, () -> userService.verifyEmail(null, "token"));
+    void verifyEmail_BadRequestException_NullId() {
+        assertThrows(IllegalArgumentException.class, () -> userService.verifyEmail(null, "token"));
         verify(userRepository, never()).persist(any(User.class));
         verify(emailVerificationRepository, never()).delete(any(EmailVerification.class));
     }
 
     @Test
-    void verifyEmail_BadRequestException_NullToken()
-            throws BadRequestException, NotFoundException, TokenExpiredException {
-        assertThrows(BadRequestException.class, () -> userService.verifyEmail(1L, null));
+    void verifyEmail_BadRequestException_NullToken() {
+        assertThrows(IllegalArgumentException.class, () -> userService.verifyEmail(1L, null));
         verify(userRepository, never()).persist(any(User.class));
         verify(emailVerificationRepository, never()).delete(any(EmailVerification.class));
     }
 
     @Test
     void verifyEmail_BadRequestException_EmptyToken() {
-        assertThrows(BadRequestException.class, () -> userService.verifyEmail(1L, ""));
-        assertThrows(BadRequestException.class, () -> userService.verifyEmail(1L, "   "));
+        assertThrows(IllegalArgumentException.class, () -> userService.verifyEmail(1L, ""));
+        assertThrows(IllegalArgumentException.class, () -> userService.verifyEmail(1L, "   "));
         verify(userRepository, never()).persist(any(User.class));
         verify(emailVerificationRepository, never()).delete(any(EmailVerification.class));
     }
 
     @Test
-    void verifyEmail_NotFoundException_TokenNotFound()
-            throws BadRequestException, NotFoundException, TokenExpiredException {
+    void verifyEmail_NotFoundException_TokenNotFound() {
         when(emailVerificationRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
         when(emailVerificationRepository.findById(anyLong())).thenReturn(null); // Mock findById
 
-        assertThrows(NotFoundException.class, () -> userService.verifyEmail(1L, "token"));
+        assertThrows(IllegalArgumentException.class, () -> userService.verifyEmail(1L, "token"));
         verify(userRepository, never()).persist(any(User.class));
         verify(emailVerificationRepository, never()).delete(any(EmailVerification.class));
     }
 
     @Test
-    void verifyEmail_BadRequestException_InvalidToken()
-            throws BadRequestException, NotFoundException, TokenExpiredException {
+    void verifyEmail_BadRequestException_InvalidToken() {
         User user =
                 new User(
                         "testuser",
@@ -890,15 +835,15 @@ public class UserServiceTest {
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(user));
         when(userRepository.findById(1L)).thenReturn(user); // Mock findById
 
-        assertThrows(BadRequestException.class, () -> userService.verifyEmail(100L, "wrongtoken"));
+        assertThrows(
+                IllegalArgumentException.class, () -> userService.verifyEmail(100L, "wrongtoken"));
         assertFalse(user.isEmailVerified());
         verify(userRepository, never()).persist(any(User.class));
         verify(emailVerificationRepository, never()).delete(any(EmailVerification.class));
     }
 
     @Test
-    void verifyEmail_TokenExpiredException()
-            throws BadRequestException, NotFoundException, TokenExpiredException {
+    void verifyEmail_TokenExpiredException() throws TokenExpiredException {
         User user =
                 new User(
                         "testuser",

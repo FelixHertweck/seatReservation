@@ -7,15 +7,15 @@ import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.NotFoundException;
 
+import de.felixhertweck.seatreservation.eventManagement.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.*;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.reservation.EventBookingClosedException;
+import de.felixhertweck.seatreservation.reservation.EventNotFoundException;
 import de.felixhertweck.seatreservation.reservation.NoSeatsAvailableException;
 import de.felixhertweck.seatreservation.reservation.SeatAlreadyReservedException;
 import de.felixhertweck.seatreservation.reservation.dto.ReservationResponseDTO;
@@ -34,14 +34,14 @@ public class ReservationService {
         return reservations.stream().map(ReservationResponseDTO::new).toList();
     }
 
-    public ReservationResponseDTO findReservationByIdForUser(Long id, User currentUser)
-            throws NotFoundException, ForbiddenException {
-        Reservation reservation = reservationRepository.findById(id);
-        if (reservation == null) {
-            throw new NotFoundException("Reservation not found");
-        }
+    public ReservationResponseDTO findReservationByIdForUser(Long id, User currentUser) {
+        Reservation reservation =
+                reservationRepository
+                        .findByIdOptional(id)
+                        .orElseThrow(
+                                () -> new ReservationNotFoundException("Reservation not found"));
         if (!reservation.getUser().equals(currentUser)) {
-            throw new ForbiddenException("You are not allowed to access this reservation");
+            throw new SecurityException("You are not allowed to access this reservation");
         }
         return new ReservationResponseDTO(reservation);
     }
@@ -49,22 +49,31 @@ public class ReservationService {
     @Transactional
     public List<ReservationResponseDTO> createReservationForUser(
             ReservationsRequestCreateDTO dto, User currentUser)
-            throws NoSeatsAvailableException,
-                    ForbiddenException,
-                    NotFoundException,
-                    EventBookingClosedException {
-        // Validate the eventId, ensure it exists
-        Event event = eventRepository.findById(dto.getEventId());
-        if (event == null) {
-            throw new NotFoundException("Event or Seat not found");
+            throws NoSeatsAvailableException, EventBookingClosedException {
+
+        if (dto.getSeatIds() == null || dto.getSeatIds().isEmpty()) {
+            throw new IllegalArgumentException("At least one seat must be selected");
         }
+
+        // Validate the eventId, ensure it exists
+        Event event =
+                eventRepository
+                        .findByIdOptional(dto.getEventId())
+                        .orElseThrow(() -> new EventNotFoundException("Event or Seat not found"));
 
         // Validate the seatIds, ensure they exist
         List<Seat> seats =
-                dto.getSeatIds().stream().map(seatId -> seatRepository.findById(seatId)).toList();
-        if (seats.contains(null)) {
-            throw new NotFoundException("Minimum one seat not found");
-        }
+                dto.getSeatIds().stream()
+                        .map(
+                                seatId ->
+                                        seatRepository
+                                                .findByIdOptional(seatId)
+                                                .orElseThrow(
+                                                        () ->
+                                                                new EventNotFoundException(
+                                                                        "Minimum one seat not"
+                                                                                + " found")))
+                        .toList();
 
         // Check if the user has an allowance for this event
         // And if the user is allowed to reserve that amount of seats
@@ -75,7 +84,7 @@ public class ReservationService {
                         .findFirst()
                         .orElseThrow(
                                 () ->
-                                        new ForbiddenException(
+                                        new EventNotFoundException(
                                                 "You are not allowed to reserve seats for this"
                                                         + " event"));
 
@@ -146,14 +155,14 @@ public class ReservationService {
     }*/
 
     @Transactional
-    public void deleteReservationForUser(Long id, User currentUser)
-            throws NotFoundException, ForbiddenException {
-        Reservation reservation = reservationRepository.findById(id);
-        if (reservation == null) {
-            throw new NotFoundException("Reservation not found");
-        }
+    public void deleteReservationForUser(Long id, User currentUser) {
+        Reservation reservation =
+                reservationRepository
+                        .findByIdOptional(id)
+                        .orElseThrow(
+                                () -> new ReservationNotFoundException("Reservation not found"));
         if (!reservation.getUser().equals(currentUser)) {
-            throw new ForbiddenException("You are not allowed to delete this reservation");
+            throw new SecurityException("You are not allowed to delete this reservation");
         }
 
         // Update the user's allowance
@@ -164,7 +173,7 @@ public class ReservationService {
                         .findFirst()
                         .orElseThrow(
                                 () ->
-                                        new ForbiddenException(
+                                        new SecurityException(
                                                 "You are not allowed to delete this reservation"));
 
         eventUserAllowance.setReservationsAllowedCount(

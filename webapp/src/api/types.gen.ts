@@ -859,10 +859,12 @@ export type DeleteApiUserReservationsByIdErrors = {
 
 export type DeleteApiUserReservationsByIdResponses = {
     /**
-     * OK
+     * No Content
      */
-    200: unknown;
+    204: void;
 };
+
+export type DeleteApiUserReservationsByIdResponse = DeleteApiUserReservationsByIdResponses[keyof DeleteApiUserReservationsByIdResponses];
 
 export type GetApiUserReservationsByIdData = {
     body?: never;

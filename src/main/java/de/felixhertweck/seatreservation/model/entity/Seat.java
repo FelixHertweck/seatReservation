@@ -21,6 +21,20 @@ public class Seat extends PanacheEntity {
 
     private int yCoordinate;
 
+    public Seat() {}
+
+    public Seat(String seatNumber, EventLocation location) {
+        this.seatNumber = seatNumber;
+        this.location = location;
+    }
+
+    public Seat(String seatNumber, EventLocation location, int xCoordinate, int yCoordinate) {
+        this.seatNumber = seatNumber;
+        this.location = location;
+        this.xCoordinate = xCoordinate;
+        this.yCoordinate = yCoordinate;
+    }
+
     public String getSeatNumber() {
         return seatNumber;
     }

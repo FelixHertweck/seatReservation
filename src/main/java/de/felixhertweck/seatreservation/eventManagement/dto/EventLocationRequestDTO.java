@@ -31,4 +31,10 @@ public class EventLocationRequestDTO {
     public void setAddress(String address) {
         this.address = address;
     }
+
+    public void setCapacity(Integer capacity) {
+        this.capacity = capacity;
+    }
+
+    public EventLocationRequestDTO() {}
 }

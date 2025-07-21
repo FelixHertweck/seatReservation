@@ -1,20 +1,15 @@
 package de.felixhertweck.seatreservation.eventManagement.service;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.NoResultException;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.core.SecurityContext;
 
 import de.felixhertweck.seatreservation.eventManagement.dto.DetailedReservationResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.ReservationRequestDTO;
+import de.felixhertweck.seatreservation.eventManagement.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.*;
 import de.felixhertweck.seatreservation.model.repository.*;
 import de.felixhertweck.seatreservation.security.Roles;
@@ -29,33 +24,23 @@ public class ReservationService {
     @Inject SeatRepository seatRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
 
-    @Inject SecurityContext securityContext;
-
     /**
      * Retrieves all reservations. Access is restricted based on user roles: - ADMIN: Returns all
      * reservations. - MANAGER: Returns reservations only for events the manager is allowed to
      * manage. - Other roles: Throws ForbiddenException.
      *
      * @return A list of Reservation entities.
-     * @throws ForbiddenException If the current user does not have the necessary permissions.
+     * @throws SecurityException If the current user does not have the necessary permissions.
      * @throws UserNotFoundException If the current user cannot be found.
      */
     public List<DetailedReservationResponseDTO> findAllReservations(User currentUser)
-            throws ForbiddenException, UserNotFoundException {
-        if (securityContext.isUserInRole(Roles.ADMIN)) {
+            throws SecurityException, UserNotFoundException {
+        if (currentUser.getRoles().contains(Roles.ADMIN)) {
             return reservationRepository.listAll().stream()
                     .map(DetailedReservationResponseDTO::new)
                     .toList();
         }
-        List<Long> allowedEventIds =
-                currentUser.getEventAllowances().stream()
-                        .map(allowance -> allowance.getEvent().getId())
-                        .collect(Collectors.toList());
-
-        if (allowedEventIds.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return reservationRepository.find("event.id IN ?1", allowedEventIds).list().stream()
+        return reservationRepository.find("event.manager", currentUser).list().stream()
                 .map(DetailedReservationResponseDTO::new)
                 .toList();
     }
@@ -67,22 +52,21 @@ public class ReservationService {
      *
      * @param id The ID of the reservation to retrieve.
      * @return The Reservation entity.
-     * @throws NotFoundException If the reservation with the given ID is not found.
-     * @throws ForbiddenException If the current user does not have the necessary permissions.
+     * @throws SecurityException If the current user does not have the necessary permissions.
      * @throws UserNotFoundException If the current user cannot be found.
      */
     public DetailedReservationResponseDTO findReservationById(Long id, User currentUser)
-            throws NotFoundException, ForbiddenException, UserNotFoundException {
+            throws SecurityException, UserNotFoundException {
         Reservation reservation =
                 reservationRepository
                         .findByIdOptional(id)
                         .orElseThrow(
                                 () ->
-                                        new NotFoundException(
+                                        new ReservationNotFoundException(
                                                 "Reservation with id " + id + " not found"));
 
         // Admins können jede Reservierung sehen
-        if (securityContext.isUserInRole(Roles.ADMIN)) {
+        if (currentUser.getRoles().contains(Roles.ADMIN)) {
             return new DetailedReservationResponseDTO(reservation);
         }
 
@@ -90,7 +74,7 @@ public class ReservationService {
             return new DetailedReservationResponseDTO(reservation);
         }
 
-        throw new ForbiddenException("You are not allowed to access this reservation.");
+        throw new SecurityException("You are not allowed to access this reservation.");
     }
 
     /**
@@ -101,17 +85,13 @@ public class ReservationService {
      * @param dto The ReservationCreationDTO containing reservation details.
      * @return The created Reservation entity.
      * @throws UserNotFoundException If the target user or current user cannot be found.
-     * @throws NotFoundException If the event or seat specified in the DTO is not found.
-     * @throws ForbiddenException If the current user does not have the necessary permissions.
-     * @throws BadRequestException If the user has no reservation allowance for the event.
+     * @throws SecurityException If the current user does not have the necessary permissions.
+     * @throws IllegalArgumentException If the user has no reservation allowance for the event.
      */
     @Transactional
     public DetailedReservationResponseDTO createReservation(
             ReservationRequestDTO dto, User currentUser)
-            throws ForbiddenException,
-                    UserNotFoundException,
-                    NotFoundException,
-                    BadRequestException {
+            throws SecurityException, UserNotFoundException, IllegalArgumentException {
         User targetUser =
                 userRepository
                         .findByIdOptional(dto.getUserId())
@@ -125,14 +105,14 @@ public class ReservationService {
                         .findByIdOptional(dto.getEventId())
                         .orElseThrow(
                                 () ->
-                                        new NotFoundException(
+                                        new IllegalArgumentException(
                                                 "Event with id "
                                                         + dto.getEventId()
                                                         + " not found"));
 
         if (!isManagerAllowedToAccessEvent(currentUser, event)
-                && !securityContext.isUserInRole(Roles.ADMIN)) {
-            throw new ForbiddenException("You are not allowed to access this reservation.");
+                && !currentUser.getRoles().contains(Roles.ADMIN)) {
+            throw new SecurityException("You are not allowed to access this reservation.");
         }
 
         Seat seat =
@@ -140,7 +120,7 @@ public class ReservationService {
                         .findByIdOptional(dto.getSeatId())
                         .orElseThrow(
                                 () ->
-                                        new NotFoundException(
+                                        new IllegalArgumentException(
                                                 "Seat with id " + dto.getSeatId() + " not found"));
 
         try {
@@ -149,13 +129,13 @@ public class ReservationService {
                             .find("user = ?1 and event = ?2", targetUser, event)
                             .singleResult();
             if (allowance.getReservationsAllowedCount() <= 0) {
-                throw new BadRequestException(
+                throw new IllegalArgumentException(
                         "No more reservations allowed for this user and event.");
             }
             allowance.setReservationsAllowedCount(allowance.getReservationsAllowedCount() - 1);
             eventUserAllowanceRepository.persist(allowance);
         } catch (NoResultException e) {
-            throw new BadRequestException("User has no reservation allowance for this event.");
+            throw new IllegalArgumentException("User has no reservation allowance for this event.");
         }
 
         Reservation reservation = new Reservation(targetUser, event, seat, LocalDateTime.now());
@@ -172,25 +152,24 @@ public class ReservationService {
      * @param id The ID of the reservation to update.
      * @param dto The ReservationUpdateDTO containing updated reservation details.
      * @return The updated Reservation entity.
-     * @throws NotFoundException If the reservation, event, user, or seat is not found.
-     * @throws ForbiddenException If the current user does not have the necessary permissions.
+     * @throws SecurityException If the current user does not have the necessary permissions.
      * @throws UserNotFoundException If the current user cannot be found.
      */
     @Transactional
     public DetailedReservationResponseDTO updateReservation(
             Long id, ReservationRequestDTO dto, User currentUser)
-            throws NotFoundException, ForbiddenException, UserNotFoundException {
+            throws SecurityException, UserNotFoundException {
         Reservation reservation =
                 reservationRepository
                         .findByIdOptional(id)
                         .orElseThrow(
                                 () ->
-                                        new NotFoundException(
+                                        new ReservationNotFoundException(
                                                 "Reservation with id " + id + " not found"));
 
         if (!isManagerAllowedToAccessEvent(currentUser, reservation.getEvent())
-                && !securityContext.isUserInRole(Roles.ADMIN)) {
-            throw new ForbiddenException("You are not allowed to update this reservation.");
+                && !currentUser.getRoles().contains(Roles.ADMIN)) {
+            throw new SecurityException("You are not allowed to update this reservation.");
         }
         // If the event is being changed, check if the new event is allowed
         if (dto.getEventId() != null && !dto.getEventId().equals(reservation.getEvent().getId())) {
@@ -199,12 +178,12 @@ public class ReservationService {
                             .findByIdOptional(dto.getEventId())
                             .orElseThrow(
                                     () ->
-                                            new NotFoundException(
+                                            new IllegalArgumentException(
                                                     "Event with id "
                                                             + dto.getEventId()
                                                             + " not found"));
             if (!isManagerAllowedToAccessEvent(currentUser, newEvent)) {
-                throw new ForbiddenException(
+                throw new SecurityException(
                         "You are not allowed to update this reservation to the new event.");
             }
         }
@@ -214,7 +193,7 @@ public class ReservationService {
                         .findByIdOptional(dto.getEventId())
                         .orElseThrow(
                                 () ->
-                                        new NotFoundException(
+                                        new IllegalArgumentException(
                                                 "Event with id "
                                                         + dto.getEventId()
                                                         + " not found"));
@@ -223,14 +202,14 @@ public class ReservationService {
                         .findByIdOptional(dto.getUserId())
                         .orElseThrow(
                                 () ->
-                                        new NotFoundException(
+                                        new IllegalArgumentException(
                                                 "User with id " + dto.getUserId() + " not found"));
         Seat seat =
                 seatRepository
                         .findByIdOptional(dto.getSeatId())
                         .orElseThrow(
                                 () ->
-                                        new NotFoundException(
+                                        new IllegalArgumentException(
                                                 "Seat with id " + dto.getSeatId() + " not found"));
 
         reservation.setEvent(event);
@@ -246,29 +225,33 @@ public class ReservationService {
      * event the manager is allowed to manage. - Other roles: Throws ForbiddenException.
      *
      * @param id The ID of the reservation to delete.
-     * @throws NotFoundException If the reservation with the given ID is not found.
-     * @throws ForbiddenException If the current user does not have the necessary permissions.
+     * @throws SecurityException If the current user does not have the necessary permissions.
      * @throws UserNotFoundException If the current user cannot be found.
      */
     @Transactional
     public void deleteReservation(Long id, User currentUser)
-            throws NotFoundException, ForbiddenException, UserNotFoundException {
+            throws SecurityException, UserNotFoundException {
         Reservation reservation =
                 reservationRepository
                         .findByIdOptional(id)
                         .orElseThrow(
                                 () ->
-                                        new NotFoundException(
+                                        new ReservationNotFoundException(
                                                 "Reservation with id " + id + " not found"));
 
-        if (securityContext.isUserInRole(Roles.MANAGER)) {
-            if (!isManagerAllowedToAccessEvent(currentUser, reservation.getEvent())) {
-                throw new ForbiddenException("You are not allowed to delete this reservation.");
-            }
-        } else {
-            throw new ForbiddenException("You are not allowed to delete reservations.");
+        if (currentUser.getRoles().contains(Roles.ADMIN)) {
+            reservationRepository.delete(reservation);
+            return;
         }
-        reservationRepository.delete(reservation);
+
+        if (currentUser.getRoles().contains(Roles.MANAGER)) {
+            if (isManagerAllowedToAccessEvent(currentUser, reservation.getEvent())) {
+                reservationRepository.delete(reservation);
+                return;
+            }
+        }
+
+        throw new SecurityException("You are not allowed to delete this reservation.");
     }
 
     /**
@@ -280,9 +263,6 @@ public class ReservationService {
      * @return true if the manager is allowed to access the event, false otherwise.
      */
     public boolean isManagerAllowedToAccessEvent(User manager, Event event) {
-        return eventUserAllowanceRepository
-                .find("user = ?1 and event = ?2", manager, event)
-                .firstResultOptional()
-                .isPresent();
+        return event.getManager().equals(manager);
     }
 }

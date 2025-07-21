@@ -6,8 +6,6 @@ import java.util.Set;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.NotFoundException;
 
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
@@ -15,6 +13,7 @@ import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.reservation.EventNotFoundException;
 import de.felixhertweck.seatreservation.reservation.dto.EventResponseDTO;
 import de.felixhertweck.seatreservation.userManagment.exceptions.UserNotFoundException;
 
@@ -46,28 +45,25 @@ public class EventService {
 
     @Transactional
     public int getAvailableSeatsForCurrentUser(Long eventId, String username)
-            throws UserNotFoundException, NotFoundException, ForbiddenException {
+            throws UserNotFoundException {
         User user = userRepository.findByUsername(username);
 
         if (user == null) {
             throw new UserNotFoundException("User not found: " + username);
         }
 
-        if (eventRepository.findById(eventId) == null) {
-            throw new NotFoundException("Event not found: " + eventId);
-        }
-
-        List<EventUserAllowance> allowances = eventUserAllowanceRepository.findByUser(user);
+        eventRepository
+                .findByIdOptional(eventId)
+                .orElseThrow(() -> new EventNotFoundException("Event not found: " + eventId));
 
         EventUserAllowance allowance =
-                allowances.stream()
-                        .filter(a -> a.getEvent().getId().equals(eventId))
-                        .findFirst()
-                        .orElse(null);
-
-        if (allowance == null) {
-            throw new ForbiddenException("User does not have access to this event: " + eventId);
-        }
+                eventUserAllowanceRepository
+                        .findByEventIdAndUserId(eventId, user.getId())
+                        .orElseThrow(
+                                () ->
+                                        new EventNotFoundException(
+                                                "User does not have access to this event: "
+                                                        + eventId));
 
         return allowance.getReservationsAllowedCount();
     }

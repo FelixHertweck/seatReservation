@@ -1,8 +1,6 @@
 package de.felixhertweck.seatreservation.userManagment.exceptions;
 
-import jakarta.ws.rs.BadRequestException;
-
-public class TokenExpiredException extends BadRequestException {
+public class TokenExpiredException extends RuntimeException {
     public TokenExpiredException(String message) {
         super(message);
     }

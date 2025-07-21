@@ -5,10 +5,10 @@ import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.ForbiddenException;
 
 import de.felixhertweck.seatreservation.common.dto.EventLocationResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventLocationRequestDTO;
+import de.felixhertweck.seatreservation.eventManagement.exception.EventLocationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
@@ -25,10 +25,8 @@ public class EventLocationService {
      * whose manager is the current user are returned.
      *
      * @return A list of DTOs representing the EventLocations.
-     * @throws ForbiddenException If no authenticated user is found.
      */
-    public List<EventLocationResponseDTO> getEventLocationsByCurrentManager(User manager)
-            throws ForbiddenException {
+    public List<EventLocationResponseDTO> getEventLocationsByCurrentManager(User manager) {
         List<EventLocation> eventLocations;
         // Access control: If the user is an ADMIN, all EventLocations are returned.
         // Otherwise, only EventLocations belonging to this manager are returned.
@@ -49,7 +47,18 @@ public class EventLocationService {
      * @return A DTO representing the newly created EventLocation.
      */
     @Transactional
-    public EventLocationResponseDTO createEventLocation(EventLocationRequestDTO dto, User manager) {
+    public EventLocationResponseDTO createEventLocation(EventLocationRequestDTO dto, User manager)
+            throws IllegalArgumentException {
+        if (dto == null
+                || dto.getName() == null
+                || dto.getName().trim().isEmpty()
+                || dto.getAddress() == null
+                || dto.getAddress().trim().isEmpty()
+                || dto.getCapacity() == null
+                || dto.getCapacity() <= 0) {
+            throw new IllegalArgumentException("Invalid EventLocation data provided.");
+        }
+
         EventLocation location =
                 new EventLocation(dto.getName(), dto.getAddress(), manager, dto.getCapacity());
         eventLocationRepository.persist(location);
@@ -64,25 +73,25 @@ public class EventLocationService {
      * @param dto The DTO containing the updated details of the EventLocation.
      * @return A DTO representing the updated EventLocation.
      * @throws IllegalArgumentException If the EventLocation with the specified ID is not found.
-     * @throws ForbiddenException If the user is not authorized to update the EventLocation.
+     * @throws SecurityException If the user is not authorized to update the EventLocation.
      */
     @Transactional
     public EventLocationResponseDTO updateEventLocation(
             Long id, EventLocationRequestDTO dto, User manager)
-            throws IllegalArgumentException, ForbiddenException {
+            throws IllegalArgumentException, SecurityException {
         EventLocation location =
                 eventLocationRepository
                         .findByIdOptional(id)
                         .orElseThrow(
                                 () ->
-                                        new IllegalArgumentException(
+                                        new EventLocationNotFoundException(
                                                 "EventLocation with id " + id + " not found"));
 
         // Access control: Checks if the current user is the manager of the location
         // or if the user has the ADMIN role.
         if (!location.getManager().id.equals(manager.getId())
                 && !manager.getRoles().contains(Roles.ADMIN)) {
-            throw new ForbiddenException("User is not the manager of this location");
+            throw new SecurityException("User is not the manager of this location");
         }
 
         location.setName(dto.getName());
@@ -98,24 +107,24 @@ public class EventLocationService {
      *
      * @param id The ID of the EventLocation to be deleted.
      * @throws IllegalArgumentException If the EventLocation with the specified ID is not found.
-     * @throws ForbiddenException If the user is not authorized to delete the EventLocation.
+     * @throws SecurityException If the user is not authorized to delete the EventLocation.
      */
     @Transactional
     public void deleteEventLocation(Long id, User manager)
-            throws IllegalArgumentException, ForbiddenException {
+            throws IllegalArgumentException, SecurityException {
         EventLocation location =
                 eventLocationRepository
                         .findByIdOptional(id)
                         .orElseThrow(
                                 () ->
-                                        new IllegalArgumentException(
+                                        new EventLocationNotFoundException(
                                                 "EventLocation with id " + id + " not found"));
 
         // Access control: Checks if the current user is the manager of the location
         // or if the user has the ADMIN role.
         if (!location.getManager().id.equals(manager.getId())
                 && !manager.getRoles().contains(Roles.ADMIN)) {
-            throw new ForbiddenException("User is not the manager of this location");
+            throw new SecurityException("User is not the manager of this location");
         }
 
         eventLocationRepository.delete(location);

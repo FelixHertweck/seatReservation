@@ -1,8 +1,6 @@
 package de.felixhertweck.seatreservation.reservation;
 
-import jakarta.ws.rs.NotFoundException;
-
-public class EventNotFoundException extends NotFoundException {
+public class EventNotFoundException extends RuntimeException {
     public EventNotFoundException(String message) {
         super(message);
     }

@@ -1,5 +1,6 @@
-- [ ] Documentation
-- [ ] Throws hinzufügen
+- [x] Documentation
+- [x] Throws hinzufügen
 - [ ] License Header
 - [x] Email Service
-- [ ] User Email Status
+- [x] User Email Status
+- [x] Service-Schicht von Web-Exceptions entkoppeln (z.B. `BadRequestException` durch `IllegalArgumentException` ersetzen)

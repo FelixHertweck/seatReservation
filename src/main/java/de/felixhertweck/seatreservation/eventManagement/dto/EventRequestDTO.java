@@ -53,4 +53,20 @@ public class EventRequestDTO {
     public void setDescription(String description) {
         this.description = description;
     }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public void setBookingDeadline(LocalDateTime bookingDeadline) {
+        this.bookingDeadline = bookingDeadline;
+    }
+
+    public void setEventLocationId(Long eventLocationId) {
+        this.eventLocationId = eventLocationId;
+    }
 }
