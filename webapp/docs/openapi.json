@@ -28,12 +28,19 @@
           }
         }
       },
-      "AvailableReservationsDTO" : {
+      "BlockSeatsRequestDTO" : {
         "type" : "object",
         "properties" : {
-          "availableReservations" : {
+          "eventId" : {
             "type" : "integer",
-            "format" : "int32"
+            "format" : "int64"
+          },
+          "seatIds" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
           }
         }
       },
@@ -92,6 +99,35 @@
           },
           "reservationDateTime" : {
             "$ref" : "#/components/schemas/LocalDateTime"
+          }
+        }
+      },
+      "EventLocationData" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "address" : {
+            "type" : "string"
+          },
+          "capacity" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "EventLocationRegistrationDTO" : {
+        "type" : "object",
+        "properties" : {
+          "eventLocation" : {
+            "$ref" : "#/components/schemas/EventLocationData"
+          },
+          "seats" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SeatData"
+            }
           }
         }
       },
@@ -188,6 +224,10 @@
           },
           "location" : {
             "$ref" : "#/components/schemas/EventLocationResponseDTO"
+          },
+          "reservationsAllowed" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         }
       },
@@ -280,6 +320,10 @@
           }
         }
       },
+      "ReservationStatus" : {
+        "type" : "string",
+        "enum" : [ "RESERVED", "BLOCKED" ]
+      },
       "ReservationsRequestCreateDTO" : {
         "type" : "object",
         "required" : [ "eventId", "seatIds" ],
@@ -311,6 +355,25 @@
           "locationId" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "xCoordinate" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "yCoordinate" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "status" : {
+            "$ref" : "#/components/schemas/ReservationStatus"
+          }
+        }
+      },
+      "SeatData" : {
+        "type" : "object",
+        "properties" : {
+          "seatNumber" : {
+            "type" : "string"
           },
           "xCoordinate" : {
             "type" : "integer",
@@ -363,6 +426,9 @@
           "yCoordinate" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "status" : {
+            "$ref" : "#/components/schemas/ReservationStatus"
           }
         }
       },
@@ -405,6 +471,16 @@
           },
           "email" : {
             "type" : "string"
+          },
+          "emailVerified" : {
+            "type" : "boolean"
+          },
+          "roles" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string"
+            }
           }
         }
       },
@@ -523,6 +599,46 @@
           }
         },
         "summary" : "Create Event Location",
+        "tags" : [ "Event Location Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
+        } ]
+      }
+    },
+    "/api/manager/eventlocations/register" : {
+      "post" : {
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/EventLocationRegistrationDTO"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EventLocationResponseDTO"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          },
+          "400" : {
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "Create Event Location With Seats",
         "tags" : [ "Event Location Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
@@ -720,6 +836,33 @@
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
         } ]
+      },
+      "delete" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Event deleted"
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Delete Event",
+        "tags" : [ "Event Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
+        } ]
       }
     },
     "/api/manager/reservationAllowance" : {
@@ -756,7 +899,74 @@
           }
         },
         "summary" : "Set Reservations Allowed For User",
-        "tags" : [ "Event User Reservation Allowance" ],
+        "tags" : [ "Event Reservation Allowance" ],
+        "security" : [ {
+          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
+        } ]
+      },
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/EventUserAllowancesDto"
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Get Reservation Allowances",
+        "tags" : [ "Event Reservation Allowance" ],
+        "security" : [ {
+          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
+        } ]
+      }
+    },
+    "/api/manager/reservationAllowance/event/{eventId}" : {
+      "get" : {
+        "parameters" : [ {
+          "name" : "eventId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/EventUserAllowancesDto"
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Get Reservation Allowances By Event Id",
+        "tags" : [ "Event Reservation Allowance" ],
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
         } ]
@@ -792,7 +1002,34 @@
           }
         },
         "summary" : "Get Reservation Allowance By Id",
-        "tags" : [ "Event User Reservation Allowance" ],
+        "tags" : [ "Event Reservation Allowance" ],
+        "security" : [ {
+          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
+        } ]
+      },
+      "delete" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Delete Reservation Allowance",
+        "tags" : [ "Event Reservation Allowance" ],
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
         } ]
@@ -860,6 +1097,39 @@
           }
         },
         "summary" : "Create Reservation",
+        "tags" : [ "Reservation Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
+        } ]
+      }
+    },
+    "/api/manager/reservations/block" : {
+      "post" : {
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/BlockSeatsRequestDTO"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "Seats blocked successfully"
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          },
+          "400" : {
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "Block Seats",
         "tags" : [ "Reservation Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
@@ -1258,79 +1528,6 @@
         } ]
       }
     },
-    "/api/user/events/available-reservations/{eventId}" : {
-      "get" : {
-        "parameters" : [ {
-          "name" : "eventId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/AvailableReservationsDTO"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Not Authorized"
-          },
-          "403" : {
-            "description" : "Not Allowed"
-          }
-        },
-        "summary" : "Get Available Reservations",
-        "tags" : [ "Event Resource" ],
-        "security" : [ {
-          "SecurityScheme" : [ "USER" ]
-        } ]
-      }
-    },
-    "/api/user/events/available-seats/{eventId}" : {
-      "get" : {
-        "parameters" : [ {
-          "name" : "eventId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "type" : "integer",
-                  "format" : "int32"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Not Authorized"
-          },
-          "403" : {
-            "description" : "Not Allowed"
-          }
-        },
-        "summary" : "Get Available Seats",
-        "tags" : [ "Event Resource" ],
-        "security" : [ {
-          "SecurityScheme" : [ "USER" ]
-        } ]
-      }
-    },
     "/api/user/reservations" : {
       "get" : {
         "responses" : {
@@ -1499,36 +1696,6 @@
           }
         },
         "summary" : "Create User",
-        "tags" : [ "User Resource" ],
-        "security" : [ {
-          "SecurityScheme" : [ "ADMIN" ]
-        } ]
-      }
-    },
-    "/api/users/admin/roles" : {
-      "get" : {
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "string"
-                  }
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Not Authorized"
-          },
-          "403" : {
-            "description" : "Not Allowed"
-          }
-        },
-        "summary" : "Available Roles",
         "tags" : [ "User Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "ADMIN" ]
@@ -1712,6 +1879,61 @@
         "tags" : [ "User Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "USER" ]
+        } ]
+      },
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserDTO"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Get Current User",
+        "tags" : [ "User Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "USER", "ADMIN", "MANAGER" ]
+        } ]
+      }
+    },
+    "/api/users/roles" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Available Roles",
+        "tags" : [ "User Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "USER", "ADMIN" ]
         } ]
       }
     }

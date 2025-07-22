@@ -6,6 +6,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.*;
 
+import de.felixhertweck.seatreservation.eventManagement.dto.BlockSeatsRequestDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.DetailedReservationResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.ReservationRequestDTO;
 import de.felixhertweck.seatreservation.eventManagement.service.ReservationService;
@@ -107,5 +108,13 @@ public class ReservationResource {
     public void deleteReservation(@PathParam("id") Long id) {
         User currentUser = userSecurityContext.getCurrentUser();
         reservationService.deleteReservation(id, currentUser);
+    }
+
+    @POST
+    @Path("/block")
+    @APIResponse(responseCode = "204", description = "Seats blocked successfully")
+    public void blockSeats(BlockSeatsRequestDTO dto) {
+        User currentUser = userSecurityContext.getCurrentUser();
+        reservationService.blockSeats(dto.getEventId(), dto.getSeatIds(), currentUser);
     }
 }

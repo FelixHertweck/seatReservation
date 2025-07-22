@@ -8,8 +8,9 @@ export type AdminUserUpdateDto = {
     roles: string[];
 };
 
-export type AvailableReservationsDto = {
-    availableReservations?: number;
+export type BlockSeatsRequestDto = {
+    eventId?: bigint;
+    seatIds?: bigint[];
 };
 
 export type DetailedEventResponseDto = {
@@ -30,6 +31,17 @@ export type DetailedReservationResponseDto = {
     event?: DetailedEventResponseDto;
     seat?: SeatDto;
     reservationDateTime?: LocalDateTime;
+};
+
+export type EventLocationData = {
+    name?: string;
+    address?: string;
+    capacity?: number;
+};
+
+export type EventLocationRegistrationDto = {
+    eventLocation?: EventLocationData;
+    seats?: SeatData[];
 };
 
 export type EventLocationRequestDto = {
@@ -64,6 +76,7 @@ export type EventResponseDto = {
     endTime?: LocalDateTime;
     bookingDeadline?: LocalDateTime;
     location?: EventLocationResponseDto;
+    reservationsAllowed?: number;
 };
 
 export type EventUserAllowancesDto = {
@@ -98,6 +111,13 @@ export type ReservationResponseDto = {
     reservationDateTime?: LocalDateTime;
 };
 
+export type ReservationStatus = 'RESERVED' | 'BLOCKED';
+
+export const ReservationStatus = {
+    RESERVED: 'RESERVED',
+    BLOCKED: 'BLOCKED'
+} as const;
+
 export type ReservationsRequestCreateDto = {
     eventId: bigint;
     seatIds: bigint[];
@@ -107,6 +127,13 @@ export type SeatDto = {
     id?: bigint;
     seatNumber?: string;
     locationId?: bigint;
+    xCoordinate?: number;
+    yCoordinate?: number;
+    status?: ReservationStatus;
+};
+
+export type SeatData = {
+    seatNumber?: string;
     xCoordinate?: number;
     yCoordinate?: number;
 };
@@ -124,6 +151,7 @@ export type SeatResponseDto = {
     location?: EventLocationResponseDto;
     xCoordinate?: number;
     yCoordinate?: number;
+    status?: ReservationStatus;
 };
 
 export type UserCreationDto = {
@@ -140,6 +168,8 @@ export type UserDto = {
     firstName?: string;
     lastName?: string;
     email?: string;
+    emailVerified?: boolean;
+    roles?: string[];
 };
 
 export type UserProfileUpdateDto = {
@@ -227,6 +257,37 @@ export type PostApiManagerEventlocationsResponses = {
 };
 
 export type PostApiManagerEventlocationsResponse = PostApiManagerEventlocationsResponses[keyof PostApiManagerEventlocationsResponses];
+
+export type PostApiManagerEventlocationsRegisterData = {
+    body: EventLocationRegistrationDto;
+    path?: never;
+    query?: never;
+    url: '/api/manager/eventlocations/register';
+};
+
+export type PostApiManagerEventlocationsRegisterErrors = {
+    /**
+     * Bad Request
+     */
+    400: unknown;
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type PostApiManagerEventlocationsRegisterResponses = {
+    /**
+     * OK
+     */
+    200: EventLocationResponseDto;
+};
+
+export type PostApiManagerEventlocationsRegisterResponse = PostApiManagerEventlocationsRegisterResponses[keyof PostApiManagerEventlocationsRegisterResponses];
 
 export type DeleteApiManagerEventlocationsByIdData = {
     body?: never;
@@ -346,6 +407,35 @@ export type PostApiManagerEventsResponses = {
 
 export type PostApiManagerEventsResponse = PostApiManagerEventsResponses[keyof PostApiManagerEventsResponses];
 
+export type DeleteApiManagerEventsByIdData = {
+    body?: never;
+    path: {
+        id: bigint;
+    };
+    query?: never;
+    url: '/api/manager/events/{id}';
+};
+
+export type DeleteApiManagerEventsByIdErrors = {
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type DeleteApiManagerEventsByIdResponses = {
+    /**
+     * Event deleted
+     */
+    204: void;
+};
+
+export type DeleteApiManagerEventsByIdResponse = DeleteApiManagerEventsByIdResponses[keyof DeleteApiManagerEventsByIdResponses];
+
 export type PutApiManagerEventsByIdData = {
     body: EventRequestDto;
     path: {
@@ -379,6 +469,33 @@ export type PutApiManagerEventsByIdResponses = {
 
 export type PutApiManagerEventsByIdResponse = PutApiManagerEventsByIdResponses[keyof PutApiManagerEventsByIdResponses];
 
+export type GetApiManagerReservationAllowanceData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/manager/reservationAllowance';
+};
+
+export type GetApiManagerReservationAllowanceErrors = {
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type GetApiManagerReservationAllowanceResponses = {
+    /**
+     * OK
+     */
+    200: EventUserAllowancesDto[];
+};
+
+export type GetApiManagerReservationAllowanceResponse = GetApiManagerReservationAllowanceResponses[keyof GetApiManagerReservationAllowanceResponses];
+
 export type PostApiManagerReservationAllowanceData = {
     body: EventUserAllowancesDto;
     path?: never;
@@ -409,6 +526,64 @@ export type PostApiManagerReservationAllowanceResponses = {
 };
 
 export type PostApiManagerReservationAllowanceResponse = PostApiManagerReservationAllowanceResponses[keyof PostApiManagerReservationAllowanceResponses];
+
+export type GetApiManagerReservationAllowanceEventByEventIdData = {
+    body?: never;
+    path: {
+        eventId: bigint;
+    };
+    query?: never;
+    url: '/api/manager/reservationAllowance/event/{eventId}';
+};
+
+export type GetApiManagerReservationAllowanceEventByEventIdErrors = {
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type GetApiManagerReservationAllowanceEventByEventIdResponses = {
+    /**
+     * OK
+     */
+    200: EventUserAllowancesDto[];
+};
+
+export type GetApiManagerReservationAllowanceEventByEventIdResponse = GetApiManagerReservationAllowanceEventByEventIdResponses[keyof GetApiManagerReservationAllowanceEventByEventIdResponses];
+
+export type DeleteApiManagerReservationAllowanceByIdData = {
+    body?: never;
+    path: {
+        id: bigint;
+    };
+    query?: never;
+    url: '/api/manager/reservationAllowance/{id}';
+};
+
+export type DeleteApiManagerReservationAllowanceByIdErrors = {
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type DeleteApiManagerReservationAllowanceByIdResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type DeleteApiManagerReservationAllowanceByIdResponse = DeleteApiManagerReservationAllowanceByIdResponses[keyof DeleteApiManagerReservationAllowanceByIdResponses];
 
 export type GetApiManagerReservationAllowanceByIdData = {
     body?: never;
@@ -496,6 +671,37 @@ export type PostApiManagerReservationsResponses = {
 };
 
 export type PostApiManagerReservationsResponse = PostApiManagerReservationsResponses[keyof PostApiManagerReservationsResponses];
+
+export type PostApiManagerReservationsBlockData = {
+    body: BlockSeatsRequestDto;
+    path?: never;
+    query?: never;
+    url: '/api/manager/reservations/block';
+};
+
+export type PostApiManagerReservationsBlockErrors = {
+    /**
+     * Bad Request
+     */
+    400: unknown;
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type PostApiManagerReservationsBlockResponses = {
+    /**
+     * Seats blocked successfully
+     */
+    204: void;
+};
+
+export type PostApiManagerReservationsBlockResponse = PostApiManagerReservationsBlockResponses[keyof PostApiManagerReservationsBlockResponses];
 
 export type GetApiManagerReservationsEventByIdData = {
     body?: never;
@@ -821,64 +1027,6 @@ export type GetApiUserEventsResponses = {
 
 export type GetApiUserEventsResponse = GetApiUserEventsResponses[keyof GetApiUserEventsResponses];
 
-export type GetApiUserEventsAvailableReservationsByEventIdData = {
-    body?: never;
-    path: {
-        eventId: bigint;
-    };
-    query?: never;
-    url: '/api/user/events/available-reservations/{eventId}';
-};
-
-export type GetApiUserEventsAvailableReservationsByEventIdErrors = {
-    /**
-     * Not Authorized
-     */
-    401: unknown;
-    /**
-     * Not Allowed
-     */
-    403: unknown;
-};
-
-export type GetApiUserEventsAvailableReservationsByEventIdResponses = {
-    /**
-     * OK
-     */
-    200: AvailableReservationsDto;
-};
-
-export type GetApiUserEventsAvailableReservationsByEventIdResponse = GetApiUserEventsAvailableReservationsByEventIdResponses[keyof GetApiUserEventsAvailableReservationsByEventIdResponses];
-
-export type GetApiUserEventsAvailableSeatsByEventIdData = {
-    body?: never;
-    path: {
-        eventId: bigint;
-    };
-    query?: never;
-    url: '/api/user/events/available-seats/{eventId}';
-};
-
-export type GetApiUserEventsAvailableSeatsByEventIdErrors = {
-    /**
-     * Not Authorized
-     */
-    401: unknown;
-    /**
-     * Not Allowed
-     */
-    403: unknown;
-};
-
-export type GetApiUserEventsAvailableSeatsByEventIdResponses = {
-    /**
-     * OK
-     */
-    200: number;
-};
-
-export type GetApiUserEventsAvailableSeatsByEventIdResponse = GetApiUserEventsAvailableSeatsByEventIdResponses[keyof GetApiUserEventsAvailableSeatsByEventIdResponses];
-
 export type GetApiUserReservationsData = {
     body?: never;
     path?: never;
@@ -1026,33 +1174,6 @@ export type PostApiUsersAdminResponses = {
 
 export type PostApiUsersAdminResponse = PostApiUsersAdminResponses[keyof PostApiUsersAdminResponses];
 
-export type GetApiUsersAdminRolesData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/users/admin/roles';
-};
-
-export type GetApiUsersAdminRolesErrors = {
-    /**
-     * Not Authorized
-     */
-    401: unknown;
-    /**
-     * Not Allowed
-     */
-    403: unknown;
-};
-
-export type GetApiUsersAdminRolesResponses = {
-    /**
-     * OK
-     */
-    200: string[];
-};
-
-export type GetApiUsersAdminRolesResponse = GetApiUsersAdminRolesResponses[keyof GetApiUsersAdminRolesResponses];
-
 export type DeleteApiUsersAdminByIdData = {
     body?: never;
     path: {
@@ -1171,6 +1292,33 @@ export type GetApiUsersManagerResponses = {
 
 export type GetApiUsersManagerResponse = GetApiUsersManagerResponses[keyof GetApiUsersManagerResponses];
 
+export type GetApiUsersMeData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/users/me';
+};
+
+export type GetApiUsersMeErrors = {
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type GetApiUsersMeResponses = {
+    /**
+     * OK
+     */
+    200: UserDto;
+};
+
+export type GetApiUsersMeResponse = GetApiUsersMeResponses[keyof GetApiUsersMeResponses];
+
 export type PutApiUsersMeData = {
     body: UserProfileUpdateDto;
     path?: never;
@@ -1201,6 +1349,33 @@ export type PutApiUsersMeResponses = {
 };
 
 export type PutApiUsersMeResponse = PutApiUsersMeResponses[keyof PutApiUsersMeResponses];
+
+export type GetApiUsersRolesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/users/roles';
+};
+
+export type GetApiUsersRolesErrors = {
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type GetApiUsersRolesResponses = {
+    /**
+     * OK
+     */
+    200: string[];
+};
+
+export type GetApiUsersRolesResponse = GetApiUsersRolesResponses[keyof GetApiUsersRolesResponses];
 
 export type ClientOptions = {
     baseUrl: 'http://localhost:8080' | 'http://0.0.0.0:8080' | (string & {});

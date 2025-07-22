@@ -12,8 +12,9 @@ public record EventResponseDTO(
         LocalDateTime startTime,
         LocalDateTime endTime,
         LocalDateTime bookingDeadline,
-        EventLocationResponseDTO location) {
-    public EventResponseDTO(Event event) {
+        EventLocationResponseDTO location,
+        Integer reservationsAllowed) {
+    public EventResponseDTO(Event event, Integer reservationsAllowed) {
         this(
                 event.getId(),
                 event.getName(),
@@ -21,6 +22,7 @@ public record EventResponseDTO(
                 event.getStartTime(),
                 event.getEndTime(),
                 event.getBookingDeadline(),
-                new EventLocationResponseDTO(event.getEventLocation()));
+                new EventLocationResponseDTO(event.getEventLocation(), event.getReservations()),
+                reservationsAllowed);
     }
 }

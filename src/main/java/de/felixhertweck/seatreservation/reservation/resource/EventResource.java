@@ -5,11 +5,9 @@ import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
-import de.felixhertweck.seatreservation.reservation.dto.AvailableReservationsDTO;
 import de.felixhertweck.seatreservation.reservation.dto.EventResponseDTO;
 import de.felixhertweck.seatreservation.reservation.service.EventService;
 import de.felixhertweck.seatreservation.security.Roles;
@@ -40,27 +38,5 @@ public class EventResource {
                                             implementation = EventResponseDTO.class)))
     public List<EventResponseDTO> getEvents() {
         return eventService.getEventsForCurrentUser(securityIdentity.getPrincipal().getName());
-    }
-
-    @GET
-    @Path("/available-seats/{eventId}")
-    @APIResponse(
-            responseCode = "200",
-            description = "OK",
-            content = @Content(schema = @Schema(implementation = Integer.class)))
-    public int getAvailableSeats(@PathParam("eventId") Long eventId) {
-        return eventService.getAvailableSeatsForCurrentUser(
-                eventId, securityIdentity.getPrincipal().getName());
-    }
-
-    @GET
-    @Path("/available-reservations/{eventId}")
-    @APIResponse(
-            responseCode = "200",
-            description = "OK",
-            content = @Content(schema = @Schema(implementation = AvailableReservationsDTO.class)))
-    public AvailableReservationsDTO getAvailableReservations(@PathParam("eventId") Long eventId) {
-        return eventService.getAvailableReservationsForCurrentUser(
-                eventId, securityIdentity.getPrincipal().getName());
     }
 }

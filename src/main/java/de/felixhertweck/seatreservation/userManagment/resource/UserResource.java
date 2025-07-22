@@ -14,6 +14,7 @@ import de.felixhertweck.seatreservation.userManagment.dto.AdminUserUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
+import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 
 /*
  * This class provides RESTful endpoints for user management operations.
@@ -27,6 +28,7 @@ public class UserResource {
 
     @Inject UserService userService;
     @Inject SecurityContext securityContext;
+    @Inject UserSecurityContext userSecurityContext;
 
     @POST
     @Path("/admin")
@@ -57,8 +59,8 @@ public class UserResource {
     }
 
     @GET
-    @RolesAllowed(Roles.ADMIN)
-    @Path("/admin/roles")
+    @RolesAllowed({Roles.USER, Roles.ADMIN})
+    @Path("/roles")
     public List<String> availableRoles() {
         return userService.getAvailableRoles();
     }
@@ -76,5 +78,12 @@ public class UserResource {
     public UserDTO updateCurrentUserProfile(UserProfileUpdateDTO userProfileUpdateDTO) {
         String username = securityContext.getUserPrincipal().getName();
         return userService.updateUserProfile(username, userProfileUpdateDTO);
+    }
+
+    @GET
+    @Path("/me")
+    @RolesAllowed({Roles.USER, Roles.ADMIN, Roles.MANAGER})
+    public UserDTO getCurrentUser() {
+        return new UserDTO(userSecurityContext.getCurrentUser());
     }
 }

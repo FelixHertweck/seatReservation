@@ -27,12 +27,19 @@ export const AdminUserUpdateDTOSchema = {
     }
 } as const;
 
-export const AvailableReservationsDTOSchema = {
+export const BlockSeatsRequestDTOSchema = {
     type: 'object',
     properties: {
-        availableReservations: {
+        eventId: {
             type: 'integer',
-            format: 'int32'
+            format: 'int64'
+        },
+        seatIds: {
+            type: 'array',
+            items: {
+                type: 'integer',
+                format: 'int64'
+            }
         }
     }
 } as const;
@@ -93,6 +100,37 @@ export const DetailedReservationResponseDTOSchema = {
         },
         reservationDateTime: {
             '$ref': '#/components/schemas/LocalDateTime'
+        }
+    }
+} as const;
+
+export const EventLocationDataSchema = {
+    type: 'object',
+    properties: {
+        name: {
+            type: 'string'
+        },
+        address: {
+            type: 'string'
+        },
+        capacity: {
+            type: 'integer',
+            format: 'int32'
+        }
+    }
+} as const;
+
+export const EventLocationRegistrationDTOSchema = {
+    type: 'object',
+    properties: {
+        eventLocation: {
+            '$ref': '#/components/schemas/EventLocationData'
+        },
+        seats: {
+            type: 'array',
+            items: {
+                '$ref': '#/components/schemas/SeatData'
+            }
         }
     }
 } as const;
@@ -193,6 +231,10 @@ export const EventResponseDTOSchema = {
         },
         location: {
             '$ref': '#/components/schemas/EventLocationResponseDTO'
+        },
+        reservationsAllowed: {
+            type: 'integer',
+            format: 'int32'
         }
     }
 } as const;
@@ -292,6 +334,11 @@ export const ReservationResponseDTOSchema = {
     }
 } as const;
 
+export const ReservationStatusSchema = {
+    type: 'string',
+    enum: ['RESERVED', 'BLOCKED']
+} as const;
+
 export const ReservationsRequestCreateDTOSchema = {
     type: 'object',
     required: ['eventId', 'seatIds'],
@@ -324,6 +371,26 @@ export const SeatDTOSchema = {
         locationId: {
             type: 'integer',
             format: 'int64'
+        },
+        xCoordinate: {
+            type: 'integer',
+            format: 'int32'
+        },
+        yCoordinate: {
+            type: 'integer',
+            format: 'int32'
+        },
+        status: {
+            '$ref': '#/components/schemas/ReservationStatus'
+        }
+    }
+} as const;
+
+export const SeatDataSchema = {
+    type: 'object',
+    properties: {
+        seatNumber: {
+            type: 'string'
         },
         xCoordinate: {
             type: 'integer',
@@ -378,6 +445,9 @@ export const SeatResponseDTOSchema = {
         yCoordinate: {
             type: 'integer',
             format: 'int32'
+        },
+        status: {
+            '$ref': '#/components/schemas/ReservationStatus'
         }
     }
 } as const;
@@ -422,6 +492,16 @@ export const UserDTOSchema = {
         },
         email: {
             type: 'string'
+        },
+        emailVerified: {
+            type: 'boolean'
+        },
+        roles: {
+            type: 'array',
+            uniqueItems: true,
+            items: {
+                type: 'string'
+            }
         }
     }
 } as const;

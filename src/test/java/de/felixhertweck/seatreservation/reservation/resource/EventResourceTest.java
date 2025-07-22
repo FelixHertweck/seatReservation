@@ -71,7 +71,8 @@ public class EventResourceTest {
                 .then()
                 .statusCode(200)
                 .body("size()", is(1))
-                .body("[0].name", is("Accessible Event"));
+                .body("[0].name", is("Accessible Event"))
+                .body("[0].reservationsAllowed", is(5));
     }
 
     @Test
@@ -85,83 +86,5 @@ public class EventResourceTest {
     @Test
     void testGetEventsForCurrentUser_Unauthorized() {
         given().when().get("/api/user/events").then().statusCode(401);
-    }
-
-    @Test
-    @TestSecurity(
-            user = "user",
-            roles = {"USER"})
-    void testGetAvailableSeats_Success() {
-        given().when()
-                .get("/api/user/events/available-seats/" + testEvent.id)
-                .then()
-                .statusCode(200)
-                .body(is("5"));
-    }
-
-    @Test
-    @TestSecurity(
-            user = "user",
-            roles = {"USER"})
-    void testGetAvailableSeats_EventNotFound() {
-        given().when().get("/api/user/events/available-seats/9999").then().statusCode(404);
-    }
-
-    @Test
-    @TestSecurity(
-            user = "user",
-            roles = {"USER"})
-    void testGetAvailableSeats_NoAccessToEvent() {
-        given().when()
-                .get("/api/user/events/available-seats/" + otherEvent.id)
-                .then()
-                .statusCode(404);
-    }
-
-    @Test
-    void testGetAvailableSeats_Unauthorized() {
-        given().when()
-                .get("/api/user/events/available-seats/" + testEvent.id)
-                .then()
-                .statusCode(401);
-    }
-
-    @Test
-    @TestSecurity(
-            user = "user",
-            roles = {"USER"})
-    void testGetAvailableReservations_Success() {
-        given().when()
-                .get("/api/user/events/available-reservations/" + testEvent.id)
-                .then()
-                .statusCode(200)
-                .body("availableReservations", is(5));
-    }
-
-    @Test
-    @TestSecurity(
-            user = "user",
-            roles = {"USER"})
-    void testGetAvailableReservations_EventNotFound() {
-        given().when().get("/api/user/events/available-reservations/9999").then().statusCode(404);
-    }
-
-    @Test
-    @TestSecurity(
-            user = "user",
-            roles = {"USER"})
-    void testGetAvailableReservations_NoAccessToEvent() {
-        given().when()
-                .get("/api/user/events/available-reservations/" + otherEvent.id)
-                .then()
-                .statusCode(404);
-    }
-
-    @Test
-    void testGetAvailableReservations_Unauthorized() {
-        given().when()
-                .get("/api/user/events/available-reservations/" + testEvent.id)
-                .then()
-                .statusCode(401);
     }
 }

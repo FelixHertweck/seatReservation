@@ -64,4 +64,12 @@ public class EventResource {
         User currentUser = userSecurityContext.getCurrentUser();
         return eventService.getEventsByCurrentManager(currentUser);
     }
+
+    @DELETE
+    @Path("/{id}")
+    @APIResponse(responseCode = "204", description = "Event deleted")
+    public void deleteEvent(@PathParam("id") Long id) {
+        User currentUser = userSecurityContext.getCurrentUser();
+        eventService.deleteEvent(id, currentUser);
+    }
 }

@@ -231,6 +231,9 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | `deleteReservation_Success_AsManager` | Löscht erfolgreich eine Reservierung als Manager für ein Event, das er verwalten darf. |
 | `deleteReservation_NotFoundException` | Versucht, eine nicht existierende Reservierung zu löschen. Erwartet `NotFoundException`. |
 | `deleteReservation_ForbiddenException_NotAllowed` | Versucht, eine Reservierung als Benutzer zu löschen, der keine Berechtigung hat. Erwartet `ForbiddenException`. |
+| `blockSeats_Success` | Blockiert erfolgreich Sitze für ein Event als Manager. |
+| `blockSeats_Forbidden` | Versucht, Sitze als nicht autorisierter Benutzer zu blockieren. Erwartet `SecurityException`. |
+| `blockSeats_SeatAlreadyReserved` | Versucht, bereits reservierte oder blockierte Sitze zu blockieren. Erwartet `IllegalStateException`. |
 
 ## EventService (reservation package)
 
@@ -238,18 +241,9 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 
 | Testfall | Beschreibung |
 | :--- | :--- |
-| `getEventsForCurrentUser_Success` | Ruft erfolgreich Events für den aktuellen Benutzer ab, basierend auf seinen EventUserAllowances. |
+| `getEventsForCurrentUser_Success` | Ruft erfolgreich Events für den aktuellen Benutzer ab, basierend auf seinen EventUserAllowances. Die Antwort enthält die Anzahl der erlaubten Reservierungen. |
 | `getEventsForCurrentUser_UserNotFoundException` | Versucht, Events für einen nicht existierenden Benutzer abzurufen. Erwartet `UserNotFoundException`. |
 | `getEventsForCurrentUser_Success_NoEvents` | Ruft eine leere Liste ab, wenn der Benutzer keine EventUserAllowances hat. |
-
-### getAvailableSeatsForCurrentUser(Long eventId, String username)
-
-| Testfall | Beschreibung |
-| :--- | :--- |
-| `getAvailableSeatsForCurrentUser_Success` | Ruft erfolgreich die Anzahl der verfügbaren Sitze für den aktuellen Benutzer für ein bestimmtes Event ab. |
-| `getAvailableSeatsForCurrentUser_UserNotFoundException` | Versucht, verfügbare Sitze für einen nicht existierenden Benutzer abzurufen. Erwartet `UserNotFoundException`. |
-| `getAvailableSeatsForCurrentUser_NotFoundException_EventNotFound` | Versucht, verfügbare Sitze für ein nicht existierendes Event abzurufen. Erwartet `NotFoundException`. |
-| `getAvailableSeatsForCurrentUser_ForbiddenException_NoAccess` | Versucht, verfügbare Sitze für ein Event abzurufen, für das der Benutzer keine Berechtigung hat. Erwartet `ForbiddenException`. |
 
 ## ReservationService (reservation package)
 
@@ -311,6 +305,7 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | `deleteEventLocation_Success_AsAdmin` | Löscht erfolgreich eine bestehende EventLocation als Administrator. |
 | `deleteEventLocation_NotFound` | Versucht, eine nicht existierende EventLocation zu löschen. |
 | `deleteEventLocation_ForbiddenException_NotManagerOrAdmin` | Versucht, eine EventLocation zu löschen, ohne die erforderlichen Berechtigungen zu haben. |
+| `createEventLocationWithSeats_Success` | Erstellt erfolgreich eine neue EventLocation mit einer Liste von Sitzplätzen. |
 
 ## Seat Service
 
@@ -400,6 +395,24 @@ Dieser Test stellt sicher, dass ein Manager oder Administrator eine neue Event-L
     *   Ein Manager sendet gültige Daten und erstellt erfolgreich eine neue Event-Location. Der Status `200 OK` wird mit den Daten der erstellten Location zurückgegeben.
 *   **Fehler:**
     *   Ein Manager sendet ungültige Daten (z. B. fehlender Name) und erhält einen `400 Bad Request`-Status.
+    *   Ein nicht authentifizierter Benutzer versucht, eine Location zu erstellen, und erhält `401 Unauthorized`.
+    *   Ein Benutzer mit der Rolle `USER` versucht, eine Location zu erstellen, und erhält `403 Forbidden`.
+---
+
+#### POST /register
+
+Erstellt eine neue Event-Location mit Sitzplätzen.
+
+**Beschreibung:**
+
+Dieser Test stellt sicher, dass ein Manager oder Administrator eine neue Event-Location zusammen mit einer Liste von Sitzplätzen erstellen kann.
+
+**Testfälle:**
+
+*   **Erfolg:**
+    *   Ein Manager sendet gültige Daten und erstellt erfolgreich eine neue Event-Location und die zugehörigen Sitzplätze. Der Status `200 OK` wird mit den Daten der erstellten Location zurückgegeben.
+*   **Fehler:**
+    *   Ein Manager sendet ungültige Daten (z. B. fehlender Name in der Location oder fehlende Sitzplatznummer) und erhält einen `400 Bad Request`-Status.
     *   Ein nicht authentifizierter Benutzer versucht, eine Location zu erstellen, und erhält `401 Unauthorized`.
     *   Ein Benutzer mit der Rolle `USER` versucht, eine Location zu erstellen, und erhält `403 Forbidden`.
 
@@ -517,6 +530,28 @@ Dieser Test stellt sicher, dass ein Manager oder Admin eine Liste seiner eigenen
     *   Ein Manager ruft seine Event-Liste ab und erhält `200 OK` mit den Daten.
 *   **Fehler:**
     *   Ein nicht autorisierter Benutzer erhält `403 Forbidden`.
+
+---
+
+#### DELETE /{id}
+
+Löscht ein Event und alle zugehörigen Daten.
+
+**Beschreibung:**
+
+Dieser Test stellt sicher, dass ein Manager oder Administrator ein Event löschen kann. Das Löschen eines Events sollte auch alle zugehörigen `EventUserAllowance`-Einträge und Reservierungen entfernen (Cascade-Delete).
+
+**Testfälle:**
+
+*   **Erfolg:**
+    *   Ein Manager löscht erfolgreich ein Event, das er verwaltet, und erhält den Status `204 No Content`.
+    *   Ein Administrator löscht erfolgreich ein Event, das er nicht verwaltet, und erhält den Status `204 No Content`.
+    *   Nach dem Löschen des Events wird überprüft, ob auch die zugehörigen `EventUserAllowance`-Einträge gelöscht wurden.
+*   **Fehler:**
+    *   Ein Manager versucht, ein Event zu löschen, das ihm nicht gehört, und erhält einen `403 Forbidden`-Status.
+    *   Ein Manager versucht, ein nicht existierendes Event zu löschen, und erhält einen `404 Not Found`-Status.
+    *   Ein nicht authentifizierter Benutzer versucht, ein Event zu löschen, und erhält einen `401 Unauthorized`-Status.
+    *   Ein Benutzer mit der Rolle `USER` versucht, ein Event zu löschen, und erhält einen `403 Forbidden`-Status.
 
 ---
 
@@ -726,7 +761,7 @@ Dieser Test stellt sicher, dass ein Manager einen Sitzplatz aus einer seiner Loc
 *   **Fehler:**
     *   Der Versuch, einen Sitzplatz zu löschen, der nicht zu seinen Locations gehört, führt zu `404 Not Found`.
     *   Der Versuch, einen Sitzplatz zu löschen, für den bereits eine Reservierung besteht, führt zu `409 Conflict`.
-Ruft alle Events ab, für die der aktuelle Benutzer eine Berechtigung hat.
+Ruft alle Events ab, für die der aktuelle Benutzer eine Berechtigung hat. Die Antwort enthält auch die Anzahl der erlaubten Reservierungen für jedes Event.
 
 **Beschreibung:**
 
@@ -735,47 +770,9 @@ Dieser Test stellt sicher, dass ein Benutzer eine Liste der für ihn verfügbare
 **Testfälle:**
 
 *   **Erfolg:**
-    *   Ein authentifizierter Benutzer mit Berechtigungen für Events ruft die Liste ab und erhält `200 OK` mit den Event-Daten.
+    *   Ein authentifizierter Benutzer mit Berechtigungen für Events ruft die Liste ab und erhält `200 OK` mit den Event-Daten, einschließlich der erlaubten Reservierungen.
     *   Ein authentifizierter Benutzer ohne Berechtigungen für Events ruft die Liste ab und erhält `200 OK` mit einer leeren Liste.
 *   **Fehler:**
-    *   Ein nicht authentifizierter Benutzer versucht, auf den Endpunkt zuzugreifen, und erhält `401 Unauthorized`.
-
----
-
-#### GET /available-seats/{id}
-
-Ruft die Anzahl der verfügbaren Plätze für ein bestimmtes Event ab.
-
-**Beschreibung:**
-
-Dieser Test überprüft, ob die korrekte Anzahl der verbleibenden Plätze für ein Event zurückgegeben wird, für das der Benutzer eine Berechtigung hat.
-
-**Testfälle:**
-
-*   **Erfolg:**
-    *   Ein Benutzer fragt die verfügbaren Plätze für ein Event an, für das er eine Berechtigung hat, und erhält `200 OK` mit einer Ganzzahl.
-*   **Fehler:**
-    *   Ein Benutzer fragt die Plätze für ein Event an, für das er keine Berechtigung hat, und erhält `404 Not Found`.
-    *   Ein Benutzer fragt die Plätze für ein nicht existierendes Event an und erhält `404 Not Found`.
-    *   Ein nicht authentifizierter Benutzer versucht, auf den Endpunkt zuzugreifen, und erhält `401 Unauthorized`.
-
----
-
-#### GET /available-reservations/{id}
-
-Ruft die Anzahl der verfügbaren Reservierungen für ein bestimmtes Event als JSON-Objekt ab.
-
-**Beschreibung:**
-
-Dieser Test überprüft, ob die korrekte Anzahl der verbleibenden Plätze für ein Event zurückgegeben wird, für das der Benutzer eine Berechtigung hat.
-
-**Testfälle:**
-
-*   **Erfolg:**
-    *   Ein Benutzer fragt die verfügbaren Reservierungen für ein Event an, für das er eine Berechtigung hat, und erhält `200 OK` mit einem JSON-Objekt `{"availableReservations": 5}`.
-*   **Fehler:**
-    *   Ein Benutzer fragt die Reservierungen für ein Event an, für das er keine Berechtigung hat, und erhält `404 Not Found`.
-    *   Ein Benutzer fragt die Reservierungen für ein nicht existierendes Event an und erhält `404 Not Found`.
     *   Ein nicht authentifizierter Benutzer versucht, auf den Endpunkt zuzugreifen, und erhält `401 Unauthorized`.
 
 ---

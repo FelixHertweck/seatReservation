@@ -10,10 +10,8 @@ import static org.mockito.Mockito.when;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.User;
-import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
-import de.felixhertweck.seatreservation.reservation.EventNotFoundException;
 import de.felixhertweck.seatreservation.reservation.dto.EventResponseDTO;
 import de.felixhertweck.seatreservation.userManagment.exceptions.UserNotFoundException;
 import io.quarkus.test.InjectMock;
@@ -29,8 +27,6 @@ class EventServiceTest {
     @InjectMock UserRepository userRepository;
 
     @InjectMock EventUserAllowanceRepository eventUserAllowanceRepository;
-
-    @InjectMock EventRepository eventRepository;
 
     private User user;
     private Event event;
@@ -65,6 +61,7 @@ class EventServiceTest {
         assertFalse(result.isEmpty());
         assertEquals(1, result.size());
         assertEquals(event.id, result.getFirst().id());
+        assertEquals(5, result.getFirst().reservationsAllowed());
     }
 
     @Test
@@ -84,48 +81,5 @@ class EventServiceTest {
         List<EventResponseDTO> result = eventService.getEventsForCurrentUser("testuser");
 
         assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void getAvailableSeatsForCurrentUser_Success() {
-        when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(eventRepository.findByIdOptional(1L)).thenReturn(java.util.Optional.of(event));
-        when(eventUserAllowanceRepository.findByEventIdAndUserId(1L, 1L))
-                .thenReturn(java.util.Optional.of(allowance));
-
-        int availableSeats = eventService.getAvailableSeatsForCurrentUser(1L, "testuser");
-
-        assertEquals(5, availableSeats);
-    }
-
-    @Test
-    void getAvailableSeatsForCurrentUser_UserNotFoundException() {
-        when(userRepository.findByUsername("unknownuser")).thenReturn(null);
-
-        assertThrows(
-                UserNotFoundException.class,
-                () -> eventService.getAvailableSeatsForCurrentUser(1L, "unknownuser"));
-    }
-
-    @Test
-    void getAvailableSeatsForCurrentUser_NotFoundException_EventNotFound() {
-        when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(eventRepository.findByIdOptional(99L)).thenReturn(java.util.Optional.empty());
-
-        assertThrows(
-                EventNotFoundException.class,
-                () -> eventService.getAvailableSeatsForCurrentUser(99L, "testuser"));
-    }
-
-    @Test
-    void getAvailableSeatsForCurrentUser_ForbiddenException_NoAccess() {
-        when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(eventRepository.findByIdOptional(1L)).thenReturn(java.util.Optional.of(event));
-        when(eventUserAllowanceRepository.findByEventIdAndUserId(1L, 1L))
-                .thenReturn(java.util.Optional.empty());
-
-        assertThrows(
-                EventNotFoundException.class,
-                () -> eventService.getAvailableSeatsForCurrentUser(1L, "testuser"));
     }
 }

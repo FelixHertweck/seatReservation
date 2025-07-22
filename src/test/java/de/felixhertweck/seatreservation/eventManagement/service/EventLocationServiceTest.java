@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import de.felixhertweck.seatreservation.common.dto.EventLocationResponseDTO;
+import de.felixhertweck.seatreservation.eventManagement.dto.EventLocationRegistrationDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventLocationRequestDTO;
 import de.felixhertweck.seatreservation.eventManagement.exception.EventLocationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
@@ -21,6 +22,7 @@ import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 @QuarkusTest
@@ -289,5 +291,60 @@ public class EventLocationServiceTest {
                 SecurityException.class,
                 () -> eventLocationService.deleteEventLocation(1L, regularUser));
         verify(eventLocationRepository, never()).delete(any(EventLocation.class));
+    }
+
+    @Test
+    void createEventLocationWithSeats_Success() {
+        // Arrange
+        EventLocationRegistrationDTO dto = new EventLocationRegistrationDTO();
+        EventLocationRegistrationDTO.EventLocationData locationData =
+                new EventLocationRegistrationDTO.EventLocationData();
+        locationData.setName("New Location with Seats");
+        locationData.setAddress("123 Seat Street");
+        locationData.setCapacity(10);
+        dto.setEventLocation(locationData);
+
+        EventLocationRegistrationDTO.SeatData seat1 = new EventLocationRegistrationDTO.SeatData();
+        seat1.setSeatNumber("A1");
+        seat1.setXCoordinate(1);
+        seat1.setYCoordinate(1);
+
+        EventLocationRegistrationDTO.SeatData seat2 = new EventLocationRegistrationDTO.SeatData();
+        seat2.setSeatNumber("A2");
+        seat2.setXCoordinate(1);
+        seat2.setYCoordinate(2);
+
+        dto.setSeats(List.of(seat1, seat2));
+
+        doAnswer(
+                        invocation -> {
+                            EventLocation loc = invocation.getArgument(0);
+                            loc.id = 20L; // Simulate ID generation
+                            return null;
+                        })
+                .when(eventLocationRepository)
+                .persist(any(EventLocation.class));
+
+        // Act
+        EventLocationResponseDTO result =
+                eventLocationService.createEventLocationWithSeats(dto, managerUser);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("New Location with Seats", result.name());
+        assertEquals(10, result.capacity());
+        assertEquals(managerUser.getUsername(), result.manager().username());
+
+        verify(eventLocationRepository, times(2)).persist(any(EventLocation.class));
+
+        ArgumentCaptor<EventLocation> eventLocationCaptor =
+                ArgumentCaptor.forClass(EventLocation.class);
+        verify(eventLocationRepository, times(2)).persist(eventLocationCaptor.capture());
+
+        EventLocation persistedLocation = eventLocationCaptor.getValue();
+        assertNotNull(persistedLocation.getSeats());
+        assertEquals(2, persistedLocation.getSeats().size());
+        assertEquals("A1", persistedLocation.getSeats().get(0).getSeatNumber());
+        assertEquals("A2", persistedLocation.getSeats().get(1).getSeatNumber());
     }
 }

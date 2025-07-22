@@ -101,7 +101,9 @@ public class ReservationServiceTest {
         seat = new Seat("A1", eventLocation, 1, 1);
         seat.id = 1L;
 
-        reservation = new Reservation(regularUser, event, seat, LocalDateTime.now());
+        reservation =
+                new Reservation(
+                        regularUser, event, seat, LocalDateTime.now(), ReservationStatus.RESERVED);
         reservation.id = 1L;
 
         allowance = new EventUserAllowance(regularUser, event, 1);
@@ -431,5 +433,36 @@ public class ReservationServiceTest {
         assertThrows(
                 SecurityException.class,
                 () -> reservationService.deleteReservation(reservation.id, managerUser));
+    }
+
+    @Test
+    void blockSeats_Success() {
+        when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
+        when(seatRepository.findByIdOptional(seat.id)).thenReturn(Optional.of(seat));
+        when(reservationRepository.findByEventId(event.id)).thenReturn(Collections.emptyList());
+
+        reservationService.blockSeats(event.id, List.of(seat.id), managerUser);
+
+        verify(reservationRepository).persist(any(Iterable.class));
+    }
+
+    @Test
+    void blockSeats_Forbidden() {
+        when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
+
+        assertThrows(
+                SecurityException.class,
+                () -> reservationService.blockSeats(event.id, List.of(seat.id), regularUser));
+    }
+
+    @Test
+    void blockSeats_SeatAlreadyReserved() {
+        when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
+        when(seatRepository.findByIdOptional(seat.id)).thenReturn(Optional.of(seat));
+        when(reservationRepository.findByEventId(event.id)).thenReturn(List.of(reservation));
+
+        assertThrows(
+                IllegalStateException.class,
+                () -> reservationService.blockSeats(event.id, List.of(seat.id), managerUser));
     }
 }

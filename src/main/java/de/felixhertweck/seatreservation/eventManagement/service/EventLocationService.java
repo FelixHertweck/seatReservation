@@ -7,9 +7,11 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.dto.EventLocationResponseDTO;
+import de.felixhertweck.seatreservation.eventManagement.dto.EventLocationRegistrationDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventLocationRequestDTO;
 import de.felixhertweck.seatreservation.eventManagement.exception.EventLocationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
+import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.security.Roles;
@@ -128,5 +130,60 @@ public class EventLocationService {
         }
 
         eventLocationRepository.delete(location);
+    }
+
+    /**
+     * Creates a new EventLocation with seats. The manager of the EventLocation is set to the
+     * currently authenticated user.
+     *
+     * @param dto The DTO containing the details of the EventLocation and its seats.
+     * @param manager The currently authenticated user who is the manager of the EventLocation.
+     * @throws IllegalArgumentException If the provided data is invalid.
+     * @throws SecurityException If the user is not authorized to create the EventLocation.
+     * @return A DTO representing the newly created EventLocation with its seats.
+     */
+    @Transactional
+    public EventLocationResponseDTO createEventLocationWithSeats(
+            EventLocationRegistrationDTO dto, User manager)
+            throws IllegalArgumentException, SecurityException {
+        EventLocationRegistrationDTO.EventLocationData locationData = dto.getEventLocation();
+        if (locationData == null
+                || locationData.getName() == null
+                || locationData.getName().trim().isEmpty()
+                || locationData.getAddress() == null
+                || locationData.getAddress().trim().isEmpty()
+                || locationData.getCapacity() == null
+                || locationData.getCapacity() <= 0) {
+            throw new IllegalArgumentException("Invalid EventLocation data provided.");
+        }
+
+        EventLocation location =
+                new EventLocation(
+                        locationData.getName(),
+                        locationData.getAddress(),
+                        manager,
+                        locationData.getCapacity());
+        eventLocationRepository.persist(location);
+
+        if (dto.getSeats() != null) {
+            for (EventLocationRegistrationDTO.SeatData seatData : dto.getSeats()) {
+                if (seatData.getSeatNumber() == null || seatData.getSeatNumber().trim().isEmpty()) {
+                    throw new IllegalArgumentException("Seat number cannot be empty");
+                }
+                if (seatData.getXCoordinate() < 0 || seatData.getYCoordinate() < 0) {
+                    throw new IllegalArgumentException("Coordinates cannot be negative");
+                }
+                Seat seat =
+                        new Seat(
+                                seatData.getSeatNumber(),
+                                location,
+                                seatData.getXCoordinate(),
+                                seatData.getYCoordinate());
+                location.getSeats().add(seat);
+            }
+        }
+
+        eventLocationRepository.persist(location);
+        return new EventLocationResponseDTO(location);
     }
 }

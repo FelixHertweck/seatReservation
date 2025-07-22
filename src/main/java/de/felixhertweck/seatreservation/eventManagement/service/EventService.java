@@ -132,6 +132,36 @@ public class EventService {
         return events.stream().map(DetailedEventResponseDTO::new).collect(Collectors.toList());
     }
 
+    /**
+     * Deletes an event. Access control: The deletion is only allowed if the currently authenticated
+     * user is the manager of the Event or has the ADMIN role. Deleting an event will also delete
+     * all associated user allowances and reservations due to cascading settings in the Event
+     * entity.
+     *
+     * @param id The ID of the Event to be deleted.
+     * @param currentUser The currently authenticated user.
+     * @throws EventNotFoundException If the Event with the specified ID is not found.
+     * @throws SecurityException If the user is not authorized to delete the Event.
+     */
+    @Transactional
+    public void deleteEvent(Long id, User currentUser)
+            throws EventNotFoundException, SecurityException {
+        Event event =
+                eventRepository
+                        .findByIdOptional(id)
+                        .orElseThrow(
+                                () ->
+                                        new EventNotFoundException(
+                                                "Event with id " + id + " not found"));
+
+        if (!event.getManager().equals(currentUser)
+                && !currentUser.getRoles().contains(Roles.ADMIN)) {
+            throw new SecurityException("User is not authorized to delete this event");
+        }
+
+        eventRepository.delete(event);
+    }
+
     @Transactional
     public EventUserAllowancesDto setReservationsAllowedForUser(
             EventUserAllowancesDto dto, User manager)
@@ -169,6 +199,75 @@ public class EventService {
         }
 
         return new EventUserAllowancesDto(allowance);
+    }
+
+    /**
+     * Retrieves all reservation allowances for the currently authenticated user. Access control: If
+     * the user is an administrator, all allowances are returned. Otherwise, only allowances for
+     * events managed by the current user are returned.
+     *
+     * @param currentUser The currently authenticated user.
+     * @throws SecurityException If the user is not authorized to view the allowances.
+     * @return A list of DTOs representing the reservation allowances for the current user.
+     */
+    public List<EventUserAllowancesDto> getReservationAllowances(User currentUser)
+            throws SecurityException {
+        List<EventUserAllowance> allowances;
+        if (currentUser.getRoles().contains(Roles.ADMIN)) {
+            allowances = eventUserAllowanceRepository.listAll();
+        } else {
+            allowances = eventUserAllowanceRepository.find("event.manager", currentUser).list();
+        }
+        return allowances.stream().map(EventUserAllowancesDto::new).collect(Collectors.toList());
+    }
+
+    /**
+     * Retrieves all reservation allowances for a specific event. Access control: The user must be
+     * the manager of the event or have the ADMIN role to view the allowances.
+     *
+     * @param eventId The ID of the event for which to retrieve allowances.
+     * @param currentUser The currently authenticated user.
+     * @throws SecurityException If the user is not authorized to view the allowances for this
+     *     event.
+     * @throws EventNotFoundException If the event with the specified ID is not found.
+     * @return A list of DTOs representing the reservation allowances for the specified event.
+     */
+    public List<EventUserAllowancesDto> getReservationAllowancesByEventId(
+            Long eventId, User currentUser) throws SecurityException, EventNotFoundException {
+        Event event = getEventById(eventId);
+        if (!event.getManager().equals(currentUser)
+                && !currentUser.getRoles().contains(Roles.ADMIN)) {
+            throw new SecurityException("User is not authorized to view allowances for this event");
+        }
+        return eventUserAllowanceRepository.findByEventId(eventId).stream()
+                .map(EventUserAllowancesDto::new)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Deletes a reservation allowance. Access control: The user must be the manager of the event
+     * associated with the allowance or have the ADMIN role to delete it.
+     *
+     * @param id The ID of the reservation allowance to be deleted.
+     * @param currentUser The currently authenticated user.
+     * @throws EventNotFoundException If the reservation allowance with the specified ID is not
+     *     found.
+     * @throws SecurityException If the user is not authorized to delete this allowance.
+     */
+    @Transactional
+    public void deleteReservationAllowance(Long id, User currentUser)
+            throws EventNotFoundException, SecurityException {
+        EventUserAllowance allowance =
+                eventUserAllowanceRepository
+                        .findByIdOptional(id)
+                        .orElseThrow(() -> new EventNotFoundException("Allowance not found"));
+
+        if (!allowance.getEvent().getManager().equals(currentUser)
+                && !currentUser.getRoles().contains(Roles.ADMIN)) {
+            throw new SecurityException("User is not authorized to delete this allowance");
+        }
+
+        eventUserAllowanceRepository.delete(allowance);
     }
 
     private Event getEventById(Long id) throws EventNotFoundException {

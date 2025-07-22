@@ -61,7 +61,13 @@ public class ReservationResourceTest {
         var allowance = new EventUserAllowance(testUser, testEvent, 2);
         eventUserAllowanceRepository.persist(allowance);
 
-        testReservation = new Reservation(testUser, testEvent, testSeat1, LocalDateTime.now());
+        testReservation =
+                new Reservation(
+                        testUser,
+                        testEvent,
+                        testSeat1,
+                        LocalDateTime.now(),
+                        ReservationStatus.RESERVED);
         reservationRepository.persist(testReservation);
 
         allowance.setReservationsAllowedCount(allowance.getReservationsAllowedCount() - 1);

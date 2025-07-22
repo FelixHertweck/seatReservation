@@ -73,7 +73,9 @@ class ReservationServiceTest {
         seat2.id = 2L;
         seat2.setLocation(location);
 
-        reservation = new Reservation(currentUser, event, seat1, LocalDateTime.now());
+        reservation =
+                new Reservation(
+                        currentUser, event, seat1, LocalDateTime.now(), ReservationStatus.RESERVED);
         reservation.id = 1L;
 
         allowance = new EventUserAllowance();
@@ -264,7 +266,8 @@ class ReservationServiceTest {
         dto.setSeatIds(List.of(seat1.id));
 
         Reservation existingReservation =
-                new Reservation(otherUser, event, seat1, LocalDateTime.now());
+                new Reservation(
+                        otherUser, event, seat1, LocalDateTime.now(), ReservationStatus.RESERVED);
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
         when(seatRepository.findByIdOptional(seat1.id)).thenReturn(Optional.of(seat1));
         when(eventUserAllowanceRepository.findByUser(currentUser)).thenReturn(List.of(allowance));

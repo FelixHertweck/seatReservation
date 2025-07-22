@@ -23,13 +23,30 @@ public class Reservation extends PanacheEntity {
 
     private LocalDateTime reservationDate;
 
+    @Enumerated(EnumType.STRING)
+    private ReservationStatus status;
+
     public Reservation() {}
 
-    public Reservation(User user, Event event, Seat seat, LocalDateTime reservationDate) {
+    public Reservation(
+            User user,
+            Event event,
+            Seat seat,
+            LocalDateTime reservationDate,
+            ReservationStatus status) {
         this.user = user;
         this.event = event;
         this.seat = seat;
         this.reservationDate = reservationDate;
+        this.status = status;
+    }
+
+    public ReservationStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ReservationStatus status) {
+        this.status = status;
     }
 
     public User getUser() {
@@ -71,12 +88,13 @@ public class Reservation extends PanacheEntity {
         return Objects.equals(user, that.user)
                 && Objects.equals(event, that.event)
                 && Objects.equals(seat, that.seat)
-                && Objects.equals(reservationDate, that.reservationDate);
+                && Objects.equals(reservationDate, that.reservationDate)
+                && Objects.equals(status, that.status);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(user, event, seat, reservationDate);
+        return Objects.hash(user, event, seat, reservationDate, status);
     }
 
     @Override
@@ -90,6 +108,8 @@ public class Reservation extends PanacheEntity {
                 + event
                 + ", reservationDate="
                 + reservationDate
+                + ", status="
+                + status
                 + ", id="
                 + id
                 + '}';

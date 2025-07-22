@@ -245,4 +245,17 @@ public class ReservationResourceTest {
                 .then()
                 .statusCode(401);
     }
+
+    @Test
+    @TestSecurity(
+            user = "manager",
+            roles = {"MANAGER"})
+    void testBlockSeats() {
+        given().contentType("application/json")
+                .body(Map.of("eventId", testEvent.id, "seatIds", new Long[] {anotherSeat.id}))
+                .when()
+                .post("/api/manager/reservations/block")
+                .then()
+                .statusCode(204);
+    }
 }

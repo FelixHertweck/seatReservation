@@ -26,7 +26,7 @@ public record DetailedEventResponseDTO(
                 event.getStartTime(),
                 event.getEndTime(),
                 event.getBookingDeadline(),
-                new EventLocationResponseDTO(event.getEventLocation()),
+                new EventLocationResponseDTO(event.getEventLocation(), event.getReservations()),
                 event.getManager() != null ? new UserDTO(event.getManager()) : null,
                 event.getUserAllowances() != null
                         ? event.getUserAllowances().stream()

@@ -1,5 +1,6 @@
 package de.felixhertweck.seatreservation.eventManagement.ressource;
 
+import java.util.List;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -17,7 +18,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 @RolesAllowed({Roles.MANAGER, Roles.ADMIN})
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class EventUserReservationAllowance {
+public class EventReservationAllowance {
 
     @Inject EventService eventService;
 
@@ -36,5 +37,27 @@ public class EventUserReservationAllowance {
     public EventUserAllowancesDto getReservationAllowanceById(@PathParam("id") Long id) {
         User currentUser = userSecurityContext.getCurrentUser();
         return eventService.getReservationAllowanceById(id, currentUser);
+    }
+
+    @GET
+    public List<EventUserAllowancesDto> getReservationAllowances() {
+        User currentUser = userSecurityContext.getCurrentUser();
+        return eventService.getReservationAllowances(currentUser);
+    }
+
+    @GET
+    @Path("/event/{eventId}")
+    public List<EventUserAllowancesDto> getReservationAllowancesByEventId(
+            @PathParam("eventId") Long eventId) {
+        User currentUser = userSecurityContext.getCurrentUser();
+        return eventService.getReservationAllowancesByEventId(eventId, currentUser);
+    }
+
+    @DELETE
+    @Path("/{id}")
+    @APIResponse(responseCode = "204", description = "No Content")
+    public void deleteReservationAllowance(@PathParam("id") Long id) {
+        User currentUser = userSecurityContext.getCurrentUser();
+        eventService.deleteReservationAllowance(id, currentUser);
     }
 }

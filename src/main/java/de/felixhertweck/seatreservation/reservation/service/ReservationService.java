@@ -119,10 +119,18 @@ public class ReservationService {
         List<Reservation> existingReservations = reservationRepository.findByEventId(event.id);
         List<Reservation> newReservations = new ArrayList<>();
         for (Seat seat : seats) {
-            if (existingReservations.stream().anyMatch(r -> r.getSeat().id.equals(seat.id))) {
+            if (existingReservations.stream()
+                    .anyMatch(
+                            r ->
+                                    r.getSeat().id.equals(seat.id)
+                                            && (r.getStatus() == ReservationStatus.RESERVED
+                                                    || r.getStatus()
+                                                            == ReservationStatus.BLOCKED))) {
                 throw new SeatAlreadyReservedException("One or more seats are already reserved");
             }
-            newReservations.add(new Reservation(currentUser, event, seat, reservationTime));
+            newReservations.add(
+                    new Reservation(
+                            currentUser, event, seat, reservationTime, ReservationStatus.RESERVED));
         }
 
         // Persist the new reservations

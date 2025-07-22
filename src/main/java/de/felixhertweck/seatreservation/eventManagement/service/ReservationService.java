@@ -166,7 +166,9 @@ public class ReservationService {
             throw new IllegalArgumentException("User has no reservation allowance for this event.");
         }
 
-        Reservation reservation = new Reservation(targetUser, event, seat, LocalDateTime.now());
+        Reservation reservation =
+                new Reservation(
+                        targetUser, event, seat, LocalDateTime.now(), ReservationStatus.RESERVED);
         reservationRepository.persist(reservation);
 
         try {
@@ -300,5 +302,70 @@ public class ReservationService {
      */
     public boolean isManagerAllowedToAccessEvent(User manager, Event event) {
         return event.getManager().equals(manager);
+    }
+
+    /**
+     * Blocks seats for an event. Access is restricted based on user roles: - ADMIN: Allows blocking
+     * seats for any event. - MANAGER: Allows blocking seats only for events the manager is allowed
+     * to manage. - Other roles: Throws SecurityException.
+     *
+     * @param eventId The ID of the event for which to block seats.
+     * @param seatIds The IDs of the seats to block.
+     * @param currentUser The user performing the action.
+     * @throws IllegalArgumentException If the event or any seat is not found.
+     * @throws SecurityException If the current user does not have the necessary permissions.
+     * @throws IllegalStateException If any of the specified seats are already reserved or blocked.
+     */
+    @Transactional
+    public void blockSeats(Long eventId, List<Long> seatIds, User currentUser)
+            throws IllegalArgumentException, SecurityException, IllegalStateException {
+        Event event =
+                eventRepository
+                        .findByIdOptional(eventId)
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "Event with id " + eventId + " not found"));
+
+        if (!isManagerAllowedToAccessEvent(currentUser, event)
+                && !currentUser.getRoles().contains(Roles.ADMIN)) {
+            throw new SecurityException("You are not allowed to block seats for this event.");
+        }
+
+        List<Seat> seats =
+                seatIds.stream()
+                        .map(
+                                seatId ->
+                                        seatRepository
+                                                .findByIdOptional(seatId)
+                                                .orElseThrow(
+                                                        () ->
+                                                                new IllegalArgumentException(
+                                                                        "Seat with id "
+                                                                                + seatId
+                                                                                + " not found")))
+                        .toList();
+
+        List<Reservation> existingReservations = reservationRepository.findByEventId(eventId);
+        for (Seat seat : seats) {
+            if (existingReservations.stream().anyMatch(r -> r.getSeat().equals(seat))) {
+                throw new IllegalStateException(
+                        "Seat with id " + seat.id + " is already reserved or blocked.");
+            }
+        }
+
+        List<Reservation> newReservations =
+                seats.stream()
+                        .map(
+                                seat ->
+                                        new Reservation(
+                                                currentUser,
+                                                event,
+                                                seat,
+                                                LocalDateTime.now(),
+                                                ReservationStatus.BLOCKED))
+                        .toList();
+
+        reservationRepository.persist(newReservations);
     }
 }

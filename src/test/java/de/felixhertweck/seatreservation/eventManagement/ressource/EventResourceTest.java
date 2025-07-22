@@ -6,11 +6,14 @@ import jakarta.transaction.Transactional;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
+import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
+import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
@@ -25,6 +28,8 @@ public class EventResourceTest {
 
     @Inject EventLocationRepository eventLocationRepository;
 
+    @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
+
     @Inject UserRepository userRepository;
 
     private Event testEvent;
@@ -33,25 +38,43 @@ public class EventResourceTest {
     @BeforeEach
     @Transactional
     void setUp() {
-        var user = userRepository.findByUsernameOptional("manager").orElseThrow();
+        var manager = userRepository.findByUsernameOptional("manager").orElseThrow();
+        userRepository
+                .findByUsernameOptional("manager2")
+                .orElseGet(
+                        () -> {
+                            var u = new de.felixhertweck.seatreservation.model.entity.User();
+                            u.setUsername("manager2");
+                            u.setPasswordHash("password");
+                            u.setRoles(java.util.Set.of("MANAGER"));
+                            u.setEmail("manager2@example.com");
+                            userRepository.persist(u);
+                            return u;
+                        });
+
         testLocation = new EventLocation();
         testLocation.setName("Test Location");
         testLocation.setAddress("Test Address");
-        testLocation.setManager(user);
+        testLocation.setManager(manager);
         eventLocationRepository.persist(testLocation);
 
         testEvent = new Event();
         testEvent.setName("Test Event");
         testEvent.setEventLocation(testLocation);
-        testEvent.setManager(user);
+        testEvent.setManager(manager);
         eventRepository.persist(testEvent);
+
+        var allowance = new EventUserAllowance(manager, testEvent, 5);
+        eventUserAllowanceRepository.persist(allowance);
     }
 
     @AfterEach
     @Transactional
     void tearDown() {
+        eventUserAllowanceRepository.deleteAll();
         eventRepository.deleteAll();
         eventLocationRepository.deleteAll();
+        userRepository.delete("username", "manager2");
     }
 
     @Test
@@ -161,5 +184,48 @@ public class EventResourceTest {
                 .put("/api/manager/events/999")
                 .then()
                 .statusCode(404);
+    }
+
+    @Test
+    @TestSecurity(
+            user = "manager",
+            roles = {"MANAGER"})
+    void testDeleteEventAsManager() {
+        given().when().delete("/api/manager/events/" + testEvent.getId()).then().statusCode(204);
+    }
+
+    @Test
+    @TestSecurity(
+            user = "admin",
+            roles = {"ADMIN"})
+    void testDeleteEventAsAdmin() {
+        given().when().delete("/api/manager/events/" + testEvent.getId()).then().statusCode(204);
+    }
+
+    @Test
+    @TestSecurity(
+            user = "manager2",
+            roles = {"MANAGER"})
+    void testDeleteEventAsOtherManagerForbidden() {
+        given().when().delete("/api/manager/events/" + testEvent.getId()).then().statusCode(403);
+    }
+
+    @Test
+    void testDeleteEventUnauthorized() {
+        given().when().delete("/api/manager/events/" + testEvent.getId()).then().statusCode(401);
+    }
+
+    @Test
+    @TestSecurity(
+            user = "manager",
+            roles = {"MANAGER"})
+    @Transactional
+    void testDeleteEventDeletesAllowances() {
+        assertEquals(1, eventUserAllowanceRepository.count());
+
+        given().when().delete("/api/manager/events/" + testEvent.getId()).then().statusCode(204);
+
+        assertEquals(0, eventRepository.count());
+        assertEquals(0, eventUserAllowanceRepository.count());
     }
 }
