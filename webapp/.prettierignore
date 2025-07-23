@@ -1,0 +1,6 @@
+out
+docs/openapi.json
+node_modules
+api
+components/ui
+public
