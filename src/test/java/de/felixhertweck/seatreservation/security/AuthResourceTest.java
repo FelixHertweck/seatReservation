@@ -4,10 +4,9 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.Matchers.notNullValue;
 
 import de.felixhertweck.seatreservation.security.dto.LoginRequestDTO;
-import de.felixhertweck.seatreservation.security.dto.LoginResponseDTO;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,10 +17,11 @@ import org.mockito.Mockito;
 public class AuthResourceTest {
 
     @InjectMock AuthService authService;
+    @InjectMock TokenService tokenService;
 
     @BeforeEach
     void setUp() {
-        Mockito.reset(authService);
+        Mockito.reset(authService, tokenService);
     }
 
     @Test
@@ -36,17 +36,23 @@ public class AuthResourceTest {
         loginRequest.setUsername(username);
         loginRequest.setPassword(password);
 
-        LoginResponseDTO response =
-                given().contentType(MediaType.APPLICATION_JSON)
-                        .body(loginRequest)
-                        .when()
-                        .post("/api/auth/login")
-                        .then()
-                        .statusCode(Response.Status.OK.getStatusCode())
-                        .extract()
-                        .as(LoginResponseDTO.class);
+        Mockito.when(tokenService.getExpirationMinutes())
+                .thenReturn(60L); // Mock the expirationMinutes for 60 minutes
 
-        assertEquals(token, response.token());
+        given().contentType(MediaType.APPLICATION_JSON)
+                .body(loginRequest)
+                .when()
+                .post("/api/auth/login")
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode())
+                .cookie("jwt", notNullValue()) // Check for the presence of the jwt cookie
+                .header(
+                        "Set-Cookie",
+                        org.hamcrest.Matchers.containsString(
+                                "Max-Age="
+                                        + (tokenService.getExpirationMinutes()
+                                                * 60))); // Check maxAge of the jwt cookie in the
+        // Set-Cookie header
     }
 
     @Test

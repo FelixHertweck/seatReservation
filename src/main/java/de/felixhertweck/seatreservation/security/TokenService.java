@@ -14,6 +14,10 @@ public class TokenService {
     @ConfigProperty(name = "jwt.token.expiration.minutes", defaultValue = "60")
     long expirationMinutes;
 
+    public long getExpirationMinutes() {
+        return expirationMinutes;
+    }
+
     public String generateToken(User user) {
         return Jwt.upn(user.getUsername())
                 .groups(user.getRoles())

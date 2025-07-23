@@ -41,8 +41,8 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 
 | Testfall | Beschreibung |
 | :--- | :--- |
-| `login_Success` | Sendet eine POST-Anfrage an `/api/auth/login` mit gültigen Anmeldeinformationen. Erwartet einen 200 OK Status und einen JWT-Token im Antwort-Body. |
-| `login_AuthenticationFailedException_InvalidCredentials` | Sendet eine POST-Anfrage an `/api/auth/login` mit ungültigen Anmeldeinformationen. Erwartet einen 403 Forbidden Status. |
+| `login_Success` | Sendet eine POST-Anfrage an `/api/auth/login` mit gültigen Anmeldeinformationen. Erwartet einen 200 OK Status und einen JWT-Cookie mit korrekter `Max-Age`. |
+| `login_AuthenticationFailedException_InvalidCredentials` | Sendet eine POST-Anfrage an `/api/auth/login` mit ungültigen Anmeldeinformationen. Erwartet einen 401 Unauthorized Status. |
 | `login_BadRequest_MissingCredentials` | Sendet eine POST-Anfrage an `/api/auth/login` ohne Benutzernamen oder Passwort. Erwartet einen 400 Bad Request Status. |
 
 ## UserService
@@ -530,6 +530,26 @@ Dieser Test stellt sicher, dass ein Manager oder Admin eine Liste seiner eigenen
     *   Ein Manager ruft seine Event-Liste ab und erhält `200 OK` mit den Daten.
 *   **Fehler:**
     *   Ein nicht autorisierter Benutzer erhält `403 Forbidden`.
+
+---
+
+#### GET /{id}
+
+Ruft ein bestimmtes Event anhand seiner ID ab.
+
+**Beschreibung:**
+
+Dieser Test stellt sicher, dass ein Manager oder Administrator ein bestimmtes Event anhand seiner ID abrufen kann, sofern er dazu berechtigt ist.
+
+**Testfälle:**
+
+*   **Erfolg:**
+    *   Ein Manager ruft ein Event ab, das er verwaltet, und erhält `200 OK` mit den Event-Daten.
+    *   Ein Administrator ruft ein Event ab, das er nicht verwaltet, und erhält `200 OK` mit den Event-Daten.
+*   **Fehler:**
+    *   Ein Manager versucht, ein Event abzurufen, das einem anderen Manager gehört, und erhält `403 Forbidden`.
+    *   Ein nicht existierendes Event wird angefragt, und es wird `404 Not Found` zurückgegeben.
+    *   Ein nicht authentifizierter Benutzer versucht, auf den Endpunkt zuzugreifen, und erhält `401 Unauthorized`.
 
 ---
 
@@ -1040,8 +1060,8 @@ Dieser Test überprüft den Anmeldevorgang.
 **Testfälle:**
 
 *   **Erfolg:**
-    *   Ein registrierter und bestätigter Benutzer sendet gültige Anmeldeinformationen (Benutzername/E-Mail und Passwort) und erhält einen `200 OK`-Status mit einem JWT-Token.
+    *   Ein registrierter und bestätigter Benutzer sendet gültige Anmeldeinformationen (Benutzername/E-Mail und Passwort) und erhält einen `200 OK`-Status mit einem JWT-Cookie.
 *   **Fehler:**
     *   Ein Benutzer sendet ungültige Anmeldeinformationen (falscher Benutzername oder falsches Passwort) und erhält einen `401 Unauthorized`-Status.
-    *   Ein Benutzer, dessen E-Mail-Adresse noch nicht bestätigt wurde, versucht sich anzumelden und erhält `401 Unauthorized`.
+    *   Ein Benutzer, dessen E-Mail-Adresse noch nicht bestätigt wurde, versucht sich anzumelden und erhält `401 Unauthorized`-Status.
     *   Die Anfrage hat ein ungültiges Format (z. B. fehlendes Passwort) und erhält einen `400 Bad Request`-Status.

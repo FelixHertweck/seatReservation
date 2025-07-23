@@ -66,10 +66,10 @@ public class UserResource {
     }
 
     @GET
-    @Path("/admin/{id}")
+    @Path("/admin")
     @RolesAllowed(Roles.ADMIN)
-    public UserDTO getUserById(@PathParam("id") Long id) {
-        return userService.getUserById(id);
+    public List<UserDTO> getAllUsersAsAdmin() {
+        return userService.getUsersAsAdmin();
     }
 
     @PUT

@@ -65,6 +65,17 @@ public class EventResource {
         return eventService.getEventsByCurrentManager(currentUser);
     }
 
+    @GET
+    @Path("/{id}")
+    @APIResponse(
+            responseCode = "200",
+            description = "OK",
+            content = @Content(schema = @Schema(implementation = DetailedEventResponseDTO.class)))
+    public DetailedEventResponseDTO getEventById(@PathParam("id") Long id) {
+        User currentUser = userSecurityContext.getCurrentUser();
+        return eventService.getEventByIdForManager(id, currentUser);
+    }
+
     @DELETE
     @Path("/{id}")
     @APIResponse(responseCode = "204", description = "Event deleted")

@@ -102,6 +102,43 @@ public class EventResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    void testGetEventByIdForManager() {
+        given().when()
+                .get("/api/manager/events/" + testEvent.getId())
+                .then()
+                .statusCode(200)
+                .body("name", is(testEvent.getName()));
+    }
+
+    @Test
+    @TestSecurity(
+            user = "admin",
+            roles = {"ADMIN"})
+    void testGetEventByIdForAdmin() {
+        given().when()
+                .get("/api/manager/events/" + testEvent.getId())
+                .then()
+                .statusCode(200)
+                .body("name", is(testEvent.getName()));
+    }
+
+    @Test
+    @TestSecurity(
+            user = "manager2",
+            roles = {"MANAGER"})
+    void testGetEventByIdForOtherManagerForbidden() {
+        given().when().get("/api/manager/events/" + testEvent.getId()).then().statusCode(403);
+    }
+
+    @Test
+    void testGetEventByIdUnauthorized() {
+        given().when().get("/api/manager/events/" + testEvent.getId()).then().statusCode(401);
+    }
+
+    @Test
+    @TestSecurity(
+            user = "manager",
+            roles = {"MANAGER"})
     void testCreateEvent() {
         given().contentType("application/json")
                 .body(

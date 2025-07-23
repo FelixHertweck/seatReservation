@@ -7,10 +7,10 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 
 import de.felixhertweck.seatreservation.security.dto.LoginRequestDTO;
-import de.felixhertweck.seatreservation.security.dto.LoginResponseDTO;
 
 @Path("/api/auth")
 @Produces(MediaType.APPLICATION_JSON)
@@ -18,6 +18,7 @@ import de.felixhertweck.seatreservation.security.dto.LoginResponseDTO;
 public class AuthResource {
 
     @Inject AuthService authService;
+    @Inject TokenService tokenService;
 
     @POST
     @Path("/login")
@@ -26,7 +27,16 @@ public class AuthResource {
             String token =
                     authService.authenticate(
                             loginRequest.getUsername(), loginRequest.getPassword());
-            return Response.ok(new LoginResponseDTO(token)).build();
+
+            NewCookie jwtCookie =
+                    new NewCookie.Builder("jwt")
+                            .value(token)
+                            .path("/")
+                            .maxAge((int) (tokenService.getExpirationMinutes() * 60))
+                            .httpOnly(true)
+                            .secure(true)
+                            .build();
+            return Response.ok().cookie(jwtCookie).build();
         } catch (AuthenticationFailedException e) {
             return Response.status(Response.Status.UNAUTHORIZED).entity(e.getMessage()).build();
         }

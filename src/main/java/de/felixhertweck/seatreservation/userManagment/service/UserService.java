@@ -181,6 +181,10 @@ public class UserService {
         return userRepository.listAll().stream().map(LimitedUserInfoDTO::new).toList();
     }
 
+    public List<UserDTO> getUsersAsAdmin() {
+        return userRepository.listAll().stream().map(UserDTO::new).toList();
+    }
+
     public List<String> getAvailableRoles() {
         return Arrays.asList(Roles.ALL_ROLES);
     }

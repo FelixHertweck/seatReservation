@@ -282,4 +282,24 @@ public class EventService {
                 .findByIdOptional(id)
                 .orElseThrow(() -> new UserNotFoundException("User with id " + id + " not found"));
     }
+
+    /**
+     * Retrieves a specific Event by its ID for a manager. Access control: The event is only
+     * returned if the currently authenticated user is the manager of the Event or has the ADMIN
+     * role.
+     *
+     * @param id The ID of the Event to be retrieved.
+     * @param manager The currently authenticated user.
+     * @return A DTO representing the retrieved Event.
+     * @throws EventNotFoundException If the Event with the specified ID is not found.
+     * @throws SecurityException If the user is not authorized to view the Event.
+     */
+    public DetailedEventResponseDTO getEventByIdForManager(Long id, User manager)
+            throws EventNotFoundException, SecurityException {
+        Event event = getEventById(id);
+        if (!event.getManager().equals(manager) && !manager.getRoles().contains(Roles.ADMIN)) {
+            throw new SecurityException("User is not authorized to view this event");
+        }
+        return new DetailedEventResponseDTO(event);
+    }
 }
