@@ -27,7 +27,7 @@ Basispfad: `/api/auth`
 
 #### POST /login
 
-Authentifiziert einen Benutzer und gibt einen JWT-Token zurück.
+Authentifiziert einen Benutzer und setzt einen JWT-Cookie.
 
 -   **Rollen:** Öffentlich
 -   **Request Body:** `LoginRequestDTO`
@@ -38,12 +38,7 @@ Authentifiziert einen Benutzer und gibt einen JWT-Token zurück.
     }
     ```
 -   **Responses:**
-    -   `200 OK`: Erfolgreiche Anmeldung. Gibt `LoginResponseDTO` mit dem JWT-Token zurück.
-        ```json
-        {
-          "token": "string"
-        }
-        ```
+    -   `200 OK`: Erfolgreiche Anmeldung. Setzt einen `jwt`-Cookie.
     -   `401 Unauthorized`: Ungültige Anmeldeinformationen oder E-Mail nicht bestätigt.
 
 ---
@@ -118,15 +113,13 @@ Ruft alle verfügbaren Benutzerrollen ab.
 
 ---
 
-#### GET /admin/{id}
+#### GET /admin
 
-Ruft die vollständigen Daten eines bestimmten Benutzers ab.
+Ruft die vollständigen Daten aller Benutzer ab.
 
 -   **Rollen:** `ADMIN`
--   **Path Parameter:** `id` (Long) - Die ID des Benutzers.
 -   **Responses:**
-    -   `200 OK`: Gibt das `UserDTO` Objekt zurück.
-    -   `404 Not Found`: Benutzer nicht gefunden.
+    -   `200 OK`: Gibt eine Liste von `UserDTO` Objekten zurück.
     -   `403 Forbidden`: Zugriff verweigert.
 
 ---
@@ -283,6 +276,19 @@ Ruft alle Events ab, die vom aktuellen Manager verwaltet werden.
 -   **Rollen:** `MANAGER`, `ADMIN`
 -   **Responses:**
     -   `200 OK`: Gibt eine Liste von `DetailedEventResponseDTO` Objekten zurück.
+
+---
+
+#### GET /{id}
+
+Ruft ein bestimmtes Event anhand seiner ID ab.
+
+-   **Rollen:** `MANAGER`, `ADMIN`
+-   **Path Parameter:** `id` (Long) - Die ID des Events.
+-   **Responses:**
+    -   `200 OK`: Gibt `DetailedEventResponseDTO` zurück.
+    -   `403 Forbidden`: Keine Berechtigung.
+    -   `404 Not Found`: Event nicht gefunden.
 
 ---
 
