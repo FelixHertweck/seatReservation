@@ -5,7 +5,7 @@ export default defineConfig({
   output: {
     format: "prettier",
     lint: "eslint",
-    path: "./src/api",
+    path: "./api",
   },
   plugins: [
     "@hey-api/schemas",

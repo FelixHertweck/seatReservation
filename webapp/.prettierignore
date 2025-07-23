@@ -1,6 +1,0 @@
-dist
-docs/openapi.json
-node_modules
-src/api
-public
-.github

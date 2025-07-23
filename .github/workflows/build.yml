@@ -18,11 +18,11 @@ permissions:
 
 
 jobs:
-  vite:
-    uses: ./.github/workflows/vite.yml
+  frontend:
+    uses: ./.github/workflows/frontend.yml
 
   maven:
-    needs: vite
+    needs: frontend
     uses: ./.github/workflows/maven.yml
     with:
       build-artifact-name: quarkus-app

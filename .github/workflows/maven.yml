@@ -28,11 +28,11 @@ jobs:
       - name: Download frontend artifact
         uses: actions/download-artifact@v4
         with:
-          name: vite-dist
-          path: dist
+          name: frontend-build
+          path: out
 
       - name: Copy frontend to backend resources
-        run: cp -r dist/* src/main/resources/META-INF/resources/
+        run: cp -r out/* src/main/resources/META-INF/resources/
 
       - name: Generate keys for JWT tests
         run: |

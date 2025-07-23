@@ -837,6 +837,40 @@
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
         } ]
       },
+      "get" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DetailedEventResponseDTO"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Get Event By Id",
+        "tags" : [ "Event Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
+        } ]
+      },
       "delete" : {
         "parameters" : [ {
           "name" : "id",
@@ -1663,6 +1697,34 @@
       }
     },
     "/api/users/admin" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/UserDTO"
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Get All Users As Admin",
+        "tags" : [ "User Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "ADMIN" ]
+        } ]
+      },
       "post" : {
         "requestBody" : {
           "content" : {
@@ -1745,40 +1807,6 @@
           }
         },
         "summary" : "Update User",
-        "tags" : [ "User Resource" ],
-        "security" : [ {
-          "SecurityScheme" : [ "ADMIN" ]
-        } ]
-      },
-      "get" : {
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/UserDTO"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Not Authorized"
-          },
-          "403" : {
-            "description" : "Not Allowed"
-          }
-        },
-        "summary" : "Get User By Id",
         "tags" : [ "User Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "ADMIN" ]

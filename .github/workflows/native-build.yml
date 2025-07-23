@@ -17,11 +17,11 @@ permissions:
   id-token: write
 
 jobs:
-  vite:
-    uses: ./.github/workflows/vite.yml
+  frontend:
+    uses: ./.github/workflows/frontend.yml
 
   maven-native:
-    needs: vite
+    needs: frontend
     uses: ./.github/workflows/maven.yml
     with:
       maven-args: "-Pnative"
