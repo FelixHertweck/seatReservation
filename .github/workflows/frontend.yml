@@ -3,8 +3,8 @@ on:
   workflow_call:
 
 jobs:
-  vite:
-    name: vite build
+  frontend:
+    name: frontend build
     runs-on: "ubuntu-24.04"
 
     steps:
