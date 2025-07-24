@@ -56,6 +56,9 @@ jobs:
       - name: Run Spotless Check
         run: ./mvnw -B spotless:check
 
+      - name: Run License Check
+        run: ./mvnw -B license:check-file-header
+
       - name: Build & Test Backend
         run: ./mvnw -B ${{ inputs.maven-args }} package
 

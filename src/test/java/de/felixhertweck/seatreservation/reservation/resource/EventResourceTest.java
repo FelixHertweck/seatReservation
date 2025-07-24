@@ -1,3 +1,22 @@
+/*
+ * #%L
+ * seat-reservation
+ * %%
+ * Copyright (C) 2025 Felix Hertweck
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 package de.felixhertweck.seatreservation.reservation.resource;
 
 import jakarta.inject.Inject;
@@ -24,9 +43,6 @@ public class EventResourceTest {
     @Inject EventLocationRepository eventLocationRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
 
-    private Event testEvent;
-    private Event otherEvent;
-
     @BeforeEach
     @Transactional
     void setUp() {
@@ -39,12 +55,12 @@ public class EventResourceTest {
         testLocation.setManager(managerUser);
         eventLocationRepository.persist(testLocation);
 
-        testEvent = new Event();
+        Event testEvent = new Event();
         testEvent.setName("Accessible Event");
         testEvent.setEventLocation(testLocation);
         eventRepository.persist(testEvent);
 
-        otherEvent = new Event();
+        Event otherEvent = new Event();
         otherEvent.setName("Inaccessible Event");
         otherEvent.setEventLocation(testLocation);
         eventRepository.persist(otherEvent);

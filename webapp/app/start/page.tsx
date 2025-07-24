@@ -92,7 +92,7 @@ export default function HomePage() {
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <Link
-                    href="/main/events"
+                    href="/events"
                     className="hover:text-foreground transition-colors"
                   >
                     Events
@@ -100,7 +100,7 @@ export default function HomePage() {
                 </li>
                 <li>
                   <Link
-                    href="/main/reservations"
+                    href="/reservations"
                     className="hover:text-foreground transition-colors"
                   >
                     Reservations
@@ -108,7 +108,7 @@ export default function HomePage() {
                 </li>
                 <li>
                   <Link
-                    href="/main/manager"
+                    href="/manager"
                     className="hover:text-foreground transition-colors"
                   >
                     Management
@@ -116,7 +116,7 @@ export default function HomePage() {
                 </li>
                 <li>
                   <Link
-                    href="/main/admin"
+                    href="/admin"
                     className="hover:text-foreground transition-colors"
                   >
                     Administration
@@ -145,7 +145,7 @@ export default function HomePage() {
                 </li>
                 <li>
                   <Link
-                    href="https://github.com/vercel/v0"
+                    href="https://github.com/FelixHertweck/seatReservation"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-foreground transition-colors flex items-center gap-2"

@@ -4,15 +4,19 @@
 
 # Backend check
 cd "$(dirname "$0")"
-mvn spotless:check || {
+./mvnw spotless:check || {
   echo "Spotless check failed. Please fix the issues before committing."
   exit 1
 }
-mvn test || {
+./mvnw license:check-file-header || {
+  echo "License check failed. Please fix the issues before committing."
+  exit 1
+}
+./mvnw  test || {
   echo "Tests failed. Please fix the issues before committing."
   exit 1
 }
-mvn quarkus:build || {
+./mvnw quarkus:build || {
   echo "Build failed. Please fix the issues before committing."
   exit 1
 }

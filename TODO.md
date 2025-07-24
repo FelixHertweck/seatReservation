@@ -4,8 +4,7 @@
 - [x] User Email Status
 - [x] Service-Schicht von Web-Exceptions entkoppeln (z.B. `BadRequestException` durch `IllegalArgumentException` ersetzen)
 - [ ] Logging
-- [ ] License Header
-- [ ] Vllt umbennen von SeatReservations in Event Management
+- [X] License Header
 - [ ] Logo erstellen und einfügen
 - [ ] Create allowance mehrere Nutzer auswählbar machen muss einfacher sein
 - [ ] TanStack Query Mutations sollten onSuccess Daten anderer verändern
