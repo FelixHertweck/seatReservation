@@ -1,14 +1,9 @@
 name: native-build.yml
 on:
   push:
-    branches: [ "main" ]
-    paths-ignore: [ "**/*.md" ]
     tags:
       - "v*.*"
       - "v*.*.*"
-  pull_request:
-    branches: [ "main" ]
-    paths-ignore: [ "**/*.md" ]
   workflow_dispatch:
 
 permissions:
