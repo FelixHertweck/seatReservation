@@ -137,4 +137,27 @@ public class EmailService {
         LOG.infof("Sending reservation confirmation to %s", user.getEmail());
         mailer.send(mail);
     }
+
+    /**
+     * Sends a password changed notification email to the specified user.
+     *
+     * @param user the user to whom the password changed email will be sent
+     * @throws IOException if the email template cannot be read
+     */
+    public void sendPasswordChangedNotification(User user) throws IOException {
+        // Read the HTML template
+        String templatePath = "src/main/resources/templates/email/password-changed.html";
+        String htmlContent = new String(Files.readAllBytes(Paths.get(templatePath)));
+
+        // Replace placeholders with actual values
+        htmlContent =
+                htmlContent.replace("{userName}", user.getFirstname() + " " + user.getLastname());
+        htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
+
+        // Create and send the email
+        Mail mail = Mail.withHtml(user.getEmail(), "Ihr Passwort wurde geändert", htmlContent);
+
+        LOG.infof("Sending password changed notification to %s", user.getEmail());
+        mailer.send(mail);
+    }
 }

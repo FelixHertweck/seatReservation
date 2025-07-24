@@ -19,7 +19,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 @Path("/api/user/events")
 @Produces(MediaType.APPLICATION_JSON)
-@RolesAllowed(Roles.USER)
+@RolesAllowed({Roles.USER, Roles.MANAGER, Roles.ADMIN})
 public class EventResource {
 
     @Inject EventService eventService;

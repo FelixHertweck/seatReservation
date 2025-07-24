@@ -1,4 +1,4 @@
-package de.felixhertweck.seatreservation.security;
+package de.felixhertweck.seatreservation.security.service;
 
 import java.time.Duration;
 import jakarta.enterprise.context.ApplicationScoped;

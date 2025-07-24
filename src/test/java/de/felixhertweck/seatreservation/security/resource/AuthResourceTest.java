@@ -1,4 +1,4 @@
-package de.felixhertweck.seatreservation.security;
+package de.felixhertweck.seatreservation.security.resource;
 
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -6,7 +6,10 @@ import jakarta.ws.rs.core.Response;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.notNullValue;
 
+import de.felixhertweck.seatreservation.security.AuthenticationFailedException;
 import de.felixhertweck.seatreservation.security.dto.LoginRequestDTO;
+import de.felixhertweck.seatreservation.security.service.AuthService;
+import de.felixhertweck.seatreservation.security.service.TokenService;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;

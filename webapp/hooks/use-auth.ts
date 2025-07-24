@@ -1,15 +1,17 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getApiUsersMeOptions,
   postApiAuthLoginMutation,
+  postApiAuthLogoutMutation,
 } from "@/api/@tanstack/react-query.gen";
-import type { UserCreationDto } from "@/api";
+import { UserCreationDto } from "@/api";
 
 export function useAuth() {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const {
     data: user,
@@ -28,6 +30,8 @@ export function useAuth() {
 
   const login = async (username: string, password: string) => {
     await loginMutation({ body: { username, password } });
+    await queryClient.invalidateQueries();
+    router.push("/events");
   };
 
   const register = async (userData: UserCreationDto) => {
@@ -36,8 +40,13 @@ export function useAuth() {
     router.push("/events");
   };
 
-  const logout = () => {
-    router.push("/login");
+  const { mutateAsync: logoutMutation } = useMutation({
+    ...postApiAuthLogoutMutation(),
+  });
+
+  const logout = async () => {
+    await logoutMutation({});
+    window.location.reload();
   };
 
   return {

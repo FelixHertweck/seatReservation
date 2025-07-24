@@ -114,6 +114,13 @@ public class UserService {
         // Update password if provided
         if (password != null && !password.trim().isEmpty()) {
             existingUser.setPasswordHash(BcryptUtil.bcryptHash(password)); // Hash the password
+            // Send password changed notification email
+            try {
+                emailService.sendPasswordChangedNotification(existingUser);
+            } catch (IOException e) {
+                throw new RuntimeException(
+                        "Failed to send password changed notification email: " + e.getMessage());
+            }
         }
     }
 

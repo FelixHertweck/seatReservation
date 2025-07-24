@@ -200,6 +200,20 @@ export type PostApiAuthLoginResponses = {
     200: unknown;
 };
 
+export type PostApiAuthLogoutData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/auth/logout';
+};
+
+export type PostApiAuthLogoutResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
 export type GetApiManagerEventlocationsData = {
     body?: never;
     path?: never;

@@ -25,14 +25,17 @@ export function EventCard({ event, onReserve }: EventCardProps) {
     : true;
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader>
+    <Card className="h-full flex flex-col hover:shadow-lg transition-all duration-300 hover:scale-[1.02] group animate-in fade-in slide-in-from-bottom duration-500">
+      <CardHeader className="group-hover:bg-accent/5 transition-colors duration-300">
         <div className="flex items-start justify-between">
-          <CardTitle className="line-clamp-2">{event.name}</CardTitle>
+          <CardTitle className="line-clamp-2 group-hover:text-primary transition-colors duration-300">
+            {event.name}
+          </CardTitle>
           <Badge
             variant={
               hasAvailableSeats && isBookingOpen ? "default" : "secondary"
             }
+            className="animate-in zoom-in duration-300 group-hover:scale-105 transition-transform"
           >
             {hasAvailableSeats && isBookingOpen ? "Available" : "Full"}
           </Badge>
@@ -43,27 +46,27 @@ export function EventCard({ event, onReserve }: EventCardProps) {
       </CardHeader>
 
       <CardContent className="flex-1 space-y-3">
-        <div className="flex items-center text-sm text-muted-foreground">
-          <Calendar className="mr-2 h-4 w-4" />
+        <div className="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors duration-300">
+          <Calendar className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
           {event.startTime
             ? new Date(event.startTime).toLocaleDateString()
             : "TBD"}
         </div>
 
-        <div className="flex items-center text-sm text-muted-foreground">
-          <Clock className="mr-2 h-4 w-4" />
+        <div className="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors duration-300">
+          <Clock className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
           {event.startTime && event.endTime
             ? `${new Date(event.startTime).toLocaleTimeString()} - ${new Date(event.endTime).toLocaleTimeString()}`
             : "Time TBD"}
         </div>
 
-        <div className="flex items-center text-sm text-muted-foreground">
-          <MapPin className="mr-2 h-4 w-4" />
+        <div className="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors duration-300">
+          <MapPin className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
           {event.location?.name || "Location TBD"}
         </div>
 
-        <div className="flex items-center text-sm text-muted-foreground">
-          <Users className="mr-2 h-4 w-4" />
+        <div className="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors duration-300">
+          <Users className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
           {event.reservationsAllowed} seats available
         </div>
 
@@ -77,7 +80,7 @@ export function EventCard({ event, onReserve }: EventCardProps) {
       <CardFooter>
         <Button
           onClick={onReserve}
-          className="w-full"
+          className="w-full hover:scale-[1.02] transition-all duration-300 active:scale-[0.98]"
           disabled={!hasAvailableSeats || !isBookingOpen}
         >
           {hasAvailableSeats && isBookingOpen

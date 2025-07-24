@@ -253,6 +253,34 @@ public class UserServiceTest {
         assertTrue(BcryptUtil.matches("newpassword", existingUser.getPasswordHash()));
         verify(userRepository, times(1)).persist(existingUser);
         verify(emailService, never()).sendEmailConfirmation(any(User.class));
+        verify(emailService, times(1)).sendPasswordChangedNotification(any(User.class));
+    }
+
+    @Test
+    void updateUser_Success_UpdatePassword_SendsEmail()
+            throws IOException,
+                    UserNotFoundException,
+                    InvalidUserException,
+                    DuplicateUserException {
+        User existingUser =
+                new User(
+                        "testuser",
+                        "old@example.com",
+                        true,
+                        "oldhash",
+                        "John",
+                        "Doe",
+                        Collections.singleton(Roles.USER));
+        existingUser.id = 1L;
+        final AdminUserUpdateDTO dto =
+                new AdminUserUpdateDTO(
+                        null, null, "newpassword", null, Collections.singleton(Roles.USER));
+
+        when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
+
+        userService.updateUser(1L, dto);
+
+        verify(emailService, times(1)).sendPasswordChangedNotification(existingUser);
     }
 
     @Test
@@ -637,6 +665,7 @@ public class UserServiceTest {
         assertTrue(BcryptUtil.matches("newpassword", existingUser.getPasswordHash()));
         verify(userRepository, times(1)).persist(existingUser);
         verify(emailService, never()).sendEmailConfirmation(any(User.class));
+        verify(emailService, times(1)).sendPasswordChangedNotification(any(User.class));
     }
 
     @Test
@@ -743,6 +772,31 @@ public class UserServiceTest {
 
         assertThrows(RuntimeException.class, () -> userService.updateUserProfile("testuser", dto));
         verify(emailService, times(1)).sendEmailConfirmation(existingUser);
+        verify(emailService, never()).sendPasswordChangedNotification(any(User.class));
+    }
+
+    @Test
+    void updateUserProfile_InternalServerErrorException_PasswordChangeEmailSendFailure()
+            throws IOException {
+        User existingUser =
+                new User(
+                        "testuser",
+                        "old@example.com",
+                        true,
+                        "oldhash",
+                        "John",
+                        "Doe",
+                        Collections.singleton(Roles.USER));
+        final UserProfileUpdateDTO dto = new UserProfileUpdateDTO(null, null, "newpassword", null);
+
+        when(userRepository.findByUsernameOptional("testuser"))
+                .thenReturn(Optional.of(existingUser));
+        doThrow(new IOException("Password changed email send failed"))
+                .when(emailService)
+                .sendPasswordChangedNotification(any(User.class));
+
+        assertThrows(RuntimeException.class, () -> userService.updateUserProfile("testuser", dto));
+        verify(emailService, times(1)).sendPasswordChangedNotification(existingUser);
     }
 
     @Test

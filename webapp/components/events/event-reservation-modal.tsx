@@ -64,31 +64,42 @@ export function EventReservationModal({
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Reserve Seats - {event.name}</DialogTitle>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-300">
+        <DialogHeader className="animate-in slide-in-from-top duration-300">
+          <DialogTitle className="text-xl font-bold">
+            Reserve Seats - {event.name}
+          </DialogTitle>
           <DialogDescription>
             Select your seats for this event. Available:{" "}
             {event.reservationsAllowed}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-4 animate-in slide-in-from-bottom duration-500">
           <div className="flex gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-green-500 rounded"></div>
+            <div className="flex items-center gap-2 animate-in slide-in-from-left duration-300">
+              <div className="w-4 h-4 bg-green-500 rounded transition-all duration-300 hover:scale-110"></div>
               <span>Available</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-blue-500 rounded"></div>
+            <div
+              className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
+              style={{ animationDelay: "100ms" }}
+            >
+              <div className="w-4 h-4 bg-blue-500 rounded transition-all duration-300 hover:scale-110"></div>
               <span>Selected</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-red-500 rounded"></div>
+            <div
+              className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
+              style={{ animationDelay: "200ms" }}
+            >
+              <div className="w-4 h-4 bg-red-500 rounded transition-all duration-300 hover:scale-110"></div>
               <span>Reserved</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-gray-500 rounded"></div>
+            <div
+              className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
+              style={{ animationDelay: "300ms" }}
+            >
+              <div className="w-4 h-4 bg-gray-500 rounded transition-all duration-300 hover:scale-110"></div>
               <span>Blocked</span>
             </div>
           </div>
@@ -100,11 +111,16 @@ export function EventReservationModal({
           />
 
           {selectedSeats.length > 0 && (
-            <div className="space-y-2">
+            <div className="space-y-2 animate-in slide-in-from-bottom duration-300">
               <h4 className="font-medium">Selected Seats:</h4>
               <div className="flex flex-wrap gap-2">
-                {selectedSeats.map((seat) => (
-                  <Badge key={seat.id?.toString()} variant="outline">
+                {selectedSeats.map((seat, index) => (
+                  <Badge
+                    key={seat.id?.toString()}
+                    variant="outline"
+                    className="animate-in zoom-in duration-300 hover:scale-105 transition-transform"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
                     {seat.seatNumber}
                   </Badge>
                 ))}
@@ -112,13 +128,18 @@ export function EventReservationModal({
             </div>
           )}
 
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose}>
+          <div className="flex justify-end gap-2 animate-in slide-in-from-bottom duration-300">
+            <Button
+              variant="outline"
+              onClick={onClose}
+              className="hover:scale-[1.02] transition-all duration-300 active:scale-[0.98] bg-transparent"
+            >
               Cancel
             </Button>
             <Button
               onClick={handleReserve}
               disabled={selectedSeats.length === 0 || isLoading}
+              className="hover:scale-[1.02] transition-all duration-300 active:scale-[0.98]"
             >
               {isLoading
                 ? "Reserving..."

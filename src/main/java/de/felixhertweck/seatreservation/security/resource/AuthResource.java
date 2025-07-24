@@ -1,4 +1,4 @@
-package de.felixhertweck.seatreservation.security;
+package de.felixhertweck.seatreservation.security.resource;
 
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -10,7 +10,10 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 
+import de.felixhertweck.seatreservation.security.AuthenticationFailedException;
 import de.felixhertweck.seatreservation.security.dto.LoginRequestDTO;
+import de.felixhertweck.seatreservation.security.service.AuthService;
+import de.felixhertweck.seatreservation.security.service.TokenService;
 
 @Path("/api/auth")
 @Produces(MediaType.APPLICATION_JSON)
@@ -40,5 +43,19 @@ public class AuthResource {
         } catch (AuthenticationFailedException e) {
             return Response.status(Response.Status.UNAUTHORIZED).entity(e.getMessage()).build();
         }
+    }
+
+    @POST
+    @Path("/logout")
+    public Response logout() {
+        NewCookie jwtCookie =
+                new NewCookie.Builder("jwt")
+                        .value("")
+                        .path("/")
+                        .maxAge(0)
+                        .httpOnly(true)
+                        .secure(true)
+                        .build();
+        return Response.ok().cookie(jwtCookie).build();
     }
 }

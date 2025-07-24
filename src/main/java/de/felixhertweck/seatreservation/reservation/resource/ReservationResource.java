@@ -18,7 +18,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 @Path("/api/user/reservations")
-@RolesAllowed(Roles.USER)
+@RolesAllowed({Roles.USER, Roles.MANAGER, Roles.ADMIN})
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class ReservationResource {

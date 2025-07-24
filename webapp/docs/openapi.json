@@ -537,6 +537,17 @@
         "tags" : [ "Auth Resource" ]
       }
     },
+    "/api/auth/logout" : {
+      "post" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "summary" : "Logout",
+        "tags" : [ "Auth Resource" ]
+      }
+    },
     "/api/manager/eventlocations" : {
       "get" : {
         "responses" : {
@@ -1558,7 +1569,7 @@
         "summary" : "Get Events",
         "tags" : [ "Event Resource" ],
         "security" : [ {
-          "SecurityScheme" : [ "USER" ]
+          "SecurityScheme" : [ "USER", "MANAGER", "ADMIN" ]
         } ]
       }
     },
@@ -1588,7 +1599,7 @@
         "summary" : "Get My Reservations",
         "tags" : [ "Reservation Resource" ],
         "security" : [ {
-          "SecurityScheme" : [ "USER" ]
+          "SecurityScheme" : [ "USER", "MANAGER", "ADMIN" ]
         } ]
       },
       "post" : {
@@ -1629,7 +1640,7 @@
         "summary" : "Create Reservation",
         "tags" : [ "Reservation Resource" ],
         "security" : [ {
-          "SecurityScheme" : [ "USER" ]
+          "SecurityScheme" : [ "USER", "MANAGER", "ADMIN" ]
         } ]
       }
     },
@@ -1665,7 +1676,7 @@
         "summary" : "Get My Reservation By Id",
         "tags" : [ "Reservation Resource" ],
         "security" : [ {
-          "SecurityScheme" : [ "USER" ]
+          "SecurityScheme" : [ "USER", "MANAGER", "ADMIN" ]
         } ]
       },
       "delete" : {
@@ -1692,7 +1703,7 @@
         "summary" : "Delete Reservation",
         "tags" : [ "Reservation Resource" ],
         "security" : [ {
-          "SecurityScheme" : [ "USER" ]
+          "SecurityScheme" : [ "USER", "MANAGER", "ADMIN" ]
         } ]
       }
     },
@@ -1906,7 +1917,7 @@
         "summary" : "Update Current User Profile",
         "tags" : [ "User Resource" ],
         "security" : [ {
-          "SecurityScheme" : [ "USER" ]
+          "SecurityScheme" : [ "USER", "MANAGER", "ADMIN" ]
         } ]
       },
       "get" : {
@@ -1961,7 +1972,7 @@
         "summary" : "Available Roles",
         "tags" : [ "User Resource" ],
         "security" : [ {
-          "SecurityScheme" : [ "USER", "ADMIN" ]
+          "SecurityScheme" : [ "USER", "MANAGER", "ADMIN" ]
         } ]
       }
     }

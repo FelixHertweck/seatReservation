@@ -6,7 +6,6 @@ import {
   getApiUserEventsOptions,
   postApiUserReservationsMutation,
   getApiUserEventsQueryKey,
-  getApiManagerReservationAllowanceEventByEventIdOptions,
   getApiManagerEventsByIdOptions,
 } from "@/api/@tanstack/react-query.gen";
 import type {

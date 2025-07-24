@@ -1,10 +1,11 @@
-package de.felixhertweck.seatreservation.security;
+package de.felixhertweck.seatreservation.security.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.security.AuthenticationFailedException;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;

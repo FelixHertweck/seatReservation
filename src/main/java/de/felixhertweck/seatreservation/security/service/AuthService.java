@@ -1,10 +1,11 @@
-package de.felixhertweck.seatreservation.security;
+package de.felixhertweck.seatreservation.security.service;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.security.AuthenticationFailedException;
 import io.quarkus.elytron.security.common.BcryptUtil;
 
 @ApplicationScoped

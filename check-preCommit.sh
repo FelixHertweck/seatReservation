@@ -38,3 +38,6 @@ npm run build || {
   echo "Build failed. Please fix the issues before committing."
   exit 1
 }
+
+echo "All checks passed. You can proceed with the commit."
+exit 0

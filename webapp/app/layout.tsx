@@ -1,9 +1,8 @@
 import type React from "react";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
-import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
+import { Toaster } from "@/components/ui/toaster";
 import InitQueryClient from "@/app/initQueryClient";
+import { ThemeProvider } from "@/components/theme-provider";
 
 export default function RootLayout({
   children,
@@ -14,19 +13,17 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <InitQueryClient>
-          <SidebarProvider>
-            <AppSidebar />
-            <SidebarInset>
-              <main className="flex-1">{children}</main>
-            </SidebarInset>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
             <Toaster />
-          </SidebarProvider>
+          </ThemeProvider>
         </InitQueryClient>
       </body>
     </html>
   );
 }
-
-export const metadata = {
-  generator: "v0.dev",
-};

@@ -1,7 +1,23 @@
 - [x] Documentation
 - [x] Throws hinzufügen
-- [ ] License Header
 - [x] Email Service
 - [x] User Email Status
 - [x] Service-Schicht von Web-Exceptions entkoppeln (z.B. `BadRequestException` durch `IllegalArgumentException` ersetzen)
 - [ ] Logging
+- [ ] License Header
+- [ ] Vllt umbennen von SeatReservations in Event Management
+- [ ] Logo erstellen und einfügen
+- [ ] Create allowance mehrere Nutzer auswählbar machen muss einfacher sein
+- [ ] TanStack Query Mutations sollten onSuccess Daten anderer verändern
+- [ ] Email Status verifiziert nicht in Profil anzeigen
+- [ ] Event Filter dark mode geht nicht
+- [ ] My Reservations geht nichts
+- [ ] Routing geht mit next.js noch nicht richtig (also in Kombi mit Backend)
+- [ ] Sprache konsistent halten (Englisch, Deutsch) --> Oder sogar konfigurierbar machen
+- [ ] Toast Notifications wenn Email Adresse geändert wurde
+- [ ] ReadMe erstellen
+- [ ] Manager export der Reservierungen
+- [ ] 1 Tag vor Event eine Erinnerung per Email schicken
+- [ ] Branch Protection erstellen
+- [ ] Manager import von Allowances
+- [ ] Manager Dashboard json export von allem

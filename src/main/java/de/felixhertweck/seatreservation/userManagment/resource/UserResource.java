@@ -59,7 +59,7 @@ public class UserResource {
     }
 
     @GET
-    @RolesAllowed({Roles.USER, Roles.ADMIN})
+    @RolesAllowed({Roles.USER, Roles.MANAGER, Roles.ADMIN})
     @Path("/roles")
     public List<String> availableRoles() {
         return userService.getAvailableRoles();
@@ -74,7 +74,7 @@ public class UserResource {
 
     @PUT
     @Path("/me")
-    @RolesAllowed({Roles.USER})
+    @RolesAllowed({Roles.USER, Roles.MANAGER, Roles.ADMIN})
     public UserDTO updateCurrentUserProfile(UserProfileUpdateDTO userProfileUpdateDTO) {
         String username = securityContext.getUserPrincipal().getName();
         return userService.updateUserProfile(username, userProfileUpdateDTO);
