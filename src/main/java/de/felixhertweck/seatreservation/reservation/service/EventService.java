@@ -29,9 +29,12 @@ import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepos
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.reservation.dto.EventResponseDTO;
 import de.felixhertweck.seatreservation.userManagment.exceptions.UserNotFoundException;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class EventService {
+
+    private static final Logger LOG = Logger.getLogger(EventService.class);
 
     @Inject UserRepository userRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
@@ -39,18 +42,24 @@ public class EventService {
     @Transactional
     public List<EventResponseDTO> getEventsForCurrentUser(String username)
             throws UserNotFoundException {
+        LOG.infof("Attempting to retrieve events for current user: %s", username);
         User user = userRepository.findByUsername(username);
 
         if (user == null) {
+            LOG.warnf("User not found: %s", username);
             throw new UserNotFoundException("User not found: " + username);
         }
+        LOG.debugf("User %s found. Retrieving event allowances.", username);
 
-        return eventUserAllowanceRepository.findByUser(user).stream()
-                .map(
-                        allowance ->
-                                new EventResponseDTO(
-                                        allowance.getEvent(),
-                                        allowance.getReservationsAllowedCount()))
-                .toList();
+        List<EventResponseDTO> events =
+                eventUserAllowanceRepository.findByUser(user).stream()
+                        .map(
+                                allowance ->
+                                        new EventResponseDTO(
+                                                allowance.getEvent(),
+                                                allowance.getReservationsAllowedCount()))
+                        .toList();
+        LOG.infof("Returning %d events for user: %s", events.size(), username);
+        return events;
     }
 }

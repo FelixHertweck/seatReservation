@@ -410,7 +410,7 @@ public class UserServiceTest {
 
     @Test
     void updateUser_InvalidUserException_NullDTO() throws IOException {
-        assertThrows(UserNotFoundException.class, () -> userService.updateUser(1L, null));
+        assertThrows(InvalidUserException.class, () -> userService.updateUser(1L, null));
         verify(userRepository, never()).persist(any(User.class));
         verify(emailService, never()).sendEmailConfirmation(any(User.class));
     }
@@ -729,7 +729,7 @@ public class UserServiceTest {
     @Test
     void updateUserProfile_InvalidUserException_NullDTO() throws IOException {
         assertThrows(
-                UserNotFoundException.class, () -> userService.updateUserProfile("testuser", null));
+                InvalidUserException.class, () -> userService.updateUserProfile("testuser", null));
         verify(userRepository, never()).persist(any(User.class));
         verify(emailService, never()).sendEmailConfirmation(any(User.class));
     }

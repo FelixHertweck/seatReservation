@@ -44,9 +44,12 @@ import de.felixhertweck.seatreservation.userManagment.exceptions.InvalidUserExce
 import de.felixhertweck.seatreservation.userManagment.exceptions.TokenExpiredException;
 import de.felixhertweck.seatreservation.userManagment.exceptions.UserNotFoundException;
 import io.quarkus.elytron.security.common.BcryptUtil;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class UserService {
+
+    private static final Logger LOG = Logger.getLogger(UserService.class);
 
     @Inject UserRepository userRepository;
 
@@ -67,18 +70,28 @@ public class UserService {
     public UserDTO createUser(UserCreationDTO userCreationDTO)
             throws InvalidUserException, DuplicateUserException {
         if (userCreationDTO == null) {
+            LOG.warn("UserCreationDTO is null during user creation.");
             throw new InvalidUserException("User creation data cannot be null.");
         }
+
+        LOG.infof("Attempting to create new user with username: %s", userCreationDTO.getUsername());
+        LOG.debugf("UserCreationDTO: %s", userCreationDTO.toString());
+
         if (userCreationDTO.getUsername() == null
                 || userCreationDTO.getUsername().trim().isEmpty()) {
+            LOG.warn("Username is empty or null during user creation.");
             throw new InvalidUserException("Username cannot be empty.");
         }
         if (userCreationDTO.getPassword() == null
                 || userCreationDTO.getPassword().trim().isEmpty()) {
+            LOG.warn("Password is empty or null during user creation.");
             throw new InvalidUserException("Password cannot be empty.");
         }
 
         if (userRepository.findByUsernameOptional(userCreationDTO.getUsername()).isPresent()) {
+            LOG.warnf(
+                    "Duplicate user creation attempt for username: %s",
+                    userCreationDTO.getUsername());
             throw new DuplicateUserException(
                     "User with username " + userCreationDTO.getUsername() + " already exists.");
         }
@@ -86,19 +99,33 @@ public class UserService {
         user.setUsername(userCreationDTO.getUsername());
         if (userCreationDTO.getEmail() != null && !userCreationDTO.getEmail().trim().isEmpty()) {
             user.setEmail(userCreationDTO.getEmail());
+            LOG.debugf("User email set to: %s", user.getEmail());
         }
         user.setPasswordHash(
                 BcryptUtil.bcryptHash(userCreationDTO.getPassword())); // Hash the password
         user.setFirstname(userCreationDTO.getFirstname());
         user.setLastname(userCreationDTO.getLastname());
         user.setRoles(new HashSet<>(List.of(Roles.USER))); // Default role for new users
+        LOG.debugf(
+                "User object prepared: username=%s, firstname=%s, lastname=%s, roles=%s",
+                user.getUsername(), user.getFirstname(), user.getLastname(), user.getRoles());
 
         userRepository.persist(user);
+        LOG.infof("User %s persisted successfully with ID: %d", user.getUsername(), user.id);
 
         if (user.getEmail() != null && !user.getEmail().trim().isEmpty()) {
             try {
+                LOG.debugf("Attempting to send email confirmation to %s", user.getEmail());
                 emailService.sendEmailConfirmation(user);
+                LOG.infof(
+                        "Email confirmation sent to %s for user ID: %d", user.getEmail(), user.id);
             } catch (IOException e) {
+                LOG.errorf(
+                        e,
+                        "Failed to send email confirmation to %s for user ID %d: %s",
+                        user.getEmail(),
+                        user.id,
+                        e.getMessage());
                 throw new RuntimeException("Failed to send email confirmation: " + e.getMessage());
             }
         }
@@ -108,39 +135,81 @@ public class UserService {
 
     private void updateUserCore(
             User existingUser, String email, String firstname, String lastname, String password) {
+        LOG.debugf("Entering updateUserCore for user ID: %d", existingUser.id);
+
         // Update email if provided and different
         if (email != null && !email.trim().isEmpty() && !email.equals(existingUser.getEmail())) {
+            LOG.debugf(
+                    "Updating email for user ID %d from %s to %s",
+                    existingUser.id, existingUser.getEmail(), email);
             existingUser.setEmail(email);
             // Reset email verification status and send confirmation email
             existingUser.setEmailVerified(false);
             try {
+                LOG.debugf(
+                        "Sending email confirmation to %s for user ID %d due to email change.",
+                        existingUser.getEmail(), existingUser.id);
                 emailService.sendEmailConfirmation(existingUser);
+                LOG.infof(
+                        "Email confirmation sent to %s for user ID: %d",
+                        existingUser.getEmail(), existingUser.id);
             } catch (IOException e) {
+                LOG.errorf(
+                        e,
+                        "Failed to send email confirmation to %s for user ID %d: %s",
+                        existingUser.getEmail(),
+                        existingUser.id,
+                        e.getMessage());
                 throw new RuntimeException("Failed to send email confirmation: " + e.getMessage());
             }
         }
 
         // Update firstname if provided
         if (firstname != null && !firstname.trim().isEmpty()) {
-            existingUser.setFirstname(firstname);
+            if (!firstname.equals(existingUser.getFirstname())) {
+                LOG.debugf(
+                        "Updating firstname for user ID %d from %s to %s",
+                        existingUser.id, existingUser.getFirstname(), firstname);
+                existingUser.setFirstname(firstname);
+            }
         }
 
         // Update lastname if provided
         if (lastname != null && !lastname.trim().isEmpty()) {
-            existingUser.setLastname(lastname);
+            if (!lastname.equals(existingUser.getLastname())) {
+                LOG.debugf(
+                        "Updating lastname for user ID %d from %s to %s",
+                        existingUser.id, existingUser.getLastname(), lastname);
+                existingUser.setLastname(lastname);
+            }
         }
 
         // Update password if provided
         if (password != null && !password.trim().isEmpty()) {
+            LOG.debugf("Updating password for user ID %d.", existingUser.id);
             existingUser.setPasswordHash(BcryptUtil.bcryptHash(password)); // Hash the password
             // Send password changed notification email
             try {
+                LOG.debugf(
+                        "Sending password changed notification to %s for user ID %d.",
+                        existingUser.getEmail(), existingUser.id);
                 emailService.sendPasswordChangedNotification(existingUser);
+                LOG.infof(
+                        "Password changed notification sent to %s for user ID: %d",
+                        existingUser.getEmail(), existingUser.id);
             } catch (IOException e) {
+                LOG.errorf(
+                        e,
+                        "Failed to send password changed notification email to %s for user ID %d:"
+                                + " %s",
+                        existingUser.getEmail(),
+                        existingUser.id,
+                        e.getMessage());
                 throw new RuntimeException(
                         "Failed to send password changed notification email: " + e.getMessage());
             }
         }
+        LOG.debugf("Exiting updateUserCore for user ID: %d", existingUser.id);
     }
 
     /**
@@ -156,13 +225,23 @@ public class UserService {
      */
     @Transactional
     public UserDTO updateUser(Long id, AdminUserUpdateDTO user) throws UserNotFoundException {
+        if (user == null) {
+            LOG.warnf("AdminUserUpdateDTO is null for user ID: %d.", id);
+            throw new InvalidUserException("User update data cannot be null.");
+        }
+
+        LOG.infof("Attempting to update user with ID: %d by admin.", id);
+        LOG.debugf("AdminUserUpdateDTO for ID %d: %s", id, user.toString());
+
         User existingUser =
                 userRepository
                         .findByIdOptional(id)
                         .orElseThrow(
-                                () ->
-                                        new UserNotFoundException(
-                                                "User with id " + id + " not found."));
+                                () -> {
+                                    LOG.warnf("User with ID %d not found for update.", id);
+                                    return new UserNotFoundException(
+                                            "User with id " + id + " not found.");
+                                });
 
         updateUserCore(
                 existingUser,
@@ -172,9 +251,13 @@ public class UserService {
                 user.getPassword());
 
         if (user.getRoles() != null) {
+            LOG.debugf(
+                    "Updating roles for user ID %d from %s to %s",
+                    existingUser.id, existingUser.getRoles(), user.getRoles());
             existingUser.setRoles(user.getRoles());
         }
         userRepository.persist(existingUser);
+        LOG.infof("User with ID %d updated successfully by admin.", existingUser.id);
         return new UserDTO(existingUser);
     }
 
@@ -186,45 +269,74 @@ public class UserService {
      */
     @Transactional
     public void deleteUser(Long id) throws UserNotFoundException {
+        LOG.infof("Attempting to delete user with ID: %d.", id);
         boolean deleted = userRepository.deleteById(id);
         if (!deleted) {
+            LOG.warnf("User with ID %d not found for deletion.", id);
             throw new UserNotFoundException("User with id " + id + " not found.");
         }
+        LOG.infof("User with ID %d deleted successfully.", id);
     }
 
     public UserDTO getUserById(Long id) {
+        LOG.infof("Attempting to retrieve user with ID: %d.", id);
         User user =
                 userRepository
                         .findByIdOptional(id)
                         .orElseThrow(
-                                () ->
-                                        new UserNotFoundException(
-                                                "User with id " + id + " not found."));
+                                () -> {
+                                    LOG.warnf("User with ID %d not found.", id);
+                                    return new UserNotFoundException(
+                                            "User with id " + id + " not found.");
+                                });
+        LOG.infof("User with ID %d retrieved successfully.", id);
         return new UserDTO(user);
     }
 
     public List<LimitedUserInfoDTO> getAllUsers() {
-        return userRepository.listAll().stream().map(LimitedUserInfoDTO::new).toList();
+        LOG.infof("Retrieving all users (limited info).");
+        List<LimitedUserInfoDTO> users =
+                userRepository.listAll().stream().map(LimitedUserInfoDTO::new).toList();
+        LOG.debugf("Returning %d limited user info DTOs.", users.size());
+        return users;
     }
 
     public List<UserDTO> getUsersAsAdmin() {
-        return userRepository.listAll().stream().map(UserDTO::new).toList();
+        LOG.infof("Retrieving all users (admin view).");
+        List<UserDTO> users = userRepository.listAll().stream().map(UserDTO::new).toList();
+        LOG.debugf("Returning %d user DTOs for admin view.", users.size());
+        return users;
     }
 
     public List<String> getAvailableRoles() {
-        return Arrays.asList(Roles.ALL_ROLES);
+        LOG.infof("Retrieving available roles.");
+        List<String> roles = Arrays.asList(Roles.ALL_ROLES);
+        LOG.debugf("Returning %d available roles.", roles.size());
+        return roles;
     }
 
     @Transactional
     public UserDTO updateUserProfile(String username, UserProfileUpdateDTO userProfileUpdateDTO)
             throws UserNotFoundException {
+        if (userProfileUpdateDTO == null) {
+            LOG.warnf("UserProfileUpdateDTO is null for username: %s.", username);
+            throw new InvalidUserException("User profile update data cannot be null.");
+        }
+
+        LOG.infof("Attempting to update user profile for username: %s.", username);
+        LOG.debugf("UserProfileUpdateDTO for %s: %s", username, userProfileUpdateDTO.toString());
+
         User existingUser =
                 userRepository
                         .findByUsernameOptional(username)
                         .orElseThrow(
-                                () ->
-                                        new UserNotFoundException(
-                                                "User with username " + username + " not found."));
+                                () -> {
+                                    LOG.warnf(
+                                            "User with username %s not found for profile update.",
+                                            username);
+                                    return new UserNotFoundException(
+                                            "User with username " + username + " not found.");
+                                });
 
         updateUserCore(
                 existingUser,
@@ -234,6 +346,7 @@ public class UserService {
                 userProfileUpdateDTO.getPassword());
 
         userRepository.persist(existingUser);
+        LOG.infof("User profile for username %s updated successfully.", username);
         return new UserDTO(existingUser);
     }
 
@@ -248,8 +361,12 @@ public class UserService {
      */
     @Transactional
     public String verifyEmail(Long id, String token) throws TokenExpiredException {
+        LOG.infof("Attempting to verify email with ID: %d and token.", id);
+        LOG.debugf("Verification ID: %d, Token: %s", id, token);
+
         // Validate id and token
         if (id == null || token == null || token.trim().isEmpty()) {
+            LOG.warn("Invalid ID or token provided for email verification.");
             throw new IllegalArgumentException("Invalid id or token");
         }
 
@@ -257,25 +374,42 @@ public class UserService {
         EmailVerification emailVerification =
                 emailVerificationRepository
                         .findByIdOptional(id)
-                        .orElseThrow(() -> new IllegalArgumentException("Token not found"));
+                        .orElseThrow(
+                                () -> {
+                                    LOG.warnf("Email verification token not found for ID: %d", id);
+                                    return new IllegalArgumentException("Token not found");
+                                });
+        LOG.debugf("Email verification record found for ID: %d", id);
 
         // Check if the token is correct
         if (!emailVerification.getToken().equals(token)) {
+            LOG.warnf(
+                    "Invalid token provided for email verification ID %d. Expected: %s, Received:"
+                            + " %s",
+                    id, emailVerification.getToken(), token);
             throw new IllegalArgumentException("Invalid token");
         }
+        LOG.debugf("Token for ID %d is correct.", id);
 
         // Check if the token has expired
         if (emailVerification.getExpirationTime().isBefore(LocalDateTime.now())) {
+            LOG.warnf(
+                    "Email verification token for ID %d has expired. Expiration time: %s, Current"
+                            + " time: %s",
+                    id, emailVerification.getExpirationTime(), LocalDateTime.now());
             throw new TokenExpiredException("Token expired");
         }
+        LOG.debugf("Token for ID %d is not expired.", id);
 
         // Delete the email verification record
         emailVerificationRepository.deleteById(id);
+        LOG.infof("Email verification record for ID %d deleted.", id);
 
         // Mark the email as verified
         User user = emailVerification.getUser();
         user.setEmailVerified(true);
         userRepository.persist(user);
+        LOG.infof("Email for user ID %d (%s) marked as verified.", user.id, user.getEmail());
 
         return user.getEmail();
     }

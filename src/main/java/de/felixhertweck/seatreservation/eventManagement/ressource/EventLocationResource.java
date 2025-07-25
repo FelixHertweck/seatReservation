@@ -37,12 +37,15 @@ import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.jboss.logging.Logger;
 
 @Path("/api/manager/eventlocations")
 @RolesAllowed({Roles.MANAGER, Roles.ADMIN})
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class EventLocationResource {
+
+    private static final Logger LOG = Logger.getLogger(EventLocationResource.class);
 
     @Inject EventLocationService eventLocationService;
 
@@ -59,8 +62,15 @@ public class EventLocationResource {
                                             type = SchemaType.ARRAY,
                                             implementation = EventLocationResponseDTO.class)))
     public List<EventLocationResponseDTO> getEventLocationsByCurrentManager() {
+        LOG.infof("Received GET request to /api/manager/eventlocations");
         User currentUser = userSecurityContext.getCurrentUser();
-        return eventLocationService.getEventLocationsByCurrentManager(currentUser);
+        List<EventLocationResponseDTO> result =
+                eventLocationService.getEventLocationsByCurrentManager(currentUser);
+        LOG.infof(
+                "Successfully responded to GET /api/manager/eventlocations with %d event"
+                        + " locations.",
+                result.size());
+        return result;
     }
 
     @POST
@@ -69,8 +79,13 @@ public class EventLocationResource {
             description = "OK",
             content = @Content(schema = @Schema(implementation = EventLocationResponseDTO.class)))
     public EventLocationResponseDTO createEventLocation(@Valid EventLocationRequestDTO dto) {
+        LOG.infof("Received POST request to /api/manager/eventlocations for new event location.");
+        LOG.debugf("EventLocationRequestDTO received: %s", dto.toString());
         User currentUser = userSecurityContext.getCurrentUser();
-        return eventLocationService.createEventLocation(dto, currentUser);
+        EventLocationResponseDTO result =
+                eventLocationService.createEventLocation(dto, currentUser);
+        LOG.infof("Event location '%s' created successfully.", result.name());
+        return result;
     }
 
     @PUT
@@ -81,16 +96,28 @@ public class EventLocationResource {
             content = @Content(schema = @Schema(implementation = EventLocationResponseDTO.class)))
     public EventLocationResponseDTO updateEventLocation(
             @PathParam("id") Long id, @Valid EventLocationRequestDTO dto) {
+        LOG.infof(
+                "Received PUT request to /api/manager/eventlocations/%d to update event location.",
+                id);
+        LOG.debugf("EventLocationRequestDTO received for ID %d: %s", id, dto.toString());
         User currentUser = userSecurityContext.getCurrentUser();
-        return eventLocationService.updateEventLocation(id, dto, currentUser);
+        EventLocationResponseDTO result =
+                eventLocationService.updateEventLocation(id, dto, currentUser);
+        LOG.infof("Event location with ID %d updated successfully.", id);
+        return result;
     }
 
     @DELETE
     @APIResponse(responseCode = "200", description = "OK")
     @Path("/{id}")
     public void deleteEventLocation(@PathParam("id") Long id) {
+        LOG.infof(
+                "Received DELETE request to /api/manager/eventlocations/%d to delete event"
+                        + " location.",
+                id);
         User currentUser = userSecurityContext.getCurrentUser();
         eventLocationService.deleteEventLocation(id, currentUser);
+        LOG.infof("Event location with ID %d deleted successfully.", id);
     }
 
     @POST
@@ -101,7 +128,14 @@ public class EventLocationResource {
             content = @Content(schema = @Schema(implementation = EventLocationResponseDTO.class)))
     public EventLocationResponseDTO createEventLocationWithSeats(
             @Valid EventLocationRegistrationDTO dto) {
+        LOG.infof(
+                "Received POST request to /api/manager/eventlocations/register for new event"
+                        + " location with seats.");
+        LOG.debugf("EventLocationRegistrationDTO received: %s", dto.toString());
         User currentUser = userSecurityContext.getCurrentUser();
-        return eventLocationService.createEventLocationWithSeats(dto, currentUser);
+        EventLocationResponseDTO result =
+                eventLocationService.createEventLocationWithSeats(dto, currentUser);
+        LOG.infof("Event location '%s' with seats created successfully.", result.name());
+        return result;
     }
 }

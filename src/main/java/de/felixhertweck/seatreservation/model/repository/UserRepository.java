@@ -24,14 +24,32 @@ import jakarta.enterprise.context.ApplicationScoped;
 
 import de.felixhertweck.seatreservation.model.entity.User;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class UserRepository implements PanacheRepository<User> {
+
+    private static final Logger LOG = Logger.getLogger(UserRepository.class);
+
     public User findByUsername(String username) {
-        return find("username", username).firstResult();
+        LOG.debugf("Finding user by username: %s", username);
+        User user = find("username", username).firstResult();
+        if (user != null) {
+            LOG.debugf("User %s found.", username);
+        } else {
+            LOG.debugf("User %s not found.", username);
+        }
+        return user;
     }
 
     public Optional<User> findByUsernameOptional(String username) {
-        return find("username", username).firstResultOptional();
+        LOG.debugf("Finding user by username (optional): %s", username);
+        Optional<User> user = find("username", username).firstResultOptional();
+        if (user.isPresent()) {
+            LOG.debugf("User %s found (optional).", username);
+        } else {
+            LOG.debugf("User %s not found (optional).", username);
+        }
+        return user;
     }
 }

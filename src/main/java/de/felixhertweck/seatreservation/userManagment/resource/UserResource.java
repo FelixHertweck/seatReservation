@@ -34,6 +34,7 @@ import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
+import org.jboss.logging.Logger;
 
 /*
  * This class provides RESTful endpoints for user management operations.
@@ -45,6 +46,8 @@ import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 @Consumes(MediaType.APPLICATION_JSON)
 public class UserResource {
 
+    private static final Logger LOG = Logger.getLogger(UserResource.class);
+
     @Inject UserService userService;
     @Inject SecurityContext securityContext;
     @Inject UserSecurityContext userSecurityContext;
@@ -53,42 +56,63 @@ public class UserResource {
     @Path("/admin")
     @RolesAllowed(Roles.ADMIN)
     public UserDTO createUser(UserCreationDTO userCreationDTO) {
-        return userService.createUser(userCreationDTO);
+        LOG.infof(
+                "Received POST request to /api/users/admin for user: %s",
+                userCreationDTO.getUsername());
+        LOG.debugf("UserCreationDTO received: %s", userCreationDTO.toString());
+        UserDTO createdUser = userService.createUser(userCreationDTO);
+        LOG.infof("User %s created successfully by admin.", createdUser.username());
+        return createdUser;
     }
 
     @PUT
     @Path("/admin/{id}")
     @RolesAllowed(Roles.ADMIN)
     public UserDTO updateUser(@PathParam("id") Long id, AdminUserUpdateDTO user) {
-        return userService.updateUser(id, user);
+        LOG.infof("Received PUT request to /api/users/admin/%d for user update.", id);
+        LOG.debugf("AdminUserUpdateDTO received for ID %d: %s", id, user.toString());
+        UserDTO updatedUser = userService.updateUser(id, user);
+        LOG.infof("User with ID %d updated successfully by admin.", id);
+        return updatedUser;
     }
 
     @DELETE
     @Path("/admin/{id}")
     @RolesAllowed(Roles.ADMIN)
     public void deleteUser(@PathParam("id") Long id) {
+        LOG.infof("Received DELETE request to /api/users/admin/%d for user deletion.", id);
         userService.deleteUser(id);
+        LOG.infof("User with ID %d deleted successfully by admin.", id);
     }
 
     @GET
     @Path("/manager")
     @RolesAllowed({Roles.ADMIN, Roles.MANAGER})
     public List<LimitedUserInfoDTO> getAllUsers() {
-        return userService.getAllUsers();
+        LOG.infof("Received GET request to /api/users/manager to get all users (limited info).");
+        List<LimitedUserInfoDTO> users = userService.getAllUsers();
+        LOG.debugf("Returning %d limited user info DTOs.", users.size());
+        return users;
     }
 
     @GET
     @RolesAllowed({Roles.USER, Roles.MANAGER, Roles.ADMIN})
     @Path("/roles")
     public List<String> availableRoles() {
-        return userService.getAvailableRoles();
+        LOG.infof("Received GET request to /api/users/roles to get available roles.");
+        List<String> roles = userService.getAvailableRoles();
+        LOG.debugf("Returning %d available roles.", roles.size());
+        return roles;
     }
 
     @GET
     @Path("/admin")
     @RolesAllowed(Roles.ADMIN)
     public List<UserDTO> getAllUsersAsAdmin() {
-        return userService.getUsersAsAdmin();
+        LOG.infof("Received GET request to /api/users/admin to get all users (admin view).");
+        List<UserDTO> users = userService.getUsersAsAdmin();
+        LOG.debugf("Returning %d user DTOs for admin view.", users.size());
+        return users;
     }
 
     @PUT
@@ -96,13 +120,23 @@ public class UserResource {
     @RolesAllowed({Roles.USER, Roles.MANAGER, Roles.ADMIN})
     public UserDTO updateCurrentUserProfile(UserProfileUpdateDTO userProfileUpdateDTO) {
         String username = securityContext.getUserPrincipal().getName();
-        return userService.updateUserProfile(username, userProfileUpdateDTO);
+        LOG.infof("Received PUT request to /api/users/me to update profile for user: %s", username);
+        LOG.debugf(
+                "UserProfileUpdateDTO received for %s: %s",
+                username, userProfileUpdateDTO.toString());
+        UserDTO updatedUser = userService.updateUserProfile(username, userProfileUpdateDTO);
+        LOG.infof("User profile for %s updated successfully.", username);
+        return updatedUser;
     }
 
     @GET
     @Path("/me")
     @RolesAllowed({Roles.USER, Roles.ADMIN, Roles.MANAGER})
     public UserDTO getCurrentUser() {
-        return new UserDTO(userSecurityContext.getCurrentUser());
+        String username = securityContext.getUserPrincipal().getName();
+        LOG.infof("Received GET request to /api/users/me for current user: %s", username);
+        UserDTO currentUser = new UserDTO(userSecurityContext.getCurrentUser());
+        LOG.debugf("Returning current user DTO for %s.", username);
+        return currentUser;
     }
 }

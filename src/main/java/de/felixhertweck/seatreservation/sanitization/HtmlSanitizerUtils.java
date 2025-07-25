@@ -19,10 +19,13 @@
  */
 package de.felixhertweck.seatreservation.sanitization;
 
+import org.jboss.logging.Logger;
 import org.owasp.html.HtmlPolicyBuilder;
 import org.owasp.html.PolicyFactory;
 
 public class HtmlSanitizerUtils {
+
+    private static final Logger LOG = Logger.getLogger(HtmlSanitizerUtils.class);
 
     private static final PolicyFactory POLICY_FACTORY =
             new HtmlPolicyBuilder().allowUrlProtocols("mailto").toFactory();
@@ -32,9 +35,13 @@ public class HtmlSanitizerUtils {
     }
 
     public static String sanitize(String unsafeHtml) {
+        LOG.debugf("Attempting to sanitize HTML: %s", unsafeHtml);
         if (unsafeHtml == null) {
+            LOG.debug("Input HTML is null, returning null.");
             return null;
         }
-        return POLICY_FACTORY.sanitize(unsafeHtml);
+        String sanitizedHtml = POLICY_FACTORY.sanitize(unsafeHtml);
+        LOG.debugf("Sanitized HTML: %s", sanitizedHtml);
+        return sanitizedHtml;
     }
 }

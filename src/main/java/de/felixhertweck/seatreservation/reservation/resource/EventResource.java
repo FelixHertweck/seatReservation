@@ -35,11 +35,14 @@ import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.jboss.logging.Logger;
 
 @Path("/api/user/events")
 @Produces(MediaType.APPLICATION_JSON)
 @RolesAllowed({Roles.USER, Roles.MANAGER, Roles.ADMIN})
 public class EventResource {
+
+    private static final Logger LOG = Logger.getLogger(EventResource.class);
 
     @Inject EventService eventService;
 
@@ -56,6 +59,10 @@ public class EventResource {
                                             type = SchemaType.ARRAY,
                                             implementation = EventResponseDTO.class)))
     public List<EventResponseDTO> getEvents() {
-        return eventService.getEventsForCurrentUser(securityIdentity.getPrincipal().getName());
+        String username = securityIdentity.getPrincipal().getName();
+        LOG.infof("Received GET request to /api/user/events for user: %s", username);
+        List<EventResponseDTO> events = eventService.getEventsForCurrentUser(username);
+        LOG.debugf("Returning %d events for user: %s", events.size(), username);
+        return events;
     }
 }

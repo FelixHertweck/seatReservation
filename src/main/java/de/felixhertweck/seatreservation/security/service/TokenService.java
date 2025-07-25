@@ -26,9 +26,12 @@ import de.felixhertweck.seatreservation.model.entity.User;
 import io.smallrye.jwt.build.Jwt;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.jwt.Claims;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class TokenService {
+
+    private static final Logger LOG = Logger.getLogger(TokenService.class);
 
     @ConfigProperty(name = "jwt.token.expiration.minutes", defaultValue = "60")
     long expirationMinutes;
@@ -38,10 +41,18 @@ public class TokenService {
     }
 
     public String generateToken(User user) {
-        return Jwt.upn(user.getUsername())
-                .groups(user.getRoles())
-                .claim(Claims.email, user.getEmail())
-                .expiresIn(Duration.ofMinutes(expirationMinutes))
-                .sign();
+        LOG.infof("Generating JWT token for user: %s", user.getUsername());
+        LOG.debugf(
+                "User ID: %d, Roles: %s, Email: %s, Expiration: %d minutes",
+                user.id, user.getRoles(), user.getEmail(), expirationMinutes);
+
+        String token =
+                Jwt.upn(user.getUsername())
+                        .groups(user.getRoles())
+                        .claim(Claims.email, user.getEmail())
+                        .expiresIn(Duration.ofMinutes(expirationMinutes))
+                        .sign();
+        LOG.infof("JWT token generated successfully for user: %s", user.getUsername());
+        return token;
     }
 }

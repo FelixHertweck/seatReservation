@@ -36,12 +36,15 @@ import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.jboss.logging.Logger;
 
 @Path("/api/manager/events")
 @RolesAllowed({Roles.MANAGER, Roles.ADMIN})
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class EventResource {
+
+    private static final Logger LOG = Logger.getLogger(EventResource.class);
 
     @Inject EventService eventService;
 
@@ -53,8 +56,12 @@ public class EventResource {
             description = "OK",
             content = @Content(schema = @Schema(implementation = DetailedEventResponseDTO.class)))
     public DetailedEventResponseDTO createEvent(@Valid EventRequestDTO dto) {
+        LOG.infof("Received POST request to /api/manager/events to create a new event.");
+        LOG.debugf("EventRequestDTO received: %s", dto.toString());
         User currentUser = userSecurityContext.getCurrentUser();
-        return eventService.createEvent(dto, currentUser);
+        DetailedEventResponseDTO result = eventService.createEvent(dto, currentUser);
+        LOG.infof("Event '%s' created successfully with ID %d.", result.name(), result.id());
+        return result;
     }
 
     @PUT
@@ -65,8 +72,12 @@ public class EventResource {
             content = @Content(schema = @Schema(implementation = DetailedEventResponseDTO.class)))
     public DetailedEventResponseDTO updateEvent(
             @PathParam("id") Long id, @Valid EventRequestDTO dto) {
+        LOG.infof("Received PUT request to /api/manager/events/%d to update event.", id);
+        LOG.debugf("EventRequestDTO received for ID %d: %s", id, dto.toString());
         User currentUser = userSecurityContext.getCurrentUser();
-        return eventService.updateEvent(id, dto, currentUser);
+        DetailedEventResponseDTO result = eventService.updateEvent(id, dto, currentUser);
+        LOG.infof("Event with ID %d updated successfully.", id);
+        return result;
     }
 
     @GET
@@ -80,8 +91,12 @@ public class EventResource {
                                             type = SchemaType.ARRAY,
                                             implementation = DetailedEventResponseDTO.class)))
     public List<DetailedEventResponseDTO> getEventsByCurrentManager() {
+        LOG.infof("Received GET request to /api/manager/events to get events by current manager.");
         User currentUser = userSecurityContext.getCurrentUser();
-        return eventService.getEventsByCurrentManager(currentUser);
+        List<DetailedEventResponseDTO> result = eventService.getEventsByCurrentManager(currentUser);
+        LOG.infof(
+                "Successfully responded to GET /api/manager/events with %d events.", result.size());
+        return result;
     }
 
     @GET
@@ -91,15 +106,24 @@ public class EventResource {
             description = "OK",
             content = @Content(schema = @Schema(implementation = DetailedEventResponseDTO.class)))
     public DetailedEventResponseDTO getEventById(@PathParam("id") Long id) {
+        LOG.infof("Received GET request to /api/manager/events/%d.", id);
         User currentUser = userSecurityContext.getCurrentUser();
-        return eventService.getEventByIdForManager(id, currentUser);
+        DetailedEventResponseDTO result = eventService.getEventByIdForManager(id, currentUser);
+        if (result != null) {
+            LOG.infof("Successfully retrieved event with ID %d.", id);
+        } else {
+            LOG.warnf("Event with ID %d not found.", id);
+        }
+        return result;
     }
 
     @DELETE
     @Path("/{id}")
     @APIResponse(responseCode = "204", description = "Event deleted")
     public void deleteEvent(@PathParam("id") Long id) {
+        LOG.infof("Received DELETE request to /api/manager/events/%d to delete event.", id);
         User currentUser = userSecurityContext.getCurrentUser();
         eventService.deleteEvent(id, currentUser);
+        LOG.infof("Event with ID %d deleted successfully.", id);
     }
 }

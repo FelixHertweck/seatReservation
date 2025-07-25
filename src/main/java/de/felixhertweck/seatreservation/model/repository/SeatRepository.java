@@ -25,11 +25,17 @@ import jakarta.enterprise.context.ApplicationScoped;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class SeatRepository implements PanacheRepository<Seat> {
 
+    private static final Logger LOG = Logger.getLogger(SeatRepository.class);
+
     public List<Seat> findByEventLocation(EventLocation eventLocation) {
-        return find("location", eventLocation).list();
+        LOG.debugf("Finding seats by event location ID: %d", eventLocation.id);
+        List<Seat> seats = find("location", eventLocation).list();
+        LOG.debugf("Found %d seats for event location ID: %d", seats.size(), eventLocation.id);
+        return seats;
     }
 }

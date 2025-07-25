@@ -24,14 +24,19 @@ import jakarta.inject.Singleton;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import io.quarkus.jackson.ObjectMapperCustomizer;
+import org.jboss.logging.Logger;
 
 @Singleton
 public class SanitizingObjectMapperCustomizer implements ObjectMapperCustomizer {
 
+    private static final Logger LOG = Logger.getLogger(SanitizingObjectMapperCustomizer.class);
+
     @Override
     public void customize(ObjectMapper objectMapper) {
+        LOG.infof("Customizing ObjectMapper for XSS sanitization.");
         SimpleModule module = new SimpleModule();
         module.addDeserializer(String.class, new XssSanitizingDeserializer());
         objectMapper.registerModule(module);
+        LOG.debug("XssSanitizingDeserializer registered with ObjectMapper.");
     }
 }

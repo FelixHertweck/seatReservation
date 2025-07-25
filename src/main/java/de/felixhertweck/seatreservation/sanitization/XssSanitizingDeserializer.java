@@ -27,23 +27,37 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StringDeserializer;
+import org.jboss.logging.Logger;
 
 public class XssSanitizingDeserializer extends JsonDeserializer<String>
         implements ContextualDeserializer {
+
+    private static final Logger LOG = Logger.getLogger(XssSanitizingDeserializer.class);
 
     @Override
     public String deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         String value = StringDeserializer.instance.deserialize(p, ctxt);
         if (value == null) {
+            LOG.debug("Deserialized value is null, returning null.");
             return null;
         }
-        return HtmlSanitizerUtils.sanitize(value);
+        String sanitizedValue = HtmlSanitizerUtils.sanitize(value);
+        if (!value.equals(sanitizedValue)) {
+            LOG.debugf(
+                    "Sanitized XSS input. Original: '%s', Sanitized: '%s'", value, sanitizedValue);
+        } else {
+            LOG.debugf("XSS input did not require sanitization: '%s'", value);
+        }
+        return sanitizedValue;
     }
 
     @Override
     public JsonDeserializer<?> createContextual(
             DeserializationContext ctxt, BeanProperty property) {
         if (property != null && property.getAnnotation(NoHtmlSanitize.class) != null) {
+            LOG.debugf(
+                    "Property '%s' is annotated with @NoHtmlSanitize, skipping XSS sanitization.",
+                    property.getName());
             return StringDeserializer.instance;
         }
         return this;

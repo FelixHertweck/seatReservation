@@ -26,9 +26,12 @@ import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.security.AuthenticationFailedException;
 import io.quarkus.elytron.security.common.BcryptUtil;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class AuthService {
+
+    private static final Logger LOG = Logger.getLogger(AuthService.class);
 
     @Inject UserRepository userRepository;
 
@@ -36,15 +39,20 @@ public class AuthService {
 
     public String authenticate(String username, String password)
             throws AuthenticationFailedException {
+        LOG.infof("Attempting to authenticate user: %s", username);
         User user = userRepository.findByUsername(username);
 
         if (user == null) {
+            LOG.warnf("Authentication failed for user %s: User not found.", username);
             throw new AuthenticationFailedException("Failed to authenticate user: " + username);
         }
+        LOG.debugf("User %s found. Verifying password.", username);
 
         if (!BcryptUtil.matches(password, user.getPasswordHash())) {
+            LOG.warnf("Authentication failed for user %s: Invalid credentials.", username);
             throw new AuthenticationFailedException("Failed to authenticate user: " + username);
         }
+        LOG.infof("User %s authenticated successfully. Generating token.", username);
 
         return tokenService.generateToken(user);
     }

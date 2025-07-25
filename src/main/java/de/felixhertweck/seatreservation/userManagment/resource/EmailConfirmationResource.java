@@ -28,11 +28,14 @@ import de.felixhertweck.seatreservation.userManagment.service.UserService;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.jboss.logging.Logger;
 
 /** Resource for user email confirmation. */
 @Path("/api/user")
 @Tag(name = "User", description = "User operations")
 public class EmailConfirmationResource {
+
+    private static final Logger LOG = Logger.getLogger(EmailConfirmationResource.class);
 
     @Inject UserService userService;
 
@@ -56,15 +59,37 @@ public class EmailConfirmationResource {
     public Response confirmEmail(@QueryParam("id") Long id, @QueryParam("token") String token) {
         String email;
         try {
+            LOG.infof("Received GET request to /api/user/confirm-email with ID: %d", id);
+            LOG.debugf("Attempting to confirm email with ID: %d and token: %s", id, token);
             email = userService.verifyEmail(id, token);
+            LOG.infof("Email for ID %d confirmed successfully: %s", id, email);
             return Response.ok(getSuccessHtml(email)).build();
         } catch (IllegalArgumentException e) {
+            LOG.warnf(
+                    e,
+                    "Email confirmation failed for ID %d due to invalid argument: %s",
+                    id,
+                    e.getMessage());
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(getErrorHtml(e.getMessage()))
                     .build();
         } catch (NotFoundException e) {
+            LOG.warnf(
+                    e,
+                    "Email confirmation failed for ID %d: Token not found. Message: %s",
+                    id,
+                    e.getMessage());
             return Response.status(Response.Status.NOT_FOUND)
                     .entity(getErrorHtml(e.getMessage()))
+                    .build();
+        } catch (Exception e) {
+            LOG.errorf(
+                    e,
+                    "Unexpected error during email confirmation for ID %d: %s",
+                    id,
+                    e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(getErrorHtml("Internal server error"))
                     .build();
         }
     }

@@ -27,13 +27,23 @@ import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.model.entity.EmailVerification;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class EmailVerificationRepository implements PanacheRepository<EmailVerification> {
 
+    private static final Logger LOG = Logger.getLogger(EmailVerificationRepository.class);
+
     public Optional<EmailVerification> findByUser(
             de.felixhertweck.seatreservation.model.entity.User user) {
-        return find("user", user).firstResultOptional();
+        LOG.debugf("Finding EmailVerification by user ID: %d", user.id);
+        Optional<EmailVerification> result = find("user", user).firstResultOptional();
+        if (result.isPresent()) {
+            LOG.debugf("EmailVerification found for user ID: %d", user.id);
+        } else {
+            LOG.debugf("No EmailVerification found for user ID: %d", user.id);
+        }
+        return result;
     }
 
     /**
@@ -43,7 +53,11 @@ public class EmailVerificationRepository implements PanacheRepository<EmailVerif
      * @return List of expired EmailVerification entities (limited by batchSize)
      */
     public List<EmailVerification> findExpiredEntries(int batchSize) {
-        return find("expirationTime < ?1", LocalDateTime.now()).page(0, batchSize).list();
+        LOG.debugf("Finding expired EmailVerification entries with batch size: %d", batchSize);
+        List<EmailVerification> entries =
+                find("expirationTime < ?1", LocalDateTime.now()).page(0, batchSize).list();
+        LOG.debugf("Found %d expired EmailVerification entries.", entries.size());
+        return entries;
     }
 
     /**
@@ -53,7 +67,10 @@ public class EmailVerificationRepository implements PanacheRepository<EmailVerif
      */
     @Transactional
     public long deleteExpiredEntries() {
-        return delete("expirationTime < ?1", LocalDateTime.now());
+        LOG.infof("Deleting all expired EmailVerification entries.");
+        long deletedCount = delete("expirationTime < ?1", LocalDateTime.now());
+        LOG.infof("Deleted %d expired EmailVerification entries.", deletedCount);
+        return deletedCount;
     }
 
     /**
@@ -64,12 +81,16 @@ public class EmailVerificationRepository implements PanacheRepository<EmailVerif
      */
     @Transactional
     public long deleteExpiredEntriesInBatch(int batchSize) {
+        LOG.debugf("Deleting expired EmailVerification entries in batch with size: %d", batchSize);
         List<EmailVerification> expiredEntries = findExpiredEntries(batchSize);
         if (expiredEntries.isEmpty()) {
+            LOG.debug("No expired EmailVerification entries found in batch.");
             return 0;
         }
 
         List<Long> ids = expiredEntries.stream().map(e -> e.id).toList();
-        return delete("id in ?1", ids);
+        long deletedCount = delete("id in ?1", ids);
+        LOG.debugf("Deleted %d expired EmailVerification entries in current batch.", deletedCount);
+        return deletedCount;
     }
 }

@@ -39,9 +39,12 @@ import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.reservation.EventNotFoundException;
 import de.felixhertweck.seatreservation.security.Roles;
 import de.felixhertweck.seatreservation.userManagment.exceptions.UserNotFoundException;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class EventService {
+
+    private static final Logger LOG = Logger.getLogger(EventService.class);
 
     @Inject EventRepository eventRepository;
 
@@ -62,15 +65,23 @@ public class EventService {
      */
     @Transactional
     public DetailedEventResponseDTO createEvent(EventRequestDTO dto, User manager) {
+        LOG.debugf(
+                "Attempting to create event with name: %s for manager: %s (ID: %d)",
+                dto.getName(), manager.getUsername(), manager.getId());
         EventLocation location =
                 eventLocationRepository
                         .findByIdOptional(dto.getEventLocationId())
                         .orElseThrow(
-                                () ->
-                                        new IllegalArgumentException(
-                                                "EventLocation with id "
-                                                        + dto.getEventLocationId()
-                                                        + " not found"));
+                                () -> {
+                                    LOG.warnf(
+                                            "EventLocation with id %d not found for event"
+                                                    + " creation.",
+                                            dto.getEventLocationId());
+                                    return new IllegalArgumentException(
+                                            "EventLocation with id "
+                                                    + dto.getEventLocationId()
+                                                    + " not found");
+                                });
 
         Event event =
                 new Event(
@@ -82,6 +93,9 @@ public class EventService {
                         location,
                         manager);
         eventRepository.persist(event);
+        LOG.infof(
+                "Event '%s' (ID: %d) created successfully by manager: %s (ID: %d)",
+                event.getName(), event.getId(), manager.getUsername(), manager.getId());
         return new DetailedEventResponseDTO(event);
     }
 
@@ -98,17 +112,28 @@ public class EventService {
     @Transactional
     public DetailedEventResponseDTO updateEvent(Long id, EventRequestDTO dto, User manager)
             throws EventNotFoundException, IllegalArgumentException {
+        LOG.debugf(
+                "Attempting to update event with ID: %d for manager: %s (ID: %d)",
+                id, manager.getUsername(), manager.getId());
         Event event =
                 eventRepository
                         .findByIdOptional(id)
                         .orElseThrow(
-                                () ->
-                                        new EventNotFoundException(
-                                                "Event with id " + id + " not found"));
+                                () -> {
+                                    LOG.warnf(
+                                            "Event with ID %d not found for update by manager: %s"
+                                                    + " (ID: %d)",
+                                            id, manager.getUsername(), manager.getId());
+                                    return new EventNotFoundException(
+                                            "Event with id " + id + " not found");
+                                });
 
         // Access control: Checks if the current user is the manager of the event
         // or if the user has the ADMIN role.
         if (!event.getManager().equals(manager) && !manager.getRoles().contains(Roles.ADMIN)) {
+            LOG.warnf(
+                    "User %s (ID: %d) is not authorized to update event with ID %d.",
+                    manager.getUsername(), manager.getId(), id);
             throw new SecurityException("User is not the manager of this event");
         }
 
@@ -116,12 +141,33 @@ public class EventService {
                 eventLocationRepository
                         .findByIdOptional(dto.getEventLocationId())
                         .orElseThrow(
-                                () ->
-                                        new IllegalArgumentException(
-                                                "EventLocation with id "
-                                                        + dto.getEventLocationId()
-                                                        + " not found"));
+                                () -> {
+                                    LOG.warnf(
+                                            "EventLocation with id %d not found for event update.",
+                                            dto.getEventLocationId());
+                                    return new IllegalArgumentException(
+                                            "EventLocation with id "
+                                                    + dto.getEventLocationId()
+                                                    + " not found");
+                                });
 
+        LOG.debugf(
+                "Updating event ID %d: name='%s' -> '%s', description='%s' -> '%s', startTime='%s'"
+                        + " -> '%s', endTime='%s' -> '%s', bookingDeadline='%s' -> '%s',"
+                        + " eventLocationId='%d' -> '%d'",
+                id,
+                event.getName(),
+                dto.getName(),
+                event.getDescription(),
+                dto.getDescription(),
+                event.getStartTime(),
+                dto.getStartTime(),
+                event.getEndTime(),
+                dto.getEndTime(),
+                event.getBookingDeadline(),
+                dto.getBookingDeadline(),
+                event.getEventLocation().getId(),
+                dto.getEventLocationId());
         event.setName(dto.getName());
         event.setDescription(dto.getDescription());
         event.setStartTime(dto.getStartTime());
@@ -129,6 +175,9 @@ public class EventService {
         event.setBookingDeadline(dto.getBookingDeadline());
         event.setEventLocation(location);
         eventRepository.persist(event);
+        LOG.infof(
+                "Event '%s' (ID: %d) updated successfully by manager: %s (ID: %d)",
+                event.getName(), event.getId(), manager.getUsername(), manager.getId());
         return new DetailedEventResponseDTO(event);
     }
 
@@ -140,14 +189,22 @@ public class EventService {
      * @return A list of DTOs representing the Events.
      */
     public List<DetailedEventResponseDTO> getEventsByCurrentManager(User manager) {
+        LOG.debugf(
+                "Attempting to retrieve events for manager: %s (ID: %d)",
+                manager.getUsername(), manager.getId());
         List<Event> events;
         // Access control: If the user is an ADMIN, all Events are returned.
         // Otherwise, only Events belonging to this manager are returned.
         if (manager.getRoles().contains(Roles.ADMIN)) {
+            LOG.debug("User is ADMIN, listing all events.");
             events = eventRepository.listAll();
         } else {
+            LOG.debugf("User is MANAGER, listing events for manager ID: %d", manager.getId());
             events = eventRepository.findByManager(manager);
         }
+        LOG.infof(
+                "Retrieved %d events for manager: %s (ID: %d)",
+                events.size(), manager.getUsername(), manager.getId());
         return events.stream().map(DetailedEventResponseDTO::new).collect(Collectors.toList());
     }
 
@@ -165,31 +222,53 @@ public class EventService {
     @Transactional
     public void deleteEvent(Long id, User currentUser)
             throws EventNotFoundException, SecurityException {
+        LOG.debugf(
+                "Attempting to delete event with ID: %d for user: %s (ID: %d)",
+                id, currentUser.getUsername(), currentUser.getId());
         Event event =
                 eventRepository
                         .findByIdOptional(id)
                         .orElseThrow(
-                                () ->
-                                        new EventNotFoundException(
-                                                "Event with id " + id + " not found"));
+                                () -> {
+                                    LOG.warnf(
+                                            "Event with ID %d not found for deletion by user: %s"
+                                                    + " (ID: %d)",
+                                            id, currentUser.getUsername(), currentUser.getId());
+                                    return new EventNotFoundException(
+                                            "Event with id " + id + " not found");
+                                });
 
         if (!event.getManager().equals(currentUser)
                 && !currentUser.getRoles().contains(Roles.ADMIN)) {
+            LOG.warnf(
+                    "User %s (ID: %d) is not authorized to delete event with ID %d.",
+                    currentUser.getUsername(), currentUser.getId(), id);
             throw new SecurityException("User is not authorized to delete this event");
         }
 
         eventRepository.delete(event);
+        LOG.infof(
+                "Event '%s' (ID: %d) deleted successfully by user: %s (ID: %d)",
+                event.getName(), event.getId(), currentUser.getUsername(), currentUser.getId());
     }
 
     @Transactional
     public EventUserAllowancesDto setReservationsAllowedForUser(
             EventUserAllowancesDto dto, User manager)
             throws EventNotFoundException, UserNotFoundException {
+        LOG.debugf(
+                "Attempting to set reservation allowance for user ID: %d, event ID: %d by manager:"
+                        + " %s (ID: %d)",
+                dto.userId(), dto.eventId(), manager.getUsername(), manager.getId());
         Event event = getEventById(dto.eventId());
         User user = getUserById(dto.userId());
 
         if (!event.getManager().id.equals(manager.getId())
                 && !manager.getRoles().contains(Roles.ADMIN)) {
+            LOG.warnf(
+                    "User %s (ID: %d) is not authorized to set reservation allowance for event ID"
+                            + " %d.",
+                    manager.getUsername(), manager.getId(), dto.eventId());
             throw new SecurityException("User is not the manager of this event");
         }
 
@@ -203,20 +282,43 @@ public class EventService {
 
         allowance.setReservationsAllowedCount(dto.reservationsAllowedCount());
         eventUserAllowanceRepository.persist(allowance);
+        LOG.infof(
+                "Reservation allowance set to %d for user ID %d and event ID %d by manager: %s (ID:"
+                        + " %d)",
+                dto.reservationsAllowedCount(),
+                dto.userId(),
+                dto.eventId(),
+                manager.getUsername(),
+                manager.getId());
         return new EventUserAllowancesDto(allowance);
     }
 
     public EventUserAllowancesDto getReservationAllowanceById(Long id, User manager) {
+        LOG.debugf(
+                "Attempting to retrieve reservation allowance with ID: %d for manager: %s (ID: %d)",
+                id, manager.getUsername(), manager.getId());
         EventUserAllowance allowance =
                 eventUserAllowanceRepository
                         .findByIdOptional(id)
-                        .orElseThrow(() -> new EventNotFoundException("Allowance not found"));
+                        .orElseThrow(
+                                () -> {
+                                    LOG.warnf(
+                                            "Reservation allowance with ID %d not found for"
+                                                    + " manager: %s (ID: %d)",
+                                            id, manager.getUsername(), manager.getId());
+                                    return new EventNotFoundException("Allowance not found");
+                                });
 
         if (!allowance.getEvent().getManager().equals(manager)
                 && !manager.getRoles().contains(Roles.ADMIN)) {
+            LOG.warnf(
+                    "User %s (ID: %d) is not authorized to view reservation allowance with ID %d.",
+                    manager.getUsername(), manager.getId(), id);
             throw new SecurityException("User is not authorized to view this allowance");
         }
-
+        LOG.infof(
+                "Successfully retrieved reservation allowance with ID %d for manager: %s (ID: %d)",
+                id, manager.getUsername(), manager.getId());
         return new EventUserAllowancesDto(allowance);
     }
 
@@ -231,12 +333,23 @@ public class EventService {
      */
     public List<EventUserAllowancesDto> getReservationAllowances(User currentUser)
             throws SecurityException {
+        LOG.debugf(
+                "Attempting to retrieve all reservation allowances for user: %s (ID: %d)",
+                currentUser.getUsername(), currentUser.getId());
         List<EventUserAllowance> allowances;
         if (currentUser.getRoles().contains(Roles.ADMIN)) {
+            LOG.debug("User is ADMIN, listing all reservation allowances.");
             allowances = eventUserAllowanceRepository.listAll();
         } else {
+            LOG.debugf(
+                    "User is MANAGER, listing reservation allowances for events managed by user ID:"
+                            + " %d",
+                    currentUser.getId());
             allowances = eventUserAllowanceRepository.find("event.manager", currentUser).list();
         }
+        LOG.infof(
+                "Retrieved %d reservation allowances for user: %s (ID: %d)",
+                allowances.size(), currentUser.getUsername(), currentUser.getId());
         return allowances.stream().map(EventUserAllowancesDto::new).collect(Collectors.toList());
     }
 
@@ -253,14 +366,26 @@ public class EventService {
      */
     public List<EventUserAllowancesDto> getReservationAllowancesByEventId(
             Long eventId, User currentUser) throws SecurityException, EventNotFoundException {
+        LOG.debugf(
+                "Attempting to retrieve reservation allowances for event ID: %d by user: %s (ID:"
+                        + " %d)",
+                eventId, currentUser.getUsername(), currentUser.getId());
         Event event = getEventById(eventId);
         if (!event.getManager().equals(currentUser)
                 && !currentUser.getRoles().contains(Roles.ADMIN)) {
+            LOG.warnf(
+                    "User %s (ID: %d) is not authorized to view allowances for event ID %d.",
+                    currentUser.getUsername(), currentUser.getId(), eventId);
             throw new SecurityException("User is not authorized to view allowances for this event");
         }
-        return eventUserAllowanceRepository.findByEventId(eventId).stream()
-                .map(EventUserAllowancesDto::new)
-                .collect(Collectors.toList());
+        List<EventUserAllowancesDto> result =
+                eventUserAllowanceRepository.findByEventId(eventId).stream()
+                        .map(EventUserAllowancesDto::new)
+                        .collect(Collectors.toList());
+        LOG.infof(
+                "Retrieved %d reservation allowances for event ID %d by user: %s (ID: %d)",
+                result.size(), eventId, currentUser.getUsername(), currentUser.getId());
+        return result;
     }
 
     /**
@@ -276,30 +401,56 @@ public class EventService {
     @Transactional
     public void deleteReservationAllowance(Long id, User currentUser)
             throws EventNotFoundException, SecurityException {
+        LOG.debugf(
+                "Attempting to delete reservation allowance with ID: %d for user: %s (ID: %d)",
+                id, currentUser.getUsername(), currentUser.getId());
         EventUserAllowance allowance =
                 eventUserAllowanceRepository
                         .findByIdOptional(id)
-                        .orElseThrow(() -> new EventNotFoundException("Allowance not found"));
+                        .orElseThrow(
+                                () -> {
+                                    LOG.warnf(
+                                            "Reservation allowance with ID %d not found for"
+                                                    + " deletion by user: %s (ID: %d)",
+                                            id, currentUser.getUsername(), currentUser.getId());
+                                    return new EventNotFoundException("Allowance not found");
+                                });
 
         if (!allowance.getEvent().getManager().equals(currentUser)
                 && !currentUser.getRoles().contains(Roles.ADMIN)) {
+            LOG.warnf(
+                    "User %s (ID: %d) is not authorized to delete reservation allowance with ID"
+                            + " %d.",
+                    currentUser.getUsername(), currentUser.getId(), id);
             throw new SecurityException("User is not authorized to delete this allowance");
         }
 
         eventUserAllowanceRepository.delete(allowance);
+        LOG.infof(
+                "Reservation allowance with ID %d deleted successfully by user: %s (ID: %d)",
+                id, currentUser.getUsername(), currentUser.getId());
     }
 
     private Event getEventById(Long id) throws EventNotFoundException {
+        LOG.debugf("Attempting to find event by ID: %d", id);
         return eventRepository
                 .findByIdOptional(id)
                 .orElseThrow(
-                        () -> new EventNotFoundException("Event with id " + id + " not found"));
+                        () -> {
+                            LOG.warnf("Event with ID %d not found.", id);
+                            return new EventNotFoundException("Event with id " + id + " not found");
+                        });
     }
 
     private User getUserById(Long id) throws UserNotFoundException {
+        LOG.debugf("Attempting to find user by ID: %d", id);
         return userRepository
                 .findByIdOptional(id)
-                .orElseThrow(() -> new UserNotFoundException("User with id " + id + " not found"));
+                .orElseThrow(
+                        () -> {
+                            LOG.warnf("User with ID %d not found.", id);
+                            return new UserNotFoundException("User with id " + id + " not found");
+                        });
     }
 
     /**
@@ -315,10 +466,19 @@ public class EventService {
      */
     public DetailedEventResponseDTO getEventByIdForManager(Long id, User manager)
             throws EventNotFoundException, SecurityException {
+        LOG.debugf(
+                "Attempting to retrieve event with ID: %d for manager: %s (ID: %d)",
+                id, manager.getUsername(), manager.getId());
         Event event = getEventById(id);
         if (!event.getManager().equals(manager) && !manager.getRoles().contains(Roles.ADMIN)) {
+            LOG.warnf(
+                    "User %s (ID: %d) is not authorized to view event with ID %d.",
+                    manager.getUsername(), manager.getId(), id);
             throw new SecurityException("User is not authorized to view this event");
         }
+        LOG.infof(
+                "Successfully retrieved event with ID %d for manager: %s (ID: %d)",
+                id, manager.getUsername(), manager.getId());
         return new DetailedEventResponseDTO(event);
     }
 }

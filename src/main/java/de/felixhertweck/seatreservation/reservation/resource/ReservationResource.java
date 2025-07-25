@@ -35,12 +35,15 @@ import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.jboss.logging.Logger;
 
 @Path("/api/user/reservations")
 @RolesAllowed({Roles.USER, Roles.MANAGER, Roles.ADMIN})
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class ReservationResource {
+
+    private static final Logger LOG = Logger.getLogger(ReservationResource.class);
 
     @Inject ReservationService reservationService;
 
@@ -58,7 +61,15 @@ public class ReservationResource {
                                             implementation = ReservationResponseDTO.class)))
     public List<ReservationResponseDTO> getMyReservations() {
         User currentUser = userSecurityContext.getCurrentUser();
-        return reservationService.findReservationsByUser(currentUser);
+        LOG.infof(
+                "Received GET request to /api/user/reservations for user: %s",
+                currentUser.getUsername());
+        List<ReservationResponseDTO> reservations =
+                reservationService.findReservationsByUser(currentUser);
+        LOG.debugf(
+                "Returning %d reservations for user: %s",
+                reservations.size(), currentUser.getUsername());
+        return reservations;
     }
 
     @GET
@@ -69,7 +80,13 @@ public class ReservationResource {
             content = @Content(schema = @Schema(implementation = ReservationResponseDTO.class)))
     public ReservationResponseDTO getMyReservationById(@PathParam("id") Long id) {
         User currentUser = userSecurityContext.getCurrentUser();
-        return reservationService.findReservationByIdForUser(id, currentUser);
+        LOG.infof(
+                "Received GET request to /api/user/reservations/%d for user: %s",
+                id, currentUser.getUsername());
+        ReservationResponseDTO reservation =
+                reservationService.findReservationByIdForUser(id, currentUser);
+        LOG.debugf("Returning reservation with ID %d for user: %s", id, currentUser.getUsername());
+        return reservation;
     }
 
     @POST
@@ -84,7 +101,18 @@ public class ReservationResource {
                                             implementation = ReservationResponseDTO.class)))
     public List<ReservationResponseDTO> createReservation(ReservationsRequestCreateDTO dto) {
         User currentUser = userSecurityContext.getCurrentUser();
-        return reservationService.createReservationForUser(dto, currentUser);
+        LOG.infof(
+                "Received POST request to /api/user/reservations for user: %s",
+                currentUser.getUsername());
+        LOG.debugf(
+                "ReservationsRequestCreateDTO received for user %s: %s",
+                currentUser.getUsername(), dto.toString());
+        List<ReservationResponseDTO> createdReservations =
+                reservationService.createReservationForUser(dto, currentUser);
+        LOG.infof(
+                "Created %d reservations for user: %s",
+                createdReservations.size(), currentUser.getUsername());
+        return createdReservations;
     }
 
     // Maybe remove this method in the future and only allow creation and deletion of reservations
@@ -105,6 +133,12 @@ public class ReservationResource {
     @APIResponse(responseCode = "204", description = "No Content")
     public void deleteReservation(@PathParam("id") Long id) {
         User currentUser = userSecurityContext.getCurrentUser();
+        LOG.infof(
+                "Received DELETE request to /api/user/reservations/%d for user: %s",
+                id, currentUser.getUsername());
         reservationService.deleteReservationForUser(id, currentUser);
+        LOG.infof(
+                "Reservation with ID %d deleted successfully for user: %s",
+                id, currentUser.getUsername());
     }
 }

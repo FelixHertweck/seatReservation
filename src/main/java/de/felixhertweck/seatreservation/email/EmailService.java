@@ -71,33 +71,46 @@ public class EmailService {
      * @throws IOException if the email template cannot be read
      */
     public void sendEmailConfirmation(User user) throws IOException {
+        LOG.infof("Attempting to send email confirmation to user: %s", user.getEmail());
+        LOG.debugf("User ID: %d, Username: %s", user.id, user.getUsername());
+
         String confirmationLink = createConfirmationLink(user);
+        LOG.debugf("Confirmation link generated: %s", confirmationLink);
 
         // Read the HTML template
         String templatePath = "src/main/resources/templates/email/email-confirmation.html";
         String htmlContent = new String(Files.readAllBytes(Paths.get(templatePath)));
+        LOG.debugf("Email confirmation template read from: %s", templatePath);
 
         // Replace placeholders with actual values
         htmlContent =
                 htmlContent.replace("{userName}", user.getFirstname() + " " + user.getLastname());
         htmlContent = htmlContent.replace("{confirmationLink}", confirmationLink);
         htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
+        LOG.debug("Placeholders replaced in email template.");
 
         // Create and send the email
         Mail mail =
                 Mail.withHtml(user.getEmail(), "Please Confirm Your Email Address", htmlContent);
 
-        LOG.infof("Sending email confirmation to %s", user.getEmail());
         mailer.send(mail);
+        LOG.infof(
+                "Email confirmation sent successfully to %s for user ID: %d",
+                user.getEmail(), user.id);
     }
 
     private String createConfirmationLink(User user) {
+        LOG.debugf("Creating confirmation link for user ID: %d", user.id);
         String token = RandomUUIDString.generate();
         LocalDateTime expirationTime = LocalDateTime.now().plusMinutes(expirationMinutes);
         EmailVerification emailVerification = new EmailVerification(user, token, expirationTime);
+        LOG.debugf("Generated token: %s, Expiration time: %s", token, expirationTime);
 
         // persist and get id of entry with emailVerificationRepository
         emailVerificationRepository.persist(emailVerification);
+        LOG.infof(
+                "Email verification entry persisted for user ID %d with ID: %d",
+                user.id, emailVerification.id);
 
         return baseUrl
                 + "/api/user/confirm-email"
@@ -109,30 +122,45 @@ public class EmailService {
 
     public void sendReservationConfirmation(User user, List<Reservation> reservations)
             throws IOException {
+        LOG.infof("Attempting to send reservation confirmation to user: %s", user.getEmail());
+        LOG.debug(
+                String.format(
+                        "User ID: %d, Number of reservations: %d",
+                        user.id, reservations != null ? reservations.size() : 0));
+
         if (reservations == null || reservations.isEmpty()) {
+            LOG.warnf(
+                    "No reservations provided for confirmation email to user %s.", user.getEmail());
             return;
         }
 
         Event event = reservations.getFirst().getEvent();
         String eventName = event.getName();
+        LOG.debugf("Event for reservation confirmation: %s (ID: %d)", eventName, event.id);
 
         // Prepare data for SVG rendering
         List<Seat> allSeats = seatRepository.findByEventLocation(event.getEventLocation());
         List<Reservation> allUserReservationsForEvent =
                 reservationRepository.findByUserAndEvent(user, event);
+        LOG.debugf(
+                "Retrieved %d total seats and %d user reservations for event %s.",
+                allSeats.size(), allUserReservationsForEvent.size(), eventName);
 
         Set<String> newSeatNumbers =
                 reservations.stream()
                         .map(r -> r.getSeat().getSeatNumber())
                         .collect(Collectors.toSet());
+        LOG.debugf("New seat numbers for confirmation: %s", newSeatNumbers);
 
         Set<String> existingSeatNumbers =
                 allUserReservationsForEvent.stream()
                         .map(r -> r.getSeat().getSeatNumber())
                         .collect(Collectors.toSet());
         existingSeatNumbers.removeAll(newSeatNumbers); // Keep only previously reserved seats
+        LOG.debugf("Existing seat numbers (excluding new ones): %s", existingSeatNumbers);
 
         String svgContent = SvgRenderer.renderSeats(allSeats, newSeatNumbers, existingSeatNumbers);
+        LOG.debug("SVG content for seat map generated.");
 
         StringBuilder seatListHtml = new StringBuilder();
         for (Reservation reservation : reservations) {
@@ -141,9 +169,11 @@ public class EmailService {
                     .append(reservation.getSeat().getSeatNumber())
                     .append("</li>");
         }
+        LOG.debugf("HTML list of seats generated: %s", seatListHtml.toString());
 
         String templatePath = "src/main/resources/templates/email/reservation-confirmation.html";
         String htmlContent = new String(Files.readAllBytes(Paths.get(templatePath)));
+        LOG.debugf("Reservation confirmation template read from: %s", templatePath);
 
         htmlContent =
                 htmlContent.replace("{userName}", user.getFirstname() + " " + user.getLastname());
@@ -151,10 +181,13 @@ public class EmailService {
         htmlContent = htmlContent.replace("{seatList}", seatListHtml.toString());
         htmlContent = htmlContent.replace("{seatMap}", svgContent);
         htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
+        LOG.debug("Placeholders replaced in reservation email template.");
 
         Mail mail = Mail.withHtml(user.getEmail(), "Ihre Reservierungsbestätigung", htmlContent);
-        LOG.infof("Sending reservation confirmation to %s", user.getEmail());
         mailer.send(mail);
+        LOG.infof(
+                "Reservation confirmation email sent successfully to %s for user ID: %d",
+                user.getEmail(), user.id);
     }
 
     /**
@@ -164,19 +197,26 @@ public class EmailService {
      * @throws IOException if the email template cannot be read
      */
     public void sendPasswordChangedNotification(User user) throws IOException {
+        LOG.infof("Attempting to send password changed notification to user: %s", user.getEmail());
+        LOG.debugf("User ID: %d, Username: %s", user.id, user.getUsername());
+
         // Read the HTML template
         String templatePath = "src/main/resources/templates/email/password-changed.html";
         String htmlContent = new String(Files.readAllBytes(Paths.get(templatePath)));
+        LOG.debugf("Password changed notification template read from: %s", templatePath);
 
         // Replace placeholders with actual values
         htmlContent =
                 htmlContent.replace("{userName}", user.getFirstname() + " " + user.getLastname());
         htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
+        LOG.debug("Placeholders replaced in password changed email template.");
 
         // Create and send the email
         Mail mail = Mail.withHtml(user.getEmail(), "Ihr Passwort wurde geändert", htmlContent);
 
-        LOG.infof("Sending password changed notification to %s", user.getEmail());
         mailer.send(mail);
+        LOG.infof(
+                "Password changed notification sent successfully to %s for user ID: %d",
+                user.getEmail(), user.id);
     }
 }

@@ -36,12 +36,15 @@ import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.jboss.logging.Logger;
 
 @Path("/api/manager/reservations")
 @RolesAllowed({Roles.MANAGER, Roles.ADMIN})
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class ReservationResource {
+
+    private static final Logger LOG = Logger.getLogger(ReservationResource.class);
 
     @Inject ReservationService reservationService;
 
@@ -58,8 +61,14 @@ public class ReservationResource {
                                             type = SchemaType.ARRAY,
                                             implementation = DetailedReservationResponseDTO.class)))
     public List<DetailedReservationResponseDTO> getAllReservations() {
+        LOG.infof("Received GET request to /api/manager/reservations to get all reservations.");
         User currentUser = userSecurityContext.getCurrentUser();
-        return reservationService.findAllReservations(currentUser);
+        List<DetailedReservationResponseDTO> result =
+                reservationService.findAllReservations(currentUser);
+        LOG.infof(
+                "Successfully responded to GET /api/manager/reservations with %d reservations.",
+                result.size());
+        return result;
     }
 
     @GET
@@ -72,8 +81,16 @@ public class ReservationResource {
                             schema =
                                     @Schema(implementation = DetailedReservationResponseDTO.class)))
     public DetailedReservationResponseDTO getReservationById(@PathParam("id") Long id) {
+        LOG.infof("Received GET request to /api/manager/reservations/%d.", id);
         User currentUser = userSecurityContext.getCurrentUser();
-        return reservationService.findReservationById(id, currentUser);
+        DetailedReservationResponseDTO result =
+                reservationService.findReservationById(id, currentUser);
+        if (result != null) {
+            LOG.infof("Successfully retrieved reservation with ID %d.", id);
+        } else {
+            LOG.warnf("Reservation with ID %d not found.", id);
+        }
+        return result;
     }
 
     @GET
@@ -89,8 +106,13 @@ public class ReservationResource {
                                             implementation = DetailedReservationResponseDTO.class)))
     public List<DetailedReservationResponseDTO> getReservationsByEventId(
             @PathParam("id") Long eventId) {
+        LOG.infof("Received GET request to /api/manager/reservations/event/%d.", eventId);
         User currentUser = userSecurityContext.getCurrentUser();
-        return reservationService.findReservationsByEventId(eventId, currentUser);
+        List<DetailedReservationResponseDTO> result =
+                reservationService.findReservationsByEventId(eventId, currentUser);
+        LOG.infof(
+                "Successfully retrieved %d reservations for event ID %d.", result.size(), eventId);
+        return result;
     }
 
     @POST
@@ -102,8 +124,16 @@ public class ReservationResource {
                             schema =
                                     @Schema(implementation = DetailedReservationResponseDTO.class)))
     public DetailedReservationResponseDTO createReservation(ReservationRequestDTO dto) {
+        LOG.infof(
+                "Received POST request to /api/manager/reservations to create a new reservation.");
+        LOG.debugf("ReservationRequestDTO received: %s", dto.toString());
         User currentUser = userSecurityContext.getCurrentUser();
-        return reservationService.createReservation(dto, currentUser);
+        DetailedReservationResponseDTO result =
+                reservationService.createReservation(dto, currentUser);
+        LOG.infof(
+                "Reservation created successfully for seat ID %d and user ID %d.",
+                dto.getSeatId(), dto.getUserId());
+        return result;
     }
 
     @PUT
@@ -117,23 +147,39 @@ public class ReservationResource {
                                     @Schema(implementation = DetailedReservationResponseDTO.class)))
     public DetailedReservationResponseDTO updateReservation(
             @PathParam("id") Long id, ReservationRequestDTO dto) {
+        LOG.infof(
+                "Received PUT request to /api/manager/reservations/%d to update reservation.", id);
+        LOG.debugf("ReservationRequestDTO received for ID %d: %s", id, dto.toString());
         User currentUser = userSecurityContext.getCurrentUser();
-        return reservationService.updateReservation(id, dto, currentUser);
+        DetailedReservationResponseDTO result =
+                reservationService.updateReservation(id, dto, currentUser);
+        LOG.infof("Reservation with ID %d updated successfully.", id);
+        return result;
     }
 
     @DELETE
     @Path("/{id}")
     @APIResponse(responseCode = "200", description = "OK")
     public void deleteReservation(@PathParam("id") Long id) {
+        LOG.infof(
+                "Received DELETE request to /api/manager/reservations/%d to delete reservation.",
+                id);
         User currentUser = userSecurityContext.getCurrentUser();
         reservationService.deleteReservation(id, currentUser);
+        LOG.infof("Reservation with ID %d deleted successfully.", id);
     }
 
     @POST
     @Path("/block")
     @APIResponse(responseCode = "204", description = "Seats blocked successfully")
     public void blockSeats(BlockSeatsRequestDTO dto) {
+        LOG.infof(
+                "Received POST request to /api/manager/reservations/block to block seats for event"
+                        + " ID %d.",
+                dto.getEventId());
+        LOG.debugf("BlockSeatsRequestDTO received: %s", dto.toString());
         User currentUser = userSecurityContext.getCurrentUser();
         reservationService.blockSeats(dto.getEventId(), dto.getSeatIds(), currentUser);
+        LOG.infof("Seats blocked successfully for event ID %d.", dto.getEventId());
     }
 }

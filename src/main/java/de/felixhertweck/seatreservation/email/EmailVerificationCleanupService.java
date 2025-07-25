@@ -34,7 +34,7 @@ import org.jboss.logging.Logger;
 @ApplicationScoped
 public class EmailVerificationCleanupService {
 
-    @Inject Logger LOG;
+    private static final Logger LOG = Logger.getLogger(EmailVerificationCleanupService.class);
 
     @Inject EmailVerificationRepository emailVerificationRepository;
 

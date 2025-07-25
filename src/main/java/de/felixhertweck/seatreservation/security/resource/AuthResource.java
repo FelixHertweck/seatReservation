@@ -33,11 +33,14 @@ import de.felixhertweck.seatreservation.security.AuthenticationFailedException;
 import de.felixhertweck.seatreservation.security.dto.LoginRequestDTO;
 import de.felixhertweck.seatreservation.security.service.AuthService;
 import de.felixhertweck.seatreservation.security.service.TokenService;
+import org.jboss.logging.Logger;
 
 @Path("/api/auth")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class AuthResource {
+
+    private static final Logger LOG = Logger.getLogger(AuthResource.class);
 
     @Inject AuthService authService;
     @Inject TokenService tokenService;
@@ -45,6 +48,8 @@ public class AuthResource {
     @POST
     @Path("/login")
     public Response login(@Valid LoginRequestDTO loginRequest) {
+        LOG.infof("Received login request for username: %s", loginRequest.getUsername());
+        LOG.debugf("LoginRequestDTO: %s", loginRequest.toString());
         try {
             String token =
                     authService.authenticate(
@@ -58,15 +63,32 @@ public class AuthResource {
                             .httpOnly(true)
                             .secure(true)
                             .build();
+            LOG.infof(
+                    "User %s logged in successfully. JWT cookie set.", loginRequest.getUsername());
             return Response.ok().cookie(jwtCookie).build();
         } catch (AuthenticationFailedException e) {
+            LOG.warnf(
+                    e,
+                    "Authentication failed for user %s: %s",
+                    loginRequest.getUsername(),
+                    e.getMessage());
             return Response.status(Response.Status.UNAUTHORIZED).entity(e.getMessage()).build();
+        } catch (Exception e) {
+            LOG.errorf(
+                    e,
+                    "Unexpected error during login for user %s: %s",
+                    loginRequest.getUsername(),
+                    e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Internal server error")
+                    .build();
         }
     }
 
     @POST
     @Path("/logout")
     public Response logout() {
+        LOG.infof("Received logout request.");
         NewCookie jwtCookie =
                 new NewCookie.Builder("jwt")
                         .value("")
@@ -75,6 +97,7 @@ public class AuthResource {
                         .httpOnly(true)
                         .secure(true)
                         .build();
+        LOG.infof("User logged out successfully. JWT cookie cleared.");
         return Response.ok().cookie(jwtCookie).build();
     }
 }

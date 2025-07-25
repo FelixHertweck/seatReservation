@@ -35,9 +35,12 @@ import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.security.Roles;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class SeatService {
+
+    private static final Logger LOG = Logger.getLogger(SeatService.class);
 
     @Inject SeatRepository seatRepository;
 
@@ -45,25 +48,46 @@ public class SeatService {
 
     @Transactional
     public SeatResponseDTO createSeatManager(SeatRequestDTO dto, User manager) {
+        LOG.debugf(
+                "Attempting to create seat with number: %s for event location ID: %d by manager: %s"
+                        + " (ID: %d)",
+                dto.getSeatNumber(),
+                dto.getEventLocationId(),
+                manager.getUsername(),
+                manager.getId());
         EventLocation eventLocation =
                 eventLocationRepository
                         .findByIdOptional(dto.getEventLocationId())
                         .orElseThrow(
-                                () ->
-                                        new IllegalArgumentException(
-                                                "EventLocation with id "
-                                                        + dto.getEventLocationId()
-                                                        + " not found"));
+                                () -> {
+                                    LOG.warnf(
+                                            "EventLocation with id %d not found for seat creation.",
+                                            dto.getEventLocationId());
+                                    return new IllegalArgumentException(
+                                            "EventLocation with id "
+                                                    + dto.getEventLocationId()
+                                                    + " not found");
+                                });
 
         if (!manager.getEventLocations().contains(eventLocation)
                 && !manager.getRoles().contains(Roles.ADMIN)) {
+            LOG.warnf(
+                    "Manager %s (ID: %d) does not own EventLocation with ID %d.",
+                    manager.getUsername(), manager.getId(), eventLocation.getId());
             throw new SecurityException("Manager does not own this EventLocation");
         }
 
         if (dto.getSeatNumber() == null || dto.getSeatNumber().trim().isEmpty()) {
+            LOG.warnf(
+                    "Invalid seat data: seat number is empty for event location ID %d.",
+                    eventLocation.getId());
             throw new IllegalArgumentException("Seat number cannot be empty");
         }
         if (dto.getXCoordinate() < 0 || dto.getYCoordinate() < 0) {
+            LOG.warnf(
+                    "Invalid seat data: coordinates are negative for seat number '%s' in event"
+                            + " location ID %d.",
+                    dto.getSeatNumber(), eventLocation.getId());
             throw new IllegalArgumentException("Coordinates cannot be negative");
         }
 
@@ -73,85 +97,151 @@ public class SeatService {
         seat.setXCoordinate(dto.getXCoordinate());
         seat.setYCoordinate(dto.getYCoordinate());
         seatRepository.persist(seat);
+        LOG.infof(
+                "Seat with ID %d created successfully for event location ID %d by manager: %s (ID:"
+                        + " %d)",
+                seat.id, eventLocation.getId(), manager.getUsername(), manager.getId());
         return new SeatResponseDTO(seat);
     }
 
     public List<SeatResponseDTO> findAllSeatsForManager(User manager) {
+        LOG.debugf(
+                "Attempting to retrieve all seats for manager: %s (ID: %d)",
+                manager.getUsername(), manager.getId());
         if (manager.getRoles().contains(Roles.ADMIN)) {
+            LOG.debug("User is ADMIN, listing all seats.");
             return seatRepository.listAll().stream()
                     .map(SeatResponseDTO::new)
                     .collect(Collectors.toList());
         }
         Set<EventLocation> managerLocations = manager.getEventLocations();
-        return seatRepository.listAll().stream()
-                .filter(seat -> managerLocations.contains(seat.getLocation()))
-                .map(SeatResponseDTO::new)
-                .collect(Collectors.toList());
+        List<SeatResponseDTO> result =
+                seatRepository.listAll().stream()
+                        .filter(seat -> managerLocations.contains(seat.getLocation()))
+                        .map(SeatResponseDTO::new)
+                        .collect(Collectors.toList());
+        LOG.infof(
+                "Retrieved %d seats for manager: %s (ID: %d)",
+                result.size(), manager.getUsername(), manager.getId());
+        return result;
     }
 
     public SeatResponseDTO findSeatByIdForManager(Long id, User manager) {
+        LOG.debugf(
+                "Attempting to retrieve seat with ID: %d for manager: %s (ID: %d)",
+                id, manager.getUsername(), manager.getId());
         Seat seat = findSeatEntityById(id, manager); // This already checks for ownership
+        LOG.infof(
+                "Successfully retrieved seat with ID %d for manager: %s (ID: %d)",
+                id, manager.getUsername(), manager.getId());
         return new SeatResponseDTO(seat);
     }
 
     @Transactional
     public SeatResponseDTO updateSeatForManager(Long id, SeatRequestDTO dto, User manager) {
+        LOG.debugf(
+                "Attempting to update seat with ID: %d for manager: %s (ID: %d)",
+                id, manager.getUsername(), manager.getId());
         Seat seat = findSeatEntityById(id, manager); // This already checks for ownership
 
         EventLocation newEventLocation =
                 eventLocationRepository
                         .findByIdOptional(dto.getEventLocationId())
                         .orElseThrow(
-                                () ->
-                                        new IllegalArgumentException(
-                                                "EventLocation with id "
-                                                        + dto.getEventLocationId()
-                                                        + " not found"));
+                                () -> {
+                                    LOG.warnf(
+                                            "EventLocation with id %d not found for seat update.",
+                                            dto.getEventLocationId());
+                                    return new IllegalArgumentException(
+                                            "EventLocation with id "
+                                                    + dto.getEventLocationId()
+                                                    + " not found");
+                                });
 
         if (!manager.getRoles().contains(Roles.ADMIN)
                 && !manager.getEventLocations().contains(newEventLocation)) {
+            LOG.warnf(
+                    "Manager %s (ID: %d) does not own the new EventLocation with ID %d for seat"
+                            + " update.",
+                    manager.getUsername(), manager.getId(), newEventLocation.getId());
             throw new SecurityException("Manager does not own the new EventLocation");
         }
 
         if (dto.getSeatNumber() == null || dto.getSeatNumber().trim().isEmpty()) {
+            LOG.warnf("Invalid seat data: seat number is empty for seat ID %d.", id);
             throw new IllegalArgumentException("Seat number cannot be empty");
         }
         if (dto.getXCoordinate() < 0 || dto.getYCoordinate() < 0) {
+            LOG.warnf("Invalid seat data: coordinates are negative for seat ID %d.", id);
             throw new IllegalArgumentException("Coordinates cannot be negative");
         }
 
+        LOG.debugf(
+                "Updating seat ID %d: seatNumber='%s' -> '%s', location ID='%d' -> '%d',"
+                        + " xCoordinate='%d' -> '%d', yCoordinate='%d' -> '%d'",
+                id,
+                seat.getSeatNumber(),
+                dto.getSeatNumber(),
+                seat.getLocation().getId(),
+                newEventLocation.getId(),
+                seat.getXCoordinate(),
+                dto.getXCoordinate(),
+                seat.getYCoordinate(),
+                dto.getYCoordinate());
         seat.setSeatNumber(dto.getSeatNumber());
         seat.setLocation(newEventLocation);
         seat.setXCoordinate(dto.getXCoordinate());
         seat.setYCoordinate(dto.getYCoordinate());
         seatRepository.persist(seat);
+        LOG.infof(
+                "Seat with ID %d updated successfully by manager: %s (ID: %d)",
+                id, manager.getUsername(), manager.getId());
         return new SeatResponseDTO(seat);
     }
 
     @Transactional
     public void deleteSeatForManager(Long id, User manager) {
+        LOG.debugf(
+                "Attempting to delete seat with ID: %d for manager: %s (ID: %d)",
+                id, manager.getUsername(), manager.getId());
         Seat seat = findSeatEntityById(id, manager); // This already checks for ownership
         seatRepository.delete(seat);
+        LOG.infof(
+                "Seat with ID %d deleted successfully by manager: %s (ID: %d)",
+                id, manager.getUsername(), manager.getId());
     }
 
     public Seat findSeatEntityById(Long id, User currentUser) {
+        LOG.debugf(
+                "Attempting to find seat entity by ID: %d for user: %s (ID: %d)",
+                id, currentUser.getUsername(), currentUser.getId());
         // Check if user has access to linked location
         Seat seat =
                 seatRepository
                         .findByIdOptional(id)
                         .orElseThrow(
-                                () ->
-                                        new SeatNotFoundException(
-                                                "Seat with id " + id + " not found"));
+                                () -> {
+                                    LOG.warnf(
+                                            "Seat with ID %d not found for user: %s (ID: %d)",
+                                            id, currentUser.getUsername(), currentUser.getId());
+                                    return new SeatNotFoundException(
+                                            "Seat with id " + id + " not found");
+                                });
 
         if (currentUser.getRoles().contains(Roles.ADMIN)) {
+            LOG.debugf("User is ADMIN, allowing access to seat ID %d.", id);
             return seat; // Admin can access any seat
         }
 
         if (!seat.getLocation().getManager().getId().equals(currentUser.getId())) {
+            LOG.warnf(
+                    "User %s (ID: %d) does not have permission to access seat ID %d.",
+                    currentUser.getUsername(), currentUser.getId(), id);
             throw new SecurityException("You do not have permission to access this seat");
         }
-
+        LOG.debugf(
+                "User %s (ID: %d) has permission to access seat ID %d.",
+                currentUser.getUsername(), currentUser.getId(), id);
         return seat;
     }
 }
