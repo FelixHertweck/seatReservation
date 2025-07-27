@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  backend:
+    image: ghcr.io/felixhertweck/seatreservation:main
+    # Uncomment this line to use the native image
+    # image: ghcr.io/felixhertweck/native-seatreservation:main
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./keys:/app/keys # Funktioniert noch nicht
+    # Override the default templates with your own, than uncomment the following line
+    #  - ./src/main/resources/templates/email:/app/seatreservation/src/main/resources/templates/email
+    depends_on:
+      - db
+    environment:
+      # Application configuration
+      - APP_URL=http://localhost:8080
+
+      # Email configuration
+      - MAIL_FROM=no-reply@example.com  # Change this!
+      - MAIL_HOST=smtp.example.com  # Change this!
+      - MAIL_PORT=587  # Change this!
+      - MAIL_USERNAME=your_mailtrap_username  # Change this!
+      - MAIL_PASSWORD=your_mailtrap_password  # Change this!
+
+      # Database configuration
+      - QUARKUS_DATASOURCE_DB_KIND=postgresql
+      - QUARKUS_DATASOURCE_USERNAME=quarkus
+      - QUARKUS_DATASOURCE_PASSWORD=quarkus # Change this!
+      - QUARKUS_DATASOURCE_JDBC_URL=jdbc:postgresql://db:5432/quarkus
+
+
+
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: quarkus
+      POSTGRES_USER: quarkus
+      POSTGRES_PASSWORD: quarkus  # Change this!
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:

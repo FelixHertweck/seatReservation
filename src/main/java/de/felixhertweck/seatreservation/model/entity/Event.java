@@ -140,22 +140,38 @@ public class Event extends PanacheEntity {
 
     @Override
     public boolean equals(Object o) {
+        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Event event = (Event) o;
+        if (id != null && event.id != null) {
+            return Objects.equals(id, event.id);
+        }
         return Objects.equals(name, event.name)
                 && Objects.equals(description, event.description)
                 && Objects.equals(startTime, event.startTime)
                 && Objects.equals(endTime, event.endTime)
                 && Objects.equals(bookingDeadline, event.bookingDeadline)
                 && Objects.equals(event_location, event.event_location)
-                && Objects.equals(
-                        manager, event.manager); // userAllowances and reservations excluded
+                && Objects.equals(userAllowances, event.userAllowances)
+                && Objects.equals(manager, event.manager)
+                && Objects.equals(reservations, event.reservations);
     }
 
     @Override
     public int hashCode() {
+        if (id != null) {
+            return Objects.hash(id);
+        }
         return Objects.hash(
-                name, description, startTime, endTime, bookingDeadline, event_location, manager);
+                name,
+                description,
+                startTime,
+                endTime,
+                bookingDeadline,
+                event_location,
+                userAllowances,
+                manager,
+                reservations);
     }
 
     @Override

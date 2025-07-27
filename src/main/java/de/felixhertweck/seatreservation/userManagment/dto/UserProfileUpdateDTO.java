@@ -19,23 +19,20 @@
  */
 package de.felixhertweck.seatreservation.userManagment.dto;
 
-import jakarta.validation.constraints.NotNull;
+import java.util.Set;
 
 import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
 
 public class UserProfileUpdateDTO {
-    @NotNull(message = "Email cannot be null")
-    @NoHtmlSanitize
-    private final String email;
+    @NoHtmlSanitize private final String email;
 
-    @NotNull(message = "Firstname cannot be null")
     private final String firstname;
 
-    @NotNull(message = "Lastname cannot be null")
     private final String lastname;
 
-    @NotNull(message = "Password cannot be null")
     private final String password;
+
+    private final Set<String> tags;
 
     public String getEmail() {
         return email;
@@ -53,11 +50,20 @@ public class UserProfileUpdateDTO {
         return password;
     }
 
+    public Set<String> getTags() {
+        return tags;
+    }
+
     public UserProfileUpdateDTO(
-            String firstname, String lastname, String passwordHash, String email) {
+            String firstname,
+            String lastname,
+            String passwordHash,
+            String email,
+            Set<String> tags) {
         this.firstname = firstname;
         this.lastname = lastname;
         this.password = passwordHash;
         this.email = email;
+        this.tags = tags;
     }
 }

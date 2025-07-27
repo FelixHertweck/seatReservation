@@ -77,14 +77,23 @@ public class EventUserAllowance extends PanacheEntity {
 
     @Override
     public boolean equals(Object o) {
+        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         EventUserAllowance that = (EventUserAllowance) o;
-        return reservationsAllowedCount == that.reservationsAllowedCount; // user and event excluded
+        if (id != null && that.id != null) {
+            return Objects.equals(id, that.id);
+        }
+        return reservationsAllowedCount == that.reservationsAllowedCount
+                && Objects.equals(user, that.user)
+                && Objects.equals(event, that.event);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(reservationsAllowedCount); // user and event excluded
+        if (id != null) {
+            return Objects.hash(id);
+        }
+        return Objects.hash(user, event, reservationsAllowedCount);
     }
 
     @Override

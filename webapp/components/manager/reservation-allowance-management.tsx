@@ -22,7 +22,7 @@ import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { AllowanceFormModal } from "@/components/manager/allowance-form-modal";
 import type {
   DetailedEventResponseDto,
-  EventUserAllowancesDto,
+  EventUserAllowancesDto, EventUserAllowancesRequestDto,
   UserDto,
 } from "@/api";
 
@@ -31,7 +31,7 @@ export interface ReservationAllowanceManagementProps {
   users: UserDto[];
   reservationAllowance: EventUserAllowancesDto[];
   createReservationAllowance: (
-    allowance: EventUserAllowancesDto,
+    allowance: EventUserAllowancesRequestDto,
   ) => Promise<EventUserAllowancesDto>;
   deleteReservationAllowance: (id: bigint) => Promise<unknown>;
 }

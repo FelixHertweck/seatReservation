@@ -45,6 +45,11 @@ public class User extends PanacheEntity {
     @Column private boolean emailVerified = false;
 
     @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_tags", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "tag")
+    private Set<String> tags = new HashSet<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role")
     private Set<String> roles = new HashSet<>();
@@ -73,6 +78,19 @@ public class User extends PanacheEntity {
         this.roles = new HashSet<>(roles);
     }
 
+    public User(
+            String username,
+            String email,
+            boolean emailVerified,
+            String passwordHash,
+            String firstname,
+            String lastname,
+            Set<String> roles,
+            Set<String> tags) {
+        this(username, email, emailVerified, passwordHash, firstname, lastname, roles);
+        this.tags = new HashSet<>(tags);
+    }
+
     public Long getId() {
         return id;
     }
@@ -91,6 +109,14 @@ public class User extends PanacheEntity {
 
     public Set<String> getRoles() {
         return roles;
+    }
+
+    public Set<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(Set<String> tags) {
+        this.tags = tags;
     }
 
     public void setRoles(Set<String> roles) {
@@ -145,25 +171,38 @@ public class User extends PanacheEntity {
 
     @Override
     public boolean equals(Object o) {
+        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
-        return Objects.equals(username, user.username)
-                && Objects.equals(firstname, user.firstname)
-                && Objects.equals(lastname, user.lastname)
-                && Objects.equals(passwordHash, user.passwordHash)
-                && Objects.equals(email, user.email)
-                && Objects.equals(roles, user.roles); // eventAllowances excluded
+        User that = (User) o;
+        if (id != null && that.id != null) {
+            return Objects.equals(id, that.id);
+        }
+        return emailVerified == that.emailVerified
+                && Objects.equals(username, that.username)
+                && Objects.equals(firstname, that.firstname)
+                && Objects.equals(lastname, that.lastname)
+                && Objects.equals(passwordHash, that.passwordHash)
+                && Objects.equals(email, that.email)
+                && Objects.equals(tags, that.tags)
+                && Objects.equals(roles, that.roles)
+                && Objects.equals(eventAllowances, that.eventAllowances);
     }
 
     @Override
     public int hashCode() {
+        if (id != null) {
+            return Objects.hash(id);
+        }
         return Objects.hash(
                 username,
                 firstname,
                 lastname,
                 passwordHash,
                 email,
-                roles); // eventAllowances excluded
+                emailVerified,
+                tags,
+                roles,
+                eventAllowances);
     }
 
     @Override
@@ -184,6 +223,10 @@ public class User extends PanacheEntity {
                 + ", email='"
                 + email
                 + '\''
+                + ", emailVerified="
+                + emailVerified
+                + ", tags="
+                + tags
                 + ", roles="
                 + roles
                 + ", eventAllowances="

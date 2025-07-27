@@ -5,10 +5,9 @@
 - [x] Service-Schicht von Web-Exceptions entkoppeln (z.B. `BadRequestException` durch `IllegalArgumentException` ersetzen)
 - [x] Logging
 - [X] License Header
+- [ ] Ich habe User DTO zu Tags verändernt. passe tests an und auch frontend
 - [ ] ReadMe erstellen
-- [ ] Logo erstellen und einfügen
 - [ ] Create allowance mehrere Nutzer auswählbar machen muss einfacher sein
-- [ ] Manager export der Reservierungen
 - [ ] 1 Tag vor Event eine Erinnerung per Email schicken
 - [x] Branch Protection erstellen
 
@@ -23,3 +22,6 @@ Frontend:
 - [ ] Routing geht mit next.js noch nicht richtig (also in Kombi mit Backend)
 - [ ] Sprache konsistent halten (Englisch, Deutsch) --> Oder sogar konfigurierbar machen
 - [ ] Toast Notifications wenn Email Adresse geändert wurde
+- [ ] Manager page auch in sidebar für admins
+- [ ] Logo erstellen und einfügen
+- [ ] Manager export der Reservierungen

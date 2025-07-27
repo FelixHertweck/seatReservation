@@ -95,17 +95,25 @@ public class EventLocation extends PanacheEntity {
 
     @Override
     public boolean equals(Object o) {
+        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         EventLocation that = (EventLocation) o;
+        if (id != null && that.id != null) {
+            return Objects.equals(id, that.id);
+        }
         return Objects.equals(name, that.name)
                 && Objects.equals(address, that.address)
                 && Objects.equals(capacity, that.capacity)
-                && Objects.equals(manager, that.manager); // seats excluded
+                && Objects.equals(manager, that.manager)
+                && Objects.equals(seats, that.seats);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, address, capacity, manager); // seats excluded
+        if (id != null) {
+            return Objects.hash(id);
+        }
+        return Objects.hash(name, address, capacity, manager, seats);
     }
 
     @Override

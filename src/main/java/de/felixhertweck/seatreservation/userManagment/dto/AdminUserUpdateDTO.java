@@ -30,15 +30,14 @@ public class AdminUserUpdateDTO {
     @NoHtmlSanitize
     private final String email;
 
-    @NotNull(message = "Firstname cannot be null")
     private final String firstname;
 
-    @NotNull(message = "Lastname cannot be null")
     private final String lastname;
 
     private final String password;
 
-    @NotNull(message = "Roles cannot be null")
+    private final Set<String> tags;
+
     @NotEmpty(message = "User must have at least one role")
     private final Set<String> roles;
 
@@ -62,12 +61,22 @@ public class AdminUserUpdateDTO {
         return roles;
     }
 
+    public Set<String> getTags() {
+        return tags;
+    }
+
     public AdminUserUpdateDTO(
-            String firstname, String lastname, String password, String email, Set<String> roles) {
+            String firstname,
+            String lastname,
+            String password,
+            String email,
+            Set<String> roles,
+            Set<String> tags) {
         this.firstname = firstname;
         this.lastname = lastname;
         this.password = password;
         this.email = email;
         this.roles = roles;
+        this.tags = tags;
     }
 }

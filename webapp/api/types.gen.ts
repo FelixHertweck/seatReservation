@@ -2,9 +2,10 @@
 
 export type AdminUserUpdateDto = {
     email: string;
-    firstname: string;
-    lastname: string;
+    firstname?: string;
+    lastname?: string;
     password?: string;
+    tags?: Array<string>;
     roles: Array<string>;
 };
 
@@ -85,9 +86,16 @@ export type EventUserAllowancesDto = {
     reservationsAllowedCount?: number;
 };
 
+export type EventUserAllowancesRequestDto = {
+    eventId: bigint;
+    userIds: Array<bigint>;
+    reservationsAllowedCount: number;
+};
+
 export type LimitedUserInfoDto = {
     id?: bigint;
     username?: string;
+    tags?: Array<string>;
 };
 
 export type LocalDateTime = Date;
@@ -160,6 +168,7 @@ export type UserCreationDto = {
     password: string;
     firstname: string;
     lastname: string;
+    tags?: Array<string>;
 };
 
 export type UserDto = {
@@ -170,13 +179,15 @@ export type UserDto = {
     email?: string;
     emailVerified?: boolean;
     roles?: Array<string>;
+    tag?: Array<string>;
 };
 
 export type UserProfileUpdateDto = {
-    email: string;
-    firstname: string;
-    lastname: string;
-    password: string;
+    email?: string;
+    firstname?: string;
+    lastname?: string;
+    password?: string;
+    tags?: Array<string>;
 };
 
 export type PostApiAuthLoginData = {
@@ -540,7 +551,7 @@ export type GetApiManagerReservationAllowanceResponses = {
 export type GetApiManagerReservationAllowanceResponse = GetApiManagerReservationAllowanceResponses[keyof GetApiManagerReservationAllowanceResponses];
 
 export type PostApiManagerReservationAllowanceData = {
-    body: EventUserAllowancesDto;
+    body: EventUserAllowancesRequestDto;
     path?: never;
     query?: never;
     url: '/api/manager/reservationAllowance';
@@ -1127,6 +1138,37 @@ export type PostApiUserReservationsResponses = {
 };
 
 export type PostApiUserReservationsResponse = PostApiUserReservationsResponses[keyof PostApiUserReservationsResponses];
+
+export type GetApiUserReservationsExportByEventIdCsvData = {
+    body?: never;
+    path: {
+        eventId: bigint;
+    };
+    query?: never;
+    url: '/api/user/reservations/export/{eventId}/csv';
+};
+
+export type GetApiUserReservationsExportByEventIdCsvErrors = {
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Forbidden - User not authorized
+     */
+    403: unknown;
+    /**
+     * Not Found - Event not found
+     */
+    404: unknown;
+};
+
+export type GetApiUserReservationsExportByEventIdCsvResponses = {
+    /**
+     * CSV export of reservations for a specific event
+     */
+    200: unknown;
+};
 
 export type DeleteApiUserReservationsByIdData = {
     body?: never;

@@ -30,7 +30,8 @@ public record UserDTO(
         String lastName,
         String email,
         boolean emailVerified,
-        Set<String> roles) {
+        Set<String> roles,
+        Set<String> tag) {
 
     public UserDTO(User user) {
         this(
@@ -40,6 +41,7 @@ public record UserDTO(
                 user.getLastname(),
                 user.getEmail(),
                 user.isEmailVerified(),
-                user.getRoles());
+                user.getRoles(),
+                user.getTags());
     }
 }

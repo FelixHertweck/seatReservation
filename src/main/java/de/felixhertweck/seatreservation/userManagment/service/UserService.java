@@ -106,9 +106,16 @@ public class UserService {
         user.setFirstname(userCreationDTO.getFirstname());
         user.setLastname(userCreationDTO.getLastname());
         user.setRoles(new HashSet<>(List.of(Roles.USER))); // Default role for new users
+        if (userCreationDTO.getTags() != null) {
+            user.setTags(new HashSet<>(userCreationDTO.getTags()));
+        }
         LOG.debugf(
-                "User object prepared: username=%s, firstname=%s, lastname=%s, roles=%s",
-                user.getUsername(), user.getFirstname(), user.getLastname(), user.getRoles());
+                "User object prepared: username=%s, firstname=%s, lastname=%s, roles=%s, tags=%s",
+                user.getUsername(),
+                user.getFirstname(),
+                user.getLastname(),
+                user.getRoles(),
+                user.getTags());
 
         userRepository.persist(user);
         LOG.infof("User %s persisted successfully with ID: %d", user.getUsername(), user.id);
@@ -344,6 +351,15 @@ public class UserService {
                 userProfileUpdateDTO.getFirstname(),
                 userProfileUpdateDTO.getLastname(),
                 userProfileUpdateDTO.getPassword());
+
+        if (userProfileUpdateDTO.getTags() != null) {
+            if (!userProfileUpdateDTO.getTags().equals(existingUser.getTags())) {
+                LOG.debugf(
+                        "Updating tags for user ID %d from %s to %s",
+                        existingUser.id, existingUser.getTags(), userProfileUpdateDTO.getTags());
+                existingUser.setTags(userProfileUpdateDTO.getTags());
+            }
+        }
 
         userRepository.persist(existingUser);
         LOG.infof("User profile for username %s updated successfully.", username);

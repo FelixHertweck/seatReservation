@@ -19,7 +19,9 @@
  */
 package de.felixhertweck.seatreservation.eventManagement.ressource;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
@@ -30,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
+import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
@@ -62,11 +65,12 @@ public class EventResourceTest {
                 .findByUsernameOptional("manager2")
                 .orElseGet(
                         () -> {
-                            var u = new de.felixhertweck.seatreservation.model.entity.User();
+                            var u = new User();
                             u.setUsername("manager2");
                             u.setPasswordHash("password");
-                            u.setRoles(java.util.Set.of("MANAGER"));
+                            u.setRoles(Set.of("MANAGER"));
                             u.setEmail("manager2@example.com");
+                            u.setTags(Collections.emptySet());
                             userRepository.persist(u);
                             return u;
                         });

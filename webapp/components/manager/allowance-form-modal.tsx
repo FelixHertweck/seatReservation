@@ -22,14 +22,15 @@ import {
 } from "@/components/ui/select";
 import type {
   DetailedEventResponseDto,
-  EventUserAllowancesDto,
+  EventUserAllowancesRequestDto,
   UserDto,
 } from "@/api";
+import {Checkbox} from "@/components/ui/checkbox";
 
 interface AllowanceFormModalProps {
   events: DetailedEventResponseDto[];
   users: UserDto[];
-  onSubmit: (allowanceData: EventUserAllowancesDto) => Promise<void>;
+  onSubmit: (allowanceData: EventUserAllowancesRequestDto) => Promise<void>;
   onClose: () => void;
 }
 
@@ -41,7 +42,7 @@ export function AllowanceFormModal({
 }: AllowanceFormModalProps) {
   const [formData, setFormData] = useState({
     eventId: "",
-    userId: "",
+    userIds: [] as string[],
     reservationsAllowedCount: "",
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -51,9 +52,9 @@ export function AllowanceFormModal({
     setIsLoading(true);
 
     try {
-      const allowanceData: EventUserAllowancesDto = {
+      const allowanceData: EventUserAllowancesRequestDto = {
         eventId: BigInt(formData.eventId),
-        userId: BigInt(formData.userId),
+        userIds: formData.userIds.map((id) => BigInt(id)),
         reservationsAllowedCount: Number.parseInt(
           formData.reservationsAllowedCount,
         ),
@@ -64,92 +65,79 @@ export function AllowanceFormModal({
     }
   };
 
+  const handleUserToggle = (userId: string, checked: boolean) => {
+    setFormData((prev) => ({
+      ...prev,
+      userIds: checked ? [...prev.userIds, userId] : prev.userIds.filter((id) => id !== userId),
+    }))
+  }
+
   return (
-    <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Create Reservation Allowance</DialogTitle>
-          <DialogDescription>
-            Set reservation limits for a user on a specific event
-          </DialogDescription>
-        </DialogHeader>
+      <Dialog open onOpenChange={onClose}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create Reservation Allowance</DialogTitle>
+            <DialogDescription>Set reservation limits for users on a specific event</DialogDescription>
+          </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="event">Event</Label>
-            <Select
-              value={formData.eventId}
-              onValueChange={(value) =>
-                setFormData((prev) => ({ ...prev, eventId: value }))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select an event" />
-              </SelectTrigger>
-              <SelectContent>
-                {events.map((event) => (
-                  <SelectItem
-                    key={event.id?.toString()}
-                    value={event.id?.toString() ?? "unkown"}
-                  >
-                    {event.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="event">Event</Label>
+              <Select
+                  value={formData.eventId}
+                  onValueChange={(value) => setFormData((prev) => ({ ...prev, eventId: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select an event" />
+                </SelectTrigger>
+                <SelectContent>
+                  {events.map((event) => (
+                      <SelectItem key={event.id?.toString()} value={event.id?.toString() ?? "unknown"}>
+                        {event.name}
+                      </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="user">User</Label>
-            <Select
-              value={formData.userId}
-              onValueChange={(value) =>
-                setFormData((prev) => ({ ...prev, userId: value }))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a user" />
-              </SelectTrigger>
-              <SelectContent>
+            <div className="space-y-2">
+              <Label>Users</Label>
+              <div className="space-y-2 max-h-40 overflow-y-auto border p-2 rounded">
                 {users.map((user) => (
-                  <SelectItem
-                    key={user.id?.toString()}
-                    value={user.id?.toString() ?? "unknown"}
-                  >
-                    {user.username}
-                  </SelectItem>
+                    <div key={user.id?.toString()} className="flex items-center space-x-2">
+                      <Checkbox
+                          id={`user-${user.id?.toString()}`}
+                          checked={formData.userIds.includes(user.id?.toString() ?? "unknown")}
+                          onCheckedChange={(checked) => handleUserToggle(user.id?.toString() ?? "unknown", checked as boolean)}
+                      />
+                      <Label htmlFor={`user-${user.id?.toString()}`}>{user.username}</Label>
+                    </div>
                 ))}
-              </SelectContent>
-            </Select>
-          </div>
+              </div>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="count">Allowed Reservations</Label>
-            <Input
-              id="count"
-              type="number"
-              min="0"
-              value={formData.reservationsAllowedCount}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  reservationsAllowedCount: e.target.value,
-                }))
-              }
-              required
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="count">Allowed Reservations</Label>
+              <Input
+                  id="count"
+                  type="number"
+                  min="0"
+                  value={formData.reservationsAllowedCount}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, reservationsAllowedCount: e.target.value }))}
+                  required
+              />
+            </div>
 
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Creating..." : "Create Allowance"}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={onClose}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isLoading || formData.userIds.length === 0}>
+                {isLoading ? "Creating..." : "Create Allowance"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
   );
 }

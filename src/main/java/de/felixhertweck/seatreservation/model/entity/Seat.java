@@ -92,16 +92,23 @@ public class Seat extends PanacheEntity {
 
     @Override
     public boolean equals(Object o) {
+        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Seat seat = (Seat) o;
-        return xCoordinate == seat.xCoordinate
-                && yCoordinate == seat.yCoordinate
-                && Objects.equals(seatNumber, seat.seatNumber)
-                && Objects.equals(location, seat.location);
+        Seat that = (Seat) o;
+        if (id != null && that.id != null) {
+            return Objects.equals(id, that.id);
+        }
+        return xCoordinate == that.xCoordinate
+                && yCoordinate == that.yCoordinate
+                && Objects.equals(seatNumber, that.seatNumber)
+                && Objects.equals(location, that.location);
     }
 
     @Override
     public int hashCode() {
+        if (id != null) {
+            return Objects.hash(id);
+        }
         return Objects.hash(seatNumber, location, xCoordinate, yCoordinate);
     }
 
