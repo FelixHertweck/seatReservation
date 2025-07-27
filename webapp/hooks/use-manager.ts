@@ -12,7 +12,7 @@ import type {
   EventLocationRegistrationDto,
   SeatRequestDto,
   ReservationRequestDto,
-  BlockSeatsRequestDto,
+  BlockSeatsRequestDto, EventUserAllowancesRequestDto,
 } from "@/api";
 import {
   getApiManagerEventsOptions,
@@ -310,13 +310,6 @@ export function useManager(): UseManagerReturn {
     },
   });
 
-  const getReservationAllowanceByEventIdQuery = (eventId: bigint) =>
-    useQuery({
-      ...getApiManagerReservationAllowanceEventByEventIdOptions({
-        path: { eventId },
-      }),
-    });
-
   const isLoading =
     eventsIsLoading ||
     locationsIsLoading ||
@@ -379,7 +372,7 @@ export function useManager(): UseManagerReturn {
       events: events ?? [],
       users: user ?? [],
       reservationAllowance: reservationAllowance ?? [],
-      createReservationAllowance: (allowance: EventUserAllowancesDto) =>
+      createReservationAllowance: (allowance: EventUserAllowancesRequestDto) =>
         createReservationAllowanceMutation.mutateAsync({ body: allowance }),
       deleteReservationAllowance: (id: bigint) =>
         deleteReservationAllowanceMutation.mutateAsync({ path: { id } }),

@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.model.entity;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -57,5 +58,41 @@ public class EmailVerification extends PanacheEntity {
 
     public LocalDateTime getExpirationTime() {
         return expirationTime;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        EmailVerification that = (EmailVerification) o;
+        if (id != null && that.id != null) {
+            return Objects.equals(id, that.id);
+        }
+        return Objects.equals(user, that.user)
+                && Objects.equals(token, that.token)
+                && Objects.equals(expirationTime, that.expirationTime);
+    }
+
+    @Override
+    public int hashCode() {
+        if (id != null) {
+            return Objects.hash(id);
+        }
+        return Objects.hash(user, token, expirationTime);
+    }
+
+    @Override
+    public String toString() {
+        return "EmailVerification{"
+                + "user="
+                + user
+                + ", token='"
+                + token
+                + '\''
+                + ", expirationTime="
+                + expirationTime
+                + ", id="
+                + id
+                + '}';
     }
 }

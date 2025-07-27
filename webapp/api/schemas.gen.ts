@@ -2,7 +2,7 @@
 
 export const AdminUserUpdateDTOSchema = {
     type: 'object',
-    required: ['email', 'firstname', 'lastname', 'roles'],
+    required: ['email', 'roles'],
     properties: {
         email: {
             type: 'string'
@@ -15,6 +15,13 @@ export const AdminUserUpdateDTOSchema = {
         },
         password: {
             type: 'string'
+        },
+        tags: {
+            type: 'array',
+            uniqueItems: true,
+            items: {
+                type: 'string'
+            }
         },
         roles: {
             type: 'array',
@@ -257,6 +264,30 @@ export const EventUserAllowancesDtoSchema = {
     }
 } as const;
 
+export const EventUserAllowancesRequestDtoSchema = {
+    type: 'object',
+    required: ['eventId', 'userIds', 'reservationsAllowedCount'],
+    properties: {
+        eventId: {
+            type: 'integer',
+            format: 'int64'
+        },
+        userIds: {
+            type: 'array',
+            uniqueItems: true,
+            items: {
+                type: 'integer',
+                format: 'int64'
+            },
+            minItems: 1
+        },
+        reservationsAllowedCount: {
+            type: 'integer',
+            format: 'int32'
+        }
+    }
+} as const;
+
 export const LimitedUserInfoDTOSchema = {
     type: 'object',
     properties: {
@@ -266,6 +297,13 @@ export const LimitedUserInfoDTOSchema = {
         },
         username: {
             type: 'string'
+        },
+        tags: {
+            type: 'array',
+            uniqueItems: true,
+            items: {
+                type: 'string'
+            }
         }
     }
 } as const;
@@ -470,6 +508,13 @@ export const UserCreationDTOSchema = {
         },
         lastname: {
             type: 'string'
+        },
+        tags: {
+            type: 'array',
+            uniqueItems: true,
+            items: {
+                type: 'string'
+            }
         }
     }
 } as const;
@@ -502,13 +547,19 @@ export const UserDTOSchema = {
             items: {
                 type: 'string'
             }
+        },
+        tag: {
+            type: 'array',
+            uniqueItems: true,
+            items: {
+                type: 'string'
+            }
         }
     }
 } as const;
 
 export const UserProfileUpdateDTOSchema = {
     type: 'object',
-    required: ['email', 'firstname', 'lastname', 'password'],
     properties: {
         email: {
             type: 'string'
@@ -521,6 +572,13 @@ export const UserProfileUpdateDTOSchema = {
         },
         password: {
             type: 'string'
+        },
+        tags: {
+            type: 'array',
+            uniqueItems: true,
+            items: {
+                type: 'string'
+            }
         }
     }
 } as const;

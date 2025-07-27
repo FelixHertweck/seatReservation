@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.userManagment.dto;
 
+import java.util.Set;
 import jakarta.validation.constraints.NotNull;
 
 import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
@@ -37,6 +38,8 @@ public class UserCreationDTO {
 
     @NotNull(message = "Lastname cannot be null")
     private final String lastname;
+
+    private final Set<String> tags;
 
     public String getUsername() {
         return username;
@@ -58,12 +61,22 @@ public class UserCreationDTO {
         return lastname;
     }
 
+    public Set<String> getTags() {
+        return tags;
+    }
+
     public UserCreationDTO(
-            String username, String email, String password, String firstname, String lastname) {
+            String username,
+            String email,
+            String password,
+            String firstname,
+            String lastname,
+            Set<String> tags) {
         this.username = username;
         this.email = email;
         this.password = password;
         this.firstname = firstname;
         this.lastname = lastname;
+        this.tags = tags;
     }
 }

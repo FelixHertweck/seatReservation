@@ -4,7 +4,7 @@
     "schemas" : {
       "AdminUserUpdateDTO" : {
         "type" : "object",
-        "required" : [ "email", "firstname", "lastname", "roles" ],
+        "required" : [ "email", "roles" ],
         "properties" : {
           "email" : {
             "type" : "string"
@@ -17,6 +17,13 @@
           },
           "password" : {
             "type" : "string"
+          },
+          "tags" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string"
+            }
           },
           "roles" : {
             "type" : "array",
@@ -248,6 +255,29 @@
           }
         }
       },
+      "EventUserAllowancesRequestDto" : {
+        "type" : "object",
+        "required" : [ "eventId", "userIds", "reservationsAllowedCount" ],
+        "properties" : {
+          "eventId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "userIds" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            },
+            "minItems" : 1
+          },
+          "reservationsAllowedCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
       "LimitedUserInfoDTO" : {
         "type" : "object",
         "properties" : {
@@ -257,6 +287,13 @@
           },
           "username" : {
             "type" : "string"
+          },
+          "tags" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string"
+            }
           }
         }
       },
@@ -450,6 +487,13 @@
           },
           "lastname" : {
             "type" : "string"
+          },
+          "tags" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string"
+            }
           }
         }
       },
@@ -481,12 +525,18 @@
             "items" : {
               "type" : "string"
             }
+          },
+          "tag" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string"
+            }
           }
         }
       },
       "UserProfileUpdateDTO" : {
         "type" : "object",
-        "required" : [ "email", "firstname", "lastname", "password" ],
         "properties" : {
           "email" : {
             "type" : "string"
@@ -499,6 +549,13 @@
           },
           "password" : {
             "type" : "string"
+          },
+          "tags" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string"
+            }
           }
         }
       }
@@ -916,7 +973,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/EventUserAllowancesDto"
+                "$ref" : "#/components/schemas/EventUserAllowancesRequestDto"
               }
             }
           },
@@ -944,7 +1001,7 @@
           }
         },
         "summary" : "Set Reservations Allowed For User",
-        "tags" : [ "Event Reservation Allowance" ],
+        "tags" : [ "Event Reservation Allowance Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
         } ]
@@ -972,7 +1029,7 @@
           }
         },
         "summary" : "Get Reservation Allowances",
-        "tags" : [ "Event Reservation Allowance" ],
+        "tags" : [ "Event Reservation Allowance Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
         } ]
@@ -1011,7 +1068,7 @@
           }
         },
         "summary" : "Get Reservation Allowances By Event Id",
-        "tags" : [ "Event Reservation Allowance" ],
+        "tags" : [ "Event Reservation Allowance Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
         } ]
@@ -1047,7 +1104,7 @@
           }
         },
         "summary" : "Get Reservation Allowance By Id",
-        "tags" : [ "Event Reservation Allowance" ],
+        "tags" : [ "Event Reservation Allowance Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
         } ]
@@ -1074,7 +1131,7 @@
           }
         },
         "summary" : "Delete Reservation Allowance",
-        "tags" : [ "Event Reservation Allowance" ],
+        "tags" : [ "Event Reservation Allowance Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
         } ]
@@ -1641,6 +1698,41 @@
         "tags" : [ "Reservation Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "USER", "MANAGER", "ADMIN" ]
+        } ]
+      }
+    },
+    "/api/user/reservations/export/{eventId}/csv" : {
+      "get" : {
+        "parameters" : [ {
+          "name" : "eventId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "CSV export of reservations for a specific event",
+            "content" : {
+              "text/csv" : { }
+            }
+          },
+          "403" : {
+            "description" : "Forbidden - User not authorized"
+          },
+          "404" : {
+            "description" : "Not Found - Event not found"
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          }
+        },
+        "summary" : "Export Reservations To Csv",
+        "tags" : [ "Reservation Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
         } ]
       }
     },

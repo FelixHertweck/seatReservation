@@ -73,7 +73,8 @@ public class UserServiceTest {
     @Test
     void createUser_Success_WithEmail() throws IOException {
         UserCreationDTO dto =
-                new UserCreationDTO("testuser", "test@example.com", "password", "John", "Doe");
+                new UserCreationDTO(
+                        "testuser", "test@example.com", "password", "John", "Doe", null);
         when(userRepository.findByUsernameOptional(anyString())).thenReturn(Optional.empty());
         when(userRepository.isPersistent(any(User.class)))
                 .thenReturn(true); // Simulate successful persistence
@@ -89,7 +90,8 @@ public class UserServiceTest {
 
     @Test
     void createUser_Success_WithoutEmail() throws IOException {
-        UserCreationDTO dto = new UserCreationDTO("testuser", null, "password", "John", "Doe");
+        UserCreationDTO dto =
+                new UserCreationDTO("testuser", null, "password", "John", "Doe", null);
         when(userRepository.findByUsernameOptional(anyString())).thenReturn(Optional.empty());
         when(userRepository.isPersistent(any(User.class))).thenReturn(true);
 
@@ -112,11 +114,11 @@ public class UserServiceTest {
     @Test
     void createUser_InvalidUserException_EmptyUsername() throws IOException {
         final UserCreationDTO dto =
-                new UserCreationDTO("", "test@example.com", "password", "John", "Doe");
+                new UserCreationDTO("", "test@example.com", "password", "John", "Doe", null);
         assertThrows(InvalidUserException.class, () -> userService.createUser(dto));
 
         final UserCreationDTO dto2 =
-                new UserCreationDTO("   ", "test@example.com", "password", "John", "Doe");
+                new UserCreationDTO("   ", "test@example.com", "password", "John", "Doe", null);
         assertThrows(InvalidUserException.class, () -> userService.createUser(dto2));
 
         verify(userRepository, never()).persist(any(User.class));
@@ -126,11 +128,11 @@ public class UserServiceTest {
     @Test
     void createUser_InvalidUserException_EmptyPassword() {
         final UserCreationDTO dto =
-                new UserCreationDTO("testuser", "test@example.com", "", "John", "Doe");
+                new UserCreationDTO("testuser", "test@example.com", "", "John", "Doe", null);
         assertThrows(InvalidUserException.class, () -> userService.createUser(dto));
 
         final UserCreationDTO dto2 =
-                new UserCreationDTO("testuser", "test@example.com", "   ", "John", "Doe");
+                new UserCreationDTO("testuser", "test@example.com", "   ", "John", "Doe", null);
         assertThrows(InvalidUserException.class, () -> userService.createUser(dto2));
 
         verify(userRepository, never()).persist(any(User.class));
@@ -139,7 +141,8 @@ public class UserServiceTest {
     @Test
     void createUser_DuplicateUserException_ExistingUsername() throws IOException {
         final UserCreationDTO dto =
-                new UserCreationDTO("existinguser", "test@example.com", "password", "John", "Doe");
+                new UserCreationDTO(
+                        "existinguser", "test@example.com", "password", "John", "Doe", null);
         when(userRepository.findByUsernameOptional(anyString()))
                 .thenReturn(Optional.of(new User()));
 
@@ -151,7 +154,8 @@ public class UserServiceTest {
     @Test
     void createUser_Success_WithDuplicateEmail() throws IOException {
         UserCreationDTO dto =
-                new UserCreationDTO("newuser", "existing@example.com", "password", "Jane", "Doe");
+                new UserCreationDTO(
+                        "newuser", "existing@example.com", "password", "Jane", "Doe", null);
         when(userRepository.findByUsernameOptional(anyString())).thenReturn(Optional.empty());
         when(userRepository.isPersistent(any(User.class))).thenReturn(true);
 
@@ -170,7 +174,8 @@ public class UserServiceTest {
     @Test
     void createUser_InternalServerErrorException_EmailSendFailure() throws IOException {
         UserCreationDTO dto =
-                new UserCreationDTO("testuser", "test@example.com", "password", "John", "Doe");
+                new UserCreationDTO(
+                        "testuser", "test@example.com", "password", "John", "Doe", null);
         when(userRepository.findByUsernameOptional(anyString())).thenReturn(Optional.empty());
         when(userRepository.isPersistent(any(User.class))).thenReturn(true);
         doThrow(new IOException("Email send failed"))
@@ -199,7 +204,13 @@ public class UserServiceTest {
                         Collections.singleton(Roles.USER));
         existingUser.id = 1L;
         final AdminUserUpdateDTO dto =
-                new AdminUserUpdateDTO("New", null, null, null, Collections.singleton(Roles.USER));
+                new AdminUserUpdateDTO(
+                        "New",
+                        null,
+                        null,
+                        null,
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
 
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
 
@@ -230,7 +241,13 @@ public class UserServiceTest {
                         Collections.singleton(Roles.USER));
         existingUser.id = 1L;
         final AdminUserUpdateDTO dto =
-                new AdminUserUpdateDTO(null, "New", null, null, Collections.singleton(Roles.USER));
+                new AdminUserUpdateDTO(
+                        null,
+                        "New",
+                        null,
+                        null,
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
 
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
 
@@ -262,7 +279,12 @@ public class UserServiceTest {
         existingUser.id = 1L;
         final AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
-                        null, null, "newpassword", null, Collections.singleton(Roles.USER));
+                        null,
+                        null,
+                        "newpassword",
+                        null,
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
 
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
 
@@ -293,7 +315,12 @@ public class UserServiceTest {
         existingUser.id = 1L;
         final AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
-                        null, null, "newpassword", null, Collections.singleton(Roles.USER));
+                        null,
+                        null,
+                        "newpassword",
+                        null,
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
 
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
 
@@ -319,7 +346,8 @@ public class UserServiceTest {
                         new HashSet<>(Collections.singletonList(Roles.USER)));
         existingUser.id = 1L;
         Set<String> newRoles = new HashSet<>(Arrays.asList(Roles.USER, Roles.ADMIN));
-        final AdminUserUpdateDTO dto = new AdminUserUpdateDTO(null, null, null, null, newRoles);
+        final AdminUserUpdateDTO dto =
+                new AdminUserUpdateDTO(null, null, null, null, newRoles, Collections.emptySet());
 
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
 
@@ -349,7 +377,12 @@ public class UserServiceTest {
         existingUser.id = 1L;
         final AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
-                        "New", "Name", "newpass", null, Collections.singleton(Roles.USER));
+                        "New",
+                        "Name",
+                        "newpass",
+                        null,
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
 
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
 
@@ -382,7 +415,12 @@ public class UserServiceTest {
         existingUser.id = 1L;
         final AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
-                        null, null, null, "new@example.com", Collections.singleton(Roles.USER));
+                        null,
+                        null,
+                        null,
+                        "new@example.com",
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
 
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
         when(emailVerificationRepository.findByUser(any(User.class)))
@@ -400,7 +438,13 @@ public class UserServiceTest {
     @Test
     void updateUser_UserNotFoundException() throws IOException {
         final AdminUserUpdateDTO dto =
-                new AdminUserUpdateDTO("New", null, null, null, Collections.singleton(Roles.USER));
+                new AdminUserUpdateDTO(
+                        "New",
+                        null,
+                        null,
+                        null,
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
         when(userRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> userService.updateUser(1L, dto));
@@ -437,7 +481,8 @@ public class UserServiceTest {
                         null,
                         null,
                         "duplicate@example.com",
-                        Collections.singleton(Roles.USER));
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
 
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
         when(emailVerificationRepository.findByUser(any(User.class))).thenReturn(Optional.empty());
@@ -467,7 +512,12 @@ public class UserServiceTest {
         existingUser.id = 1L;
         AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
-                        null, null, null, "new@example.com", Collections.singleton(Roles.USER));
+                        null,
+                        null,
+                        null,
+                        "new@example.com",
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
 
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
         when(emailVerificationRepository.findByUser(any(User.class))).thenReturn(Optional.empty());
@@ -607,7 +657,7 @@ public class UserServiceTest {
                         "Old",
                         "User",
                         Collections.singleton(Roles.USER));
-        final UserProfileUpdateDTO dto = new UserProfileUpdateDTO("New", null, null, null);
+        final UserProfileUpdateDTO dto = new UserProfileUpdateDTO("New", null, null, null, null);
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
@@ -639,7 +689,7 @@ public class UserServiceTest {
                         "John",
                         "Old",
                         Collections.singleton(Roles.USER));
-        final UserProfileUpdateDTO dto = new UserProfileUpdateDTO(null, "New", null, null);
+        final UserProfileUpdateDTO dto = new UserProfileUpdateDTO(null, "New", null, null, null);
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
@@ -671,7 +721,8 @@ public class UserServiceTest {
                         "John",
                         "Doe",
                         Collections.singleton(Roles.USER));
-        final UserProfileUpdateDTO dto = new UserProfileUpdateDTO(null, null, "newpassword", null);
+        final UserProfileUpdateDTO dto =
+                new UserProfileUpdateDTO(null, null, "newpassword", null, null);
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
@@ -698,7 +749,8 @@ public class UserServiceTest {
                         "John",
                         "Doe",
                         Collections.singleton(Roles.USER));
-        UserProfileUpdateDTO dto = new UserProfileUpdateDTO(null, null, null, "new@example.com");
+        UserProfileUpdateDTO dto =
+                new UserProfileUpdateDTO(null, null, null, "new@example.com", null);
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
@@ -715,7 +767,7 @@ public class UserServiceTest {
 
     @Test
     void updateUserProfile_UserNotFoundException() throws IOException {
-        final UserProfileUpdateDTO dto = new UserProfileUpdateDTO("New", null, null, null);
+        final UserProfileUpdateDTO dto = new UserProfileUpdateDTO("New", null, null, null, null);
         when(userRepository.findByUsernameOptional(anyString())).thenReturn(Optional.empty());
         when(userRepository.findByUsername(anyString())).thenReturn(null); // Mock findByUsername
 
@@ -750,7 +802,7 @@ public class UserServiceTest {
                         "Doe",
                         Collections.singleton(Roles.USER));
         final UserProfileUpdateDTO dto =
-                new UserProfileUpdateDTO(null, null, null, "duplicate@example.com");
+                new UserProfileUpdateDTO(null, null, null, "duplicate@example.com", null);
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
@@ -778,7 +830,7 @@ public class UserServiceTest {
                         "Doe",
                         Collections.singleton(Roles.USER));
         final UserProfileUpdateDTO dto =
-                new UserProfileUpdateDTO(null, null, null, "new@example.com");
+                new UserProfileUpdateDTO(null, null, null, "new@example.com", null);
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
@@ -806,7 +858,8 @@ public class UserServiceTest {
                         "John",
                         "Doe",
                         Collections.singleton(Roles.USER));
-        final UserProfileUpdateDTO dto = new UserProfileUpdateDTO(null, null, "newpassword", null);
+        final UserProfileUpdateDTO dto =
+                new UserProfileUpdateDTO(null, null, "newpassword", null, null);
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));

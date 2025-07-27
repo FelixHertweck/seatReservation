@@ -19,9 +19,14 @@
  */
 package de.felixhertweck.seatreservation.reservation.service;
 
+import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -30,6 +35,7 @@ import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.email.EmailService;
+import de.felixhertweck.seatreservation.eventManagement.dto.ReservationExportDTO;
 import de.felixhertweck.seatreservation.eventManagement.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.*;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
@@ -42,6 +48,7 @@ import de.felixhertweck.seatreservation.reservation.NoSeatsAvailableException;
 import de.felixhertweck.seatreservation.reservation.SeatAlreadyReservedException;
 import de.felixhertweck.seatreservation.reservation.dto.ReservationResponseDTO;
 import de.felixhertweck.seatreservation.reservation.dto.ReservationsRequestCreateDTO;
+import de.felixhertweck.seatreservation.security.Roles;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
@@ -351,5 +358,64 @@ public class ReservationService {
         LOG.infof(
                 "Reservation with ID %d deleted successfully for user %s.",
                 id, currentUser.getUsername());
+    }
+
+    public byte[] exportReservationsToCsv(Long eventId, User currentUser)
+            throws EventNotFoundException, SecurityException, IOException {
+        LOG.infof(
+                "Attempting to export reservations for event ID %d by user: %s (ID: %d)",
+                eventId, currentUser.getUsername(), currentUser.getId());
+
+        Event event =
+                eventRepository
+                        .findByIdOptional(eventId)
+                        .orElseThrow(
+                                () -> {
+                                    LOG.warnf(
+                                            "Event with ID %d not found for CSV export.", eventId);
+                                    return new EventNotFoundException(
+                                            "Event with id " + eventId + " not found");
+                                });
+
+        if (!event.getManager().equals(currentUser)
+                && !currentUser.getRoles().contains(Roles.ADMIN)) {
+            LOG.warnf(
+                    "User %s (ID: %d) is not authorized to export reservations for event ID %d.",
+                    currentUser.getUsername(), currentUser.getId(), eventId);
+            throw new SecurityException(
+                    "User is not authorized to export this event's reservations");
+        }
+
+        List<Reservation> reservations = reservationRepository.findByEventId(eventId);
+
+        // Sort by seat number
+        reservations.sort(Comparator.comparing(r -> r.getSeat().getSeatNumber()));
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(baos))) {
+            // CSV Header
+            writer.write("ID,Seat Number,First Name,Last Name,Reservation Date\n");
+
+            long exportIdCounter = 1;
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+            for (Reservation reservation : reservations) {
+                ReservationExportDTO dto = new ReservationExportDTO(reservation, exportIdCounter++);
+                writer.write(
+                        String.format(
+                                "%d,%s,%s,%s,%s\n",
+                                dto.getId(),
+                                dto.getSeatNumber(),
+                                dto.getFirstName(),
+                                dto.getLastName(),
+                                dto.getReservationDate().format(formatter)));
+            }
+            writer.flush();
+        }
+
+        LOG.infof(
+                "Successfully exported %d reservations for event ID %d to CSV by user: %s (ID: %d)",
+                reservations.size(), eventId, currentUser.getUsername(), currentUser.getId());
+        return baos.toByteArray();
     }
 }

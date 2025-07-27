@@ -19,11 +19,13 @@
  */
 package de.felixhertweck.seatreservation.common.dto;
 
+import java.util.Set;
+
 import de.felixhertweck.seatreservation.model.entity.User;
 
-public record LimitedUserInfoDTO(Long id, String username) {
+public record LimitedUserInfoDTO(Long id, String username, Set<String> tags) {
 
     public LimitedUserInfoDTO(User user) {
-        this(user.getId(), user.getUsername());
+        this(user.getId(), user.getUsername(), user.getTags());
     }
 }

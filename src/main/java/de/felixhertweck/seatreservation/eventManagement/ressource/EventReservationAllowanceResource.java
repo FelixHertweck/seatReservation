@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.eventManagement.ressource;
 
 import java.util.List;
+import java.util.Set;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -27,10 +28,13 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.*;
 
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesDto;
-import de.felixhertweck.seatreservation.eventManagement.service.EventService;
+import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesRequestDto;
+import de.felixhertweck.seatreservation.eventManagement.service.EventReservationAllowanceService;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.security.Roles;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.jboss.logging.Logger;
 
@@ -38,29 +42,32 @@ import org.jboss.logging.Logger;
 @RolesAllowed({Roles.MANAGER, Roles.ADMIN})
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class EventReservationAllowance {
+public class EventReservationAllowanceResource {
 
-    private static final Logger LOG = Logger.getLogger(EventReservationAllowance.class);
+    private static final Logger LOG = Logger.getLogger(EventReservationAllowanceResource.class);
 
-    @Inject EventService eventService;
+    @Inject EventReservationAllowanceService eventReservationAllowanceService;
 
     @Inject UserSecurityContext userSecurityContext;
 
     @POST
-    @APIResponse(responseCode = "200", description = "OK")
-    public EventUserAllowancesDto setReservationsAllowedForUser(
-            @Valid EventUserAllowancesDto userReservationAllowanceDTO) {
+    @APIResponse(
+            responseCode = "200",
+            description = "OK",
+            content = @Content(schema = @Schema(implementation = EventUserAllowancesDto.class)))
+    public Set<EventUserAllowancesDto> setReservationsAllowedForUser(
+            @Valid EventUserAllowancesRequestDto userReservationAllowanceDTO) {
         LOG.infof(
                 "Received POST request to /api/manager/reservationAllowance to set reservation"
                         + " allowance.");
         LOG.debugf("EventUserAllowancesDto received: %s", userReservationAllowanceDTO.toString());
         User currentUser = userSecurityContext.getCurrentUser();
-        EventUserAllowancesDto result =
-                eventService.setReservationsAllowedForUser(
+        Set<EventUserAllowancesDto> result =
+                eventReservationAllowanceService.setReservationsAllowedForUser(
                         userReservationAllowanceDTO, currentUser);
         LOG.infof(
-                "Reservation allowance set successfully for user ID %d and event ID %d.",
-                userReservationAllowanceDTO.userId(), userReservationAllowanceDTO.eventId());
+                "Reservation allowance set successfully for user IDs %d and event ID %d.",
+                userReservationAllowanceDTO.getUserIds(), userReservationAllowanceDTO.getEventId());
         return result;
     }
 
@@ -69,7 +76,8 @@ public class EventReservationAllowance {
     public EventUserAllowancesDto getReservationAllowanceById(@PathParam("id") Long id) {
         LOG.infof("Received GET request to /api/manager/reservationAllowance/%d.", id);
         User currentUser = userSecurityContext.getCurrentUser();
-        EventUserAllowancesDto result = eventService.getReservationAllowanceById(id, currentUser);
+        EventUserAllowancesDto result =
+                eventReservationAllowanceService.getReservationAllowanceById(id, currentUser);
         if (result != null) {
             LOG.infof("Successfully retrieved reservation allowance with ID %d.", id);
         } else {
@@ -83,7 +91,8 @@ public class EventReservationAllowance {
         LOG.infof(
                 "Received GET request to /api/manager/reservationAllowance to get all allowances.");
         User currentUser = userSecurityContext.getCurrentUser();
-        List<EventUserAllowancesDto> result = eventService.getReservationAllowances(currentUser);
+        List<EventUserAllowancesDto> result =
+                eventReservationAllowanceService.getReservationAllowances(currentUser);
         LOG.infof("Successfully retrieved %d reservation allowances.", result.size());
         return result;
     }
@@ -95,7 +104,8 @@ public class EventReservationAllowance {
         LOG.infof("Received GET request to /api/manager/reservationAllowance/event/%d.", eventId);
         User currentUser = userSecurityContext.getCurrentUser();
         List<EventUserAllowancesDto> result =
-                eventService.getReservationAllowancesByEventId(eventId, currentUser);
+                eventReservationAllowanceService.getReservationAllowancesByEventId(
+                        eventId, currentUser);
         LOG.infof(
                 "Successfully retrieved %d reservation allowances for event ID %d.",
                 result.size(), eventId);
@@ -111,7 +121,7 @@ public class EventReservationAllowance {
                         + " allowance.",
                 id);
         User currentUser = userSecurityContext.getCurrentUser();
-        eventService.deleteReservationAllowance(id, currentUser);
+        eventReservationAllowanceService.deleteReservationAllowance(id, currentUser);
         LOG.infof("Reservation allowance with ID %d deleted successfully.", id);
     }
 }

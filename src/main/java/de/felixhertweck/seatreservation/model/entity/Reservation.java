@@ -98,35 +98,42 @@ public class Reservation extends PanacheEntity {
 
     @Override
     public boolean equals(Object o) {
+        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Reservation that = (Reservation) o;
+        if (id != null && that.id != null) {
+            return Objects.equals(id, that.id);
+        }
         return Objects.equals(user, that.user)
                 && Objects.equals(event, that.event)
                 && Objects.equals(seat, that.seat)
                 && Objects.equals(reservationDate, that.reservationDate)
-                && Objects.equals(status, that.status);
+                && status == that.status;
     }
 
     @Override
     public int hashCode() {
+        if (id != null) {
+            return Objects.hash(id);
+        }
         return Objects.hash(user, event, seat, reservationDate, status);
     }
 
     @Override
     public String toString() {
         return "Reservation{"
-                + "seat="
-                + seat
-                + ", user="
-                + user
-                + ", event="
-                + event
-                + ", reservationDate="
-                + reservationDate
+                + "id="
+                + id
                 + ", status="
                 + status
-                + ", id="
-                + id
+                + ", reservationDate="
+                + reservationDate
+                + ", seat="
+                + seat
+                + ", event="
+                + event
+                + ", user="
+                + user
                 + '}';
     }
 }

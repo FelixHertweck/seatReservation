@@ -556,6 +556,21 @@ Blockiert eine beliebige Anzahl von Sitzen für ein Event.
 
 ---
 
+#### GET /export/{eventId}/csv
+
+Exportiert alle Reservierungen für ein bestimmtes Event als CSV-Datei.
+
+-   **Rollen:** `MANAGER`, `ADMIN`
+-   **Path Parameter:** `eventId` (Long) - Die ID des Events.
+-   **Produces:** `text/csv`
+-   **Responses:**
+    -   `200 OK`: CSV-Datei erfolgreich exportiert.
+    -   `403 Forbidden`: Keine Berechtigung (Benutzer ist nicht der Manager des Events oder kein Admin).
+    -   `404 Not Found`: Event nicht gefunden.
+    -   `500 Internal Server Error`: Interner Serverfehler beim Export.
+
+---
+
 ## Events (Benutzer)
 
 ### EventResource

@@ -28,7 +28,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesDto;
-import de.felixhertweck.seatreservation.eventManagement.service.EventService;
+import de.felixhertweck.seatreservation.eventManagement.service.EventReservationAllowanceService;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.reservation.EventNotFoundException;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
@@ -38,9 +38,9 @@ import io.quarkus.test.security.TestSecurity;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-class EventReservationAllowanceTest {
+class EventReservationAllowanceResourceTest {
 
-    @InjectMock EventService eventService;
+    @InjectMock EventReservationAllowanceService eventReservationAllowanceService;
 
     @InjectMock UserSecurityContext userSecurityContext;
 
@@ -51,7 +51,9 @@ class EventReservationAllowanceTest {
     void getReservationAllowanceById_Success() {
         EventUserAllowancesDto dto = new EventUserAllowancesDto(1L, 2L, 5);
         when(userSecurityContext.getCurrentUser()).thenReturn(new User());
-        when(eventService.getReservationAllowanceById(anyLong(), any(User.class))).thenReturn(dto);
+        when(eventReservationAllowanceService.getReservationAllowanceById(
+                        anyLong(), any(User.class)))
+                .thenReturn(dto);
 
         given().when()
                 .get("/api/manager/reservationAllowance/1")
@@ -68,7 +70,8 @@ class EventReservationAllowanceTest {
             roles = {"MANAGER"})
     void getReservationAllowanceById_NotFound() {
         when(userSecurityContext.getCurrentUser()).thenReturn(new User());
-        when(eventService.getReservationAllowanceById(anyLong(), any(User.class)))
+        when(eventReservationAllowanceService.getReservationAllowanceById(
+                        anyLong(), any(User.class)))
                 .thenThrow(new EventNotFoundException("Allowance not found"));
 
         given().when().get("/api/manager/reservationAllowance/99").then().statusCode(404);
@@ -105,7 +108,7 @@ class EventReservationAllowanceTest {
             roles = {"MANAGER"})
     void getReservationAllowances_Success() {
         when(userSecurityContext.getCurrentUser()).thenReturn(new User());
-        when(eventService.getReservationAllowances(any(User.class)))
+        when(eventReservationAllowanceService.getReservationAllowances(any(User.class)))
                 .thenReturn(Collections.singletonList(new EventUserAllowancesDto(1L, 2L, 5)));
 
         given().when()
@@ -131,7 +134,8 @@ class EventReservationAllowanceTest {
             roles = {"MANAGER"})
     void getReservationAllowancesByEventId_Success() {
         when(userSecurityContext.getCurrentUser()).thenReturn(new User());
-        when(eventService.getReservationAllowancesByEventId(anyLong(), any(User.class)))
+        when(eventReservationAllowanceService.getReservationAllowancesByEventId(
+                        anyLong(), any(User.class)))
                 .thenReturn(Collections.singletonList(new EventUserAllowancesDto(1L, 2L, 5)));
 
         given().when()

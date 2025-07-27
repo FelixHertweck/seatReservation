@@ -93,10 +93,18 @@ public class EmailService {
         Mail mail =
                 Mail.withHtml(user.getEmail(), "Please Confirm Your Email Address", htmlContent);
 
-        mailer.send(mail);
-        LOG.infof(
-                "Email confirmation sent successfully to %s for user ID: %d",
-                user.getEmail(), user.id);
+        try {
+            mailer.send(mail);
+            LOG.infof(
+                    "Email confirmation sent successfully to %s for user ID: %d",
+                    user.getEmail(), user.id);
+        } catch (Exception e) {
+            LOG.errorf(
+                    e,
+                    "Failed to send email confirmation to %s for user ID: %d",
+                    user.getEmail(),
+                    user.id);
+        }
     }
 
     private String createConfirmationLink(User user) {
@@ -184,10 +192,18 @@ public class EmailService {
         LOG.debug("Placeholders replaced in reservation email template.");
 
         Mail mail = Mail.withHtml(user.getEmail(), "Ihre Reservierungsbestätigung", htmlContent);
-        mailer.send(mail);
-        LOG.infof(
-                "Reservation confirmation email sent successfully to %s for user ID: %d",
-                user.getEmail(), user.id);
+        try {
+            mailer.send(mail);
+            LOG.infof(
+                    "Reservation confirmation email sent successfully to %s for user ID: %d",
+                    user.getEmail(), user.id);
+        } catch (Exception e) {
+            LOG.errorf(
+                    e,
+                    "Failed to send reservation confirmation to %s for user ID: %d",
+                    user.getEmail(),
+                    user.id);
+        }
     }
 
     /**
@@ -214,9 +230,17 @@ public class EmailService {
         // Create and send the email
         Mail mail = Mail.withHtml(user.getEmail(), "Ihr Passwort wurde geändert", htmlContent);
 
-        mailer.send(mail);
-        LOG.infof(
-                "Password changed notification sent successfully to %s for user ID: %d",
-                user.getEmail(), user.id);
+        try {
+            mailer.send(mail);
+            LOG.infof(
+                    "Password changed notification sent successfully to %s for user ID: %d",
+                    user.getEmail(), user.id);
+        } catch (Exception e) {
+            LOG.errorf(
+                    e,
+                    "Failed to send password changed notification to %s for user ID: %d",
+                    user.getEmail(),
+                    user.id);
+        }
     }
 }
