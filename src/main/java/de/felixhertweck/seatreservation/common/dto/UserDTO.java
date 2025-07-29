@@ -26,12 +26,12 @@ import de.felixhertweck.seatreservation.model.entity.User;
 public record UserDTO(
         Long id,
         String username,
-        String firstName,
-        String lastName,
+        String firstname,
+        String lastname,
         String email,
         boolean emailVerified,
         Set<String> roles,
-        Set<String> tag) {
+        Set<String> tags) {
 
     public UserDTO(User user) {
         this(

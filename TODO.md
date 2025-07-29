@@ -5,11 +5,13 @@
 - [x] Service-Schicht von Web-Exceptions entkoppeln (z.B. `BadRequestException` durch `IllegalArgumentException` ersetzen)
 - [x] Logging
 - [X] License Header
-- [ ] Ich habe User DTO zu Tags verändernt. passe tests an und auch frontend
-- [ ] ReadMe erstellen
-- [ ] Create allowance mehrere Nutzer auswählbar machen muss einfacher sein
-- [ ] 1 Tag vor Event eine Erinnerung per Email schicken
+- [X] User Array with tags
+- [X] ReadMe erstellen
+- [X] Create allowance mehrere Nutzer auswählbar machen muss einfacher sein
+- [X] 1 Tag vor Event eine Erinnerung per Email schicken
 - [x] Branch Protection erstellen
+- [X] Register new User Endpoint
+- [ ] Endpoints geben zu viele Daten zurück, es 
 
 
 Frontend: 
@@ -25,3 +27,4 @@ Frontend:
 - [ ] Manager page auch in sidebar für admins
 - [ ] Logo erstellen und einfügen
 - [ ] Manager export der Reservierungen
+- [ ] Each table should have a select and a button to export the data

@@ -20,12 +20,14 @@
 package de.felixhertweck.seatreservation.userManagment.dto;
 
 import java.util.Set;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
 
-public class UserCreationDTO {
+public class AdminUserCreationDto {
+
     @NotNull(message = "Username cannot be null")
     private final String username;
 
@@ -40,6 +42,9 @@ public class UserCreationDTO {
 
     @NotNull(message = "Lastname cannot be null")
     private final String lastname;
+
+    @NotEmpty(message = "User must have at least one role")
+    private Set<String> roles;
 
     private final Set<String> tags;
 
@@ -63,31 +68,28 @@ public class UserCreationDTO {
         return lastname;
     }
 
+    public Set<String> getRoles() {
+        return roles;
+    }
+
     public Set<String> getTags() {
         return tags;
     }
 
-    public UserCreationDTO(
+    public AdminUserCreationDto(
             String username,
             String email,
             String password,
             String firstname,
             String lastname,
+            Set<String> roles,
             Set<String> tags) {
         this.username = username;
         this.email = email;
         this.password = password;
         this.firstname = firstname;
         this.lastname = lastname;
+        this.roles = roles;
         this.tags = tags;
-    }
-
-    public UserCreationDTO(AdminUserCreationDto adminUserCreationDto) {
-        this.username = adminUserCreationDto.getUsername();
-        this.email = adminUserCreationDto.getEmail();
-        this.password = adminUserCreationDto.getPassword();
-        this.firstname = adminUserCreationDto.getFirstname();
-        this.lastname = adminUserCreationDto.getLastname();
-        this.tags = adminUserCreationDto.getTags();
     }
 }

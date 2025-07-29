@@ -10,6 +10,10 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | :--- | :--- |
 | `sendEmailConfirmation_Success` | Sendet erfolgreich eine E-Mail-Bestätigung an einen Benutzer. |
 | `sendEmailConfirmation_IOException` | Simuliert einen Fehler beim Senden der E-Mail-Bestätigung (z.B. durch eine `IOException`). Erwartet, dass die Ausnahme korrekt behandelt wird. |
+| `sendEventReminder_Success` | Sendet erfolgreich eine Event-Erinnerungs-E-Mail an einen Benutzer. |
+| `sendEventReminder_IOException` | Simuliert einen Fehler beim Senden der Event-Erinnerungs-E-Mail (z.B. durch eine `IOException`). Erwartet, dass die Ausnahme korrekt behandelt wird. |
+| `sendEventReservationsCsvToManager_Success` | Sendet erfolgreich eine E-Mail mit CSV-Export der Reservierungen an den Manager. |
+| `sendEventReservationsCsvToManager_IOException` | Simuliert einen Fehler beim Senden der E-Mail mit CSV-Export an den Manager (z.B. durch eine `IOException`). Erwartet, dass die Ausnahme korrekt behandelt wird. |
 
 ### EmailVerificationCleanupService
 
@@ -44,6 +48,9 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | `login_Success` | Sendet eine POST-Anfrage an `/api/auth/login` mit gültigen Anmeldeinformationen. Erwartet einen 200 OK Status und einen JWT-Cookie mit korrekter `Max-Age`. |
 | `login_AuthenticationFailedException_InvalidCredentials` | Sendet eine POST-Anfrage an `/api/auth/login` mit ungültigen Anmeldeinformationen. Erwartet einen 401 Unauthorized Status. |
 | `login_BadRequest_MissingCredentials` | Sendet eine POST-Anfrage an `/api/auth/login` ohne Benutzernamen oder Passwort. Erwartet einen 400 Bad Request Status. |
+| `register_Success` | Sendet eine POST-Anfrage an `/api/auth/register` mit gültigen Registrierungsdaten. Erwartet einen 201 Created Status. |
+| `register_Failure_DuplicateUsername` | Sendet eine POST-Anfrage an `/api/auth/register` mit einem bereits existierenden Benutzernamen. Erwartet einen 409 Conflict Status. |
+| `register_Failure_InvalidData` | Sendet eine POST-Anfrage an `/api/auth/register` mit ungültigen Daten (z.B. fehlender Benutzername, zu kurzes Passwort). Erwartet einen 400 Bad Request Status. |
 
 ## UserService
 

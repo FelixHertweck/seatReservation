@@ -20,12 +20,18 @@
 package de.felixhertweck.seatreservation.email;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.entity.*;
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
+import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
+import de.felixhertweck.seatreservation.model.repository.SeatRepository;
+import de.felixhertweck.seatreservation.reservation.service.ReservationService;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,6 +48,9 @@ class EmailServiceTest {
     @Mock Mailer mailer;
 
     @Mock EmailVerificationRepository emailVerificationRepository;
+    @Mock ReservationRepository reservationRepository;
+    @Mock SeatRepository seatRepository;
+    @Mock ReservationService reservationService;
 
     @InjectMocks EmailService emailService;
 
@@ -56,7 +65,43 @@ class EmailServiceTest {
         user.setEmail("test@example.com");
         user.setFirstname("Test");
         user.setLastname("User");
+        user.id = 1L;
         return user;
+    }
+
+    private Event createTestEvent(EventLocation location) {
+        Event event = new Event();
+        event.id = 10L;
+        event.setName("Test Event");
+        event.setStartTime(LocalDateTime.now().plusDays(1));
+        event.setEndTime(LocalDateTime.now().plusDays(1).plusHours(2));
+        event.setEventLocation(location);
+        return event;
+    }
+
+    private EventLocation createTestEventLocation() {
+        EventLocation location = new EventLocation();
+        location.id = 100L;
+        location.setName("Test Location");
+        location.setCapacity(100);
+        return location;
+    }
+
+    private Seat createTestSeat(EventLocation location, String seatNumber) {
+        Seat seat = new Seat();
+        seat.id = 1000L;
+        seat.setSeatNumber(seatNumber);
+        seat.setLocation(location);
+        return seat;
+    }
+
+    private Reservation createTestReservation(User user, Event event, Seat seat) {
+        Reservation reservation = new Reservation();
+        reservation.id = 10000L;
+        reservation.setUser(user);
+        reservation.setEvent(event);
+        reservation.setSeat(seat);
+        return reservation;
     }
 
     @Test
@@ -76,5 +121,57 @@ class EmailServiceTest {
         assertEquals(user.getEmail(), sentMail.getTo().getFirst());
         assertEquals("Please Confirm Your Email Address", sentMail.getSubject());
         assertTrue(sentMail.getHtml().contains("http://localhost:8080/api/user/confirm-email"));
+    }
+
+    @Test
+    void sendEventReminder_Success() throws IOException {
+        User user = createTestUser();
+        EventLocation location = createTestEventLocation();
+        Event event = createTestEvent(location);
+        Seat seat = createTestSeat(location, "A1");
+        List<Reservation> reservations =
+                Collections.singletonList(createTestReservation(user, event, seat));
+
+        doNothing().when(mailer).send(any(Mail.class));
+
+        emailService.sendEventReminder(user, event, reservations);
+
+        ArgumentCaptor<Mail> mailCaptor = ArgumentCaptor.forClass(Mail.class);
+        verify(mailer, times(1)).send(mailCaptor.capture());
+
+        Mail sentMail = mailCaptor.getValue();
+        assertEquals(user.getEmail(), sentMail.getTo().getFirst());
+        assertEquals("Erinnerung: Ihr Event beginnt bald!", sentMail.getSubject());
+        assertTrue(sentMail.getHtml().contains(user.getFirstname() + " " + user.getLastname()));
+        assertTrue(sentMail.getHtml().contains(event.getName()));
+        assertTrue(sentMail.getHtml().contains(event.getStartTime().toLocalDate().toString()));
+        assertTrue(sentMail.getHtml().contains(event.getStartTime().toLocalTime().toString()));
+        assertTrue(sentMail.getHtml().contains(event.getEventLocation().getName()));
+        assertTrue(sentMail.getHtml().contains("<li>A1</li>"));
+    }
+
+    @Test
+    void sendEventReminder_IOException() throws IOException {
+        User user = createTestUser();
+        EventLocation location = createTestEventLocation();
+        Event event = createTestEvent(location);
+        Seat seat = createTestSeat(location, "A1");
+        List<Reservation> reservations =
+                Collections.singletonList(createTestReservation(user, event, seat));
+
+        // Simulate a failure in mailer.send (e.g., due to an internal issue, not IOException
+        // directly)
+        // Since EmailService catches IOException internally, we cannot directly assertThrows
+        // IOException.
+        // We will verify that mailer.send was attempted.
+        doThrow(new RuntimeException("Simulated Mailer Error")).when(mailer).send(any(Mail.class));
+
+        // Call the method under test
+        emailService.sendEventReminder(user, event, reservations);
+
+        // Verify that mailer.send was attempted
+        verify(mailer, times(1)).send(any(Mail.class));
+        // Further verification would involve mocking the static Logger to check errorf calls,
+        // which is beyond the scope of simple Mockito setup without PowerMock or similar.
     }
 }

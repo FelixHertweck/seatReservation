@@ -29,8 +29,8 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 
-import de.felixhertweck.seatreservation.security.AuthenticationFailedException;
 import de.felixhertweck.seatreservation.security.dto.LoginRequestDTO;
+import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
 import de.felixhertweck.seatreservation.security.service.AuthService;
 import de.felixhertweck.seatreservation.security.service.TokenService;
 import org.jboss.logging.Logger;
@@ -50,39 +50,30 @@ public class AuthResource {
     public Response login(@Valid LoginRequestDTO loginRequest) {
         LOG.infof("Received login request for username: %s", loginRequest.getUsername());
         LOG.debugf("LoginRequestDTO: %s", loginRequest.toString());
-        try {
-            String token =
-                    authService.authenticate(
-                            loginRequest.getUsername(), loginRequest.getPassword());
+        String token =
+                authService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
 
-            NewCookie jwtCookie =
-                    new NewCookie.Builder("jwt")
-                            .value(token)
-                            .path("/")
-                            .maxAge((int) (tokenService.getExpirationMinutes() * 60))
-                            .httpOnly(true)
-                            .secure(true)
-                            .build();
-            LOG.infof(
-                    "User %s logged in successfully. JWT cookie set.", loginRequest.getUsername());
-            return Response.ok().cookie(jwtCookie).build();
-        } catch (AuthenticationFailedException e) {
-            LOG.warnf(
-                    e,
-                    "Authentication failed for user %s: %s",
-                    loginRequest.getUsername(),
-                    e.getMessage());
-            return Response.status(Response.Status.UNAUTHORIZED).entity(e.getMessage()).build();
-        } catch (Exception e) {
-            LOG.errorf(
-                    e,
-                    "Unexpected error during login for user %s: %s",
-                    loginRequest.getUsername(),
-                    e.getMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Internal server error")
-                    .build();
-        }
+        NewCookie jwtCookie =
+                new NewCookie.Builder("jwt")
+                        .value(token)
+                        .path("/")
+                        .maxAge((int) (tokenService.getExpirationMinutes() * 60))
+                        .httpOnly(true)
+                        .secure(true)
+                        .build();
+        LOG.infof("User %s logged in successfully. JWT cookie set.", loginRequest.getUsername());
+        return Response.ok().cookie(jwtCookie).build();
+    }
+
+    @POST
+    @Path("/register")
+    public Response register(@Valid RegisterRequestDTO registerRequest) {
+        LOG.infof("Received registration request for username: %s", registerRequest.getUsername());
+        LOG.debugf("RegisterRequestDTO: %s", registerRequest.toString());
+
+        authService.register(registerRequest);
+        LOG.infof("User %s registered successfully.", registerRequest.getUsername());
+        return Response.status(Response.Status.CREATED).build();
     }
 
     @POST

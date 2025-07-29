@@ -105,6 +105,14 @@ export type LoginRequestDto = {
     password: string;
 };
 
+export type RegisterRequestDto = {
+    username: string;
+    firstname: string;
+    lastname: string;
+    email: string;
+    password: string;
+};
+
 export type ReservationRequestDto = {
     eventId: bigint;
     userId: bigint;
@@ -219,6 +227,27 @@ export type PostApiAuthLogoutData = {
 };
 
 export type PostApiAuthLogoutResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type PostApiAuthRegisterData = {
+    body: RegisterRequestDto;
+    path?: never;
+    query?: never;
+    url: '/api/auth/register';
+};
+
+export type PostApiAuthRegisterErrors = {
+    /**
+     * Bad Request
+     */
+    400: unknown;
+};
+
+export type PostApiAuthRegisterResponses = {
     /**
      * OK
      */

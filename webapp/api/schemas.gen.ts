@@ -329,6 +329,34 @@ export const LoginRequestDTOSchema = {
     }
 } as const;
 
+export const RegisterRequestDTOSchema = {
+    type: 'object',
+    required: ['username', 'firstname', 'lastname', 'email', 'password'],
+    properties: {
+        username: {
+            type: 'string',
+            pattern: '\\S'
+        },
+        firstname: {
+            type: 'string',
+            pattern: '\\S'
+        },
+        lastname: {
+            type: 'string',
+            pattern: '\\S'
+        },
+        email: {
+            type: 'string',
+            pattern: '\\S'
+        },
+        password: {
+            type: 'string',
+            pattern: '\\S',
+            minLength: 8
+        }
+    }
+} as const;
+
 export const ReservationRequestDTOSchema = {
     type: 'object',
     required: ['eventId', 'userId', 'seatId'],
@@ -504,7 +532,8 @@ export const UserCreationDTOSchema = {
             type: 'string'
         },
         firstname: {
-            type: 'string'
+            type: 'string',
+            minLength: 8
         },
         lastname: {
             type: 'string'
@@ -571,7 +600,8 @@ export const UserProfileUpdateDTOSchema = {
             type: 'string'
         },
         password: {
-            type: 'string'
+            type: 'string',
+            minLength: 8
         },
         tags: {
             type: 'array',

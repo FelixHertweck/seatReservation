@@ -4,9 +4,9 @@
 -- Insert admin user
 INSERT INTO users (id, username, email, passwordHash, firstname, lastname, emailVerified) VALUES (1, 'admin', 'admin@example.com', '$2a$10$IagMwMnYnQAAq6n2p2oe9OOJJKGB7qp.O7NnVdWD6JFeMHwTSNS4q', 'Admin', 'User', true);
 
--- Assign ADMIN tag to admin user
-INSERT INTO user_tags (user_id, tag) VALUES (1, 'superuser');
-INSERT INTO user_tags (user_id, tag) VALUES (1, 'demouser');
+-- Assign ADMIN tags to admin user
+INSERT INTO user_tags (user_id, tags) VALUES (1, 'superuser');
+INSERT INTO user_tags (user_id, tags) VALUES (1, 'demouser');
 
 -- Assign ADMIN role to admin user
 INSERT INTO user_roles (user_id, role) VALUES (1, 'ADMIN');
@@ -14,9 +14,9 @@ INSERT INTO user_roles (user_id, role) VALUES (1, 'ADMIN');
 -- Insert manager user
 INSERT INTO users (id, username, email, passwordHash, firstname, lastname, emailVerified) VALUES (2, 'manager', 'manager@example.example.com', '$2a$10$S2ge7FYww8TDwL8z.nvjDujgzJMohwInStimGs349vJXRpH8KFzfm', 'Event', 'Manager', true);
 
--- Assign ADMIN tag to manager user
-INSERT INTO user_tags (user_id, tag) VALUES (2, 'manageruser');
-INSERT INTO user_tags (user_id, tag) VALUES (2, 'demouser');
+-- Assign ADMIN tags to manager user
+INSERT INTO user_tags (user_id, tags) VALUES (2, 'manageruser');
+INSERT INTO user_tags (user_id, tags) VALUES (2, 'demouser');
 
 -- Assign MANAGER role to manager user
 INSERT INTO user_roles (user_id, role) VALUES (2, 'MANAGER');
@@ -24,9 +24,9 @@ INSERT INTO user_roles (user_id, role) VALUES (2, 'MANAGER');
 -- Insert regular user
 INSERT INTO users (id, username, email, passwordHash, firstname, lastname, emailVerified) VALUES (3, 'user', 'user@example.com', '$2a$10$x9zL3DyXWpj/.f5WLevXGOVtkvc7JbJ6RwJU.a9VfD1rUgsqLVxMq', 'Regular', 'User', true);
 
--- Assign ADMIN tag to regular user
-INSERT INTO user_tags (user_id, tag) VALUES (3, 'normaluser');
-INSERT INTO user_tags (user_id, tag) VALUES (3, 'demouser');
+-- Assign ADMIN tags to regular user
+INSERT INTO user_tags (user_id, tags) VALUES (3, 'normaluser');
+INSERT INTO user_tags (user_id, tags) VALUES (3, 'demouser');
 
 -- Assign USER role to regular user
 INSERT INTO user_roles (user_id, role) VALUES (3, 'USER');

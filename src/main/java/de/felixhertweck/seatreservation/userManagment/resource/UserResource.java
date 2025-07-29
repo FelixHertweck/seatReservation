@@ -29,6 +29,7 @@ import jakarta.ws.rs.*;
 import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
 import de.felixhertweck.seatreservation.common.dto.UserDTO;
 import de.felixhertweck.seatreservation.security.Roles;
+import de.felixhertweck.seatreservation.userManagment.dto.AdminUserCreationDto;
 import de.felixhertweck.seatreservation.userManagment.dto.AdminUserUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
@@ -55,12 +56,14 @@ public class UserResource {
     @POST
     @Path("/admin")
     @RolesAllowed(Roles.ADMIN)
-    public UserDTO createUser(UserCreationDTO userCreationDTO) {
+    public UserDTO createUser(AdminUserCreationDto userCreationDTO) {
         LOG.infof(
                 "Received POST request to /api/users/admin for user: %s",
                 userCreationDTO.getUsername());
         LOG.debugf("UserCreationDTO received: %s", userCreationDTO.toString());
-        UserDTO createdUser = userService.createUser(userCreationDTO);
+        UserDTO createdUser =
+                userService.createUser(
+                        new UserCreationDTO(userCreationDTO), userCreationDTO.getRoles());
         LOG.infof("User %s created successfully by admin.", createdUser.username());
         return createdUser;
     }

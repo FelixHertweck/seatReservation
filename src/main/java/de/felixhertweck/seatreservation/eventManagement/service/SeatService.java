@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.eventManagement.service;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -69,7 +71,7 @@ public class SeatService {
                                                     + " not found");
                                 });
 
-        if (!manager.getEventLocations().contains(eventLocation)
+        if (!eventLocation.getManager().equals(manager)
                 && !manager.getRoles().contains(Roles.ADMIN)) {
             LOG.warnf(
                     "Manager %s (ID: %d) does not own EventLocation with ID %d.",
@@ -114,12 +116,17 @@ public class SeatService {
                     .map(SeatResponseDTO::new)
                     .collect(Collectors.toList());
         }
-        Set<EventLocation> managerLocations = manager.getEventLocations();
-        List<SeatResponseDTO> result =
-                seatRepository.listAll().stream()
-                        .filter(seat -> managerLocations.contains(seat.getLocation()))
-                        .map(SeatResponseDTO::new)
-                        .collect(Collectors.toList());
+        List<EventLocation> managerLocations;
+        if (manager.getRoles().contains(Roles.ADMIN)) {
+            managerLocations = new ArrayList<>(eventLocationRepository.listAll());
+        } else {
+            managerLocations = new ArrayList<>(
+                    eventLocationRepository.findByManager(manager));
+        }
+        List<SeatResponseDTO> result = managerLocations.stream()
+                .flatMap(location -> seatRepository.findByEventLocation(location).stream())
+                .map(SeatResponseDTO::new)
+                .collect(Collectors.toList());
         LOG.infof(
                 "Retrieved %d seats for manager: %s (ID: %d)",
                 result.size(), manager.getUsername(), manager.getId());
@@ -142,7 +149,7 @@ public class SeatService {
         LOG.debugf(
                 "Attempting to update seat with ID: %d for manager: %s (ID: %d)",
                 id, manager.getUsername(), manager.getId());
-        Seat seat = findSeatEntityById(id, manager); // This already checks for ownership
+        Seat seat = findSeatEntityById(id, manager);
 
         EventLocation newEventLocation =
                 eventLocationRepository
@@ -159,7 +166,7 @@ public class SeatService {
                                 });
 
         if (!manager.getRoles().contains(Roles.ADMIN)
-                && !manager.getEventLocations().contains(newEventLocation)) {
+                && !newEventLocation.getManager().equals(manager)) {
             LOG.warnf(
                     "Manager %s (ID: %d) does not own the new EventLocation with ID %d for seat"
                             + " update.",
