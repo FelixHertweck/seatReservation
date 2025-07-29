@@ -2,6 +2,43 @@
   "openapi" : "3.1.0",
   "components" : {
     "schemas" : {
+      "AdminUserCreationDto" : {
+        "type" : "object",
+        "required" : [ "username", "password", "firstname", "lastname", "roles" ],
+        "properties" : {
+          "username" : {
+            "type" : "string"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "password" : {
+            "type" : "string"
+          },
+          "firstname" : {
+            "type" : "string",
+            "minLength" : 8
+          },
+          "lastname" : {
+            "type" : "string"
+          },
+          "roles" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string"
+            },
+            "minItems" : 1
+          },
+          "tags" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
       "AdminUserUpdateDTO" : {
         "type" : "object",
         "required" : [ "email", "roles" ],
@@ -316,6 +353,33 @@
           }
         }
       },
+      "RegisterRequestDTO" : {
+        "type" : "object",
+        "required" : [ "username", "firstname", "lastname", "email", "password" ],
+        "properties" : {
+          "username" : {
+            "type" : "string",
+            "pattern" : "\\S"
+          },
+          "firstname" : {
+            "type" : "string",
+            "pattern" : "\\S"
+          },
+          "lastname" : {
+            "type" : "string",
+            "pattern" : "\\S"
+          },
+          "email" : {
+            "type" : "string",
+            "pattern" : "\\S"
+          },
+          "password" : {
+            "type" : "string",
+            "pattern" : "\\S",
+            "minLength" : 8
+          }
+        }
+      },
       "ReservationRequestDTO" : {
         "type" : "object",
         "required" : [ "eventId", "userId", "seatId" ],
@@ -469,34 +533,6 @@
           }
         }
       },
-      "UserCreationDTO" : {
-        "type" : "object",
-        "required" : [ "username", "password", "firstname", "lastname" ],
-        "properties" : {
-          "username" : {
-            "type" : "string"
-          },
-          "email" : {
-            "type" : "string"
-          },
-          "password" : {
-            "type" : "string"
-          },
-          "firstname" : {
-            "type" : "string"
-          },
-          "lastname" : {
-            "type" : "string"
-          },
-          "tags" : {
-            "type" : "array",
-            "uniqueItems" : true,
-            "items" : {
-              "type" : "string"
-            }
-          }
-        }
-      },
       "UserDTO" : {
         "type" : "object",
         "properties" : {
@@ -507,10 +543,10 @@
           "username" : {
             "type" : "string"
           },
-          "firstName" : {
+          "firstname" : {
             "type" : "string"
           },
-          "lastName" : {
+          "lastname" : {
             "type" : "string"
           },
           "email" : {
@@ -526,7 +562,7 @@
               "type" : "string"
             }
           },
-          "tag" : {
+          "tags" : {
             "type" : "array",
             "uniqueItems" : true,
             "items" : {
@@ -548,7 +584,8 @@
             "type" : "string"
           },
           "password" : {
-            "type" : "string"
+            "type" : "string",
+            "minLength" : 8
           },
           "tags" : {
             "type" : "array",
@@ -602,6 +639,30 @@
           }
         },
         "summary" : "Logout",
+        "tags" : [ "Auth Resource" ]
+      }
+    },
+    "/api/auth/register" : {
+      "post" : {
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RegisterRequestDTO"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          },
+          "400" : {
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "Register",
         "tags" : [ "Auth Resource" ]
       }
     },
@@ -1833,7 +1894,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/UserCreationDTO"
+                "$ref" : "#/components/schemas/AdminUserCreationDto"
               }
             }
           },

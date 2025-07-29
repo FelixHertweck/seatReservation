@@ -230,14 +230,16 @@ public class SeatServiceTest {
         Seat otherSeat = new Seat("X1", otherLocation, 1, 1);
         otherSeat.id = 2L;
 
-        List<Seat> allSeats = Arrays.asList(existingSeat, otherSeat);
-        when(seatRepository.listAll()).thenReturn(allSeats);
+        List<Seat> managerSeats = Collections.singletonList(existingSeat);
+        when(managerUser.getEventLocations()).thenReturn(Set.of(eventLocation));
+        when(seatRepository.list("location.id in ?1", Set.of(eventLocation.id))).thenReturn(managerSeats);
+
         List<SeatResponseDTO> result = seatService.findAllSeatsForManager(managerUser);
 
         assertNotNull(result);
         assertEquals(1, result.size()); // Should only find the one seat they manage
         assertEquals(existingSeat.getSeatNumber(), result.getFirst().seatNumber());
-        verify(seatRepository, times(1)).listAll();
+        verify(seatRepository, times(1)).list("location.id in ?1", Set.of(eventLocation.id));
     }
 
     @Test

@@ -34,6 +34,7 @@ import de.felixhertweck.seatreservation.model.entity.*;
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
+import de.felixhertweck.seatreservation.reservation.service.ReservationService;
 import de.felixhertweck.seatreservation.utils.RandomUUIDString;
 import de.felixhertweck.seatreservation.utils.SvgRenderer;
 import io.quarkus.mailer.Mail;
@@ -57,6 +58,8 @@ public class EmailService {
     @Inject ReservationRepository reservationRepository;
 
     @Inject SeatRepository seatRepository;
+
+    @Inject ReservationService reservationService;
 
     @ConfigProperty(name = "email.confirmation.base.url", defaultValue = "")
     String baseUrl;
@@ -241,6 +244,142 @@ public class EmailService {
                     "Failed to send password changed notification to %s for user ID: %d",
                     user.getEmail(),
                     user.id);
+        }
+    }
+
+    /**
+     * Sends an event reminder email to the specified user.
+     *
+     * @param user the user to whom the reminder email will be sent
+     * @param event the event for which the reminder is being sent
+     * @param reservations the list of reservations made by the user for the event
+     * @throws IOException if the email template cannot be read
+     */
+    public void sendEventReminder(User user, Event event, List<Reservation> reservations)
+            throws IOException {
+        LOG.infof(
+                "Attempting to send event reminder to user: %s for event: %s",
+                user.getEmail(), event.getName());
+        LOG.debugf(
+                String.format(
+                        "User ID: %d, Event ID: %d, Number of reservations: %d",
+                        user.id, event.id, reservations.size()));
+
+        // Read the HTML template
+        String templatePath = "src/main/resources/templates/email/event-reminder.html";
+        String htmlContent = new String(Files.readAllBytes(Paths.get(templatePath)));
+        LOG.debugf("Event reminder template read from: %s", templatePath);
+
+        // Prepare seat list HTML
+        StringBuilder seatListHtml = new StringBuilder();
+        for (Reservation reservation : reservations) {
+            seatListHtml
+                    .append("<li>")
+                    .append(reservation.getSeat().getSeatNumber())
+                    .append("</li>");
+        }
+        LOG.debugf("HTML list of seats generated: %s", seatListHtml.toString());
+
+        // Replace placeholders with actual values
+        htmlContent =
+                htmlContent.replace("{userName}", user.getFirstname() + " " + user.getLastname());
+        htmlContent = htmlContent.replace("{eventName}", event.getName());
+        htmlContent =
+                htmlContent.replace("{eventDate}", event.getStartTime().toLocalDate().toString());
+        htmlContent =
+                htmlContent.replace("{eventTime}", event.getStartTime().toLocalTime().toString());
+        htmlContent = htmlContent.replace("{eventLocation}", event.getEventLocation().getName());
+        htmlContent = htmlContent.replace("{seatList}", seatListHtml.toString());
+        htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
+        LOG.debug("Placeholders replaced in event reminder email template.");
+
+        // Create and send the email
+        Mail mail =
+                Mail.withHtml(user.getEmail(), "Erinnerung: Ihr Event beginnt bald!", htmlContent);
+
+        try {
+            mailer.send(mail);
+            LOG.infof(
+                    "Event reminder sent successfully to %s for user ID: %d, event ID: %d",
+                    user.getEmail(), user.id, event.id);
+        } catch (Exception e) {
+            LOG.errorf(
+                    e,
+                    "Failed to send event reminder to %s for user ID: %d, event ID: %d",
+                    user.getEmail(),
+                    user.id,
+                    event.id);
+        }
+    }
+
+    /**
+     * Sends an email to the event manager with a CSV export of all reservations for a given event.
+     *
+     * @param manager the manager of the event
+     * @param event the event for which the reservations are to be exported
+     * @throws IOException if the email template cannot be read or CSV export fails
+     */
+    public void sendEventReservationsCsvToManager(User manager, Event event) throws IOException {
+        LOG.infof(
+                "Attempting to send reservation CSV export to manager: %s for event: %s",
+                manager.getEmail(), event.getName());
+        LOG.debugf("Manager ID: %d, Event ID: %d", manager.id, event.id);
+
+        // Generate CSV data
+        byte[] csvData = reservationService.exportReservationsToCsv(event.id, manager);
+        LOG.debugf(
+                "Generated CSV data of size %d bytes for event ID: %d", csvData.length, event.id);
+
+        // Read the HTML template (can be a generic one or a specific one for CSV export)
+        String templatePath =
+                "src/main/resources/templates/email/event-reminder.html"; // Reusing for simplicity,
+        // can create a new one
+        String htmlContent = new String(Files.readAllBytes(Paths.get(templatePath)));
+        LOG.debugf("Email template for CSV export read from: %s", templatePath);
+
+        // Replace placeholders
+        htmlContent =
+                htmlContent.replace(
+                        "{userName}", manager.getFirstname() + " " + manager.getLastname());
+        htmlContent = htmlContent.replace("{eventName}", event.getName());
+        htmlContent =
+                htmlContent.replace("{eventDate}", event.getStartTime().toLocalDate().toString());
+        htmlContent =
+                htmlContent.replace("{eventTime}", event.getStartTime().toLocalTime().toString());
+        htmlContent = htmlContent.replace("{eventLocation}", event.getEventLocation().getName());
+        htmlContent =
+                htmlContent.replace(
+                        "{seatList}",
+                        "Bitte finden Sie die Reservierungsdetails im Anhang."); // Placeholder for
+        // seat list
+        htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
+        LOG.debug("Placeholders replaced in CSV export email template.");
+
+        // Create and send the email with CSV attachment
+        Mail mail =
+                Mail.withHtml(
+                        manager.getEmail(),
+                        "Reservierungsübersicht für Ihr Event: " + event.getName(),
+                        htmlContent);
+        mail.addAttachment(
+                "reservations_" + event.id + ".csv",
+                csvData,
+                "text/csv"); // Korrigierte Reihenfolge der Argumente
+
+        try {
+            mailer.send(mail);
+            LOG.infof(
+                    "Reservation CSV export email sent successfully to %s for manager ID: %d, event"
+                            + " ID: %d",
+                    manager.getEmail(), manager.id, event.id);
+        } catch (Exception e) {
+            LOG.errorf(
+                    e,
+                    "Failed to send reservation CSV export email to %s for manager ID: %d, event"
+                            + " ID: %d",
+                    manager.getEmail(),
+                    manager.id,
+                    event.id);
         }
     }
 }

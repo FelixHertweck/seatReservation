@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -61,13 +62,14 @@ public class UserService {
      * Creates a new user with the provided dto.
      *
      * @param userCreationDTO The DTO containing user creation dto.
+     * @param roles The roles to assign to the user.
      * @return The created UserDTO.
      * @throws InvalidUserException If the provided data is invalid.
      * @throws DuplicateUserException If a user with the same username or email already exists.
      * @throws RuntimeException If an error occurs while sending email confirmation.
      */
     @Transactional
-    public UserDTO createUser(UserCreationDTO userCreationDTO)
+    public UserDTO createUser(UserCreationDTO userCreationDTO, Set<String> roles)
             throws InvalidUserException, DuplicateUserException {
         if (userCreationDTO == null) {
             LOG.warn("UserCreationDTO is null during user creation.");
@@ -105,7 +107,7 @@ public class UserService {
                 BcryptUtil.bcryptHash(userCreationDTO.getPassword())); // Hash the password
         user.setFirstname(userCreationDTO.getFirstname());
         user.setLastname(userCreationDTO.getLastname());
-        user.setRoles(new HashSet<>(List.of(Roles.USER))); // Default role for new users
+        user.setRoles(new HashSet<>(roles));
         if (userCreationDTO.getTags() != null) {
             user.setTags(new HashSet<>(userCreationDTO.getTags()));
         }
@@ -141,7 +143,12 @@ public class UserService {
     }
 
     private void updateUserCore(
-            User existingUser, String email, String firstname, String lastname, String password) {
+            User existingUser,
+            String email,
+            String firstname,
+            String lastname,
+            String password,
+            Set<String> tags) {
         LOG.debugf("Entering updateUserCore for user ID: %d", existingUser.id);
 
         // Update email if provided and different
@@ -216,6 +223,16 @@ public class UserService {
                         "Failed to send password changed notification email: " + e.getMessage());
             }
         }
+
+        if (tags != null) {
+            if (!tags.equals(existingUser.getTags())) {
+                LOG.debugf(
+                        "Updating tags for user ID %d from %s to %s",
+                        existingUser.id, existingUser.getTags(), tags);
+                existingUser.setTags(tags);
+            }
+        }
+
         LOG.debugf("Exiting updateUserCore for user ID: %d", existingUser.id);
     }
 
@@ -255,7 +272,8 @@ public class UserService {
                 user.getEmail(),
                 user.getFirstname(),
                 user.getLastname(),
-                user.getPassword());
+                user.getPassword(),
+                user.getTags());
 
         if (user.getRoles() != null) {
             LOG.debugf(
@@ -350,16 +368,8 @@ public class UserService {
                 userProfileUpdateDTO.getEmail(),
                 userProfileUpdateDTO.getFirstname(),
                 userProfileUpdateDTO.getLastname(),
-                userProfileUpdateDTO.getPassword());
-
-        if (userProfileUpdateDTO.getTags() != null) {
-            if (!userProfileUpdateDTO.getTags().equals(existingUser.getTags())) {
-                LOG.debugf(
-                        "Updating tags for user ID %d from %s to %s",
-                        existingUser.id, existingUser.getTags(), userProfileUpdateDTO.getTags());
-                existingUser.setTags(userProfileUpdateDTO.getTags());
-            }
-        }
+                userProfileUpdateDTO.getPassword(),
+                userProfileUpdateDTO.getTags());
 
         userRepository.persist(existingUser);
         LOG.infof("User profile for username %s updated successfully.", username);

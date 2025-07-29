@@ -79,7 +79,7 @@ public class UserServiceTest {
         when(userRepository.isPersistent(any(User.class)))
                 .thenReturn(true); // Simulate successful persistence
 
-        UserDTO createdUser = userService.createUser(dto);
+        UserDTO createdUser = userService.createUser(dto, Set.of(Roles.USER));
 
         assertNotNull(createdUser);
         assertEquals("testuser", createdUser.username());
@@ -95,7 +95,7 @@ public class UserServiceTest {
         when(userRepository.findByUsernameOptional(anyString())).thenReturn(Optional.empty());
         when(userRepository.isPersistent(any(User.class))).thenReturn(true);
 
-        UserDTO createdUser = userService.createUser(dto);
+        UserDTO createdUser = userService.createUser(dto, Set.of(Roles.USER));
 
         assertNotNull(createdUser);
         assertEquals("testuser", createdUser.username());
@@ -106,7 +106,8 @@ public class UserServiceTest {
 
     @Test
     void createUser_InvalidUserException_NullDTO() throws IOException {
-        assertThrows(InvalidUserException.class, () -> userService.createUser(null));
+        assertThrows(
+                InvalidUserException.class, () -> userService.createUser(null, Set.of(Roles.USER)));
         verify(userRepository, never()).persist(any(User.class));
         verify(emailService, never()).sendEmailConfirmation(any(User.class));
     }
@@ -115,11 +116,13 @@ public class UserServiceTest {
     void createUser_InvalidUserException_EmptyUsername() throws IOException {
         final UserCreationDTO dto =
                 new UserCreationDTO("", "test@example.com", "password", "John", "Doe", null);
-        assertThrows(InvalidUserException.class, () -> userService.createUser(dto));
+        assertThrows(
+                InvalidUserException.class, () -> userService.createUser(dto, Set.of(Roles.USER)));
 
         final UserCreationDTO dto2 =
                 new UserCreationDTO("   ", "test@example.com", "password", "John", "Doe", null);
-        assertThrows(InvalidUserException.class, () -> userService.createUser(dto2));
+        assertThrows(
+                InvalidUserException.class, () -> userService.createUser(dto2, Set.of(Roles.USER)));
 
         verify(userRepository, never()).persist(any(User.class));
         verify(emailService, never()).sendEmailConfirmation(any(User.class));
@@ -129,11 +132,13 @@ public class UserServiceTest {
     void createUser_InvalidUserException_EmptyPassword() {
         final UserCreationDTO dto =
                 new UserCreationDTO("testuser", "test@example.com", "", "John", "Doe", null);
-        assertThrows(InvalidUserException.class, () -> userService.createUser(dto));
+        assertThrows(
+                InvalidUserException.class, () -> userService.createUser(dto, Set.of(Roles.USER)));
 
         final UserCreationDTO dto2 =
                 new UserCreationDTO("testuser", "test@example.com", "   ", "John", "Doe", null);
-        assertThrows(InvalidUserException.class, () -> userService.createUser(dto2));
+        assertThrows(
+                InvalidUserException.class, () -> userService.createUser(dto2, Set.of(Roles.USER)));
 
         verify(userRepository, never()).persist(any(User.class));
     }
@@ -146,7 +151,9 @@ public class UserServiceTest {
         when(userRepository.findByUsernameOptional(anyString()))
                 .thenReturn(Optional.of(new User()));
 
-        assertThrows(DuplicateUserException.class, () -> userService.createUser(dto));
+        assertThrows(
+                DuplicateUserException.class,
+                () -> userService.createUser(dto, Set.of(Roles.USER)));
         verify(userRepository, never()).persist(any(User.class));
         verify(emailService, never()).sendEmailConfirmation(any(User.class));
     }
@@ -162,7 +169,7 @@ public class UserServiceTest {
         // Simulate that another user already has this email, but it should not prevent creation
         // (assuming email uniqueness is not enforced at this layer for creation)
 
-        UserDTO createdUser = userService.createUser(dto);
+        UserDTO createdUser = userService.createUser(dto, Set.of(Roles.USER));
 
         assertNotNull(createdUser);
         assertEquals("newuser", createdUser.username());
@@ -182,7 +189,7 @@ public class UserServiceTest {
                 .when(emailService)
                 .sendEmailConfirmation(any(User.class));
 
-        assertThrows(RuntimeException.class, () -> userService.createUser(dto));
+        assertThrows(RuntimeException.class, () -> userService.createUser(dto, Set.of(Roles.USER)));
         verify(userRepository, times(1)).persist(any(User.class));
         verify(emailService, times(1)).sendEmailConfirmation(any(User.class));
     }
@@ -217,8 +224,8 @@ public class UserServiceTest {
         UserDTO updatedUser = userService.updateUser(1L, dto);
 
         assertNotNull(updatedUser);
-        assertEquals("New", updatedUser.firstName());
-        assertEquals("User", updatedUser.lastName());
+        assertEquals("New", updatedUser.firstname());
+        assertEquals("User", updatedUser.lastname());
         assertEquals("old@example.com", updatedUser.email());
         verify(userRepository, times(1)).persist(existingUser);
         verify(emailService, never()).sendEmailConfirmation(any(User.class));
@@ -254,8 +261,8 @@ public class UserServiceTest {
         UserDTO updatedUser = userService.updateUser(1L, dto);
 
         assertNotNull(updatedUser);
-        assertEquals("John", updatedUser.firstName());
-        assertEquals("New", updatedUser.lastName());
+        assertEquals("John", updatedUser.firstname());
+        assertEquals("New", updatedUser.lastname());
         assertEquals("old@example.com", updatedUser.email());
         verify(userRepository, times(1)).persist(existingUser);
         verify(emailService, never()).sendEmailConfirmation(any(User.class));
@@ -389,8 +396,8 @@ public class UserServiceTest {
         UserDTO updatedUser = userService.updateUser(1L, dto);
 
         assertNotNull(updatedUser);
-        assertEquals("New", updatedUser.firstName());
-        assertEquals("Name", updatedUser.lastName());
+        assertEquals("New", updatedUser.firstname());
+        assertEquals("Name", updatedUser.lastname());
         assertTrue(BcryptUtil.matches("newpass", existingUser.getPasswordHash()));
         assertEquals("old@example.com", updatedUser.email());
         verify(userRepository, times(1)).persist(existingUser);
@@ -667,8 +674,8 @@ public class UserServiceTest {
         UserDTO updatedUser = userService.updateUserProfile("testuser", dto);
 
         assertNotNull(updatedUser);
-        assertEquals("New", updatedUser.firstName());
-        assertEquals("User", updatedUser.lastName());
+        assertEquals("New", updatedUser.firstname());
+        assertEquals("User", updatedUser.lastname());
         assertEquals("old@example.com", updatedUser.email());
         verify(userRepository, times(1)).persist(existingUser);
         verify(emailService, never()).sendEmailConfirmation(any(User.class));
@@ -699,8 +706,8 @@ public class UserServiceTest {
         UserDTO updatedUser = userService.updateUserProfile("testuser", dto);
 
         assertNotNull(updatedUser);
-        assertEquals("John", updatedUser.firstName());
-        assertEquals("New", updatedUser.lastName());
+        assertEquals("John", updatedUser.firstname());
+        assertEquals("New", updatedUser.lastname());
         assertEquals("old@example.com", updatedUser.email());
         verify(userRepository, times(1)).persist(existingUser);
         verify(emailService, never()).sendEmailConfirmation(any(User.class));

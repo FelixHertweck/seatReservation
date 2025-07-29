@@ -577,4 +577,8 @@ public class ReservationService {
                 "Successfully blocked %d seats for event ID %d by user: %s (ID: %d)",
                 seats.size(), eventId, currentUser.getUsername(), currentUser.getId());
     }
+
+    public List<Reservation> findByEvent(Event event) {
+        return reservationRepository.find("event", event).list();
+    }
 }

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event-Erinnerung</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #0056b3;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 0.8em;
+            color: #777;
+            text-align: center;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Erinnerung: Ihr Event beginnt bald!</h1>
+        <p>Hallo {userName},</p>
+        <p>Wir möchten Sie daran erinnern, dass das Event <strong>"{eventName}"</strong> morgen stattfindet.</p>
+        <p><strong>Details zum Event:</strong></p>
+        <ul>
+            <li><strong>Datum:</strong> {eventDate}</li>
+            <li><strong>Uhrzeit:</strong> {eventTime}</li>
+            <li><strong>Ort:</strong> {eventLocation}</li>
+        </ul>
+        <p>Sie haben die folgenden Plätze für dieses Event reserviert:</p>
+        <ul>
+            {seatList}
+        </ul>
+        <p>Wir freuen uns auf Ihr Kommen!</p>
+        <p>Mit freundlichen Grüßen,</p>
+        <p>Ihr Seat Reservation Team</p>
+        <div class="footer">
+            <p>&copy; {currentYear} Seat Reservation. Alle Rechte vorbehalten.</p>
+        </div>
+    </div>
+</body>
+</html>

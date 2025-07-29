@@ -20,7 +20,6 @@
 package de.felixhertweck.seatreservation.eventManagement.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import de.felixhertweck.seatreservation.common.dto.EventLocationResponseDTO;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 
@@ -28,7 +27,7 @@ import de.felixhertweck.seatreservation.model.entity.Seat;
 public record SeatResponseDTO(
         Long id,
         String seatNumber,
-        EventLocationResponseDTO location,
+        Long eventLocationId,
         int xCoordinate,
         int yCoordinate,
         ReservationStatus status) {
@@ -36,7 +35,7 @@ public record SeatResponseDTO(
         this(
                 seat.getId(),
                 seat.getSeatNumber(),
-                new EventLocationResponseDTO(seat.getLocation()),
+                seat.getLocation().getId(),
                 seat.getXCoordinate(),
                 seat.getYCoordinate(),
                 null);
@@ -46,7 +45,7 @@ public record SeatResponseDTO(
         this(
                 seat.getId(),
                 seat.getSeatNumber(),
-                new EventLocationResponseDTO(seat.getLocation()),
+                seat.getLocation().getId(),
                 seat.getXCoordinate(),
                 seat.getYCoordinate(),
                 status);

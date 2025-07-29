@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.eventManagement.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -172,6 +173,17 @@ public class EventService {
                 "Event '%s' (ID: %d) updated successfully by manager: %s (ID: %d)",
                 event.getName(), event.getId(), manager.getUsername(), manager.getId());
         return new DetailedEventResponseDTO(event);
+    }
+
+    /**
+     * Retrieves a list of Events that occur between the specified start and end times.
+     *
+     * @param start The start time of the period to search for events.
+     * @param end The end time of the period to search for events.
+     * @return A list of Events that occur within the specified time range.
+     */
+    public List<Event> findEventsBetweenDates(LocalDateTime start, LocalDateTime end) {
+        return eventRepository.find("startTime BETWEEN ?1 AND ?2", start, end).list();
     }
 
     /**

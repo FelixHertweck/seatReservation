@@ -1,7 +1,55 @@
-# Seat reservation system
+# Seat Reservation System
 
-## Before first use
-Execute the following command to create the database schema:
+A comprehensive system for managing seat reservations for events. The system consists of a Quarkus backend and a Next.js frontend.
+
+## Overview
+
+This application provides a robust solution for managing event seat reservations. It allows users to browse events, reserve seats, and receive email notifications. The system supports different user roles with varying levels of access and capabilities, ensuring secure and efficient management of events and reservations.
+
+## Architecture
+
+The system is built with a clear separation of concerns:
+
+-   **Backend:** Developed using **Quarkus**, a cloud-native Java framework, providing high performance and a small memory footprint. It handles all business logic, data persistence, and API endpoints.
+-   **Frontend:** A modern web application built with **Next.js**, a React framework, offering a responsive and interactive user interface. It consumes data from the backend API.
+-   **Database:** **PostgreSQL** is used as the primary data store, ensuring reliable and scalable data management for events, seats, and user information.
+-   **Security:** Implemented with **JWT (JSON Web Tokens)** for authentication and authorization, securing access to various functionalities based on user roles.
+-   **Email Services:** Integrated for sending automated notifications, such as reservation confirmations and event reminders, configured via environment variables.
+
+## User Roles and Permissions
+
+The system defines different user roles to manage access and functionalities:
+
+### Standard User
+
+-   Can view available events.
+-   Can reserve seats for events.
+-   Receives email confirmations for reservations.
+-   Can view their own past and upcoming reservations.
+
+### Manager
+
+Managers have elevated privileges, allowing them to manage events and reservations within their scope.
+-   **Event Management:** Can create, update, and delete events.
+-   **Seat Management:** Can define and modify seating plans for events.
+-   **Reservation Oversight:** Can view and manage all reservations for events they manage.
+-   **User Allowances:** Can set specific allowances for users regarding event access or reservation limits.
+
+### Admin
+
+Admins have full control over the system, including user management and system-wide configurations.
+-   **Full Event and Reservation Management:** All capabilities of a Manager, but across all events.
+-   **User Management:** Can create, update, and delete user accounts.
+-   **Role Assignment:** Can assign and modify user roles (Standard User, Manager, Admin).
+-   **System Configuration:** Access to system-wide settings and configurations.
+
+## Build Status
+
+[![Build Status](https://github.com/FelixHertweck/SeatReservation/actions/workflows/build.yml/badge.svg)](https://github.com/FelixHertweck/SeatReservation/actions/workflows/build.yml)
+
+## Before First Use
+
+Execute the following command to generate the necessary keys for JWT authentication:
 
 ```shell script
 mkdir -p keys && openssl genpkey -algorithm RSA -out keys/privateKey.pem -pkeyopt rsa_keygen_bits:2048 && openssl rsa -pubout -in keys/privateKey.pem -out keys/publicKey.pem
@@ -13,24 +61,23 @@ The application requires certain environment variables to be set for proper func
 
 ### Setting up your environment
 
-1. Copy the `.env.example` file to create your own `.env` file:
-   ```shell script
-   cp .env.example .env
-   ```
+1.  Copy the `.env.example` file to create your own `.env` file:
+    ```shell script
+    cp .env.example .env
+    ```
 
-2. Edit the `.env` file and replace the placeholder values with your actual configuration:
-   ```
-   mail-host=your-mail-host         # e.g., smtp.gmail.com
-   mail-port=your-mail-port         # e.g., 465 for SSL
-   mail-username=your-mail-username # Your email username/address
-   mail-password=your-mail-password # Your email password or app password
-   mail-from=your-mail-from-address # The "from" address for sent emails
-   ```
+2.  Edit the `.env` file and replace the placeholder values with your actual configuration:
+    ```
+    mail-host=your-mail-host         # e.g., smtp.gmail.com
+    mail-port=your-mail-port         # e.g., 465 for SSL
+    mail-username=your-mail-username # Your email username/address
+    mail-password=your-mail-password # Your email password or app password
+    mail-from=your-mail-from-address # The "from" address for sent emails
+    ```
 
-> **_IMPORTANT:_** The `.env` file contains sensitive information and is not committed to the repository. It is listed in `.gitignore` to prevent accidental commits. Never commit your actual `.env` file with real credentials.
+## Backend (Quarkus)
 
-
-## Running the application in dev mode
+### Running the application in dev mode
 
 You can run your application in dev mode that enables live coding using:
 
@@ -38,9 +85,9 @@ You can run your application in dev mode that enables live coding using:
 ./mvnw quarkus:dev
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+> **_NOTE:_** Quarkus ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
 
-## Packaging and running the application
+### Packaging and running the application
 
 The application can be packaged using:
 
@@ -48,8 +95,7 @@ The application can be packaged using:
 ./mvnw package
 ```
 
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
+It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory. Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
 
 The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
 
@@ -61,7 +107,7 @@ If you want to build an _über-jar_, execute the following command:
 
 The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
 
-## Creating a native executable
+### Creating a native executable
 
 You can create a native executable using:
 
@@ -77,28 +123,32 @@ Or, if you don't have GraalVM installed, you can run the native executable build
 
 You can then execute your native executable with: `./target/security-jpa-quickstart-1.0.0-SNAPSHOT-runner`
 
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
+To learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
 
-## Related Guides
+## Frontend (Next.js)
 
-- Hibernate ORM with Panache ([guide](https://quarkus.io/guides/hibernate-orm-panache)): Simplify your persistence code for Hibernate ORM via the active record or the repository pattern
-- REST ([guide](https://quarkus.io/guides/rest)): A Jakarta REST implementation utilizing build time processing and Vert.x. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it.
-- Security JPA ([guide](https://quarkus.io/guides/security-getting-started)): Secure your applications with username/password stored in a database via Jakarta Persistence
-- JDBC Driver - PostgreSQL ([guide](https://quarkus.io/guides/datasource)): Connect to the PostgreSQL database via JDBC
+The frontend is located in the `webapp/` directory.
 
-## Provided Code
+### Installing Dependencies
 
-### Hibernate ORM
+Navigate into the `webapp/` directory and install the dependencies:
 
-Create your first JPA entity
+```shell script
+cd webapp/
+npm install
+```
 
-[Related guide section...](https://quarkus.io/guides/hibernate-orm)
+### Available Scripts
 
-[Related Hibernate with Panache section...](https://quarkus.io/guides/hibernate-orm-panache)
+From the `webapp/` directory, you can run the following scripts:
 
-
-### REST
-
-Easily start your REST Web Services
-
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
+-   **`npm run dev`**: Starts the application in development mode.
+-   **`npm run build`**: Builds the application for production.
+-   **`npm run start`**: Starts the production server.
+-   **`npm run lint`**: Runs ESLint and automatically fixes issues.
+-   **`npm run lint:check`**: Runs ESLint without fixing issues.
+-   **`npm run format`**: Formats the code with Prettier and writes changes.
+-   **`npm run format:check`**: Checks code formatting with Prettier.
+-   **`npm run generate:openapi-file`**: Generates the OpenAPI file from the backend.
+-   **`npm run generate:api-client`**: Generates the API client based on the OpenAPI file.
+-   **`npm run generate:api`**: Executes `generate:openapi-file` and `generate:api-client`.

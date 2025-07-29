@@ -46,7 +46,7 @@ public class User extends PanacheEntity {
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_tags", joinColumns = @JoinColumn(name = "user_id"))
-    @Column(name = "tag")
+    @Column(name = "tags")
     private Set<String> tags = new HashSet<>();
 
     @ElementCollection(fetch = FetchType.EAGER)
@@ -163,11 +163,6 @@ public class User extends PanacheEntity {
         return eventAllowances;
     }
 
-    public Set<EventLocation> getEventLocations() {
-        return eventAllowances.stream()
-                .map(EventUserAllowance::getEventLocation)
-                .collect(Collectors.toSet());
-    }
 
     @Override
     public boolean equals(Object o) {

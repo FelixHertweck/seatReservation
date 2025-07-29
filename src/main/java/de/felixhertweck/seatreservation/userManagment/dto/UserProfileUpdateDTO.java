@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.userManagment.dto;
 
 import java.util.Set;
+import jakarta.validation.constraints.Size;
 
 import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
 
@@ -30,6 +31,7 @@ public class UserProfileUpdateDTO {
 
     private final String lastname;
 
+    @Size(min = 8, message = "Password must be at least 8 characters long")
     private final String password;
 
     private final Set<String> tags;
