@@ -110,17 +110,20 @@
           "bookingDeadline" : {
             "$ref" : "#/components/schemas/LocalDateTime"
           },
-          "location" : {
-            "$ref" : "#/components/schemas/EventLocationResponseDTO"
+          "eventLocationId" : {
+            "type" : "integer",
+            "format" : "int64"
           },
-          "manager" : {
-            "$ref" : "#/components/schemas/UserDTO"
+          "managerId" : {
+            "type" : "integer",
+            "format" : "int64"
           },
-          "eventUserAllowances" : {
+          "eventUserAllowancesIds" : {
             "type" : "array",
             "uniqueItems" : true,
             "items" : {
-              "$ref" : "#/components/schemas/EventUserAllowancesDto"
+              "type" : "integer",
+              "format" : "int64"
             }
           }
         }
@@ -135,8 +138,9 @@
           "user" : {
             "$ref" : "#/components/schemas/UserDTO"
           },
-          "event" : {
-            "$ref" : "#/components/schemas/DetailedEventResponseDTO"
+          "eventId" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "seat" : {
             "$ref" : "#/components/schemas/SeatDTO"
@@ -517,8 +521,9 @@
           "seatNumber" : {
             "type" : "string"
           },
-          "location" : {
-            "$ref" : "#/components/schemas/EventLocationResponseDTO"
+          "eventLocationId" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "xCoordinate" : {
             "type" : "integer",

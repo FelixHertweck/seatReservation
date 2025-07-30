@@ -22,7 +22,6 @@ package de.felixhertweck.seatreservation.model.entity;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import jakarta.persistence.*;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
@@ -162,7 +161,6 @@ public class User extends PanacheEntity {
     public Set<EventUserAllowance> getEventAllowances() {
         return eventAllowances;
     }
-
 
     @Override
     public boolean equals(Object o) {

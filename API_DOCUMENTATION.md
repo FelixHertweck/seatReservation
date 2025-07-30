@@ -454,6 +454,17 @@ Löscht eine Reservierungsberechtigung.
     -   `403 Forbidden`: Keine Berechtigung.
     -   `404 Not Found`: Berechtigung nicht gefunden.
 
+#### PUT /
+
+Aktualisiert eine bestehende Reservierungsberechtigung.
+
+-   **Rollen:** `MANAGER`, `ADMIN`
+-   **Request Body:** `EventUserAllowanceUpdateDto`
+-   **Responses:**
+    -   `200 OK`: Berechtigung erfolgreich aktualisiert. Gibt `EventUserAllowancesDto` zurück.
+    -   `403 Forbidden`: Keine Berechtigung.
+    -   `404 Not Found`: Berechtigung nicht gefunden.
+
 ---
 
 ## Reservierungen (Manager/Admin)
