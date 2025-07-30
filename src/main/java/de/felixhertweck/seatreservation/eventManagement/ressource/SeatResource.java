@@ -61,7 +61,7 @@ public class SeatResource {
         SeatResponseDTO result = seatService.createSeatManager(seatRequestDTO, currentUser);
         LOG.infof(
                 "Seat with ID %d created successfully for event location ID %d.",
-                result.id(), result.location().id());
+                result.id(), result.eventLocationId());
         return result;
     }
 

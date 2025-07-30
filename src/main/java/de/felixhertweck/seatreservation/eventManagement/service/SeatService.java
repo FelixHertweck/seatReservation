@@ -20,9 +20,7 @@
 package de.felixhertweck.seatreservation.eventManagement.service;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -120,13 +118,13 @@ public class SeatService {
         if (manager.getRoles().contains(Roles.ADMIN)) {
             managerLocations = new ArrayList<>(eventLocationRepository.listAll());
         } else {
-            managerLocations = new ArrayList<>(
-                    eventLocationRepository.findByManager(manager));
+            managerLocations = new ArrayList<>(eventLocationRepository.findByManager(manager));
         }
-        List<SeatResponseDTO> result = managerLocations.stream()
-                .flatMap(location -> seatRepository.findByEventLocation(location).stream())
-                .map(SeatResponseDTO::new)
-                .collect(Collectors.toList());
+        List<SeatResponseDTO> result =
+                managerLocations.stream()
+                        .flatMap(location -> seatRepository.findByEventLocation(location).stream())
+                        .map(SeatResponseDTO::new)
+                        .collect(Collectors.toList());
         LOG.infof(
                 "Retrieved %d seats for manager: %s (ID: %d)",
                 result.size(), manager.getUsername(), manager.getId());

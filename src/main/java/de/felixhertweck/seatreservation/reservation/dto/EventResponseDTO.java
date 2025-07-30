@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.reservation.dto;
 
 import java.time.LocalDateTime;
 
+import de.felixhertweck.seatreservation.common.dto.EventLocationResponseDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;
 
 public record EventResponseDTO(
@@ -30,7 +31,7 @@ public record EventResponseDTO(
         LocalDateTime startTime,
         LocalDateTime endTime,
         LocalDateTime bookingDeadline,
-        Long eventLocationId,
+        EventLocationResponseDTO location,
         Integer reservationsAllowed) {
     public EventResponseDTO(Event event, Integer reservationsAllowed) {
         this(
@@ -40,7 +41,7 @@ public record EventResponseDTO(
                 event.getStartTime(),
                 event.getEndTime(),
                 event.getBookingDeadline(),
-                event.getEventLocation().getId(),
+                new EventLocationResponseDTO(event.getEventLocation(), event.getReservations()),
                 reservationsAllowed);
     }
 }

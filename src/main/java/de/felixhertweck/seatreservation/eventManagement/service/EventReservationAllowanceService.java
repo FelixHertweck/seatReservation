@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
+import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowanceUpdateDto;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
@@ -112,6 +113,55 @@ public class EventReservationAllowanceService {
                 manager.getId());
 
         return resultAllowances;
+    }
+
+    /**
+     * Updates an existing reservation allowance. Access control: The manager must be the manager of
+     * the event associated with the allowance or have the ADMIN role to update it.
+     *
+     * @param dto The DTO containing the updated reservation allowance information.
+     * @param manager The user attempting to update the allowance.
+     * @throws EventNotFoundException If the event or allowance with the specified IDs are not found.
+     * @throws SecurityException If the user is not authorized to update this allowance.
+     * @return A DTO representing the updated reservation allowance.
+     */
+    @Transactional
+    public EventUserAllowancesDto updateReservationAllowance(
+            EventUserAllowanceUpdateDto dto, User manager)
+            throws EventNotFoundException, SecurityException {
+        LOG.debugf(
+                "Attempting to update reservation allowance with ID: %d for user ID: %d, event ID:"
+                        + " %d by manager: %s (ID: %d)",
+                dto.id(), dto.userId(), dto.eventId(), manager.getUsername(), manager.getId());
+
+        EventUserAllowance allowance =
+                eventUserAllowanceRepository
+                        .findByIdOptional(dto.id())
+                        .orElseThrow(
+                                () -> {
+                                    LOG.warnf(
+                                            "Reservation allowance with ID %d not found for update"
+                                                    + " by manager: %s (ID: %d)",
+                                            dto.id(), manager.getUsername(), manager.getId());
+                                    return new EventNotFoundException("Allowance not found");
+                                });
+
+        if (!allowance.getEvent().getManager().equals(manager)
+                && !manager.getRoles().contains(Roles.ADMIN)) {
+            LOG.warnf(
+                    "User %s (ID: %d) is not authorized to update reservation allowance with ID %d.",
+                    manager.getUsername(), manager.getId(), dto.id());
+            throw new SecurityException("User is not authorized to update this allowance");
+        }
+
+        allowance.setReservationsAllowedCount(dto.reservationsAllowedCount());
+        eventUserAllowanceRepository.persist(allowance);
+
+        LOG.infof(
+                "Reservation allowance with ID %d updated successfully to count %d by manager: %s"
+                        + " (ID: %d)",
+                dto.id(), dto.reservationsAllowedCount(), manager.getUsername(), manager.getId());
+        return new EventUserAllowancesDto(allowance);
     }
 
     /**

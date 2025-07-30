@@ -27,6 +27,7 @@ import jakarta.validation.Valid;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.*;
 
+import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowanceUpdateDto;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesDto;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesRequestDto;
 import de.felixhertweck.seatreservation.eventManagement.service.EventReservationAllowanceService;
@@ -68,6 +69,28 @@ public class EventReservationAllowanceResource {
         LOG.infof(
                 "Reservation allowance set successfully for user IDs %d and event ID %d.",
                 userReservationAllowanceDTO.getUserIds(), userReservationAllowanceDTO.getEventId());
+        return result;
+    }
+
+    @PUT
+    @APIResponse(
+            responseCode = "200",
+            description = "OK",
+            content = @Content(schema = @Schema(implementation = EventUserAllowancesDto.class)))
+    public EventUserAllowancesDto updateReservationAllowance(
+            @Valid EventUserAllowanceUpdateDto eventUserAllowanceUpdateDto) {
+        LOG.infof(
+                "Received PUT request to /api/manager/reservationAllowance to update reservation"
+                        + " allowance with ID %d.",
+                eventUserAllowanceUpdateDto.id());
+        LOG.debugf("EventUserAllowanceUpdateDto received: %s", eventUserAllowanceUpdateDto.toString());
+        User currentUser = userSecurityContext.getCurrentUser();
+        EventUserAllowancesDto result =
+                eventReservationAllowanceService.updateReservationAllowance(
+                        eventUserAllowanceUpdateDto, currentUser);
+        LOG.infof(
+                "Reservation allowance with ID %d updated successfully.",
+                eventUserAllowanceUpdateDto.id());
         return result;
     }
 

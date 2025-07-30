@@ -137,7 +137,9 @@ public class SeatServiceTest {
 
         assertNotNull(createdSeat);
         assertEquals("B2", createdSeat.seatNumber());
-        assertEquals(eventLocation.id, createdSeat.location().id());
+        assertEquals(eventLocation.id, createdSeat.eventLocationId());
+        assertEquals(2, createdSeat.xCoordinate());
+        assertEquals(2, createdSeat.yCoordinate());
         verify(seatRepository, times(1)).persist(any(Seat.class));
     }
 
@@ -164,7 +166,9 @@ public class SeatServiceTest {
 
         assertNotNull(createdSeat);
         assertEquals("C3", createdSeat.seatNumber());
-        assertEquals(eventLocation.id, createdSeat.location().id());
+        assertEquals(eventLocation.id, createdSeat.eventLocationId());
+        assertEquals(3, createdSeat.xCoordinate());
+        assertEquals(3, createdSeat.yCoordinate());
         verify(seatRepository, times(1)).persist(any(Seat.class));
     }
 
@@ -231,26 +235,31 @@ public class SeatServiceTest {
         otherSeat.id = 2L;
 
         List<Seat> managerSeats = Collections.singletonList(existingSeat);
-        when(managerUser.getEventLocations()).thenReturn(Set.of(eventLocation));
-        when(seatRepository.list("location.id in ?1", Set.of(eventLocation.id))).thenReturn(managerSeats);
+        when(eventLocationRepository.findByManager(managerUser))
+                .thenReturn(Collections.singletonList(eventLocation));
+        when(seatRepository.findByEventLocation(eventLocation)).thenReturn(managerSeats);
 
         List<SeatResponseDTO> result = seatService.findAllSeatsForManager(managerUser);
 
         assertNotNull(result);
         assertEquals(1, result.size()); // Should only find the one seat they manage
         assertEquals(existingSeat.getSeatNumber(), result.getFirst().seatNumber());
-        verify(seatRepository, times(1)).list("location.id in ?1", Set.of(eventLocation.id));
+        assertEquals(existingSeat.getXCoordinate(), result.getFirst().xCoordinate());
+        assertEquals(existingSeat.getYCoordinate(), result.getFirst().yCoordinate());
+        verify(seatRepository, times(1)).findByEventLocation(eventLocation);
     }
 
     @Test
     void findAllSeatsForManager_Success_NoSeatsForManager() {
-        when(seatRepository.listAll()).thenReturn(Collections.emptyList());
+        when(eventLocationRepository.findByManager(managerUser))
+                .thenReturn(Collections.emptyList());
+        // No direct seatRepository.list call when managerLocations is empty
 
         List<SeatResponseDTO> result = seatService.findAllSeatsForManager(managerUser);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
-        verify(seatRepository, times(1)).listAll();
+        verify(seatRepository, never()).findByEventLocation(any(EventLocation.class));
     }
 
     @Test
@@ -261,6 +270,8 @@ public class SeatServiceTest {
 
         assertNotNull(foundSeat);
         assertEquals(existingSeat.getSeatNumber(), foundSeat.seatNumber());
+        assertEquals(existingSeat.getXCoordinate(), foundSeat.xCoordinate());
+        assertEquals(existingSeat.getYCoordinate(), foundSeat.yCoordinate());
     }
 
     @Test
@@ -272,6 +283,8 @@ public class SeatServiceTest {
 
         assertNotNull(foundSeat);
         assertEquals(existingSeat.getSeatNumber(), foundSeat.seatNumber());
+        assertEquals(existingSeat.getXCoordinate(), foundSeat.xCoordinate());
+        assertEquals(existingSeat.getYCoordinate(), foundSeat.yCoordinate());
     }
 
     @Test

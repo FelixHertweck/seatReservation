@@ -28,3 +28,5 @@ Frontend:
 - [ ] Logo erstellen und einfügen
 - [ ] Manager export der Reservierungen
 - [ ] Each table should have a select and a button to export the data
+- [ ] Tabelle sollte verlinkungen beinhalten
+- 

@@ -174,6 +174,15 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | `setReservationsAllowedForUser_ForbiddenException_NotManagerOrAdmin` | Versucht, die Reservierungserlaubnis als Benutzer zu setzen, der weder Manager noch Administrator des Events ist. Erwartet `ForbiddenException`. |
 | `setReservationsAllowedForUser_Success_AsAdmin` | Setzt erfolgreich die erlaubte Anzahl von Reservierungen für einen Benutzer für ein Event durch einen Administrator und überprüft die korrekte Persistierung der Daten. |
 
+### updateReservationAllowance(EventUserAllowanceUpdateDto dto, User manager)
+
+| Testfall | Beschreibung |
+| :--- | :--- |
+| `updateReservationAllowance_Success_AsManager` | Aktualisiert erfolgreich eine bestehende Reservierungsberechtigung als Manager des Events. |
+| `updateReservationAllowance_Success_AsAdmin` | Aktualisiert erfolgreich eine bestehende Reservierungsberechtigung als Administrator. |
+| `updateReservationAllowance_EventNotFoundException_AllowanceNotFound` | Versucht, eine nicht existierende Reservierungsberechtigung zu aktualisieren. Erwartet `EventNotFoundException`. |
+| `updateReservationAllowance_SecurityException_NotManagerOrAdmin` | Versucht, eine Reservierungsberechtigung als Benutzer zu aktualisieren, der weder Manager noch Administrator des Events ist. Erwartet `SecurityException`. |
+
 ### getReservationAllowanceById(Long id, User manager)
 
 | Testfall | Beschreibung |
