@@ -27,6 +27,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
+import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowanceUpdateDto;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesDto;
 import de.felixhertweck.seatreservation.eventManagement.service.EventReservationAllowanceService;
 import de.felixhertweck.seatreservation.model.entity.User;
@@ -49,7 +50,7 @@ class EventReservationAllowanceResourceTest {
             user = "testUser",
             roles = {"MANAGER"})
     void getReservationAllowanceById_Success() {
-        EventUserAllowancesDto dto = new EventUserAllowancesDto(1L, 2L, 5);
+        EventUserAllowancesDto dto = new EventUserAllowancesDto(1L, 1L, 2L, 5);
         when(userSecurityContext.getCurrentUser()).thenReturn(new User());
         when(eventReservationAllowanceService.getReservationAllowanceById(
                         anyLong(), any(User.class)))
@@ -59,6 +60,7 @@ class EventReservationAllowanceResourceTest {
                 .get("/api/manager/reservationAllowance/1")
                 .then()
                 .statusCode(200)
+                .body("id", is(1))
                 .body("eventId", is(1))
                 .body("userId", is(2))
                 .body("reservationsAllowedCount", is(5));
@@ -109,7 +111,7 @@ class EventReservationAllowanceResourceTest {
     void getReservationAllowances_Success() {
         when(userSecurityContext.getCurrentUser()).thenReturn(new User());
         when(eventReservationAllowanceService.getReservationAllowances(any(User.class)))
-                .thenReturn(Collections.singletonList(new EventUserAllowancesDto(1L, 2L, 5)));
+                .thenReturn(Collections.singletonList(new EventUserAllowancesDto(1L, 1L, 2L, 5)));
 
         given().when()
                 .get("/api/manager/reservationAllowance")
@@ -136,7 +138,7 @@ class EventReservationAllowanceResourceTest {
         when(userSecurityContext.getCurrentUser()).thenReturn(new User());
         when(eventReservationAllowanceService.getReservationAllowancesByEventId(
                         anyLong(), any(User.class)))
-                .thenReturn(Collections.singletonList(new EventUserAllowancesDto(1L, 2L, 5)));
+                .thenReturn(Collections.singletonList(new EventUserAllowancesDto(1L, 1L, 2L, 5)));
 
         given().when()
                 .get("/api/manager/reservationAllowance/event/1")
@@ -153,5 +155,65 @@ class EventReservationAllowanceResourceTest {
             roles = {"USER"})
     void getReservationAllowancesByEventId_Forbidden() {
         given().when().get("/api/manager/reservationAllowance/event/1").then().statusCode(403);
+    }
+
+    @Test
+    @TestSecurity(
+            user = "testUser",
+            roles = {"MANAGER"})
+    void updateReservationAllowance_Success() {
+        EventUserAllowanceUpdateDto requestDto = new EventUserAllowanceUpdateDto(1L, 1L, 2L, 10);
+        EventUserAllowancesDto responseDto = new EventUserAllowancesDto(1L, 1L, 2L, 10);
+
+        when(userSecurityContext.getCurrentUser()).thenReturn(new User());
+        when(eventReservationAllowanceService.updateReservationAllowance(
+                        any(EventUserAllowanceUpdateDto.class), any(User.class)))
+                .thenReturn(responseDto);
+
+        given().contentType("application/json")
+                .body(requestDto)
+                .when()
+                .put("/api/manager/reservationAllowance")
+                .then()
+                .statusCode(200)
+                .body("id", is(1))
+                .body("eventId", is(1))
+                .body("userId", is(2))
+                .body("reservationsAllowedCount", is(10));
+    }
+
+    @Test
+    @TestSecurity(
+            user = "testUser",
+            roles = {"MANAGER"})
+    void updateReservationAllowance_NotFound() {
+        EventUserAllowanceUpdateDto requestDto = new EventUserAllowanceUpdateDto(99L, 1L, 2L, 10);
+
+        when(userSecurityContext.getCurrentUser()).thenReturn(new User());
+        when(eventReservationAllowanceService.updateReservationAllowance(
+                        any(EventUserAllowanceUpdateDto.class), any(User.class)))
+                .thenThrow(new EventNotFoundException("Allowance not found"));
+
+        given().contentType("application/json")
+                .body(requestDto)
+                .when()
+                .put("/api/manager/reservationAllowance")
+                .then()
+                .statusCode(404);
+    }
+
+    @Test
+    @TestSecurity(
+            user = "testUser",
+            roles = {"USER"})
+    void updateReservationAllowance_Forbidden() {
+        EventUserAllowanceUpdateDto requestDto = new EventUserAllowanceUpdateDto(1L, 1L, 2L, 10);
+
+        given().contentType("application/json")
+                .body(requestDto)
+                .when()
+                .put("/api/manager/reservationAllowance")
+                .then()
+                .statusCode(403);
     }
 }

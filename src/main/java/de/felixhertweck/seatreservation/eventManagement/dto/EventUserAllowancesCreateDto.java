@@ -23,7 +23,7 @@ import java.util.Set;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
-public class EventUserAllowancesRequestDto {
+public class EventUserAllowancesCreateDto {
 
     @NotNull(message = "Event ID must not be null")
     private Long eventId;
@@ -35,7 +35,7 @@ public class EventUserAllowancesRequestDto {
     @NotNull(message = "Reservations allowed count must not be null")
     private int reservationsAllowedCount;
 
-    public EventUserAllowancesRequestDto(
+    public EventUserAllowancesCreateDto(
             Set<Long> userIds, Long eventId, int reservationsAllowedCount) {
         this.userIds = userIds;
         this.eventId = eventId;
