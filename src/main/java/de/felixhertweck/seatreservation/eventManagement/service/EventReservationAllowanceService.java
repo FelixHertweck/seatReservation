@@ -24,12 +24,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
-import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowanceUpdateDto;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowanceUpdateDto;
+import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesCreateDto;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesDto;
-import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesRequestDto;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.User;
@@ -63,7 +63,7 @@ public class EventReservationAllowanceService {
      */
     @Transactional
     public Set<EventUserAllowancesDto> setReservationsAllowedForUser(
-            EventUserAllowancesRequestDto dto, User manager)
+            EventUserAllowancesCreateDto dto, User manager)
             throws EventNotFoundException, UserNotFoundException {
         LOG.debugf(
                 "Attempting to set reservation allowance for user ID: %d, event ID: %d by manager:"
@@ -121,7 +121,8 @@ public class EventReservationAllowanceService {
      *
      * @param dto The DTO containing the updated reservation allowance information.
      * @param manager The user attempting to update the allowance.
-     * @throws EventNotFoundException If the event or allowance with the specified IDs are not found.
+     * @throws EventNotFoundException If the event or allowance with the specified IDs are not
+     *     found.
      * @throws SecurityException If the user is not authorized to update this allowance.
      * @return A DTO representing the updated reservation allowance.
      */
@@ -149,7 +150,8 @@ public class EventReservationAllowanceService {
         if (!allowance.getEvent().getManager().equals(manager)
                 && !manager.getRoles().contains(Roles.ADMIN)) {
             LOG.warnf(
-                    "User %s (ID: %d) is not authorized to update reservation allowance with ID %d.",
+                    "User %s (ID: %d) is not authorized to update reservation allowance with ID"
+                            + " %d.",
                     manager.getUsername(), manager.getId(), dto.id());
             throw new SecurityException("User is not authorized to update this allowance");
         }

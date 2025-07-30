@@ -33,8 +33,9 @@ import static org.mockito.Mockito.*;
 
 import de.felixhertweck.seatreservation.eventManagement.dto.DetailedEventResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventRequestDTO;
+import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowanceUpdateDto;
+import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesCreateDto;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesDto;
-import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesRequestDto;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
@@ -326,8 +327,8 @@ public class EventServiceTest {
     @Test
     void setReservationsAllowedForUser_Success_NewAllowance()
             throws EventNotFoundException, UserNotFoundException {
-        EventUserAllowancesRequestDto dto =
-                new EventUserAllowancesRequestDto(Set.of(regularUser.id), existingEvent.id, 5);
+        EventUserAllowancesCreateDto dto =
+                new EventUserAllowancesCreateDto(Set.of(regularUser.id), existingEvent.id, 5);
 
         when(eventRepository.findByIdOptional(existingEvent.id))
                 .thenReturn(Optional.of(existingEvent));
@@ -357,8 +358,8 @@ public class EventServiceTest {
     @Test
     void setReservationsAllowedForUser_Success_UpdateAllowance()
             throws EventNotFoundException, UserNotFoundException {
-        EventUserAllowancesRequestDto dto =
-                new EventUserAllowancesRequestDto(Set.of(regularUser.id), existingEvent.id, 10);
+        EventUserAllowancesCreateDto dto =
+                new EventUserAllowancesCreateDto(Set.of(regularUser.id), existingEvent.id, 10);
         EventUserAllowance existingAllowance =
                 new EventUserAllowance(regularUser, existingEvent, 5);
 
@@ -385,8 +386,8 @@ public class EventServiceTest {
     void setReservationsAllowedForUser_Success_AsAdmin()
             throws EventNotFoundException, UserNotFoundException {
         // Arrange
-        EventUserAllowancesRequestDto dto =
-                new EventUserAllowancesRequestDto(Set.of(regularUser.id), existingEvent.id, 5);
+        EventUserAllowancesCreateDto dto =
+                new EventUserAllowancesCreateDto(Set.of(regularUser.id), existingEvent.id, 5);
         ArgumentCaptor<EventUserAllowance> allowanceCaptor =
                 ArgumentCaptor.forClass(EventUserAllowance.class);
 
@@ -416,8 +417,8 @@ public class EventServiceTest {
 
     @Test
     void setReservationsAllowedForUser_EventNotFoundException() {
-        EventUserAllowancesRequestDto dto =
-                new EventUserAllowancesRequestDto(Set.of(regularUser.id), 99L, 5);
+        EventUserAllowancesCreateDto dto =
+                new EventUserAllowancesCreateDto(Set.of(regularUser.id), 99L, 5);
 
         when(eventRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
 
@@ -431,8 +432,8 @@ public class EventServiceTest {
 
     @Test
     void setReservationsAllowedForUser_UserNotFoundException() {
-        EventUserAllowancesRequestDto dto =
-                new EventUserAllowancesRequestDto(Set.of(99L), existingEvent.id, 5);
+        EventUserAllowancesCreateDto dto =
+                new EventUserAllowancesCreateDto(Set.of(99L), existingEvent.id, 5);
 
         when(eventRepository.findByIdOptional(existingEvent.id))
                 .thenReturn(Optional.of(existingEvent));
@@ -448,8 +449,8 @@ public class EventServiceTest {
 
     @Test
     void setReservationsAllowedForUser_ForbiddenException_NotManagerOrAdmin() {
-        EventUserAllowancesRequestDto dto =
-                new EventUserAllowancesRequestDto(Set.of(regularUser.id), existingEvent.id, 5);
+        EventUserAllowancesCreateDto dto =
+                new EventUserAllowancesCreateDto(Set.of(regularUser.id), existingEvent.id, 5);
 
         when(eventRepository.findByIdOptional(existingEvent.id))
                 .thenReturn(Optional.of(existingEvent));
@@ -477,6 +478,83 @@ public class EventServiceTest {
     }
 
     @Test
+    void updateReservationAllowance_Success_AsManager()
+            throws EventNotFoundException, SecurityException {
+        EventUserAllowance existingAllowance =
+                new EventUserAllowance(regularUser, existingEvent, 5);
+        existingAllowance.id = 1L;
+        EventUserAllowanceUpdateDto dto =
+                new EventUserAllowanceUpdateDto(
+                        existingAllowance.id, existingEvent.id, regularUser.id, 10);
+
+        when(eventUserAllowanceRepository.findByIdOptional(existingAllowance.id))
+                .thenReturn(Optional.of(existingAllowance));
+
+        EventUserAllowancesDto result =
+                eventReservationAllowanceService.updateReservationAllowance(dto, managerUser);
+
+        assertNotNull(result);
+        assertEquals(10, result.reservationsAllowedCount());
+        verify(eventUserAllowanceRepository, times(1)).persist(existingAllowance);
+    }
+
+    @Test
+    void updateReservationAllowance_Success_AsAdmin()
+            throws EventNotFoundException, SecurityException {
+        EventUserAllowance existingAllowance =
+                new EventUserAllowance(regularUser, existingEvent, 5);
+        existingAllowance.id = 1L;
+        EventUserAllowanceUpdateDto dto =
+                new EventUserAllowanceUpdateDto(
+                        existingAllowance.id, existingEvent.id, regularUser.id, 10);
+
+        when(eventUserAllowanceRepository.findByIdOptional(existingAllowance.id))
+                .thenReturn(Optional.of(existingAllowance));
+
+        EventUserAllowancesDto result =
+                eventReservationAllowanceService.updateReservationAllowance(dto, adminUser);
+
+        assertNotNull(result);
+        assertEquals(10, result.reservationsAllowedCount());
+        verify(eventUserAllowanceRepository, times(1)).persist(existingAllowance);
+    }
+
+    @Test
+    void updateReservationAllowance_EventNotFoundException_AllowanceNotFound() {
+        EventUserAllowanceUpdateDto dto =
+                new EventUserAllowanceUpdateDto(99L, existingEvent.id, regularUser.id, 10);
+
+        when(eventUserAllowanceRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
+
+        assertThrows(
+                EventNotFoundException.class,
+                () ->
+                        eventReservationAllowanceService.updateReservationAllowance(
+                                dto, managerUser));
+        verify(eventUserAllowanceRepository, never()).persist(any(EventUserAllowance.class));
+    }
+
+    @Test
+    void updateReservationAllowance_SecurityException_NotManagerOrAdmin() {
+        EventUserAllowance existingAllowance =
+                new EventUserAllowance(regularUser, existingEvent, 5);
+        existingAllowance.id = 1L;
+        EventUserAllowanceUpdateDto dto =
+                new EventUserAllowanceUpdateDto(
+                        existingAllowance.id, existingEvent.id, regularUser.id, 10);
+
+        when(eventUserAllowanceRepository.findByIdOptional(existingAllowance.id))
+                .thenReturn(Optional.of(existingAllowance));
+
+        assertThrows(
+                SecurityException.class,
+                () ->
+                        eventReservationAllowanceService.updateReservationAllowance(
+                                dto, regularUser));
+        verify(eventUserAllowanceRepository, never()).persist(any(EventUserAllowance.class));
+    }
+
+    @Test
     void getReservationAllowanceById_Success_AsManager() {
         EventUserAllowance allowance = new EventUserAllowance(regularUser, existingEvent, 5);
         allowance.id = 1L;
@@ -492,6 +570,7 @@ public class EventServiceTest {
         assertEquals(regularUser.id, result.userId());
         assertEquals(existingEvent.id, result.eventId());
         assertEquals(5, result.reservationsAllowedCount());
+        assertEquals(allowance.id, result.id());
     }
 
     @Test
@@ -508,6 +587,7 @@ public class EventServiceTest {
 
         assertNotNull(result);
         assertEquals(regularUser.id, result.userId());
+        assertEquals(allowance.id, result.id());
     }
 
     @Test

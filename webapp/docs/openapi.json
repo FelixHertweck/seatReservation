@@ -279,9 +279,14 @@
           }
         }
       },
-      "EventUserAllowancesDto" : {
+      "EventUserAllowanceUpdateDto" : {
         "type" : "object",
+        "required" : [ "id", "eventId", "userId", "reservationsAllowedCount" ],
         "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "eventId" : {
             "type" : "integer",
             "format" : "int64"
@@ -296,7 +301,7 @@
           }
         }
       },
-      "EventUserAllowancesRequestDto" : {
+      "EventUserAllowancesCreateDto" : {
         "type" : "object",
         "required" : [ "eventId", "userIds", "reservationsAllowedCount" ],
         "properties" : {
@@ -312,6 +317,27 @@
               "format" : "int64"
             },
             "minItems" : 1
+          },
+          "reservationsAllowedCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "EventUserAllowancesDto" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "eventId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "userId" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "reservationsAllowedCount" : {
             "type" : "integer",
@@ -1034,12 +1060,50 @@
       }
     },
     "/api/manager/reservationAllowance" : {
+      "put" : {
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/EventUserAllowanceUpdateDto"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EventUserAllowancesDto"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          },
+          "400" : {
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "Update Reservation Allowance",
+        "tags" : [ "Event Reservation Allowance Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
+        } ]
+      },
       "post" : {
         "requestBody" : {
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/EventUserAllowancesRequestDto"
+                "$ref" : "#/components/schemas/EventUserAllowancesCreateDto"
               }
             }
           },

@@ -21,9 +21,11 @@ package de.felixhertweck.seatreservation.eventManagement.dto;
 
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 
-public record EventUserAllowancesDto(Long eventId, Long userId, int reservationsAllowedCount) {
+public record EventUserAllowancesDto(
+        Long id, Long eventId, Long userId, int reservationsAllowedCount) {
     public EventUserAllowancesDto(EventUserAllowance eventUserAllowance) {
         this(
+                eventUserAllowance.id,
                 eventUserAllowance.getEvent().id,
                 eventUserAllowance.getUser().id,
                 eventUserAllowance.getReservationsAllowedCount());

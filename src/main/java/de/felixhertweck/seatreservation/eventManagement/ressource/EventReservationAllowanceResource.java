@@ -28,8 +28,8 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.*;
 
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowanceUpdateDto;
+import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesCreateDto;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesDto;
-import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesRequestDto;
 import de.felixhertweck.seatreservation.eventManagement.service.EventReservationAllowanceService;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.security.Roles;
@@ -57,7 +57,7 @@ public class EventReservationAllowanceResource {
             description = "OK",
             content = @Content(schema = @Schema(implementation = EventUserAllowancesDto.class)))
     public Set<EventUserAllowancesDto> setReservationsAllowedForUser(
-            @Valid EventUserAllowancesRequestDto userReservationAllowanceDTO) {
+            @Valid EventUserAllowancesCreateDto userReservationAllowanceDTO) {
         LOG.infof(
                 "Received POST request to /api/manager/reservationAllowance to set reservation"
                         + " allowance.");
@@ -83,7 +83,8 @@ public class EventReservationAllowanceResource {
                 "Received PUT request to /api/manager/reservationAllowance to update reservation"
                         + " allowance with ID %d.",
                 eventUserAllowanceUpdateDto.id());
-        LOG.debugf("EventUserAllowanceUpdateDto received: %s", eventUserAllowanceUpdateDto.toString());
+        LOG.debugf(
+                "EventUserAllowanceUpdateDto received: %s", eventUserAllowanceUpdateDto.toString());
         User currentUser = userSecurityContext.getCurrentUser();
         EventUserAllowancesDto result =
                 eventReservationAllowanceService.updateReservationAllowance(
