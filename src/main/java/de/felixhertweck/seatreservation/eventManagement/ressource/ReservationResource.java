@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.eventManagement.ressource;
 
 import java.util.List;
+import java.util.Set;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
@@ -122,39 +123,19 @@ public class ReservationResource {
             content =
                     @Content(
                             schema =
-                                    @Schema(implementation = DetailedReservationResponseDTO.class)))
-    public DetailedReservationResponseDTO createReservation(ReservationRequestDTO dto) {
-        LOG.infof(
-                "Received POST request to /api/manager/reservations to create a new reservation.");
+                                    @Schema(
+                                            type = SchemaType.ARRAY,
+                                            implementation = DetailedReservationResponseDTO.class)))
+    public Set<DetailedReservationResponseDTO> createReservations(ReservationRequestDTO dto) {
+        LOG.infof("Received POST request to /api/manager/reservations to create new reservations.");
         LOG.debugf("ReservationRequestDTO received: %s", dto.toString());
         User currentUser = userSecurityContext.getCurrentUser();
-        DetailedReservationResponseDTO result =
-                reservationService.createReservation(dto, currentUser);
+        Set<DetailedReservationResponseDTO> results =
+                reservationService.createReservations(dto, currentUser);
         LOG.infof(
-                "Reservation created successfully for seat ID %d and user ID %d.",
-                dto.getSeatId(), dto.getUserId());
-        return result;
-    }
-
-    @PUT
-    @Path("/{id}")
-    @APIResponse(
-            responseCode = "200",
-            description = "OK",
-            content =
-                    @Content(
-                            schema =
-                                    @Schema(implementation = DetailedReservationResponseDTO.class)))
-    public DetailedReservationResponseDTO updateReservation(
-            @PathParam("id") Long id, ReservationRequestDTO dto) {
-        LOG.infof(
-                "Received PUT request to /api/manager/reservations/%d to update reservation.", id);
-        LOG.debugf("ReservationRequestDTO received for ID %d: %s", id, dto.toString());
-        User currentUser = userSecurityContext.getCurrentUser();
-        DetailedReservationResponseDTO result =
-                reservationService.updateReservation(id, dto, currentUser);
-        LOG.infof("Reservation with ID %d updated successfully.", id);
-        return result;
+                "Reservations created successfully for seat IDs %s and user ID %d.",
+                dto.getSeatIds(), dto.getUserId());
+        return results;
     }
 
     @DELETE

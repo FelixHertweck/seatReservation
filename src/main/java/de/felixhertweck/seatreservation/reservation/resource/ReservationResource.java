@@ -116,19 +116,6 @@ public class ReservationResource {
         return createdReservations;
     }
 
-    // Maybe remove this method in the future and only allow creation and deletion of reservations
-    /*@PUT
-    @Path("/{id}")
-    @APIResponse(
-            responseCode = "200",
-            description = "OK",
-            content = @Content(schema = @Schema(implementation = DetailedReservationResponseDTO.class)))
-    public DetailedReservationResponseDTO updateReservation(
-            @PathParam("id") Long id, ReservationRequestUpdateDTO dto) {
-        User currentUser = userSecurityContext.getCurrentUser();
-        return reservationService.updateReservationForUser(id, dto, currentUser);
-    }*/
-
     @DELETE
     @Path("/{id}")
     @APIResponse(responseCode = "204", description = "No Content")

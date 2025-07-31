@@ -21,8 +21,10 @@ package de.felixhertweck.seatreservation.eventManagement.service;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.NoResultException;
@@ -181,13 +183,13 @@ public class ReservationService {
      * @throws IllegalArgumentException If the user has no reservation allowance for the event.
      */
     @Transactional
-    public DetailedReservationResponseDTO createReservation(
+    public Set<DetailedReservationResponseDTO> createReservations(
             ReservationRequestDTO dto, User currentUser)
             throws SecurityException, UserNotFoundException, IllegalArgumentException {
         LOG.debugf(
                 "Attempting to create reservation for seat ID: %d, user ID: %d, event ID: %d by"
                         + " user: %s (ID: %d)",
-                dto.getSeatId(),
+                dto.getSeatIds(),
                 dto.getUserId(),
                 dto.getEventId(),
                 currentUser.getUsername(),
@@ -225,191 +227,92 @@ public class ReservationService {
             throw new SecurityException("You are not allowed to access this reservation.");
         }
 
-        Seat seat =
-                seatRepository
-                        .findByIdOptional(dto.getSeatId())
-                        .orElseThrow(
-                                () -> {
-                                    LOG.warnf(
-                                            "Seat with ID %d not found for reservation creation.",
-                                            dto.getSeatId());
-                                    return new IllegalArgumentException(
-                                            "Seat with id " + dto.getSeatId() + " not found");
-                                });
+        List<Reservation> existingReservations = new ArrayList<>();
 
-        try {
-            EventUserAllowance allowance =
-                    eventUserAllowanceRepository
-                            .find("user = ?1 and event = ?2", targetUser, event)
-                            .singleResult();
-            if (allowance.getReservationsAllowedCount() <= 0) {
-                LOG.warnf(
-                        "No more reservations allowed for user ID %d and event ID %d.",
-                        targetUser.getId(), event.getId());
-                throw new IllegalArgumentException(
-                        "No more reservations allowed for this user and event.");
-            }
-            allowance.setReservationsAllowedCount(allowance.getReservationsAllowedCount() - 1);
-            eventUserAllowanceRepository.persist(allowance);
-            LOG.debug(
-                    String.format(
-                            "Decremented reservation allowance for user ID %d and event ID %d. New"
-                                    + " allowance: %d",
-                            targetUser.getId(),
-                            event.getId(),
-                            allowance.getReservationsAllowedCount()));
-        } catch (NoResultException e) {
-            LOG.warnf(
-                    e,
-                    "User ID %d has no reservation allowance for event ID %d.",
-                    targetUser.getId(),
-                    event.getId());
-            throw new IllegalArgumentException("User has no reservation allowance for this event.");
-        }
-
-        Reservation reservation =
-                new Reservation(
-                        targetUser, event, seat, LocalDateTime.now(), ReservationStatus.RESERVED);
-        reservationRepository.persist(reservation);
-        LOG.infof(
-                "Reservation created successfully for seat ID %d, user ID %d, event ID %d."
-                        + " Reservation ID: %d",
-                dto.getSeatId(), dto.getUserId(), dto.getEventId(), reservation.id);
-
-        try {
-            emailService.sendReservationConfirmation(
-                    targetUser, Collections.singletonList(reservation));
-            LOG.debugf(
-                    "Reservation confirmation email sent to user ID %d for reservation ID %d.",
-                    targetUser.getId(), reservation.id);
-        } catch (IOException | PersistenceException | IllegalStateException e) {
-            LOG.errorf(
-                    e,
-                    "Failed to send reservation confirmation email for reservation ID %d.",
-                    reservation.id);
-        }
-
-        return new DetailedReservationResponseDTO(reservation);
-    }
-
-    /**
-     * Updates an existing reservation. Access is restricted based on user roles: - ADMIN: Allows
-     * update for any reservation. - MANAGER: Allows update only if the reservation and the new
-     * event (if changed) belong to events the manager is allowed to manage. - Other roles: Throws
-     * ForbiddenException.
-     *
-     * @param id The ID of the reservation to update.
-     * @param dto The ReservationUpdateDTO containing updated reservation details.
-     * @return The updated Reservation entity.
-     * @throws SecurityException If the current user does not have the necessary permissions.
-     * @throws UserNotFoundException If the current user cannot be found.
-     */
-    @Transactional
-    public DetailedReservationResponseDTO updateReservation(
-            Long id, ReservationRequestDTO dto, User currentUser)
-            throws SecurityException, UserNotFoundException {
-        LOG.debugf(
-                "Attempting to update reservation with ID: %d for user: %s (ID: %d)",
-                id, currentUser.getUsername(), currentUser.getId());
-        Reservation reservation =
-                reservationRepository
-                        .findByIdOptional(id)
-                        .orElseThrow(
-                                () -> {
-                                    LOG.warnf(
-                                            "Reservation with ID %d not found for update by user:"
-                                                    + " %s (ID: %d)",
-                                            id, currentUser.getUsername(), currentUser.getId());
-                                    return new ReservationNotFoundException(
-                                            "Reservation with id " + id + " not found");
-                                });
-
-        if (!isManagerAllowedToAccessEvent(currentUser, reservation.getEvent())
-                && !currentUser.getRoles().contains(Roles.ADMIN)) {
-            LOG.warnf(
-                    "User %s (ID: %d) is not allowed to update reservation with ID %d.",
-                    currentUser.getUsername(), currentUser.getId(), id);
-            throw new SecurityException("You are not allowed to update this reservation.");
-        }
-        // If the event is being changed, check if the new event is allowed
-        if (dto.getEventId() != null && !dto.getEventId().equals(reservation.getEvent().getId())) {
-            LOG.debugf(
-                    "Event ID changed from %d to %d for reservation ID %d.",
-                    reservation.getEvent().getId(), dto.getEventId(), id);
-            Event newEvent =
-                    eventRepository
-                            .findByIdOptional(dto.getEventId())
+        for (Long dtoSeatId : dto.getSeatIds()) {
+            Seat seat =
+                    seatRepository
+                            .findByIdOptional(dtoSeatId)
                             .orElseThrow(
                                     () -> {
                                         LOG.warnf(
-                                                "New event with ID %d not found for reservation"
-                                                        + " update.",
-                                                dto.getEventId());
+                                                "Seat with ID %d not found for reservation"
+                                                        + " creation.",
+                                                dtoSeatId);
                                         return new IllegalArgumentException(
-                                                "Event with id " + dto.getEventId() + " not found");
+                                                "Seat with id " + dtoSeatId + " not found");
                                     });
-            if (!isManagerAllowedToAccessEvent(currentUser, newEvent)) {
-                LOG.warnf(
-                        "User %s (ID: %d) is not allowed to update reservation ID %d to new event"
-                                + " ID %d.",
-                        currentUser.getUsername(), currentUser.getId(), id, newEvent.getId());
-                throw new SecurityException(
-                        "You are not allowed to update this reservation to the new event.");
+
+            if (!dto.isDeductAllowance()) {
+                LOG.infof(
+                        "Allowance check skipped for user %s (ID: %d).",
+                        currentUser.getUsername(), currentUser.getId());
+            } else {
+                try {
+                    EventUserAllowance allowance =
+                            eventUserAllowanceRepository
+                                    .find("user = ?1 and event = ?2", targetUser, event)
+                                    .singleResult();
+                    if (allowance.getReservationsAllowedCount() <= 0) {
+                        LOG.warnf(
+                                "No more reservations allowed for user ID %d and event ID %d.",
+                                targetUser.getId(), event.getId());
+                        throw new IllegalArgumentException(
+                                "No more reservations allowed for this user and event.");
+                    }
+                    allowance.setReservationsAllowedCount(
+                            allowance.getReservationsAllowedCount() - 1);
+                    eventUserAllowanceRepository.persist(allowance);
+                    LOG.debug(
+                            String.format(
+                                    "Decremented reservation allowance for user ID %d and event ID"
+                                            + " %d. New allowance: %d",
+                                    targetUser.getId(),
+                                    event.getId(),
+                                    allowance.getReservationsAllowedCount()));
+                } catch (NoResultException e) {
+                    LOG.warnf(
+                            e,
+                            "User ID %d has no reservation allowance for event ID %d.",
+                            targetUser.getId(),
+                            event.getId());
+                    throw new IllegalArgumentException(
+                            "User has no reservation allowance for this event.");
+                }
             }
+
+            Reservation reservation =
+                    new Reservation(
+                            targetUser,
+                            event,
+                            seat,
+                            LocalDateTime.now(),
+                            ReservationStatus.RESERVED);
+            reservationRepository.persist(reservation);
+            existingReservations.add(reservation);
+            LOG.infof(
+                    "Reservation created successfully for seat ID %d, user ID %d, event ID %d."
+                            + " Reservation ID: %d",
+                    dtoSeatId, dto.getUserId(), dto.getEventId(), reservation.id);
         }
 
-        Event event =
-                eventRepository
-                        .findByIdOptional(dto.getEventId())
-                        .orElseThrow(
-                                () -> {
-                                    LOG.warnf(
-                                            "Event with ID %d not found during reservation update.",
-                                            dto.getEventId());
-                                    return new IllegalArgumentException(
-                                            "Event with id " + dto.getEventId() + " not found");
-                                });
-        User user =
-                userRepository
-                        .findByIdOptional(dto.getUserId())
-                        .orElseThrow(
-                                () -> {
-                                    LOG.warnf(
-                                            "User with ID %d not found during reservation update.",
-                                            dto.getUserId());
-                                    return new IllegalArgumentException(
-                                            "User with id " + dto.getUserId() + " not found");
-                                });
-        Seat seat =
-                seatRepository
-                        .findByIdOptional(dto.getSeatId())
-                        .orElseThrow(
-                                () -> {
-                                    LOG.warnf(
-                                            "Seat with ID %d not found during reservation update.",
-                                            dto.getSeatId());
-                                    return new IllegalArgumentException(
-                                            "Seat with id " + dto.getSeatId() + " not found");
-                                });
+        try {
+            emailService.sendReservationConfirmation(targetUser, existingReservations);
+            LOG.debugf(
+                    "Reservation confirmation email sent to user ID %d for reservation ID %d.",
+                    targetUser.getId(), existingReservations.get(0).getEvent().id);
+        } catch (IOException | PersistenceException | IllegalStateException e) {
+            LOG.errorf(
+                    e,
+                    "Failed to send reservation confirmation email to user ID %d for reservation ID"
+                            + " %d.",
+                    targetUser.getId(),
+                    existingReservations.get(0).id);
+        }
 
-        LOG.debugf(
-                "Updating reservation ID %d: event ID='%d' -> '%d', user ID='%d' -> '%d', seat"
-                        + " ID='%d' -> '%d'",
-                id,
-                reservation.getEvent().getId(),
-                event.getId(),
-                reservation.getUser().getId(),
-                user.getId(),
-                reservation.getSeat().getId(),
-                seat.getId());
-        reservation.setEvent(event);
-        reservation.setUser(user);
-        reservation.setSeat(seat);
-        reservationRepository.persist(reservation);
-        LOG.infof(
-                "Reservation with ID %d updated successfully by user: %s (ID: %d)",
-                id, currentUser.getUsername(), currentUser.getId());
-        return new DetailedReservationResponseDTO(reservation);
+        return existingReservations.stream()
+                .map(DetailedReservationResponseDTO::new)
+                .collect(Collectors.toSet());
     }
 
     /**

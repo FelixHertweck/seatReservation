@@ -23,9 +23,12 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import jakarta.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.eventManagement.exception.ReservationNotFoundException;
@@ -158,12 +161,13 @@ class ReservationServiceTest {
     void createReservationForUser_Success() {
         ReservationsRequestCreateDTO dto = new ReservationsRequestCreateDTO();
         dto.setEventId(event.id);
-        dto.setSeatIds(List.of(seat1.id));
+        dto.setSeatIds(Set.of(seat1.id));
 
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
         when(seatRepository.findByIdOptional(seat1.id)).thenReturn(Optional.of(seat1));
         when(eventUserAllowanceRepository.findByUser(currentUser)).thenReturn(List.of(allowance));
         when(reservationRepository.findByEventId(event.id)).thenReturn(Collections.emptyList());
+        doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
 
         List<ReservationResponseDTO> result =
                 reservationService.createReservationForUser(dto, currentUser);
@@ -177,7 +181,7 @@ class ReservationServiceTest {
         currentUser.setEmailVerified(false);
         ReservationsRequestCreateDTO dto = new ReservationsRequestCreateDTO();
         dto.setEventId(event.id);
-        dto.setSeatIds(List.of(seat1.id));
+        dto.setSeatIds(Set.of(seat1.id));
 
         var exception =
                 assertThrows(
@@ -193,7 +197,7 @@ class ReservationServiceTest {
     void createReservationForUser_IllegalArgumentException_NoSeatIds() {
         ReservationsRequestCreateDTO dto = new ReservationsRequestCreateDTO();
         dto.setEventId(event.id);
-        dto.setSeatIds(Collections.emptyList());
+        dto.setSeatIds(Collections.emptySet());
 
         assertThrows(
                 IllegalArgumentException.class,
@@ -204,7 +208,7 @@ class ReservationServiceTest {
     void createReservationForUser_NotFoundException_EventNotFound() {
         ReservationsRequestCreateDTO dto = new ReservationsRequestCreateDTO();
         dto.setEventId(99L);
-        dto.setSeatIds(List.of(seat1.id));
+        dto.setSeatIds(Set.of(seat1.id));
 
         when(eventRepository.findByIdOptional(99L)).thenReturn(Optional.empty());
 
@@ -217,13 +221,13 @@ class ReservationServiceTest {
     void createReservationForUser_NotFoundException_SeatNotFound() {
         ReservationsRequestCreateDTO dto = new ReservationsRequestCreateDTO();
         dto.setEventId(event.id);
-        dto.setSeatIds(List.of(99L));
+        dto.setSeatIds(Set.of(99L));
 
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
         when(seatRepository.findByIdOptional(99L)).thenReturn(Optional.empty());
 
         assertThrows(
-                de.felixhertweck.seatreservation.reservation.EventNotFoundException.class,
+                EventNotFoundException.class,
                 () -> reservationService.createReservationForUser(dto, currentUser));
     }
 
@@ -231,7 +235,7 @@ class ReservationServiceTest {
     void createReservationForUser_ForbiddenException_NoAllowance() {
         ReservationsRequestCreateDTO dto = new ReservationsRequestCreateDTO();
         dto.setEventId(event.id);
-        dto.setSeatIds(List.of(seat1.id));
+        dto.setSeatIds(Set.of(seat1.id));
 
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
         when(seatRepository.findByIdOptional(seat1.id)).thenReturn(Optional.of(seat1));
@@ -239,7 +243,7 @@ class ReservationServiceTest {
                 .thenReturn(Collections.emptyList());
 
         assertThrows(
-                de.felixhertweck.seatreservation.reservation.EventNotFoundException.class,
+                EventNotFoundException.class,
                 () -> reservationService.createReservationForUser(dto, currentUser));
     }
 
@@ -247,7 +251,7 @@ class ReservationServiceTest {
     void createReservationForUser_NoSeatsAvailableException_LimitReached() {
         ReservationsRequestCreateDTO dto = new ReservationsRequestCreateDTO();
         dto.setEventId(event.id);
-        dto.setSeatIds(List.of(seat1.id, seat2.id, 3L)); // 3 seats, but only 2 allowed
+        dto.setSeatIds(Set.of(seat1.id, seat2.id, 3L)); // 3 seats, but only 2 allowed
 
         allowance.setReservationsAllowedCount(2);
 
@@ -267,7 +271,7 @@ class ReservationServiceTest {
         event.setBookingDeadline(LocalDateTime.now().minusDays(1));
         ReservationsRequestCreateDTO dto = new ReservationsRequestCreateDTO();
         dto.setEventId(event.id);
-        dto.setSeatIds(List.of(seat1.id));
+        dto.setSeatIds(Set.of(seat1.id));
 
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
         when(seatRepository.findByIdOptional(seat1.id)).thenReturn(Optional.of(seat1));
@@ -282,7 +286,7 @@ class ReservationServiceTest {
     void createReservationForUser_SeatAlreadyReservedException() {
         ReservationsRequestCreateDTO dto = new ReservationsRequestCreateDTO();
         dto.setEventId(event.id);
-        dto.setSeatIds(List.of(seat1.id));
+        dto.setSeatIds(Set.of(seat1.id));
 
         Reservation existingReservation =
                 new Reservation(

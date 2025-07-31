@@ -266,37 +266,6 @@ public class ReservationService {
                 .collect(Collectors.toList());
     }
 
-    // Maybe remove this method, only expose delete and create methods
-    /*
-    @Transactional
-    public DetailedReservationResponseDTO updateReservationForUser(
-            Long id, ReservationRequestUpdateDTO dto, User currentUser) {
-        Reservation reservation = reservationRepository.findById(id);
-        if (reservation == null) {
-            throw new NotFoundException("Reservation not found");
-        }
-        if (!reservation.getUser().equals(currentUser)) {
-            throw new ForbiddenException("You are not allowed to update this reservation");
-        }
-
-        Event event = eventRepository.findById(dto.eventId);
-        if (event == null) {
-            throw new NotFoundException("Event not found");
-        }
-
-        Seat seat = seatRepository.findById(dto.seatId);
-        if (seat == null) {
-            throw new NotFoundException("Seat not found");
-        }
-
-        reservation.setEvent(event);
-        reservation.setSeat(seat);
-        reservation.setReservationDate(LocalDateTime.now());
-        reservationRepository.persist(reservation);
-
-        return new DetailedReservationResponseDTO(reservation);
-    }*/
-
     @Transactional
     public void deleteReservationForUser(Long id, User currentUser) {
         LOG.infof(

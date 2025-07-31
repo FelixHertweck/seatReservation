@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.eventManagement.dto;
 
+import java.util.Set;
 import jakarta.validation.constraints.NotNull;
 
 public class ReservationRequestDTO {
@@ -29,7 +30,9 @@ public class ReservationRequestDTO {
     private Long userId;
 
     @NotNull(message = "Seat ID must not be null")
-    private Long seatId;
+    private Set<Long> seatIds;
+
+    private boolean deductAllowance = true;
 
     public Long getEventId() {
         return eventId;
@@ -39,8 +42,16 @@ public class ReservationRequestDTO {
         return userId;
     }
 
-    public Long getSeatId() {
-        return seatId;
+    public Set<Long> getSeatIds() {
+        return seatIds;
+    }
+
+    public boolean isDeductAllowance() {
+        return deductAllowance;
+    }
+
+    public void setDeductAllowance(boolean deductAllowance) {
+        this.deductAllowance = deductAllowance;
     }
 
     public void setEventId(Long eventId) {
@@ -51,7 +62,7 @@ public class ReservationRequestDTO {
         this.userId = userId;
     }
 
-    public void setSeatId(Long seatId) {
-        this.seatId = seatId;
+    public void setSeatIds(Set<Long> seatIds) {
+        this.seatIds = seatIds;
     }
 }

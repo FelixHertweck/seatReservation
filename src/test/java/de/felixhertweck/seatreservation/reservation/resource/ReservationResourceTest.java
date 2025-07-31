@@ -20,7 +20,7 @@
 package de.felixhertweck.seatreservation.reservation.resource;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Set;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
@@ -167,7 +167,7 @@ public class ReservationResourceTest {
             user = "user",
             roles = {"USER"})
     void testCreateReservation_Success() {
-        var request = new ReservationsRequestCreateDTO(testEvent.id, List.of(testSeat2.id));
+        var request = new ReservationsRequestCreateDTO(testEvent.id, Set.of(testSeat2.id));
         given().contentType("application/json")
                 .body(request)
                 .when()
@@ -183,7 +183,7 @@ public class ReservationResourceTest {
             user = "user",
             roles = {"USER"})
     void testCreateReservation_SeatAlreadyReserved() {
-        var request = new ReservationsRequestCreateDTO(testEvent.id, List.of(testSeat1.id));
+        var request = new ReservationsRequestCreateDTO(testEvent.id, Set.of(testSeat1.id));
         given().contentType("application/json")
                 .body(request)
                 .when()
@@ -199,7 +199,7 @@ public class ReservationResourceTest {
     @Transactional
     void testCreateReservation_NoAllowance() {
         var request =
-                new ReservationsRequestCreateDTO(testEvent.id, List.of(testSeat2.id, testSeat3.id));
+                new ReservationsRequestCreateDTO(testEvent.id, Set.of(testSeat2.id, testSeat3.id));
 
         given().contentType("application/json")
                 .body(request)
@@ -220,7 +220,7 @@ public class ReservationResourceTest {
         otherEvent.setEventLocation(testEvent.getEventLocation());
         eventRepository.persist(otherEvent);
 
-        var request = new ReservationsRequestCreateDTO(otherEvent.id, List.of(testSeat2.id));
+        var request = new ReservationsRequestCreateDTO(otherEvent.id, Set.of(testSeat2.id));
         given().contentType("application/json")
                 .body(request)
                 .when()
@@ -234,7 +234,7 @@ public class ReservationResourceTest {
             user = "user",
             roles = {"USER"})
     void testCreateReservation_InvalidRequest() {
-        var request = new ReservationsRequestCreateDTO(testEvent.id, List.of());
+        var request = new ReservationsRequestCreateDTO(testEvent.id, Set.of());
         given().contentType("application/json")
                 .body(request)
                 .when()
@@ -245,7 +245,7 @@ public class ReservationResourceTest {
 
     @Test
     void testCreateReservation_Unauthorized() {
-        var request = new ReservationsRequestCreateDTO(testEvent.id, List.of(testSeat2.id));
+        var request = new ReservationsRequestCreateDTO(testEvent.id, Set.of(testSeat2.id));
         given().contentType("application/json")
                 .body(request)
                 .when()
