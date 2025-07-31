@@ -34,6 +34,7 @@ import de.felixhertweck.seatreservation.eventManagement.service.EventReservation
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.security.Roles;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
@@ -55,7 +56,12 @@ public class EventReservationAllowanceResource {
     @APIResponse(
             responseCode = "200",
             description = "OK",
-            content = @Content(schema = @Schema(implementation = EventUserAllowancesDto.class)))
+            content =
+                    @Content(
+                            schema =
+                                    @Schema(
+                                            type = SchemaType.ARRAY,
+                                            implementation = EventUserAllowancesDto.class)))
     public Set<EventUserAllowancesDto> setReservationsAllowedForUser(
             @Valid EventUserAllowancesCreateDto userReservationAllowanceDTO) {
         LOG.infof(

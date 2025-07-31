@@ -412,7 +412,7 @@
       },
       "ReservationRequestDTO" : {
         "type" : "object",
-        "required" : [ "eventId", "userId", "seatId" ],
+        "required" : [ "eventId", "userId", "seatIds" ],
         "properties" : {
           "eventId" : {
             "type" : "integer",
@@ -422,9 +422,16 @@
             "type" : "integer",
             "format" : "int64"
           },
-          "seatId" : {
-            "type" : "integer",
-            "format" : "int64"
+          "seatIds" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          },
+          "deductAllowance" : {
+            "type" : "boolean"
           }
         }
       },
@@ -465,6 +472,7 @@
           },
           "seatIds" : {
             "type" : "array",
+            "uniqueItems" : true,
             "items" : {
               "type" : "integer",
               "format" : "int64"
@@ -1115,7 +1123,10 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/EventUserAllowancesDto"
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/EventUserAllowancesDto"
+                  }
                 }
               }
             }
@@ -1313,7 +1324,10 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/DetailedReservationResponseDTO"
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/DetailedReservationResponseDTO"
+                  }
                 }
               }
             }
@@ -1328,7 +1342,7 @@
             "description" : "Bad Request"
           }
         },
-        "summary" : "Create Reservation",
+        "summary" : "Create Reservations",
         "tags" : [ "Reservation Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
@@ -1408,53 +1422,6 @@
       }
     },
     "/api/manager/reservations/{id}" : {
-      "put" : {
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/ReservationRequestDTO"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/DetailedReservationResponseDTO"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Not Authorized"
-          },
-          "403" : {
-            "description" : "Not Allowed"
-          },
-          "400" : {
-            "description" : "Bad Request"
-          }
-        },
-        "summary" : "Update Reservation",
-        "tags" : [ "Reservation Resource" ],
-        "security" : [ {
-          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
-        } ]
-      },
       "get" : {
         "parameters" : [ {
           "name" : "id",

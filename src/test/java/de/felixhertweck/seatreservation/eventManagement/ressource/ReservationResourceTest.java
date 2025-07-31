@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.eventManagement.ressource;
 
 import java.util.Map;
+import java.util.Set;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
@@ -151,9 +152,14 @@ public class ReservationResourceTest {
         given().contentType("application/json")
                 .body(
                         Map.of(
-                                "eventId", testEvent.id,
-                                "seatId", anotherSeat.id,
-                                "userId", testUser.id))
+                                "eventId",
+                                testEvent.id,
+                                "seatIds",
+                                Set.of(anotherSeat.id),
+                                "userId",
+                                testUser.id,
+                                "deductAllowance",
+                                false))
                 .when()
                 .post("/api/manager/reservations")
                 .then()
@@ -171,40 +177,6 @@ public class ReservationResourceTest {
                 .post("/api/manager/reservations")
                 .then()
                 .statusCode(400);
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    void testUpdateReservation() {
-        given().contentType("application/json")
-                .body(
-                        Map.of(
-                                "eventId", testEvent.id,
-                                "seatId", testSeat.id,
-                                "userId", testUser.id))
-                .when()
-                .put("/api/manager/reservations/" + testReservation.id)
-                .then()
-                .statusCode(200);
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    void testUpdateReservationNotFound() {
-        given().contentType("application/json")
-                .body(
-                        Map.of(
-                                "eventId", testEvent.id,
-                                "seatId", testSeat.id,
-                                "userId", testUser.id))
-                .when()
-                .put("/api/manager/reservations/999")
-                .then()
-                .statusCode(404);
     }
 
     @Test

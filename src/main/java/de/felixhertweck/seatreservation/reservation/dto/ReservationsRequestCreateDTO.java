@@ -19,7 +19,7 @@
  */
 package de.felixhertweck.seatreservation.reservation.dto;
 
-import java.util.List;
+import java.util.Set;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
@@ -29,11 +29,11 @@ public class ReservationsRequestCreateDTO {
 
     @NotNull(message = "Seat IDs must not be null")
     @NotEmpty(message = "Seat IDs must not be empty")
-    private List<Long> seatIds;
+    private Set<Long> seatIds;
 
     public ReservationsRequestCreateDTO() {}
 
-    public ReservationsRequestCreateDTO(Long eventId, List<Long> seatIds) {
+    public ReservationsRequestCreateDTO(Long eventId, Set<Long> seatIds) {
         this.eventId = eventId;
         this.seatIds = seatIds;
     }
@@ -46,11 +46,11 @@ public class ReservationsRequestCreateDTO {
         this.eventId = eventId;
     }
 
-    public List<Long> getSeatIds() {
+    public Set<Long> getSeatIds() {
         return seatIds;
     }
 
-    public void setSeatIds(List<Long> seatIds) {
+    public void setSeatIds(Set<Long> seatIds) {
         this.seatIds = seatIds;
     }
 }
