@@ -25,15 +25,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download frontend artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend-build
-          path: out
-
-      - name: Copy frontend to backend resources
-        run: cp -r out/* src/main/resources/META-INF/resources/
-
       - name: Generate keys for JWT tests
         run: |
           mkdir keys
