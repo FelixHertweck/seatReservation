@@ -56,6 +56,13 @@ public class User extends PanacheEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<EventUserAllowance> eventAllowances = new HashSet<>();
 
+    @OneToOne(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY)
+    private EmailVerification emailVerification;
+
     /** Constructor for JPA. */
     public User() {}
 
@@ -162,6 +169,14 @@ public class User extends PanacheEntity {
         return eventAllowances;
     }
 
+    public EmailVerification getEmailVerification() {
+        return emailVerification;
+    }
+
+    public void setEmailVerification(EmailVerification emailVerification) {
+        this.emailVerification = emailVerification;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -178,7 +193,8 @@ public class User extends PanacheEntity {
                 && Objects.equals(email, that.email)
                 && Objects.equals(tags, that.tags)
                 && Objects.equals(roles, that.roles)
-                && Objects.equals(eventAllowances, that.eventAllowances);
+                && Objects.equals(eventAllowances, that.eventAllowances)
+                && Objects.equals(emailVerification, that.emailVerification);
     }
 
     @Override
@@ -195,7 +211,8 @@ public class User extends PanacheEntity {
                 emailVerified,
                 tags,
                 roles,
-                eventAllowances);
+                eventAllowances,
+                emailVerification);
     }
 
     @Override
@@ -224,6 +241,8 @@ public class User extends PanacheEntity {
                 + roles
                 + ", eventAllowances="
                 + eventAllowances
+                + ", emailVerification="
+                + emailVerification
                 + ", id="
                 + id
                 + '}';
