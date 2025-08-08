@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserManagement } from "@/components/admin/user-management";
 import { useAdmin } from "@/hooks/use-admin";
 import Loading from "./loading";
+import { UserExport } from "@/components/admin/user-export";
 
 export default function AdminPage() {
   const adminData = useAdmin();
@@ -24,10 +25,15 @@ export default function AdminPage() {
       <Tabs defaultValue="users" className="space-y-4">
         <TabsList>
           <TabsTrigger value="users">User Management</TabsTrigger>
+          <TabsTrigger value="export">Export Data</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users">
           <UserManagement {...adminData} />
+        </TabsContent>
+
+        <TabsContent value="export">
+          <UserExport />
         </TabsContent>
       </Tabs>
     </div>

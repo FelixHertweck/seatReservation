@@ -28,12 +28,14 @@ import type {
 
 interface BlockSeatsModalProps {
   events: DetailedEventResponseDto[];
+  seats: SeatDto[];
   onSubmit: (blockData: BlockSeatsRequestDto) => Promise<void>;
   onClose: () => void;
 }
 
 export function BlockSeatsModal({
   events,
+  seats,
   onSubmit,
   onClose,
 }: BlockSeatsModalProps) {
@@ -105,7 +107,7 @@ export function BlockSeatsModal({
           <div className="space-y-2">
             <Label>Seats to Block</Label>
             <div className="space-y-2 max-h-40 overflow-y-auto">
-              {getSeatsForEvent(formData.eventId, events).map((seat) => (
+              {getSeatsForEvent(formData.eventId, events, seats).map((seat) => (
                 <div
                   key={seat.id?.toString()}
                   className="flex items-center space-x-2"
@@ -148,7 +150,10 @@ export function BlockSeatsModal({
 const getSeatsForEvent = (
   eventId: string,
   events: DetailedEventResponseDto[],
+  seats: SeatDto[],
 ): SeatDto[] => {
   const event = events.find((e) => e.id?.toString() === eventId);
-  return event ? event.location?.seats || [] : [];
+  return event
+    ? seats.filter((seat) => seat.locationId === event.eventLocationId)
+    : [];
 };

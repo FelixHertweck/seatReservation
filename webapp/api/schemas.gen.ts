@@ -111,17 +111,20 @@ export const DetailedEventResponseDTOSchema = {
         bookingDeadline: {
             '$ref': '#/components/schemas/LocalDateTime'
         },
-        location: {
-            '$ref': '#/components/schemas/EventLocationResponseDTO'
+        eventLocationId: {
+            type: 'integer',
+            format: 'int64'
         },
-        manager: {
-            '$ref': '#/components/schemas/UserDTO'
+        managerId: {
+            type: 'integer',
+            format: 'int64'
         },
-        eventUserAllowances: {
+        eventUserAllowancesIds: {
             type: 'array',
             uniqueItems: true,
             items: {
-                '$ref': '#/components/schemas/EventUserAllowancesDto'
+                type: 'integer',
+                format: 'int64'
             }
         }
     }
@@ -137,8 +140,9 @@ export const DetailedReservationResponseDTOSchema = {
         user: {
             '$ref': '#/components/schemas/UserDTO'
         },
-        event: {
-            '$ref': '#/components/schemas/DetailedEventResponseDTO'
+        eventId: {
+            type: 'integer',
+            format: 'int64'
         },
         seat: {
             '$ref': '#/components/schemas/SeatDTO'
@@ -284,9 +288,14 @@ export const EventResponseDTOSchema = {
     }
 } as const;
 
-export const EventUserAllowancesDtoSchema = {
+export const EventUserAllowanceUpdateDtoSchema = {
     type: 'object',
+    required: ['id', 'eventId', 'userId', 'reservationsAllowedCount'],
     properties: {
+        id: {
+            type: 'integer',
+            format: 'int64'
+        },
         eventId: {
             type: 'integer',
             format: 'int64'
@@ -302,7 +311,7 @@ export const EventUserAllowancesDtoSchema = {
     }
 } as const;
 
-export const EventUserAllowancesRequestDtoSchema = {
+export const EventUserAllowancesCreateDtoSchema = {
     type: 'object',
     required: ['eventId', 'userIds', 'reservationsAllowedCount'],
     properties: {
@@ -318,6 +327,28 @@ export const EventUserAllowancesRequestDtoSchema = {
                 format: 'int64'
             },
             minItems: 1
+        },
+        reservationsAllowedCount: {
+            type: 'integer',
+            format: 'int32'
+        }
+    }
+} as const;
+
+export const EventUserAllowancesDtoSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            type: 'integer',
+            format: 'int64'
+        },
+        eventId: {
+            type: 'integer',
+            format: 'int64'
+        },
+        userId: {
+            type: 'integer',
+            format: 'int64'
         },
         reservationsAllowedCount: {
             type: 'integer',
@@ -397,7 +428,7 @@ export const RegisterRequestDTOSchema = {
 
 export const ReservationRequestDTOSchema = {
     type: 'object',
-    required: ['eventId', 'userId', 'seatId'],
+    required: ['eventId', 'userId', 'seatIds'],
     properties: {
         eventId: {
             type: 'integer',
@@ -407,9 +438,16 @@ export const ReservationRequestDTOSchema = {
             type: 'integer',
             format: 'int64'
         },
-        seatId: {
-            type: 'integer',
-            format: 'int64'
+        seatIds: {
+            type: 'array',
+            uniqueItems: true,
+            items: {
+                type: 'integer',
+                format: 'int64'
+            }
+        },
+        deductAllowance: {
+            type: 'boolean'
         }
     }
 } as const;
@@ -453,6 +491,7 @@ export const ReservationsRequestCreateDTOSchema = {
         },
         seatIds: {
             type: 'array',
+            uniqueItems: true,
             items: {
                 type: 'integer',
                 format: 'int64'
@@ -539,8 +578,9 @@ export const SeatResponseDTOSchema = {
         seatNumber: {
             type: 'string'
         },
-        location: {
-            '$ref': '#/components/schemas/EventLocationResponseDTO'
+        eventLocationId: {
+            type: 'integer',
+            format: 'int64'
         },
         xCoordinate: {
             type: 'integer',

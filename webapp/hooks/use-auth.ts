@@ -6,8 +6,9 @@ import {
   getApiUsersMeOptions,
   postApiAuthLoginMutation,
   postApiAuthLogoutMutation,
+  postApiAuthRegisterMutation,
 } from "@/api/@tanstack/react-query.gen";
-import { UserCreationDto } from "@/api";
+import { RegisterRequestDto } from "@/api";
 
 export function useAuth() {
   const router = useRouter();
@@ -31,13 +32,19 @@ export function useAuth() {
   const login = async (username: string, password: string) => {
     await loginMutation({ body: { username, password } });
     await queryClient.invalidateQueries();
-    router.push("/events");
   };
 
-  const register = async (userData: UserCreationDto) => {
-    console.log("Need to implement register logic");
-    //TODO: Implement registration logic
-    router.push("/events");
+  const { mutateAsync: registerMutation } = useMutation({
+    ...postApiAuthRegisterMutation(),
+    onSuccess: async () => {
+      await refetchUser();
+      router.push("/events");
+    },
+  });
+
+  const register = async (userData: RegisterRequestDto) => {
+    await registerMutation({ body: userData });
+    await queryClient.invalidateQueries();
   };
 
   const { mutateAsync: logoutMutation } = useMutation({

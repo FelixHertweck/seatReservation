@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/use-auth";
-import type { UserCreationDto } from "@/api";
+import type { RegisterRequestDto } from "@/api";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -34,7 +34,7 @@ export default function RegisterPage() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const userData: UserCreationDto = {
+      const userData: RegisterRequestDto = {
         username: formData.username,
         email: formData.email,
         password: formData.password,

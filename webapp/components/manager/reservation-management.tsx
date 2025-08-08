@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Edit, Trash2, Ban } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, Trash2, Ban, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -38,13 +38,12 @@ export interface ReservationManagementProps {
   reservations: DetailedReservationResponseDto[];
   createReservation: (
     reservation: ReservationRequestDto,
-  ) => Promise<DetailedReservationResponseDto>;
-  updateReservation: (
-    id: bigint,
-    reservation: ReservationRequestDto,
-  ) => Promise<DetailedReservationResponseDto>;
+  ) => Promise<DetailedReservationResponseDto[]>;
   deleteReservation: (id: bigint) => Promise<unknown>;
   blockSeats: (request: BlockSeatsRequestDto) => Promise<void>;
+  onNavigateToEvent?: (eventId: bigint) => void;
+  onNavigateToSeat?: (seatId: bigint) => void;
+  initialFilter?: Record<string, string>;
 }
 
 export function ReservationManagement({
@@ -53,55 +52,78 @@ export function ReservationManagement({
   seats,
   reservations,
   createReservation,
-  updateReservation,
   deleteReservation,
   blockSeats,
+  onNavigateToEvent,
+  onNavigateToSeat,
+  initialFilter = {},
 }: ReservationManagementProps) {
   const [filteredReservations, setFilteredReservations] =
     useState(reservations);
-  const [selectedReservation, setSelectedReservation] =
-    useState<DetailedReservationResponseDto | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
-  const [isCreating, setIsCreating] = useState(false);
+  const [currentFilters, setCurrentFilters] =
+    useState<Record<string, string>>(initialFilter);
 
-  const handleSearch = (query: string) => {
-    const filtered = reservations.filter(
-      (reservation) =>
-        reservation.user?.username
-          ?.toLowerCase()
-          .includes(query.toLowerCase()) ||
-        reservation.event?.name?.toLowerCase().includes(query.toLowerCase()) ||
-        reservation.seat?.seatNumber
-          ?.toLowerCase()
-          .includes(query.toLowerCase()),
-    );
-    setFilteredReservations(filtered);
-  };
+  useEffect(() => {
+    setCurrentFilters(initialFilter);
+  }, [initialFilter]);
 
-  const handleFilter = (filters: Record<string, unknown>) => {
+  useEffect(() => {
+    applyFilters("", currentFilters);
+  }, [reservations, currentFilters]);
+
+  const applyFilters = (
+    searchQuery: string,
+    filters: Record<string, string>,
+  ) => {
     let filtered = reservations;
 
+    // Apply search
+    if (searchQuery) {
+      filtered = filtered.filter(
+        (reservation) =>
+          reservation.user?.username
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          events
+            .find((event) => event.id === reservation.eventId)
+            ?.name?.toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          reservation.seat?.seatNumber
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase()),
+      );
+    }
+
+    // Apply filters
     if (filters.eventId) {
       filtered = filtered.filter(
-        (r) => r.event?.id?.toString() === filters.eventId,
+        (reservation) => reservation.eventId?.toString() === filters.eventId,
+      );
+    }
+    if (filters.seatId) {
+      filtered = filtered.filter(
+        (reservation) => reservation.seat?.id?.toString() === filters.seatId,
       );
     }
 
     setFilteredReservations(filtered);
   };
 
-  const handleCreateReservation = () => {
-    setSelectedReservation(null);
-    setIsCreating(true);
-    setIsModalOpen(true);
+  const handleSearch = (query: string) => {
+    applyFilters(query, currentFilters);
   };
 
-  const handleEditReservation = (
-    reservation: DetailedReservationResponseDto,
-  ) => {
-    setSelectedReservation(reservation);
-    setIsCreating(false);
+  const handleFilter = (filters: Record<string, unknown>) => {
+    const stringFilters = Object.fromEntries(
+      Object.entries(filters).map(([key, value]) => [key, String(value)]),
+    );
+    setCurrentFilters(stringFilters);
+    applyFilters("", stringFilters);
+  };
+
+  const handleCreateReservation = () => {
     setIsModalOpen(true);
   };
 
@@ -113,6 +135,18 @@ export function ReservationManagement({
       confirm(`Are you sure you want to delete this reservation?`)
     ) {
       await deleteReservation(reservation.id);
+    }
+  };
+
+  const handleEventClick = (eventId: bigint) => {
+    if (onNavigateToEvent) {
+      onNavigateToEvent(eventId);
+    }
+  };
+
+  const handleSeatClick = (seatId: bigint) => {
+    if (onNavigateToSeat) {
+      onNavigateToSeat(seatId);
     }
   };
 
@@ -144,8 +178,17 @@ export function ReservationManagement({
           onSearch={handleSearch}
           onFilter={handleFilter}
           filterOptions={[
-            { key: "eventId", label: "Filter by Event", type: "string" },
+            {
+              key: "eventId",
+              label: "Event",
+              type: "select",
+              options: events.map((event) => ({
+                value: event.id?.toString() || "",
+                label: event.name || "",
+              })),
+            },
           ]}
+          initialFilters={currentFilters}
         />
 
         <Table>
@@ -159,42 +202,68 @@ export function ReservationManagement({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredReservations.map((reservation) => (
-              <TableRow key={reservation.id?.toString()}>
-                <TableCell>{reservation.user?.username}</TableCell>
-                <TableCell>{reservation.event?.name}</TableCell>
-                <TableCell>
-                  <Badge variant="outline">
-                    {reservation.seat?.seatNumber}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  {reservation.reservationDateTime
-                    ? new Date(
-                        reservation.reservationDateTime,
-                      ).toLocaleDateString()
-                    : "Unknown"}
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEditReservation(reservation)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleDeleteReservation(reservation)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+            {filteredReservations.map((reservation) => {
+              const event = events.find(
+                (event) => event.id === reservation.eventId,
+              );
+
+              return (
+                <TableRow key={reservation.id?.toString()}>
+                  <TableCell>{reservation.user?.username}</TableCell>
+                  <TableCell>
+                    {event ? (
+                      <Button
+                        variant="link"
+                        className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                        onClick={() => event.id && handleEventClick(event.id)}
+                      >
+                        {event.name}
+                        <ExternalLink className="ml-1 h-3 w-3" />
+                      </Button>
+                    ) : (
+                      "Unknown event"
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {reservation.seat ? (
+                      <Button
+                        variant="link"
+                        className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                        onClick={() =>
+                          reservation.seat?.id &&
+                          handleSeatClick(reservation.seat.id)
+                        }
+                      >
+                        <Badge variant="outline">
+                          {reservation.seat.seatNumber}
+                        </Badge>
+                        <ExternalLink className="ml-1 h-3 w-3" />
+                      </Button>
+                    ) : (
+                      <Badge variant="outline">Unknown seat</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {reservation.reservationDateTime
+                      ? new Date(
+                          reservation.reservationDateTime,
+                        ).toLocaleDateString()
+                      : "Unknown"}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDeleteReservation(reservation)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </CardContent>
@@ -204,14 +273,8 @@ export function ReservationManagement({
           users={users}
           events={events}
           seats={seats}
-          reservation={selectedReservation}
-          isCreating={isCreating}
           onSubmit={async (reservationData) => {
-            if (isCreating) {
-              await createReservation(reservationData);
-            } else if (selectedReservation?.id) {
-              await updateReservation(selectedReservation.id, reservationData);
-            }
+            await createReservation(reservationData);
             setIsModalOpen(false);
           }}
           onClose={() => setIsModalOpen(false)}
@@ -221,6 +284,7 @@ export function ReservationManagement({
       {isBlockModalOpen && (
         <BlockSeatsModal
           events={events}
+          seats={seats}
           onSubmit={async (blockData) => {
             await blockSeats(blockData);
             setIsBlockModalOpen(false);

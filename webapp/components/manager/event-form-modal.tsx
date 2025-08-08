@@ -54,7 +54,7 @@ export function EventFormModal({
     bookingDeadline: event?.bookingDeadline
       ? new Date(event.bookingDeadline).toISOString().slice(0, 16)
       : "",
-    eventLocationId: event?.location?.id?.toString() || "",
+    eventLocationId: event?.eventLocationId?.toString() || "",
   });
   const [isLoading, setIsLoading] = useState(false);
 

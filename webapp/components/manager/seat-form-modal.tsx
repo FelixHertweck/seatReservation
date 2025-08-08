@@ -43,7 +43,7 @@ export function SeatFormModal({
 }: SeatFormModalProps) {
   const [formData, setFormData] = useState({
     seatNumber: seat?.seatNumber || "",
-    eventLocationId: seat?.location?.id?.toString() || "",
+    eventLocationId: seat?.eventLocationId?.toString() || "",
     xCoordinate: seat?.xCoordinate?.toString() || "",
     yCoordinate: seat?.yCoordinate?.toString() || "",
   });

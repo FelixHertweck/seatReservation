@@ -21,7 +21,6 @@ import {
 import { Label } from "@/components/ui/label";
 import type {
   DetailedEventResponseDto,
-  DetailedReservationResponseDto,
   ReservationRequestDto,
   SeatDto,
   UserDto,
@@ -31,8 +30,6 @@ interface ReservationFormModalProps {
   users: UserDto[];
   events: DetailedEventResponseDto[];
   seats: SeatDto[];
-  reservation: DetailedReservationResponseDto | null;
-  isCreating: boolean;
   onSubmit: (reservationData: ReservationRequestDto) => Promise<void>;
   onClose: () => void;
 }
@@ -41,15 +38,14 @@ export function ReservationFormModal({
   users,
   events,
   seats,
-  reservation,
-  isCreating,
   onSubmit,
   onClose,
 }: ReservationFormModalProps) {
   const [formData, setFormData] = useState({
-    eventId: reservation?.event?.id?.toString() || "",
-    userId: reservation?.user?.id?.toString() || "",
-    seatId: reservation?.seat?.id?.toString() || "",
+    eventId: "",
+    userId: "",
+    seatIds: [] as string[],
+    deductAllowance: true,
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -61,7 +57,8 @@ export function ReservationFormModal({
       const reservationData: ReservationRequestDto = {
         eventId: BigInt(formData.eventId),
         userId: BigInt(formData.userId),
-        seatId: BigInt(formData.seatId),
+        seatIds: formData.seatIds.map((id) => BigInt(id)),
+        deductAllowance: formData.deductAllowance,
       };
       await onSubmit(reservationData);
     } finally {
@@ -69,17 +66,22 @@ export function ReservationFormModal({
     }
   };
 
+  const handleSeatToggle = (seatId: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      seatIds: prev.seatIds.includes(seatId)
+        ? prev.seatIds.filter((id) => id !== seatId)
+        : [...prev.seatIds, seatId],
+    }));
+  };
+
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>
-            {isCreating ? "Create Reservation" : "Edit Reservation"}
-          </DialogTitle>
+          <DialogTitle>Create Reservation</DialogTitle>
           <DialogDescription>
-            {isCreating
-              ? "Create a new reservation"
-              : "Update reservation details"}
+            Create a new reservation for multiple seats
           </DialogDescription>
         </DialogHeader>
 
@@ -133,35 +135,60 @@ export function ReservationFormModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="seat">Seat</Label>
-            <Select
-              value={formData.seatId}
-              onValueChange={(value) =>
-                setFormData((prev) => ({ ...prev, seatId: value }))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a seat" />
-              </SelectTrigger>
-              <SelectContent>
-                {seats.map((seat) => (
-                  <SelectItem
-                    key={seat.id?.toString()}
-                    value={seat.id?.toString() ?? "unknown"}
-                  >
+            <Label>Seats (select multiple)</Label>
+            <div className="max-h-32 overflow-y-auto border rounded p-2 space-y-1">
+              {seats.map((seat) => (
+                <div
+                  key={seat.id?.toString()}
+                  className="flex items-center space-x-2"
+                >
+                  <input
+                    type="checkbox"
+                    id={`seat-${seat.id}`}
+                    checked={formData.seatIds.includes(
+                      seat.id?.toString() ?? "",
+                    )}
+                    onChange={() => handleSeatToggle(seat.id?.toString() ?? "")}
+                    className="rounded"
+                  />
+                  <label htmlFor={`seat-${seat.id}`} className="text-sm">
                     {seat.seatNumber}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                  </label>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500">
+              Selected: {formData.seatIds.length} seat(s)
+            </p>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="deductAllowance"
+              checked={formData.deductAllowance}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  deductAllowance: e.target.checked,
+                }))
+              }
+              className="rounded"
+            />
+            <Label htmlFor="deductAllowance" className="text-sm">
+              Deduct from user allowance
+            </Label>
           </div>
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Saving..." : isCreating ? "Create" : "Update"}
+            <Button
+              type="submit"
+              disabled={isLoading || formData.seatIds.length === 0}
+            >
+              {isLoading ? "Creating..." : "Create Reservation"}
             </Button>
           </div>
         </form>

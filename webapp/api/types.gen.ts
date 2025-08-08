@@ -31,15 +31,15 @@ export type DetailedEventResponseDto = {
     startTime?: LocalDateTime;
     endTime?: LocalDateTime;
     bookingDeadline?: LocalDateTime;
-    location?: EventLocationResponseDto;
-    manager?: UserDto;
-    eventUserAllowances?: Array<EventUserAllowancesDto>;
+    eventLocationId?: bigint;
+    managerId?: bigint;
+    eventUserAllowancesIds?: Array<bigint>;
 };
 
 export type DetailedReservationResponseDto = {
     id?: bigint;
     user?: UserDto;
-    event?: DetailedEventResponseDto;
+    eventId?: bigint;
     seat?: SeatDto;
     reservationDateTime?: LocalDateTime;
 };
@@ -90,16 +90,24 @@ export type EventResponseDto = {
     reservationsAllowed?: number;
 };
 
-export type EventUserAllowancesDto = {
-    eventId?: bigint;
-    userId?: bigint;
-    reservationsAllowedCount?: number;
+export type EventUserAllowanceUpdateDto = {
+    id: bigint;
+    eventId: bigint;
+    userId: bigint;
+    reservationsAllowedCount: number;
 };
 
-export type EventUserAllowancesRequestDto = {
+export type EventUserAllowancesCreateDto = {
     eventId: bigint;
     userIds: Array<bigint>;
     reservationsAllowedCount: number;
+};
+
+export type EventUserAllowancesDto = {
+    id?: bigint;
+    eventId?: bigint;
+    userId?: bigint;
+    reservationsAllowedCount?: number;
 };
 
 export type LimitedUserInfoDto = {
@@ -126,7 +134,8 @@ export type RegisterRequestDto = {
 export type ReservationRequestDto = {
     eventId: bigint;
     userId: bigint;
-    seatId: bigint;
+    seatIds: Array<bigint>;
+    deductAllowance?: boolean;
 };
 
 export type ReservationResponseDto = {
@@ -174,7 +183,7 @@ export type SeatRequestDto = {
 export type SeatResponseDto = {
     id?: bigint;
     seatNumber?: string;
-    location?: EventLocationResponseDto;
+    eventLocationId?: bigint;
     xCoordinate?: number;
     yCoordinate?: number;
     status?: ReservationStatus;
@@ -581,7 +590,7 @@ export type GetApiManagerReservationAllowanceResponses = {
 export type GetApiManagerReservationAllowanceResponse = GetApiManagerReservationAllowanceResponses[keyof GetApiManagerReservationAllowanceResponses];
 
 export type PostApiManagerReservationAllowanceData = {
-    body: EventUserAllowancesRequestDto;
+    body: EventUserAllowancesCreateDto;
     path?: never;
     query?: never;
     url: '/api/manager/reservationAllowance';
@@ -606,10 +615,41 @@ export type PostApiManagerReservationAllowanceResponses = {
     /**
      * OK
      */
-    200: EventUserAllowancesDto;
+    200: Array<EventUserAllowancesDto>;
 };
 
 export type PostApiManagerReservationAllowanceResponse = PostApiManagerReservationAllowanceResponses[keyof PostApiManagerReservationAllowanceResponses];
+
+export type PutApiManagerReservationAllowanceData = {
+    body: EventUserAllowanceUpdateDto;
+    path?: never;
+    query?: never;
+    url: '/api/manager/reservationAllowance';
+};
+
+export type PutApiManagerReservationAllowanceErrors = {
+    /**
+     * Bad Request
+     */
+    400: unknown;
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type PutApiManagerReservationAllowanceResponses = {
+    /**
+     * OK
+     */
+    200: EventUserAllowancesDto;
+};
+
+export type PutApiManagerReservationAllowanceResponse = PutApiManagerReservationAllowanceResponses[keyof PutApiManagerReservationAllowanceResponses];
 
 export type GetApiManagerReservationAllowanceEventByEventIdData = {
     body?: never;
@@ -751,7 +791,7 @@ export type PostApiManagerReservationsResponses = {
     /**
      * OK
      */
-    200: DetailedReservationResponseDto;
+    200: Array<DetailedReservationResponseDto>;
 };
 
 export type PostApiManagerReservationsResponse = PostApiManagerReservationsResponses[keyof PostApiManagerReservationsResponses];
@@ -871,39 +911,6 @@ export type GetApiManagerReservationsByIdResponses = {
 };
 
 export type GetApiManagerReservationsByIdResponse = GetApiManagerReservationsByIdResponses[keyof GetApiManagerReservationsByIdResponses];
-
-export type PutApiManagerReservationsByIdData = {
-    body: ReservationRequestDto;
-    path: {
-        id: bigint;
-    };
-    query?: never;
-    url: '/api/manager/reservations/{id}';
-};
-
-export type PutApiManagerReservationsByIdErrors = {
-    /**
-     * Bad Request
-     */
-    400: unknown;
-    /**
-     * Not Authorized
-     */
-    401: unknown;
-    /**
-     * Not Allowed
-     */
-    403: unknown;
-};
-
-export type PutApiManagerReservationsByIdResponses = {
-    /**
-     * OK
-     */
-    200: DetailedReservationResponseDto;
-};
-
-export type PutApiManagerReservationsByIdResponse = PutApiManagerReservationsByIdResponses[keyof PutApiManagerReservationsByIdResponses];
 
 export type GetApiManagerSeatsData = {
     body?: never;

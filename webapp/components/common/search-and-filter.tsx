@@ -1,93 +1,112 @@
 "use client";
 
-import { useState } from "react";
-import { Search } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Badge } from "@/components/ui/badge";
 
 interface FilterOption {
   key: string;
   label: string;
-  type: "boolean" | "string" | "number";
-  options?: string[];
+  type: "boolean" | "string" | "number" | "select";
+  options?: { value: string; label: string }[];
 }
 
 interface SearchAndFilterProps {
   onSearch: (query: string) => void;
   onFilter: (filters: Record<string, unknown>) => void;
   filterOptions: FilterOption[];
+  initialFilters?: Record<string, string>;
 }
 
 export function SearchAndFilter({
   onSearch,
   onFilter,
   filterOptions,
+  initialFilters = {},
 }: SearchAndFilterProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState<Record<string, unknown>>({});
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [filters, setFilters] =
+    useState<Record<string, unknown>>(initialFilters);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     onSearch(query);
   };
 
-  const handleFilterChange = (key: string, value: unknown) => {
-    const newFilters = { ...filters, [key]: value };
+  const clearFilter = (key: string) => {
+    const newFilters = { ...filters };
+    delete newFilters[key];
     setFilters(newFilters);
     onFilter(newFilters);
   };
 
+  const clearAllFilters = () => {
+    setFilters({});
+    onFilter({});
+  };
+
+  const getFilterDisplayName = (key: string, value: unknown): string => {
+    const option = filterOptions.find((opt) => opt.key === key);
+    if (!option) return `${key}: ${value}`;
+
+    if (option.type === "select" && option.options) {
+      const selectedOption = option.options.find((opt) => opt.value === value);
+      return `${option.label}: ${selectedOption?.label || value}`;
+    }
+
+    return `${option.label}: ${value}`;
+  };
+
+  const activeFilters = Object.entries(filters).filter(
+    ([, value]) => value !== "" && value !== null && value !== undefined,
+  );
+
   return (
     <div className="space-y-4 mb-6">
-      <div className="flex gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            placeholder="Search..."
-            value={searchQuery}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="pl-10"
-          />
+      {/* Active Filters Display */}
+      {activeFilters.length > 0 && (
+        <div className="flex flex-wrap gap-2 items-center">
+          <span className="text-sm text-muted-foreground">Active filters:</span>
+          {activeFilters.map(([key, value]) => (
+            <Badge
+              key={key}
+              variant="outline"
+              className="flex items-center gap-1"
+            >
+              {getFilterDisplayName(key, value)}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-auto p-0 ml-1 hover:bg-transparent"
+                onClick={() => clearFilter(key)}
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </Badge>
+          ))}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearAllFilters}
+            className="text-muted-foreground"
+          >
+            Clear all
+          </Button>
         </div>
-        {filterOptions.length > 0 && (
-          <Collapsible open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-            <CollapsibleTrigger asChild>
-              <Button variant="outline">Filters</Button>
-            </CollapsibleTrigger>
-          </Collapsible>
-        )}
-      </div>
-
-      {filterOptions.length > 0 && (
-        <Collapsible open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-          <CollapsibleContent className="space-y-4 p-4 border rounded-lg bg-gray-50">
-            {filterOptions.map((option) => (
-              <div key={option.key} className="flex items-center space-x-2">
-                {option.type === "boolean" && (
-                  <>
-                    <Checkbox
-                      id={option.key}
-                      checked={!!filters[option.key]}
-                      onCheckedChange={(checked) =>
-                        handleFilterChange(option.key, checked)
-                      }
-                    />
-                    <Label htmlFor={option.key}>{option.label}</Label>
-                  </>
-                )}
-              </div>
-            ))}
-          </CollapsibleContent>
-        </Collapsible>
       )}
+
+      {/* Search Bar */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+        <Input
+          placeholder="Search..."
+          value={searchQuery}
+          onChange={(e) => handleSearch(e.target.value)}
+          className="pl-10"
+        />
+      </div>
     </div>
   );
 }
