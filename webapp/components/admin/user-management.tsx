@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,12 +21,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { UserFormModal } from "@/components/admin/user-form-modal";
-import type { UserDto, UserCreationDto, AdminUserUpdateDto } from "@/api";
+import type { UserDto, AdminUserCreationDto, AdminUserUpdateDto } from "@/api";
 
 export interface UserManagementProps {
   users: UserDto[];
   availableRoles: string[];
-  createUser: (user: UserCreationDto) => Promise<void>;
+  createUser: (user: AdminUserCreationDto) => Promise<void>;
   updateUser: (id: bigint, user: AdminUserUpdateDto) => Promise<void>;
   deleteUser: (id: bigint) => Promise<void>;
 }
@@ -43,13 +43,20 @@ export function UserManagement({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
+  //TODO: Gena das auch auf der Manager Seite hinzufügen
+  useEffect(() => {
+    setFilteredUsers(users);
+  }, [users]);
+
   const handleSearch = (query: string) => {
+    const lowerCaseQuery = query.toLowerCase();
     const filtered = users.filter(
       (user) =>
-        user.username?.toLowerCase().includes(query.toLowerCase()) ||
-        user.firstName?.toLowerCase().includes(query.toLowerCase()) ||
-        user.lastName?.toLowerCase().includes(query.toLowerCase()) ||
-        user.email?.toLowerCase().includes(query.toLowerCase()),
+        user.username?.toLowerCase().includes(lowerCaseQuery) ||
+        user.firstname?.toLowerCase().includes(lowerCaseQuery) ||
+        user.lastname?.toLowerCase().includes(lowerCaseQuery) ||
+        user.email?.toLowerCase().includes(lowerCaseQuery) ||
+        user.tags?.some((tag) => tag.toLowerCase().includes(lowerCaseQuery)), // Search by tags
     );
     setFilteredUsers(filtered);
   };
@@ -80,10 +87,10 @@ export function UserManagement({
   };
 
   const handleModalSubmit = async (
-    userData: UserCreationDto | AdminUserUpdateDto,
+    userData: AdminUserCreationDto | AdminUserUpdateDto,
   ) => {
     if (isCreating) {
-      await createUser(userData as UserCreationDto);
+      await createUser(userData as AdminUserCreationDto);
     } else if (selectedUser?.id) {
       await updateUser(selectedUser.id, userData as AdminUserUpdateDto);
     }
@@ -121,6 +128,7 @@ export function UserManagement({
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Roles</TableHead>
+              <TableHead>Tags</TableHead> {/* New TableHead for Tags */}
               <TableHead>Verified</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
@@ -130,7 +138,7 @@ export function UserManagement({
               <TableRow key={user.id?.toString()}>
                 <TableCell className="font-medium">{user.username}</TableCell>
                 <TableCell>
-                  {user.firstName} {user.lastName}
+                  {user.firstname} {user.lastname}
                 </TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>
@@ -138,6 +146,16 @@ export function UserManagement({
                     {user.roles?.map((role) => (
                       <Badge key={role} variant="outline">
                         {role}
+                      </Badge>
+                    ))}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  {/* Ensure no whitespace here */}
+                  <div className="flex gap-1 flex-wrap">
+                    {user.tags?.map((tag) => (
+                      <Badge key={tag} variant="secondary">
+                        {tag}
                       </Badge>
                     ))}
                   </div>

@@ -2,134 +2,165 @@
 
 import type React from "react";
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useState, useEffect } from "react";
 import { useProfile } from "@/hooks/use-profile";
+import { useAuthStatus } from "@/hooks/use-auth-status";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { X } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 import type { UserProfileUpdateDto } from "@/api";
-import Loading from "./loading";
 
 export default function ProfilePage() {
-  const { user, isLoading, updateProfile } = useProfile();
-  const [formData, setFormData] = useState({
-    email: user?.email || "",
-    firstname: user?.firstName || "",
-    lastname: user?.lastName || "",
-    password: "",
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user, updateProfile, isLoading } = useProfile();
+  const { isLoggedIn: isAuthenticated } = useAuthStatus();
+  const { toast } = useToast();
 
-  if (isLoading) {
-    return <Loading />;
-  }
+  const [firstname, setFirstname] = useState("");
+  const [lastname, setLastname] = useState("");
+  const [email, setEmail] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
+  const [newTag, setNewTag] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user?.id) return;
+  useEffect(() => {
+    if (user) {
+      setFirstname(user.firstname || "");
+      setLastname(user.lastname || "");
+      setEmail(user.email || "");
+      setTags(user.tags || []);
+    }
+  }, [user]);
 
-    setIsSubmitting(true);
-    try {
-      const updateData: UserProfileUpdateDto = {
-        email: formData.email,
-        firstname: formData.firstname,
-        lastname: formData.lastname,
-        password: formData.password,
-      };
-      await updateProfile(updateData);
-    } finally {
-      setIsSubmitting(false);
+  const handleAddTag = () => {
+    if (newTag.trim() && !tags.includes(newTag.trim())) {
+      setTags([...tags, newTag.trim()]);
+      setNewTag("");
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const handleRemoveTag = (tagToRemove: string) => {
+    setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
-  return (
-    <div className="container mx-auto p-6 max-w-2xl">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Profile</h1>
-        <p className="text-muted-foreground">
-          Manage your account information and preferences
-        </p>
-      </div>
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to update your profile.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-      <Card>
+    const updatedProfile: UserProfileUpdateDto = {
+      firstname,
+      lastname,
+      email,
+      tags,
+    };
+
+    try {
+      await updateProfile(updatedProfile);
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been successfully updated.",
+      });
+    } catch (err) {
+      toast({
+        title: "Update Failed",
+        description: "Failed to update profile.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (isLoading) {
+    return <div>Loading profile...</div>;
+  }
+
+  return (
+    <div className="container mx-auto py-8">
+      <Card className="max-w-2xl mx-auto">
         <CardHeader>
-          <CardTitle>Personal Information</CardTitle>
-          <CardDescription>
-            Update your personal details and password
-          </CardDescription>
+          <CardTitle>Profile Settings</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="firstname">First Name</Label>
-                <Input
-                  id="firstname"
-                  value={formData.firstname}
-                  onChange={(e) =>
-                    handleInputChange("firstname", e.target.value)
-                  }
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastname">Last Name</Label>
-                <Input
-                  id="lastname"
-                  value={formData.lastname}
-                  onChange={(e) =>
-                    handleInputChange("lastname", e.target.value)
-                  }
-                  required
-                />
-              </div>
+            <div>
+              <Label htmlFor="username">Username</Label>
+              <Input id="username" value={user?.username || ""} disabled />
             </div>
-
-            <div className="space-y-2">
+            <div>
+              <Label htmlFor="firstname">First Name</Label>
+              <Input
+                id="firstname"
+                value={firstname}
+                onChange={(e) => setFirstname(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="lastname">Last Name</Label>
+              <Input
+                id="lastname"
+                value={lastname}
+                onChange={(e) => setLastname(e.target.value)}
+              />
+            </div>
+            <div>
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange("email", e.target.value)}
-                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">New Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Leave empty to keep current password"
-                value={formData.password}
-                onChange={(e) => handleInputChange("password", e.target.value)}
-              />
+            <div>
+              <Label htmlFor="tags">Tags</Label>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {tags.map((tag) => (
+                  <Badge
+                    key={tag}
+                    variant="secondary"
+                    className="flex items-center gap-1"
+                  >
+                    {tag}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRemoveTag(tag)}
+                      className="h-auto p-0.5"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </Badge>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  id="newTag"
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  placeholder="Add new tag"
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddTag();
+                    }
+                  }}
+                />
+                <Button type="button" onClick={handleAddTag}>
+                  Add
+                </Button>
+              </div>
             </div>
-
-            <div className="space-y-2">
-              <Label>Username</Label>
-              <Input value={user?.username || ""} disabled />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Roles</Label>
-              <Input value={user?.roles?.join(", ") || ""} disabled />
-            </div>
-
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Updating..." : "Update Profile"}
+            <Button type="submit" className="w-full">
+              Save Changes
             </Button>
           </form>
         </CardContent>

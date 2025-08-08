@@ -1,14 +1,14 @@
 "use client";
 
-import type React from "react";
-
-import { useState } from "react";
+import { CommandGroup } from "@/components/ui/command";
+import { CommandEmpty } from "@/components/ui/command";
+import { useState, useEffect, useMemo } from "react"; // Added useMemo
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,124 +20,394 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandList,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import { ChevronsUpDown, XCircle } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "@/components/ui/use-toast";
+
 import type {
-  DetailedEventResponseDto,
-  EventUserAllowancesRequestDto,
   UserDto,
+  DetailedEventResponseDto,
+  EventUserAllowancesDto,
+  EventUserAllowanceUpdateDto,
+  EventUserAllowancesCreateDto,
 } from "@/api";
-import {Checkbox} from "@/components/ui/checkbox";
 
 interface AllowanceFormModalProps {
-  events: DetailedEventResponseDto[];
+  allowance: EventUserAllowancesDto | null; // Null for creation, object for update
   users: UserDto[];
-  onSubmit: (allowanceData: EventUserAllowancesRequestDto) => Promise<void>;
+  events: DetailedEventResponseDto[];
+  isCreating: boolean;
+  onSubmit: (
+    allowanceData: EventUserAllowancesCreateDto | EventUserAllowanceUpdateDto,
+  ) => Promise<void>;
   onClose: () => void;
 }
 
 export function AllowanceFormModal({
-  events,
+  allowance,
   users,
+  events,
+  isCreating,
   onSubmit,
   onClose,
 }: AllowanceFormModalProps) {
-  const [formData, setFormData] = useState({
-    eventId: "",
-    userIds: [] as string[],
-    reservationsAllowedCount: "",
-  });
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>(
+    allowance && !isCreating ? [allowance.userId?.toString() || ""] : [],
+  );
+  const [selectedEventId, setSelectedEventId] = useState<string | undefined>(
+    allowance?.eventId?.toString(),
+  );
+  const [allowedReservations, setAllowedReservations] = useState(
+    allowance?.reservationsAllowedCount?.toString() || "",
+  );
+  const [userSearchOpen, setUserSearchOpen] = useState(false);
+  const [selectedTag, setSelectedTag] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  useEffect(() => {
+    if (allowance && !isCreating) {
+      setSelectedUserIds([allowance.userId?.toString() || ""]);
+      setSelectedEventId(allowance.eventId?.toString());
+      setAllowedReservations(
+        allowance.reservationsAllowedCount?.toString() || "",
+      );
+    } else if (isCreating) {
+      setSelectedUserIds([]);
+      setSelectedEventId(undefined);
+      setAllowedReservations("");
+    }
+    setSelectedTag(undefined); // Reset tag selection on modal open/mode change
+  }, [allowance, isCreating]);
 
+  const allTags = Array.from(new Set(users.flatMap((user) => user.tags || [])));
+
+  const handleUserToggle = (userId: string, checked: boolean) => {
+    setSelectedUserIds((prev) =>
+      checked ? [...prev, userId] : prev.filter((id) => id !== userId),
+    );
+  };
+
+  const handleSelectUsersByTag = (tag: string) => {
+    setSelectedTag(tag);
+    const usersWithTagIds = users
+      .filter((user) => user.tags?.includes(tag))
+      .map((user) => user.id?.toString() || "")
+      .filter(Boolean) as string[];
+
+    // Add users with this tag that are not already selected
+    const newSelectedUsers = Array.from(
+      new Set([...selectedUserIds, ...usersWithTagIds]),
+    );
+    setSelectedUserIds(newSelectedUsers);
+  };
+
+  const handleClearTag = () => {
+    setSelectedTag(undefined);
+    // Do not clear selectedUserIds automatically, user can deselect manually
+  };
+
+  const handleClearAllSelectedUsers = () => {
+    setSelectedUserIds([]);
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedEventId || !allowedReservations) {
+      toast({
+        title: "Validation Error",
+        description:
+          "Please select an event and enter the allowed reservations.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
     try {
-      const allowanceData: EventUserAllowancesRequestDto = {
-        eventId: BigInt(formData.eventId),
-        userIds: formData.userIds.map((id) => BigInt(id)),
-        reservationsAllowedCount: Number.parseInt(
-          formData.reservationsAllowedCount,
-        ),
-      };
-      await onSubmit(allowanceData);
+      const eventId = BigInt(selectedEventId);
+      const reservations = Number.parseInt(allowedReservations, 10);
+
+      if (isCreating) {
+        if (selectedUserIds.length === 0) {
+          toast({
+            title: "Validation Error",
+            description: "Please select at least one user for creation.",
+            variant: "destructive",
+          });
+          return;
+        }
+        const allowanceData: EventUserAllowancesCreateDto = {
+          eventId,
+          userIds: selectedUserIds.map((id) => BigInt(id)),
+          reservationsAllowedCount: reservations,
+        };
+        await onSubmit(allowanceData);
+        toast({
+          title: "Success",
+          description: "Allowance(s) created successfully.",
+        });
+      } else {
+        // For update, ensure a single user is selected (or was pre-selected)
+        if (!allowance?.id || selectedUserIds.length !== 1) {
+          toast({
+            title: "Validation Error",
+            description:
+              "Invalid state for update. Please select exactly one user.",
+            variant: "destructive",
+          });
+          return;
+        }
+        const allowanceData: EventUserAllowanceUpdateDto = {
+          id: allowance.id,
+          eventId,
+          userId: BigInt(selectedUserIds[0]),
+          reservationsAllowedCount: reservations,
+        };
+        await onSubmit(allowanceData);
+        toast({
+          title: "Success",
+          description: "Allowance updated successfully.",
+        });
+      }
+      onClose();
+    } catch (error) {
+      console.error("Failed to submit allowance:", error);
+      toast({
+        title: "Submission Error",
+        description: "Failed to submit allowance. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleUserToggle = (userId: string, checked: boolean) => {
-    setFormData((prev) => ({
-      ...prev,
-      userIds: checked ? [...prev.userIds, userId] : prev.userIds.filter((id) => id !== userId),
-    }))
-  }
+  const filteredUsers = useMemo(() => {
+    if (!isCreating && allowance?.userId) {
+      // In update mode, only show the pre-selected user
+      return users.filter(
+        (user) => user.id?.toString() === allowance.userId?.toString(),
+      );
+    }
+    // In creation mode, filter by tag if selected, otherwise show all
+    return users.filter((user) => {
+      if (!selectedTag) return true;
+      return user.tags?.includes(selectedTag);
+    });
+  }, [users, selectedTag, isCreating, allowance]);
+
+  const getSelectedUsernames = () => {
+    return selectedUserIds
+      .map((id) => users.find((u) => u.id?.toString() === id)?.username)
+      .filter(Boolean) as string[];
+  };
 
   return (
-      <Dialog open onOpenChange={onClose}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Create Reservation Allowance</DialogTitle>
-            <DialogDescription>Set reservation limits for users on a specific event</DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="event">Event</Label>
-              <Select
-                  value={formData.eventId}
-                  onValueChange={(value) => setFormData((prev) => ({ ...prev, eventId: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select an event" />
-                </SelectTrigger>
-                <SelectContent>
-                  {events.map((event) => (
-                      <SelectItem key={event.id?.toString()} value={event.id?.toString() ?? "unknown"}>
-                        {event.name}
-                      </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Users</Label>
-              <div className="space-y-2 max-h-40 overflow-y-auto border p-2 rounded">
-                {users.map((user) => (
-                    <div key={user.id?.toString()} className="flex items-center space-x-2">
-                      <Checkbox
-                          id={`user-${user.id?.toString()}`}
-                          checked={formData.userIds.includes(user.id?.toString() ?? "unknown")}
-                          onCheckedChange={(checked) => handleUserToggle(user.id?.toString() ?? "unknown", checked as boolean)}
-                      />
-                      <Label htmlFor={`user-${user.id?.toString()}`}>{user.username}</Label>
-                    </div>
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>
+            {isCreating ? "Add New Allowance" : "Edit Allowance"}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="event" className="text-right">
+              Event
+            </Label>
+            <Select
+              value={selectedEventId}
+              onValueChange={setSelectedEventId}
+              disabled={!isCreating} // Event typically not editable after creation
+            >
+              <SelectTrigger className="col-span-3">
+                <SelectValue placeholder="Select an event" />
+              </SelectTrigger>
+              <SelectContent>
+                {events.map((event) => (
+                  <SelectItem
+                    key={event.id?.toString()}
+                    value={event.id?.toString() || ""}
+                  >
+                    {event.name}
+                  </SelectItem>
                 ))}
-              </div>
-            </div>
+              </SelectContent>
+            </Select>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="count">Allowed Reservations</Label>
-              <Input
-                  id="count"
-                  type="number"
-                  min="0"
-                  value={formData.reservationsAllowedCount}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, reservationsAllowedCount: e.target.value }))}
-                  required
-              />
-            </div>
+          <div className="grid grid-cols-4 items-start gap-4">
+            <Label htmlFor="users" className="text-right pt-2">
+              Users
+            </Label>
+            <div className="col-span-3 flex flex-col gap-2">
+              <Popover open={userSearchOpen} onOpenChange={setUserSearchOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={userSearchOpen}
+                    className="w-full justify-between bg-transparent"
+                    disabled={!isCreating && selectedUserIds.length > 0} // Disable if not creating and user already selected for update
+                  >
+                    {selectedUserIds.length > 0
+                      ? `${selectedUserIds.length} user(s) selected`
+                      : "Select user(s)..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                  <Command>
+                    {isCreating && allTags.length > 0 && (
+                      <div className="p-2 border-b flex items-center gap-2">
+                        <Select
+                          onValueChange={handleSelectUsersByTag}
+                          value={selectedTag}
+                        >
+                          <SelectTrigger className="flex-grow">
+                            <SelectValue placeholder="Filter by tag" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {allTags.map((tag) => (
+                              <SelectItem key={tag} value={tag}>
+                                {tag}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {selectedTag && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={handleClearTag}
+                            aria-label="Clear tag selection"
+                          >
+                            <XCircle className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                    <CommandInput placeholder="Search user..." />
+                    <CommandList>
+                      <CommandEmpty>No user found.</CommandEmpty>
+                      <CommandGroup>
+                        {filteredUsers.map((user) => (
+                          <CommandItem
+                            key={user.id?.toString()}
+                            value={user.username}
+                            onSelect={() =>
+                              handleUserToggle(
+                                user.id?.toString() || "",
+                                !selectedUserIds.includes(
+                                  user.id?.toString() || "",
+                                ),
+                              )
+                            }
+                          >
+                            <Checkbox
+                              checked={selectedUserIds.includes(
+                                user.id?.toString() || "",
+                              )}
+                              onCheckedChange={(checked) =>
+                                handleUserToggle(
+                                  user.id?.toString() || "",
+                                  checked as boolean,
+                                )
+                              }
+                              className="mr-2"
+                            />
+                            {user.username}
+                            {user.tags && user.tags.length > 0 && (
+                              <div className="ml-auto flex gap-1">
+                                {user.tags.map((tag) => (
+                                  <Badge key={tag} variant="secondary">
+                                    {tag}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
 
-            <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isLoading || formData.userIds.length === 0}>
-                {isLoading ? "Creating..." : "Create Allowance"}
-              </Button>
+              {isCreating && selectedUserIds.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {getSelectedUsernames().map((username) => (
+                    <Badge key={username} variant="outline">
+                      {username}
+                    </Badge>
+                  ))}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleClearAllSelectedUsers}
+                    className="text-xs text-red-500 hover:text-red-600"
+                  >
+                    Clear All
+                  </Button>
+                </div>
+              )}
+              {!isCreating && selectedUserIds.length > 0 && (
+                <div className="text-sm text-muted-foreground">
+                  Selected User:{" "}
+                  {
+                    users.find((u) => u.id?.toString() === selectedUserIds[0])
+                      ?.username
+                  }
+                </div>
+              )}
             </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+          </div>
+
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="allowedReservations" className="text-right">
+              Allowed Reservations
+            </Label>
+            <Input
+              id="allowedReservations"
+              type="number"
+              value={allowedReservations}
+              onChange={(e) => setAllowedReservations(e.target.value)}
+              className="col-span-3"
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} disabled={isLoading}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={
+              isLoading ||
+              selectedUserIds.length === 0 ||
+              !selectedEventId ||
+              !allowedReservations
+            }
+          >
+            {isLoading
+              ? "Submitting..."
+              : isCreating
+                ? "Create Allowance"
+                : "Save Changes"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

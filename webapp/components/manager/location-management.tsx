@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, Edit, Trash2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -41,6 +41,8 @@ export interface LocationManagementProps {
   registerLocationWithSeats: (
     data: EventLocationRegistrationDto,
   ) => Promise<EventLocationResponseDto>;
+  onNavigateToSeats?: (locationId: bigint) => void;
+  initialFilter?: Record<string, string>;
 }
 
 export function LocationManagement({
@@ -49,20 +51,60 @@ export function LocationManagement({
   updateLocation,
   deleteLocation,
   registerLocationWithSeats,
+  onNavigateToSeats,
+  initialFilter = {},
 }: LocationManagementProps) {
   const [filteredLocations, setFilteredLocations] = useState(locations);
   const [selectedLocation, setSelectedLocation] =
     useState<EventLocationResponseDto | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [currentFilters, setCurrentFilters] =
+    useState<Record<string, string>>(initialFilter);
+
+  useEffect(() => {
+    setCurrentFilters(initialFilter);
+  }, [initialFilter]);
+
+  useEffect(() => {
+    applyFilters("", currentFilters);
+  }, [locations, currentFilters]);
+
+  const applyFilters = (
+    searchQuery: string,
+    filters: Record<string, string>,
+  ) => {
+    let filtered = locations;
+
+    // Apply search
+    if (searchQuery) {
+      filtered = filtered.filter(
+        (location) =>
+          location.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          location.address?.toLowerCase().includes(searchQuery.toLowerCase()),
+      );
+    }
+
+    // Apply filters
+    if (filters.locationId) {
+      filtered = filtered.filter(
+        (location) => location.id?.toString() === filters.locationId,
+      );
+    }
+
+    setFilteredLocations(filtered);
+  };
 
   const handleSearch = (query: string) => {
-    const filtered = locations.filter(
-      (location) =>
-        location.name?.toLowerCase().includes(query.toLowerCase()) ||
-        location.address?.toLowerCase().includes(query.toLowerCase()),
+    applyFilters(query, currentFilters);
+  };
+
+  const handleFilter = (filters: Record<string, unknown>) => {
+    const stringFilters = Object.fromEntries(
+      Object.entries(filters).map(([key, value]) => [key, String(value)]),
     );
-    setFilteredLocations(filtered);
+    setCurrentFilters(stringFilters);
+    applyFilters("", stringFilters);
   };
 
   const handleCreateLocation = () => {
@@ -83,6 +125,12 @@ export function LocationManagement({
       confirm(`Are you sure you want to delete ${location.name}?`)
     ) {
       await deleteLocation(BigInt(location.id));
+    }
+  };
+
+  const handleSeatsClick = (locationId: bigint) => {
+    if (onNavigateToSeats) {
+      onNavigateToSeats(locationId);
     }
   };
 
@@ -111,8 +159,19 @@ export function LocationManagement({
           <TabsContent value="list" className="space-y-4">
             <SearchAndFilter
               onSearch={handleSearch}
-              onFilter={() => {}}
-              filterOptions={[]}
+              onFilter={handleFilter}
+              filterOptions={[
+                {
+                  key: "locationId",
+                  label: "Location",
+                  type: "select",
+                  options: locations.map((loc) => ({
+                    value: loc.id?.toString() || "",
+                    label: loc.name || "",
+                  })),
+                },
+              ]}
+              initialFilters={currentFilters}
             />
 
             <Table>
@@ -127,35 +186,54 @@ export function LocationManagement({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredLocations.map((location) => (
-                  <TableRow key={location.id?.toString()}>
-                    <TableCell className="font-medium">
-                      {location.name}
-                    </TableCell>
-                    <TableCell>{location.address}</TableCell>
-                    <TableCell>{location.capacity}</TableCell>
-                    <TableCell>{location.manager?.username}</TableCell>
-                    <TableCell>{location.seats?.length || 0}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEditLocation(location)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleDeleteLocation(location)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {filteredLocations.map((location) => {
+                  const seatCount = location.seats?.length || 0;
+
+                  return (
+                    <TableRow key={location.id?.toString()}>
+                      <TableCell className="font-medium">
+                        {location.name}
+                      </TableCell>
+                      <TableCell>{location.address}</TableCell>
+                      <TableCell>{location.capacity}</TableCell>
+                      <TableCell>{location.manager?.username}</TableCell>
+                      <TableCell>
+                        {seatCount > 0 ? (
+                          <Button
+                            variant="link"
+                            className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                            onClick={() =>
+                              location.id && handleSeatsClick(location.id)
+                            }
+                          >
+                            {seatCount} seats
+                            <ExternalLink className="ml-1 h-3 w-3" />
+                          </Button>
+                        ) : (
+                          "0 seats"
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditLocation(location)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDeleteLocation(location)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </TabsContent>

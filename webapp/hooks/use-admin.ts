@@ -9,7 +9,7 @@ import {
   deleteApiUsersAdminByIdMutation,
   getApiUsersRolesOptions,
 } from "@/api/@tanstack/react-query.gen";
-import type { UserCreationDto, AdminUserUpdateDto } from "@/api";
+import type { AdminUserCreationDto, AdminUserUpdateDto, UserDto } from "@/api";
 
 export function useAdmin() {
   const queryClient = useQueryClient();
@@ -23,32 +23,45 @@ export function useAdmin() {
 
   const { mutateAsync: createMutation } = useMutation({
     ...postApiUsersAdminMutation(),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: getApiUsersAdminQueryKey(),
-      });
+    onSuccess: async (data) => {
+      queryClient.setQueriesData(
+        { queryKey: getApiUsersAdminQueryKey() },
+        (oldData: UserDto[] | undefined) => {
+          return oldData ? [...oldData, data] : [data];
+        },
+      );
     },
   });
 
   const { mutateAsync: updateMutation } = useMutation({
     ...putApiUsersAdminByIdMutation(),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: getApiUsersAdminQueryKey(),
-      });
+    onSuccess: async (data) => {
+      queryClient.setQueriesData(
+        { queryKey: getApiUsersAdminQueryKey() },
+        (oldData: UserDto[] | undefined) => {
+          return oldData
+            ? oldData.map((user) => (user.id === data.id ? data : user))
+            : [data];
+        },
+      );
     },
   });
 
   const { mutateAsync: deleteMutation } = useMutation({
     ...deleteApiUsersAdminByIdMutation(),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: getApiUsersAdminQueryKey(),
-      });
+    onSuccess: async (_, variables) => {
+      queryClient.setQueriesData(
+        { queryKey: getApiUsersAdminQueryKey() },
+        (oldData: UserDto[] | undefined) => {
+          return oldData
+            ? oldData.filter((user) => user.id !== variables.path.id)
+            : [];
+        },
+      );
     },
   });
 
-  const createUser = async (userData: UserCreationDto) => {
+  const createUser = async (userData: AdminUserCreationDto) => {
     await createMutation({ body: userData });
   };
 

@@ -75,7 +75,7 @@ export function AppSidebar() {
       { title: "Profile", url: "/profile", icon: Settings, badge: "" },
     ];
 
-    if (user?.roles?.includes("MANAGER")) {
+    if (user?.roles?.includes("MANAGER") || user?.roles?.includes("ADMIN")) {
       baseItems.push({
         title: "Manager",
         url: "/manager",
@@ -97,8 +97,8 @@ export function AppSidebar() {
   };
 
   const getUserInitials = () => {
-    if (!user?.firstName || !user?.lastName) return "U";
-    return `${user.firstName[0]}${user.lastName[0]}`;
+    if (!user?.firstname || !user?.lastname) return "U";
+    return `${user.firstname[0]}${user.lastname[0]}`;
   };
 
   const getThemeIcon = (themeValue: string) => {
@@ -226,7 +226,7 @@ export function AppSidebar() {
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
                       <span className="truncate font-semibold group-hover:text-sidebar-accent-foreground transition-colors duration-300">
-                        {user.firstName} {user.lastName}
+                        {user.firstname} {user.lastname}
                       </span>
                       <span className="truncate text-xs text-sidebar-foreground/60 group-hover:text-sidebar-foreground/80 transition-colors duration-300">
                         {user.email}

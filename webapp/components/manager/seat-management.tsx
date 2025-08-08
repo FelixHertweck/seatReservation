@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, Edit, Trash2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -33,6 +33,8 @@ export interface SeatManagementProps {
   createSeat: (seat: SeatRequestDto) => Promise<SeatResponseDto>;
   updateSeat: (id: bigint, seat: SeatRequestDto) => Promise<SeatResponseDto>;
   deleteSeat: (id: bigint) => Promise<unknown>;
+  onNavigateToLocation?: (locationId: bigint) => void;
+  initialFilter?: Record<string, string>;
 }
 
 export function SeatManagement({
@@ -41,6 +43,8 @@ export function SeatManagement({
   createSeat,
   updateSeat,
   deleteSeat,
+  onNavigateToLocation,
+  initialFilter = {},
 }: SeatManagementProps) {
   const [filteredSeats, setFilteredSeats] = useState(seats);
   const [selectedSeat, setSelectedSeat] = useState<SeatResponseDto | null>(
@@ -48,14 +52,60 @@ export function SeatManagement({
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [currentFilters, setCurrentFilters] =
+    useState<Record<string, string>>(initialFilter);
+
+  useEffect(() => {
+    setCurrentFilters(initialFilter);
+  }, [initialFilter]);
+
+  useEffect(() => {
+    applyFilters("", currentFilters);
+  }, [seats, currentFilters]);
+
+  const applyFilters = (
+    searchQuery: string,
+    filters: Record<string, string>,
+  ) => {
+    let filtered = seats;
+
+    // Apply search
+    if (searchQuery) {
+      filtered = filtered.filter(
+        (seat) =>
+          seat.seatNumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          locations
+            .find((loc) => loc.id === seat.eventLocationId)
+            ?.name?.toLowerCase()
+            .includes(searchQuery.toLowerCase()),
+      );
+    }
+
+    // Apply filters
+    if (filters.locationId) {
+      filtered = filtered.filter(
+        (seat) => seat.eventLocationId?.toString() === filters.locationId,
+      );
+    }
+    if (filters.seatId) {
+      filtered = filtered.filter(
+        (seat) => seat.id?.toString() === filters.seatId,
+      );
+    }
+
+    setFilteredSeats(filtered);
+  };
 
   const handleSearch = (query: string) => {
-    const filtered = seats.filter(
-      (seat) =>
-        seat.seatNumber?.toLowerCase().includes(query.toLowerCase()) ||
-        seat.location?.name?.toLowerCase().includes(query.toLowerCase()),
+    applyFilters(query, currentFilters);
+  };
+
+  const handleFilter = (filters: Record<string, unknown>) => {
+    const stringFilters = Object.fromEntries(
+      Object.entries(filters).map(([key, value]) => [key, String(value)]),
     );
-    setFilteredSeats(filtered);
+    setCurrentFilters(stringFilters);
+    applyFilters("", stringFilters);
   };
 
   const handleCreateSeat = () => {
@@ -79,6 +129,12 @@ export function SeatManagement({
     }
   };
 
+  const handleLocationClick = (locationId: bigint) => {
+    if (onNavigateToLocation) {
+      onNavigateToLocation(locationId);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -99,8 +155,19 @@ export function SeatManagement({
       <CardContent>
         <SearchAndFilter
           onSearch={handleSearch}
-          onFilter={() => {}}
-          filterOptions={[]}
+          onFilter={handleFilter}
+          filterOptions={[
+            {
+              key: "locationId",
+              label: "Location",
+              type: "select",
+              options: locations.map((loc) => ({
+                value: loc.id?.toString() || "",
+                label: loc.name || "",
+              })),
+            },
+          ]}
+          initialFilters={currentFilters}
         />
 
         <Table>
@@ -114,38 +181,61 @@ export function SeatManagement({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredSeats.map((seat) => (
-              <TableRow key={seat.id?.toString()}>
-                <TableCell className="font-medium">{seat.seatNumber}</TableCell>
-                <TableCell>{seat.location?.name}</TableCell>
-                <TableCell>
-                  ({seat.xCoordinate}, {seat.yCoordinate})
-                </TableCell>
-                <TableCell>
-                  <Badge variant={seat.status ? "destructive" : "default"}>
-                    {seat.status || "Available"}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEditSeat(seat)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleDeleteSeat(seat)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+            {filteredSeats.map((seat) => {
+              const location = locations.find(
+                (loc) => loc.id === seat.eventLocationId,
+              );
+
+              return (
+                <TableRow key={seat.id?.toString()}>
+                  <TableCell className="font-medium">
+                    {seat.seatNumber}
+                  </TableCell>
+                  <TableCell>
+                    {location ? (
+                      <Button
+                        variant="link"
+                        className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                        onClick={() =>
+                          location.id && handleLocationClick(location.id)
+                        }
+                      >
+                        {location.name}
+                        <ExternalLink className="ml-1 h-3 w-3" />
+                      </Button>
+                    ) : (
+                      "Unknown location"
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    ({seat.xCoordinate}, {seat.yCoordinate})
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={seat.status ? "destructive" : "default"}>
+                      {seat.status || "Available"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditSeat(seat)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDeleteSeat(seat)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </CardContent>

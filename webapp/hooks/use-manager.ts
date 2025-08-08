@@ -12,7 +12,10 @@ import type {
   EventLocationRegistrationDto,
   SeatRequestDto,
   ReservationRequestDto,
-  BlockSeatsRequestDto, EventUserAllowancesRequestDto,
+  BlockSeatsRequestDto,
+  EventUserAllowancesCreateDto, // Import new create DTO
+  EventUserAllowanceUpdateDto, // Import new update DTO
+  UserDto, // Import UserDto for use in useManager return type
 } from "@/api";
 import {
   getApiManagerEventsOptions,
@@ -30,13 +33,12 @@ import {
   deleteApiManagerSeatsByIdMutation,
   getApiManagerReservationsOptions,
   postApiManagerReservationsMutation,
-  putApiManagerReservationsByIdMutation,
   deleteApiManagerReservationsByIdMutation,
   postApiManagerReservationsBlockMutation,
   getApiManagerReservationAllowanceOptions,
   postApiManagerReservationAllowanceMutation,
+  putApiManagerReservationAllowanceMutation, // Import new update mutation
   deleteApiManagerReservationAllowanceByIdMutation,
-  getApiManagerReservationAllowanceEventByEventIdOptions,
   getApiManagerEventsQueryKey,
   getApiManagerEventlocationsQueryKey,
   getApiManagerSeatsQueryKey,
@@ -44,11 +46,11 @@ import {
   getApiManagerReservationAllowanceQueryKey,
   getApiUsersManagerOptions,
 } from "@/api/@tanstack/react-query.gen";
-import { EventManagementProps } from "@/components/manager/event-management";
-import { LocationManagementProps } from "@/components/manager/location-management";
-import { ReservationAllowanceManagementProps } from "@/components/manager/reservation-allowance-management";
-import { ReservationManagementProps } from "@/components/manager/reservation-management";
-import { SeatManagementProps } from "@/components/manager/seat-management";
+import type { EventManagementProps } from "@/components/manager/event-management";
+import type { LocationManagementProps } from "@/components/manager/location-management";
+import type { ReservationAllowanceManagementProps } from "@/components/manager/reservation-allowance-management";
+import type { ReservationManagementProps } from "@/components/manager/reservation-management";
+import type { SeatManagementProps } from "@/components/manager/seat-management";
 
 interface UseManagerReturn {
   isLoading: boolean;
@@ -230,22 +232,6 @@ export function useManager(): UseManagerReturn {
     },
   });
 
-  const updateReservationMutation = useMutation({
-    ...putApiManagerReservationsByIdMutation(),
-    onSuccess: (data) => {
-      queryClient.setQueriesData(
-        { queryKey: getApiManagerReservationsQueryKey() },
-        (oldData: DetailedReservationResponseDto[] | undefined) => {
-          return oldData
-            ? oldData.map((reservation) =>
-                reservation.id === data.id ? data : reservation,
-              )
-            : [data];
-        },
-      );
-    },
-  });
-
   const deleteReservationMutation = useMutation({
     ...deleteApiManagerReservationsByIdMutation(),
     onSuccess: (_, variables) => {
@@ -288,7 +274,23 @@ export function useManager(): UseManagerReturn {
       queryClient.setQueriesData(
         { queryKey: getApiManagerReservationAllowanceQueryKey() },
         (oldData: EventUserAllowancesDto[] | undefined) => {
-          return oldData ? [...oldData, data] : [data];
+          return oldData ? [...oldData, ...data] : [...data];
+        },
+      );
+    },
+  });
+
+  const updateReservationAllowanceMutation = useMutation({
+    ...putApiManagerReservationAllowanceMutation(),
+    onSuccess: (data) => {
+      queryClient.setQueriesData(
+        { queryKey: getApiManagerReservationAllowanceQueryKey() },
+        (oldData: EventUserAllowancesDto[] | undefined) => {
+          return oldData
+            ? oldData.map((allowance) =>
+                allowance.id === data.id ? data : allowance,
+              )
+            : [data];
         },
       );
     },
@@ -301,9 +303,7 @@ export function useManager(): UseManagerReturn {
         { queryKey: getApiManagerReservationAllowanceQueryKey() },
         (oldData: EventUserAllowancesDto[] | undefined) => {
           return oldData
-            ? oldData.filter(
-                (allowance) => allowance.eventId !== variables.path.id,
-              )
+            ? oldData.filter((allowance) => allowance.id !== variables.path.id)
             : [];
         },
       );
@@ -358,11 +358,6 @@ export function useManager(): UseManagerReturn {
       reservations: reservations ?? [],
       createReservation: (reservation: ReservationRequestDto) =>
         createReservationMutation.mutateAsync({ body: reservation }),
-      updateReservation: (id: bigint, reservation: ReservationRequestDto) =>
-        updateReservationMutation.mutateAsync({
-          path: { id },
-          body: reservation,
-        }),
       deleteReservation: (id: bigint) =>
         deleteReservationMutation.mutateAsync({ path: { id } }),
       blockSeats: (seats: BlockSeatsRequestDto) =>
@@ -371,9 +366,11 @@ export function useManager(): UseManagerReturn {
     reservationAllowance: {
       events: events ?? [],
       users: user ?? [],
-      reservationAllowance: reservationAllowance ?? [],
-      createReservationAllowance: (allowance: EventUserAllowancesRequestDto) =>
+      allowances: reservationAllowance ?? [],
+      createReservationAllowance: (allowance: EventUserAllowancesCreateDto) =>
         createReservationAllowanceMutation.mutateAsync({ body: allowance }),
+      updateReservationAllowance: (allowance: EventUserAllowanceUpdateDto) =>
+        updateReservationAllowanceMutation.mutateAsync({ body: allowance }),
       deleteReservationAllowance: (id: bigint) =>
         deleteReservationAllowanceMutation.mutateAsync({ path: { id } }),
     },

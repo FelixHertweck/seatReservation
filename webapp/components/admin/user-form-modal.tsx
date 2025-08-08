@@ -1,26 +1,26 @@
 "use client";
 
-import type React from "react";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import type { UserDto, UserCreationDto, AdminUserUpdateDto } from "@/api";
+import { Badge } from "@/components/ui/badge";
+import { X } from "lucide-react";
+import type { UserDto, AdminUserUpdateDto, AdminUserCreationDto } from "@/api";
 
 interface UserFormModalProps {
   user: UserDto | null;
   availableRoles: string[];
   isCreating: boolean;
-  onSubmit: (userData: UserCreationDto | AdminUserUpdateDto) => Promise<void>;
+  onSubmit: (userData: AdminUserCreationDto | AdminUserUpdateDto) => void;
   onClose: () => void;
 }
 
@@ -31,166 +31,233 @@ export function UserFormModal({
   onSubmit,
   onClose,
 }: UserFormModalProps) {
-  const [formData, setFormData] = useState({
-    username: user?.username || "",
-    email: user?.email || "",
-    firstname: user?.firstName || "",
-    lastname: user?.lastName || "",
-    password: "",
-    roles: user?.roles || [],
-  });
-  const [isLoading, setIsLoading] = useState(false);
+  const [username, setUsername] = useState(user?.username || "");
+  const [firstname, setFirstname] = useState(user?.firstname || "");
+  const [lastname, setLastname] = useState(user?.lastname || "");
+  const [email, setEmail] = useState(user?.email || "");
+  const [password, setPassword] = useState("");
+  const [emailVerified, setEmailVerified] = useState(
+    user?.emailVerified || false,
+  );
+  const [selectedRoles, setSelectedRoles] = useState<string[]>(
+    user?.roles || [],
+  );
+  const [tags, setTags] = useState<string[]>(user?.tags || []);
+  const [newTag, setNewTag] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  useEffect(() => {
+    if (user) {
+      setUsername(user.username || "");
+      setFirstname(user.firstname || "");
+      setLastname(user.lastname || "");
+      setEmail(user.email || "");
+      setEmailVerified(user.emailVerified || false);
+      setSelectedRoles(user.roles || []);
+      setTags(user.tags || []);
+    } else {
+      setUsername("");
+      setFirstname("");
+      setLastname("");
+      setEmail("");
+      setPassword("");
+      setEmailVerified(false);
+      setSelectedRoles([]);
+      setTags([]);
+    }
+  }, [user]);
 
-    try {
-      if (isCreating) {
-        const userData: UserCreationDto = {
-          username: formData.username,
-          email: formData.email,
-          password: formData.password,
-          firstname: formData.firstname,
-          lastname: formData.lastname,
-        };
-        await onSubmit(userData);
-      } else {
-        const userData: AdminUserUpdateDto = {
-          email: formData.email,
-          firstname: formData.firstname,
-          lastname: formData.lastname,
-          password: formData.password || undefined,
-          roles: formData.roles,
-        };
-        await onSubmit(userData);
-      }
-    } finally {
-      setIsLoading(false);
+  const handleRoleChange = (role: string, checked: boolean) => {
+    setSelectedRoles((prev) =>
+      checked ? [...prev, role] : prev.filter((r) => r !== role),
+    );
+  };
+
+  const handleAddTag = () => {
+    if (newTag.trim() && !tags.includes(newTag.trim())) {
+      setTags([...tags, newTag.trim()]);
+      setNewTag("");
     }
   };
 
-  const handleRoleChange = (role: string, checked: boolean) => {
-    setFormData((prev) => ({
-      ...prev,
-      roles: checked
-        ? [...prev.roles, role]
-        : prev.roles.filter((r) => r !== role),
-    }));
+  const handleRemoveTag = (tagToRemove: string) => {
+    setTags(tags.filter((tag) => tag !== tagToRemove));
+  };
+
+  const handleSubmit = () => {
+    if (isCreating) {
+      const userData: AdminUserCreationDto = {
+        username,
+        password,
+        firstname,
+        lastname,
+        email,
+        roles: selectedRoles,
+        tags,
+      };
+      onSubmit(userData);
+    } else {
+      const userData: AdminUserUpdateDto = {
+        firstname,
+        lastname,
+        email,
+        roles: selectedRoles,
+        tags,
+      };
+      onSubmit(userData);
+    }
   };
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{isCreating ? "Create User" : "Edit User"}</DialogTitle>
-          <DialogDescription>
-            {isCreating
-              ? "Add a new user to the system"
-              : "Update user information and roles"}
-          </DialogDescription>
+          <DialogTitle>{isCreating ? "Add New User" : "Edit User"}</DialogTitle>
         </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="username" className="text-right">
+              Username
+            </Label>
+            <Input
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="col-span-3"
+              disabled={!isCreating} // Username typically not editable after creation
+            />
+          </div>
           {isCreating && (
-            <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="password" className="text-right">
+                Password
+              </Label>
               <Input
-                id="username"
-                value={formData.username}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, username: e.target.value }))
-                }
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="col-span-3"
                 required
               />
             </div>
           )}
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="firstname">First Name</Label>
-              <Input
-                id="firstname"
-                value={formData.firstname}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    firstname: e.target.value,
-                  }))
-                }
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="lastname">Last Name</Label>
-              <Input
-                id="lastname"
-                value={formData.lastname}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, lastname: e.target.value }))
-                }
-                required
-              />
-            </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="firstname" className="text-right">
+              First Name
+            </Label>
+            <Input
+              id="firstname"
+              value={firstname}
+              onChange={(e) => setFirstname(e.target.value)}
+              className="col-span-3"
+            />
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="lastname" className="text-right">
+              Last Name
+            </Label>
+            <Input
+              id="lastname"
+              value={lastname}
+              onChange={(e) => setLastname(e.target.value)}
+              className="col-span-3"
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="email" className="text-right">
+              Email
+            </Label>
             <Input
               id="email"
               type="email"
-              value={formData.email}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, email: e.target.value }))
-              }
-              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="col-span-3"
             />
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="password">
-              {isCreating
-                ? "Password"
-                : "New Password (leave empty to keep current)"}
-            </Label>
-            <Input
-              id="password"
-              type="password"
-              value={formData.password}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, password: e.target.value }))
-              }
-              required={isCreating}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Roles</Label>
-            <div className="space-y-2">
+          {!isCreating && (
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="emailVerified" className="text-right">
+                Verified
+              </Label>
+              <Checkbox
+                id="emailVerified"
+                checked={emailVerified}
+                onCheckedChange={(checked) => setEmailVerified(!!checked)}
+                className="col-span-3"
+              />
+            </div>
+          )}
+          <div className="grid grid-cols-4 items-start gap-4">
+            <Label className="text-right pt-2">Roles</Label>
+            <div className="col-span-3 flex flex-col gap-2">
               {availableRoles.map((role) => (
                 <div key={role} className="flex items-center space-x-2">
                   <Checkbox
-                    id={role}
-                    checked={formData.roles.includes(role)}
+                    id={`role-${role}`}
+                    checked={selectedRoles.includes(role)}
                     onCheckedChange={(checked) =>
-                      handleRoleChange(role, checked as boolean)
+                      handleRoleChange(role, !!checked)
                     }
                   />
-                  <Label htmlFor={role}>{role}</Label>
+                  <Label htmlFor={`role-${role}`}>{role}</Label>
                 </div>
               ))}
             </div>
           </div>
-
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Saving..." : isCreating ? "Create" : "Update"}
-            </Button>
+          <div className="grid grid-cols-4 items-start gap-4">
+            <Label htmlFor="tags" className="text-right pt-2">
+              Tags
+            </Label>
+            <div className="col-span-3">
+              <div className="flex flex-wrap gap-2 mb-2">
+                {tags.map((tag) => (
+                  <Badge
+                    key={tag}
+                    variant="secondary"
+                    className="flex items-center gap-1"
+                  >
+                    {tag}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRemoveTag(tag)}
+                      className="h-auto p-0.5"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </Badge>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  id="newTag"
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  placeholder="Add new tag"
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddTag();
+                    }
+                  }}
+                />
+                <Button type="button" onClick={handleAddTag}>
+                  Add
+                </Button>
+              </div>
+            </div>
           </div>
-        </form>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={handleSubmit}>
+            {isCreating ? "Create User" : "Save Changes"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
