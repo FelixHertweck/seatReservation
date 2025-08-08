@@ -7,9 +7,6 @@ on:
         required: false
         type: boolean
         default: false
-    secrets:
-      GH_TOKEN:
-        required: true
 
 permissions:
   contents: read
