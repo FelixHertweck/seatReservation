@@ -12,9 +12,6 @@ permissions:
   id-token: write
 
 jobs:
-  frontend:
-    uses: ./.github/workflows/frontend.yml
-
   maven-native:
     needs: frontend
     uses: ./.github/workflows/maven.yml

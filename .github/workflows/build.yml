@@ -20,6 +20,8 @@ permissions:
 jobs:
   frontend:
     uses: ./.github/workflows/frontend.yml
+    with:
+      enable-docker-build: true
 
   maven:
     needs: frontend
@@ -28,7 +30,7 @@ jobs:
       build-artifact-name: quarkus-app
       build-artifact-path: target/quarkus-app
 
-  docker:
+  backend-docker:
     needs: maven
     permissions:
       contents: write
@@ -40,3 +42,17 @@ jobs:
       build-artifact-path: target/quarkus-app
       docker-file-path: ./src/main/docker/Dockerfile.jvm
       container-image-title: Backend
+
+  frontend-docker:
+    needs: frontend
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+    uses: ./.github/workflows/docker.yml
+    with:
+      build-artifact-name: frontend-build
+      build-artifact-path: webapp/out
+      docker-file-path: ./webapp/Dockerfile
+      container-image-title: Frontend
+      image-name: ${{ github.repository }}-frontend
