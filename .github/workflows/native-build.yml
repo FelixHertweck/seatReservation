@@ -13,7 +13,6 @@ permissions:
 
 jobs:
   maven-native:
-    needs: frontend
     uses: ./.github/workflows/maven.yml
     with:
       maven-args: "-Pnative"
