@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.eventManagement.ressource;
 
 import java.util.List;
+import java.util.Set;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -27,8 +28,9 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.*;
 
 import de.felixhertweck.seatreservation.common.dto.EventLocationResponseDTO;
-import de.felixhertweck.seatreservation.eventManagement.dto.EventLocationRegistrationDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventLocationRequestDTO;
+import de.felixhertweck.seatreservation.eventManagement.dto.ImportEventLocationDto;
+import de.felixhertweck.seatreservation.eventManagement.dto.ImportSeatDto;
 import de.felixhertweck.seatreservation.eventManagement.service.EventLocationService;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.security.Roles;
@@ -121,20 +123,39 @@ public class EventLocationResource {
     }
 
     @POST
-    @Path("/register")
+    @Path("/import")
     @APIResponse(
             responseCode = "200",
             description = "OK",
             content = @Content(schema = @Schema(implementation = EventLocationResponseDTO.class)))
     public EventLocationResponseDTO createEventLocationWithSeats(
-            @Valid EventLocationRegistrationDTO dto) {
+            @Valid ImportEventLocationDto dto) {
         LOG.infof(
                 "Received POST request to /api/manager/eventlocations/register for new event"
                         + " location with seats.");
         LOG.debugf("EventLocationRegistrationDTO received: %s", dto.toString());
         User currentUser = userSecurityContext.getCurrentUser();
         EventLocationResponseDTO result =
-                eventLocationService.createEventLocationWithSeats(dto, currentUser);
+                eventLocationService.importEventLocation(dto, currentUser);
+        LOG.infof("Event location '%s' with seats created successfully.", result.name());
+        return result;
+    }
+
+    @POST
+    @Path("/import/{id}")
+    @APIResponse(
+            responseCode = "200",
+            description = "OK",
+            content = @Content(schema = @Schema(implementation = EventLocationResponseDTO.class)))
+    public EventLocationResponseDTO importSeatsToEventLocation(
+            @PathParam("id") Long id, @Valid Set<ImportSeatDto> seats) {
+        LOG.infof(
+                "Received POST request to /api/manager/eventlocations/import for new event"
+                        + " location with seats.");
+        LOG.debugf("SeatRequestDTO received: %s", seats.toString());
+        User currentUser = userSecurityContext.getCurrentUser();
+        EventLocationResponseDTO result =
+                eventLocationService.importSeatsToEventLocation(id, seats, currentUser);
         LOG.infof("Event location '%s' with seats created successfully.", result.name());
         return result;
     }

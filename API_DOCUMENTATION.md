@@ -234,19 +234,17 @@ Löscht eine Event-Location.
 
 ---
 
-#### POST /register
+#### POST /import
 
 Erstellt eine neue Event-Location zusammen mit einer Liste von Sitzplätzen.
 
 -   **Rollen:** `MANAGER`, `ADMIN`
--   **Request Body:** `EventLocationRegistrationDTO`
+-   **Request Body:** `ImportEventLocationDto`
     ```json
     {
-      "eventLocation": {
-        "name": "string",
-        "address": "string",
-        "capacity": "integer"
-      },
+      "name": "string",
+      "address": "string",
+      "capacity": "integer",
       "seats": [
         {
           "seatNumber": "string",
@@ -259,6 +257,30 @@ Erstellt eine neue Event-Location zusammen mit einer Liste von Sitzplätzen.
 -   **Responses:**
     -   `200 OK`: Location und Sitzplätze erfolgreich erstellt. Gibt `EventLocationResponseDTO` zurück.
     -   `400 Bad Request`: Ungültige Eingabedaten.
+---
+
+#### POST /importSeats/{id}
+
+Importiert eine Liste von Sitzplätzen zu einer bestehenden Event-Location.
+
+-   **Rollen:** `MANAGER`, `ADMIN`
+-   **Path Parameter:** `id` (Long) - Die ID der Event-Location.
+-   **Request Body:** `Set<ImportSeatDto>`
+    ```json
+    [
+      {
+        "seatNumber": "string",
+        "xCoordinate": "integer",
+        "yCoordinate": "integer"
+      }
+    ]
+    ```
+-   **Responses:**
+    -   `200 OK`: Sitze erfolgreich importiert. Gibt `EventLocationResponseDTO` zurück.
+    -   `400 Bad Request`: Ungültige Eingabedaten.
+    -   `403 Forbidden`: Keine Berechtigung.
+    -   `404 Not Found`: Location nicht gefunden.
+
 ---
 
 ## Events (Manager/Admin)

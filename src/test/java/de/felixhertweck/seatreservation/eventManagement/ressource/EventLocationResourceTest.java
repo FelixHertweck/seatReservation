@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.eventManagement.ressource;
 
+import java.util.ArrayList;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
@@ -57,6 +58,7 @@ public class EventLocationResourceTest {
         testLocation.setName("Test Location");
         testLocation.setAddress("Test Address");
         testLocation.setManager(user);
+        testLocation.setSeats(new ArrayList<>()); // Initialize seats list
         eventLocationRepository.persist(testLocation);
     }
 
@@ -189,16 +191,62 @@ public class EventLocationResourceTest {
             roles = {"MANAGER"})
     void testCreateEventLocationWithSeats() {
         String requestBody =
-                "{\"eventLocation\":{\"name\":\"New Location\",\"address\":\"123 Main"
-                    + " St\",\"capacity\":100},\"seats\":[{\"seatNumber\":\"A1\",\"xCoordinate\":1,\"yCoordinate\":1},{\"seatNumber\":\"A2\",\"xCoordinate\":1,\"yCoordinate\":2}]}";
+                "{\"name\":\"New Location\",\"address\":\"123 Main"
+                    + " St\",\"capacity\":100,\"seats\":[{\"seatNumber\":\"A1\",\"xCoordinate\":1,\"yCoordinate\":1},{\"seatNumber\":\"A2\",\"xCoordinate\":1,\"yCoordinate\":2}]}";
 
         given().contentType("application/json")
                 .body(requestBody)
                 .when()
-                .post("/api/manager/eventlocations/register")
+                .post("/api/manager/eventlocations/import")
                 .then()
                 .statusCode(200)
                 .body("name", is("New Location"))
                 .body("seats.size()", is(2));
+    }
+
+    @Test
+    @TestSecurity(
+            user = "manager",
+            roles = {"MANAGER"})
+    void testImportSeatsToEventLocation_Success() {
+        String requestBody =
+                "[{\"seatNumber\":\"B1\",\"xCoordinate\":2,\"yCoordinate\":1},{\"seatNumber\":\"B2\",\"xCoordinate\":2,\"yCoordinate\":2}]";
+
+        given().contentType("application/json")
+                .body(requestBody)
+                .when()
+                .post("/api/manager/eventlocations/import/" + testLocation.getId())
+                .then()
+                .statusCode(200)
+                .body("name", is("Test Location"))
+                .body("seats.size()", is(2)); // Assuming initial seats are 0, and 2 are added
+    }
+
+    @Test
+    @TestSecurity(
+            user = "manager",
+            roles = {"MANAGER"})
+    void testImportSeatsToEventLocation_NotFound() {
+        String requestBody = "[{\"seatNumber\":\"B1\",\"xCoordinate\":2,\"yCoordinate\":1}]";
+        given().contentType("application/json")
+                .body(requestBody)
+                .when()
+                .post("/api/manager/eventlocations/import/999")
+                .then()
+                .statusCode(404);
+    }
+
+    @Test
+    @TestSecurity(
+            user = "testUser",
+            roles = {"USER"})
+    void testImportSeatsToEventLocation_Forbidden() {
+        String requestBody = "[{\"seatNumber\":\"B1\",\"xCoordinate\":2,\"yCoordinate\":1}]";
+        given().contentType("application/json")
+                .body(requestBody)
+                .when()
+                .post("/api/manager/eventlocations/import/" + testLocation.getId())
+                .then()
+                .statusCode(403);
     }
 }

@@ -21,12 +21,9 @@ package de.felixhertweck.seatreservation.eventManagement.dto;
 
 import jakarta.validation.constraints.NotNull;
 
-public class SeatRequestDTO {
+public class ImportSeatDto {
     @NotNull(message = "Seat number must not be null")
     private String seatNumber;
-
-    @NotNull(message = "EventLocation ID must not be null")
-    private Long eventLocationId;
 
     @NotNull(message = "X coordinate must not be null")
     private int xCoordinate;
@@ -34,24 +31,18 @@ public class SeatRequestDTO {
     @NotNull(message = "Y coordinate must not be null")
     private int yCoordinate;
 
-    public SeatRequestDTO() {
+    public ImportSeatDto() {
         // Default constructor for serialization/deserialization
     }
 
-    public SeatRequestDTO(
-            String seatNumber, Long eventLocationId, int xCoordinate, int yCoordinate) {
+    public ImportSeatDto(String seatNumber, int xCoordinate, int yCoordinate) {
         this.seatNumber = seatNumber;
-        this.eventLocationId = eventLocationId;
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
     }
 
     public String getSeatNumber() {
         return seatNumber;
-    }
-
-    public Long getEventLocationId() {
-        return eventLocationId;
     }
 
     public int getXCoordinate() {
@@ -64,10 +55,6 @@ public class SeatRequestDTO {
 
     public void setSeatNumber(String seatNumber) {
         this.seatNumber = seatNumber;
-    }
-
-    public void setEventLocationId(Long eventLocationId) {
-        this.eventLocationId = eventLocationId;
     }
 
     public void setXCoordinate(int xCoordinate) {
