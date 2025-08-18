@@ -64,7 +64,7 @@ export function EventReservationModal({
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-300">
+      <DialogContent className="max-w-6xl max-h-[90vh] h-[85vh] flex flex-col animate-in fade-in zoom-in duration-300">
         <DialogHeader className="animate-in slide-in-from-top duration-300">
           <DialogTitle className="text-xl font-bold">
             Reserve Seats - {event.name}
@@ -75,7 +75,7 @@ export function EventReservationModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 animate-in slide-in-from-bottom duration-500">
+        <div className="flex-1 flex flex-col space-y-4 animate-in slide-in-from-bottom duration-500 min-h-0">
           <div className="flex gap-4 text-sm">
             <div className="flex items-center gap-2 animate-in slide-in-from-left duration-300">
               <div className="w-4 h-4 bg-green-500 rounded transition-all duration-300 hover:scale-110"></div>
@@ -104,11 +104,13 @@ export function EventReservationModal({
             </div>
           </div>
 
-          <SeatMap
-            seats={seats}
-            selectedSeats={selectedSeats}
-            onSeatSelect={handleSeatSelect}
-          />
+          <div className="flex-1 min-h-0">
+            <SeatMap
+              seats={seats}
+              selectedSeats={selectedSeats}
+              onSeatSelect={handleSeatSelect}
+            />
+          </div>
 
           {selectedSeats.length > 0 && (
             <div className="space-y-2 animate-in slide-in-from-bottom duration-300">

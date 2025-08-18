@@ -31,7 +31,7 @@ export type DetailedEventResponseDto = {
     startTime?: LocalDateTime;
     endTime?: LocalDateTime;
     bookingDeadline?: LocalDateTime;
-    eventLocationId?: bigint;
+    eventLocation?: EventLocationResponseDto;
     managerId?: bigint;
     eventUserAllowancesIds?: Array<bigint>;
 };
@@ -42,17 +42,6 @@ export type DetailedReservationResponseDto = {
     eventId?: bigint;
     seat?: SeatDto;
     reservationDateTime?: LocalDateTime;
-};
-
-export type EventLocationData = {
-    name?: string;
-    address?: string;
-    capacity?: number;
-};
-
-export type EventLocationRegistrationDto = {
-    eventLocation?: EventLocationData;
-    seats?: Array<SeatData>;
 };
 
 export type EventLocationRequestDto = {
@@ -110,6 +99,19 @@ export type EventUserAllowancesDto = {
     reservationsAllowedCount?: number;
 };
 
+export type ImportEventLocationDto = {
+    name: string;
+    address: string;
+    capacity: number;
+    seats?: Array<ImportSeatDto>;
+};
+
+export type ImportSeatDto = {
+    seatNumber: string;
+    xCoordinate: number;
+    yCoordinate: number;
+};
+
 export type LimitedUserInfoDto = {
     id?: bigint;
     username?: string;
@@ -165,12 +167,6 @@ export type SeatDto = {
     xCoordinate?: number;
     yCoordinate?: number;
     status?: ReservationStatus;
-};
-
-export type SeatData = {
-    seatNumber?: string;
-    xCoordinate?: number;
-    yCoordinate?: number;
 };
 
 export type SeatRequestDto = {
@@ -322,14 +318,14 @@ export type PostApiManagerEventlocationsResponses = {
 
 export type PostApiManagerEventlocationsResponse = PostApiManagerEventlocationsResponses[keyof PostApiManagerEventlocationsResponses];
 
-export type PostApiManagerEventlocationsRegisterData = {
-    body: EventLocationRegistrationDto;
+export type PostApiManagerEventlocationsImportData = {
+    body: ImportEventLocationDto;
     path?: never;
     query?: never;
-    url: '/api/manager/eventlocations/register';
+    url: '/api/manager/eventlocations/import';
 };
 
-export type PostApiManagerEventlocationsRegisterErrors = {
+export type PostApiManagerEventlocationsImportErrors = {
     /**
      * Bad Request
      */
@@ -344,14 +340,47 @@ export type PostApiManagerEventlocationsRegisterErrors = {
     403: unknown;
 };
 
-export type PostApiManagerEventlocationsRegisterResponses = {
+export type PostApiManagerEventlocationsImportResponses = {
     /**
      * OK
      */
     200: EventLocationResponseDto;
 };
 
-export type PostApiManagerEventlocationsRegisterResponse = PostApiManagerEventlocationsRegisterResponses[keyof PostApiManagerEventlocationsRegisterResponses];
+export type PostApiManagerEventlocationsImportResponse = PostApiManagerEventlocationsImportResponses[keyof PostApiManagerEventlocationsImportResponses];
+
+export type PostApiManagerEventlocationsImportByIdData = {
+    body: Array<ImportSeatDto>;
+    path: {
+        id: bigint;
+    };
+    query?: never;
+    url: '/api/manager/eventlocations/import/{id}';
+};
+
+export type PostApiManagerEventlocationsImportByIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: unknown;
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type PostApiManagerEventlocationsImportByIdResponses = {
+    /**
+     * OK
+     */
+    200: EventLocationResponseDto;
+};
+
+export type PostApiManagerEventlocationsImportByIdResponse = PostApiManagerEventlocationsImportByIdResponses[keyof PostApiManagerEventlocationsImportByIdResponses];
 
 export type DeleteApiManagerEventlocationsByIdData = {
     body?: never;
@@ -822,7 +851,7 @@ export type PostApiManagerReservationsBlockResponses = {
     /**
      * Seats blocked successfully
      */
-    204: void;
+    200: Array<DetailedReservationResponseDto>;
 };
 
 export type PostApiManagerReservationsBlockResponse = PostApiManagerReservationsBlockResponses[keyof PostApiManagerReservationsBlockResponses];

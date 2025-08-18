@@ -9,13 +9,13 @@ import type {
   DetailedReservationResponseDto,
   EventUserAllowancesDto,
   EventLocationRequestDto,
-  EventLocationRegistrationDto,
   SeatRequestDto,
   ReservationRequestDto,
   BlockSeatsRequestDto,
   EventUserAllowancesCreateDto, // Import new create DTO
   EventUserAllowanceUpdateDto, // Import new update DTO
-  UserDto, // Import UserDto for use in useManager return type
+  UserDto,
+  ImportEventLocationDto, // Import UserDto for use in useManager return type
 } from "@/api";
 import {
   getApiManagerEventsOptions,
@@ -26,7 +26,6 @@ import {
   postApiManagerEventlocationsMutation,
   putApiManagerEventlocationsByIdMutation,
   deleteApiManagerEventlocationsByIdMutation,
-  postApiManagerEventlocationsRegisterMutation,
   getApiManagerSeatsOptions,
   postApiManagerSeatsMutation,
   putApiManagerSeatsByIdMutation,
@@ -45,6 +44,7 @@ import {
   getApiManagerReservationsQueryKey,
   getApiManagerReservationAllowanceQueryKey,
   getApiUsersManagerOptions,
+  postApiManagerEventlocationsImportMutation,
 } from "@/api/@tanstack/react-query.gen";
 import type { EventManagementProps } from "@/components/manager/event-management";
 import type { LocationManagementProps } from "@/components/manager/location-management";
@@ -70,7 +70,11 @@ export function useManager(): UseManagerReturn {
   });
 
   // Event management
-  const { data: events, isLoading: eventsIsLoading } = useQuery({
+  const {
+    data: events,
+    isLoading: eventsIsLoading,
+    refetch: eventsRefetch,
+  } = useQuery({
     ...getApiManagerEventsOptions(),
   });
 
@@ -162,7 +166,7 @@ export function useManager(): UseManagerReturn {
   });
 
   const registerLocationWithSeatsMutation = useMutation({
-    ...postApiManagerEventlocationsRegisterMutation(),
+    ...postApiManagerEventlocationsImportMutation(),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: getApiManagerEventlocationsQueryKey(),
@@ -184,6 +188,7 @@ export function useManager(): UseManagerReturn {
           return oldData ? [...oldData, data] : [data];
         },
       );
+      eventsRefetch();
     },
   });
 
@@ -226,9 +231,10 @@ export function useManager(): UseManagerReturn {
       queryClient.setQueriesData(
         { queryKey: getApiManagerReservationsQueryKey() },
         (oldData: DetailedReservationResponseDto[] | undefined) => {
-          return oldData ? [...oldData, data] : [data];
+          return oldData ? [...oldData, ...data] : [...data];
         },
       );
+      eventsRefetch();
     },
   });
 
@@ -250,13 +256,14 @@ export function useManager(): UseManagerReturn {
 
   const blockSeatsMutation = useMutation({
     ...postApiManagerReservationsBlockMutation(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: getApiManagerReservationsQueryKey(),
-      });
-      queryClient.invalidateQueries({
-        queryKey: getApiManagerSeatsQueryKey(),
-      });
+    onSuccess: (data) => {
+      queryClient.setQueriesData(
+        { queryKey: getApiManagerReservationsQueryKey() },
+        (oldData: DetailedReservationResponseDto[] | undefined) => {
+          return oldData ? [...oldData, ...data] : [...data];
+        },
+      );
+      eventsRefetch();
     },
   });
 
@@ -338,7 +345,7 @@ export function useManager(): UseManagerReturn {
         updateLocationMutation.mutateAsync({ path: { id }, body: location }),
       deleteLocation: (id: bigint) =>
         deleteLocationMutation.mutateAsync({ path: { id } }),
-      registerLocationWithSeats: (location: EventLocationRegistrationDto) =>
+      registerLocationWithSeats: (location: ImportEventLocationDto) =>
         registerLocationWithSeatsMutation.mutateAsync({ body: location }),
     },
     seats: {

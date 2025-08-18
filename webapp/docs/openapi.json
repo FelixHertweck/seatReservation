@@ -110,9 +110,8 @@
           "bookingDeadline" : {
             "$ref" : "#/components/schemas/LocalDateTime"
           },
-          "eventLocationId" : {
-            "type" : "integer",
-            "format" : "int64"
+          "eventLocation" : {
+            "$ref" : "#/components/schemas/EventLocationResponseDTO"
           },
           "managerId" : {
             "type" : "integer",
@@ -147,35 +146,6 @@
           },
           "reservationDateTime" : {
             "$ref" : "#/components/schemas/LocalDateTime"
-          }
-        }
-      },
-      "EventLocationData" : {
-        "type" : "object",
-        "properties" : {
-          "name" : {
-            "type" : "string"
-          },
-          "address" : {
-            "type" : "string"
-          },
-          "capacity" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        }
-      },
-      "EventLocationRegistrationDTO" : {
-        "type" : "object",
-        "properties" : {
-          "eventLocation" : {
-            "$ref" : "#/components/schemas/EventLocationData"
-          },
-          "seats" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/SeatData"
-            }
           }
         }
       },
@@ -345,6 +315,45 @@
           }
         }
       },
+      "ImportEventLocationDto" : {
+        "type" : "object",
+        "required" : [ "name", "address", "capacity" ],
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "address" : {
+            "type" : "string"
+          },
+          "capacity" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "seats" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ImportSeatDto"
+            }
+          }
+        }
+      },
+      "ImportSeatDto" : {
+        "type" : "object",
+        "required" : [ "seatNumber", "xCoordinate", "yCoordinate" ],
+        "properties" : {
+          "seatNumber" : {
+            "type" : "string"
+          },
+          "xCoordinate" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "yCoordinate" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
       "LimitedUserInfoDTO" : {
         "type" : "object",
         "properties" : {
@@ -505,22 +514,6 @@
           },
           "status" : {
             "$ref" : "#/components/schemas/ReservationStatus"
-          }
-        }
-      },
-      "SeatData" : {
-        "type" : "object",
-        "properties" : {
-          "seatNumber" : {
-            "type" : "string"
-          },
-          "xCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "yCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
           }
         }
       },
@@ -773,13 +766,13 @@
         } ]
       }
     },
-    "/api/manager/eventlocations/register" : {
+    "/api/manager/eventlocations/import" : {
       "post" : {
         "requestBody" : {
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/EventLocationRegistrationDTO"
+                "$ref" : "#/components/schemas/ImportEventLocationDto"
               }
             }
           },
@@ -807,6 +800,59 @@
           }
         },
         "summary" : "Create Event Location With Seats",
+        "tags" : [ "Event Location Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
+        } ]
+      }
+    },
+    "/api/manager/eventlocations/import/{id}" : {
+      "post" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "array",
+                "uniqueItems" : true,
+                "items" : {
+                  "$ref" : "#/components/schemas/ImportSeatDto"
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EventLocationResponseDTO"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          },
+          "400" : {
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "Import Seats To Event Location",
         "tags" : [ "Event Location Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
@@ -1362,8 +1408,18 @@
           "required" : true
         },
         "responses" : {
-          "204" : {
-            "description" : "Seats blocked successfully"
+          "200" : {
+            "description" : "Seats blocked successfully",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/DetailedReservationResponseDTO"
+                  }
+                }
+              }
+            }
           },
           "401" : {
             "description" : "Not Authorized"
