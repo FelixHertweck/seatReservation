@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Dialog,
   DialogContent,
@@ -6,11 +8,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { SeatMap } from "@/components/common/seat-map";
+import { useState } from "react";
 import type { ReservationResponseDto, SeatDto } from "@/api";
 
 interface SeatMapModalProps {
   seats: SeatDto[];
   reservation: ReservationResponseDto;
+  eventReservations: ReservationResponseDto[];
   onClose: () => void;
   isLoading: boolean;
 }
@@ -18,28 +22,45 @@ interface SeatMapModalProps {
 export function SeatMapModal({
   seats,
   reservation,
+  eventReservations,
   onClose,
   isLoading,
 }: SeatMapModalProps) {
-  const reservedSeat = reservation.seat ? [reservation.seat] : [];
+  const [highlightedSeats, setHighlightedSeats] = useState<SeatDto[]>([]);
 
-  const availableSeatsCount = seats.filter(
-    (seat) => seat.status !== "RESERVED",
-  ).length;
-  const totalSeatsCount = seats.length;
-  const reservedSeatsCount = seats.filter(
-    (seat) => seat.status === "RESERVED",
-  ).length;
+  const reservedSeats = eventReservations
+    .map((res) => res.seat)
+    .filter(
+      (seat): seat is NonNullable<typeof seat> =>
+        seat !== null && seat !== undefined,
+    );
+
+  const handleSeatClick = (seat: SeatDto) => {
+    setHighlightedSeats((prev) => {
+      const isAlreadyHighlighted = prev.some((s) => s.id === seat.id);
+      if (isAlreadyHighlighted) {
+        return [];
+      } else {
+        return [seat];
+      }
+    });
+  };
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl max-h-[90vh] h-[85vh] flex flex-col">
+      <DialogContent className="max-w-[95vw] w-[1200px] max-h-[90vh] h-[85vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Your Reserved Seat</DialogTitle>
+          <DialogTitle>
+            {eventReservations.length > 1
+              ? "Your Reserved Seats"
+              : "Your Reserved Seat"}
+          </DialogTitle>
           <DialogDescription>
             {isLoading
               ? "Loading seat map..."
-              : `Seat ${reservation.seat?.seatNumber} - Position (${reservation.seat?.xCoordinate}, ${reservation.seat?.yCoordinate})`}
+              : eventReservations.length > 1
+                ? `You have ${eventReservations.length} seats reserved for this event`
+                : `Seat ${reservation.seat?.seatNumber} - Position (${reservation.seat?.xCoordinate}, ${reservation.seat?.yCoordinate})`}
           </DialogDescription>
         </DialogHeader>
 
@@ -48,118 +69,44 @@ export function SeatMapModal({
             <p>Loading...</p>
           </div>
         ) : (
-          <div className="flex-1 flex gap-6 min-h-0">
-            {/* Left side - Seat Map */}
-            <div className="flex-1 min-h-0">
+          <div className="flex-1 flex flex-col gap-4 min-h-0 overflow-hidden">
+            <div className="flex-1 min-h-0 min-w-0">
               <SeatMap
                 seats={seats}
-                selectedSeats={reservedSeat}
+                selectedSeats={highlightedSeats}
                 onSeatSelect={() => {}} // Read-only
                 readonly
               />
             </div>
 
-            {/* Right side - Selected seats, legend, and statistics */}
-            <div className="w-80 flex flex-col space-y-6 bg-gray-50 p-4 rounded-lg">
-              {/* Selected Seats Section */}
-              <div>
-                <h3 className="font-semibold text-lg mb-3">
-                  Your Selected Seat
+            <div className="flex-shrink-0 bg-gray-50 p-3 md:p-4 rounded-lg border-t max-h-32 md:max-h-40 overflow-y-auto">
+              <div className="flex flex-col gap-2 md:gap-3">
+                <h3 className="font-semibold text-base md:text-lg">
+                  Your Reserved Seats
                 </h3>
-                {reservation.seat ? (
-                  <div className="bg-white p-3 rounded border">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-4 h-4 bg-blue-500 rounded"></div>
-                      <span className="font-medium">
-                        Seat {reservation.seat.seatNumber}
-                      </span>
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      <p>
-                        Position: ({reservation.seat.xCoordinate},{" "}
-                        {reservation.seat.yCoordinate})
-                      </p>
-                    </div>
+                {reservedSeats.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5 md:gap-2">
+                    {reservedSeats.map((seat, index) => (
+                      <button
+                        key={seat.id || index}
+                        className={`px-2 py-1.5 md:px-3 md:py-2 text-sm rounded-md border transition-all hover:shadow-md ${
+                          highlightedSeats.some((s) => s.id === seat.id)
+                            ? "bg-blue-500 text-white border-blue-600 shadow-md"
+                            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                        }`}
+                        onClick={() => handleSeatClick(seat)}
+                      >
+                        Seat {seat.seatNumber}
+                      </button>
+                    ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500">No seat selected</p>
+                  <p className="text-gray-500 text-sm">No seats reserved</p>
                 )}
-              </div>
-
-              {/* Legend Section */}
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Legend</h3>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 bg-green-500 rounded"></div>
-                    <span>Available Seats</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 bg-blue-500 rounded"></div>
-                    <span>Your Seat</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 bg-red-500 rounded"></div>
-                    <span>Reserved Seats</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Seat Statistics Section */}
-              <div>
-                <h3 className="font-semibold text-lg mb-3">
-                  Seat Availability
-                </h3>
-                <div className="space-y-3">
-                  <div className="bg-white p-3 rounded border">
-                    <div className="flex justify-between items-center">
-                      <span className="text-green-600 font-medium">
-                        Available
-                      </span>
-                      <span className="font-bold text-green-600">
-                        {availableSeatsCount}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="bg-white p-3 rounded border">
-                    <div className="flex justify-between items-center">
-                      <span className="text-red-600 font-medium">Reserved</span>
-                      <span className="font-bold text-red-600">
-                        {reservedSeatsCount}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="bg-white p-3 rounded border">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600 font-medium">Total</span>
-                      <span className="font-bold text-gray-600">
-                        {totalSeatsCount}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Availability percentage */}
-                  <div className="bg-white p-3 rounded border">
-                    <div className="text-sm text-gray-600 mb-1">
-                      Availability
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 bg-gray-200 rounded-full h-2">
-                        <div
-                          className="bg-green-500 h-2 rounded-full transition-all duration-300"
-                          style={{
-                            width: `${(availableSeatsCount / totalSeatsCount) * 100}%`,
-                          }}
-                        ></div>
-                      </div>
-                      <span className="text-sm font-medium">
-                        {Math.round(
-                          (availableSeatsCount / totalSeatsCount) * 100,
-                        )}
-                        %
-                      </span>
-                    </div>
-                  </div>
+                <div className="text-xs md:text-sm text-gray-600">
+                  <p>
+                    💡 Click on a seat number to highlight it on the map
+                  </p>
                 </div>
               </div>
             </div>
