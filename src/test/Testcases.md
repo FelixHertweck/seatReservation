@@ -321,7 +321,11 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | `deleteEventLocation_Success_AsAdmin` | Löscht erfolgreich eine bestehende EventLocation als Administrator. |
 | `deleteEventLocation_NotFound` | Versucht, eine nicht existierende EventLocation zu löschen. |
 | `deleteEventLocation_ForbiddenException_NotManagerOrAdmin` | Versucht, eine EventLocation zu löschen, ohne die erforderlichen Berechtigungen zu haben. |
-| `createEventLocationWithSeats_Success` | Erstellt erfolgreich eine neue EventLocation mit einer Liste von Sitzplätzen. |
+| `importEventLocation_Success` | Erstellt erfolgreich eine neue EventLocation mit einer Liste von Sitzplätzen. |
+| `importSeatsToEventLocation_Success` | Importiert erfolgreich Sitze zu einer bestehenden EventLocation als Manager. |
+| `importSeatsToEventLocation_Success_AsAdmin` | Importiert erfolgreich Sitze zu einer bestehenden EventLocation als Administrator. |
+| `importSeatsToEventLocation_NotFound` | Versucht, Sitze zu einer nicht existierenden EventLocation zu importieren. |
+| `importSeatsToEventLocation_Forbidden` | Versucht, Sitze zu einer EventLocation zu importieren, für die keine Berechtigung besteht. |
 
 ## Seat Service
 
@@ -415,18 +419,18 @@ Dieser Test stellt sicher, dass ein Manager oder Administrator eine neue Event-L
     *   Ein Benutzer mit der Rolle `USER` versucht, eine Location zu erstellen, und erhält `403 Forbidden`.
 ---
 
-#### POST /register
+#### POST /import
 
 Erstellt eine neue Event-Location mit Sitzplätzen.
 
 **Beschreibung:**
 
-Dieser Test stellt sicher, dass ein Manager oder Administrator eine neue Event-Location zusammen mit einer Liste von Sitzplätzen erstellen kann.
+Dieser Test stellt sicher, dass ein Manager oder Administrator eine neue Event-Location zusammen mit einer Liste von Sitzplätzen importieren kann.
 
 **Testfälle:**
 
 *   **Erfolg:**
-    *   Ein Manager sendet gültige Daten und erstellt erfolgreich eine neue Event-Location und die zugehörigen Sitzplätze. Der Status `200 OK` wird mit den Daten der erstellten Location zurückgegeben.
+    *   Ein Manager sendet gültige Daten und importiert erfolgreich eine neue Event-Location und die zugehörigen Sitzplätze. Der Status `200 OK` wird mit den Daten der importierten Location zurückgegeben.
 *   **Fehler:**
     *   Ein Manager sendet ungültige Daten (z. B. fehlender Name in der Location oder fehlende Sitzplatznummer) und erhält einen `400 Bad Request`-Status.
     *   Ein nicht authentifizierter Benutzer versucht, eine Location zu erstellen, und erhält `401 Unauthorized`.
