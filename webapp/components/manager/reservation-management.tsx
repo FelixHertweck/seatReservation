@@ -40,7 +40,9 @@ export interface ReservationManagementProps {
     reservation: ReservationRequestDto,
   ) => Promise<DetailedReservationResponseDto[]>;
   deleteReservation: (id: bigint) => Promise<unknown>;
-  blockSeats: (request: BlockSeatsRequestDto) => Promise<void>;
+  blockSeats: (
+    request: BlockSeatsRequestDto,
+  ) => Promise<DetailedReservationResponseDto[]>;
   onNavigateToEvent?: (eventId: bigint) => void;
   onNavigateToSeat?: (seatId: bigint) => void;
   initialFilter?: Record<string, string>;
@@ -284,7 +286,6 @@ export function ReservationManagement({
       {isBlockModalOpen && (
         <BlockSeatsModal
           events={events}
-          seats={seats}
           onSubmit={async (blockData) => {
             await blockSeats(blockData);
             setIsBlockModalOpen(false);

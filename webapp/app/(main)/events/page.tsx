@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { EventCard } from "@/components/events/event-card";
 import { EventReservationModal } from "@/components/events/event-reservation-modal";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
@@ -13,31 +13,45 @@ export default function EventsPage() {
   const [selectedEvent, setSelectedEvent] = useState<EventResponseDto | null>(
     null,
   );
-  const [filteredEvents, setFilteredEvents] = useState(events);
+  const [filteredEvents, setFilteredEvents] = useState<EventResponseDto[]>([]);
+
+  useEffect(() => {
+    if (events) {
+      const sortedEvents = [...events].sort((a, b) => {
+        const aHasSeats = (a.reservationsAllowed ?? 0) > 0;
+        const bHasSeats = (b.reservationsAllowed ?? 0) > 0;
+
+        if (aHasSeats && !bHasSeats) return -1;
+        if (!aHasSeats && bHasSeats) return 1;
+        return 0;
+      });
+      setFilteredEvents(sortedEvents);
+    }
+  }, [events]);
 
   if (isLoading) {
     return <Loading />;
   }
 
   const handleSearch = (query: string) => {
+    if (!events) return;
+
     const filtered = events.filter(
       (event) =>
         event.name?.toLowerCase().includes(query.toLowerCase()) ||
         event.description?.toLowerCase().includes(query.toLowerCase()),
     );
-    setFilteredEvents(filtered);
-  };
 
-  const handleFilter = (filters: Record<string, unknown>) => {
-    let filtered = events;
+    const sortedFiltered = filtered.sort((a, b) => {
+      const aHasSeats = (a.reservationsAllowed ?? 0) > 0;
+      const bHasSeats = (b.reservationsAllowed ?? 0) > 0;
 
-    if (filters.hasAvailableSeats) {
-      filtered = filtered.filter(
-        (event) => (event.reservationsAllowed ?? 0) > 0,
-      );
-    }
+      if (aHasSeats && !bHasSeats) return -1;
+      if (!aHasSeats && bHasSeats) return 1;
+      return 0;
+    });
 
-    setFilteredEvents(filtered);
+    setFilteredEvents(sortedFiltered);
   };
 
   return (
@@ -51,14 +65,8 @@ export default function EventsPage() {
 
       <SearchAndFilter
         onSearch={handleSearch}
-        onFilter={handleFilter}
-        filterOptions={[
-          {
-            key: "hasAvailableSeats",
-            label: "Available Seats",
-            type: "boolean",
-          },
-        ]}
+        onFilter={() => {}}
+        filterOptions={[]}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

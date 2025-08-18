@@ -1,10 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Search, X } from "lucide-react";
+import { useState } from "react";
+import { Search, X, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface FilterOption {
   key: string;
@@ -29,10 +38,27 @@ export function SearchAndFilter({
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] =
     useState<Record<string, unknown>>(initialFilters);
+  const [showFilters, setShowFilters] = useState(false);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     onSearch(query);
+  };
+
+  const handleFilterChange = (key: string, value: unknown) => {
+    const newFilters = { ...filters };
+    if (
+      value === false ||
+      value === "" ||
+      value === null ||
+      value === undefined
+    ) {
+      delete newFilters[key];
+    } else {
+      newFilters[key] = value;
+    }
+    setFilters(newFilters);
+    onFilter(newFilters);
   };
 
   const clearFilter = (key: string) => {
@@ -65,6 +91,85 @@ export function SearchAndFilter({
 
   return (
     <div className="space-y-4 mb-6">
+      {/* Search Bar and Filter Toggle */}
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Input
+            placeholder="Search..."
+            value={searchQuery}
+            onChange={(e) => handleSearch(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        {filterOptions.length > 0 && (
+          <Button
+            variant="outline"
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center gap-2"
+          >
+            <Filter className="h-4 w-4" />
+            Filters
+          </Button>
+        )}
+      </div>
+
+      {showFilters && filterOptions.length > 0 && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filterOptions.map((option) => (
+                <div key={option.key} className="space-y-2">
+                  <label className="text-sm font-medium">{option.label}</label>
+                  {option.type === "boolean" && (
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id={option.key}
+                        checked={!!filters[option.key]}
+                        onCheckedChange={(checked) =>
+                          handleFilterChange(option.key, checked)
+                        }
+                      />
+                      <label htmlFor={option.key} className="text-sm">
+                        {option.label}
+                      </label>
+                    </div>
+                  )}
+                  {option.type === "select" && option.options && (
+                    <Select
+                      value={(filters[option.key] as string) || ""}
+                      onValueChange={(value) =>
+                        handleFilterChange(option.key, value)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={`Select ${option.label}`} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {option.options.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                  {option.type === "string" && (
+                    <Input
+                      placeholder={`Enter ${option.label}`}
+                      value={(filters[option.key] as string) || ""}
+                      onChange={(e) =>
+                        handleFilterChange(option.key, e.target.value)
+                      }
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Active Filters Display */}
       {activeFilters.length > 0 && (
         <div className="flex flex-wrap gap-2 items-center">
@@ -96,17 +201,6 @@ export function SearchAndFilter({
           </Button>
         </div>
       )}
-
-      {/* Search Bar */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-        <Input
-          placeholder="Search..."
-          value={searchQuery}
-          onChange={(e) => handleSearch(e.target.value)}
-          className="pl-10"
-        />
-      </div>
     </div>
   );
 }
