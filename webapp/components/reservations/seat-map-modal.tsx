@@ -104,9 +104,7 @@ export function SeatMapModal({
                   <p className="text-gray-500 text-sm">No seats reserved</p>
                 )}
                 <div className="text-xs md:text-sm text-gray-600">
-                  <p>
-                    💡 Click on a seat number to highlight it on the map
-                  </p>
+                  <p>💡 Click on a seat number to highlight it on the map</p>
                 </div>
               </div>
             </div>
