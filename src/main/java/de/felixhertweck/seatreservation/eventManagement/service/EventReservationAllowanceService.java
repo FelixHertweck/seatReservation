@@ -104,11 +104,11 @@ public class EventReservationAllowanceService {
                         });
 
         LOG.infof(
-                "Reservation allowance set to %d for user IDs %d and event ID %d by manager: %s"
+                "Reservation allowance set to %d for user IDs %s and event ID %d by manager: %s"
                         + " (ID: %d)",
                 dto.getReservationsAllowedCount(),
                 dto.getUserIds(),
-                dto.getReservationsAllowedCount(),
+                dto.getEventId(),
                 manager.getUsername(),
                 manager.getId());
 
