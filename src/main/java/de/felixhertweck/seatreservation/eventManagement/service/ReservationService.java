@@ -407,7 +407,8 @@ public class ReservationService {
      * @throws IllegalStateException If any of the specified seats are already reserved or blocked.
      */
     @Transactional
-    public void blockSeats(Long eventId, List<Long> seatIds, User currentUser)
+    public Set<DetailedReservationResponseDTO> blockSeats(
+            Long eventId, List<Long> seatIds, User currentUser)
             throws IllegalArgumentException, SecurityException, IllegalStateException {
         LOG.debugf(
                 "Attempting to block seats for event ID: %d, seat IDs: %s by user: %s (ID: %d)",
@@ -476,9 +477,13 @@ public class ReservationService {
                         .toList();
 
         reservationRepository.persist(newReservations);
+
         LOG.infof(
                 "Successfully blocked %d seats for event ID %d by user: %s (ID: %d)",
                 seats.size(), eventId, currentUser.getUsername(), currentUser.getId());
+        return newReservations.stream()
+                .map(DetailedReservationResponseDTO::new)
+                .collect(Collectors.toSet());
     }
 
     public List<Reservation> findByEvent(Event event) {
