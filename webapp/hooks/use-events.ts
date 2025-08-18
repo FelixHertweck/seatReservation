@@ -7,6 +7,7 @@ import {
   postApiUserReservationsMutation,
   getApiUserEventsQueryKey,
   getApiManagerEventsByIdOptions,
+  getApiUserReservationsQueryKey,
 } from "@/api/@tanstack/react-query.gen";
 import type {
   EventResponseDto,
@@ -33,6 +34,14 @@ export function useEvents(): UseEventsReturn {
 
   const createReservationMutation = useMutation({
     ...postApiUserReservationsMutation(),
+    onSuccess: (data) => {
+      queryClient.setQueriesData(
+        { queryKey: getApiUserReservationsQueryKey() },
+        (oldData: ReservationResponseDto[] | undefined) => {
+          return oldData ? [...oldData, ...data] : [...data];
+        },
+      );
+    },
   });
 
   const createReservation = async (
@@ -57,7 +66,7 @@ export function useEvents(): UseEventsReturn {
   const getEventById = (eventId: bigint) => {
     return queryClient.fetchQuery({
       ...getApiManagerEventsByIdOptions({
-        path: { id: eventId },
+        path: { id: BigInt(eventId.toString()) },
       }),
     });
   };

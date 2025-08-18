@@ -4,7 +4,6 @@ import {
   Calendar,
   Settings,
   Users,
-  UserCheck,
   LogOut,
   LogIn,
   Sparkles,
@@ -66,12 +65,6 @@ export function AppSidebar() {
   const getMenuItems = () => {
     const baseItems = [
       { title: "Events", url: "/events", icon: Calendar, badge: "" },
-      {
-        title: "My Reservations",
-        url: "/reservations",
-        icon: UserCheck,
-        badge: "",
-      },
       { title: "Profile", url: "/profile", icon: Settings, badge: "" },
     ];
 
