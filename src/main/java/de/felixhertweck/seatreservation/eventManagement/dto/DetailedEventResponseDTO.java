@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import de.felixhertweck.seatreservation.common.dto.EventLocationResponseDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;
 
 public record DetailedEventResponseDTO(
@@ -32,7 +33,7 @@ public record DetailedEventResponseDTO(
         LocalDateTime startTime,
         LocalDateTime endTime,
         LocalDateTime bookingDeadline,
-        Long eventLocationId,
+        EventLocationResponseDTO eventLocation,
         Long managerId,
         Set<Long> eventUserAllowancesIds) {
     public DetailedEventResponseDTO(Event event) {
@@ -43,7 +44,7 @@ public record DetailedEventResponseDTO(
                 event.getStartTime(),
                 event.getEndTime(),
                 event.getBookingDeadline(),
-                event.getEventLocation() != null ? event.getEventLocation().getId() : null,
+                new EventLocationResponseDTO(event.getEventLocation(), event.getReservations()),
                 event.getManager() != null ? event.getManager().getId() : null,
                 event.getUserAllowances() != null
                         ? event.getUserAllowances().stream()
