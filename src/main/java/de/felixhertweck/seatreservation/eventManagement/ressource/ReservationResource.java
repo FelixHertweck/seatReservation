@@ -152,15 +152,25 @@ public class ReservationResource {
 
     @POST
     @Path("/block")
-    @APIResponse(responseCode = "204", description = "Seats blocked successfully")
-    public void blockSeats(BlockSeatsRequestDTO dto) {
+    @APIResponse(
+            responseCode = "200",
+            description = "Seats blocked successfully",
+            content =
+                    @Content(
+                            schema =
+                                    @Schema(
+                                            type = SchemaType.ARRAY,
+                                            implementation = DetailedReservationResponseDTO.class)))
+    public Set<DetailedReservationResponseDTO> blockSeats(BlockSeatsRequestDTO dto) {
         LOG.infof(
                 "Received POST request to /api/manager/reservations/block to block seats for event"
                         + " ID %d.",
                 dto.getEventId());
         LOG.debugf("BlockSeatsRequestDTO received: %s", dto.toString());
         User currentUser = userSecurityContext.getCurrentUser();
-        reservationService.blockSeats(dto.getEventId(), dto.getSeatIds(), currentUser);
+        Set<DetailedReservationResponseDTO> results =
+                reservationService.blockSeats(dto.getEventId(), dto.getSeatIds(), currentUser);
         LOG.infof("Seats blocked successfully for event ID %d.", dto.getEventId());
+        return results;
     }
 }
