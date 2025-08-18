@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Edit, Trash2, ExternalLink } from "lucide-react";
+import { Plus, Edit, Trash2, ExternalLink, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,14 +18,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { LocationFormModal } from "@/components/manager/location-form-modal";
-import { LocationJsonUpload } from "@/components/manager/location-json-upload";
+import { LocationImportModal } from "@/components/manager/location-import-modal";
+import { SearchAndFilter } from "@/components/common/search-and-filter";
 import type {
   EventLocationResponseDto,
   EventLocationRequestDto,
-  EventLocationRegistrationDto,
+  ImportEventLocationDto,
+  ImportSeatDto,
 } from "@/api";
 
 export interface LocationManagementProps {
@@ -38,8 +38,12 @@ export interface LocationManagementProps {
     location: EventLocationRequestDto,
   ) => Promise<EventLocationResponseDto>;
   deleteLocation: (id: bigint) => Promise<unknown>;
-  registerLocationWithSeats: (
-    data: EventLocationRegistrationDto,
+  importLocationWithSeats: (
+    data: ImportEventLocationDto,
+  ) => Promise<EventLocationResponseDto>;
+  importSeats: (
+    seats: ImportSeatDto[],
+    locationId: string,
   ) => Promise<EventLocationResponseDto>;
   onNavigateToSeats?: (locationId: bigint) => void;
   initialFilter?: Record<string, string>;
@@ -50,7 +54,8 @@ export function LocationManagement({
   createLocation,
   updateLocation,
   deleteLocation,
-  registerLocationWithSeats,
+  importLocationWithSeats,
+  importSeats,
   onNavigateToSeats,
   initialFilter = {},
 }: LocationManagementProps) {
@@ -58,6 +63,7 @@ export function LocationManagement({
   const [selectedLocation, setSelectedLocation] =
     useState<EventLocationResponseDto | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [currentFilters, setCurrentFilters] =
     useState<Record<string, string>>(initialFilter);
@@ -113,6 +119,10 @@ export function LocationManagement({
     setIsModalOpen(true);
   };
 
+  const handleImportLocation = () => {
+    setIsImportModalOpen(true);
+  };
+
   const handleEditLocation = (location: EventLocationResponseDto) => {
     setSelectedLocation(location);
     setIsCreating(false);
@@ -134,6 +144,15 @@ export function LocationManagement({
     }
   };
 
+  const handleImportSeats = async (
+    seats: ImportSeatDto[],
+    locationId: string,
+  ) => {
+    if (importSeats) {
+      await importSeats(seats, locationId);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -142,106 +161,101 @@ export function LocationManagement({
             <CardTitle>Location Management</CardTitle>
             <CardDescription>Create and manage event locations</CardDescription>
           </div>
-          <Button onClick={handleCreateLocation}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Location
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleImportLocation}>
+              <FileText className="mr-2 h-4 w-4" />
+              Import JSON
+            </Button>
+            <Button onClick={handleCreateLocation}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Location
+            </Button>
+          </div>
         </div>
       </CardHeader>
 
       <CardContent>
-        <Tabs defaultValue="list" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="list">Location List</TabsTrigger>
-            <TabsTrigger value="upload">JSON Upload</TabsTrigger>
-          </TabsList>
+        <div className="space-y-4">
+          <SearchAndFilter
+            onSearch={handleSearch}
+            onFilter={handleFilter}
+            filterOptions={[
+              {
+                key: "locationId",
+                label: "Location",
+                type: "select",
+                options: locations.map((loc) => ({
+                  value: loc.id?.toString() || "",
+                  label: loc.name || "",
+                })),
+              },
+            ]}
+            initialFilters={currentFilters}
+          />
 
-          <TabsContent value="list" className="space-y-4">
-            <SearchAndFilter
-              onSearch={handleSearch}
-              onFilter={handleFilter}
-              filterOptions={[
-                {
-                  key: "locationId",
-                  label: "Location",
-                  type: "select",
-                  options: locations.map((loc) => ({
-                    value: loc.id?.toString() || "",
-                    label: loc.name || "",
-                  })),
-                },
-              ]}
-              initialFilters={currentFilters}
-            />
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Address</TableHead>
+                <TableHead>Capacity</TableHead>
+                <TableHead>Manager</TableHead>
+                <TableHead>Seats</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredLocations.map((location) => {
+                const seatCount = location.seats?.length || 0;
 
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Address</TableHead>
-                  <TableHead>Capacity</TableHead>
-                  <TableHead>Manager</TableHead>
-                  <TableHead>Seats</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredLocations.map((location) => {
-                  const seatCount = location.seats?.length || 0;
-
-                  return (
-                    <TableRow key={location.id?.toString()}>
-                      <TableCell className="font-medium">
-                        {location.name}
-                      </TableCell>
-                      <TableCell>{location.address}</TableCell>
-                      <TableCell>{location.capacity}</TableCell>
-                      <TableCell>{location.manager?.username}</TableCell>
-                      <TableCell>
-                        {seatCount > 0 ? (
-                          <Button
-                            variant="link"
-                            className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
-                            onClick={() =>
-                              location.id && handleSeatsClick(location.id)
-                            }
-                          >
-                            {seatCount} seats
-                            <ExternalLink className="ml-1 h-3 w-3" />
-                          </Button>
-                        ) : (
-                          "0 seats"
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEditLocation(location)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => handleDeleteLocation(location)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TabsContent>
-
-          <TabsContent value="upload">
-            <LocationJsonUpload onUpload={registerLocationWithSeats} />
-          </TabsContent>
-        </Tabs>
+                return (
+                  <TableRow key={location.id?.toString()}>
+                    <TableCell className="font-medium">
+                      {location.name}
+                    </TableCell>
+                    <TableCell>{location.address}</TableCell>
+                    <TableCell>{location.capacity}</TableCell>
+                    <TableCell>{location.manager?.username}</TableCell>
+                    <TableCell>
+                      {seatCount > 0 ? (
+                        <Button
+                          variant="link"
+                          className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                          onClick={() =>
+                            location.id && handleSeatsClick(location.id)
+                          }
+                        >
+                          {seatCount} seats
+                          <ExternalLink className="ml-1 h-3 w-3" />
+                        </Button>
+                      ) : (
+                        "0 seats"
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditLocation(location)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDeleteLocation(location)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
 
       {isModalOpen && (
@@ -257,6 +271,16 @@ export function LocationManagement({
             setIsModalOpen(false);
           }}
           onClose={() => setIsModalOpen(false)}
+        />
+      )}
+
+      {isImportModalOpen && (
+        <LocationImportModal
+          isOpen={isImportModalOpen}
+          onClose={() => setIsImportModalOpen(false)}
+          locations={locations}
+          onImportLocation={importLocationWithSeats}
+          onImportSeats={handleImportSeats}
         />
       )}
     </Card>

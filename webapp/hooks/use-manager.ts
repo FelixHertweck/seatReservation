@@ -15,7 +15,8 @@ import type {
   EventUserAllowancesCreateDto, // Import new create DTO
   EventUserAllowanceUpdateDto, // Import new update DTO
   UserDto,
-  ImportEventLocationDto, // Import UserDto for use in useManager return type
+  ImportEventLocationDto,
+  ImportSeatDto, // Import UserDto for use in useManager return type
 } from "@/api";
 import {
   getApiManagerEventsOptions,
@@ -45,6 +46,7 @@ import {
   getApiManagerReservationAllowanceQueryKey,
   getApiUsersManagerOptions,
   postApiManagerEventlocationsImportMutation,
+  postApiManagerEventlocationsImportByIdMutation,
 } from "@/api/@tanstack/react-query.gen";
 import type { EventManagementProps } from "@/components/manager/event-management";
 import type { LocationManagementProps } from "@/components/manager/location-management";
@@ -165,12 +167,31 @@ export function useManager(): UseManagerReturn {
     },
   });
 
-  const registerLocationWithSeatsMutation = useMutation({
+  const importLocationWithSeatsMutation = useMutation({
     ...postApiManagerEventlocationsImportMutation(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: getApiManagerEventlocationsQueryKey(),
-      });
+    onSuccess: (data) => {
+      queryClient.setQueriesData(
+        { queryKey: getApiManagerEventlocationsQueryKey() },
+        (oldData: EventLocationResponseDto[] | undefined) => {
+          return oldData ? [...oldData, data] : [data];
+        },
+      );
+    },
+  });
+
+  const importSeatsMutation = useMutation({
+    ...postApiManagerEventlocationsImportByIdMutation(),
+    onSuccess: (data) => {
+      queryClient.setQueriesData(
+        { queryKey: getApiManagerEventlocationsQueryKey() },
+        (oldData: EventLocationResponseDto[] | undefined) => {
+          return oldData
+            ? oldData.map((location) =>
+                location.id === data.id ? data : location,
+              )
+            : [data];
+        },
+      );
     },
   });
 
@@ -345,8 +366,13 @@ export function useManager(): UseManagerReturn {
         updateLocationMutation.mutateAsync({ path: { id }, body: location }),
       deleteLocation: (id: bigint) =>
         deleteLocationMutation.mutateAsync({ path: { id } }),
-      registerLocationWithSeats: (location: ImportEventLocationDto) =>
-        registerLocationWithSeatsMutation.mutateAsync({ body: location }),
+      importLocationWithSeats: (location: ImportEventLocationDto) =>
+        importLocationWithSeatsMutation.mutateAsync({ body: location }),
+      importSeats: (seats: ImportSeatDto[], locationId: string) =>
+        importSeatsMutation.mutateAsync({
+          body: seats,
+          path: { id: BigInt(locationId) },
+        }),
     },
     seats: {
       locations: locations ?? [],
