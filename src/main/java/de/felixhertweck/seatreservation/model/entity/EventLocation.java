@@ -19,9 +19,9 @@
  */
 package de.felixhertweck.seatreservation.model.entity;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import jakarta.persistence.*;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
@@ -38,7 +38,13 @@ public class EventLocation extends PanacheEntity {
     private User manager;
 
     @OneToMany(mappedBy = "location", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Seat> seats = new ArrayList<>();
+    private Set<Seat> seats = new HashSet<>();
+
+    @OneToMany(mappedBy = "location", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Marker> markers = new HashSet<>();
+
+    @OneToMany(mappedBy = "location", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Area> areas = new HashSet<>();
 
     public EventLocation() {}
 
@@ -81,12 +87,28 @@ public class EventLocation extends PanacheEntity {
         this.manager = manager;
     }
 
-    public List<Seat> getSeats() {
+    public Set<Seat> getSeats() {
         return seats;
     }
 
-    public void setSeats(List<Seat> seats) {
+    public void setSeats(Set<Seat> seats) {
         this.seats = seats;
+    }
+
+    public Set<Marker> getMarkers() {
+        return markers;
+    }
+
+    public void setMarkers(Set<Marker> markers) {
+        this.markers = markers;
+    }
+
+    public Set<Area> getAreas() {
+        return areas;
+    }
+
+    public void setAreas(Set<Area> areas) {
+        this.areas = areas;
     }
 
     public Long getId() {
@@ -105,7 +127,9 @@ public class EventLocation extends PanacheEntity {
                 && Objects.equals(address, that.address)
                 && Objects.equals(capacity, that.capacity)
                 && Objects.equals(manager, that.manager)
-                && Objects.equals(seats, that.seats);
+                && Objects.equals(seats, that.seats)
+                && Objects.equals(markers, that.markers)
+                && Objects.equals(areas, that.areas);
     }
 
     @Override
@@ -113,7 +137,7 @@ public class EventLocation extends PanacheEntity {
         if (id != null) {
             return Objects.hash(id);
         }
-        return Objects.hash(name, address, capacity, manager, seats);
+        return Objects.hash(name, address, capacity, manager, seats, markers, areas);
     }
 
     @Override
@@ -133,6 +157,10 @@ public class EventLocation extends PanacheEntity {
                 + ", name='"
                 + name
                 + '\''
+                + ", markers="
+                + markers
+                + ", areas="
+                + areas
                 + '}';
     }
 }

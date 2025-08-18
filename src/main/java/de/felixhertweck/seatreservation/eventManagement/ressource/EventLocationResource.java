@@ -27,7 +27,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.*;
 
 import de.felixhertweck.seatreservation.common.dto.EventLocationResponseDTO;
-import de.felixhertweck.seatreservation.eventManagement.dto.EventLocationRegistrationDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventLocationRequestDTO;
 import de.felixhertweck.seatreservation.eventManagement.service.EventLocationService;
 import de.felixhertweck.seatreservation.model.entity.User;
@@ -118,24 +117,5 @@ public class EventLocationResource {
         User currentUser = userSecurityContext.getCurrentUser();
         eventLocationService.deleteEventLocation(id, currentUser);
         LOG.infof("Event location with ID %d deleted successfully.", id);
-    }
-
-    @POST
-    @Path("/register")
-    @APIResponse(
-            responseCode = "200",
-            description = "OK",
-            content = @Content(schema = @Schema(implementation = EventLocationResponseDTO.class)))
-    public EventLocationResponseDTO createEventLocationWithSeats(
-            @Valid EventLocationRegistrationDTO dto) {
-        LOG.infof(
-                "Received POST request to /api/manager/eventlocations/register for new event"
-                        + " location with seats.");
-        LOG.debugf("EventLocationRegistrationDTO received: %s", dto.toString());
-        User currentUser = userSecurityContext.getCurrentUser();
-        EventLocationResponseDTO result =
-                eventLocationService.createEventLocationWithSeats(dto, currentUser);
-        LOG.infof("Event location '%s' with seats created successfully.", result.name());
-        return result;
     }
 }

@@ -189,13 +189,13 @@ public class EventLocationResourceTest {
             roles = {"MANAGER"})
     void testCreateEventLocationWithSeats() {
         String requestBody =
-                "{\"eventLocation\":{\"name\":\"New Location\",\"address\":\"123 Main"
-                    + " St\",\"capacity\":100},\"seats\":[{\"seatNumber\":\"A1\",\"xCoordinate\":1,\"yCoordinate\":1},{\"seatNumber\":\"A2\",\"xCoordinate\":1,\"yCoordinate\":2}]}";
+                "{\"name\":\"New Location\",\"address\":\"123 Main"
+                    + " St\",\"capacity\":100,\"seats\":[{\"seatNumber\":\"A1\",\"xCoordinate\":1,\"yCoordinate\":1},{\"seatNumber\":\"A2\",\"xCoordinate\":1,\"yCoordinate\":2}]}";
 
         given().contentType("application/json")
                 .body(requestBody)
                 .when()
-                .post("/api/manager/eventlocations/register")
+                .post("/api/manager/eventlocations")
                 .then()
                 .statusCode(200)
                 .body("name", is("New Location"))

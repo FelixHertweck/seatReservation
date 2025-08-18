@@ -19,7 +19,12 @@
  */
 package de.felixhertweck.seatreservation.eventManagement.dto;
 
+import java.util.Set;
 import jakarta.validation.constraints.NotNull;
+
+import de.felixhertweck.seatreservation.common.dto.AreaDTO;
+import de.felixhertweck.seatreservation.common.dto.MarkerDTO;
+import de.felixhertweck.seatreservation.common.dto.SeatDTO;
 
 public class EventLocationRequestDTO {
     @NotNull(message = "Name must not be null")
@@ -30,6 +35,12 @@ public class EventLocationRequestDTO {
 
     @NotNull(message = "Capacity must not be null")
     private Integer capacity;
+
+    private Set<MarkerDTO> markers;
+
+    private Set<AreaDTO> areas;
+
+    private Set<SeatDTO> seats;
 
     public String getName() {
         return name;
@@ -43,6 +54,18 @@ public class EventLocationRequestDTO {
         return capacity;
     }
 
+    public Set<MarkerDTO> getMarkers() {
+        return markers;
+    }
+
+    public Set<AreaDTO> getAreas() {
+        return areas;
+    }
+
+    public Set<SeatDTO> getSeats() {
+        return seats;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -53,6 +76,18 @@ public class EventLocationRequestDTO {
 
     public void setCapacity(Integer capacity) {
         this.capacity = capacity;
+    }
+
+    public void setMarkers(Set<MarkerDTO> markers) {
+        this.markers = markers;
+    }
+
+    public void setAreas(Set<AreaDTO> areas) {
+        this.areas = areas;
+    }
+
+    public void setSeats(Set<SeatDTO> seats) {
+        this.seats = seats;
     }
 
     public EventLocationRequestDTO() {}

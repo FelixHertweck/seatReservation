@@ -21,6 +21,8 @@ package de.felixhertweck.seatreservation.common.dto;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
@@ -32,7 +34,9 @@ public record EventLocationResponseDTO(
         String address,
         Integer capacity,
         LimitedUserInfoDTO manager,
-        List<SeatDTO> seats) {
+        Set<SeatDTO> seats,
+        Set<MarkerDTO> markers,
+        Set<AreaDTO> areas) {
     public EventLocationResponseDTO(EventLocation eventLocation) {
         this(eventLocation, Collections.emptyList());
     }
@@ -58,7 +62,17 @@ public record EventLocationResponseDTO(
                                                             .orElse(null);
                                             return new SeatDTO(seat, status);
                                         })
-                                .toList()
-                        : List.of());
+                                .collect(Collectors.toSet())
+                        : Set.of(),
+                eventLocation.getMarkers() != null
+                        ? eventLocation.getMarkers().stream()
+                                .map(MarkerDTO::new)
+                                .collect(Collectors.toSet())
+                        : Set.of(),
+                eventLocation.getAreas() != null
+                        ? eventLocation.getAreas().stream()
+                                .map(AreaDTO::new)
+                                .collect(Collectors.toSet())
+                        : Set.of());
     }
 }
