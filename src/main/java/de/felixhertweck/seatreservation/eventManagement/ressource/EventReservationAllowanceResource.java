@@ -73,7 +73,7 @@ public class EventReservationAllowanceResource {
                 eventReservationAllowanceService.setReservationsAllowedForUser(
                         userReservationAllowanceDTO, currentUser);
         LOG.infof(
-                "Reservation allowance set successfully for user IDs %d and event ID %d.",
+                "Reservation allowance set successfully for user IDs %s and event ID %d.",
                 userReservationAllowanceDTO.getUserIds(), userReservationAllowanceDTO.getEventId());
         return result;
     }
