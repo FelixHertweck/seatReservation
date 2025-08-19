@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Plus, Edit, Trash2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +26,7 @@ import type {
   SeatRequestDto,
   EventLocationResponseDto,
 } from "@/api";
+import { t } from "i18next";
 
 export interface SeatManagementProps {
   seats: SeatResponseDto[];
@@ -59,42 +60,44 @@ export function SeatManagement({
     setCurrentFilters(initialFilter);
   }, [initialFilter]);
 
+  const applyFilters = useCallback(
+    (searchQuery: string, filters: Record<string, string>) => {
+      let filtered = seats;
+
+      // Apply search
+      if (searchQuery) {
+        filtered = filtered.filter(
+          (seat) =>
+            seat.seatNumber
+              ?.toLowerCase()
+              .includes(searchQuery.toLowerCase()) ||
+            locations
+              .find((loc) => loc.id === seat.eventLocationId)
+              ?.name?.toLowerCase()
+              .includes(searchQuery.toLowerCase()),
+        );
+      }
+
+      // Apply filters
+      if (filters.locationId) {
+        filtered = filtered.filter(
+          (seat) => seat.eventLocationId?.toString() === filters.locationId,
+        );
+      }
+      if (filters.seatId) {
+        filtered = filtered.filter(
+          (seat) => seat.id?.toString() === filters.seatId,
+        );
+      }
+
+      setFilteredSeats(filtered);
+    },
+    [seats, locations],
+  );
+
   useEffect(() => {
     applyFilters("", currentFilters);
-  }, [seats, currentFilters]);
-
-  const applyFilters = (
-    searchQuery: string,
-    filters: Record<string, string>,
-  ) => {
-    let filtered = seats;
-
-    // Apply search
-    if (searchQuery) {
-      filtered = filtered.filter(
-        (seat) =>
-          seat.seatNumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          locations
-            .find((loc) => loc.id === seat.eventLocationId)
-            ?.name?.toLowerCase()
-            .includes(searchQuery.toLowerCase()),
-      );
-    }
-
-    // Apply filters
-    if (filters.locationId) {
-      filtered = filtered.filter(
-        (seat) => seat.eventLocationId?.toString() === filters.locationId,
-      );
-    }
-    if (filters.seatId) {
-      filtered = filtered.filter(
-        (seat) => seat.id?.toString() === filters.seatId,
-      );
-    }
-
-    setFilteredSeats(filtered);
-  };
+  }, [seats, currentFilters, applyFilters]);
 
   const handleSearch = (query: string) => {
     applyFilters(query, currentFilters);
@@ -123,7 +126,9 @@ export function SeatManagement({
   const handleDeleteSeat = async (seat: SeatResponseDto) => {
     if (
       seat.id &&
-      confirm(`Are you sure you want to delete seat ${seat.seatNumber}?`)
+      confirm(
+        t("seatManagement.confirmDelete", { seatNumber: seat.seatNumber }),
+      )
     ) {
       await deleteSeat(seat.id);
     }
@@ -140,14 +145,12 @@ export function SeatManagement({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Seat Management</CardTitle>
-            <CardDescription>
-              Create and manage seats for locations
-            </CardDescription>
+            <CardTitle>{t("seatManagement.title")}</CardTitle>
+            <CardDescription>{t("seatManagement.description")}</CardDescription>
           </div>
           <Button onClick={handleCreateSeat}>
             <Plus className="mr-2 h-4 w-4" />
-            Add Seat
+            {t("seatManagement.addSeatButton")}
           </Button>
         </div>
       </CardHeader>
@@ -159,7 +162,7 @@ export function SeatManagement({
           filterOptions={[
             {
               key: "locationId",
-              label: "Location",
+              label: t("seatManagement.filter.locationLabel"),
               type: "select",
               options: locations.map((loc) => ({
                 value: loc.id?.toString() || "",
@@ -173,11 +176,13 @@ export function SeatManagement({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Seat Number</TableHead>
-              <TableHead>Location</TableHead>
-              <TableHead>Position</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead>
+                {t("seatManagement.table.seatNumberHeader")}
+              </TableHead>
+              <TableHead>{t("seatManagement.table.locationHeader")}</TableHead>
+              <TableHead>{t("seatManagement.table.positionHeader")}</TableHead>
+              <TableHead>{t("seatManagement.table.statusHeader")}</TableHead>
+              <TableHead>{t("seatManagement.table.actionsHeader")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -204,7 +209,7 @@ export function SeatManagement({
                         <ExternalLink className="ml-1 h-3 w-3" />
                       </Button>
                     ) : (
-                      "Unknown location"
+                      t("seatManagement.unknownLocation")
                     )}
                   </TableCell>
                   <TableCell>
@@ -212,7 +217,7 @@ export function SeatManagement({
                   </TableCell>
                   <TableCell>
                     <Badge variant={seat.status ? "destructive" : "default"}>
-                      {seat.status || "Available"}
+                      {seat.status || t("seatManagement.statusAvailable")}
                     </Badge>
                   </TableCell>
                   <TableCell>

@@ -5,9 +5,9 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
-import { Toaster } from "@/components/ui/toaster";
 import "@/app/globals.css";
 import { LoginRequiredPopup } from "@/components/common/login-required-popup";
+import { t } from "i18next";
 
 export default function MainLayout({
   children,
@@ -22,7 +22,7 @@ export default function MainLayout({
           <SidebarTrigger className="hover:scale-110 transition-transform duration-200" />
           <div className="w-full flex-1">
             <h1 className="text-lg font-semibold md:text-xl">
-              Event Management
+              {t("mainLayout.eventManagementTitle")}
             </h1>
           </div>
         </header>

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { EventResponseDto } from "@/api";
+import { t } from "i18next";
 
 interface EventCardProps {
   event: EventResponseDto;
@@ -37,7 +38,9 @@ export function EventCard({ event, onReserve }: EventCardProps) {
             }
             className="animate-in zoom-in duration-300 group-hover:scale-105 transition-transform"
           >
-            {hasAvailableSeats && isBookingOpen ? "Available" : "Full"}
+            {hasAvailableSeats && isBookingOpen
+              ? t("eventCard.statusAvailable")
+              : t("eventCard.statusFull")}
           </Badge>
         </div>
         <CardDescription className="line-clamp-3">
@@ -50,29 +53,30 @@ export function EventCard({ event, onReserve }: EventCardProps) {
           <Calendar className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
           {event.startTime
             ? new Date(event.startTime).toLocaleDateString()
-            : "TBD"}
+            : t("eventCard.tbd")}
         </div>
 
         <div className="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors duration-300">
           <Clock className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
           {event.startTime && event.endTime
             ? `${new Date(event.startTime).toLocaleTimeString()} - ${new Date(event.endTime).toLocaleTimeString()}`
-            : "Time TBD"}
+            : t("eventCard.timeTbd")}
         </div>
 
         <div className="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors duration-300">
           <MapPin className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
-          {event.location?.name || "Location TBD"}
+          {event.location?.name || t("eventCard.locationTbd")}
         </div>
 
         <div className="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors duration-300">
           <Users className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
-          {event.reservationsAllowed} seats available
+          {t("eventCard.seatsAvailable", { count: event.reservationsAllowed })}
         </div>
 
         {event.bookingDeadline && (
           <div className="text-sm text-muted-foreground">
-            Booking until: {new Date(event.bookingDeadline).toLocaleString()}
+            {t("eventCard.bookingUntil")}:{" "}
+            {new Date(event.bookingDeadline).toLocaleString()}
           </div>
         )}
       </CardContent>
@@ -84,8 +88,8 @@ export function EventCard({ event, onReserve }: EventCardProps) {
           disabled={!hasAvailableSeats || !isBookingOpen}
         >
           {hasAvailableSeats && isBookingOpen
-            ? "Reserve Seats"
-            : "Not Available"}
+            ? t("eventCard.reserveSeatsButton")
+            : t("eventCard.notAvailableButton")}
         </Button>
       </CardFooter>
     </Card>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Plus, Edit, Trash2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +27,7 @@ import type {
   DetailedEventResponseDto,
   LimitedUserInfoDto,
 } from "@/api";
+import { t } from "i18next";
 
 export interface ReservationAllowanceManagementProps {
   allowances: EventUserAllowancesDto[];
@@ -65,37 +66,37 @@ export function ReservationAllowanceManagement({
     setCurrentFilters(initialFilter);
   }, [initialFilter]);
 
+  const applyFilters = useCallback(
+    (searchQuery: string, filters: Record<string, string>) => {
+      let filtered = allowances;
+
+      // Apply search
+      if (searchQuery) {
+        filtered = filtered.filter((allowance) => {
+          const event = events.find((e) => e.id === allowance.eventId);
+          const user = users.find((u) => u.id === allowance.userId);
+          return (
+            event?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            user?.username?.toLowerCase().includes(searchQuery.toLowerCase())
+          );
+        });
+      }
+
+      // Apply filters
+      if (filters.eventId) {
+        filtered = filtered.filter(
+          (allowance) => allowance.eventId?.toString() === filters.eventId,
+        );
+      }
+
+      setFilteredAllowances(filtered);
+    },
+    [allowances, events, users],
+  );
+
   useEffect(() => {
     applyFilters("", currentFilters);
-  }, [allowances, currentFilters]);
-
-  const applyFilters = (
-    searchQuery: string,
-    filters: Record<string, string>,
-  ) => {
-    let filtered = allowances;
-
-    // Apply search
-    if (searchQuery) {
-      filtered = filtered.filter((allowance) => {
-        const event = events.find((e) => e.id === allowance.eventId);
-        const user = users.find((u) => u.id === allowance.userId);
-        return (
-          event?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user?.username?.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-      });
-    }
-
-    // Apply filters
-    if (filters.eventId) {
-      filtered = filtered.filter(
-        (allowance) => allowance.eventId?.toString() === filters.eventId,
-      );
-    }
-
-    setFilteredAllowances(filtered);
-  };
+  }, [allowances, currentFilters, applyFilters]);
 
   const handleSearch = (query: string) => {
     applyFilters(query, currentFilters);
@@ -141,7 +142,7 @@ export function ReservationAllowanceManagement({
   const handleDeleteAllowance = async (allowance: EventUserAllowancesDto) => {
     if (
       allowance.id &&
-      confirm("Are you sure you want to delete this allowance?")
+      confirm(t("reservationAllowanceManagement.confirmDelete"))
     ) {
       await deleteReservationAllowance(allowance.id);
     }
@@ -158,14 +159,14 @@ export function ReservationAllowanceManagement({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Reservation Allowance Management</CardTitle>
+            <CardTitle>{t("reservationAllowanceManagement.title")}</CardTitle>
             <CardDescription>
-              Manage user reservation allowances for events
+              {t("reservationAllowanceManagement.description")}
             </CardDescription>
           </div>
           <Button onClick={openCreateModal}>
             <Plus className="mr-2 h-4 w-4" />
-            Add Allowance
+            {t("reservationAllowanceManagement.addAllowanceButton")}
           </Button>
         </div>
       </CardHeader>
@@ -177,7 +178,7 @@ export function ReservationAllowanceManagement({
           filterOptions={[
             {
               key: "eventId",
-              label: "Event",
+              label: t("reservationAllowanceManagement.eventFilterLabel"),
               type: "select",
               options: events.map((event) => ({
                 value: event.id?.toString() || "",
@@ -191,10 +192,20 @@ export function ReservationAllowanceManagement({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Event</TableHead>
-              <TableHead>User</TableHead>
-              <TableHead>Allowed Reservations</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead>
+                {t("reservationAllowanceManagement.tableHeaderEvent")}
+              </TableHead>
+              <TableHead>
+                {t("reservationAllowanceManagement.tableHeaderUser")}
+              </TableHead>
+              <TableHead>
+                {t(
+                  "reservationAllowanceManagement.tableHeaderAllowedReservations",
+                )}
+              </TableHead>
+              <TableHead>
+                {t("reservationAllowanceManagement.tableHeaderActions")}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -215,10 +226,13 @@ export function ReservationAllowanceManagement({
                         <ExternalLink className="ml-1 h-3 w-3" />
                       </Button>
                     ) : (
-                      "Unknown event"
+                      t("reservationAllowanceManagement.unknownEvent")
                     )}
                   </TableCell>
-                  <TableCell>{user?.username || "Unknown user"}</TableCell>
+                  <TableCell>
+                    {user?.username ||
+                      t("reservationAllowanceManagement.unknownUser")}
+                  </TableCell>
                   <TableCell>{allowance.reservationsAllowedCount}</TableCell>
                   <TableCell>
                     <div className="flex gap-2">

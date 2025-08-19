@@ -35,6 +35,7 @@ import { ChevronsUpDown, XCircle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/use-toast";
+import { t } from "i18next";
 
 import type {
   UserDto,
@@ -125,9 +126,8 @@ export function AllowanceFormModal({
   const handleSubmit = async () => {
     if (!selectedEventId || !allowedReservations) {
       toast({
-        title: "Validation Error",
-        description:
-          "Please select an event and enter the allowed reservations.",
+        title: t("allowanceFormModal.validationErrorTitle"),
+        description: t("allowanceFormModal.validationErrorDescription"),
         variant: "destructive",
       });
       return;
@@ -141,8 +141,8 @@ export function AllowanceFormModal({
       if (isCreating) {
         if (selectedUserIds.length === 0) {
           toast({
-            title: "Validation Error",
-            description: "Please select at least one user for creation.",
+            title: t("allowanceFormModal.validationErrorTitle"),
+            description: t("allowanceFormModal.selectAtLeastOneUser"),
             variant: "destructive",
           });
           return;
@@ -154,16 +154,15 @@ export function AllowanceFormModal({
         };
         await onSubmit(allowanceData);
         toast({
-          title: "Success",
-          description: "Allowance(s) created successfully.",
+          title: t("allowanceFormModal.successTitle"),
+          description: t("allowanceFormModal.allowanceCreatedSuccess"),
         });
       } else {
         // For update, ensure a single user is selected (or was pre-selected)
         if (!allowance?.id || selectedUserIds.length !== 1) {
           toast({
-            title: "Validation Error",
-            description:
-              "Invalid state for update. Please select exactly one user.",
+            title: t("allowanceFormModal.validationErrorTitle"),
+            description: t("allowanceFormModal.selectExactlyOneUser"),
             variant: "destructive",
           });
           return;
@@ -176,16 +175,16 @@ export function AllowanceFormModal({
         };
         await onSubmit(allowanceData);
         toast({
-          title: "Success",
-          description: "Allowance updated successfully.",
+          title: t("allowanceFormModal.successTitle"),
+          description: t("allowanceFormModal.allowanceUpdatedSuccess"),
         });
       }
       onClose();
     } catch (error) {
       console.error("Failed to submit allowance:", error);
       toast({
-        title: "Submission Error",
-        description: "Failed to submit allowance. Please try again.",
+        title: t("allowanceFormModal.submissionErrorTitle"),
+        description: t("allowanceFormModal.submissionErrorDescription"),
         variant: "destructive",
       });
     } finally {
@@ -218,13 +217,15 @@ export function AllowanceFormModal({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
-            {isCreating ? "Add New Allowance" : "Edit Allowance"}
+            {isCreating
+              ? t("allowanceFormModal.addNewAllowanceTitle")
+              : t("allowanceFormModal.editAllowanceTitle")}
           </DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="event" className="text-right">
-              Event
+              {t("allowanceFormModal.eventLabel")}
             </Label>
             <Select
               value={selectedEventId}
@@ -232,7 +233,9 @@ export function AllowanceFormModal({
               disabled={!isCreating} // Event typically not editable after creation
             >
               <SelectTrigger className="col-span-3">
-                <SelectValue placeholder="Select an event" />
+                <SelectValue
+                  placeholder={t("allowanceFormModal.selectEventPlaceholder")}
+                />
               </SelectTrigger>
               <SelectContent>
                 {events.map((event) => (
@@ -249,7 +252,7 @@ export function AllowanceFormModal({
 
           <div className="grid grid-cols-4 items-start gap-4">
             <Label htmlFor="users" className="text-right pt-2">
-              Users
+              {t("allowanceFormModal.usersLabel")}
             </Label>
             <div className="col-span-3 flex flex-col gap-2">
               <Popover open={userSearchOpen} onOpenChange={setUserSearchOpen}>
@@ -262,8 +265,10 @@ export function AllowanceFormModal({
                     disabled={!isCreating && selectedUserIds.length > 0} // Disable if not creating and user already selected for update
                   >
                     {selectedUserIds.length > 0
-                      ? `${selectedUserIds.length} user(s) selected`
-                      : "Select user(s)..."}
+                      ? t("allowanceFormModal.usersSelected", {
+                          count: selectedUserIds.length,
+                        })
+                      : t("allowanceFormModal.selectUsersPlaceholder")}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
@@ -276,7 +281,11 @@ export function AllowanceFormModal({
                           value={selectedTag}
                         >
                           <SelectTrigger className="flex-grow">
-                            <SelectValue placeholder="Filter by tag" />
+                            <SelectValue
+                              placeholder={t(
+                                "allowanceFormModal.filterByTagPlaceholder",
+                              )}
+                            />
                           </SelectTrigger>
                           <SelectContent>
                             {allTags.map((tag) => (
@@ -291,16 +300,24 @@ export function AllowanceFormModal({
                             variant="ghost"
                             size="icon"
                             onClick={handleClearTag}
-                            aria-label="Clear tag selection"
+                            aria-label={t(
+                              "allowanceFormModal.clearTagSelectionAriaLabel",
+                            )}
                           >
                             <XCircle className="h-4 w-4" />
                           </Button>
                         )}
                       </div>
                     )}
-                    <CommandInput placeholder="Search user..." />
+                    <CommandInput
+                      placeholder={t(
+                        "allowanceFormModal.searchUserPlaceholder",
+                      )}
+                    />
                     <CommandList>
-                      <CommandEmpty>No user found.</CommandEmpty>
+                      <CommandEmpty>
+                        {t("allowanceFormModal.noUserFound")}
+                      </CommandEmpty>
                       <CommandGroup>
                         {filteredUsers.map((user) => (
                           <CommandItem
@@ -358,13 +375,13 @@ export function AllowanceFormModal({
                     onClick={handleClearAllSelectedUsers}
                     className="text-xs text-red-500 hover:text-red-600"
                   >
-                    Clear All
+                    {t("allowanceFormModal.clearAllButton")}
                   </Button>
                 </div>
               )}
               {!isCreating && selectedUserIds.length > 0 && (
                 <div className="text-sm text-muted-foreground">
-                  Selected User:{" "}
+                  {t("allowanceFormModal.selectedUserLabel")}{" "}
                   {
                     users.find((u) => u.id?.toString() === selectedUserIds[0])
                       ?.username
@@ -376,7 +393,7 @@ export function AllowanceFormModal({
 
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="allowedReservations" className="text-right">
-              Allowed Reservations
+              {t("allowanceFormModal.allowedReservationsLabel")}
             </Label>
             <Input
               id="allowedReservations"
@@ -389,7 +406,7 @@ export function AllowanceFormModal({
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={isLoading}>
-            Cancel
+            {t("allowanceFormModal.cancelButton")}
           </Button>
           <Button
             onClick={handleSubmit}
@@ -401,10 +418,10 @@ export function AllowanceFormModal({
             }
           >
             {isLoading
-              ? "Submitting..."
+              ? t("allowanceFormModal.submittingButton")
               : isCreating
-                ? "Create Allowance"
-                : "Save Changes"}
+                ? t("allowanceFormModal.createAllowanceButton")
+                : t("allowanceFormModal.saveChangesButton")}
           </Button>
         </DialogFooter>
       </DialogContent>

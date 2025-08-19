@@ -25,6 +25,7 @@ import type {
   SeatRequestDto,
   EventLocationResponseDto,
 } from "@/api";
+import { t } from "i18next";
 
 interface SeatFormModalProps {
   seat: SeatResponseDto | null;
@@ -70,17 +71,23 @@ export function SeatFormModal({
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{isCreating ? "Create Seat" : "Edit Seat"}</DialogTitle>
+          <DialogTitle>
+            {isCreating
+              ? t("seatFormModal.createSeatTitle")
+              : t("seatFormModal.editSeatTitle")}
+          </DialogTitle>
           <DialogDescription>
             {isCreating
-              ? "Add a new seat to a location"
-              : "Update seat information"}
+              ? t("seatFormModal.addSeatDescription")
+              : t("seatFormModal.updateSeatDescription")}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="seatNumber">Seat Number</Label>
+            <Label htmlFor="seatNumber">
+              {t("seatFormModal.seatNumberLabel")}
+            </Label>
             <Input
               id="seatNumber"
               value={formData.seatNumber}
@@ -92,7 +99,7 @@ export function SeatFormModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="location">Location</Label>
+            <Label htmlFor="location">{t("seatFormModal.locationLabel")}</Label>
             <Select
               value={formData.eventLocationId}
               onValueChange={(value) =>
@@ -100,7 +107,9 @@ export function SeatFormModal({
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select a location" />
+                <SelectValue
+                  placeholder={t("seatFormModal.selectLocationPlaceholder")}
+                />
               </SelectTrigger>
               <SelectContent>
                 {locations.map((location) => (
@@ -117,7 +126,9 @@ export function SeatFormModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="xCoordinate">X Coordinate</Label>
+              <Label htmlFor="xCoordinate">
+                {t("seatFormModal.xCoordinateLabel")}
+              </Label>
               <Input
                 id="xCoordinate"
                 type="number"
@@ -132,7 +143,9 @@ export function SeatFormModal({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="yCoordinate">Y Coordinate</Label>
+              <Label htmlFor="yCoordinate">
+                {t("seatFormModal.yCoordinateLabel")}
+              </Label>
               <Input
                 id="yCoordinate"
                 type="number"
@@ -150,10 +163,14 @@ export function SeatFormModal({
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              {t("seatFormModal.cancelButton")}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Saving..." : isCreating ? "Create" : "Update"}
+              {isLoading
+                ? t("seatFormModal.savingButton")
+                : isCreating
+                  ? t("seatFormModal.createButton")
+                  : t("seatFormModal.updateButton")}
             </Button>
           </div>
         </form>

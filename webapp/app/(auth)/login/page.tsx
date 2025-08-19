@@ -4,6 +4,7 @@ import type React from "react";
 
 import { useState } from "react";
 import Link from "next/link";
+import { t } from "i18next";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -51,20 +52,20 @@ export default function LoginPage() {
         <Card className="w-full max-w-md mx-4">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold">
-              Willkommen zurück!
+              {t("login.welcomeBack")}
             </CardTitle>
-            <CardDescription>Sie sind bereits angemeldet.</CardDescription>
+            <CardDescription>{t("login.alreadyLoggedIn")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Button onClick={handleContinue} className="w-full">
-              Weiter mit angemeldetem Nutzer ({user?.username})
+              {t("login.continueWithUser", { username: user?.username })}
             </Button>
             <Button
               onClick={handleLogout}
               variant="outline"
               className="w-full bg-transparent"
             >
-              Logout
+              {t("login.logout")}
             </Button>
           </CardContent>
         </Card>
@@ -76,43 +77,43 @@ export default function LoginPage() {
     <div className="flex min-h-screen w-full items-center justify-center bg-background">
       <Card className="w-full max-w-md mx-4">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Anmelden</CardTitle>
-          <CardDescription>
-            Geben Sie Ihre Anmeldedaten ein, um auf Ihr Konto zuzugreifen
-          </CardDescription>
+          <CardTitle className="text-2xl font-bold">
+            {t("login.signIn")}
+          </CardTitle>
+          <CardDescription>{t("login.enterCredentials")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Benutzername</Label>
+              <Label htmlFor="username">{t("login.username")}</Label>
               <Input
                 id="username"
                 type="text"
-                placeholder="Geben Sie Ihren Benutzernamen ein"
+                placeholder={t("login.enterUsername")}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Passwort</Label>
+              <Label htmlFor="password">{t("login.password")}</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="Geben Sie Ihr Passwort ein"
+                placeholder={t("login.enterPassword")}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </div>
             <Button type="submit" className="w-full" disabled={isLoadingForm}>
-              {isLoadingForm ? "Melde mich an..." : "Anmelden"}
+              {isLoadingForm ? t("login.signingIn") : t("login.signInButton")}
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">
-            {"Sie haben noch kein Konto? "}
+            {t("login.noAccount")}
             <Link href="/register" className="text-primary hover:underline">
-              Registrieren
+              {t("login.register")}
             </Link>
           </div>
         </CardContent>

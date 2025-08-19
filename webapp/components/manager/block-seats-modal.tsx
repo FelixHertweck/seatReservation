@@ -26,6 +26,7 @@ import type {
   DetailedEventResponseDto,
   SeatDto,
 } from "@/api";
+import { t } from "i18next";
 
 interface BlockSeatsModalProps {
   events: DetailedEventResponseDto[];
@@ -87,9 +88,11 @@ export function BlockSeatsModal({
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-6xl max-h-[90vh] h-[85vh] flex flex-col animate-in fade-in zoom-in duration-300">
         <DialogHeader className="animate-in slide-in-from-top duration-300">
-          <DialogTitle className="text-xl font-bold">Block Seats</DialogTitle>
+          <DialogTitle className="text-xl font-bold">
+            {t("blockSeatsModal.title")}
+          </DialogTitle>
           <DialogDescription>
-            Select seats to block and prevent reservations
+            {t("blockSeatsModal.description")}
           </DialogDescription>
         </DialogHeader>
 
@@ -98,14 +101,20 @@ export function BlockSeatsModal({
           className="flex-1 flex flex-col space-y-4 animate-in slide-in-from-bottom duration-500 min-h-0"
         >
           <div className="space-y-2">
-            <Label htmlFor="eventLocation">Event Location *</Label>
+            <Label htmlFor="eventLocation">
+              {t("blockSeatsModal.eventLocationLabel")} *
+            </Label>
             <Select
               value={formData.eventId}
               onValueChange={handleEventChange}
               required
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select an event location" />
+                <SelectValue
+                  placeholder={t(
+                    "blockSeatsModal.selectEventLocationPlaceholder",
+                  )}
+                />
               </SelectTrigger>
               <SelectContent>
                 {events?.map((event) => (
@@ -123,28 +132,28 @@ export function BlockSeatsModal({
           <div className="flex gap-4 text-sm">
             <div className="flex items-center gap-2 animate-in slide-in-from-left duration-300">
               <div className="w-4 h-4 bg-green-500 dark:bg-green-400 rounded transition-all duration-300 hover:scale-110"></div>
-              <span>Available</span>
+              <span>{t("blockSeatsModal.available")}</span>
             </div>
             <div
               className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
               style={{ animationDelay: "100ms" }}
             >
               <div className="w-4 h-4 bg-blue-500 dark:bg-blue-400 rounded transition-all duration-300 hover:scale-110"></div>
-              <span>Selected to Block</span>
+              <span>{t("blockSeatsModal.selectedToBlock")}</span>
             </div>
             <div
               className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
               style={{ animationDelay: "200ms" }}
             >
               <div className="w-4 h-4 bg-red-500 dark:bg-red-400 rounded transition-all duration-300 hover:scale-110"></div>
-              <span>Reserved</span>
+              <span>{t("blockSeatsModal.reserved")}</span>
             </div>
             <div
               className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
               style={{ animationDelay: "300ms" }}
             >
               <div className="w-4 h-4 bg-gray-500 dark:bg-gray-400 rounded transition-all duration-300 hover:scale-110"></div>
-              <span>Already Blocked</span>
+              <span>{t("blockSeatsModal.alreadyBlocked")}</span>
             </div>
           </div>
 
@@ -160,7 +169,9 @@ export function BlockSeatsModal({
 
           {selectedSeats.length > 0 && (
             <div className="space-y-2 animate-in slide-in-from-bottom duration-300">
-              <h4 className="font-medium">Seats to Block:</h4>
+              <h4 className="font-medium">
+                {t("blockSeatsModal.seatsToBlockTitle")}
+              </h4>
               <div className="flex flex-wrap gap-2">
                 {selectedSeats.map((seat, index) => (
                   <Badge
@@ -183,7 +194,7 @@ export function BlockSeatsModal({
               onClick={onClose}
               className="hover:scale-[1.02] transition-all duration-300 active:scale-[0.98] bg-transparent"
             >
-              Cancel
+              {t("blockSeatsModal.cancelButton")}
             </Button>
             <Button
               type="submit"
@@ -193,8 +204,10 @@ export function BlockSeatsModal({
               className="hover:scale-[1.02] transition-all duration-300 active:scale-[0.98]"
             >
               {isLoading
-                ? "Blocking..."
-                : `Block ${selectedSeats.length} Seat(s)`}
+                ? t("blockSeatsModal.blockingButton")
+                : t("blockSeatsModal.blockSeatsButton", {
+                    count: selectedSeats.length,
+                  })}
             </Button>
           </div>
         </form>

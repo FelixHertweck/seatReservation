@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
+import { t } from "i18next";
 
 interface FilterOption {
   key: string;
@@ -96,7 +97,7 @@ export function SearchAndFilter({
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
-            placeholder="Search..."
+            placeholder={t("searchAndFilter.searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
             className="pl-10"
@@ -109,7 +110,7 @@ export function SearchAndFilter({
             className="flex items-center gap-2"
           >
             <Filter className="h-4 w-4" />
-            Filters
+            {t("searchAndFilter.filtersButton")}
           </Button>
         )}
       </div>
@@ -143,7 +144,11 @@ export function SearchAndFilter({
                       }
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder={`Select ${option.label}`} />
+                        <SelectValue
+                          placeholder={t("searchAndFilter.selectPlaceholder", {
+                            label: option.label,
+                          })}
+                        />
                       </SelectTrigger>
                       <SelectContent>
                         {option.options.map((opt) => (
@@ -156,7 +161,9 @@ export function SearchAndFilter({
                   )}
                   {option.type === "string" && (
                     <Input
-                      placeholder={`Enter ${option.label}`}
+                      placeholder={t("searchAndFilter.enterPlaceholder", {
+                        label: option.label,
+                      })}
                       value={(filters[option.key] as string) || ""}
                       onChange={(e) =>
                         handleFilterChange(option.key, e.target.value)
@@ -173,7 +180,9 @@ export function SearchAndFilter({
       {/* Active Filters Display */}
       {activeFilters.length > 0 && (
         <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-sm text-muted-foreground">Active filters:</span>
+          <span className="text-sm text-muted-foreground">
+            {t("searchAndFilter.activeFiltersLabel")}
+          </span>
           {activeFilters.map(([key, value]) => (
             <Badge
               key={key}
@@ -197,7 +206,7 @@ export function SearchAndFilter({
             onClick={clearAllFilters}
             className="text-muted-foreground"
           >
-            Clear all
+            {t("searchAndFilter.clearAllButton")}
           </Button>
         </div>
       )}

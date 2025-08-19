@@ -5,6 +5,7 @@ import InitQueryClient from "@/app/initQueryClient";
 import { ThemeProvider } from "@/components/theme-provider";
 import { EmailVerificationPrompt } from "@/components/common/EmailVerificationPrompt";
 import { initI18N } from "@/locals/Languages";
+import i18n from "i18next";
 
 export default function RootLayout({
   children,
@@ -14,7 +15,7 @@ export default function RootLayout({
   initI18N();
 
   return (
-    <html lang="en">
+    <html lang={i18n.language}>
       <head>
         <link
           rel="apple-touch-icon"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Plus,
   Edit,
@@ -35,6 +35,7 @@ import type {
   ImportSeatDto,
 } from "@/api";
 import { customSerializer } from "@/lib/jsonBodySerializer";
+import { t } from "i18next";
 
 export interface LocationManagementProps {
   locations: EventLocationResponseDto[];
@@ -80,34 +81,34 @@ export function LocationManagement({
     setCurrentFilters(initialFilter);
   }, [initialFilter]);
 
+  const applyFilters = useCallback(
+    (searchQuery: string, filters: Record<string, string>) => {
+      let filtered = locations;
+
+      // Apply search
+      if (searchQuery) {
+        filtered = filtered.filter(
+          (location) =>
+            location.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            location.address?.toLowerCase().includes(searchQuery.toLowerCase()),
+        );
+      }
+
+      // Apply filters
+      if (filters.locationId) {
+        filtered = filtered.filter(
+          (location) => location.id?.toString() === filters.locationId,
+        );
+      }
+
+      setFilteredLocations(filtered);
+    },
+    [locations],
+  );
+
   useEffect(() => {
     applyFilters("", currentFilters);
-  }, [locations, currentFilters]);
-
-  const applyFilters = (
-    searchQuery: string,
-    filters: Record<string, string>,
-  ) => {
-    let filtered = locations;
-
-    // Apply search
-    if (searchQuery) {
-      filtered = filtered.filter(
-        (location) =>
-          location.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          location.address?.toLowerCase().includes(searchQuery.toLowerCase()),
-      );
-    }
-
-    // Apply filters
-    if (filters.locationId) {
-      filtered = filtered.filter(
-        (location) => location.id?.toString() === filters.locationId,
-      );
-    }
-
-    setFilteredLocations(filtered);
-  };
+  }, [locations, currentFilters, applyFilters]);
 
   const handleSearch = (query: string) => {
     applyFilters(query, currentFilters);
@@ -140,7 +141,9 @@ export function LocationManagement({
   const handleDeleteLocation = async (location: EventLocationResponseDto) => {
     if (
       location.id !== undefined &&
-      confirm(`Are you sure you want to delete ${location.name}?`)
+      confirm(
+        t("locationManagement.confirmDelete", { locationName: location.name }),
+      )
     ) {
       await deleteLocation(BigInt(location.id));
     }
@@ -181,17 +184,19 @@ export function LocationManagement({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Location Management</CardTitle>
-            <CardDescription>Create and manage event locations</CardDescription>
+            <CardTitle>{t("locationManagement.title")}</CardTitle>
+            <CardDescription>
+              {t("locationManagement.description")}
+            </CardDescription>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={handleImportLocation}>
               <FileText className="mr-2 h-4 w-4" />
-              Import JSON
+              {t("locationManagement.importJsonButton")}
             </Button>
             <Button onClick={handleCreateLocation}>
               <Plus className="mr-2 h-4 w-4" />
-              Add Location
+              {t("locationManagement.addLocationButton")}
             </Button>
           </div>
         </div>
@@ -205,7 +210,7 @@ export function LocationManagement({
             filterOptions={[
               {
                 key: "locationId",
-                label: "Location",
+                label: t("locationManagement.locationFilterLabel"),
                 type: "select",
                 options: locations.map((loc) => ({
                   value: loc.id?.toString() || "",
@@ -219,12 +224,22 @@ export function LocationManagement({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Address</TableHead>
-                <TableHead>Capacity</TableHead>
-                <TableHead>Manager</TableHead>
-                <TableHead>Seats</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead>{t("locationManagement.tableHeaderName")}</TableHead>
+                <TableHead>
+                  {t("locationManagement.tableHeaderAddress")}
+                </TableHead>
+                <TableHead>
+                  {t("locationManagement.tableHeaderCapacity")}
+                </TableHead>
+                <TableHead>
+                  {t("locationManagement.tableHeaderManager")}
+                </TableHead>
+                <TableHead>
+                  {t("locationManagement.tableHeaderSeats")}
+                </TableHead>
+                <TableHead>
+                  {t("locationManagement.tableHeaderActions")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -248,11 +263,13 @@ export function LocationManagement({
                             location.id && handleSeatsClick(location.id)
                           }
                         >
-                          {seatCount} seats
+                          {t("locationManagement.seatsCount", {
+                            count: seatCount,
+                          })}
                           <ExternalLink className="ml-1 h-3 w-3" />
                         </Button>
                       ) : (
-                        "0 seats"
+                        t("locationManagement.noSeats")
                       )}
                     </TableCell>
                     <TableCell>
@@ -261,7 +278,7 @@ export function LocationManagement({
                           variant="outline"
                           size="sm"
                           onClick={() => handleExportLocation(location)}
-                          title="Export as JSON"
+                          title={t("locationManagement.exportAsJsonTitle")}
                         >
                           <Download className="h-4 w-4" />
                         </Button>

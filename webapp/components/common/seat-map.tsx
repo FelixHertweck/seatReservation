@@ -7,6 +7,7 @@ import type { ReactElement } from "react";
 import { cn } from "@/lib/utils";
 import type { SeatDto } from "@/api";
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import { t } from "i18next";
 
 interface SeatMapProps {
   seats: SeatDto[];
@@ -47,7 +48,7 @@ const SeatComponent = React.memo(
           clickable && "cursor-pointer",
         )}
         onClick={handleClick}
-        title={`Seat ${seat.seatNumber}`}
+        title={t("seatMap.seatTitle", { seatNumber: seat.seatNumber })}
       >
         <div
           className={cn(
@@ -321,7 +322,7 @@ export function SeatMap({
           onClick={resetView}
           className="px-2 py-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-sm dark:text-white"
         >
-          Reset
+          {t("seatMap.resetButton")}
         </button>
       </div>
 
@@ -354,7 +355,7 @@ export function SeatMap({
             }}
           >
             <div className="w-full h-full flex items-center justify-center text-gray-800 dark:text-gray-200 text-3xl font-bold">
-              BÜHNE
+              {t("seatMap.stageText")}
             </div>
           </div>
 
