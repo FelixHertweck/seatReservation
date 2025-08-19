@@ -11,6 +11,7 @@ import {
 import { Download } from "lucide-react";
 import { useAdmin } from "@/hooks/use-admin";
 import { toast } from "@/components/ui/use-toast";
+import { customSerializer } from "@/lib/jsonBodySerializer";
 
 export function UserExport() {
   const { users, isLoading } = useAdmin();
@@ -27,11 +28,8 @@ export function UserExport() {
     }
 
     try {
-      const jsonString = JSON.stringify(
-        users,
-        (key, value) => (typeof value === "bigint" ? value.toString() : value),
-        2,
-      );
+      const jsonString = customSerializer.json(users);
+
       const blob = new Blob([jsonString], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");

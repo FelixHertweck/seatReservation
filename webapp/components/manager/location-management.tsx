@@ -34,6 +34,7 @@ import type {
   ImportEventLocationDto,
   ImportSeatDto,
 } from "@/api";
+import { customSerializer } from "@/lib/jsonBodySerializer";
 
 export interface LocationManagementProps {
   locations: EventLocationResponseDto[];
@@ -161,11 +162,8 @@ export function LocationManagement({
   };
 
   const handleExportLocation = (location: EventLocationResponseDto) => {
-    const dataStr = JSON.stringify(
-      location,
-      (_, value) => (typeof value === "bigint" ? Number(value) : value),
-      2,
-    );
+    const dataStr = customSerializer.json(location);
+
     const dataBlob = new Blob([dataStr], { type: "application/json" });
     const url = URL.createObjectURL(dataBlob);
 
