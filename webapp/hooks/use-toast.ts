@@ -8,6 +8,16 @@ import type { ToastActionElement, ToastProps } from "@/components/ui/toast";
 const TOAST_LIMIT = 1;
 const TOAST_REMOVE_DELAY = 1000000;
 
+let TOASTS_DISABLED = false;
+
+export function setToastsDisabled(disabled: boolean) {
+  TOASTS_DISABLED = disabled;
+}
+
+export function getToastsDisabled() {
+  return TOASTS_DISABLED;
+}
+
 type ToasterToast = ToastProps & {
   id: string;
   title?: React.ReactNode;
@@ -140,6 +150,14 @@ function dispatch(action: Action) {
 type Toast = Omit<ToasterToast, "id">;
 
 function toast({ ...props }: Toast) {
+  if (TOASTS_DISABLED) {
+    return {
+      id: "",
+      dismiss: () => {},
+      update: () => {},
+    };
+  }
+
   const id = genId();
 
   const update = (props: ToasterToast) =>

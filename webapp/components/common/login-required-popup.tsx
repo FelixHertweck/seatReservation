@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useAuthStatus } from "@/hooks/use-auth-status";
+import { setToastsDisabled } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 export function LoginRequiredPopup() {
   const { isLoggedIn, isLoading } = useAuthStatus();
@@ -19,6 +21,16 @@ export function LoginRequiredPopup() {
   const handleLoginRedirect = () => {
     router.push("/login");
   };
+
+  useEffect(() => {
+    if (!isLoading && !isLoggedIn) {
+      setToastsDisabled(true);
+    }
+
+    return () => {
+      setToastsDisabled(false);
+    };
+  }, [isLoading, isLoggedIn]);
 
   return (
     <Dialog open={!isLoading && !isLoggedIn}>
