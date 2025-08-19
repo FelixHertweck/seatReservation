@@ -161,7 +161,8 @@ public class UserService {
             existingUser.setEmailVerified(false);
 
             // Delete existing email verification entry if present
-            emailVerificationRepository.findByUserIdOptional(existingUser.id)
+            emailVerificationRepository
+                    .findByUserIdOptional(existingUser.id)
                     .ifPresent(emailVerificationRepository::delete);
 
             // Send new email confirmation
