@@ -157,8 +157,14 @@ public class UserService {
                     "Updating email for user ID %d from %s to %s",
                     existingUser.id, existingUser.getEmail(), email);
             existingUser.setEmail(email);
-            // Reset email verification status and send confirmation email
+            // Reset email verification status
             existingUser.setEmailVerified(false);
+
+            // Delete existing email verification entry if present
+            emailVerificationRepository.findByUserIdOptional(existingUser.id)
+                    .ifPresent(emailVerificationRepository::delete);
+
+            // Send new email confirmation
             try {
                 LOG.debugf(
                         "Sending email confirmation to %s for user ID %d due to email change.",
