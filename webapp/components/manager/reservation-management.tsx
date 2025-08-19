@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Trash2, Ban, ExternalLink } from "lucide-react";
+import { Plus, Trash2, Ban, ExternalLink, Download } from "lucide-react"; // Added Download icon
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,14 +22,30 @@ import { Badge } from "@/components/ui/badge";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { ReservationFormModal } from "@/components/manager/reservation-form-modal";
 import { BlockSeatsModal } from "@/components/manager/block-seats-modal";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import type {
-  DetailedReservationResponseDto,
-  ReservationRequestDto,
-  BlockSeatsRequestDto,
   UserDto,
   DetailedEventResponseDto,
   SeatDto,
+  DetailedReservationResponseDto,
+  ReservationRequestDto,
+  BlockSeatsRequestDto,
 } from "@/api";
+import { customSerializer } from "@/lib/jsonBodySerializer";
 
 export interface ReservationManagementProps {
   users: UserDto[];
@@ -64,6 +80,9 @@ export function ReservationManagement({
     useState(reservations);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false); // Added state for export functionality
+  const [selectedEventForExport, setSelectedEventForExport] =
+    useState<string>("");
   const [currentFilters, setCurrentFilters] =
     useState<Record<string, string>>(initialFilter);
 
@@ -152,6 +171,31 @@ export function ReservationManagement({
     }
   };
 
+  const handleExportReservations = () => {
+    if (!selectedEventForExport) return;
+
+    const eventId = BigInt(selectedEventForExport);
+    const event = events.find((e) => e.id === eventId);
+    const eventReservations = reservations.filter((r) => r.eventId === eventId);
+
+    const exportData = customSerializer.json(eventReservations);
+
+    const blob = new Blob([exportData], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `reservations-${event?.name?.replace(/[^a-z0-9]/gi, "_").toLowerCase() || "event"}-${new Date().toISOString().split("T")[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    setIsExportModalOpen(false);
+    setSelectedEventForExport("");
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -163,6 +207,62 @@ export function ReservationManagement({
             </CardDescription>
           </div>
           <div className="flex gap-2">
+            <Dialog
+              open={isExportModalOpen}
+              onOpenChange={setIsExportModalOpen}
+            >
+              <DialogTrigger asChild>
+                <Button variant="outline">
+                  <Download className="mr-2 h-4 w-4" />
+                  Export Reservations
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Export Event Reservations</DialogTitle>
+                  <DialogDescription>
+                    Select an event to export all its reservations as JSON.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium">Select Event</label>
+                    <Select
+                      value={selectedEventForExport}
+                      onValueChange={setSelectedEventForExport}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose an event to export" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {events.map((event) => (
+                          <SelectItem
+                            key={event.id?.toString()}
+                            value={event.id?.toString() || ""}
+                          >
+                            {event.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsExportModalOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleExportReservations}
+                      disabled={!selectedEventForExport}
+                    >
+                      Export JSON
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
             <Button variant="outline" onClick={() => setIsBlockModalOpen(true)}>
               <Ban className="mr-2 h-4 w-4" />
               Block Seats
