@@ -149,7 +149,7 @@ public class EventServiceTest {
 
         assertNotNull(createdEvent);
         assertEquals("New Event", createdEvent.name());
-        assertEquals(eventLocation.id, createdEvent.eventLocationId());
+        assertEquals(eventLocation.id, createdEvent.eventLocation().id());
         verify(eventRepository, times(1)).persist(any(Event.class));
     }
 

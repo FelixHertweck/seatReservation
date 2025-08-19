@@ -247,6 +247,6 @@ public class ReservationResourceTest {
                 .when()
                 .post("/api/manager/reservations/block")
                 .then()
-                .statusCode(204);
+                .statusCode(200);
     }
 }
