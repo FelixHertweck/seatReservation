@@ -47,8 +47,8 @@ export default function LoginPage() {
 
   if (isLoggedIn && !currentlyLoggingIn) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-        <Card className="w-full max-w-md">
+      <div className="flex min-h-screen w-full items-center justify-center bg-background">
+        <Card className="w-full max-w-md mx-4">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold">
               Willkommen zurück!
@@ -59,7 +59,11 @@ export default function LoginPage() {
             <Button onClick={handleContinue} className="w-full">
               Weiter mit angemeldetem Nutzer ({user?.username})
             </Button>
-            <Button onClick={handleLogout} variant="outline" className="w-full">
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              className="w-full bg-transparent"
+            >
               Logout
             </Button>
           </CardContent>
@@ -69,8 +73,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-screen w-full items-center justify-center bg-background">
+      <Card className="w-full max-w-md mx-4">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">Anmelden</CardTitle>
           <CardDescription>

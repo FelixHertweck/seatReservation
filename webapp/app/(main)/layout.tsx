@@ -28,7 +28,6 @@ export default function MainLayout({
         </header>
         <main className="flex-1 p-4 lg:p-6">{children}</main>
       </SidebarInset>
-      <Toaster />
       <LoginRequiredPopup />
     </SidebarProvider>
   );
