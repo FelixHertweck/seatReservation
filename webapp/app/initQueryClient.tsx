@@ -19,11 +19,13 @@ export default function InitQueryClient({
       queries: {
         staleTime: 60000,
         throwOnError: () => {
-          toast({
-            title: "Error",
-            description: "Failed to load data. Please try again.",
-            variant: "destructive",
-          });
+          setTimeout(() => {
+            toast({
+              title: "Error",
+              description: "Failed to load data. Please try again.",
+              variant: "destructive",
+            });
+          }, 0);
           return false;
         },
       },

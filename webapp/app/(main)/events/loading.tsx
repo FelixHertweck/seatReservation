@@ -1,26 +1,8 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export default function Loading() {
   return (
     <div className="container mx-auto p-6 animate-in fade-in duration-500">
-      <div className="flex items-center gap-3 mb-6">
-        <LoadingSpinner size="lg" />
-        <div>
-          <Skeleton className="h-8 w-32 mb-2 animate-pulse" />
-          <Skeleton className="h-4 w-96 animate-pulse" />
-        </div>
-      </div>
-
-      {/* Search and Filter Skeleton */}
-      <div className="space-y-4 mb-6">
-        <div className="flex gap-4">
-          <Skeleton className="h-10 flex-1 animate-pulse" />
-          <Skeleton className="h-10 w-20 animate-pulse" />
-        </div>
-      </div>
-
-      {/* Event Cards Grid Skeleton */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {Array.from({ length: 6 }).map((_, index) => (
           <div

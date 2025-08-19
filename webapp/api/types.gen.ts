@@ -1147,6 +1147,33 @@ export type GetApiUserEventsResponses = {
 
 export type GetApiUserEventsResponse = GetApiUserEventsResponses[keyof GetApiUserEventsResponses];
 
+export type PostApiUserResendEmailConfirmationData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/user/resend-email-confirmation';
+};
+
+export type PostApiUserResendEmailConfirmationErrors = {
+    /**
+     * User not found
+     */
+    404: unknown;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
+export type PostApiUserResendEmailConfirmationResponses = {
+    /**
+     * Email confirmation resent successfully
+     */
+    204: void;
+};
+
+export type PostApiUserResendEmailConfirmationResponse = PostApiUserResendEmailConfirmationResponses[keyof PostApiUserResendEmailConfirmationResponses];
+
 export type GetApiUserReservationsData = {
     body?: never;
     path?: never;

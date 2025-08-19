@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { EventCard } from "@/components/events/event-card";
 import { EventReservationModal } from "@/components/events/event-reservation-modal";
 import { ReservationCard } from "@/components/reservations/reservation-card";
@@ -21,12 +21,7 @@ import type { EventResponseDto, ReservationResponseDto } from "@/api";
 import Loading from "./loading";
 
 export default function EventsPage() {
-  const {
-    events,
-    isLoading: eventsLoading,
-    createReservation,
-    getEventById,
-  } = useEvents();
+  const { events, isLoading: eventsLoading, createReservation } = useEvents();
   const {
     reservations,
     isLoading: reservationsLoading,
@@ -37,59 +32,24 @@ export default function EventsPage() {
   );
   const [selectedReservation, setSelectedReservation] =
     useState<ReservationResponseDto | null>(null);
-  const [filteredEvents, setFilteredEvents] = useState<EventResponseDto[]>([]);
-  const [filteredReservations, setFilteredReservations] = useState<
-    ReservationResponseDto[]
-  >([]);
   const [activeTab, setActiveTab] = useState("available");
   const [selectedEventFilter, setSelectedEventFilter] = useState<string>("all");
+  const [eventSearchQuery, setEventSearchQuery] = useState<string>("");
+  const [reservationSearchQuery, setReservationSearchQuery] =
+    useState<string>("");
 
-  const [isSeatsLoading, setIsSeatsLoading] = useState(false);
-
-  useEffect(() => {
-    if (events) {
-      const sortedEvents = [...events].sort((a, b) => {
-        const aHasSeats = (a.reservationsAllowed ?? 0) > 0;
-        const bHasSeats = (b.reservationsAllowed ?? 0) > 0;
-
-        if (aHasSeats && !bHasSeats) return -1;
-        if (!aHasSeats && bHasSeats) return 1;
-        return 0;
-      });
-      setFilteredEvents(sortedEvents);
-    }
-  }, [events]);
-
-  useEffect(() => {
-    if (reservations) {
-      let filtered = [...reservations];
-
-      // Filter by selected event if not "all"
-      if (selectedEventFilter !== "all") {
-        const eventId = BigInt(selectedEventFilter);
-        filtered = filtered.filter(
-          (reservation) => reservation.eventId === eventId,
-        );
-      }
-
-      setFilteredReservations(filtered);
-    }
-  }, [reservations, selectedEventFilter]);
-
-  if (eventsLoading || reservationsLoading) {
-    return <Loading />;
-  }
-
-  const handleEventSearch = (query: string) => {
-    if (!events) return;
+  const filteredEvents = useMemo(() => {
+    if (!events) return [];
 
     const filtered = events.filter(
       (event) =>
-        event.name?.toLowerCase().includes(query.toLowerCase()) ||
-        event.description?.toLowerCase().includes(query.toLowerCase()),
+        event.name?.toLowerCase().includes(eventSearchQuery.toLowerCase()) ||
+        event.description
+          ?.toLowerCase()
+          .includes(eventSearchQuery.toLowerCase()),
     );
 
-    const sortedFiltered = filtered.sort((a, b) => {
+    return [...filtered].sort((a, b) => {
       const aHasSeats = (a.reservationsAllowed ?? 0) > 0;
       const bHasSeats = (b.reservationsAllowed ?? 0) > 0;
 
@@ -97,26 +57,35 @@ export default function EventsPage() {
       if (!aHasSeats && bHasSeats) return 1;
       return 0;
     });
+  }, [events, eventSearchQuery]);
 
-    setFilteredEvents(sortedFiltered);
-  };
+  const filteredReservations = useMemo(() => {
+    if (!reservations) return [];
 
-  const handleReservationSearch = (query: string) => {
-    let baseReservations = [...reservations];
+    let filtered = [...reservations];
 
-    // Apply event filter first
+    // Filter by selected event if not "all"
     if (selectedEventFilter !== "all") {
       const eventId = BigInt(selectedEventFilter);
-      baseReservations = baseReservations.filter(
+      filtered = filtered.filter(
         (reservation) => reservation.eventId === eventId,
       );
     }
 
     // Then apply search filter
-    const filtered = baseReservations.filter((reservation) =>
-      reservation.seat?.seatNumber?.toLowerCase().includes(query.toLowerCase()),
+    return filtered.filter((reservation) =>
+      reservation.seat?.seatNumber
+        ?.toLowerCase()
+        .includes(reservationSearchQuery.toLowerCase()),
     );
-    setFilteredReservations(filtered);
+  }, [reservations, selectedEventFilter, reservationSearchQuery]);
+
+  const handleEventSearch = (query: string) => {
+    setEventSearchQuery(query);
+  };
+
+  const handleReservationSearch = (query: string) => {
+    setReservationSearchQuery(query);
   };
 
   const handleViewReservationSeats = (reservation: ReservationResponseDto) => {
@@ -138,6 +107,10 @@ export default function EventsPage() {
       (reservation) => reservation.eventId === eventId,
     );
   };
+
+  if (eventsLoading || reservationsLoading) {
+    return <Loading />;
+  }
 
   return (
     <div className="container mx-auto p-6">
@@ -228,15 +201,27 @@ export default function EventsPage() {
             filterOptions={[]}
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredEvents.map((event) => (
-              <EventCard
-                key={event.id?.toString()}
-                event={event}
-                onReserve={() => setSelectedEvent(event)}
-              />
-            ))}
-          </div>
+          {filteredEvents.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground text-lg">
+                Derzeit sind keine Events verfügbar.
+              </p>
+              <p className="text-muted-foreground">
+                Bitte versuchen Sie es später noch einmal oder überprüfen Sie
+                Ihre Suchkriterien.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredEvents.map((event) => (
+                <EventCard
+                  key={event.id?.toString()}
+                  event={event}
+                  onReserve={() => setSelectedEvent(event)}
+                />
+              ))}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
 
@@ -249,7 +234,7 @@ export default function EventsPage() {
           reservation={selectedReservation}
           eventReservations={getEventReservations(selectedReservation.eventId)}
           onClose={() => setSelectedReservation(null)}
-          isLoading={isSeatsLoading}
+          isLoading={false}
         />
       )}
 
