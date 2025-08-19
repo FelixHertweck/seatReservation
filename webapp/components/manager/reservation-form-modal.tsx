@@ -29,11 +29,11 @@ import type {
   UserDto,
   DetailedReservationResponseDto,
 } from "@/api";
+import { t } from "i18next";
 
 interface ReservationFormModalProps {
   users: UserDto[];
   events: DetailedEventResponseDto[];
-  seats: SeatDto[];
   reservations?: DetailedReservationResponseDto[];
   onSubmit: (reservationData: ReservationRequestDto) => Promise<void>;
   onClose: () => void;
@@ -42,7 +42,6 @@ interface ReservationFormModalProps {
 export function ReservationFormModal({
   users,
   events,
-  seats,
   reservations = [],
   onSubmit,
   onClose,
@@ -126,9 +125,11 @@ export function ReservationFormModal({
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-6xl max-h-[90vh] h-[80vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Create Reservation</DialogTitle>
+          <DialogTitle>
+            {t("reservationFormModal.createReservationTitle")}
+          </DialogTitle>
           <DialogDescription>
-            Create a new reservation for multiple seats
+            {t("reservationFormModal.createReservationDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -138,28 +139,28 @@ export function ReservationFormModal({
             <div className="flex gap-4 text-sm mb-4">
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-green-500 dark:bg-green-400 rounded"></div>
-                <span>Available</span>
+                <span>{t("reservationFormModal.availableStatus")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-blue-500 dark:bg-blue-400 rounded"></div>
-                <span>Selected</span>
+                <span>{t("reservationFormModal.selectedStatus")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-red-500 dark:bg-red-400 rounded"></div>
-                <span>Reserved</span>
+                <span>{t("reservationFormModal.reservedStatus")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-yellow-500 dark:bg-yellow-400 rounded"></div>
-                <span>User Reserved</span>
+                <span>{t("reservationFormModal.userReservedStatus")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-gray-500 dark:bg-gray-400 rounded"></div>
-                <span>Blocked</span>
+                <span>{t("reservationFormModal.blockedStatus")}</span>
               </div>
             </div>
 
             {formData.eventId && availableSeats.length > 0 ? (
-              <div className="flex-1 min-h-0 flex items-center justify-center">
+              <div className="flex-1 flex items-center justify-center">
                 <div className="w-full h-full max-h-[60vh] flex items-center justify-center">
                   <SeatMap
                     seats={availableSeats}
@@ -172,8 +173,8 @@ export function ReservationFormModal({
             ) : (
               <div className="flex-1 flex items-center justify-center text-gray-500">
                 {!formData.eventId
-                  ? "Please select an event to view seats"
-                  : "No seats available for this event"}
+                  ? t("reservationFormModal.selectEventToViewSeats")
+                  : t("reservationFormModal.noSeatsAvailableForEvent")}
               </div>
             )}
           </div>
@@ -184,14 +185,18 @@ export function ReservationFormModal({
               <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="event" className="text-sm font-medium">
-                    Event
+                    {t("reservationFormModal.eventLabel")}
                   </Label>
                   <Select
                     value={formData.eventId}
                     onValueChange={handleEventChange}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select an event" />
+                      <SelectValue
+                        placeholder={t(
+                          "reservationFormModal.selectEventPlaceholder",
+                        )}
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {events.map((event) => (
@@ -208,10 +213,12 @@ export function ReservationFormModal({
 
                 <div className="space-y-2">
                   <Label htmlFor="user" className="text-sm font-medium">
-                    User
+                    {t("reservationFormModal.userLabel")}
                   </Label>
                   <Input
-                    placeholder="Filter users..."
+                    placeholder={t(
+                      "reservationFormModal.filterUsersPlaceholder",
+                    )}
                     value={userSearch}
                     onChange={(e) => setUserSearch(e.target.value)}
                     className="w-full"
@@ -223,7 +230,11 @@ export function ReservationFormModal({
                     }
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select a user" />
+                      <SelectValue
+                        placeholder={t(
+                          "reservationFormModal.selectUserPlaceholder",
+                        )}
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {filteredUsers.map((user) => (
@@ -242,7 +253,9 @@ export function ReservationFormModal({
               {/* Selected Seats Section */}
               {selectedSeats.length > 0 && (
                 <div className="space-y-3 border-t pt-4">
-                  <h4 className="font-medium text-sm">Selected Seats</h4>
+                  <h4 className="font-medium text-sm">
+                    {t("reservationFormModal.selectedSeatsTitle")}
+                  </h4>
                   <div className="flex flex-wrap gap-2">
                     {selectedSeats.map((seat) => (
                       <Badge
@@ -255,8 +268,9 @@ export function ReservationFormModal({
                     ))}
                   </div>
                   <p className="text-xs text-gray-600 dark:text-gray-400">
-                    {selectedSeats.length} seat
-                    {selectedSeats.length !== 1 ? "s" : ""} selected
+                    {t("reservationFormModal.seatsSelected", {
+                      count: selectedSeats.length,
+                    })}
                   </p>
                 </div>
               )}
@@ -276,7 +290,7 @@ export function ReservationFormModal({
                   className="rounded"
                 />
                 <Label htmlFor="deductAllowance" className="text-sm">
-                  Deduct from user allowance
+                  {t("reservationFormModal.deductAllowanceLabel")}
                 </Label>
               </div>
             </div>
@@ -285,7 +299,7 @@ export function ReservationFormModal({
             <div className="flex flex-col gap-3 mt-auto pt-6 border-t">
               {!isFormValid && (
                 <p className="text-xs text-red-500 text-center">
-                  Please select an event, user, and at least one seat
+                  {t("reservationFormModal.validationError")}
                 </p>
               )}
               <div className="flex gap-3">
@@ -295,14 +309,16 @@ export function ReservationFormModal({
                   onClick={onClose}
                   className="flex-1 bg-transparent"
                 >
-                  Cancel
+                  {t("reservationFormModal.cancelButton")}
                 </Button>
                 <Button
                   type="submit"
                   disabled={isLoading || !isFormValid}
                   className="flex-1"
                 >
-                  {isLoading ? "Creating..." : "Create"}
+                  {isLoading
+                    ? t("reservationFormModal.creatingButton")
+                    : t("reservationFormModal.createButton")}
                 </Button>
               </div>
             </div>

@@ -3,6 +3,7 @@
 import { Calendar, Github, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { t } from "i18next";
 
 export default function HomePage() {
   return (
@@ -15,14 +16,16 @@ export default function HomePage() {
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-lg">
                 <Calendar className="size-4" />
               </div>
-              <span className="text-xl font-bold">Event Manager</span>
+              <span className="text-xl font-bold">
+                {t("startPage.eventManagerTitle")}
+              </span>
             </div>
             <div className="flex items-center gap-4">
               <Link href="/login">
-                <Button variant="ghost">Sign In</Button>
+                <Button variant="ghost">{t("startPage.signInButton")}</Button>
               </Link>
               <Link href="/register">
-                <Button>Get Started</Button>
+                <Button>{t("startPage.getStartedButton")}</Button>
               </Link>
             </div>
           </div>
@@ -36,14 +39,13 @@ export default function HomePage() {
             className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent animate-in slide-in-from-bottom duration-700"
             style={{ animationDelay: "300ms" }}
           >
-            Event Management
+            {t("startPage.heroTitle")}
           </h1>
           <p
             className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto animate-in slide-in-from-bottom duration-700"
             style={{ animationDelay: "400ms" }}
           >
-            Access your events, reservations, and administrative tools. Sign in
-            or register to get started.
+            {t("startPage.heroDescription")}
           </p>
           <div
             className="flex flex-col sm:flex-row gap-4 justify-center animate-in slide-in-from-bottom duration-700"
@@ -54,7 +56,7 @@ export default function HomePage() {
                 size="lg"
                 className="group hover:scale-105 transition-all duration-300"
               >
-                Get Started
+                {t("startPage.getStartedButton")}
                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
               </Button>
             </Link>
@@ -64,7 +66,7 @@ export default function HomePage() {
                 size="lg"
                 className="hover:scale-105 transition-all duration-300 bg-transparent"
               >
-                Sign In
+                {t("startPage.signInButton")}
               </Button>
             </Link>
           </div>
@@ -80,22 +82,25 @@ export default function HomePage() {
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-lg">
                   <Calendar className="size-4" />
                 </div>
-                <span className="text-xl font-bold">Event Manager</span>
+                <span className="text-xl font-bold">
+                  {t("startPage.eventManagerTitle")}
+                </span>
               </div>
               <p className="text-muted-foreground mb-4 max-w-md">
-                The most comprehensive event management platform for modern
-                organizations.
+                {t("startPage.footerDescription")}
               </p>
             </div>
             <div>
-              <h3 className="font-semibold mb-4">Product</h3>
+              <h3 className="font-semibold mb-4">
+                {t("startPage.productTitle")}
+              </h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <Link
                     href="/events"
                     className="hover:text-foreground transition-colors"
                   >
-                    Events
+                    {t("startPage.eventsLink")}
                   </Link>
                 </li>
                 <li>
@@ -103,7 +108,7 @@ export default function HomePage() {
                     href="/reservations"
                     className="hover:text-foreground transition-colors"
                   >
-                    Reservations
+                    {t("startPage.reservationsLink")}
                   </Link>
                 </li>
                 <li>
@@ -111,7 +116,7 @@ export default function HomePage() {
                     href="/manager"
                     className="hover:text-foreground transition-colors"
                   >
-                    Management
+                    {t("startPage.managementLink")}
                   </Link>
                 </li>
                 <li>
@@ -119,20 +124,22 @@ export default function HomePage() {
                     href="/admin"
                     className="hover:text-foreground transition-colors"
                   >
-                    Administration
+                    {t("startPage.administrationLink")}
                   </Link>
                 </li>
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold mb-4">Resources</h3>
+              <h3 className="font-semibold mb-4">
+                {t("startPage.resourcesTitle")}
+              </h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <Link
                     href="#"
                     className="hover:text-foreground transition-colors"
                   >
-                    About
+                    {t("startPage.aboutLink")}
                   </Link>
                 </li>
                 <li>
@@ -140,7 +147,7 @@ export default function HomePage() {
                     href="#"
                     className="hover:text-foreground transition-colors"
                   >
-                    Contact
+                    {t("startPage.contactLink")}
                   </Link>
                 </li>
                 <li>
@@ -151,14 +158,14 @@ export default function HomePage() {
                     className="hover:text-foreground transition-colors flex items-center gap-2"
                   >
                     <Github className="h-4 w-4" />
-                    GitHub Project
+                    {t("startPage.githubProjectLink")}
                   </Link>
                 </li>
               </ul>
             </div>
           </div>
           <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
-            <p>&copy; 2025 Event Manager. All rights reserved.</p>
+            <p>{t("startPage.copyright")}</p>
           </div>
         </div>
       </footer>

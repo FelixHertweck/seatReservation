@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { EventCard } from "@/components/events/event-card";
 import { EventReservationModal } from "@/components/events/event-reservation-modal";
 import { ReservationCard } from "@/components/reservations/reservation-card";
@@ -19,6 +19,7 @@ import { useEvents } from "@/hooks/use-events";
 import { useReservations } from "@/hooks/use-reservations";
 import type { EventResponseDto, ReservationResponseDto } from "@/api";
 import Loading from "./loading";
+import { t } from "i18next";
 
 export default function EventsPage() {
   const { events, isLoading: eventsLoading, createReservation } = useEvents();
@@ -115,18 +116,18 @@ export default function EventsPage() {
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Events & Reservations</h1>
-        <p className="text-muted-foreground">
-          Browse events and manage your reservations
-        </p>
+        <h1 className="text-3xl font-bold mb-2">{t("eventsPage.title")}</h1>
+        <p className="text-muted-foreground">{t("eventsPage.description")}</p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="available">Available Events</TabsTrigger>
+          <TabsTrigger value="available">
+            {t("eventsPage.availableEventsTab")}
+          </TabsTrigger>
 
           <TabsTrigger value="reservations" className="flex items-center gap-2">
-            My Reservations
+            {t("eventsPage.myReservationsTab")}
             {reservations.length > 0 && (
               <Badge variant="secondary" className="ml-1">
                 {reservations.length}
@@ -150,10 +151,14 @@ export default function EventsPage() {
                 onValueChange={setSelectedEventFilter}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Filter by Event" />
+                  <SelectValue
+                    placeholder={t("eventsPage.filterByEventPlaceholder")}
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Events</SelectItem>
+                  <SelectItem value="all">
+                    {t("eventsPage.allEventsFilter")}
+                  </SelectItem>
                   {eventsWithReservations.map((event) => (
                     <SelectItem
                       key={event.id?.toString()}
@@ -171,11 +176,11 @@ export default function EventsPage() {
             <div className="text-center py-12">
               <p className="text-muted-foreground text-lg">
                 {selectedEventFilter === "all"
-                  ? "You don't have any reservations yet."
-                  : "No reservations found for the selected event."}
+                  ? t("eventsPage.noReservationsYet")
+                  : t("eventsPage.noReservationsForSelectedEvent")}
               </p>
               <p className="text-muted-foreground">
-                Switch to "Available Events" to make your first reservation!
+                {t("eventsPage.switchToAvailableEvents")}
               </p>
             </div>
           ) : (
@@ -204,11 +209,10 @@ export default function EventsPage() {
           {filteredEvents.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground text-lg">
-                Derzeit sind keine Events verfügbar.
+                {t("eventsPage.noEventsAvailable")}
               </p>
               <p className="text-muted-foreground">
-                Bitte versuchen Sie es später noch einmal oder überprüfen Sie
-                Ihre Suchkriterien.
+                {t("eventsPage.tryAgainOrCheckSearch")}
               </p>
             </div>
           ) : (

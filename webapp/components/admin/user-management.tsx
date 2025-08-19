@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { UserFormModal } from "@/components/admin/user-form-modal";
 import type { UserDto, AdminUserCreationDto, AdminUserUpdateDto } from "@/api";
+import { t } from "i18next";
 
 export interface UserManagementProps {
   users: UserDto[];
@@ -43,7 +44,6 @@ export function UserManagement({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
-  //TODO: Gena das auch auf der Manager Seite hinzufügen
   useEffect(() => {
     setFilteredUsers(users);
   }, [users]);
@@ -80,7 +80,7 @@ export function UserManagement({
   const handleDeleteUser = async (user: UserDto) => {
     if (
       user.id &&
-      confirm(`Are you sure you want to delete ${user.username}?`)
+      confirm(t("userManagement.confirmDelete", { username: user.username }))
     ) {
       await deleteUser(user.id);
     }
@@ -102,14 +102,12 @@ export function UserManagement({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>User Management</CardTitle>
-            <CardDescription>
-              Manage system users and their roles
-            </CardDescription>
+            <CardTitle>{t("userManagement.title")}</CardTitle>
+            <CardDescription>{t("userManagement.description")}</CardDescription>
           </div>
           <Button onClick={handleCreateUser}>
             <Plus className="mr-2 h-4 w-4" />
-            Add User
+            {t("userManagement.addUserButton")}
           </Button>
         </div>
       </CardHeader>
@@ -124,13 +122,14 @@ export function UserManagement({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Username</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Roles</TableHead>
-              <TableHead>Tags</TableHead> {/* New TableHead for Tags */}
-              <TableHead>Verified</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead>{t("userManagement.tableHeaderUsername")}</TableHead>
+              <TableHead>{t("userManagement.tableHeaderName")}</TableHead>
+              <TableHead>{t("userManagement.tableHeaderEmail")}</TableHead>
+              <TableHead>{t("userManagement.tableHeaderRoles")}</TableHead>
+              <TableHead>{t("userManagement.tableHeaderTags")}</TableHead>{" "}
+              {/* New TableHead for Tags */}
+              <TableHead>{t("userManagement.tableHeaderVerified")}</TableHead>
+              <TableHead>{t("userManagement.tableHeaderActions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -162,7 +161,9 @@ export function UserManagement({
                 </TableCell>
                 <TableCell>
                   <Badge variant={user.emailVerified ? "default" : "secondary"}>
-                    {user.emailVerified ? "Verified" : "Pending"}
+                    {user.emailVerified
+                      ? t("userManagement.verifiedStatus")
+                      : t("userManagement.pendingStatus")}
                   </Badge>
                 </TableCell>
                 <TableCell>

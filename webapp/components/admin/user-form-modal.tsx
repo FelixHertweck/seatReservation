@@ -15,6 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import type { UserDto, AdminUserUpdateDto, AdminUserCreationDto } from "@/api";
+import { t } from "i18next";
 
 interface UserFormModalProps {
   user: UserDto | null;
@@ -111,12 +112,16 @@ export function UserFormModal({
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{isCreating ? "Add New User" : "Edit User"}</DialogTitle>
+          <DialogTitle>
+            {isCreating
+              ? t("userFormModal.addNewUserTitle")
+              : t("userFormModal.editUserTitle")}
+          </DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="username" className="text-right">
-              Username
+              {t("userFormModal.usernameLabel")}
             </Label>
             <Input
               id="username"
@@ -129,7 +134,7 @@ export function UserFormModal({
           {isCreating && (
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="password" className="text-right">
-                Password
+                {t("userFormModal.passwordLabel")}
               </Label>
               <Input
                 id="password"
@@ -143,7 +148,7 @@ export function UserFormModal({
           )}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="firstname" className="text-right">
-              First Name
+              {t("userFormModal.firstNameLabel")}
             </Label>
             <Input
               id="firstname"
@@ -154,7 +159,7 @@ export function UserFormModal({
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="lastname" className="text-right">
-              Last Name
+              {t("userFormModal.lastNameLabel")}
             </Label>
             <Input
               id="lastname"
@@ -165,7 +170,7 @@ export function UserFormModal({
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="email" className="text-right">
-              Email
+              {t("userFormModal.emailLabel")}
             </Label>
             <Input
               id="email"
@@ -178,7 +183,7 @@ export function UserFormModal({
           {!isCreating && (
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="emailVerified" className="text-right">
-                Verified
+                {t("userFormModal.verifiedLabel")}
               </Label>
               <Checkbox
                 id="emailVerified"
@@ -189,7 +194,9 @@ export function UserFormModal({
             </div>
           )}
           <div className="grid grid-cols-4 items-start gap-4">
-            <Label className="text-right pt-2">Roles</Label>
+            <Label className="text-right pt-2">
+              {t("userFormModal.rolesLabel")}
+            </Label>
             <div className="col-span-3 flex flex-col gap-2">
               {availableRoles.map((role) => (
                 <div key={role} className="flex items-center space-x-2">
@@ -207,7 +214,7 @@ export function UserFormModal({
           </div>
           <div className="grid grid-cols-4 items-start gap-4">
             <Label htmlFor="tags" className="text-right pt-2">
-              Tags
+              {t("userFormModal.tagsLabel")}
             </Label>
             <div className="col-span-3">
               <div className="flex flex-wrap gap-2 mb-2">
@@ -235,7 +242,7 @@ export function UserFormModal({
                   id="newTag"
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
-                  placeholder="Add new tag"
+                  placeholder={t("userFormModal.addTagPlaceholder")}
                   onKeyPress={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
@@ -244,7 +251,7 @@ export function UserFormModal({
                   }}
                 />
                 <Button type="button" onClick={handleAddTag}>
-                  Add
+                  {t("userFormModal.addButton")}
                 </Button>
               </div>
             </div>
@@ -252,10 +259,12 @@ export function UserFormModal({
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
-            Cancel
+            {t("userFormModal.cancelButton")}
           </Button>
           <Button onClick={handleSubmit}>
-            {isCreating ? "Create User" : "Save Changes"}
+            {isCreating
+              ? t("userFormModal.createUserButton")
+              : t("userFormModal.saveChangesButton")}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -10,6 +10,7 @@ import {
 import { SeatMap } from "@/components/common/seat-map";
 import { useState } from "react";
 import type { ReservationResponseDto, SeatDto } from "@/api";
+import { t } from "i18next";
 
 interface SeatMapModalProps {
   seats: SeatDto[];
@@ -52,21 +53,27 @@ export function SeatMapModal({
         <DialogHeader>
           <DialogTitle>
             {eventReservations.length > 1
-              ? "Your Reserved Seats"
-              : "Your Reserved Seat"}
+              ? t("seatMapModal.yourReservedSeatsTitle")
+              : t("seatMapModal.yourReservedSeatTitle")}
           </DialogTitle>
           <DialogDescription>
             {isLoading
-              ? "Loading seat map..."
+              ? t("seatMapModal.loadingSeatMap")
               : eventReservations.length > 1
-                ? `You have ${eventReservations.length} seats reserved for this event`
-                : `Seat ${reservation.seat?.seatNumber} - Position (${reservation.seat?.xCoordinate}, ${reservation.seat?.yCoordinate})`}
+                ? t("seatMapModal.multipleSeatsReserved", {
+                    count: eventReservations.length,
+                  })
+                : t("seatMapModal.singleSeatReserved", {
+                    seatNumber: reservation.seat?.seatNumber,
+                    x: reservation.seat?.xCoordinate,
+                    y: reservation.seat?.yCoordinate,
+                  })}
           </DialogDescription>
         </DialogHeader>
 
         {isLoading ? (
           <div className="flex justify-center items-center h-48">
-            <p>Loading...</p>
+            <p>{t("seatMapModal.loadingText")}</p>
           </div>
         ) : (
           <div className="flex-1 flex flex-col gap-4 min-h-0 overflow-hidden">
@@ -82,7 +89,7 @@ export function SeatMapModal({
             <div className="flex-shrink-0 bg-gray-50 p-3 md:p-4 rounded-lg border-t max-h-32 md:max-h-40 overflow-y-auto">
               <div className="flex flex-col gap-2 md:gap-3">
                 <h3 className="font-semibold text-base md:text-lg">
-                  Your Reserved Seats
+                  {t("seatMapModal.yourReservedSeatsSectionTitle")}
                 </h3>
                 {reservedSeats.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5 md:gap-2">
@@ -96,15 +103,19 @@ export function SeatMapModal({
                         }`}
                         onClick={() => handleSeatClick(seat)}
                       >
-                        Seat {seat.seatNumber}
+                        {t("seatMapModal.seatNumberButton", {
+                          seatNumber: seat.seatNumber,
+                        })}
                       </button>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500 text-sm">No seats reserved</p>
+                  <p className="text-gray-500 text-sm">
+                    {t("seatMapModal.noSeatsReserved")}
+                  </p>
                 )}
                 <div className="text-xs md:text-sm text-gray-600">
-                  <p>💡 Click on a seat number to highlight it on the map</p>
+                  <p>{t("seatMapModal.clickToHighlightHint")}</p>
                 </div>
               </div>
             </div>

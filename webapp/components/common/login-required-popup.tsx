@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { useAuthStatus } from "@/hooks/use-auth-status";
 import { setToastsDisabled } from "@/hooks/use-toast";
 import { useEffect } from "react";
+import { t } from "i18next";
 
 export function LoginRequiredPopup() {
   const { isLoggedIn, isLoading } = useAuthStatus();
@@ -36,13 +37,15 @@ export function LoginRequiredPopup() {
     <Dialog open={!isLoading && !isLoggedIn}>
       <DialogContent className="sm:max-w-[425px]" noX={true}>
         <DialogHeader>
-          <DialogTitle>Anmeldung erforderlich</DialogTitle>
+          <DialogTitle>{t("loginRequiredPopup.title")}</DialogTitle>
           <DialogDescription>
-            Sie müssen angemeldet sein, um auf diese Seite zugreifen zu können.
+            {t("loginRequiredPopup.description")}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button onClick={handleLoginRedirect}>Anmelden</Button>
+          <Button onClick={handleLoginRedirect}>
+            {t("loginRequiredPopup.loginButton")}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { client } from "@/api/client.gen";
 import { toast } from "@/hooks/use-toast";
 import { usePathname } from "next/navigation";
+import { t } from "i18next";
 
 export default function InitQueryClient({
   children,
@@ -25,8 +26,8 @@ export default function InitQueryClient({
           if (showToast) {
             setTimeout(() => {
               toast({
-                title: "Error",
-                description: "Failed to load data. Please try again.",
+                title: t("error.title"),
+                description: t("error.dataLoadFailed"),
                 variant: "destructive",
               });
             }, 0);
@@ -38,8 +39,8 @@ export default function InitQueryClient({
         onError: (error: Error) => {
           if (showToast) {
             toast({
-              title: "Error",
-              description: "An error occurred: " + error.message,
+              title: t("error.title"),
+              description: t("error.anErrorOccurred") + error.message,
               variant: "destructive",
             });
           }

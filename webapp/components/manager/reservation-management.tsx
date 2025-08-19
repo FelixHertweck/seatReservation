@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Plus, Trash2, Ban, ExternalLink, Download } from "lucide-react"; // Added Download icon
 import { Button } from "@/components/ui/button";
 import {
@@ -40,17 +40,16 @@ import {
 import type {
   UserDto,
   DetailedEventResponseDto,
-  SeatDto,
   DetailedReservationResponseDto,
   ReservationRequestDto,
   BlockSeatsRequestDto,
 } from "@/api";
 import { customSerializer } from "@/lib/jsonBodySerializer";
+import { t } from "i18next";
 
 export interface ReservationManagementProps {
   users: UserDto[];
   events: DetailedEventResponseDto[];
-  seats: SeatDto[];
   reservations: DetailedReservationResponseDto[];
   createReservation: (
     reservation: ReservationRequestDto,
@@ -67,7 +66,6 @@ export interface ReservationManagementProps {
 export function ReservationManagement({
   users,
   events,
-  seats,
   reservations,
   createReservation,
   deleteReservation,
@@ -90,47 +88,47 @@ export function ReservationManagement({
     setCurrentFilters(initialFilter);
   }, [initialFilter]);
 
+  const applyFilters = useCallback(
+    (searchQuery: string, filters: Record<string, string>) => {
+      let filtered = reservations;
+
+      // Apply search
+      if (searchQuery) {
+        filtered = filtered.filter(
+          (reservation) =>
+            reservation.user?.username
+              ?.toLowerCase()
+              .includes(searchQuery.toLowerCase()) ||
+            events
+              .find((event) => event.id === reservation.eventId)
+              ?.name?.toLowerCase()
+              .includes(searchQuery.toLowerCase()) ||
+            reservation.seat?.seatNumber
+              ?.toLowerCase()
+              .includes(searchQuery.toLowerCase()),
+        );
+      }
+
+      // Apply filters
+      if (filters.eventId) {
+        filtered = filtered.filter(
+          (reservation) => reservation.eventId?.toString() === filters.eventId,
+        );
+      }
+      if (filters.seatId) {
+        filtered = filtered.filter(
+          (reservation) => reservation.seat?.id?.toString() === filters.seatId,
+        );
+      }
+
+      setFilteredReservations(filtered);
+    },
+    [reservations, events],
+  );
+
   useEffect(() => {
     applyFilters("", currentFilters);
-  }, [reservations, currentFilters]);
-
-  const applyFilters = (
-    searchQuery: string,
-    filters: Record<string, string>,
-  ) => {
-    let filtered = reservations;
-
-    // Apply search
-    if (searchQuery) {
-      filtered = filtered.filter(
-        (reservation) =>
-          reservation.user?.username
-            ?.toLowerCase()
-            .includes(searchQuery.toLowerCase()) ||
-          events
-            .find((event) => event.id === reservation.eventId)
-            ?.name?.toLowerCase()
-            .includes(searchQuery.toLowerCase()) ||
-          reservation.seat?.seatNumber
-            ?.toLowerCase()
-            .includes(searchQuery.toLowerCase()),
-      );
-    }
-
-    // Apply filters
-    if (filters.eventId) {
-      filtered = filtered.filter(
-        (reservation) => reservation.eventId?.toString() === filters.eventId,
-      );
-    }
-    if (filters.seatId) {
-      filtered = filtered.filter(
-        (reservation) => reservation.seat?.id?.toString() === filters.seatId,
-      );
-    }
-
-    setFilteredReservations(filtered);
-  };
+  }, [reservations, currentFilters, applyFilters]);
 
   const handleSearch = (query: string) => {
     applyFilters(query, currentFilters);
@@ -151,10 +149,7 @@ export function ReservationManagement({
   const handleDeleteReservation = async (
     reservation: DetailedReservationResponseDto,
   ) => {
-    if (
-      reservation.id &&
-      confirm(`Are you sure you want to delete this reservation?`)
-    ) {
+    if (reservation.id && confirm(t("reservationManagement.confirmDelete"))) {
       await deleteReservation(reservation.id);
     }
   };
@@ -201,9 +196,9 @@ export function ReservationManagement({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Reservation Management</CardTitle>
+            <CardTitle>{t("reservationManagement.title")}</CardTitle>
             <CardDescription>
-              Manage event reservations and block seats
+              {t("reservationManagement.description")}
             </CardDescription>
           </div>
           <div className="flex gap-2">
@@ -214,25 +209,35 @@ export function ReservationManagement({
               <DialogTrigger asChild>
                 <Button variant="outline">
                   <Download className="mr-2 h-4 w-4" />
-                  Export Reservations
+                  {t("reservationManagement.exportReservationsButton")}
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Export Event Reservations</DialogTitle>
+                  <DialogTitle>
+                    {t("reservationManagement.exportEventReservationsTitle")}
+                  </DialogTitle>
                   <DialogDescription>
-                    Select an event to export all its reservations as JSON.
+                    {t(
+                      "reservationManagement.exportEventReservationsDescription",
+                    )}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div>
-                    <label className="text-sm font-medium">Select Event</label>
+                    <label className="text-sm font-medium">
+                      {t("reservationManagement.selectEventLabel")}
+                    </label>
                     <Select
                       value={selectedEventForExport}
                       onValueChange={setSelectedEventForExport}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Choose an event to export" />
+                        <SelectValue
+                          placeholder={t(
+                            "reservationManagement.chooseEventToExportPlaceholder",
+                          )}
+                        />
                       </SelectTrigger>
                       <SelectContent>
                         {events.map((event) => (
@@ -251,13 +256,13 @@ export function ReservationManagement({
                       variant="outline"
                       onClick={() => setIsExportModalOpen(false)}
                     >
-                      Cancel
+                      {t("reservationManagement.cancelButton")}
                     </Button>
                     <Button
                       onClick={handleExportReservations}
                       disabled={!selectedEventForExport}
                     >
-                      Export JSON
+                      {t("reservationManagement.exportJsonButton")}
                     </Button>
                   </div>
                 </div>
@@ -265,11 +270,11 @@ export function ReservationManagement({
             </Dialog>
             <Button variant="outline" onClick={() => setIsBlockModalOpen(true)}>
               <Ban className="mr-2 h-4 w-4" />
-              Block Seats
+              {t("reservationManagement.blockSeatsButton")}
             </Button>
             <Button onClick={handleCreateReservation}>
               <Plus className="mr-2 h-4 w-4" />
-              Add Reservation
+              {t("reservationManagement.addReservationButton")}
             </Button>
           </div>
         </div>
@@ -282,7 +287,7 @@ export function ReservationManagement({
           filterOptions={[
             {
               key: "eventId",
-              label: "Event",
+              label: t("reservationManagement.eventFilterLabel"),
               type: "select",
               options: events.map((event) => ({
                 value: event.id?.toString() || "",
@@ -296,11 +301,21 @@ export function ReservationManagement({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>User</TableHead>
-              <TableHead>Event</TableHead>
-              <TableHead>Seat</TableHead>
-              <TableHead>Reserved Date</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead>
+                {t("reservationManagement.tableHeaderUser")}
+              </TableHead>
+              <TableHead>
+                {t("reservationManagement.tableHeaderEvent")}
+              </TableHead>
+              <TableHead>
+                {t("reservationManagement.tableHeaderSeat")}
+              </TableHead>
+              <TableHead>
+                {t("reservationManagement.tableHeaderReservedDate")}
+              </TableHead>
+              <TableHead>
+                {t("reservationManagement.tableHeaderActions")}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -323,7 +338,7 @@ export function ReservationManagement({
                         <ExternalLink className="ml-1 h-3 w-3" />
                       </Button>
                     ) : (
-                      "Unknown event"
+                      t("reservationManagement.unknownEvent")
                     )}
                   </TableCell>
                   <TableCell>
@@ -342,7 +357,9 @@ export function ReservationManagement({
                         <ExternalLink className="ml-1 h-3 w-3" />
                       </Button>
                     ) : (
-                      <Badge variant="outline">Unknown seat</Badge>
+                      <Badge variant="outline">
+                        {t("reservationManagement.unknownSeat")}
+                      </Badge>
                     )}
                   </TableCell>
                   <TableCell>
@@ -350,7 +367,7 @@ export function ReservationManagement({
                       ? new Date(
                           reservation.reservationDateTime,
                         ).toLocaleDateString()
-                      : "Unknown"}
+                      : t("reservationManagement.unknownDate")}
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
@@ -374,7 +391,6 @@ export function ReservationManagement({
         <ReservationFormModal
           users={users}
           events={events}
-          seats={seats}
           reservations={reservations}
           onSubmit={async (reservationData) => {
             await createReservation(reservationData);

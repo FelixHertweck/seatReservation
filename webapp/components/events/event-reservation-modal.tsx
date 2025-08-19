@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { SeatMap } from "@/components/common/seat-map";
 import { Badge } from "@/components/ui/badge";
 import type { EventResponseDto, ReservationResponseDto, SeatDto } from "@/api";
+import { t } from "i18next";
 
 interface EventReservationModalProps {
   event: EventResponseDto;
@@ -74,11 +75,12 @@ export function EventReservationModal({
       <DialogContent className="max-w-6xl max-h-[90vh] h-[85vh] flex flex-col animate-in fade-in zoom-in duration-300">
         <DialogHeader className="animate-in slide-in-from-top duration-300">
           <DialogTitle className="text-xl font-bold">
-            Reserve Seats - {event.name}
+            {t("eventReservationModal.title", { eventName: event.name })}
           </DialogTitle>
           <DialogDescription>
-            Select your seats for this event. Available:{" "}
-            {event.reservationsAllowed}
+            {t("eventReservationModal.description", {
+              availableSeats: event.reservationsAllowed,
+            })}
           </DialogDescription>
         </DialogHeader>
 
@@ -86,35 +88,35 @@ export function EventReservationModal({
           <div className="flex gap-4 text-sm">
             <div className="flex items-center gap-2 animate-in slide-in-from-left duration-300">
               <div className="w-4 h-4 bg-green-500 rounded transition-all duration-300 hover:scale-110"></div>
-              <span>Available</span>
+              <span>{t("eventReservationModal.available")}</span>
             </div>
             <div
               className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
               style={{ animationDelay: "100ms" }}
             >
               <div className="w-4 h-4 bg-blue-500 rounded transition-all duration-300 hover:scale-110"></div>
-              <span>Selected</span>
+              <span>{t("eventReservationModal.selected")}</span>
             </div>
             <div
               className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
               style={{ animationDelay: "150ms" }}
             >
               <div className="w-4 h-4 bg-yellow-500 rounded transition-all duration-300 hover:scale-110"></div>
-              <span>My Reserved</span>
+              <span>{t("eventReservationModal.myReserved")}</span>
             </div>
             <div
               className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
               style={{ animationDelay: "200ms" }}
             >
               <div className="w-4 h-4 bg-red-500 rounded transition-all duration-300 hover:scale-110"></div>
-              <span>Reserved</span>
+              <span>{t("eventReservationModal.reserved")}</span>
             </div>
             <div
               className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
               style={{ animationDelay: "300ms" }}
             >
               <div className="w-4 h-4 bg-gray-500 rounded transition-all duration-300 hover:scale-110"></div>
-              <span>Blocked</span>
+              <span>{t("eventReservationModal.blocked")}</span>
             </div>
           </div>
 
@@ -130,7 +132,7 @@ export function EventReservationModal({
           {selectedSeats.length > 0 && (
             <div className="m-0 animate-in slide-in-from-bottom duration-300 max-h-15 md:max-h-24 overflow-y-auto">
               <h4 className="font-medium text-sm md:text-base">
-                Selected Seats:
+                {t("eventReservationModal.selectedSeatsTitle")}
               </h4>
               <div className="flex flex-wrap gap-1.5 md:gap-2">
                 {selectedSeats.map((seat, index) => (
@@ -153,7 +155,7 @@ export function EventReservationModal({
               onClick={onClose}
               className="hover:scale-[1.02] transition-all duration-300 active:scale-[0.98] bg-transparent text-sm md:text-base px-3 py-2"
             >
-              Cancel
+              {t("eventReservationModal.cancelButton")}
             </Button>
             <Button
               onClick={handleReserve}
@@ -161,8 +163,10 @@ export function EventReservationModal({
               className="hover:scale-[1.02] transition-all duration-300 active:scale-[0.98] text-sm md:text-base px-3 py-2"
             >
               {isLoading
-                ? "Reserving..."
-                : `Reserve ${selectedSeats.length} Seat(s)`}
+                ? t("eventReservationModal.reservingButton")
+                : t("eventReservationModal.reserveSeatsButton", {
+                    count: selectedSeats.length,
+                  })}
             </Button>
           </div>
         </div>

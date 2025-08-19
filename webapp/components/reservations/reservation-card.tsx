@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { ReservationResponseDto } from "@/api";
+import { t } from "i18next";
 
 interface ReservationCardProps {
   reservation: ReservationResponseDto;
@@ -28,26 +29,35 @@ export function ReservationCard({
     <Card>
       <CardHeader>
         <div className="flex items-start justify-between">
-          <CardTitle className="line-clamp-1">Event Reservation</CardTitle>
-          <Badge variant="outline">Seat {reservation.seat?.seatNumber}</Badge>
+          <CardTitle className="line-clamp-1">
+            {t("reservationCard.eventReservationTitle")}
+          </CardTitle>
+          <Badge variant="outline">
+            {t("reservationCard.seatBadge", {
+              seatNumber: reservation.seat?.seatNumber,
+            })}
+          </Badge>
         </div>
         <CardDescription>
-          Reserved on{" "}
+          {t("reservationCard.reservedOn")}{" "}
           {reservation.reservationDateTime
             ? new Date(reservation.reservationDateTime).toLocaleDateString()
-            : "Unknown date"}
+            : t("reservationCard.unknownDate")}
         </CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-3">
         <div className="flex items-center text-sm text-muted-foreground">
           <MapPin className="mr-2 h-4 w-4" />
-          Location: {reservation.seat?.locationId?.toString() || "Unknown"}
+          {t("reservationCard.locationLabel")}:{" "}
+          {reservation.seat?.locationId?.toString() ||
+            t("reservationCard.unknownLocation")}
         </div>
 
         <div className="flex items-center text-sm text-muted-foreground">
           <Calendar className="mr-2 h-4 w-4" />
-          Position: Row {reservation.seat?.yCoordinate}, Seat{" "}
+          {t("reservationCard.positionLabel")}: {t("reservationCard.rowLabel")}{" "}
+          {reservation.seat?.yCoordinate}, {t("reservationCard.seatLabel")}{" "}
           {reservation.seat?.xCoordinate}
         </div>
       </CardContent>
@@ -55,11 +65,11 @@ export function ReservationCard({
       <CardFooter className="flex gap-2">
         <Button variant="outline" size="sm" onClick={onViewSeats}>
           <Eye className="mr-2 h-4 w-4" />
-          View Seat
+          {t("reservationCard.viewSeatButton")}
         </Button>
         <Button variant="destructive" size="sm" onClick={onDelete}>
           <Trash2 className="mr-2 h-4 w-4" />
-          Cancel
+          {t("reservationCard.cancelButton")}
         </Button>
       </CardFooter>
     </Card>

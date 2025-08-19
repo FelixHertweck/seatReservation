@@ -12,6 +12,7 @@ import { Download } from "lucide-react";
 import { useAdmin } from "@/hooks/use-admin";
 import { toast } from "@/components/ui/use-toast";
 import { customSerializer } from "@/lib/jsonBodySerializer";
+import { t } from "i18next";
 
 export function UserExport() {
   const { users, isLoading } = useAdmin();
@@ -19,9 +20,8 @@ export function UserExport() {
   const handleExport = () => {
     if (!users || users.length === 0) {
       toast({
-        title: "Keine Nutzer zum Exportieren",
-        description:
-          "Es sind keine Nutzerdaten verfügbar, die exportiert werden könnten.",
+        title: t("userExport.noUsersToExportTitle"),
+        description: t("userExport.noUsersToExportDescription"),
         variant: "destructive",
       });
       return;
@@ -41,15 +41,14 @@ export function UserExport() {
       URL.revokeObjectURL(url);
 
       toast({
-        title: "Export erfolgreich",
-        description:
-          "Die Nutzerdaten wurden erfolgreich als users.json exportiert.",
+        title: t("userExport.exportSuccessTitle"),
+        description: t("userExport.exportSuccessDescription"),
       });
     } catch (error) {
-      console.error("Fehler beim Exportieren der Nutzerdaten:", error);
+      console.error(t("userExport.exportErrorLog"), error);
       toast({
-        title: "Export fehlgeschlagen",
-        description: "Es gab einen Fehler beim Exportieren der Nutzerdaten.",
+        title: t("userExport.exportFailedTitle"),
+        description: t("userExport.exportFailedDescription"),
         variant: "destructive",
       });
     }
@@ -58,9 +57,9 @@ export function UserExport() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Nutzerdaten exportieren</CardTitle>
+        <CardTitle>{t("userExport.exportDataTitle")}</CardTitle>
         <CardDescription>
-          Exportieren Sie alle Nutzerdaten als JSON-Datei.
+          {t("userExport.exportDataDescription")}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -69,11 +68,13 @@ export function UserExport() {
           disabled={isLoading || users.length === 0}
         >
           <Download className="mr-2 h-4 w-4" />
-          {isLoading ? "Lade Nutzer..." : "Nutzer als JSON exportieren"}
+          {isLoading
+            ? t("userExport.loadingUsers")
+            : t("userExport.exportUsersAsJson")}
         </Button>
         {users.length === 0 && !isLoading && (
           <p className="text-sm text-muted-foreground mt-2">
-            Keine Nutzer zum Exportieren gefunden.
+            {t("userExport.noUsersFoundToExport")}
           </p>
         )}
       </CardContent>

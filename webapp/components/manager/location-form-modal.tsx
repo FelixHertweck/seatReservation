@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { EventLocationResponseDto, EventLocationRequestDto } from "@/api";
+import { t } from "i18next";
 
 interface LocationFormModalProps {
   location: EventLocationResponseDto | null;
@@ -57,18 +58,22 @@ export function LocationFormModal({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {isCreating ? "Create Location" : "Edit Location"}
+            {isCreating
+              ? t("locationFormModal.createLocationTitle")
+              : t("locationFormModal.editLocationTitle")}
           </DialogTitle>
           <DialogDescription>
             {isCreating
-              ? "Add a new event location"
-              : "Update location information"}
+              ? t("locationFormModal.addLocationDescription")
+              : t("locationFormModal.updateLocationDescription")}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Location Name</Label>
+            <Label htmlFor="name">
+              {t("locationFormModal.locationNameLabel")}
+            </Label>
             <Input
               id="name"
               value={formData.name}
@@ -80,7 +85,9 @@ export function LocationFormModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="address">Address</Label>
+            <Label htmlFor="address">
+              {t("locationFormModal.addressLabel")}
+            </Label>
             <Textarea
               id="address"
               value={formData.address}
@@ -92,7 +99,9 @@ export function LocationFormModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="capacity">Capacity</Label>
+            <Label htmlFor="capacity">
+              {t("locationFormModal.capacityLabel")}
+            </Label>
             <Input
               id="capacity"
               type="number"
@@ -106,10 +115,14 @@ export function LocationFormModal({
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              {t("locationFormModal.cancelButton")}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Saving..." : isCreating ? "Create" : "Update"}
+              {isLoading
+                ? t("locationFormModal.savingButton")
+                : isCreating
+                  ? t("locationFormModal.createButton")
+                  : t("locationFormModal.updateButton")}
             </Button>
           </div>
         </form>

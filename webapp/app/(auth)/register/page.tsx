@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/use-auth";
 import type { RegisterRequestDto } from "@/api";
+import { t } from "i18next";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -55,19 +56,19 @@ export default function RegisterPage() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Create account</CardTitle>
-          <CardDescription>
-            Enter your information to create your account
-          </CardDescription>
+          <CardTitle className="text-2xl font-bold">
+            {t("register.createAccountTitle")}
+          </CardTitle>
+          <CardDescription>{t("register.enterInfo")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="firstname">First name</Label>
+                <Label htmlFor="firstname">{t("register.firstName")}</Label>
                 <Input
                   id="firstname"
-                  placeholder="John"
+                  placeholder={t("register.firstNamePlaceholder")}
                   value={formData.firstname}
                   onChange={(e) =>
                     handleInputChange("firstname", e.target.value)
@@ -76,10 +77,10 @@ export default function RegisterPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lastname">Last name</Label>
+                <Label htmlFor="lastname">{t("register.lastName")}</Label>
                 <Input
                   id="lastname"
-                  placeholder="Doe"
+                  placeholder={t("register.lastNamePlaceholder")}
                   value={formData.lastname}
                   onChange={(e) =>
                     handleInputChange("lastname", e.target.value)
@@ -89,28 +90,28 @@ export default function RegisterPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username">{t("register.username")}</Label>
               <Input
                 id="username"
-                placeholder="johndoe"
+                placeholder={t("register.usernamePlaceholder")}
                 value={formData.username}
                 onChange={(e) => handleInputChange("username", e.target.value)}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("register.email")}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="john@example.com"
+                placeholder={t("register.emailPlaceholder")}
                 value={formData.email}
                 onChange={(e) => handleInputChange("email", e.target.value)}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("register.password")}</Label>
               <Input
                 id="password"
                 type="password"
@@ -131,17 +132,19 @@ export default function RegisterPage() {
                 }
               />
               <Label htmlFor="admin" className="text-sm">
-                Register as Admin
+                {t("register.registerAsAdmin")}
               </Label>
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Creating account..." : "Create account"}
+              {isLoading
+                ? t("register.creatingAccount")
+                : t("register.createAccountButton")}
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">
-            Already have an account?{" "}
+            {t("register.alreadyHaveAccount")}
             <Link href="/login" className="text-primary hover:underline">
-              Sign in
+              {t("register.signIn")}
             </Link>
           </div>
         </CardContent>

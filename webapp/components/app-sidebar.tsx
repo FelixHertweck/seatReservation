@@ -6,11 +6,11 @@ import {
   Users,
   LogOut,
   LogIn,
-  Sparkles,
   Sun,
   Moon,
   Monitor,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   Sidebar,
@@ -37,6 +37,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect } from "react";
 import { useTheme } from "next-themes";
+import { t } from "i18next";
 
 export function AppSidebar() {
   const { user, logout } = useAuth();
@@ -61,25 +62,30 @@ export function AppSidebar() {
 
   const getMenuItems = () => {
     const baseItems = [
-      { title: "Events", url: "/events", icon: Calendar, badge: "" },
-      { title: "Profile", url: "/profile", icon: Settings, badge: "" },
+      { title: t("sidebar.events"), url: "/events", icon: Calendar, badge: "" },
+      {
+        title: t("sidebar.profile"),
+        url: "/profile",
+        icon: Settings,
+        badge: "",
+      },
     ];
 
     if (user?.roles?.includes("MANAGER") || user?.roles?.includes("ADMIN")) {
       baseItems.push({
-        title: "Manager",
+        title: t("sidebar.manager"),
         url: "/manager",
         icon: Users,
-        badge: "Manager",
+        badge: t("sidebar.manager"),
       });
     }
 
     if (user?.roles?.includes("ADMIN")) {
       baseItems.push({
-        title: "User Management",
+        title: t("sidebar.userManagement"),
         url: "/admin",
         icon: Users,
-        badge: "Admin",
+        badge: t("sidebar.admin"),
       });
     }
 
@@ -106,12 +112,12 @@ export function AppSidebar() {
   const getThemeLabel = (themeValue: string) => {
     switch (themeValue) {
       case "light":
-        return "Light";
+        return t("sidebar.light");
       case "dark":
-        return "Dark";
+        return t("sidebar.dark");
       case "system":
       default:
-        return "System";
+        return t("sidebar.system");
     }
   };
 
@@ -128,23 +134,23 @@ export function AppSidebar() {
       className="border-r bg-gradient-to-b from-sidebar-background to-sidebar-background/80 backdrop-blur-sm"
     >
       <SidebarMenu>
-        <a
+        <Link
           href="/"
           className={`w-full transition-all duration-500 flex items-center justify-center bg-transparent`}
         >
-          <img
+          <Image
             src="/logo.png"
             alt="Logo"
             className={`h-auto w-full max-h-[100px] bg-transparent object-contain`}
           />
-        </a>
+        </Link>
       </SidebarMenu>
       <div className="border-b border-sidebar-border/50" />
 
       <SidebarContent className="px-2 py-1 ">
         <SidebarGroup>
           <SidebarGroupLabel className="text-base font-semibold text-sidebar-foreground/70 mb-2 px-2">
-            Navigation
+            {t("sidebar.navigation")}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
@@ -219,7 +225,7 @@ export function AppSidebar() {
                   sideOffset={4}
                 >
                   <div className="px-2 py-1.5 text-sm font-semibold text-sidebar-foreground">
-                    Theme
+                    {t("sidebar.theme")}
                   </div>
                   {["light", "dark", "system"].map((themeOption) => {
                     const ThemeIcon = getThemeIcon(themeOption);
@@ -247,14 +253,14 @@ export function AppSidebar() {
                     className="hover:bg-destructive/10 hover:text-destructive transition-all duration-200 cursor-pointer group"
                   >
                     <LogOut className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
-                    Logout
+                    {t("sidebar.logout")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
               <SidebarMenuButton
                 asChild
-                tooltip="Login"
+                tooltip={t("sidebar.login")}
                 className="hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground transition-all duration-300 hover:scale-[1.02] group"
               >
                 <Link
@@ -263,7 +269,7 @@ export function AppSidebar() {
                   className="flex items-center gap-3"
                 >
                   <LogIn className="group-hover:scale-110 group-hover:translate-x-1 transition-all duration-300" />
-                  <span className="font-medium">Login</span>
+                  <span className="font-medium">{t("sidebar.login")}</span>
                 </Link>
               </SidebarMenuButton>
             )}

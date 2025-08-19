@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Plus, Edit, Trash2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +25,7 @@ import type {
   EventLocationResponseDto,
   EventRequestDto,
 } from "@/api";
+import { t } from "i18next";
 
 export interface EventManagementProps {
   events: DetailedEventResponseDto[];
@@ -60,39 +61,41 @@ export function EventManagement({
     setCurrentFilters(initialFilter);
   }, [initialFilter]);
 
+  const applyFilters = useCallback(
+    (searchQuery: string, filters: Record<string, string>) => {
+      let filtered = events;
+
+      // Apply search
+      if (searchQuery) {
+        filtered = filtered.filter(
+          (event) =>
+            event.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            event.description
+              ?.toLowerCase()
+              .includes(searchQuery.toLowerCase()),
+        );
+      }
+
+      // Apply filters
+      if (filters.eventId) {
+        filtered = filtered.filter(
+          (event) => event.id?.toString() === filters.eventId,
+        );
+      }
+      if (filters.locationId) {
+        filtered = filtered.filter(
+          (event) => event.eventLocation?.id?.toString() === filters.locationId,
+        );
+      }
+
+      setFilteredEvents(filtered);
+    },
+    [events],
+  );
+
   useEffect(() => {
     applyFilters("", currentFilters);
-  }, [events, currentFilters]);
-
-  const applyFilters = (
-    searchQuery: string,
-    filters: Record<string, string>,
-  ) => {
-    let filtered = events;
-
-    // Apply search
-    if (searchQuery) {
-      filtered = filtered.filter(
-        (event) =>
-          event.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          event.description?.toLowerCase().includes(searchQuery.toLowerCase()),
-      );
-    }
-
-    // Apply filters
-    if (filters.eventId) {
-      filtered = filtered.filter(
-        (event) => event.id?.toString() === filters.eventId,
-      );
-    }
-    if (filters.locationId) {
-      filtered = filtered.filter(
-        (event) => event.eventLocation?.id?.toString() === filters.locationId,
-      );
-    }
-
-    setFilteredEvents(filtered);
-  };
+  }, [events, currentFilters, applyFilters]);
 
   const handleSearch = (query: string) => {
     applyFilters(query, currentFilters);
@@ -119,7 +122,10 @@ export function EventManagement({
   };
 
   const handleDeleteEvent = async (event: DetailedEventResponseDto) => {
-    if (event.id && confirm(`Are you sure you want to delete ${event.name}?`)) {
+    if (
+      event.id &&
+      confirm(t("eventManagement.confirmDelete", { eventName: event.name }))
+    ) {
       await deleteEvent(event.id);
     }
   };
@@ -135,12 +141,14 @@ export function EventManagement({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Event Management</CardTitle>
-            <CardDescription>Create and manage events</CardDescription>
+            <CardTitle>{t("eventManagement.title")}</CardTitle>
+            <CardDescription>
+              {t("eventManagement.description")}
+            </CardDescription>
           </div>
           <Button onClick={handleCreateEvent}>
             <Plus className="mr-2 h-4 w-4" />
-            Add Event
+            {t("eventManagement.addEventButton")}
           </Button>
         </div>
       </CardHeader>
@@ -152,7 +160,7 @@ export function EventManagement({
           filterOptions={[
             {
               key: "locationId",
-              label: "Location",
+              label: t("eventManagement.locationFilterLabel"),
               type: "select",
               options: allLocations.map((loc) => ({
                 value: loc.id?.toString() || "",
@@ -166,12 +174,14 @@ export function EventManagement({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Start Time</TableHead>
-              <TableHead>End Time</TableHead>
-              <TableHead>Location</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead>{t("eventManagement.tableHeaderName")}</TableHead>
+              <TableHead>
+                {t("eventManagement.tableHeaderDescription")}
+              </TableHead>
+              <TableHead>{t("eventManagement.tableHeaderStartTime")}</TableHead>
+              <TableHead>{t("eventManagement.tableHeaderEndTime")}</TableHead>
+              <TableHead>{t("eventManagement.tableHeaderLocation")}</TableHead>
+              <TableHead>{t("eventManagement.tableHeaderActions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -186,12 +196,12 @@ export function EventManagement({
                   <TableCell>
                     {event.startTime
                       ? new Date(event.startTime).toLocaleString()
-                      : "TBD"}
+                      : t("eventManagement.tbd")}
                   </TableCell>
                   <TableCell>
                     {event.endTime
                       ? new Date(event.endTime).toLocaleString()
-                      : "TBD"}
+                      : t("eventManagement.tbd")}
                   </TableCell>
                   <TableCell>
                     {location ? (
@@ -206,7 +216,7 @@ export function EventManagement({
                         <ExternalLink className="ml-1 h-3 w-3" />
                       </Button>
                     ) : (
-                      "No location"
+                      t("eventManagement.noLocation")
                     )}
                   </TableCell>
                   <TableCell>

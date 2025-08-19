@@ -14,6 +14,7 @@ import { X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import type { UserProfileUpdateDto } from "@/api";
 import LoadingSkeleton from "./loading";
+import { t } from "i18next";
 
 export default function ProfilePage() {
   const { user, updateProfile, isLoading, resendConfirmation } = useProfile();
@@ -51,8 +52,8 @@ export default function ProfilePage() {
     e.preventDefault();
     if (!isAuthenticated) {
       toast({
-        title: "Authentication Required",
-        description: "Please log in to update your profile.",
+        title: t("profilePage.authRequiredTitle"),
+        description: t("profilePage.authRequiredDescription"),
         variant: "destructive",
       });
       return;
@@ -68,15 +69,14 @@ export default function ProfilePage() {
     await updateProfile(updatedProfile);
     console.log("Profile updated successfully");
     toast({
-      title: "Profile Updated",
-      description: "Your profile has been successfully updated.",
+      title: t("profilePage.profileUpdatedTitle"),
+      description: t("profilePage.profileUpdatedDescription"),
     });
 
     if (email !== originalEmail) {
       toast({
-        title: "Bestätigungsemail gesendet",
-        description:
-          "Eine Bestätigungsemail wurde an Ihre Adresse gesendet. Bitte bestätigen sie diese!",
+        title: t("profilePage.confirmationEmailSentTitle"),
+        description: t("profilePage.confirmationEmailSentDescription"),
       });
       setOriginalEmail(email); // Update originalEmail after successful change
     }
@@ -90,16 +90,18 @@ export default function ProfilePage() {
     <div className="container mx-auto py-8">
       <Card className="max-w-2xl mx-auto">
         <CardHeader>
-          <CardTitle>Profile Settings</CardTitle>
+          <CardTitle>{t("profilePage.profileSettingsTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username">{t("profilePage.usernameLabel")}</Label>
               <Input id="username" value={user?.username || ""} disabled />
             </div>
             <div>
-              <Label htmlFor="firstname">First Name</Label>
+              <Label htmlFor="firstname">
+                {t("profilePage.firstNameLabel")}
+              </Label>
               <Input
                 id="firstname"
                 value={firstname}
@@ -107,7 +109,7 @@ export default function ProfilePage() {
               />
             </div>
             <div>
-              <Label htmlFor="lastname">Last Name</Label>
+              <Label htmlFor="lastname">{t("profilePage.lastNameLabel")}</Label>
               <Input
                 id="lastname"
                 value={lastname}
@@ -116,20 +118,20 @@ export default function ProfilePage() {
             </div>
             <div>
               <div className="flex items-center justify-between mb-1">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t("profilePage.emailLabel")}</Label>
                 {user?.emailVerified ? (
                   <Badge
                     variant="default"
                     className="bg-green-500 hover:bg-green-500"
                   >
-                    Verifiziert
+                    {t("profilePage.verifiedBadge")}
                   </Badge>
                 ) : (
                   <Badge
                     variant="destructive"
                     className="flex items-center gap-1"
                   >
-                    Nicht verifiziert
+                    {t("profilePage.notVerifiedBadge")}
                   </Badge>
                 )}
               </div>
@@ -143,8 +145,7 @@ export default function ProfilePage() {
               {!user?.emailVerified && (
                 <div className="flex flex-col items-start gap-2">
                   <span className="text-xs text-gray-500">
-                    Eine Bestätigungsemail wurde versendet und muss über den
-                    Link bestätigt werden.
+                    {t("profilePage.confirmationEmailInfo")}
                   </span>
                   <Button
                     type="button"
@@ -153,19 +154,20 @@ export default function ProfilePage() {
                     onClick={async () => {
                       await resendConfirmation();
                       toast({
-                        title: "Bestätigungsemail erneut gesendet",
-                        description:
-                          "Eine neue Bestätigungsemail wurde an Ihre Adresse gesendet.",
+                        title: t("profilePage.confirmationEmailResentTitle"),
+                        description: t(
+                          "profilePage.confirmationEmailResentDescription",
+                        ),
                       });
                     }}
                   >
-                    Erneut senden
+                    {t("profilePage.resendButton")}
                   </Button>
                 </div>
               )}
             </div>
             <div>
-              <Label htmlFor="tags">Tags</Label>
+              <Label htmlFor="tags">{t("profilePage.tagsLabel")}</Label>
               <div className="flex flex-wrap gap-2 mb-2">
                 {tags.map((tag) => (
                   <Badge
@@ -191,7 +193,7 @@ export default function ProfilePage() {
                   id="newTag"
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
-                  placeholder="Add new tag"
+                  placeholder={t("profilePage.addTagPlaceholder")}
                   onKeyPress={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
@@ -200,12 +202,12 @@ export default function ProfilePage() {
                   }}
                 />
                 <Button type="button" onClick={handleAddTag}>
-                  Add
+                  {t("profilePage.addButton")}
                 </Button>
               </div>
             </div>
             <Button type="submit" className="w-full">
-              Save Changes
+              {t("profilePage.saveChangesButton")}
             </Button>
           </form>
         </CardContent>

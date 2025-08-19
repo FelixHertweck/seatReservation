@@ -9,6 +9,7 @@ import { ReservationManagement } from "@/components/manager/reservation-manageme
 import { ReservationAllowanceManagement } from "@/components/manager/reservation-allowance-management";
 import { useManager } from "@/hooks/use-manager";
 import Loading from "./loading";
+import { t } from "i18next";
 
 export default function ManagerPage() {
   const managerData = useManager();
@@ -39,9 +40,11 @@ export default function ManagerPage() {
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Manager Dashboard</h1>
+        <h1 className="text-3xl font-bold mb-2">
+          {t("managerPage.dashboardTitle")}
+        </h1>
         <p className="text-muted-foreground">
-          Manage events, locations, seats, and reservations
+          {t("managerPage.dashboardDescription")}
         </p>
       </div>
 
@@ -54,11 +57,17 @@ export default function ManagerPage() {
         className="space-y-4"
       >
         <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="events">Events</TabsTrigger>
-          <TabsTrigger value="locations">Locations</TabsTrigger>
-          <TabsTrigger value="seats">Seats</TabsTrigger>
-          <TabsTrigger value="reservations">Reservations</TabsTrigger>
-          <TabsTrigger value="allowances">Allowances</TabsTrigger>
+          <TabsTrigger value="events">{t("managerPage.eventsTab")}</TabsTrigger>
+          <TabsTrigger value="locations">
+            {t("managerPage.locationsTab")}
+          </TabsTrigger>
+          <TabsTrigger value="seats">{t("managerPage.seatsTab")}</TabsTrigger>
+          <TabsTrigger value="reservations">
+            {t("managerPage.reservationsTab")}
+          </TabsTrigger>
+          <TabsTrigger value="allowances">
+            {t("managerPage.allowancesTab")}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="events">

@@ -26,6 +26,7 @@ import type {
   EventLocationResponseDto,
   EventRequestDto,
 } from "@/api";
+import { t } from "i18next";
 
 interface EventFormModalProps {
   allLocations: EventLocationResponseDto[];
@@ -54,7 +55,7 @@ export function EventFormModal({
     bookingDeadline: event?.bookingDeadline
       ? new Date(event.bookingDeadline).toISOString().slice(0, 16)
       : "",
-    eventLocationId: event?.eventLocationId?.toString() || "",
+    eventLocationId: event?.eventLocation?.id?.toString() || "",
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -82,18 +83,20 @@ export function EventFormModal({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {isCreating ? "Create Event" : "Edit Event"}
+            {isCreating
+              ? t("eventFormModal.createEventTitle")
+              : t("eventFormModal.editEventTitle")}
           </DialogTitle>
           <DialogDescription>
             {isCreating
-              ? "Add a new event to the system"
-              : "Update event information"}
+              ? t("eventFormModal.addEventDescription")
+              : t("eventFormModal.updateEventDescription")}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Event Name</Label>
+            <Label htmlFor="name">{t("eventFormModal.eventNameLabel")}</Label>
             <Input
               id="name"
               value={formData.name}
@@ -105,7 +108,9 @@ export function EventFormModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">
+              {t("eventFormModal.descriptionLabel")}
+            </Label>
             <Textarea
               id="description"
               value={formData.description}
@@ -120,7 +125,9 @@ export function EventFormModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="location">Location</Label>
+            <Label htmlFor="location">
+              {t("eventFormModal.locationLabel")}
+            </Label>
             <Select
               value={formData.eventLocationId}
               onValueChange={(value) =>
@@ -128,7 +135,9 @@ export function EventFormModal({
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select a location" />
+                <SelectValue
+                  placeholder={t("eventFormModal.selectLocationPlaceholder")}
+                />
               </SelectTrigger>
               <SelectContent>
                 {allLocations.map((location) => (
@@ -145,7 +154,9 @@ export function EventFormModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="startTime">Start Time</Label>
+              <Label htmlFor="startTime">
+                {t("eventFormModal.startTimeLabel")}
+              </Label>
               <Input
                 id="startTime"
                 type="datetime-local"
@@ -160,7 +171,9 @@ export function EventFormModal({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="endTime">End Time</Label>
+              <Label htmlFor="endTime">
+                {t("eventFormModal.endTimeLabel")}
+              </Label>
               <Input
                 id="endTime"
                 type="datetime-local"
@@ -174,7 +187,9 @@ export function EventFormModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="bookingDeadline">Booking Deadline</Label>
+            <Label htmlFor="bookingDeadline">
+              {t("eventFormModal.bookingDeadlineLabel")}
+            </Label>
             <Input
               id="bookingDeadline"
               type="datetime-local"
@@ -191,10 +206,14 @@ export function EventFormModal({
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              {t("eventFormModal.cancelButton")}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Saving..." : isCreating ? "Create" : "Update"}
+              {isLoading
+                ? t("eventFormModal.savingButton")
+                : isCreating
+                  ? t("eventFormModal.createButton")
+                  : t("eventFormModal.updateButton")}
             </Button>
           </div>
         </form>

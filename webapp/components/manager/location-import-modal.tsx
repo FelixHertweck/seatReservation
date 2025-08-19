@@ -27,6 +27,7 @@ import type {
   ImportSeatDto,
   EventLocationResponseDto,
 } from "@/api";
+import { t } from "i18next";
 
 interface LocationImportModalProps {
   isOpen: boolean;
@@ -64,20 +65,18 @@ export function LocationImportModal({
       if (importType === "location") {
         // Validate ImportEventLocationDto structure
         if (!parsedData.name || !parsedData.address || !parsedData.capacity) {
-          throw new Error(
-            "Location data must include name, address, and capacity",
-          );
+          throw new Error(t("locationImportModal.locationDataValidationError"));
         }
         await onImportLocation(parsedData as ImportEventLocationDto);
       } else {
         // Import seats to existing location
         if (!selectedLocationId) {
-          throw new Error("Please select a location for the seats");
+          throw new Error(t("locationImportModal.selectLocationForSeatsError"));
         }
 
         // Validate seats array
         if (!Array.isArray(parsedData)) {
-          throw new Error("Seats data must be an array");
+          throw new Error(t("locationImportModal.seatsDataArrayError"));
         }
 
         // Validate each seat has required fields
@@ -87,9 +86,7 @@ export function LocationImportModal({
             seat.xCoordinate === undefined ||
             seat.yCoordinate === undefined
           ) {
-            throw new Error(
-              "Each seat must have seatNumber, xCoordinate, and yCoordinate",
-            );
+            throw new Error(t("locationImportModal.seatDataValidationError"));
           }
         }
 
@@ -105,7 +102,7 @@ export function LocationImportModal({
       setError(
         err instanceof Error
           ? err.message
-          : "Invalid JSON format or data structure",
+          : t("locationImportModal.invalidJsonOrDataStructureError"),
       );
     } finally {
       setIsLoading(false);
@@ -126,17 +123,19 @@ export function LocationImportModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Import Location Data
+            {t("locationImportModal.importLocationDataTitle")}
           </DialogTitle>
           <DialogDescription>
-            Import location or seat data using JSON format
+            {t("locationImportModal.importLocationDataDescription")}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Import Type Selection */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Import Type</Label>
+            <Label className="text-sm font-medium">
+              {t("locationImportModal.importTypeLabel")}
+            </Label>
             <RadioGroup
               value={importType}
               onValueChange={(value) =>
@@ -147,13 +146,13 @@ export function LocationImportModal({
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="location" id="location" />
                 <Label htmlFor="location" className="cursor-pointer">
-                  New Location with Seats
+                  {t("locationImportModal.newLocationWithSeatsOption")}
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="seats" id="seats" />
                 <Label htmlFor="seats" className="cursor-pointer">
-                  Add Seats to Existing Location
+                  {t("locationImportModal.addSeatsToExistingLocationOption")}
                 </Label>
               </div>
             </RadioGroup>
@@ -162,13 +161,19 @@ export function LocationImportModal({
           {/* Location Selection for Seats Import */}
           {importType === "seats" && (
             <div className="space-y-2">
-              <Label htmlFor="location-select">Select Location</Label>
+              <Label htmlFor="location-select">
+                {t("locationImportModal.selectLocationLabel")}
+              </Label>
               <Select
                 value={selectedLocationId}
                 onValueChange={setSelectedLocationId}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose a location..." />
+                  <SelectValue
+                    placeholder={t(
+                      "locationImportModal.chooseLocationPlaceholder",
+                    )}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   {locations.map((location) => (
@@ -187,17 +192,17 @@ export function LocationImportModal({
           {/* JSON Input */}
           <div className="space-y-2">
             <Label htmlFor="json-input">
-              JSON Data
+              {t("locationImportModal.jsonDataLabel")}
               {importType === "location"
-                ? " (Location with Seats)"
-                : " (Seats Array)"}
+                ? t("locationImportModal.locationWithSeatsJsonHint")
+                : t("locationImportModal.seatsArrayJsonHint")}
             </Label>
             <Textarea
               id="json-input"
               placeholder={
                 importType === "location"
-                  ? "Paste location JSON data here..."
-                  : "Paste seats array JSON data here..."
+                  ? t("locationImportModal.pasteLocationJsonPlaceholder")
+                  : t("locationImportModal.pasteSeatsJsonPlaceholder")
               }
               value={jsonData}
               onChange={(e) => setJsonData(e.target.value)}
@@ -215,7 +220,7 @@ export function LocationImportModal({
           {/* Action Buttons */}
           <div className="flex justify-end gap-3 pt-4">
             <Button type="button" variant="outline" onClick={handleClose}>
-              Cancel
+              {t("locationImportModal.cancelButton")}
             </Button>
             <Button
               type="submit"
@@ -226,7 +231,9 @@ export function LocationImportModal({
               }
             >
               <Upload className="mr-2 h-4 w-4" />
-              {isLoading ? "Importing..." : "Import Data"}
+              {isLoading
+                ? t("locationImportModal.importingButton")
+                : t("locationImportModal.importDataButton")}
             </Button>
           </div>
         </form>
