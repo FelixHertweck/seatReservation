@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { getApiUsersMe } from "@/api";
 
 export function useAuthStatus() {
   const [isLoading, setIsLoading] = useState(false);
