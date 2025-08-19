@@ -27,29 +27,26 @@ export default function InitQueryClient({
               toast({
                 title: "Error",
                 description: "Failed to load data. Please try again.",
-              variant: "destructive",
-            });
-          }, 0);
-        }
+                variant: "destructive",
+              });
+            }, 0);
+          }
           return false;
         },
       },
       mutations: {
         onError: (error: Error) => {
-          
           if (showToast) {
-          toast({
-            title: "Error",
-            description: "An error occurred: " + error.message,
-            variant: "destructive",
-          });
-      } 
+            toast({
+              title: "Error",
+              description: "An error occurred: " + error.message,
+              variant: "destructive",
+            });
+          }
         },
       },
     },
   });
-
-
 
   return (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>

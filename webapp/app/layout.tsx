@@ -4,12 +4,15 @@ import { Toaster } from "@/components/ui/toaster";
 import InitQueryClient from "@/app/initQueryClient";
 import { ThemeProvider } from "@/components/theme-provider";
 import { EmailVerificationPrompt } from "@/components/common/EmailVerificationPrompt";
+import { initI18N } from "@/locals/Languages";
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  initI18N();
+
   return (
     <html lang="en">
       <head>
