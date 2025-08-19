@@ -87,7 +87,7 @@ export function EventManagement({
     }
     if (filters.locationId) {
       filtered = filtered.filter(
-        (event) => event.eventLocationId?.toString() === filters.locationId,
+        (event) => event.eventLocation?.id?.toString() === filters.locationId,
       );
     }
 
@@ -176,10 +176,7 @@ export function EventManagement({
           </TableHeader>
           <TableBody>
             {filteredEvents.map((event) => {
-              const location = allLocations.find(
-                (loc) => loc.id === event.eventLocationId,
-              );
-
+              const location = event.eventLocation;
               return (
                 <TableRow key={event.id?.toString()}>
                   <TableCell className="font-medium">{event.name}</TableCell>

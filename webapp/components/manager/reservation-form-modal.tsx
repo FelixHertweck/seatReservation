@@ -19,6 +19,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { SeatMap } from "@/components/common/seat-map";
 import type {
   DetailedEventResponseDto,
   ReservationRequestDto,
@@ -47,7 +50,26 @@ export function ReservationFormModal({
     seatIds: [] as string[],
     deductAllowance: true,
   });
+  const [selectedSeats, setSelectedSeats] = useState<SeatDto[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [userSearch, setUserSearch] = useState("");
+
+  const selectedEvent = events?.find(
+    (event) => event.id?.toString() === formData.eventId,
+  );
+  const availableSeats: SeatDto[] = selectedEvent?.eventLocation?.seats ?? [];
+
+  const filteredUsers = users
+    .filter((user) => {
+      const username = user.username?.toLowerCase() || "";
+      const searchTerm = userSearch.toLowerCase();
+      return username.includes(searchTerm);
+    })
+    .sort((a, b) => {
+      const usernameA = a.username?.toLowerCase() || "";
+      const usernameB = b.username?.toLowerCase() || "";
+      return usernameA.localeCompare(usernameB);
+    });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,7 +79,7 @@ export function ReservationFormModal({
       const reservationData: ReservationRequestDto = {
         eventId: BigInt(formData.eventId),
         userId: BigInt(formData.userId),
-        seatIds: formData.seatIds.map((id) => BigInt(id)),
+        seatIds: selectedSeats.map((seat) => seat.id!),
         deductAllowance: formData.deductAllowance,
       };
       await onSubmit(reservationData);
@@ -66,18 +88,28 @@ export function ReservationFormModal({
     }
   };
 
-  const handleSeatToggle = (seatId: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      seatIds: prev.seatIds.includes(seatId)
-        ? prev.seatIds.filter((id) => id !== seatId)
-        : [...prev.seatIds, seatId],
-    }));
+  const handleSeatSelect = (seat: SeatDto) => {
+    setSelectedSeats((prev) => {
+      const isSelected = prev.some((s) => s.id === seat.id);
+      if (isSelected) {
+        return prev.filter((s) => s.id !== seat.id);
+      } else {
+        return [...prev, seat];
+      }
+    });
   };
+
+  const handleEventChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, eventId: value }));
+    setSelectedSeats([]);
+  };
+
+  const isFormValid =
+    formData.eventId && formData.userId && selectedSeats.length > 0;
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-6xl max-h-[90vh] h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Create Reservation</DialogTitle>
           <DialogDescription>
@@ -85,111 +117,175 @@ export function ReservationFormModal({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="event">Event</Label>
-            <Select
-              value={formData.eventId}
-              onValueChange={(value) =>
-                setFormData((prev) => ({ ...prev, eventId: value }))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select an event" />
-              </SelectTrigger>
-              <SelectContent>
-                {events.map((event) => (
-                  <SelectItem
-                    key={event.id?.toString()}
-                    value={event.id?.toString() ?? "unknown"}
-                  >
-                    {event.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="user">User</Label>
-            <Select
-              value={formData.userId}
-              onValueChange={(value) =>
-                setFormData((prev) => ({ ...prev, userId: value }))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a user" />
-              </SelectTrigger>
-              <SelectContent>
-                {users.map((user) => (
-                  <SelectItem
-                    key={user.id?.toString()}
-                    value={user.id?.toString() ?? "unknown"}
-                  >
-                    {user.username}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Seats (select multiple)</Label>
-            <div className="max-h-32 overflow-y-auto border rounded p-2 space-y-1">
-              {seats.map((seat) => (
-                <div
-                  key={seat.id?.toString()}
-                  className="flex items-center space-x-2"
-                >
-                  <input
-                    type="checkbox"
-                    id={`seat-${seat.id}`}
-                    checked={formData.seatIds.includes(
-                      seat.id?.toString() ?? "",
-                    )}
-                    onChange={() => handleSeatToggle(seat.id?.toString() ?? "")}
-                    className="rounded"
-                  />
-                  <label htmlFor={`seat-${seat.id}`} className="text-sm">
-                    {seat.seatNumber}
-                  </label>
-                </div>
-              ))}
+        <form onSubmit={handleSubmit} className="flex-1 flex gap-6 min-h-0">
+          {/* Left side - Seat Map */}
+          <div className="flex-1 flex flex-col min-h-0 max-w-[calc(100%-20rem)]">
+            <div className="flex gap-4 text-sm mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-green-500 dark:bg-green-400 rounded"></div>
+                <span>Available</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-blue-500 dark:bg-blue-400 rounded"></div>
+                <span>Selected</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-red-500 dark:bg-red-400 rounded"></div>
+                <span>Reserved</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-gray-500 dark:bg-gray-400 rounded"></div>
+                <span>Blocked</span>
+              </div>
             </div>
-            <p className="text-xs text-gray-500">
-              Selected: {formData.seatIds.length} seat(s)
-            </p>
+
+            {formData.eventId && availableSeats.length > 0 ? (
+              <div className="flex-1 min-h-0 flex items-center justify-center">
+                <div className="w-full h-full max-h-[60vh] flex items-center justify-center">
+                  <SeatMap
+                    seats={availableSeats}
+                    selectedSeats={selectedSeats}
+                    onSeatSelect={handleSeatSelect}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="flex-1 flex items-center justify-center text-gray-500">
+                {!formData.eventId
+                  ? "Please select an event to view seats"
+                  : "No seats available for this event"}
+              </div>
+            )}
           </div>
 
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="deductAllowance"
-              checked={formData.deductAllowance}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  deductAllowance: e.target.checked,
-                }))
-              }
-              className="rounded"
-            />
-            <Label htmlFor="deductAllowance" className="text-sm">
-              Deduct from user allowance
-            </Label>
-          </div>
+          <div className="w-80 flex flex-col bg-gray-50 dark:bg-gray-900 p-6 rounded-lg">
+            <div className="space-y-6">
+              {/* Event and User Selection in a grid */}
+              <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="event" className="text-sm font-medium">
+                    Event
+                  </Label>
+                  <Select
+                    value={formData.eventId}
+                    onValueChange={handleEventChange}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select an event" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {events.map((event) => (
+                        <SelectItem
+                          key={event.id?.toString()}
+                          value={event.id?.toString() ?? "unknown"}
+                        >
+                          {event.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={isLoading || formData.seatIds.length === 0}
-            >
-              {isLoading ? "Creating..." : "Create Reservation"}
-            </Button>
+                <div className="space-y-2">
+                  <Label htmlFor="user" className="text-sm font-medium">
+                    User
+                  </Label>
+                  <Input
+                    placeholder="Filter users..."
+                    value={userSearch}
+                    onChange={(e) => setUserSearch(e.target.value)}
+                    className="w-full"
+                  />
+                  <Select
+                    value={formData.userId}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, userId: value }))
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a user" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {filteredUsers.map((user) => (
+                        <SelectItem
+                          key={user.id?.toString()}
+                          value={user.id?.toString() ?? "unknown"}
+                        >
+                          {user.username}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Selected Seats Section */}
+              {selectedSeats.length > 0 && (
+                <div className="space-y-3 border-t pt-4">
+                  <h4 className="font-medium text-sm">Selected Seats</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedSeats.map((seat) => (
+                      <Badge
+                        key={seat.id?.toString()}
+                        variant="outline"
+                        className="bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-700"
+                      >
+                        {seat.seatNumber}
+                      </Badge>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                    {selectedSeats.length} seat
+                    {selectedSeats.length !== 1 ? "s" : ""} selected
+                  </p>
+                </div>
+              )}
+
+              {/* Deduct Allowance Option */}
+              <div className="flex items-center space-x-3 border-t pt-4">
+                <input
+                  type="checkbox"
+                  id="deductAllowance"
+                  checked={formData.deductAllowance}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      deductAllowance: e.target.checked,
+                    }))
+                  }
+                  className="rounded"
+                />
+                <Label htmlFor="deductAllowance" className="text-sm">
+                  Deduct from user allowance
+                </Label>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col gap-3 mt-auto pt-6 border-t">
+              {!isFormValid && (
+                <p className="text-xs text-red-500 text-center">
+                  Please select an event, user, and at least one seat
+                </p>
+              )}
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onClose}
+                  className="flex-1 bg-transparent"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isLoading || !isFormValid}
+                  className="flex-1"
+                >
+                  {isLoading ? "Creating..." : "Create"}
+                </Button>
+              </div>
+            </div>
           </div>
         </form>
       </DialogContent>
