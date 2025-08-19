@@ -107,11 +107,13 @@ class EmailServiceTest {
     @Test
     void sendEmailConfirmation_Success() throws IOException {
         User user = createTestUser();
+        EmailVerification emailVerification =
+                new EmailVerification(user, "testtoken", LocalDateTime.now().plusMinutes(60));
         doNothing().when(mailer).send(any(Mail.class));
 
-        emailService.sendEmailConfirmation(user);
+        emailService.sendEmailConfirmation(user, emailVerification);
 
-        verify(emailVerificationRepository, times(1))
+        verify(emailVerificationRepository, never())
                 .persist(
                         any(de.felixhertweck.seatreservation.model.entity.EmailVerification.class));
         ArgumentCaptor<Mail> mailCaptor = ArgumentCaptor.forClass(Mail.class);
@@ -121,6 +123,40 @@ class EmailServiceTest {
         assertEquals(user.getEmail(), sentMail.getTo().getFirst());
         assertEquals("Please Confirm Your Email Address", sentMail.getSubject());
         assertTrue(sentMail.getHtml().contains("http://localhost:8080/api/user/confirm-email"));
+    }
+
+    @Test
+    void createEmailVerification_Success() {
+        User user = createTestUser();
+        doNothing().when(emailVerificationRepository).persist(any(EmailVerification.class));
+
+        EmailVerification createdVerification = emailService.createEmailVerification(user);
+
+        assertNotNull(createdVerification);
+        assertEquals(user, createdVerification.getUser());
+        assertNotNull(createdVerification.getToken());
+        assertNotNull(createdVerification.getExpirationTime());
+        verify(emailVerificationRepository, times(1)).persist(createdVerification);
+    }
+
+    @Test
+    void updateEmailVerificationExpiration_Success() {
+        User user = createTestUser();
+        EmailVerification emailVerification =
+                new EmailVerification(user, "oldtoken", LocalDateTime.now().minusMinutes(10));
+        emailVerification.id = 1L;
+
+        doNothing().when(emailVerificationRepository).persist(any(EmailVerification.class));
+
+        EmailVerification updatedVerification =
+                emailService.updateEmailVerificationExpiration(emailVerification);
+
+        assertNotNull(updatedVerification);
+        assertTrue(
+                updatedVerification
+                        .getExpirationTime()
+                        .isAfter(LocalDateTime.now().minusMinutes(1)));
+        verify(emailVerificationRepository, times(1)).persist(updatedVerification);
     }
 
     @Test

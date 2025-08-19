@@ -60,6 +60,10 @@ public class EmailVerification extends PanacheEntity {
         return expirationTime;
     }
 
+    public void setExpirationTime(LocalDateTime expirationTime) {
+        this.expirationTime = expirationTime;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

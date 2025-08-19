@@ -125,7 +125,11 @@ public class UserService {
         if (user.getEmail() != null && !user.getEmail().trim().isEmpty()) {
             try {
                 LOG.debugf("Attempting to send email confirmation to %s", user.getEmail());
-                emailService.sendEmailConfirmation(user);
+
+                emailVerificationRepository.deleteByUserId(user.id);
+
+                EmailVerification emailVerification = emailService.createEmailVerification(user);
+                emailService.sendEmailConfirmation(user, emailVerification);
                 LOG.infof(
                         "Email confirmation sent to %s for user ID: %d", user.getEmail(), user.id);
             } catch (IOException e) {
@@ -160,17 +164,18 @@ public class UserService {
             // Reset email verification status
             existingUser.setEmailVerified(false);
 
-            // Delete existing email verification entry if present
-            emailVerificationRepository
-                    .findByUserIdOptional(existingUser.id)
-                    .ifPresent(emailVerificationRepository::delete);
+            // Delete existing email verification entry in a new transaction to avoid constraint
+            // violation
+            emailVerificationRepository.deleteByUserId(existingUser.id);
 
             // Send new email confirmation
             try {
                 LOG.debugf(
                         "Sending email confirmation to %s for user ID %d due to email change.",
                         existingUser.getEmail(), existingUser.id);
-                emailService.sendEmailConfirmation(existingUser);
+                EmailVerification emailVerification =
+                        emailService.createEmailVerification(existingUser);
+                emailService.sendEmailConfirmation(existingUser, emailVerification);
                 LOG.infof(
                         "Email confirmation sent to %s for user ID: %d",
                         existingUser.getEmail(), existingUser.id);
@@ -445,5 +450,54 @@ public class UserService {
         LOG.infof("Email for user ID %d (%s) marked as verified.", user.id, user.getEmail());
 
         return user.getEmail();
+    }
+
+    /**
+     * Resends the email confirmation for a given username and extends the token's lifetime.
+     *
+     * @param username The username of the user for whom to resend the email.
+     * @throws UserNotFoundException If the user with the given username does not exist.
+     * @throws IOException If an error occurs while sending the email.
+     */
+    @Transactional
+    public void resendEmailConfirmation(String username) throws UserNotFoundException, IOException {
+        LOG.infof("Attempting to resend email confirmation for username: %s", username);
+
+        User user =
+                userRepository
+                        .findByUsernameOptional(username)
+                        .orElseThrow(
+                                () -> {
+                                    LOG.warnf(
+                                            "User with username %s not found for resending email"
+                                                    + " confirmation.",
+                                            username);
+                                    return new UserNotFoundException(
+                                            "User with username " + username + " not found.");
+                                });
+
+        if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
+            LOG.warnf("User %s has no email address, cannot resend confirmation.", username);
+            throw new IllegalArgumentException(
+                    "User has no email address to send confirmation to.");
+        }
+
+        // Find existing email verification entry
+        EmailVerification emailVerification =
+                emailVerificationRepository.findByUserIdOptional(user.id).orElse(null);
+
+        if (emailVerification != null) {
+            // Update existing token's expiration time
+            emailService.updateEmailVerificationExpiration(emailVerification);
+            LOG.debugf("Existing email verification token for user ID %d updated.", user.id);
+        } else {
+            // Create a new email verification if none exists
+            emailVerification = emailService.createEmailVerification(user);
+            LOG.debugf("New email verification token created for user ID %d.", user.id);
+        }
+
+        // Send email confirmation with the (updated or new) email verification
+        emailService.sendEmailConfirmation(user, emailVerification);
+        LOG.infof("Email confirmation resent to %s for user ID: %d", user.getEmail(), user.id);
     }
 }

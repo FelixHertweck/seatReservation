@@ -71,13 +71,16 @@ public class EmailService {
      * Sends an email confirmation to the specified user.
      *
      * @param user the user to whom the confirmation email will be sent
+     * @param emailVerification the EmailVerification object to use for the link
      * @throws IOException if the email template cannot be read
      */
-    public void sendEmailConfirmation(User user) throws IOException {
+    public void sendEmailConfirmation(User user, EmailVerification emailVerification)
+            throws IOException {
         LOG.infof("Attempting to send email confirmation to user: %s", user.getEmail());
         LOG.debugf("User ID: %d, Username: %s", user.id, user.getUsername());
 
-        String confirmationLink = createConfirmationLink(user);
+        String confirmationLink =
+                generateConfirmationLink(emailVerification.id, emailVerification.getToken());
         LOG.debugf("Confirmation link generated: %s", confirmationLink);
 
         // Read the HTML template
@@ -110,25 +113,42 @@ public class EmailService {
         }
     }
 
-    private String createConfirmationLink(User user) {
-        LOG.debugf("Creating confirmation link for user ID: %d", user.id);
+    /**
+     * Creates a new email verification entry and returns it.
+     *
+     * @param user The user for whom to create the verification.
+     * @return The newly created EmailVerification object.
+     */
+    public EmailVerification createEmailVerification(User user) {
+        LOG.debugf("Creating new email verification for user ID: %d", user.id);
         String token = RandomUUIDString.generate();
         LocalDateTime expirationTime = LocalDateTime.now().plusMinutes(expirationMinutes);
         EmailVerification emailVerification = new EmailVerification(user, token, expirationTime);
-        LOG.debugf("Generated token: %s, Expiration time: %s", token, expirationTime);
-
-        // persist and get id of entry with emailVerificationRepository
         emailVerificationRepository.persist(emailVerification);
         LOG.infof(
                 "Email verification entry persisted for user ID %d with ID: %d",
                 user.id, emailVerification.id);
+        return emailVerification;
+    }
 
-        return baseUrl
-                + "/api/user/confirm-email"
-                + "?id="
-                + emailVerification.id
-                + "&token="
-                + token;
+    /**
+     * Updates an existing email verification entry's expiration time and returns the updated entry.
+     *
+     * @param emailVerification The EmailVerification object to update.
+     * @return The updated EmailVerification object.
+     */
+    public EmailVerification updateEmailVerificationExpiration(
+            EmailVerification emailVerification) {
+        emailVerification.setExpirationTime(LocalDateTime.now().plusMinutes(expirationMinutes));
+        emailVerificationRepository.persist(emailVerification);
+        LOG.infof(
+                "Email verification entry ID %d expiration time updated to: %s",
+                emailVerification.id, emailVerification.getExpirationTime());
+        return emailVerification;
+    }
+
+    private String generateConfirmationLink(Long id, String token) {
+        return baseUrl + "/api/user/confirm-email" + "?id=" + id + "&token=" + token;
     }
 
     public void sendReservationConfirmation(User user, List<Reservation> reservations)
