@@ -275,6 +275,7 @@ export function ReservationManagement({
           users={users}
           events={events}
           seats={seats}
+          reservations={reservations}
           onSubmit={async (reservationData) => {
             await createReservation(reservationData);
             setIsModalOpen(false);

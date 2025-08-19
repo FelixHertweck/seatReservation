@@ -11,6 +11,7 @@ import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 interface SeatMapProps {
   seats: SeatDto[];
   selectedSeats: SeatDto[];
+  userReservedSeats?: SeatDto[];
   onSeatSelect: (seat: SeatDto) => void;
   readonly?: boolean;
 }
@@ -66,6 +67,7 @@ SeatComponent.displayName = "SeatComponent";
 export function SeatMap({
   seats,
   selectedSeats,
+  userReservedSeats = [],
   onSeatSelect,
   readonly = false,
 }: SeatMapProps): ReactElement {
@@ -79,23 +81,32 @@ export function SeatMap({
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<HTMLDivElement>(null);
 
-  const { maxX, maxY, seatPositionMap, selectedSeatIds } = useMemo(() => {
-    const maxX = Math.max(...seats.map((s) => s.xCoordinate || 0));
-    const maxY = Math.max(...seats.map((s) => s.yCoordinate || 0));
+  const { maxX, maxY, seatPositionMap, selectedSeatIds, userReservedSeatIds } =
+    useMemo(() => {
+      const maxX = Math.max(...seats.map((s) => s.xCoordinate || 0));
+      const maxY = Math.max(...seats.map((s) => s.yCoordinate || 0));
 
-    // Create a map for O(1) seat lookup
-    const seatPositionMap = new Map<string, SeatDto>();
-    seats.forEach((seat) => {
-      if (seat.xCoordinate && seat.yCoordinate) {
-        seatPositionMap.set(`${seat.xCoordinate}-${seat.yCoordinate}`, seat);
-      }
-    });
+      // Create a map for O(1) seat lookup
+      const seatPositionMap = new Map<string, SeatDto>();
+      seats.forEach((seat) => {
+        if (seat.xCoordinate && seat.yCoordinate) {
+          seatPositionMap.set(`${seat.xCoordinate}-${seat.yCoordinate}`, seat);
+        }
+      });
 
-    // Create a Set for O(1) selected seat lookup
-    const selectedSeatIds = new Set(selectedSeats.map((s) => s.id));
+      // Create a Set for O(1) selected seat lookup
+      const selectedSeatIds = new Set(selectedSeats.map((s) => s.id));
 
-    return { maxX, maxY, seatPositionMap, selectedSeatIds };
-  }, [seats, selectedSeats]);
+      const userReservedSeatIds = new Set(userReservedSeats.map((s) => s.id));
+
+      return {
+        maxX,
+        maxY,
+        seatPositionMap,
+        selectedSeatIds,
+        userReservedSeatIds,
+      };
+    }, [seats, selectedSeats, userReservedSeats]);
 
   const getSeatColor = useCallback(
     (seat: SeatDto | undefined) => {
@@ -104,6 +115,10 @@ export function SeatMap({
       const isSelected = selectedSeatIds.has(seat.id);
       if (isSelected)
         return "bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700";
+
+      const isUserReserved = userReservedSeatIds.has(seat.id);
+      if (isUserReserved)
+        return "bg-yellow-500 hover:bg-yellow-600 dark:bg-yellow-600 dark:hover:bg-yellow-700";
 
       switch (seat.status) {
         case "RESERVED":
@@ -114,15 +129,17 @@ export function SeatMap({
           return "bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700";
       }
     },
-    [selectedSeatIds],
+    [selectedSeatIds, userReservedSeatIds],
   );
 
   const canSelectSeat = useCallback(
     (seat: SeatDto | undefined) => {
       if (!seat || readonly) return false;
+      const isUserReserved = userReservedSeatIds.has(seat.id);
+      if (isUserReserved) return true;
       return !seat.status; // Can only select seats without status (available)
     },
-    [readonly],
+    [readonly, userReservedSeatIds],
   );
 
   const gridItems = useMemo(() => {

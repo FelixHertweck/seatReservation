@@ -256,6 +256,7 @@ export default function EventsPage() {
       {selectedEvent && (
         <EventReservationModal
           event={selectedEvent}
+          userReservations={reservations}
           onClose={() => setSelectedEvent(null)}
           onReserve={createReservation}
         />
