@@ -15,6 +15,7 @@ import type { EventResponseDto, ReservationResponseDto, SeatDto } from "@/api";
 
 interface EventReservationModalProps {
   event: EventResponseDto;
+  userReservations: ReservationResponseDto[];
   onClose: () => void;
   onReserve: (
     eventId: bigint,
@@ -24,6 +25,7 @@ interface EventReservationModalProps {
 
 export function EventReservationModal({
   event,
+  userReservations,
   onClose,
   onReserve,
 }: EventReservationModalProps) {
@@ -31,6 +33,11 @@ export function EventReservationModal({
   const [isLoading, setIsLoading] = useState(false);
 
   const seats: SeatDto[] = event.location?.seats ?? [];
+
+  const userReservedSeats = userReservations
+    .filter((reservation) => reservation.eventId === event.id)
+    .map((reservation) => reservation.seat)
+    .filter((seat): seat is SeatDto => seat !== null && seat !== undefined);
 
   const handleSeatSelect = (seat: SeatDto) => {
     if (seat.status) return; // Can't select reserved or blocked seats
@@ -90,6 +97,13 @@ export function EventReservationModal({
             </div>
             <div
               className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
+              style={{ animationDelay: "150ms" }}
+            >
+              <div className="w-4 h-4 bg-yellow-500 rounded transition-all duration-300 hover:scale-110"></div>
+              <span>My Reserved</span>
+            </div>
+            <div
+              className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
               style={{ animationDelay: "200ms" }}
             >
               <div className="w-4 h-4 bg-red-500 rounded transition-all duration-300 hover:scale-110"></div>
@@ -108,6 +122,7 @@ export function EventReservationModal({
             <SeatMap
               seats={seats}
               selectedSeats={selectedSeats}
+              userReservedSeats={userReservedSeats}
               onSeatSelect={handleSeatSelect}
             />
           </div>

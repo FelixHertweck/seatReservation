@@ -27,12 +27,14 @@ import type {
   ReservationRequestDto,
   SeatDto,
   UserDto,
+  DetailedReservationResponseDto,
 } from "@/api";
 
 interface ReservationFormModalProps {
   users: UserDto[];
   events: DetailedEventResponseDto[];
   seats: SeatDto[];
+  reservations?: DetailedReservationResponseDto[];
   onSubmit: (reservationData: ReservationRequestDto) => Promise<void>;
   onClose: () => void;
 }
@@ -41,6 +43,7 @@ export function ReservationFormModal({
   users,
   events,
   seats,
+  reservations = [],
   onSubmit,
   onClose,
 }: ReservationFormModalProps) {
@@ -107,6 +110,18 @@ export function ReservationFormModal({
   const isFormValid =
     formData.eventId && formData.userId && selectedSeats.length > 0;
 
+  const userReservedSeats: SeatDto[] =
+    formData.userId && formData.eventId
+      ? reservations
+          .filter(
+            (reservation) =>
+              reservation.user?.id?.toString() === formData.userId &&
+              reservation.eventId?.toString() === formData.eventId,
+          )
+          .map((reservation) => reservation.seat)
+          .filter((seat): seat is SeatDto => seat !== undefined)
+      : [];
+
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-6xl max-h-[90vh] h-[80vh] flex flex-col">
@@ -134,6 +149,10 @@ export function ReservationFormModal({
                 <span>Reserved</span>
               </div>
               <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-yellow-500 dark:bg-yellow-400 rounded"></div>
+                <span>User Reserved</span>
+              </div>
+              <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-gray-500 dark:bg-gray-400 rounded"></div>
                 <span>Blocked</span>
               </div>
@@ -145,6 +164,7 @@ export function ReservationFormModal({
                   <SeatMap
                     seats={availableSeats}
                     selectedSeats={selectedSeats}
+                    userReservedSeats={userReservedSeats}
                     onSeatSelect={handleSeatSelect}
                   />
                 </div>
