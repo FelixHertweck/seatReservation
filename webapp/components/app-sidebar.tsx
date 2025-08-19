@@ -19,7 +19,6 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -38,13 +37,11 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect } from "react";
 import { useTheme } from "next-themes";
-import { useRouter } from "next/navigation";
 
 export function AppSidebar() {
   const { user, logout } = useAuth();
   const { setOpen, isMobile } = useSidebar();
   const { theme, setTheme } = useTheme();
-  const router = useRouter();
 
   // Auto-close sidebar on mobile when screen becomes small
   useEffect(() => {
@@ -130,36 +127,23 @@ export function AppSidebar() {
       collapsible="offcanvas"
       className="border-r bg-gradient-to-b from-sidebar-background to-sidebar-background/80 backdrop-blur-sm"
     >
-      <SidebarHeader className="border-b border-sidebar-border/50 bg-gradient-to-r from-sidebar-primary/5 to-sidebar-accent/5">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent/50 transition-all duration-300 hover:scale-[1.02] group"
-              onClick={() => {
-                router.push("/");
-              }}
-            >
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-gradient-to-br from-sidebar-primary to-sidebar-primary/80 text-sidebar-primary-foreground shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110">
-                <Calendar className="size-4 group-hover:rotate-12 transition-transform duration-300" />
-              </div>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold bg-gradient-to-r from-sidebar-foreground to-sidebar-foreground/80 bg-clip-text">
-                  Event Manager
-                </span>
-                <span className="truncate text-xs text-sidebar-foreground/60">
-                  Management System
-                </span>
-              </div>
-              <Sparkles className="size-3 text-sidebar-primary opacity-60 group-hover:opacity-100 transition-opacity duration-300" />
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarHeader>
+      <SidebarMenu>
+        <a
+          href="/"
+          className={`w-full transition-all duration-500 flex items-center justify-center bg-transparent`}
+        >
+          <img
+            src="/logo.png"
+            alt="Logo"
+            className={`h-auto w-full max-h-[100px] bg-transparent object-contain`}
+          />
+        </a>
+      </SidebarMenu>
+      <div className="border-b border-sidebar-border/50" />
 
-      <SidebarContent className="px-2 py-4">
+      <SidebarContent className="px-2 py-1 ">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70 mb-2 px-2">
+          <SidebarGroupLabel className="text-base font-semibold text-sidebar-foreground/70 mb-2 px-2">
             Navigation
           </SidebarGroupLabel>
           <SidebarGroupContent>
