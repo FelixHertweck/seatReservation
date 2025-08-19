@@ -79,13 +79,19 @@ public class UserServiceTest {
         when(userRepository.isPersistent(any(User.class)))
                 .thenReturn(true); // Simulate successful persistence
 
+        EmailVerification mockEmailVerification =
+                new EmailVerification(new User(), "token", LocalDateTime.now());
+        when(emailService.createEmailVerification(any(User.class)))
+                .thenReturn(mockEmailVerification);
+
         UserDTO createdUser = userService.createUser(dto, Set.of(Roles.USER));
 
         assertNotNull(createdUser);
         assertEquals("testuser", createdUser.username());
         assertEquals("test@example.com", createdUser.email());
         verify(userRepository, times(1)).persist(any(User.class));
-        verify(emailService, times(1)).sendEmailConfirmation(any(User.class));
+        verify(emailService, times(1))
+                .sendEmailConfirmation(any(User.class), eq(mockEmailVerification));
     }
 
     @Test
@@ -101,7 +107,9 @@ public class UserServiceTest {
         assertEquals("testuser", createdUser.username());
         assertNull(createdUser.email());
         verify(userRepository, times(1)).persist(any(User.class));
-        verify(emailService, never()).sendEmailConfirmation(any(User.class));
+        verify(emailService, never()).createEmailVerification(any(User.class));
+        verify(emailService, never())
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
     @Test
@@ -109,7 +117,9 @@ public class UserServiceTest {
         assertThrows(
                 InvalidUserException.class, () -> userService.createUser(null, Set.of(Roles.USER)));
         verify(userRepository, never()).persist(any(User.class));
-        verify(emailService, never()).sendEmailConfirmation(any(User.class));
+        verify(emailService, never()).createEmailVerification(any(User.class));
+        verify(emailService, never())
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
     @Test
@@ -125,7 +135,9 @@ public class UserServiceTest {
                 InvalidUserException.class, () -> userService.createUser(dto2, Set.of(Roles.USER)));
 
         verify(userRepository, never()).persist(any(User.class));
-        verify(emailService, never()).sendEmailConfirmation(any(User.class));
+        verify(emailService, never()).createEmailVerification(any(User.class));
+        verify(emailService, never())
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
     @Test
@@ -155,7 +167,9 @@ public class UserServiceTest {
                 DuplicateUserException.class,
                 () -> userService.createUser(dto, Set.of(Roles.USER)));
         verify(userRepository, never()).persist(any(User.class));
-        verify(emailService, never()).sendEmailConfirmation(any(User.class));
+        verify(emailService, never()).createEmailVerification(any(User.class));
+        verify(emailService, never())
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
     @Test
@@ -165,6 +179,8 @@ public class UserServiceTest {
                         "newuser", "existing@example.com", "password", "Jane", "Doe", null);
         when(userRepository.findByUsernameOptional(anyString())).thenReturn(Optional.empty());
         when(userRepository.isPersistent(any(User.class))).thenReturn(true);
+        when(emailService.createEmailVerification(any(User.class)))
+                .thenReturn(new EmailVerification(new User(), "token", LocalDateTime.now()));
 
         // Simulate that another user already has this email, but it should not prevent creation
         // (assuming email uniqueness is not enforced at this layer for creation)
@@ -175,7 +191,9 @@ public class UserServiceTest {
         assertEquals("newuser", createdUser.username());
         assertEquals("existing@example.com", createdUser.email());
         verify(userRepository, times(1)).persist(any(User.class));
-        verify(emailService, times(1)).sendEmailConfirmation(any(User.class));
+        verify(emailService, times(1)).createEmailVerification(any(User.class));
+        verify(emailService, times(1))
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
     @Test
@@ -185,13 +203,17 @@ public class UserServiceTest {
                         "testuser", "test@example.com", "password", "John", "Doe", null);
         when(userRepository.findByUsernameOptional(anyString())).thenReturn(Optional.empty());
         when(userRepository.isPersistent(any(User.class))).thenReturn(true);
+        when(emailService.createEmailVerification(any(User.class)))
+                .thenReturn(new EmailVerification(new User(), "token", LocalDateTime.now()));
         doThrow(new IOException("Email send failed"))
                 .when(emailService)
-                .sendEmailConfirmation(any(User.class));
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
 
         assertThrows(RuntimeException.class, () -> userService.createUser(dto, Set.of(Roles.USER)));
         verify(userRepository, times(1)).persist(any(User.class));
-        verify(emailService, times(1)).sendEmailConfirmation(any(User.class));
+        verify(emailService, times(1)).createEmailVerification(any(User.class));
+        verify(emailService, times(1))
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
     @Test
@@ -228,7 +250,8 @@ public class UserServiceTest {
         assertEquals("User", updatedUser.lastname());
         assertEquals("old@example.com", updatedUser.email());
         verify(userRepository, times(1)).persist(existingUser);
-        verify(emailService, never()).sendEmailConfirmation(any(User.class));
+        verify(emailService, never())
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
     @Test
@@ -265,7 +288,8 @@ public class UserServiceTest {
         assertEquals("New", updatedUser.lastname());
         assertEquals("old@example.com", updatedUser.email());
         verify(userRepository, times(1)).persist(existingUser);
-        verify(emailService, never()).sendEmailConfirmation(any(User.class));
+        verify(emailService, never())
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
     @Test
@@ -300,7 +324,8 @@ public class UserServiceTest {
         assertNotNull(updatedUser);
         assertTrue(BcryptUtil.matches("newpassword", existingUser.getPasswordHash()));
         verify(userRepository, times(1)).persist(existingUser);
-        verify(emailService, never()).sendEmailConfirmation(any(User.class));
+        verify(emailService, never())
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
         verify(emailService, times(1)).sendPasswordChangedNotification(any(User.class));
     }
 
@@ -363,7 +388,8 @@ public class UserServiceTest {
         assertNotNull(updatedUser);
         assertEquals(newRoles, existingUser.getRoles());
         verify(userRepository, times(1)).persist(existingUser);
-        verify(emailService, never()).sendEmailConfirmation(any(User.class));
+        verify(emailService, never())
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
     @Test
@@ -401,7 +427,8 @@ public class UserServiceTest {
         assertTrue(BcryptUtil.matches("newpass", existingUser.getPasswordHash()));
         assertEquals("old@example.com", updatedUser.email());
         verify(userRepository, times(1)).persist(existingUser);
-        verify(emailService, never()).sendEmailConfirmation(any(User.class));
+        verify(emailService, never())
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
     @Test
@@ -430,8 +457,10 @@ public class UserServiceTest {
                         Collections.emptySet());
 
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
-        when(emailVerificationRepository.findByUser(any(User.class)))
+        when(emailVerificationRepository.findByUserIdOptional(anyLong()))
                 .thenReturn(Optional.empty()); // No existing token
+        when(emailService.createEmailVerification(any(User.class)))
+                .thenReturn(new EmailVerification(new User(), "token", LocalDateTime.now()));
 
         UserDTO updatedUser = userService.updateUser(1L, dto);
 
@@ -439,7 +468,9 @@ public class UserServiceTest {
         assertEquals("new@example.com", updatedUser.email());
         assertFalse(existingUser.isEmailVerified());
         verify(userRepository, times(1)).persist(existingUser);
-        verify(emailService, times(1)).sendEmailConfirmation(existingUser);
+        verify(emailService, times(1)).createEmailVerification(any(User.class));
+        verify(emailService, times(1))
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
     @Test
@@ -456,14 +487,16 @@ public class UserServiceTest {
 
         assertThrows(UserNotFoundException.class, () -> userService.updateUser(1L, dto));
         verify(userRepository, never()).persist(any(User.class));
-        verify(emailService, never()).sendEmailConfirmation(any(User.class));
+        verify(emailService, never())
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
     @Test
     void updateUser_InvalidUserException_NullDTO() throws IOException {
         assertThrows(InvalidUserException.class, () -> userService.updateUser(1L, null));
         verify(userRepository, never()).persist(any(User.class));
-        verify(emailService, never()).sendEmailConfirmation(any(User.class));
+        verify(emailService, never())
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
     @Test
@@ -492,7 +525,10 @@ public class UserServiceTest {
                         Collections.emptySet());
 
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
-        when(emailVerificationRepository.findByUser(any(User.class))).thenReturn(Optional.empty());
+        when(emailVerificationRepository.findByUserIdOptional(anyLong()))
+                .thenReturn(Optional.empty()); // No existing token
+        when(emailService.createEmailVerification(any(User.class)))
+                .thenReturn(new EmailVerification(new User(), "token", LocalDateTime.now()));
 
         // Simulate another user already has this email, but it should not prevent update
         // (assuming email uniqueness is not enforced at this layer for update)
@@ -502,7 +538,9 @@ public class UserServiceTest {
         assertNotNull(updatedUser);
         assertEquals("duplicate@example.com", updatedUser.email());
         verify(userRepository, times(1)).persist(existingUser);
-        verify(emailService, times(1)).sendEmailConfirmation(existingUser);
+        verify(emailService, times(1)).createEmailVerification(any(User.class));
+        verify(emailService, times(1))
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
     @Test
@@ -527,13 +565,18 @@ public class UserServiceTest {
                         Collections.emptySet());
 
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
-        when(emailVerificationRepository.findByUser(any(User.class))).thenReturn(Optional.empty());
+        when(emailVerificationRepository.findByUserIdOptional(anyLong()))
+                .thenReturn(Optional.empty());
+        when(emailService.createEmailVerification(any(User.class)))
+                .thenReturn(new EmailVerification(new User(), "token", LocalDateTime.now()));
         doThrow(new IOException("Email send failed"))
                 .when(emailService)
-                .sendEmailConfirmation(any(User.class));
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
 
         assertThrows(RuntimeException.class, () -> userService.updateUser(1L, dto));
-        verify(emailService, times(1)).sendEmailConfirmation(existingUser);
+        verify(emailService, times(1)).createEmailVerification(any(User.class));
+        verify(emailService, times(1))
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
     @Test
@@ -678,7 +721,8 @@ public class UserServiceTest {
         assertEquals("User", updatedUser.lastname());
         assertEquals("old@example.com", updatedUser.email());
         verify(userRepository, times(1)).persist(existingUser);
-        verify(emailService, never()).sendEmailConfirmation(any(User.class));
+        verify(emailService, never())
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
     @Test
@@ -710,7 +754,8 @@ public class UserServiceTest {
         assertEquals("New", updatedUser.lastname());
         assertEquals("old@example.com", updatedUser.email());
         verify(userRepository, times(1)).persist(existingUser);
-        verify(emailService, never()).sendEmailConfirmation(any(User.class));
+        verify(emailService, never())
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
     @Test
@@ -741,7 +786,8 @@ public class UserServiceTest {
         assertNotNull(updatedUser);
         assertTrue(BcryptUtil.matches("newpassword", existingUser.getPasswordHash()));
         verify(userRepository, times(1)).persist(existingUser);
-        verify(emailService, never()).sendEmailConfirmation(any(User.class));
+        verify(emailService, never())
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
         verify(emailService, times(1)).sendPasswordChangedNotification(any(User.class));
     }
 
@@ -761,7 +807,10 @@ public class UserServiceTest {
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
-        when(emailVerificationRepository.findByUser(any(User.class))).thenReturn(Optional.empty());
+        when(emailVerificationRepository.findByUserIdOptional(anyLong()))
+                .thenReturn(Optional.empty());
+        when(emailService.createEmailVerification(any(User.class)))
+                .thenReturn(new EmailVerification(new User(), "token", LocalDateTime.now()));
 
         UserDTO updatedUser = userService.updateUserProfile("testuser", dto);
 
@@ -769,7 +818,9 @@ public class UserServiceTest {
         assertEquals("new@example.com", updatedUser.email());
         assertFalse(existingUser.isEmailVerified());
         verify(userRepository, times(1)).persist(existingUser);
-        verify(emailService, times(1)).sendEmailConfirmation(existingUser);
+        verify(emailService, times(1)).createEmailVerification(any(User.class));
+        verify(emailService, times(1))
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
     @Test
@@ -782,7 +833,8 @@ public class UserServiceTest {
                 UserNotFoundException.class,
                 () -> userService.updateUserProfile("nonexistent", dto));
         verify(userRepository, never()).persist(any(User.class));
-        verify(emailService, never()).sendEmailConfirmation(any(User.class));
+        verify(emailService, never())
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
     @Test
@@ -790,7 +842,8 @@ public class UserServiceTest {
         assertThrows(
                 InvalidUserException.class, () -> userService.updateUserProfile("testuser", null));
         verify(userRepository, never()).persist(any(User.class));
-        verify(emailService, never()).sendEmailConfirmation(any(User.class));
+        verify(emailService, never())
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
     @Test
@@ -815,14 +868,19 @@ public class UserServiceTest {
                 .thenReturn(Optional.of(existingUser));
         when(userRepository.findByUsername("testuser"))
                 .thenReturn(existingUser); // Mock findByUsername
-        when(emailVerificationRepository.findByUser(any(User.class))).thenReturn(Optional.empty());
+        when(emailVerificationRepository.findByUserIdOptional(anyLong()))
+                .thenReturn(Optional.empty());
+        when(emailService.createEmailVerification(any(User.class)))
+                .thenReturn(new EmailVerification(new User(), "token", LocalDateTime.now()));
 
         UserDTO updatedUser = userService.updateUserProfile("testuser", dto);
 
         assertNotNull(updatedUser);
         assertEquals("duplicate@example.com", updatedUser.email());
         verify(userRepository, times(1)).persist(any(User.class));
-        verify(emailService, times(1)).sendEmailConfirmation(existingUser);
+        verify(emailService, times(1)).createEmailVerification(any(User.class));
+        verify(emailService, times(1))
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
     @Test
@@ -843,14 +901,18 @@ public class UserServiceTest {
                 .thenReturn(Optional.of(existingUser));
         when(userRepository.findByUsername("testuser"))
                 .thenReturn(existingUser); // Mock findByUsername
-        when(emailVerificationRepository.findByUser(any(User.class))).thenReturn(Optional.empty());
+        when(emailVerificationRepository.findByUserIdOptional(anyLong()))
+                .thenReturn(Optional.empty());
+        when(emailService.createEmailVerification(any(User.class)))
+                .thenReturn(new EmailVerification(new User(), "token", LocalDateTime.now()));
         doThrow(new IOException("Email send failed"))
                 .when(emailService)
-                .sendEmailConfirmation(any(User.class));
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
 
         assertThrows(RuntimeException.class, () -> userService.updateUserProfile("testuser", dto));
-        verify(emailService, times(1)).sendEmailConfirmation(existingUser);
-        verify(emailService, never()).sendPasswordChangedNotification(any(User.class));
+        verify(emailService, times(1)).createEmailVerification(any(User.class));
+        verify(emailService, times(1))
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
     @Test

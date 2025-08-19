@@ -22,6 +22,7 @@ package de.felixhertweck.seatreservation.userManagment.resource;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.*;
 
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
@@ -38,6 +39,8 @@ public class EmailConfirmationResource {
     private static final Logger LOG = Logger.getLogger(EmailConfirmationResource.class);
 
     @Inject UserService userService;
+
+    @Inject SecurityContext securityContext;
 
     /**
      * Confirms a user's email address using the provided id and token.
@@ -87,6 +90,51 @@ public class EmailConfirmationResource {
                     e,
                     "Unexpected error during email confirmation for ID %d: %s",
                     id,
+                    e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(getErrorHtml("Internal server error"))
+                    .build();
+        }
+    }
+
+    /**
+     * Resends the email confirmation for the authenticated user and extends the token's lifetime.
+     *
+     * @return a response indicating success or failure
+     */
+    @POST
+    @Path("/resend-email-confirmation")
+    @Operation(
+            summary = "Resend email confirmation",
+            description =
+                    "Resends the email confirmation for the authenticated user and extends the"
+                            + " token's lifetime.")
+    @APIResponse(responseCode = "204", description = "Email confirmation resent successfully")
+    @APIResponse(responseCode = "404", description = "User not found")
+    @APIResponse(responseCode = "500", description = "Internal server error")
+    public Response resendEmailConfirmation() {
+        String username = securityContext.getUserPrincipal().getName();
+        try {
+            LOG.infof(
+                    "Received POST request to /api/user/resend-email-confirmation for user: %s",
+                    username);
+            userService.resendEmailConfirmation(username);
+            LOG.infof("Email confirmation resent successfully for user: %s", username);
+            return Response.noContent().build();
+        } catch (NotFoundException e) {
+            LOG.warnf(
+                    e,
+                    "Resending email confirmation failed for user %s: User not found. Message: %s",
+                    username,
+                    e.getMessage());
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(getErrorHtml(e.getMessage()))
+                    .build();
+        } catch (Exception e) {
+            LOG.errorf(
+                    e,
+                    "Unexpected error during resending email confirmation for user %s: %s",
+                    username,
                     e.getMessage());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity(getErrorHtml("Internal server error"))
