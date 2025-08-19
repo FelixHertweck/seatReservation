@@ -11,17 +11,18 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import type { UserProfileUpdateDto } from "@/api";
+import LoadingSkeleton from "./loading";
 
 export default function ProfilePage() {
-  const { user, updateProfile, isLoading } = useProfile();
+  const { user, updateProfile, isLoading, resendConfirmation } = useProfile();
   const { isLoggedIn: isAuthenticated } = useAuthStatus();
-  const { toast } = useToast();
 
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
   const [email, setEmail] = useState("");
+  const [originalEmail, setOriginalEmail] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
 
@@ -30,6 +31,7 @@ export default function ProfilePage() {
       setFirstname(user.firstname || "");
       setLastname(user.lastname || "");
       setEmail(user.email || "");
+      setOriginalEmail(user.email || "");
       setTags(user.tags || []);
     }
   }, [user]);
@@ -63,23 +65,25 @@ export default function ProfilePage() {
       tags,
     };
 
-    try {
-      await updateProfile(updatedProfile);
+    await updateProfile(updatedProfile);
+    console.log("Profile updated successfully");
+    toast({
+      title: "Profile Updated",
+      description: "Your profile has been successfully updated.",
+    });
+
+    if (email !== originalEmail) {
       toast({
-        title: "Profile Updated",
-        description: "Your profile has been successfully updated.",
+        title: "Bestätigungsemail gesendet",
+        description:
+          "Eine Bestätigungsemail wurde an Ihre Adresse gesendet. Bitte bestätigen sie diese!",
       });
-    } catch (err) {
-      toast({
-        title: "Update Failed",
-        description: "Failed to update profile.",
-        variant: "destructive",
-      });
+      setOriginalEmail(email); // Update originalEmail after successful change
     }
   };
 
   if (isLoading) {
-    return <div>Loading profile...</div>;
+    return <LoadingSkeleton />;
   }
 
   return (
@@ -111,13 +115,54 @@ export default function ProfilePage() {
               />
             </div>
             <div>
-              <Label htmlFor="email">Email</Label>
+              <div className="flex items-center justify-between mb-1">
+                <Label htmlFor="email">Email</Label>
+                {user?.emailVerified ? (
+                  <Badge
+                    variant="default"
+                    className="bg-green-500 hover:bg-green-500"
+                  >
+                    Verifiziert
+                  </Badge>
+                ) : (
+                  <Badge
+                    variant="destructive"
+                    className="flex items-center gap-1"
+                  >
+                    Nicht verifiziert
+                  </Badge>
+                )}
+              </div>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                className="mb-2"
               />
+              {!user?.emailVerified && (
+                <div className="flex flex-col items-start gap-2">
+                  <span className="text-xs text-gray-500">
+                    Eine Bestätigungsemail wurde versendet und muss über den
+                    Link bestätigt werden.
+                  </span>
+                  <Button
+                    type="button"
+                    className="text-xs"
+                    size={"sm"}
+                    onClick={async () => {
+                      await resendConfirmation();
+                      toast({
+                        title: "Bestätigungsemail erneut gesendet",
+                        description:
+                          "Eine neue Bestätigungsemail wurde an Ihre Adresse gesendet.",
+                      });
+                    }}
+                  >
+                    Erneut senden
+                  </Button>
+                </div>
+              )}
             </div>
             <div>
               <Label htmlFor="tags">Tags</Label>

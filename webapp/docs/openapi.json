@@ -1783,6 +1783,24 @@
         } ]
       }
     },
+    "/api/user/resend-email-confirmation" : {
+      "post" : {
+        "summary" : "Resend email confirmation",
+        "description" : "Resends the email confirmation for the authenticated user and extends the token's lifetime.",
+        "tags" : [ "User" ],
+        "responses" : {
+          "204" : {
+            "description" : "Email confirmation resent successfully"
+          },
+          "404" : {
+            "description" : "User not found"
+          },
+          "500" : {
+            "description" : "Internal server error"
+          }
+        }
+      }
+    },
     "/api/user/reservations" : {
       "get" : {
         "responses" : {

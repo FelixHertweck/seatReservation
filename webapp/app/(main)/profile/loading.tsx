@@ -1,17 +1,8 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export default function Loading() {
   return (
     <div className="container mx-auto p-6 max-w-2xl animate-in fade-in duration-500">
-      <div className="flex items-center gap-3 mb-6">
-        <LoadingSpinner size="lg" />
-        <div>
-          <Skeleton className="h-8 w-20 mb-2 animate-pulse" />
-          <Skeleton className="h-4 w-80 animate-pulse" />
-        </div>
-      </div>
-
       <div className="border rounded-lg animate-in slide-in-from-bottom duration-500">
         <div className="p-6 border-b">
           <Skeleton className="h-6 w-40 mb-1 animate-pulse" />

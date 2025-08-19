@@ -3,6 +3,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import InitQueryClient from "@/app/initQueryClient";
 import { ThemeProvider } from "@/components/theme-provider";
+import { EmailVerificationPrompt } from "@/components/common/EmailVerificationPrompt";
 
 export default function RootLayout({
   children,
@@ -21,6 +22,7 @@ export default function RootLayout({
           >
             {children}
             <Toaster />
+            <EmailVerificationPrompt />
           </ThemeProvider>
         </InitQueryClient>
       </body>

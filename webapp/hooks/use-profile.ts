@@ -6,6 +6,7 @@ import {
   getApiUsersMeOptions,
   putApiUsersMeMutation,
   getApiUsersMeQueryKey,
+  postApiUserResendEmailConfirmationMutation,
 } from "@/api/@tanstack/react-query.gen";
 import type { UserDto, UserProfileUpdateDto } from "@/api";
 
@@ -18,6 +19,11 @@ export function useProfile() {
 
   const updateMutation = useMutation({
     ...putApiUsersMeMutation(),
+    onSuccess: async (data) => {
+      queryClient.setQueriesData({ queryKey: getApiUsersMeQueryKey() }, () => {
+        return data;
+      });
+    },
   });
 
   const updateProfile = async (
@@ -27,6 +33,14 @@ export function useProfile() {
       body: updateData,
     });
     return result;
+  };
+
+  const resendConfirmationMutation = useMutation({
+    ...postApiUserResendEmailConfirmationMutation(),
+  });
+
+  const resendConfirmation = async (): Promise<void> => {
+    await resendConfirmationMutation.mutateAsync({});
   };
 
   useEffect(() => {
@@ -39,5 +53,6 @@ export function useProfile() {
     user,
     isLoading,
     updateProfile,
+    resendConfirmation,
   };
 }
