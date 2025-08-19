@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Edit, Trash2, ExternalLink, FileText } from "lucide-react";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  ExternalLink,
+  FileText,
+  Download,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -153,6 +160,24 @@ export function LocationManagement({
     }
   };
 
+  const handleExportLocation = (location: EventLocationResponseDto) => {
+    const dataStr = JSON.stringify(
+      location,
+      (_, value) => (typeof value === "bigint" ? Number(value) : value),
+      2,
+    );
+    const dataBlob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(dataBlob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${location.name?.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_export.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -234,6 +259,14 @@ export function LocationManagement({
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleExportLocation(location)}
+                          title="Export as JSON"
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
                         <Button
                           variant="outline"
                           size="sm"
