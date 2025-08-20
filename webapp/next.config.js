@@ -4,7 +4,9 @@
 const { PHASE_DEVELOPMENT_SERVER } = require("next/constants");
 
 module.exports = (phase, { defaultConfig }) => {
-  if (phase === PHASE_DEVELOPMENT_SERVER) {
+  const isDev = phase === PHASE_DEVELOPMENT_SERVER;
+  const buildMode = process.env.BUILD_MODE;
+  if (isDev) {
     return {
       async rewrites() {
         return [
@@ -17,10 +19,18 @@ module.exports = (phase, { defaultConfig }) => {
     };
   }
 
-  return {
-    output: "export",
-    images: {
-      unoptimized: true,
-    },
-  };
+  if (buildMode === "static") {
+    return {
+      output: "export",
+      images: { unoptimized: true },
+    };
+  }
+
+  if (buildMode === "standalone") {
+    return {
+      output: "standalone",
+    };
+  }
+
+  throw new Error(`Unknown BUILD_MODE: ${buildMode}`);
 };
