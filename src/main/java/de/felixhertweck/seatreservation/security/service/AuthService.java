@@ -46,6 +46,14 @@ public class AuthService {
 
     @Inject UserService userService;
 
+    /**
+     * Authenticates a user with the given username and password.
+     *
+     * @param username the username of the user
+     * @param password the password of the user
+     * @return a JWT token if authentication is successful
+     * @throws AuthenticationFailedException if authentication fails
+     */
     public String authenticate(String username, String password)
             throws AuthenticationFailedException {
         LOG.infof("Attempting to authenticate user: %s", username);
@@ -66,22 +74,32 @@ public class AuthService {
         return tokenService.generateToken(user);
     }
 
-    public void register(RegisterRequestDTO registerRequest)
+    /**
+     * Registers a new user with the given registration details.
+     *
+     * @param registerRequest the registration details
+     * @return a JWT token if registration is successful
+     * @throws DuplicateUserException if the user already exists
+     * @throws InvalidUserException if the user details are invalid
+     */
+    public String register(RegisterRequestDTO registerRequest)
             throws DuplicateUserException, InvalidUserException {
         LOG.infof("Attempting to register new user: %s", registerRequest.getUsername());
 
-        UserCreationDTO userCreationDTO =
-                new UserCreationDTO(
-                        registerRequest.getUsername(),
-                        registerRequest.getEmail(),
-                        registerRequest.getPassword(),
-                        registerRequest.getFirstname(),
-                        registerRequest.getLastname(),
-                        null // Tags are not part of initial registration
-                        );
+        UserCreationDTO userCreationDTO = new UserCreationDTO(registerRequest);
 
-        userService.createUser(userCreationDTO, Set.of(Roles.USER)); // Default role for new users
+        userService.createUser(userCreationDTO, Set.of(Roles.USER));
+
+        User user = userRepository.findByUsername(registerRequest.getUsername());
+
+        if (user == null) {
+            LOG.warnf("User %s not found after registration.", registerRequest.getUsername());
+            throw new InvalidUserException("User not found: " + registerRequest.getUsername());
+        }
+
         LOG.infof(
                 "User %s registered successfully via AuthService.", registerRequest.getUsername());
+
+        return tokenService.generateToken(user);
     }
 }

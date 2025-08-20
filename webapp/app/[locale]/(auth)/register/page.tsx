@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/use-auth";
 import type { RegisterRequestDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
@@ -28,10 +27,12 @@ export default function RegisterPage() {
     password: "",
     firstname: "",
     lastname: "",
-    isAdmin: false,
   });
   const [isLoading, setIsLoading] = useState(false);
   const { register } = useAuth();
+
+  const isPasswordTooShort =
+    formData.password.length > 0 && formData.password.length < 8;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +56,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+    <div className="flex min-h-screen w-full items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">
@@ -121,21 +122,11 @@ export default function RegisterPage() {
                 onChange={(e) => handleInputChange("password", e.target.value)}
                 required
               />
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="admin"
-                checked={formData.isAdmin}
-                onCheckedChange={(checked) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    isAdmin: checked as boolean,
-                  }))
-                }
-              />
-              <Label htmlFor="admin" className="text-sm">
-                {t("register.registerAsAdmin")}
-              </Label>
+              {isPasswordTooShort && (
+                <p className="text-sm text-destructive">
+                  {t("register.passwordTooShort")}
+                </p>
+              )}
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading

@@ -20,9 +20,7 @@
 package de.felixhertweck.seatreservation.userManagment.dto;
 
 import java.util.Set;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 
 import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
 
@@ -37,13 +35,11 @@ public class AdminUserCreationDto {
     private final String password;
 
     @NotNull(message = "Firstname cannot be null")
-    @Size(min = 8, message = "Password must be at least 8 characters long")
     private final String firstname;
 
     @NotNull(message = "Lastname cannot be null")
     private final String lastname;
 
-    @NotEmpty(message = "User must have at least one role")
     private Set<String> roles;
 
     private final Set<String> tags;

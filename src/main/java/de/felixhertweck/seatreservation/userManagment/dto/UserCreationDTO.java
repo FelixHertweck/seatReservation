@@ -24,18 +24,21 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
+import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
 
 public class UserCreationDTO {
     @NotNull(message = "Username cannot be null")
     private final String username;
 
-    @NoHtmlSanitize private final String email;
+    @NotNull(message = "Email cannot be null")
+    @NoHtmlSanitize
+    private final String email;
 
     @NotNull(message = "Password cannot be null")
+    @Size(min = 8, message = "Password must be at least 8 characters long")
     private final String password;
 
     @NotNull(message = "Firstname cannot be null")
-    @Size(min = 8, message = "Password must be at least 8 characters long")
     private final String firstname;
 
     @NotNull(message = "Lastname cannot be null")
@@ -89,5 +92,15 @@ public class UserCreationDTO {
         this.firstname = adminUserCreationDto.getFirstname();
         this.lastname = adminUserCreationDto.getLastname();
         this.tags = adminUserCreationDto.getTags();
+    }
+
+    public UserCreationDTO(RegisterRequestDTO registerRequest) {
+        this(
+                registerRequest.getUsername(),
+                registerRequest.getEmail(),
+                registerRequest.getPassword(),
+                registerRequest.getFirstname(),
+                registerRequest.getLastname(),
+                Set.of());
     }
 }

@@ -53,14 +53,7 @@ public class AuthResource {
         String token =
                 authService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
 
-        NewCookie jwtCookie =
-                new NewCookie.Builder("jwt")
-                        .value(token)
-                        .path("/")
-                        .maxAge((int) (tokenService.getExpirationMinutes() * 60))
-                        .httpOnly(true)
-                        .secure(true)
-                        .build();
+        NewCookie jwtCookie = tokenService.createNewJwtCookie(token);
         LOG.infof("User %s logged in successfully. JWT cookie set.", loginRequest.getUsername());
         return Response.ok().cookie(jwtCookie).build();
     }
@@ -71,9 +64,13 @@ public class AuthResource {
         LOG.infof("Received registration request for username: %s", registerRequest.getUsername());
         LOG.debugf("RegisterRequestDTO: %s", registerRequest.toString());
 
-        authService.register(registerRequest);
+        String token = authService.register(registerRequest);
+
+        NewCookie jwtCookie = tokenService.createNewJwtCookie(token);
+
         LOG.infof("User %s registered successfully.", registerRequest.getUsername());
-        return Response.status(Response.Status.CREATED).build();
+
+        return Response.ok().cookie(jwtCookie).build();
     }
 
     @POST

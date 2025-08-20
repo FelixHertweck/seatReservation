@@ -8,6 +8,7 @@ import {
   putApiUsersAdminByIdMutation,
   deleteApiUsersAdminByIdMutation,
   getApiUsersRolesOptions,
+  postApiUsersAdminImportMutation,
 } from "@/api/@tanstack/react-query.gen";
 import type { AdminUserCreationDto, AdminUserUpdateDto, UserDto } from "@/api";
 
@@ -28,6 +29,18 @@ export function useAdmin() {
         { queryKey: getApiUsersAdminQueryKey() },
         (oldData: UserDto[] | undefined) => {
           return oldData ? [...oldData, data] : [data];
+        },
+      );
+    },
+  });
+
+  const { mutateAsync: importMutation } = useMutation({
+    ...postApiUsersAdminImportMutation(),
+    onSuccess: async (data) => {
+      queryClient.setQueriesData(
+        { queryKey: getApiUsersAdminQueryKey() },
+        (oldData: UserDto[] | undefined) => {
+          return oldData ? [...oldData, ...data] : [...data];
         },
       );
     },
@@ -65,6 +78,10 @@ export function useAdmin() {
     await createMutation({ body: userData });
   };
 
+  const importUsers = async (userData: AdminUserCreationDto[]) => {
+    await importMutation({ body: userData });
+  };
+
   const updateUser = async (id: bigint, userData: AdminUserUpdateDto) => {
     await updateMutation({ body: userData, path: { id } });
   };
@@ -78,6 +95,7 @@ export function useAdmin() {
     availableRoles: availableRoles ?? [],
     isLoading: userIsLoading || rolesIsLoading,
     createUser,
+    importUsers,
     updateUser,
     deleteUser,
   };

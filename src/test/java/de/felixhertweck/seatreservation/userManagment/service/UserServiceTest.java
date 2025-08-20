@@ -40,6 +40,7 @@ import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.security.Roles;
+import de.felixhertweck.seatreservation.userManagment.dto.AdminUserCreationDto;
 import de.felixhertweck.seatreservation.userManagment.dto.AdminUserUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
@@ -210,7 +211,7 @@ public class UserServiceTest {
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
 
         assertThrows(RuntimeException.class, () -> userService.createUser(dto, Set.of(Roles.USER)));
-        verify(userRepository, times(1)).persist(any(User.class));
+        verify(userRepository, never()).persist(any(User.class));
         verify(emailService, times(1)).createEmailVerification(any(User.class));
         verify(emailService, times(1))
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
@@ -1093,5 +1094,131 @@ public class UserServiceTest {
         // Second attempt should throw an exception because the token is no longer found
         assertThrows(
                 IllegalArgumentException.class, () -> userService.verifyEmail(100L, "validtoken"));
+    }
+
+    @Test
+    void importUsers_Success() throws InvalidUserException, DuplicateUserException, IOException {
+        Set<AdminUserCreationDto> dtos = new HashSet<>();
+        AdminUserCreationDto dto1 =
+                new AdminUserCreationDto(
+                        "user1",
+                        "user1@example.com",
+                        "pass1",
+                        "First1",
+                        "Last1",
+                        Set.of(Roles.USER),
+                        null);
+        AdminUserCreationDto dto2 =
+                new AdminUserCreationDto(
+                        "user2",
+                        "user2@example.com",
+                        "pass2",
+                        "First2",
+                        "Last2",
+                        Set.of(Roles.MANAGER),
+                        null);
+        dtos.add(dto1);
+        dtos.add(dto2);
+
+        when(userRepository.findByUsernameOptional("user1")).thenReturn(Optional.empty());
+        when(userRepository.findByUsernameOptional("user2")).thenReturn(Optional.empty());
+        when(userRepository.isPersistent(any(User.class))).thenReturn(true);
+        when(emailService.createEmailVerification(any(User.class)))
+                .thenReturn(new EmailVerification(new User(), "token", LocalDateTime.now()));
+
+        Set<UserDTO> importedUsers = userService.importUsers(dtos);
+
+        assertNotNull(importedUsers);
+        assertEquals(2, importedUsers.size());
+        verify(userRepository, times(2)).persist(any(User.class));
+        verify(emailService, times(2))
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
+    }
+
+    @Test
+    void importUsers_EmptySet() throws InvalidUserException, DuplicateUserException, IOException {
+        Set<AdminUserCreationDto> dtos = Collections.emptySet();
+
+        Set<UserDTO> importedUsers = userService.importUsers(dtos);
+
+        assertNotNull(importedUsers);
+        assertTrue(importedUsers.isEmpty());
+        verify(userRepository, never()).persist(any(User.class));
+        verify(emailService, never())
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
+    }
+
+    @Test
+    void importUsers_InvalidUserException() throws IOException {
+        Set<AdminUserCreationDto> dtos = new HashSet<>();
+        AdminUserCreationDto invalidDto =
+                new AdminUserCreationDto(
+                        "",
+                        "invalid@example.com",
+                        "pass",
+                        "Invalid",
+                        "User",
+                        Set.of(Roles.USER),
+                        null); // Invalid username
+        dtos.add(invalidDto);
+
+        assertThrows(InvalidUserException.class, () -> userService.importUsers(dtos));
+        verify(userRepository, never()).persist(any(User.class));
+        verify(emailService, never())
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
+    }
+
+    @Test
+    void importUsers_DuplicateUserException() throws IOException {
+        Set<AdminUserCreationDto> dtos = new HashSet<>();
+        AdminUserCreationDto duplicateDto =
+                new AdminUserCreationDto(
+                        "existinguser",
+                        "existing@example.com",
+                        "pass",
+                        "Existing",
+                        "User",
+                        Set.of(Roles.USER),
+                        null);
+        dtos.add(duplicateDto);
+
+        when(userRepository.findByUsernameOptional("existinguser"))
+                .thenReturn(Optional.of(new User())); // Simulate existing user
+        when(emailService.createEmailVerification(any(User.class)))
+                .thenReturn(new EmailVerification(new User(), "token", LocalDateTime.now()));
+
+        assertThrows(DuplicateUserException.class, () -> userService.importUsers(dtos));
+        verify(userRepository, never()).persist(any(User.class));
+        verify(emailService, never())
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
+    }
+
+    @Test
+    void importUsers_EmailSendFailure() throws IOException {
+        Set<AdminUserCreationDto> dtos = new HashSet<>();
+        AdminUserCreationDto dto1 =
+                new AdminUserCreationDto(
+                        "user1",
+                        "user1@example.com",
+                        "pass1",
+                        "First1",
+                        "Last1",
+                        Set.of(Roles.USER),
+                        null);
+        dtos.add(dto1);
+
+        when(userRepository.findByUsernameOptional("user1")).thenReturn(Optional.empty());
+        when(emailService.createEmailVerification(any(User.class)))
+                .thenReturn(new EmailVerification(new User(), "token", LocalDateTime.now()));
+        doThrow(new IOException("Email send failed"))
+                .when(emailService)
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
+
+        assertThrows(RuntimeException.class, () -> userService.importUsers(dtos));
+        verify(userRepository, never())
+                .persist(any(User.class)); // Should not persist if email send fails and
+        // transaction rolls back
+        verify(emailService, times(1))
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 }

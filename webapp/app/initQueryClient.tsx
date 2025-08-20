@@ -36,13 +36,12 @@ export default function InitQueryClient({
       },
       mutations: {
         onError: (error: Error) => {
-          if (showToast) {
-            toast({
-              title: "An error occurred",
-              description: "Failed to update data: " + error.message,
-              variant: "destructive",
-            });
-          }
+          console.log("Mutation error:", error);
+          toast({
+            title: "An error occurred",
+            description: error.message,
+            variant: "destructive",
+          });
         },
       },
     },

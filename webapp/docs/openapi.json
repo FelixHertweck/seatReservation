@@ -4,7 +4,7 @@
     "schemas" : {
       "AdminUserCreationDto" : {
         "type" : "object",
-        "required" : [ "username", "password", "firstname", "lastname", "roles" ],
+        "required" : [ "username", "password", "firstname", "lastname" ],
         "properties" : {
           "username" : {
             "type" : "string"
@@ -16,8 +16,7 @@
             "type" : "string"
           },
           "firstname" : {
-            "type" : "string",
-            "minLength" : 8
+            "type" : "string"
           },
           "lastname" : {
             "type" : "string"
@@ -27,8 +26,7 @@
             "uniqueItems" : true,
             "items" : {
               "type" : "string"
-            },
-            "minItems" : 1
+            }
           },
           "tags" : {
             "type" : "array",
@@ -41,7 +39,6 @@
       },
       "AdminUserUpdateDTO" : {
         "type" : "object",
-        "required" : [ "email", "roles" ],
         "properties" : {
           "email" : {
             "type" : "string"
@@ -67,8 +64,7 @@
             "uniqueItems" : true,
             "items" : {
               "type" : "string"
-            },
-            "minItems" : 1
+            }
           }
         }
       },
@@ -2032,6 +2028,54 @@
           }
         },
         "summary" : "Create User",
+        "tags" : [ "User Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "ADMIN" ]
+        } ]
+      }
+    },
+    "/api/users/admin/import" : {
+      "post" : {
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "array",
+                "uniqueItems" : true,
+                "items" : {
+                  "$ref" : "#/components/schemas/AdminUserCreationDto"
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "uniqueItems" : true,
+                  "items" : {
+                    "$ref" : "#/components/schemas/UserDTO"
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          },
+          "400" : {
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "Import Users",
         "tags" : [ "User Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "ADMIN" ]

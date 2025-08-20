@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -21,6 +21,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { UserFormModal } from "@/components/admin/user-form-modal";
+import { UserImportModal } from "@/components/admin/user-import-modal";
 import type { UserDto, AdminUserCreationDto, AdminUserUpdateDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 
@@ -30,6 +31,7 @@ export interface UserManagementProps {
   createUser: (user: AdminUserCreationDto) => Promise<void>;
   updateUser: (id: bigint, user: AdminUserUpdateDto) => Promise<void>;
   deleteUser: (id: bigint) => Promise<void>;
+  importUsers?: (users: AdminUserCreationDto[]) => Promise<void>;
 }
 
 export function UserManagement({
@@ -38,6 +40,7 @@ export function UserManagement({
   createUser,
   updateUser,
   deleteUser,
+  importUsers,
 }: UserManagementProps) {
   const t = useT();
 
@@ -45,6 +48,7 @@ export function UserManagement({
   const [selectedUser, setSelectedUser] = useState<UserDto | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   useEffect(() => {
     setFilteredUsers(users);
@@ -107,10 +111,21 @@ export function UserManagement({
             <CardTitle>{t("userManagement.title")}</CardTitle>
             <CardDescription>{t("userManagement.description")}</CardDescription>
           </div>
-          <Button onClick={handleCreateUser}>
-            <Plus className="mr-2 h-4 w-4" />
-            {t("userManagement.addUserButton")}
-          </Button>
+          <div className="flex gap-2">
+            {importUsers && (
+              <Button
+                variant="outline"
+                onClick={() => setIsImportModalOpen(true)}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                {t("userManagement.importJsonButton")}
+              </Button>
+            )}
+            <Button onClick={handleCreateUser}>
+              <Plus className="mr-2 h-4 w-4" />
+              {t("userManagement.addUserButton")}
+            </Button>
+          </div>
         </div>
       </CardHeader>
 
@@ -128,7 +143,8 @@ export function UserManagement({
               <TableHead>{t("userManagement.tableHeaderName")}</TableHead>
               <TableHead>{t("userManagement.tableHeaderEmail")}</TableHead>
               <TableHead>{t("userManagement.tableHeaderRoles")}</TableHead>
-              <TableHead>{t("userManagement.tableHeaderTags")}</TableHead>
+              <TableHead>{t("userManagement.tableHeaderTags")}</TableHead>{" "}
+              {/* New TableHead for Tags */}
               <TableHead>{t("userManagement.tableHeaderVerified")}</TableHead>
               <TableHead>{t("userManagement.tableHeaderActions")}</TableHead>
             </TableRow>
@@ -197,6 +213,15 @@ export function UserManagement({
           isCreating={isCreating}
           onSubmit={handleModalSubmit}
           onClose={() => setIsModalOpen(false)}
+        />
+      )}
+
+      {isImportModalOpen && importUsers && (
+        <UserImportModal
+          isOpen={isImportModalOpen}
+          onClose={() => setIsImportModalOpen(false)}
+          availableRoles={availableRoles}
+          onImportUsers={importUsers}
         />
       )}
     </Card>
