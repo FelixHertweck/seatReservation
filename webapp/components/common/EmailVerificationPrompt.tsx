@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -14,9 +14,13 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { t } from "i18next";
+import { useT } from "@/lib/i18n/hooks";
 
 export function EmailVerificationPrompt() {
+  const t = useT();
+  const params = useParams();
+  const locale = params.locale as string;
+
   const { user, isLoggedIn, isLoading } = useAuth();
   const router = useRouter();
   const [showPopup, setShowPopup] = useState(false);
@@ -38,7 +42,7 @@ export function EmailVerificationPrompt() {
 
   const handleGoToProfile = () => {
     setShowPopup(false);
-    router.push("/profile");
+    router.push(`/${locale}/profile`);
   };
 
   if (!showPopup) {

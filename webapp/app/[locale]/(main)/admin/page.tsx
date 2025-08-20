@@ -5,9 +5,11 @@ import { UserManagement } from "@/components/admin/user-management";
 import { useAdmin } from "@/hooks/use-admin";
 import Loading from "./loading";
 import { UserExport } from "@/components/admin/user-export";
-import { t } from "i18next";
+import { useT } from "@/lib/i18n/hooks";
 
 export default function AdminPage() {
+  const t = useT();
+
   const adminData = useAdmin();
 
   if (adminData.isLoading) {

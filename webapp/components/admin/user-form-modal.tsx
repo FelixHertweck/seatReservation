@@ -15,7 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import type { UserDto, AdminUserUpdateDto, AdminUserCreationDto } from "@/api";
-import { t } from "i18next";
+import { useT } from "@/lib/i18n/hooks";
 
 interface UserFormModalProps {
   user: UserDto | null;
@@ -32,6 +32,8 @@ export function UserFormModal({
   onSubmit,
   onClose,
 }: UserFormModalProps) {
+  const t = useT();
+
   const [username, setUsername] = useState(user?.username || "");
   const [firstname, setFirstname] = useState(user?.firstname || "");
   const [lastname, setLastname] = useState(user?.lastname || "");

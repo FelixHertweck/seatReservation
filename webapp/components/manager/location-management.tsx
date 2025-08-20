@@ -35,7 +35,7 @@ import type {
   ImportSeatDto,
 } from "@/api";
 import { customSerializer } from "@/lib/jsonBodySerializer";
-import { t } from "i18next";
+import { useT } from "@/lib/i18n/hooks";
 
 export interface LocationManagementProps {
   locations: EventLocationResponseDto[];
@@ -68,6 +68,8 @@ export function LocationManagement({
   onNavigateToSeats,
   initialFilter = {},
 }: LocationManagementProps) {
+  const t = useT();
+
   const [filteredLocations, setFilteredLocations] = useState(locations);
   const [selectedLocation, setSelectedLocation] =
     useState<EventLocationResponseDto | null>(null);

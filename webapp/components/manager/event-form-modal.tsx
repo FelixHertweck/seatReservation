@@ -26,7 +26,7 @@ import type {
   EventLocationResponseDto,
   EventRequestDto,
 } from "@/api";
-import { t } from "i18next";
+import { useT } from "@/lib/i18n/hooks";
 
 interface EventFormModalProps {
   allLocations: EventLocationResponseDto[];
@@ -43,6 +43,8 @@ export function EventFormModal({
   onSubmit,
   onClose,
 }: EventFormModalProps) {
+  const t = useT();
+
   const [formData, setFormData] = useState({
     name: event?.name || "",
     description: event?.description || "",

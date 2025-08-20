@@ -9,9 +9,11 @@ import { ReservationManagement } from "@/components/manager/reservation-manageme
 import { ReservationAllowanceManagement } from "@/components/manager/reservation-allowance-management";
 import { useManager } from "@/hooks/use-manager";
 import Loading from "./loading";
-import { t } from "i18next";
+import { useT } from "@/lib/i18n/hooks";
 
 export default function ManagerPage() {
+  const t = useT();
+
   const managerData = useManager();
   const [activeTab, setActiveTab] = useState("events");
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});

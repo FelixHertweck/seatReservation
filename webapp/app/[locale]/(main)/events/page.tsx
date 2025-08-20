@@ -19,9 +19,11 @@ import { useEvents } from "@/hooks/use-events";
 import { useReservations } from "@/hooks/use-reservations";
 import type { EventResponseDto, ReservationResponseDto } from "@/api";
 import Loading from "./loading";
-import { t } from "i18next";
+import { useT } from "@/lib/i18n/hooks";
 
 export default function EventsPage() {
+  const t = useT();
+
   const { events, isLoading: eventsLoading, createReservation } = useEvents();
   const {
     reservations,

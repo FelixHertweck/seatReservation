@@ -450,6 +450,9 @@
     "light": "Light",
     "dark": "Dark",
     "system": "System",
+    "language": "Language",
+    "english": "English",
+    "german": "German",
     "logout": "Logout",
     "login": "Login"
   },

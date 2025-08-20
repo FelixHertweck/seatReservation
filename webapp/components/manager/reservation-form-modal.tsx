@@ -29,7 +29,7 @@ import type {
   UserDto,
   DetailedReservationResponseDto,
 } from "@/api";
-import { t } from "i18next";
+import { useT } from "@/lib/i18n/hooks";
 
 interface ReservationFormModalProps {
   users: UserDto[];
@@ -46,6 +46,8 @@ export function ReservationFormModal({
   onSubmit,
   onClose,
 }: ReservationFormModalProps) {
+  const t = useT();
+
   const [formData, setFormData] = useState({
     eventId: "",
     userId: "",

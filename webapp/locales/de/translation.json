@@ -450,6 +450,9 @@
     "light": "Hell",
     "dark": "Dunkel",
     "system": "System",
+    "language": "Sprache",
+    "english": "Englisch",
+    "german": "Deutsch",
     "logout": "Abmelden",
     "login": "Anmelden"
   },
