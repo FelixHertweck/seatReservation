@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { EventLocationResponseDto, EventLocationRequestDto } from "@/api";
-import { t } from "i18next";
+import { useT } from "@/lib/i18n/hooks";
 
 interface LocationFormModalProps {
   location: EventLocationResponseDto | null;
@@ -30,6 +30,8 @@ export function LocationFormModal({
   onSubmit,
   onClose,
 }: LocationFormModalProps) {
+  const t = useT();
+
   const [formData, setFormData] = useState({
     name: location?.name || "",
     address: location?.address || "",

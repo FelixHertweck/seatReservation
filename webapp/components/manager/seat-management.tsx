@@ -26,7 +26,7 @@ import type {
   SeatRequestDto,
   EventLocationResponseDto,
 } from "@/api";
-import { t } from "i18next";
+import { useT } from "@/lib/i18n/hooks";
 
 export interface SeatManagementProps {
   seats: SeatResponseDto[];
@@ -47,6 +47,8 @@ export function SeatManagement({
   onNavigateToLocation,
   initialFilter = {},
 }: SeatManagementProps) {
+  const t = useT();
+
   const [filteredSeats, setFilteredSeats] = useState(seats);
   const [selectedSeat, setSelectedSeat] = useState<SeatResponseDto | null>(
     null,

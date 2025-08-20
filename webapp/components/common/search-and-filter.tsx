@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { t } from "i18next";
+import { useT } from "@/lib/i18n/hooks";
 
 interface FilterOption {
   key: string;
@@ -36,6 +36,8 @@ export function SearchAndFilter({
   filterOptions,
   initialFilters = {},
 }: SearchAndFilterProps) {
+  const t = useT();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] =
     useState<Record<string, unknown>>(initialFilters);

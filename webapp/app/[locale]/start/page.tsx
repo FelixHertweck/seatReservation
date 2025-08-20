@@ -1,14 +1,19 @@
-"use client";
-
 import { Calendar, Github, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { t } from "i18next";
+import { createTranslation } from "@/lib/i18n/server";
 
-export default function HomePage() {
+export default async function StartPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await createTranslation(locale);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/20">
-      {/* Navigation - Beibehalten wie vom Benutzer gewünscht */}
+      {/* Navigation */}
       <nav className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -21,10 +26,10 @@ export default function HomePage() {
               </span>
             </div>
             <div className="flex items-center gap-4">
-              <Link href="/login">
+              <Link href={`/${locale}/login`}>
                 <Button variant="ghost">{t("startPage.signInButton")}</Button>
               </Link>
-              <Link href="/register">
+              <Link href={`/${locale}/register`}>
                 <Button>{t("startPage.getStartedButton")}</Button>
               </Link>
             </div>
@@ -32,7 +37,7 @@ export default function HomePage() {
         </div>
       </nav>
 
-      {/* Hero Section - Vereinfacht */}
+      {/* Hero Section */}
       <section className="container mx-auto px-4 py-20 text-center flex flex-col items-center justify-center min-h-[calc(100vh-140px)]">
         <div className="max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom duration-1000">
           <h1
@@ -51,7 +56,7 @@ export default function HomePage() {
             className="flex flex-col sm:flex-row gap-4 justify-center animate-in slide-in-from-bottom duration-700"
             style={{ animationDelay: "500ms" }}
           >
-            <Link href="/register">
+            <Link href={`/${locale}/register`}>
               <Button
                 size="lg"
                 className="group hover:scale-105 transition-all duration-300"
@@ -60,7 +65,7 @@ export default function HomePage() {
                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
               </Button>
             </Link>
-            <Link href="/login">
+            <Link href={`/${locale}/login`}>
               <Button
                 variant="outline"
                 size="lg"
@@ -73,7 +78,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Footer - Geändert */}
+      {/* Footer */}
       <footer className="border-t bg-accent/5">
         <div className="container mx-auto px-4 py-12">
           <div className="grid md:grid-cols-4 gap-8">
@@ -97,7 +102,7 @@ export default function HomePage() {
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <Link
-                    href="/events"
+                    href={`/${locale}/events`}
                     className="hover:text-foreground transition-colors"
                   >
                     {t("startPage.eventsLink")}
@@ -105,7 +110,7 @@ export default function HomePage() {
                 </li>
                 <li>
                   <Link
-                    href="/reservations"
+                    href={`/${locale}/reservations`}
                     className="hover:text-foreground transition-colors"
                   >
                     {t("startPage.reservationsLink")}
@@ -113,7 +118,7 @@ export default function HomePage() {
                 </li>
                 <li>
                   <Link
-                    href="/manager"
+                    href={`/${locale}/manager`}
                     className="hover:text-foreground transition-colors"
                   >
                     {t("startPage.managementLink")}
@@ -121,7 +126,7 @@ export default function HomePage() {
                 </li>
                 <li>
                   <Link
-                    href="/admin"
+                    href={`/${locale}/admin`}
                     className="hover:text-foreground transition-colors"
                   >
                     {t("startPage.administrationLink")}

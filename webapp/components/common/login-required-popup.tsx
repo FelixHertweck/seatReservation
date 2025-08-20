@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -13,14 +13,18 @@ import { Button } from "@/components/ui/button";
 import { useAuthStatus } from "@/hooks/use-auth-status";
 import { setToastsDisabled } from "@/hooks/use-toast";
 import { useEffect } from "react";
-import { t } from "i18next";
+import { useT } from "@/lib/i18n/hooks";
 
 export function LoginRequiredPopup() {
+  const t = useT();
+  const params = useParams();
+  const locale = params.locale as string;
+
   const { isLoggedIn, isLoading } = useAuthStatus();
   const router = useRouter();
 
   const handleLoginRedirect = () => {
-    router.push("/login");
+    router.push(`/${locale}/login`);
   };
 
   useEffect(() => {

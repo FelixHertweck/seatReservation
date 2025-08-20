@@ -27,7 +27,7 @@ import type {
   DetailedEventResponseDto,
   LimitedUserInfoDto,
 } from "@/api";
-import { t } from "i18next";
+import { useT } from "@/lib/i18n/hooks";
 
 export interface ReservationAllowanceManagementProps {
   allowances: EventUserAllowancesDto[];
@@ -54,6 +54,8 @@ export function ReservationAllowanceManagement({
   onNavigateToEvent,
   initialFilter = {},
 }: ReservationAllowanceManagementProps) {
+  const t = useT();
+
   const [filteredAllowances, setFilteredAllowances] = useState(allowances);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);

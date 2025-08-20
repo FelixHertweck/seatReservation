@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { ReservationResponseDto } from "@/api";
-import { t } from "i18next";
+import { useT } from "@/lib/i18n/hooks";
 
 interface ReservationCardProps {
   reservation: ReservationResponseDto;
@@ -25,6 +25,8 @@ export function ReservationCard({
   onViewSeats,
   onDelete,
 }: ReservationCardProps) {
+  const t = useT();
+
   return (
     <Card>
       <CardHeader>

@@ -26,7 +26,7 @@ import type {
   DetailedEventResponseDto,
   SeatDto,
 } from "@/api";
-import { t } from "i18next";
+import { useT } from "@/lib/i18n/hooks";
 
 interface BlockSeatsModalProps {
   events: DetailedEventResponseDto[];
@@ -39,6 +39,8 @@ export function BlockSeatsModal({
   onSubmit,
   onClose,
 }: BlockSeatsModalProps) {
+  const t = useT();
+
   const [formData, setFormData] = useState({
     eventId: "",
     seatIds: [] as string[],

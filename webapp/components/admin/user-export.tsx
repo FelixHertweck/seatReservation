@@ -12,9 +12,11 @@ import { Download } from "lucide-react";
 import { useAdmin } from "@/hooks/use-admin";
 import { toast } from "@/components/ui/use-toast";
 import { customSerializer } from "@/lib/jsonBodySerializer";
-import { t } from "i18next";
+import { useT } from "@/lib/i18n/hooks";
 
 export function UserExport() {
+  const t = useT();
+
   const { users, isLoading } = useAdmin();
 
   const handleExport = () => {

@@ -22,7 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { UserFormModal } from "@/components/admin/user-form-modal";
 import type { UserDto, AdminUserCreationDto, AdminUserUpdateDto } from "@/api";
-import { t } from "i18next";
+import { useT } from "@/lib/i18n/hooks";
 
 export interface UserManagementProps {
   users: UserDto[];
@@ -39,6 +39,8 @@ export function UserManagement({
   updateUser,
   deleteUser,
 }: UserManagementProps) {
+  const t = useT();
+
   const [filteredUsers, setFilteredUsers] = useState(users);
   const [selectedUser, setSelectedUser] = useState<UserDto | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -126,8 +128,7 @@ export function UserManagement({
               <TableHead>{t("userManagement.tableHeaderName")}</TableHead>
               <TableHead>{t("userManagement.tableHeaderEmail")}</TableHead>
               <TableHead>{t("userManagement.tableHeaderRoles")}</TableHead>
-              <TableHead>{t("userManagement.tableHeaderTags")}</TableHead>{" "}
-              {/* New TableHead for Tags */}
+              <TableHead>{t("userManagement.tableHeaderTags")}</TableHead>
               <TableHead>{t("userManagement.tableHeaderVerified")}</TableHead>
               <TableHead>{t("userManagement.tableHeaderActions")}</TableHead>
             </TableRow>
@@ -150,7 +151,6 @@ export function UserManagement({
                   </div>
                 </TableCell>
                 <TableCell>
-                  {/* Ensure no whitespace here */}
                   <div className="flex gap-1 flex-wrap">
                     {user.tags?.map((tag) => (
                       <Badge key={tag} variant="secondary">

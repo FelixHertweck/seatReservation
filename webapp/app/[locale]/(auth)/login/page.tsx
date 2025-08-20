@@ -4,7 +4,6 @@ import type React from "react";
 
 import { useState } from "react";
 import Link from "next/link";
-import { t } from "i18next";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,9 +15,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useT } from "@/lib/i18n/hooks";
 
 export default function LoginPage() {
+  const params = useParams();
+  const locale = params.locale as string;
+  const t = useT();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoadingForm, setIsLoadingForm] = useState(false);
@@ -39,7 +43,7 @@ export default function LoginPage() {
   };
 
   const handleContinue = () => {
-    router.push("/events");
+    router.push(`/${locale}/events`);
   };
 
   const handleLogout = async () => {

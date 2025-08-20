@@ -10,7 +10,7 @@ import {
 import { SeatMap } from "@/components/common/seat-map";
 import { useState } from "react";
 import type { ReservationResponseDto, SeatDto } from "@/api";
-import { t } from "i18next";
+import { useT } from "@/lib/i18n/hooks";
 
 interface SeatMapModalProps {
   seats: SeatDto[];
@@ -27,6 +27,8 @@ export function SeatMapModal({
   onClose,
   isLoading,
 }: SeatMapModalProps) {
+  const t = useT();
+
   const [highlightedSeats, setHighlightedSeats] = useState<SeatDto[]>([]);
 
   const reservedSeats = eventReservations

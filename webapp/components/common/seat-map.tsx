@@ -7,7 +7,7 @@ import type { ReactElement } from "react";
 import { cn } from "@/lib/utils";
 import type { SeatDto } from "@/api";
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
-import { t } from "i18next";
+import { useT } from "@/lib/i18n/hooks";
 
 interface SeatMapProps {
   seats: SeatDto[];
@@ -31,6 +31,8 @@ const SeatComponent = React.memo(
     zoom: number;
     onSeatSelect: (seat: SeatDto) => void;
   }) => {
+    const t = useT();
+
     const handleClick = useCallback(
       (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -72,6 +74,8 @@ export function SeatMap({
   onSeatSelect,
   readonly = false,
 }: SeatMapProps): ReactElement {
+  const t = useT();
+
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);

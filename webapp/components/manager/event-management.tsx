@@ -25,7 +25,7 @@ import type {
   EventLocationResponseDto,
   EventRequestDto,
 } from "@/api";
-import { t } from "i18next";
+import { useT } from "@/lib/i18n/hooks";
 
 export interface EventManagementProps {
   events: DetailedEventResponseDto[];
@@ -49,6 +49,8 @@ export function EventManagement({
   onNavigateToLocation,
   initialFilter = {},
 }: EventManagementProps) {
+  const t = useT();
+
   const [filteredEvents, setFilteredEvents] = useState(events);
   const [selectedEvent, setSelectedEvent] =
     useState<DetailedEventResponseDto | null>(null);

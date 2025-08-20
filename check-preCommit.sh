@@ -149,7 +149,7 @@ fi
 
 if [ "$SKIP_FRONTEND_BUILD" = false ]; then
   echo "Running Frontend Build..."
-  npm run build || {
+  npm run build:static || {
     echo "Build failed. Please fix the issues before committing."
     echo "To skip previous checks and retry from this point, run: $(basename "$0") --skip-frontend-build"
     exit 1

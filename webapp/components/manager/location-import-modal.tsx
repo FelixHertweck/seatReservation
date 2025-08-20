@@ -27,7 +27,7 @@ import type {
   ImportSeatDto,
   EventLocationResponseDto,
 } from "@/api";
-import { t } from "i18next";
+import { useT } from "@/lib/i18n/hooks";
 
 interface LocationImportModalProps {
   isOpen: boolean;
@@ -46,6 +46,8 @@ export function LocationImportModal({
   onImportLocation,
   onImportSeats,
 }: LocationImportModalProps) {
+  const t = useT();
+
   const [jsonData, setJsonData] = useState("");
   const [importType, setImportType] = useState<"location" | "seats">(
     "location",

@@ -17,9 +17,11 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/use-auth";
 import type { RegisterRequestDto } from "@/api";
-import { t } from "i18next";
+import { useT } from "@/lib/i18n/hooks";
 
 export default function RegisterPage() {
+  const t = useT();
+
   const [formData, setFormData] = useState({
     username: "",
     email: "",

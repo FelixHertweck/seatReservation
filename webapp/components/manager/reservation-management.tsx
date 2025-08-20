@@ -45,7 +45,7 @@ import type {
   BlockSeatsRequestDto,
 } from "@/api";
 import { customSerializer } from "@/lib/jsonBodySerializer";
-import { t } from "i18next";
+import { useT } from "@/lib/i18n/hooks";
 
 export interface ReservationManagementProps {
   users: UserDto[];
@@ -74,6 +74,8 @@ export function ReservationManagement({
   onNavigateToSeat,
   initialFilter = {},
 }: ReservationManagementProps) {
+  const t = useT();
+
   const [filteredReservations, setFilteredReservations] =
     useState(reservations);
   const [isModalOpen, setIsModalOpen] = useState(false);

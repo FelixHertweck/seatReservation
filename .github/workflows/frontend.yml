@@ -1,12 +1,15 @@
 name: frontend.yml
 on:
-  workflow_call:
-    inputs:
-      enable-docker-build:
-        description: 'Enable Docker build and push for frontend'
-        required: false
-        type: boolean
-        default: false
+  push:
+    branches: [ "main" ]
+    paths-ignore: [ "**/*.md" ]
+    tags:
+      - "v*.*"
+      - "v*.*.*"
+  pull_request:
+    branches: [ "main" ]
+    paths-ignore: [ "**/*.md" ]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -17,6 +20,9 @@ jobs:
   frontend:
     name: frontend build
     runs-on: "ubuntu-24.04"
+
+    env:
+      NODE_VERSION: '22.18.x' 
 
     steps:
       - name: Checkout Repo
@@ -63,7 +69,7 @@ jobs:
               npm list
 
       - name: Install Dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: steps.cache-npm.outputs.cache-hit != 'true'
         run: |
               cd webapp
               npm ci
@@ -89,10 +95,23 @@ jobs:
       - name: Build
         run: |
               cd webapp
-              npm run build
+              npm run build:static
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: frontend-build
           path: webapp/out
+
+
+  frontend-docker:
+    needs: frontend
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+    uses: ./.github/workflows/nextjs-docker.yml
+    with:
+      docker-file-path: ./webapp/Dockerfile
+      container-image-title: Frontend
+      image-name: ${{ github.repository }}-frontend
