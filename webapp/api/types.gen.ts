@@ -6,17 +6,17 @@ export type AdminUserCreationDto = {
     password: string;
     firstname: string;
     lastname: string;
-    roles: Array<string>;
+    roles?: Array<string>;
     tags?: Array<string>;
 };
 
 export type AdminUserUpdateDto = {
-    email: string;
+    email?: string;
     firstname?: string;
     lastname?: string;
     password?: string;
     tags?: Array<string>;
-    roles: Array<string>;
+    roles?: Array<string>;
 };
 
 export type BlockSeatsRequestDto = {
@@ -1378,6 +1378,37 @@ export type PostApiUsersAdminResponses = {
 };
 
 export type PostApiUsersAdminResponse = PostApiUsersAdminResponses[keyof PostApiUsersAdminResponses];
+
+export type PostApiUsersAdminImportData = {
+    body: Array<AdminUserCreationDto>;
+    path?: never;
+    query?: never;
+    url: '/api/users/admin/import';
+};
+
+export type PostApiUsersAdminImportErrors = {
+    /**
+     * Bad Request
+     */
+    400: unknown;
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type PostApiUsersAdminImportResponses = {
+    /**
+     * OK
+     */
+    200: Array<UserDto>;
+};
+
+export type PostApiUsersAdminImportResponse = PostApiUsersAdminImportResponses[keyof PostApiUsersAdminImportResponses];
 
 export type DeleteApiUsersAdminByIdData = {
     body?: never;

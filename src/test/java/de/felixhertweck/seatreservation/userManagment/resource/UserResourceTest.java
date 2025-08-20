@@ -19,9 +19,16 @@
  */
 package de.felixhertweck.seatreservation.userManagment.resource;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.greaterThan;
+import java.util.HashSet;
+import java.util.Set;
 
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.is;
+
+import de.felixhertweck.seatreservation.userManagment.dto.AdminUserCreationDto;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import org.junit.jupiter.api.Test;
@@ -48,5 +55,144 @@ public class UserResourceTest {
     @Test
     public void testGetAllUsersAsAdminUnauthorized() {
         given().when().get("/api/users/admin").then().statusCode(401);
+    }
+
+    @Test
+    @TestSecurity(user = "admin", roles = "ADMIN")
+    public void importUsers_Success_AdminRole() {
+        Set<AdminUserCreationDto> dtos = new HashSet<>();
+        dtos.add(
+                new AdminUserCreationDto(
+                        "testuser1",
+                        "test1@example.com",
+                        "password",
+                        "John",
+                        "Doe",
+                        Set.of("USER"),
+                        null));
+        dtos.add(
+                new AdminUserCreationDto(
+                        "testuser2",
+                        "test2@example.com",
+                        "password",
+                        "Jane",
+                        "Doe",
+                        Set.of("MANAGER"),
+                        null));
+
+        given().contentType("application/json")
+                .body(dtos)
+                .when()
+                .post("/api/users/admin/import")
+                .then()
+                .statusCode(200)
+                .body("size()", is(2));
+    }
+
+    @Test
+    @TestSecurity(user = "testuser", roles = "USER")
+    public void importUsers_Forbidden_UserRole() {
+        Set<AdminUserCreationDto> dtos = new HashSet<>();
+        dtos.add(
+                new AdminUserCreationDto(
+                        "testuser1",
+                        "test1@example.com",
+                        "password",
+                        "John",
+                        "Doe",
+                        Set.of("USER"),
+                        null));
+
+        given().contentType("application/json")
+                .body(dtos)
+                .when()
+                .post("/api/users/admin/import")
+                .then()
+                .statusCode(403);
+    }
+
+    @Test
+    public void importUsers_Unauthorized() {
+        Set<AdminUserCreationDto> dtos = new HashSet<>();
+        dtos.add(
+                new AdminUserCreationDto(
+                        "testuser1",
+                        "test1@example.com",
+                        "password",
+                        "John",
+                        "Doe",
+                        Set.of("USER"),
+                        null));
+
+        given().contentType("application/json")
+                .body(dtos)
+                .when()
+                .post("/api/users/admin/import")
+                .then()
+                .statusCode(401);
+    }
+
+    @Test
+    @TestSecurity(user = "admin", roles = "ADMIN")
+    public void importUsers_InvalidInput() {
+        Set<AdminUserCreationDto> dtos = new HashSet<>();
+        // Invalid DTO: empty username
+        dtos.add(
+                new AdminUserCreationDto(
+                        "", "test1@example.com", "password", "John", "Doe", Set.of("USER"), null));
+
+        given().contentType("application/json")
+                .body(dtos)
+                .when()
+                .post("/api/users/admin/import")
+                .then()
+                .statusCode(400); // Expecting Bad Request due to InvalidUserException
+    }
+
+    @Test
+    @TestSecurity(user = "admin", roles = "ADMIN")
+    public void importUsers_DuplicateUser() {
+        Set<AdminUserCreationDto> dtos = new HashSet<>();
+        dtos.add(
+                new AdminUserCreationDto(
+                        "existinguser",
+                        "existing@example.com",
+                        "password",
+                        "John",
+                        "Doe",
+                        Set.of("USER"),
+                        null));
+        dtos.add(
+                new AdminUserCreationDto(
+                        "existinguser",
+                        "existing2@example.com",
+                        "password",
+                        "Jane",
+                        "Doe",
+                        Set.of("USER"),
+                        null));
+
+        given().contentType("application/json")
+                .body(
+                        new AdminUserCreationDto(
+                                "existinguser",
+                                "existing@example.com",
+                                "password",
+                                "John",
+                                "Doe",
+                                Set.of("USER"),
+                                null))
+                .when()
+                .post("/api/users/admin")
+                .then()
+                .statusCode(is(anyOf(equalTo(200), equalTo(409))));
+
+        // Then, try to import a set including the duplicate
+        given().contentType("application/json")
+                .body(dtos)
+                .when()
+                .post("/api/users/admin/import")
+                .then()
+                .statusCode(409); // Expecting Conflict due to DuplicateUserException
     }
 }

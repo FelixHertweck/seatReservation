@@ -2,7 +2,7 @@
 
 export const AdminUserCreationDtoSchema = {
     type: 'object',
-    required: ['username', 'password', 'firstname', 'lastname', 'roles'],
+    required: ['username', 'password', 'firstname', 'lastname'],
     properties: {
         username: {
             type: 'string'
@@ -14,8 +14,7 @@ export const AdminUserCreationDtoSchema = {
             type: 'string'
         },
         firstname: {
-            type: 'string',
-            minLength: 8
+            type: 'string'
         },
         lastname: {
             type: 'string'
@@ -25,8 +24,7 @@ export const AdminUserCreationDtoSchema = {
             uniqueItems: true,
             items: {
                 type: 'string'
-            },
-            minItems: 1
+            }
         },
         tags: {
             type: 'array',
@@ -40,7 +38,6 @@ export const AdminUserCreationDtoSchema = {
 
 export const AdminUserUpdateDTOSchema = {
     type: 'object',
-    required: ['email', 'roles'],
     properties: {
         email: {
             type: 'string'
@@ -66,8 +63,7 @@ export const AdminUserUpdateDTOSchema = {
             uniqueItems: true,
             items: {
                 type: 'string'
-            },
-            minItems: 1
+            }
         }
     }
 } as const;

@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.userManagment.resource;
 
 import java.util.List;
+import java.util.Set;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
@@ -52,6 +53,17 @@ public class UserResource {
     @Inject UserService userService;
     @Inject SecurityContext securityContext;
     @Inject UserSecurityContext userSecurityContext;
+
+    @POST
+    @Path("/admin/import")
+    @RolesAllowed(Roles.ADMIN)
+    public Set<UserDTO> importUsers(Set<AdminUserCreationDto> userCreationDTOs) {
+        LOG.infof(
+                "Received POST request to /api/users/admin/import for %d users.",
+                userCreationDTOs.size());
+        Set<UserDTO> importedUsers = userService.importUsers(userCreationDTOs);
+        return importedUsers;
+    }
 
     @POST
     @Path("/admin")

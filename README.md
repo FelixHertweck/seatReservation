@@ -4,6 +4,8 @@ A comprehensive system for managing seat reservations for events. The system con
 
 ## Overview
 
+After initial start there is a user account with username admin and password admin. Make sure to change the default credentials before deploying the application!
+
 This application provides a robust solution for managing event seat reservations. It allows users to browse events, reserve seats, and receive email notifications. The system supports different user roles with varying levels of access and capabilities, ensuring secure and efficient management of events and reservations.
 
 ## Architecture
@@ -44,16 +46,34 @@ Admins have full control over the system, including user management and system-w
 -   **System Configuration:** Access to system-wide settings and configurations.
 
 ## Build Status
+- Frontend 
+[![Build Status](https://github.com/FelixHertweck/SeatReservation/actions/workflows/frontend.yml/badge.svg?branch=main)](https://github.com/FelixHertweck/SeatReservation/actions/workflows/frontend.yml)
 
-[![Build Status](https://github.com/FelixHertweck/SeatReservation/actions/workflows/build.yml/badge.svg)](https://github.com/FelixHertweck/SeatReservation/actions/workflows/build.yml)
+- Backend:  [![Build Status](https://github.com/FelixHertweck/SeatReservation/actions/workflows/backend.yml/badge.svg?branch=main)](https://github.com/FelixHertweck/SeatReservation/actions/workflows/backend.yml)
+- Backend Native: [![Build Status](https://github.com/FelixHertweck/SeatReservation/actions/workflows/backend-native.yml/badge.svg?branch=main)](https://github.com/FelixHertweck/SeatReservation/actions/workflows/backend-native.yml)
 
-## Before First Use
+## Initial Setup
+
+Before running the application, ensure the following setup steps are completed:
+
+### JWT Key Generation
 
 Execute the following command to generate the necessary keys for JWT authentication:
 
 ```shell script
 mkdir -p keys && openssl genpkey -algorithm RSA -out keys/privateKey.pem -pkeyopt rsa_keygen_bits:2048 && openssl rsa -pubout -in keys/privateKey.pem -out keys/publicKey.pem
 ```
+
+### Automatic Admin User Creation
+
+Upon initial startup, the application automatically checks for the existence of an 'admin' user. If no user with the username 'admin' is found, a new admin account will be created with the following default credentials:
+
+-   **Username:** `admin`
+-   **Email:** `admin@example.com`
+-   **Password:** `admin` 
+-   **Roles:** `ADMIN`
+
+**Make sure to change the default credentials before deploying the application**
 
 ## Environment Variables
 

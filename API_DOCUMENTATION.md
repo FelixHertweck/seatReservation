@@ -124,6 +124,20 @@ Ruft die vollständigen Daten aller Benutzer ab.
 
 ---
 
+#### POST /admin/import
+
+Importiert Set von Benutzern.
+
+-   **Rollen:** `ADMIN`
+-   **Request Body:** `Set<AdminUserUpdateDTO>`
+-   **Responses:**
+   -   `200 OK`: Benutzer erfolgreich importiert. Gibt eine Liste von `UserDTO` Objekten zurück.
+   -   `400 Bad Request`: Ungültiges Format.
+   -   `403 Forbidden`: Zugriff verweigert (Rolle ist nicht `ADMIN`).
+   -   `500 Internal Server Error`: Interner Serverfehler beim Import.
+
+---
+
 ## Benutzerprofil (Benutzer)
 
 ### UserResource

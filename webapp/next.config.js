@@ -2,6 +2,7 @@
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { PHASE_DEVELOPMENT_SERVER } = require("next/constants");
+const process = require("process");
 
 module.exports = (phase, { defaultConfig }) => {
   const isDev = phase === PHASE_DEVELOPMENT_SERVER;
@@ -31,6 +32,5 @@ module.exports = (phase, { defaultConfig }) => {
       output: "standalone",
     };
   }
-
-  throw new Error(`Unknown BUILD_MODE: ${buildMode}`);
+  return {};
 };

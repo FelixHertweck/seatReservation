@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.security.service;
 
 import java.time.Duration;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.ws.rs.core.NewCookie;
 
 import de.felixhertweck.seatreservation.model.entity.User;
 import io.smallrye.jwt.build.Jwt;
@@ -36,10 +37,21 @@ public class TokenService {
     @ConfigProperty(name = "jwt.token.expiration.minutes", defaultValue = "60")
     long expirationMinutes;
 
+    /**
+     * Gets the expiration time for JWT tokens in minutes.
+     *
+     * @return the expiration time in minutes
+     */
     public long getExpirationMinutes() {
         return expirationMinutes;
     }
 
+    /**
+     * Generates a JWT token for the given user.
+     *
+     * @param user the user for whom the token is generated
+     * @return the generated JWT token
+     */
     public String generateToken(User user) {
         LOG.infof("Generating JWT token for user: %s", user.getUsername());
         LOG.debugf(
@@ -54,5 +66,21 @@ public class TokenService {
                         .sign();
         LOG.infof("JWT token generated successfully for user: %s", user.getUsername());
         return token;
+    }
+
+    /**
+     * Creates a new HTTP cookie containing the JWT token.
+     *
+     * @param token the JWT token to include in the cookie
+     * @return the created NewCookie
+     */
+    public NewCookie createNewJwtCookie(String token) {
+        return new NewCookie.Builder("jwt")
+                .value(token)
+                .path("/")
+                .maxAge((int) (expirationMinutes * 60))
+                .httpOnly(true)
+                .secure(true)
+                .build();
     }
 }

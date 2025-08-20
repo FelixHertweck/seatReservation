@@ -20,15 +20,11 @@
 package de.felixhertweck.seatreservation.userManagment.dto;
 
 import java.util.Set;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 
 import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
 
 public class AdminUserUpdateDTO {
-    @NotNull(message = "Email cannot be null")
-    @NoHtmlSanitize
-    private final String email;
+    @NoHtmlSanitize private final String email;
 
     private final String firstname;
 
@@ -38,7 +34,6 @@ public class AdminUserUpdateDTO {
 
     private final Set<String> tags;
 
-    @NotEmpty(message = "User must have at least one role")
     private final Set<String> roles;
 
     public String getEmail() {

@@ -48,6 +48,8 @@ export function UserFormModal({
   const [tags, setTags] = useState<string[]>(user?.tags || []);
   const [newTag, setNewTag] = useState("");
 
+  const isPasswordTooShort = password.length > 0 && password.length < 8;
+
   useEffect(() => {
     if (user) {
       setUsername(user.username || "");
@@ -138,14 +140,20 @@ export function UserFormModal({
               <Label htmlFor="password" className="text-right">
                 {t("userFormModal.passwordLabel")}
               </Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="col-span-3"
-                required
-              />
+              <div className="col-span-3">
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                {isPasswordTooShort && (
+                  <p className="text-sm text-destructive mt-1">
+                    {t("userFormModal.passwordTooShort")}
+                  </p>
+                )}
+              </div>
             </div>
           )}
           <div className="grid grid-cols-4 items-center gap-4">

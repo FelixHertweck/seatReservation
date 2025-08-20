@@ -37,6 +37,7 @@ import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.security.Roles;
+import de.felixhertweck.seatreservation.userManagment.dto.AdminUserCreationDto;
 import de.felixhertweck.seatreservation.userManagment.dto.AdminUserUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
@@ -57,6 +58,26 @@ public class UserService {
     @Inject EmailService emailService;
 
     @Inject EmailVerificationRepository emailVerificationRepository;
+
+    /**
+     * Imports a set of users from the provided DTOs. Send directly email verification if email is
+     * set.
+     *
+     * @param adminUserCreationDtos The set of user creation DTOs to import.
+     * @return A set of UserDTOs representing the imported users.
+     */
+    @Transactional
+    public Set<UserDTO> importUsers(Set<AdminUserCreationDto> adminUserCreationDtos)
+            throws InvalidUserException, DuplicateUserException {
+        LOG.infof("Importing %d users.", adminUserCreationDtos.size());
+
+        Set<UserDTO> importedUsers = new HashSet<>();
+        for (AdminUserCreationDto adminUser : adminUserCreationDtos) {
+            UserDTO user = createUser(new UserCreationDTO(adminUser), adminUser.getRoles());
+            importedUsers.add(user);
+        }
+        return importedUsers;
+    }
 
     /**
      * Creates a new user with the provided dto.
@@ -119,9 +140,6 @@ public class UserService {
                 user.getRoles(),
                 user.getTags());
 
-        userRepository.persist(user);
-        LOG.infof("User %s persisted successfully with ID: %d", user.getUsername(), user.id);
-
         if (user.getEmail() != null && !user.getEmail().trim().isEmpty()) {
             try {
                 LOG.debugf("Attempting to send email confirmation to %s", user.getEmail());
@@ -142,6 +160,67 @@ public class UserService {
                 throw new RuntimeException("Failed to send email confirmation: " + e.getMessage());
             }
         }
+        userRepository.persist(user);
+        LOG.infof("User %s persisted successfully with ID: %d", user.getUsername(), user.id);
+
+        return new UserDTO(user);
+    }
+
+    /**
+     * Creates a new admin user with a pre-hashed password. This method is intended for internal
+     * use, such as application initialization, where the password hash is already known.
+     *
+     * @param username The username of the admin user.
+     * @param email The email of the admin user.
+     * @param passwordHash The pre-hashed password of the admin user.
+     * @param firstname The first name of the admin user.
+     * @param lastname The last name of the admin user.
+     * @param roles The roles to assign to the admin user.
+     * @param tags The tags to assign to the admin user.
+     * @return The created UserDTO.
+     * @throws DuplicateUserException If a user with the same username or email already exists.
+     * @throws RuntimeException If an error occurs while sending email confirmation.
+     */
+    @Transactional
+    public UserDTO createAdminUserWithHashedPassword(
+            String username,
+            String email,
+            String passwordHash,
+            String firstname,
+            String lastname,
+            Set<String> roles,
+            Set<String> tags)
+            throws DuplicateUserException {
+        LOG.infof("Attempting to create new admin user with username: %s", username);
+
+        if (userRepository.findByUsernameOptional(username).isPresent()) {
+            LOG.warnf("Duplicate admin user creation attempt for username: %s", username);
+            throw new DuplicateUserException("User with username " + username + " already exists.");
+        }
+
+        User user = new User();
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setPasswordHash(passwordHash);
+        user.setFirstname(firstname);
+        user.setLastname(lastname);
+        user.setRoles(new HashSet<>(roles));
+        if (tags != null) {
+            user.setTags(new HashSet<>(tags));
+        }
+        user.setEmailVerified(true);
+
+        LOG.debugf(
+                "Admin user object prepared: username=%s, firstname=%s, lastname=%s, roles=%s,"
+                        + " tags=%s",
+                user.getUsername(),
+                user.getFirstname(),
+                user.getLastname(),
+                user.getRoles(),
+                user.getTags());
+
+        userRepository.persist(user);
+        LOG.infof("Admin user %s persisted successfully with ID: %d", user.getUsername(), user.id);
 
         return new UserDTO(user);
     }

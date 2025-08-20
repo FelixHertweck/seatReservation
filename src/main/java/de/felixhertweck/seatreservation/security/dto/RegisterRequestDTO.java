@@ -22,6 +22,8 @@ package de.felixhertweck.seatreservation.security.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
+
 public class RegisterRequestDTO {
 
     @NotBlank(message = "Username must not be blank")
@@ -34,6 +36,7 @@ public class RegisterRequestDTO {
     private String lastname;
 
     @NotBlank(message = "Email must not be blank")
+    @NoHtmlSanitize
     private String email;
 
     @NotBlank(message = "Password must not be blank")

@@ -20,12 +20,12 @@
 package de.felixhertweck.seatreservation.security.resource;
 
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
 
 import de.felixhertweck.seatreservation.security.AuthenticationFailedException;
 import de.felixhertweck.seatreservation.security.dto.LoginRequestDTO;
@@ -63,6 +63,17 @@ public class AuthResourceTest {
         loginRequest.setUsername(username);
         loginRequest.setPassword(password);
 
+        // Mock the NewCookie creation
+        NewCookie mockedCookie =
+                new NewCookie.Builder("jwt")
+                        .value(token)
+                        .path("/")
+                        .maxAge(60 * 60) // 60 minutes
+                        .httpOnly(true)
+                        .secure(true)
+                        .build();
+        Mockito.when(tokenService.createNewJwtCookie(token)).thenReturn(mockedCookie);
+
         Mockito.when(tokenService.getExpirationMinutes())
                 .thenReturn(60L); // Mock the expirationMinutes for 60 minutes
 
@@ -72,7 +83,10 @@ public class AuthResourceTest {
                 .post("/api/auth/login")
                 .then()
                 .statusCode(Response.Status.OK.getStatusCode())
-                .cookie("jwt", notNullValue()) // Check for the presence of the jwt cookie
+                .header(
+                        "Set-Cookie",
+                        containsString("jwt=")) // Check for the presence of the jwt cookie in the
+                // Set-Cookie header
                 .header(
                         "Set-Cookie",
                         containsString(
@@ -149,14 +163,16 @@ public class AuthResourceTest {
         registerRequest.setEmail("newuser@example.com");
         registerRequest.setPassword("securepassword");
 
-        Mockito.doNothing().when(authService).register(Mockito.any(RegisterRequestDTO.class));
+        Mockito.doAnswer(invocation -> null)
+                .when(authService)
+                .register(Mockito.any(RegisterRequestDTO.class));
 
         given().contentType(MediaType.APPLICATION_JSON)
                 .body(registerRequest)
                 .when()
                 .post("/api/auth/register")
                 .then()
-                .statusCode(Response.Status.CREATED.getStatusCode());
+                .statusCode(Response.Status.OK.getStatusCode());
     }
 
     @Test

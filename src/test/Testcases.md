@@ -66,6 +66,17 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | `createUser_DuplicateUserException_ExistingUsername` | Versucht, einen Benutzer mit einem Benutzernamen zu erstellen, der bereits in der Datenbank existiert. Erwartet `DuplicateUserException`. |
 | `createUser_Success_WithDuplicateEmail` | Erstellt einen neuen Benutzer mit einer E-Mail-Adresse, die bereits von einem anderen Benutzer verwendet wird. Überprüft, ob der Benutzer erfolgreich erstellt wird und keine `DuplicateUserException` geworfen wird. |
 | `createUser_InternalServerErrorException_EmailSendFailure` | Simuliert einen Fehler beim Senden der E-Mail-Bestätigung (z.B. durch eine `IOException` im `EmailService`). Erwartet `InternalServerErrorException`. |
+| `createUser_InternalServerErrorException_EmailSendFailure` | Simuliert einen Fehler beim Senden der E-Mail-Bestätigung (z.B. durch eine `IOException` im `EmailService`). Erwartet `InternalServerErrorException`. |
+
+### importUsers(Set<AdminUserCreationDto> adminUserCreationDtos)
+
+| Testfall | Beschreibung |
+| :--- | :--- |
+| `importUsers_Success` | Importiert erfolgreich mehrere Benutzer. |
+| `importUsers_EmptySet` | Versucht, ein leeres Set von Benutzern zu importieren. Erwartet eine leere Liste importierter Benutzer. |
+| `importUsers_InvalidUserException` | Versucht, Benutzer mit ungültigen Daten zu importieren (z.B. leerer Benutzername). Erwartet `InvalidUserException`. |
+| `importUsers_DuplicateUserException` | Versucht, Benutzer zu importieren, von denen einer bereits existiert. Erwartet `DuplicateUserException`. |
+| `importUsers_EmailSendFailure` | Simuliert einen Fehler beim E-Mail-Versand während des Imports. Erwartet `RuntimeException`. |
 
 ### updateUser(Long id, AdminUserUpdateDTO user)
 
@@ -108,6 +119,7 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | Testfall | Beschreibung |
 | :--- | :--- |
 | `getAvailableRoles_Success` | Ruft erfolgreich eine Liste aller verfügbaren Rollen ab. |
+
 
 ### updateUserProfile(String username, UserProfileUpdateDTO userProfileUpdateDTO)
 
@@ -932,6 +944,25 @@ Dieser Test überprüft den E-Mail-Bestätigungsprozess über einen Token. Der E
 Basispfad: `/api/users`
 
 Rollen: `ADMIN`, `MANAGER`, `USER`
+
+---
+
+#### POST /admin/import
+
+Importiert eine Menge von Benutzern (nur für Admins).
+
+**Beschreibung:**
+
+Dieser Test stellt sicher, dass nur Administratoren Benutzer in großen Mengen importieren können.
+
+**Testfälle:**
+
+*   **Erfolg:**
+    *   Ein Admin sendet ein gültiges Set von Benutzerdaten und importiert erfolgreich die Benutzer. Er erhält `200 OK` mit den Daten der importierten Benutzer.
+*   **Fehler:**
+    *   Ein Admin sendet ungültige Daten (z.B. leere Benutzernamen oder doppelte Benutzer) und erhält `400 Bad Request` oder `409 Conflict`.
+    *   Ein Benutzer mit der Rolle `MANAGER` oder `USER` versucht, Benutzer zu importieren, und erhält `403 Forbidden`.
+    *   Ein nicht authentifizierter Benutzer versucht, auf den Endpunkt zuzugreifen, und erhält `401 Unauthorized`.
 
 ---
 
