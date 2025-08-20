@@ -21,10 +21,10 @@ services:
       - app-network
 
   backend:
-    image: ghcr.io/felixhertweck/seatreservation:main
+    image: ghcr.io/felixhertweck/seatreservation-backend:main
 
     # Uncomment this line to use the native image
-    # image: ghcr.io/felixhertweck/seatreservation-native:main
+    # image: ghcr.io/felixhertweck/seatreservation-backend-native:main
 
     # Backend Port no need to export cause of nginx proxy
     # ports:

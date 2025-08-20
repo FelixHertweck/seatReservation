@@ -1,4 +1,4 @@
-name: build.yml
+name: backend.yml
 on:
   push:
     branches: [ "main" ]
@@ -18,25 +18,6 @@ permissions:
 
 
 jobs:
-  frontend:
-    uses: ./.github/workflows/frontend.yml
-    with:
-      enable-docker-build: true
-
-  frontend-docker:
-    needs: frontend
-    permissions:
-      contents: write
-      packages: write
-      id-token: write
-    uses: ./.github/workflows/docker.yml
-    with:
-      build-artifact-name: frontend-build
-      build-artifact-path: webapp/out
-      docker-file-path: ./webapp/Dockerfile
-      container-image-title: Frontend
-      image-name: ${{ github.repository }}-frontend
-
   maven:
     uses: ./.github/workflows/maven.yml
     with:
@@ -54,4 +35,5 @@ jobs:
       build-artifact-name: quarkus-app
       build-artifact-path: target/quarkus-app
       docker-file-path: ./src/main/docker/Dockerfile.jvm
-      container-image-title: Backend
+      container-image-title: backend
+      image-name: ${{ github.repository }}-backend
