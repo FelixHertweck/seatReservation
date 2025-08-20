@@ -14,9 +14,11 @@ import { X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import type { UserProfileUpdateDto } from "@/api";
 import LoadingSkeleton from "./loading";
-import { t } from "i18next";
+import { useT } from "@/lib/i18n/hooks";
 
 export default function ProfilePage() {
+  const t = useT();
+
   const { user, updateProfile, isLoading, resendConfirmation } = useProfile();
   const { isLoggedIn: isAuthenticated } = useAuthStatus();
 
@@ -78,7 +80,7 @@ export default function ProfilePage() {
         title: t("profilePage.confirmationEmailSentTitle"),
         description: t("profilePage.confirmationEmailSentDescription"),
       });
-      setOriginalEmail(email); // Update originalEmail after successful change
+      setOriginalEmail(email);
     }
   };
 

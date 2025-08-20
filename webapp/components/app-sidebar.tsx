@@ -9,9 +9,10 @@ import {
   Sun,
   Moon,
   Monitor,
+  Globe,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import {
   Sidebar,
   SidebarContent,
@@ -37,23 +38,25 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect } from "react";
 import { useTheme } from "next-themes";
-import { t } from "i18next";
+import { useT } from "@/lib/i18n/hooks";
+import { languages } from "@/lib/i18n/config";
 
 export function AppSidebar() {
+  const t = useT();
+
   const { user, logout } = useAuth();
   const { setOpen, isMobile } = useSidebar();
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const router = useRouter();
+  const pathname = usePathname();
 
-  // Auto-close sidebar on mobile when screen becomes small
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 768) {
-        // md breakpoint
         setOpen(false);
       }
     };
 
-    // Initial check
     handleResize();
 
     window.addEventListener("resize", handleResize);
@@ -121,8 +124,30 @@ export function AppSidebar() {
     }
   };
 
+  const getCurrentLanguage = () => {
+    const segments = pathname.split("/");
+    return segments[1] || "en";
+  };
+
+  const getLanguageLabel = (lang: string) => {
+    switch (lang) {
+      case "en":
+        return t("sidebar.english");
+      case "de":
+        return t("sidebar.german");
+      default:
+        return lang.toUpperCase();
+    }
+  };
+
+  const switchLanguage = (newLang: string) => {
+    const segments = pathname.split("/");
+    segments[1] = newLang;
+    const newPath = segments.join("/");
+    router.push(newPath);
+  };
+
   const handleLinkClick = () => {
-    // Close sidebar on mobile when a link is clicked
     if (isMobile) {
       setOpen(false);
     }
@@ -138,10 +163,11 @@ export function AppSidebar() {
           href="/"
           className={`w-full transition-all duration-500 flex items-center justify-center bg-transparent`}
         >
-          <Image
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src="/logo.png"
             alt="Logo"
-            className={`h-auto w-full max-h-[100px] bg-transparent object-contain`}
+            className={`h-auto w-full max-h-[100px] bg-transparent object-contain ${resolvedTheme === "dark" ? "invert" : ""}`}
           />
         </Link>
       </SidebarMenu>
@@ -159,7 +185,7 @@ export function AppSidebar() {
                   <SidebarMenuButton
                     asChild
                     tooltip={item.title}
-                    className="hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground transition-all duration-300 hover:scale-[1.02] hover:translate-x-1 group relative overflow-hidden"
+                    className="hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground transition-all duration-300 hover:scale-[1.02] group relative overflow-hidden"
                     style={{
                       animationDelay: `${index * 100}ms`,
                     }}
@@ -240,6 +266,28 @@ export function AppSidebar() {
                         <ThemeIcon className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
                         {getThemeLabel(themeOption)}
                         {theme === themeOption && (
+                          <div className="ml-auto w-2 h-2 rounded-full bg-sidebar-primary animate-pulse" />
+                        )}
+                      </DropdownMenuItem>
+                    );
+                  })}
+                  <DropdownMenuSeparator />
+                  <div className="px-2 py-1.5 text-sm font-semibold text-sidebar-foreground">
+                    {t("sidebar.language")}
+                  </div>
+                  {languages.map((lang) => {
+                    const isCurrentLanguage = getCurrentLanguage() === lang;
+                    return (
+                      <DropdownMenuItem
+                        key={lang}
+                        onClick={() => switchLanguage(lang)}
+                        className={`hover:bg-sidebar-accent/50 transition-all duration-200 cursor-pointer group ${
+                          isCurrentLanguage ? "bg-sidebar-accent/30" : ""
+                        }`}
+                      >
+                        <Globe className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
+                        {getLanguageLabel(lang)}
+                        {isCurrentLanguage && (
                           <div className="ml-auto w-2 h-2 rounded-full bg-sidebar-primary animate-pulse" />
                         )}
                       </DropdownMenuItem>

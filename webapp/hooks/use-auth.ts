@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getApiUsersMeOptions,
@@ -11,6 +11,9 @@ import {
 import { RegisterRequestDto } from "@/api";
 
 export function useAuth() {
+  const params = useParams();
+  const locale = params.locale as string;
+
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -25,7 +28,7 @@ export function useAuth() {
     ...postApiAuthLoginMutation(),
     onSuccess: async () => {
       await refetchUser();
-      router.push("/events");
+      router.push(`/${locale}/events`);
     },
   });
 
@@ -38,7 +41,7 @@ export function useAuth() {
     ...postApiAuthRegisterMutation(),
     onSuccess: async () => {
       await refetchUser();
-      router.push("/events");
+      router.push(`/${locale}/events`);
     },
   });
 

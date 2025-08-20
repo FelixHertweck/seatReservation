@@ -35,7 +35,7 @@ import { ChevronsUpDown, XCircle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/use-toast";
-import { t } from "i18next";
+import { useT } from "@/lib/i18n/hooks";
 
 import type {
   UserDto,
@@ -64,6 +64,8 @@ export function AllowanceFormModal({
   onSubmit,
   onClose,
 }: AllowanceFormModalProps) {
+  const t = useT();
+
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>(
     allowance && !isCreating ? [allowance.userId?.toString() || ""] : [],
   );

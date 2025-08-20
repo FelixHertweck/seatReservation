@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { SeatMap } from "@/components/common/seat-map";
 import { Badge } from "@/components/ui/badge";
 import type { EventResponseDto, ReservationResponseDto, SeatDto } from "@/api";
-import { t } from "i18next";
+import { useT } from "@/lib/i18n/hooks";
 
 interface EventReservationModalProps {
   event: EventResponseDto;
@@ -30,6 +30,8 @@ export function EventReservationModal({
   onClose,
   onReserve,
 }: EventReservationModalProps) {
+  const t = useT();
+
   const [selectedSeats, setSelectedSeats] = useState<SeatDto[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 

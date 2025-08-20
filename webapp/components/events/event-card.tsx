@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { EventResponseDto } from "@/api";
-import { t } from "i18next";
+import { useT } from "@/lib/i18n/hooks";
 
 interface EventCardProps {
   event: EventResponseDto;
@@ -20,6 +20,8 @@ interface EventCardProps {
 }
 
 export function EventCard({ event, onReserve }: EventCardProps) {
+  const t = useT();
+
   const hasAvailableSeats = (event.reservationsAllowed ?? 0) > 0;
   const isBookingOpen = event.bookingDeadline
     ? new Date(event.bookingDeadline) > new Date()

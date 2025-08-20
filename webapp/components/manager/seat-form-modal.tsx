@@ -25,7 +25,7 @@ import type {
   SeatRequestDto,
   EventLocationResponseDto,
 } from "@/api";
-import { t } from "i18next";
+import { useT } from "@/lib/i18n/hooks";
 
 interface SeatFormModalProps {
   seat: SeatResponseDto | null;
@@ -42,6 +42,8 @@ export function SeatFormModal({
   onSubmit,
   onClose,
 }: SeatFormModalProps) {
+  const t = useT();
+
   const [formData, setFormData] = useState({
     seatNumber: seat?.seatNumber || "",
     eventLocationId: seat?.eventLocationId?.toString() || "",
