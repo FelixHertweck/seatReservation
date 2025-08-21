@@ -98,22 +98,14 @@
     "saveChangesButton": "Änderungen speichern"
   },
   "startPage": {
-    "eventManagerTitle": "Event Manager",
+    "eventManagerTitle": "Sitzplatz Reservierung",
     "signInButton": "Anmelden",
     "getStartedButton": "Loslegen",
-    "heroTitle": "Event-Verwaltung",
+    "heroTitle": "SeatReservation",
     "heroDescription": "Greifen Sie auf Ihre Veranstaltungen, Reservierungen und Verwaltungstools zu. Melden Sie sich an oder registrieren Sie sich, um zu beginnen.",
-    "footerDescription": "Die umfassendste Event-Management-Plattform für moderne Organisationen.",
-    "productTitle": "Produkt",
-    "eventsLink": "Veranstaltungen",
-    "reservationsLink": "Reservierungen",
-    "managementLink": "Verwaltung",
-    "administrationLink": "Administration",
-    "resourcesTitle": "Ressourcen",
-    "aboutLink": "Über uns",
-    "contactLink": "Kontakt",
+    "footerDescription": "Die umfassendste Sitzplatz Reservierungs-Plattform für moderne Organisationen.",
     "githubProjectLink": "GitHub-Projekt",
-    "copyright": "© 2025 Event Manager. Alle Rechte vorbehalten."
+    "copyright": "© 2025 SeatReservation. Alle Rechte vorbehalten."
   },
   "userExport": {
     "noUsersToExportTitle": "Keine Benutzer zum Exportieren",
