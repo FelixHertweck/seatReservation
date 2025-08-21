@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.security.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -37,6 +38,7 @@ public class RegisterRequestDTO {
 
     @NotBlank(message = "Email must not be blank")
     @NoHtmlSanitize
+    @Email(regexp = ".+[@].+[\\\\.].+", message = "Invalid email format")
     private String email;
 
     @NotBlank(message = "Password must not be blank")

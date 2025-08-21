@@ -26,19 +26,30 @@ export function EmailVerificationPrompt() {
   const [showPopup, setShowPopup] = useState(false);
   const currentpath = usePathname();
 
+  const [timerCompleted, setTimerCompleted] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setTimerCompleted(true);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   useEffect(() => {
     if (
+      timerCompleted &&
       !isLoading &&
       isLoggedIn &&
       user &&
       (!user.emailVerified || !user.email) &&
-      currentpath !== "/profile"
+      currentpath.includes("profile") === false
     ) {
       setShowPopup(true);
     } else {
       setShowPopup(false);
     }
-  }, [user, isLoggedIn, isLoading, currentpath]);
+  }, [user, isLoggedIn, isLoading, currentpath, timerCompleted]);
 
   const handleGoToProfile = () => {
     setShowPopup(false);
