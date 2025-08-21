@@ -51,12 +51,7 @@ export function UserImportModal({
 
       // Validate each user has required fields
       for (const user of parsedData) {
-        if (
-          !user.username ||
-          !user.email ||
-          !user.firstname ||
-          !user.lastname
-        ) {
+        if (!user.username || !user.firstname || !user.lastname) {
           throw new Error(t("userImportModal.userDataValidationError"));
         }
 

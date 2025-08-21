@@ -16,7 +16,9 @@ export default function InitQueryClient({
   });
   const currentpath = usePathname();
 
-  const showToast = currentpath.includes("login") || currentpath.includes("register");
+  const showToast = !(
+    currentpath.includes("login") || currentpath.includes("register")
+  );
 
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -37,8 +39,15 @@ export default function InitQueryClient({
       },
       mutations: {
         onError: (error: Error) => {
-          const errorTitle = error.message || (error as unknown as ValidationError).title || "An unexpected error occurred" || "An error occurred";
-          const errorDescription = (error as unknown as ValidationError).violations?.map((violation) => violation.message).join(", ") || "Please try again.";
+          const errorTitle =
+            error.message ||
+            (error as unknown as ValidationError).title ||
+            "An unexpected error occurred" ||
+            "An error occurred";
+          const errorDescription =
+            (error as unknown as ValidationError).violations
+              ?.map((violation) => violation.message)
+              .join(", ") || "Please try again.";
 
           toast({
             title: errorTitle,
