@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.userManagment.dto;
 
 import java.util.Set;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
@@ -32,6 +33,7 @@ public class UserCreationDTO {
 
     @NotNull(message = "Email cannot be null")
     @NoHtmlSanitize
+    @Email(regexp = ".+[@].+[\\\\.].+", message = "Invalid email format")
     private final String email;
 
     @NotNull(message = "Password cannot be null")

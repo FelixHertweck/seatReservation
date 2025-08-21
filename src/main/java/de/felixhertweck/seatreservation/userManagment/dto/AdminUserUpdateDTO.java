@@ -20,11 +20,14 @@
 package de.felixhertweck.seatreservation.userManagment.dto;
 
 import java.util.Set;
+import jakarta.validation.constraints.Email;
 
 import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
 
 public class AdminUserUpdateDTO {
-    @NoHtmlSanitize private final String email;
+    @NoHtmlSanitize
+    @Email(regexp = "^(|.+[@].+[\\\\.].+)$", message = "Invalid email format")
+    private final String email;
 
     private final String firstname;
 

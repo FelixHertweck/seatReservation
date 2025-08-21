@@ -2,7 +2,7 @@
 
 import type React from "react";
 import { CookiesProvider } from "react-cookie";
-import InitQueryClient from "@/app/initQueryClient";
+import InitQueryClient from "./initQueryClient";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { EmailVerificationPrompt } from "@/components/common/EmailVerificationPrompt";

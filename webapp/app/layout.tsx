@@ -28,36 +28,8 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-  ),
   alternates: {
     canonical: "/",
-  },
-  openGraph: {
-    type: "website",
-    locale: "en_US",
-    url: "/",
-    title: "SeatReservation - Event Seat Booking System",
-    description:
-      "Book seats for events easily with our modern seat reservation system. Secure, fast, and user-friendly event booking platform.",
-    siteName: "SeatReservation",
-    images: [
-      {
-        url: "/logo.png",
-        width: 1200,
-        height: 691,
-        alt: "SeatReservation Logo",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "SeatReservation - Event Seat Booking System",
-    description:
-      "Book seats for events easily with our modern seat reservation system. Secure, fast, and user-friendly event booking platform.",
-    images: ["/logo.png"],
-    creator: "@felixhertweck",
   },
   robots: {
     index: false,
