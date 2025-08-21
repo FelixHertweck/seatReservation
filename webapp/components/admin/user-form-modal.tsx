@@ -182,6 +182,17 @@ export function UserFormModal({
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="lastname" className="text-right">
+              {t("userFormModal.lastNameLabel")}
+            </Label>
+            <Input
+              id="lastname"
+              value={lastname}
+              onChange={(e) => setLastname(e.target.value)}
+              className="col-span-3"
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="email" className="text-right">
               {t("userFormModal.emailLabel")}
             </Label>

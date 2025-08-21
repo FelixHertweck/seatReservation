@@ -36,13 +36,16 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
 }
 
 function ToasterControlWrapper() {
-  const { toasterDisabled, disableToaster } = useToasterControl();
+  const { toasterDisabled, disableToaster, enableToaster } =
+    useToasterControl();
   const pathname = usePathname();
 
   useEffect(() => {
     clearAllToasts();
     if (pathname.endsWith("start")) {
       disableToaster();
+    } else {
+      enableToaster();
     }
   }, [pathname]);
 

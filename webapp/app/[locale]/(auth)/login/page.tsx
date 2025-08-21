@@ -69,7 +69,7 @@ export default function LoginPage() {
               variant="outline"
               className="w-full bg-transparent"
             >
-              {t("login.logout")}
+              {t("login.logoutButton")}
             </Button>
           </CardContent>
         </Card>

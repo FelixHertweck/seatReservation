@@ -2,6 +2,8 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "@/hooks/use-toast";
+import { useT } from "@/lib/i18n/hooks";
 import {
   getApiUsersMeOptions,
   postApiAuthLoginMutation,
@@ -11,6 +13,7 @@ import {
 import { RegisterRequestDto } from "@/api";
 
 export function useAuth() {
+  const t = useT();
   const params = useParams();
   const locale = params.locale as string;
 
@@ -29,6 +32,10 @@ export function useAuth() {
     onSuccess: async () => {
       await refetchUser();
       router.push(`/${locale}/events`);
+      toast({
+        title: t("login.success.title"),
+        description: t("login.success.description"),
+      });
     },
   });
 
@@ -42,6 +49,10 @@ export function useAuth() {
     onSuccess: async () => {
       await refetchUser();
       router.push(`/${locale}/events`);
+      toast({
+        title: t("register.success.title"),
+        description: t("register.success.description"),
+      });
     },
   });
 
@@ -52,6 +63,12 @@ export function useAuth() {
 
   const { mutateAsync: logoutMutation } = useMutation({
     ...postApiAuthLogoutMutation(),
+    onSuccess: async () => {
+      toast({
+        title: t("logout.success.title"),
+        description: t("logout.success.description"),
+      });
+    },
   });
 
   const logout = async () => {

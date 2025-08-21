@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Download } from "lucide-react";
 import { useAdmin } from "@/hooks/use-admin";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { customSerializer } from "@/lib/jsonBodySerializer";
 import { useT } from "@/lib/i18n/hooks";
 

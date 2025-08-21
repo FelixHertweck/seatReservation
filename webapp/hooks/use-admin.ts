@@ -1,6 +1,8 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "@/hooks/use-toast";
+import { useT } from "@/lib/i18n/hooks";
 import {
   getApiUsersAdminOptions,
   getApiUsersAdminQueryKey,
@@ -13,6 +15,7 @@ import {
 import type { AdminUserCreationDto, AdminUserUpdateDto, UserDto } from "@/api";
 
 export function useAdmin() {
+  const t = useT();
   const queryClient = useQueryClient();
 
   const { data: users, isLoading: userIsLoading } = useQuery(
@@ -31,6 +34,10 @@ export function useAdmin() {
           return oldData ? [...oldData, data] : [data];
         },
       );
+      toast({
+        title: t("admin.user.create.success.title"),
+        description: t("admin.user.create.success.description"),
+      });
     },
   });
 
@@ -43,6 +50,10 @@ export function useAdmin() {
           return oldData ? [...oldData, ...data] : [...data];
         },
       );
+      toast({
+        title: t("admin.user.import.success.title"),
+        description: t("admin.user.import.success.description"),
+      });
     },
   });
 
@@ -57,6 +68,10 @@ export function useAdmin() {
             : [data];
         },
       );
+      toast({
+        title: t("admin.user.update.success.title"),
+        description: t("admin.user.update.success.description"),
+      });
     },
   });
 
@@ -71,6 +86,10 @@ export function useAdmin() {
             : [];
         },
       );
+      toast({
+        title: t("admin.user.delete.success.title"),
+        description: t("admin.user.delete.success.description"),
+      });
     },
   });
 

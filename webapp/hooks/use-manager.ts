@@ -1,6 +1,8 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "@/hooks/use-toast";
+import { useT } from "@/lib/i18n/hooks";
 import type {
   DetailedEventResponseDto,
   EventRequestDto,
@@ -12,11 +14,10 @@ import type {
   SeatRequestDto,
   ReservationRequestDto,
   BlockSeatsRequestDto,
-  EventUserAllowancesCreateDto, // Import new create DTO
-  EventUserAllowanceUpdateDto, // Import new update DTO
-  UserDto,
+  EventUserAllowancesCreateDto,
+  EventUserAllowanceUpdateDto,
   ImportEventLocationDto,
-  ImportSeatDto, // Import UserDto for use in useManager return type
+  ImportSeatDto,
 } from "@/api";
 import {
   getApiManagerEventsOptions,
@@ -64,6 +65,8 @@ interface UseManagerReturn {
 }
 
 export function useManager(): UseManagerReturn {
+  const t = useT();
+
   const queryClient = useQueryClient();
 
   // User
@@ -89,6 +92,10 @@ export function useManager(): UseManagerReturn {
           return oldData ? [...oldData, data] : [data];
         },
       );
+      toast({
+        title: t("manager.event.create.success.title"),
+        description: t("manager.event.create.success.description"),
+      });
     },
   });
 
@@ -103,6 +110,10 @@ export function useManager(): UseManagerReturn {
             : [data];
         },
       );
+      toast({
+        title: t("manager.event.update.success.title"),
+        description: t("manager.event.update.success.description"),
+      });
     },
   });
 
@@ -117,6 +128,10 @@ export function useManager(): UseManagerReturn {
             : [];
         },
       );
+      toast({
+        title: t("manager.event.delete.success.title"),
+        description: t("manager.event.delete.success.description"),
+      });
     },
   });
 
@@ -134,6 +149,10 @@ export function useManager(): UseManagerReturn {
           return oldData ? [...oldData, data] : [data];
         },
       );
+      toast({
+        title: t("manager.location.create.success.title"),
+        description: t("manager.location.create.success.description"),
+      });
     },
   });
 
@@ -150,6 +169,10 @@ export function useManager(): UseManagerReturn {
             : [data];
         },
       );
+      toast({
+        title: t("manager.location.update.success.title"),
+        description: t("manager.location.update.success.description"),
+      });
     },
   });
 
@@ -164,6 +187,10 @@ export function useManager(): UseManagerReturn {
             : [];
         },
       );
+      toast({
+        title: t("manager.location.delete.success.title"),
+        description: t("manager.location.delete.success.description"),
+      });
     },
   });
 
@@ -176,6 +203,10 @@ export function useManager(): UseManagerReturn {
           return oldData ? [...oldData, data] : [data];
         },
       );
+      toast({
+        title: t("manager.location.importWithSeats.success.title"),
+        description: t("manager.location.importWithSeats.success.description"),
+      });
     },
   });
 
@@ -192,6 +223,10 @@ export function useManager(): UseManagerReturn {
             : [data];
         },
       );
+      toast({
+        title: t("manager.location.importSeats.success.title"),
+        description: t("manager.location.importSeats.success.description"),
+      });
     },
   });
 
@@ -210,6 +245,10 @@ export function useManager(): UseManagerReturn {
         },
       );
       eventsRefetch();
+      toast({
+        title: t("manager.seat.create.success.title"),
+        description: t("manager.seat.create.success.description"),
+      });
     },
   });
 
@@ -224,6 +263,10 @@ export function useManager(): UseManagerReturn {
             : [data];
         },
       );
+      toast({
+        title: t("manager.seat.update.success.title"),
+        description: t("manager.seat.update.success.description"),
+      });
     },
   });
 
@@ -238,6 +281,10 @@ export function useManager(): UseManagerReturn {
             : [];
         },
       );
+      toast({
+        title: t("manager.seat.delete.success.title"),
+        description: t("manager.seat.delete.success.description"),
+      });
     },
   });
 
@@ -256,6 +303,10 @@ export function useManager(): UseManagerReturn {
         },
       );
       eventsRefetch();
+      toast({
+        title: t("manager.reservation.create.success.title"),
+        description: t("manager.reservation.create.success.description"),
+      });
     },
   });
 
@@ -272,6 +323,10 @@ export function useManager(): UseManagerReturn {
             : [];
         },
       );
+      toast({
+        title: t("manager.reservation.delete.success.title"),
+        description: t("manager.reservation.delete.success.description"),
+      });
     },
   });
 
@@ -285,6 +340,10 @@ export function useManager(): UseManagerReturn {
         },
       );
       eventsRefetch();
+      toast({
+        title: t("manager.reservation.blockSeats.success.title"),
+        description: t("manager.reservation.blockSeats.success.description"),
+      });
     },
   });
 
@@ -305,6 +364,12 @@ export function useManager(): UseManagerReturn {
           return oldData ? [...oldData, ...data] : [...data];
         },
       );
+      toast({
+        title: t("manager.reservationAllowance.create.success.title"),
+        description: t(
+          "manager.reservationAllowance.create.success.description",
+        ),
+      });
     },
   });
 
@@ -321,6 +386,12 @@ export function useManager(): UseManagerReturn {
             : [data];
         },
       );
+      toast({
+        title: t("manager.reservationAllowance.update.success.title"),
+        description: t(
+          "manager.reservationAllowance.update.success.description",
+        ),
+      });
     },
   });
 
@@ -335,6 +406,12 @@ export function useManager(): UseManagerReturn {
             : [];
         },
       );
+      toast({
+        title: t("manager.reservationAllowance.delete.success.title"),
+        description: t(
+          "manager.reservationAllowance.delete.success.description",
+        ),
+      });
     },
   });
 

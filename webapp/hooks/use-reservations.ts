@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { toast } from "@/hooks/use-toast";
 import {
   getApiUserReservationsOptions,
   deleteApiUserReservationsByIdMutation,
@@ -15,9 +17,17 @@ export function useReservations() {
   });
 
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   const deleteMutation = useMutation({
     ...deleteApiUserReservationsByIdMutation(),
+    onSuccess: () => {
+      console.log("delete event");
+      toast({
+        title: t("reservation.delete.success.title"),
+        description: t("reservation.delete.success.description"),
+      });
+    },
   });
 
   const deleteReservation = async (id: bigint) => {

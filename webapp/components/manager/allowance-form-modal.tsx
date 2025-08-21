@@ -34,7 +34,7 @@ import {
 import { ChevronsUpDown, XCircle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { useT } from "@/lib/i18n/hooks";
 
 import type {

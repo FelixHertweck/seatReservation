@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "@/hooks/use-toast";
+import { useT } from "@/lib/i18n/hooks";
 import {
   getApiUserEventsOptions,
   postApiUserReservationsMutation,
@@ -26,6 +28,7 @@ interface UseEventsReturn {
 }
 
 export function useEvents(): UseEventsReturn {
+  const t = useT();
   const { data: events, isLoading: eventsIsLoading } = useQuery({
     ...getApiUserEventsOptions(),
   });
@@ -41,6 +44,10 @@ export function useEvents(): UseEventsReturn {
           return oldData ? [...oldData, ...data] : [...data];
         },
       );
+      toast({
+        title: t("reservation.create.success.title"),
+        description: t("reservation.create.success.description"),
+      });
     },
   });
 
