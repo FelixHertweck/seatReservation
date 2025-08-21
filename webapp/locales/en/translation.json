@@ -174,7 +174,7 @@
     "importingButton": "Importing...",
     "importDataButton": "Import Data",
     "usersDataArrayError": "Users data must be an array",
-    "userDataValidationError": "Each user must have username, password, firstName, lastName, email, and roles",
+    "userDataValidationError": "Each user must have username, password, firstname, lastname, and roles",
     "invalidRoleError": "Invalid role found. Available roles are: ADMIN, MANAGER, USER",
     "invalidJsonOrDataStructureError": "Invalid JSON format or data structure"
   },
