@@ -43,6 +43,7 @@ public class RegisterRequestDTO {
 
     @NotBlank(message = "Password must not be blank")
     @Size(min = 8, message = "Password must be at least 8 characters long")
+    @NoHtmlSanitize
     private String password;
 
     public String getUsername() {

@@ -21,11 +21,14 @@ package de.felixhertweck.seatreservation.security.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
+import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
+
 public class LoginRequestDTO {
     @NotBlank(message = "Username must not be blank")
     private String username;
 
     @NotBlank(message = "Password must not be blank")
+    @NoHtmlSanitize
     private String password;
 
     public String getUsername() {

@@ -33,7 +33,7 @@ public class AdminUserUpdateDTO {
 
     private final String lastname;
 
-    private final String password;
+    @NoHtmlSanitize private final String password;
 
     private final Set<String> tags;
 
