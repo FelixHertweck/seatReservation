@@ -54,7 +54,7 @@ const SeatComponent = React.memo(
       >
         <div
           className={cn(
-            "w-full h-full rounded-full transition-all duration-200 hover:scale-105 flex items-center justify-center text-white text-xs font-medium drop-shadow-sm",
+            "w-full h-full rounded-full transition-all duration-200 hover:scale-105 flex items-center justify-center text-white text-xs font-medium drop-shadow-xs",
             seatColor,
           )}
         >
@@ -312,19 +312,19 @@ export function SeatMap({
       <div className="absolute top-2 right-2 z-10 flex gap-2">
         <button
           onClick={zoomIn}
-          className="px-2 py-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-sm dark:text-white"
+          className="px-2 py-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded shadow-xs hover:bg-gray-50 dark:hover:bg-gray-700 text-sm dark:text-white"
         >
           +
         </button>
         <button
           onClick={zoomOut}
-          className="px-2 py-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-sm dark:text-white"
+          className="px-2 py-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded shadow-xs hover:bg-gray-50 dark:hover:bg-gray-700 text-sm dark:text-white"
         >
           -
         </button>
         <button
           onClick={resetView}
-          className="px-2 py-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-sm dark:text-white"
+          className="px-2 py-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded shadow-xs hover:bg-gray-50 dark:hover:bg-gray-700 text-sm dark:text-white"
         >
           {t("seatMap.resetButton")}
         </button>
