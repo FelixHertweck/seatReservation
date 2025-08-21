@@ -89,35 +89,35 @@ export function EventReservationModal({
         <div className="flex-1 flex flex-col animate-in slide-in-from-bottom duration-500 min-h-0">
           <div className="flex gap-4 text-sm">
             <div className="flex items-center gap-2 animate-in slide-in-from-left duration-300">
-              <div className="w-4 h-4 bg-green-500 rounded transition-all duration-300 hover:scale-110"></div>
+              <div className="size-4 bg-green-500 rounded transition-all duration-300 hover:scale-110"></div>
               <span>{t("eventReservationModal.available")}</span>
             </div>
             <div
               className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
               style={{ animationDelay: "100ms" }}
             >
-              <div className="w-4 h-4 bg-blue-500 rounded transition-all duration-300 hover:scale-110"></div>
+              <div className="size-4 bg-blue-500 rounded transition-all duration-300 hover:scale-110"></div>
               <span>{t("eventReservationModal.selected")}</span>
             </div>
             <div
               className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
               style={{ animationDelay: "150ms" }}
             >
-              <div className="w-4 h-4 bg-yellow-500 rounded transition-all duration-300 hover:scale-110"></div>
+              <div className="size-4 bg-yellow-500 rounded transition-all duration-300 hover:scale-110"></div>
               <span>{t("eventReservationModal.myReserved")}</span>
             </div>
             <div
               className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
               style={{ animationDelay: "200ms" }}
             >
-              <div className="w-4 h-4 bg-red-500 rounded transition-all duration-300 hover:scale-110"></div>
+              <div className="size-4 bg-red-500 rounded transition-all duration-300 hover:scale-110"></div>
               <span>{t("eventReservationModal.reserved")}</span>
             </div>
             <div
               className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
               style={{ animationDelay: "300ms" }}
             >
-              <div className="w-4 h-4 bg-gray-500 rounded transition-all duration-300 hover:scale-110"></div>
+              <div className="size-4 bg-gray-500 rounded transition-all duration-300 hover:scale-110"></div>
               <span>{t("eventReservationModal.blocked")}</span>
             </div>
           </div>
