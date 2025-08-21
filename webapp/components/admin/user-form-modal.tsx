@@ -38,7 +38,7 @@ export function UserFormModal({
   const [firstname, setFirstname] = useState(user?.firstname || "");
   const [lastname, setLastname] = useState(user?.lastname || "");
   const [email, setEmail] = useState(user?.email || "");
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState(isCreating ? "" : "••••••••");
   const [emailVerified, setEmailVerified] = useState(
     user?.emailVerified || false,
   );
@@ -48,7 +48,8 @@ export function UserFormModal({
   const [tags, setTags] = useState<string[]>(user?.tags || []);
   const [newTag, setNewTag] = useState("");
 
-  const isPasswordTooShort = password.length > 0 && password.length < 8;
+  const isPasswordTooShort =
+    password.length > 0 && password.length < 8 && password !== "••••••••";
 
   useEffect(() => {
     if (user) {
@@ -59,6 +60,7 @@ export function UserFormModal({
       setEmailVerified(user.emailVerified || false);
       setSelectedRoles(user.roles || []);
       setTags(user.tags || []);
+      setPassword(isCreating ? "" : "••••••••");
     } else {
       setUsername("");
       setFirstname("");
@@ -69,7 +71,7 @@ export function UserFormModal({
       setSelectedRoles([]);
       setTags([]);
     }
-  }, [user]);
+  }, [user, isCreating]);
 
   const handleRoleChange = (role: string, checked: boolean) => {
     setSelectedRoles((prev) =>
@@ -89,27 +91,15 @@ export function UserFormModal({
   };
 
   const handleSubmit = () => {
-    if (isCreating) {
-      const userData: AdminUserCreationDto = {
-        username,
-        password,
-        firstname,
-        lastname,
-        email,
-        roles: selectedRoles,
-        tags,
-      };
-      onSubmit(userData);
-    } else {
-      const userData: AdminUserUpdateDto = {
-        firstname,
-        lastname,
-        email,
-        roles: selectedRoles,
-        tags,
-      };
-      onSubmit(userData);
-    }
+    const userData: AdminUserUpdateDto = {
+      firstname,
+      lastname,
+      password: password === "••••••••" ? undefined : password,
+      email,
+      roles: selectedRoles,
+      tags,
+    };
+    onSubmit(userData);
   };
 
   return (
@@ -135,27 +125,40 @@ export function UserFormModal({
               disabled={!isCreating} // Username typically not editable after creation
             />
           </div>
-          {isCreating && (
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="password" className="text-right">
-                {t("userFormModal.passwordLabel")}
-              </Label>
-              <div className="col-span-3">
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                {isPasswordTooShort && (
-                  <p className="text-sm text-destructive mt-1">
-                    {t("userFormModal.passwordTooShort")}
-                  </p>
-                )}
-              </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="password" className="text-right">
+              {t("userFormModal.passwordLabel")}
+            </Label>
+            <div className="col-span-3">
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={
+                  isCreating
+                    ? t("userFormModal.passwordPlaceholder")
+                    : t("userFormModal.passwordUpdatePlaceholder")
+                }
+                required={isCreating}
+                onFocus={() => {
+                  if (!isCreating && password === "••••••••") {
+                    setPassword("");
+                  }
+                }}
+              />
+              {isPasswordTooShort && (
+                <p className="text-sm text-destructive mt-1">
+                  {t("userFormModal.passwordTooShort")}
+                </p>
+              )}
+              {!isCreating && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t("userFormModal.passwordUpdateHint")}
+                </p>
+              )}
             </div>
-          )}
+          </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="firstname" className="text-right">
               {t("userFormModal.firstNameLabel")}
