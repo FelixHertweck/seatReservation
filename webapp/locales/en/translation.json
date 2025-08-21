@@ -98,22 +98,14 @@
     "saveChangesButton": "Save Changes"
   },
   "startPage": {
-    "eventManagerTitle": "Event Manager",
+    "eventManagerTitle": "Seat Reservation System",
     "signInButton": "Sign In",
     "getStartedButton": "Get Started",
-    "heroTitle": "Event Management",
+    "heroTitle": "SeatReservation",
     "heroDescription": "Access your events, reservations, and administrative tools. Sign in or register to get started.",
-    "footerDescription": "The most comprehensive event management platform for modern organizations.",
-    "productTitle": "Product",
-    "eventsLink": "Events",
-    "reservationsLink": "Reservations",
-    "managementLink": "Management",
-    "administrationLink": "Administration",
-    "resourcesTitle": "Resources",
-    "aboutLink": "About",
-    "contactLink": "Contact",
+    "footerDescription": "The most comprehensive seat reservation platform for modern organizations.",
     "githubProjectLink": "GitHub Project",
-    "copyright": "© 2025 Event Manager. All rights reserved."
+    "copyright": "© 2025 SeatReservation. All rights reserved."
   },
   "userExport": {
     "noUsersToExportTitle": "No users to export",
