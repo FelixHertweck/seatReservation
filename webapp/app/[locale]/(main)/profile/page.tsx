@@ -28,6 +28,10 @@ export default function ProfilePage() {
   const [originalEmail, setOriginalEmail] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPasswordSection, setShowPasswordSection] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -50,6 +54,12 @@ export default function ProfilePage() {
     setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
+  const isPasswordValid = newPassword.length >= 8;
+  const doPasswordsMatch = newPassword === confirmPassword;
+  const isPasswordUpdateValid = showPasswordSection
+    ? currentPassword.length > 0 && isPasswordValid && doPasswordsMatch
+    : true;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isAuthenticated) {
@@ -61,11 +71,21 @@ export default function ProfilePage() {
       return;
     }
 
+    if (showPasswordSection && !isPasswordUpdateValid) {
+      toast({
+        title: t("profilePage.passwordValidationErrorTitle"),
+        description: t("profilePage.passwordValidationErrorDescription"),
+        variant: "destructive",
+      });
+      return;
+    }
+
     const updatedProfile: UserProfileUpdateDto = {
       firstname,
       lastname,
       email,
       tags,
+      ...(showPasswordSection && newPassword ? { password: newPassword } : {}),
     };
 
     await updateProfile(updatedProfile);
@@ -74,6 +94,13 @@ export default function ProfilePage() {
       title: t("profilePage.profileUpdatedTitle"),
       description: t("profilePage.profileUpdatedDescription"),
     });
+
+    if (showPasswordSection) {
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setShowPasswordSection(false);
+    }
 
     if (email !== originalEmail) {
       toast({
@@ -168,6 +195,83 @@ export default function ProfilePage() {
                 </div>
               )}
             </div>
+
+            <div className="border-t pt-4">
+              <div className="flex items-center justify-between mb-4">
+                <Label className="text-base font-medium">
+                  {t("profilePage.passwordSectionTitle")}
+                </Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setShowPasswordSection(!showPasswordSection);
+                    if (showPasswordSection) {
+                      setCurrentPassword("");
+                      setNewPassword("");
+                      setConfirmPassword("");
+                    }
+                  }}
+                >
+                  {showPasswordSection
+                    ? t("profilePage.cancelPasswordUpdate")
+                    : t("profilePage.changePassword")}
+                </Button>
+              </div>
+
+              {showPasswordSection && (
+                <div className="space-y-4 bg-muted/50 p-4 rounded-lg">
+                  <div>
+                    <Label htmlFor="currentPassword">
+                      {t("profilePage.currentPasswordLabel")}
+                    </Label>
+                    <Input
+                      id="currentPassword"
+                      type="password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      placeholder={t("profilePage.currentPasswordPlaceholder")}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="newPassword">
+                      {t("profilePage.newPasswordLabel")}
+                    </Label>
+                    <Input
+                      id="newPassword"
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder={t("profilePage.newPasswordPlaceholder")}
+                    />
+                    {newPassword.length > 0 && !isPasswordValid && (
+                      <p className="text-sm text-destructive mt-1">
+                        {t("profilePage.passwordTooShort")}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <Label htmlFor="confirmPassword">
+                      {t("profilePage.confirmPasswordLabel")}
+                    </Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder={t("profilePage.confirmPasswordPlaceholder")}
+                    />
+                    {confirmPassword.length > 0 && !doPasswordsMatch && (
+                      <p className="text-sm text-destructive mt-1">
+                        {t("profilePage.passwordsDoNotMatch")}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div>
               <Label htmlFor="tags">{t("profilePage.tagsLabel")}</Label>
               <div className="flex flex-wrap gap-2 mb-2">
