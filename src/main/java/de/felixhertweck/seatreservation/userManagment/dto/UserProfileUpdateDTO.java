@@ -35,6 +35,7 @@ public class UserProfileUpdateDTO {
     private final String lastname;
 
     @Size(min = 8, message = "Password must be at least 8 characters long")
+    @NoHtmlSanitize
     private final String password;
 
     private final Set<String> tags;

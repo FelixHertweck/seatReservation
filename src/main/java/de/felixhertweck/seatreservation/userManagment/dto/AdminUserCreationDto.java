@@ -35,6 +35,7 @@ public class AdminUserCreationDto {
     private final String email;
 
     @NotNull(message = "Password cannot be null")
+    @NoHtmlSanitize
     private final String password;
 
     @NotNull(message = "Firstname cannot be null")
