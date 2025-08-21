@@ -209,6 +209,9 @@ public class EmailService {
         htmlContent =
                 htmlContent.replace("{userName}", user.getFirstname() + " " + user.getLastname());
         htmlContent = htmlContent.replace("{eventName}", eventName != null ? eventName : "");
+        htmlContent = htmlContent.replace("{eventLocation}", event.getEventLocation().getName());
+        htmlContent = htmlContent.replace("{eventStartTime}", event.getStartTime().toString());
+        htmlContent = htmlContent.replace("{eventEndTime}", event.getEndTime().toString());
         htmlContent = htmlContent.replace("{seatList}", seatListHtml.toString());
         htmlContent = htmlContent.replace("{seatMap}", svgContent);
         htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
