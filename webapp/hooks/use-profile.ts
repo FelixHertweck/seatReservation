@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { toast } from "@/hooks/use-toast";
 import {
   getApiUsersMeOptions,
   putApiUsersMeMutation,
@@ -12,6 +14,7 @@ import type { UserDto, UserProfileUpdateDto } from "@/api";
 
 export function useProfile() {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   const { data: user, isLoading } = useQuery({
     ...getApiUsersMeOptions(),
@@ -22,6 +25,10 @@ export function useProfile() {
     onSuccess: async (data) => {
       queryClient.setQueriesData({ queryKey: getApiUsersMeQueryKey() }, () => {
         return data;
+      });
+      toast({
+        title: t("profile.update.success.title"),
+        description: t("profile.update.success.description"),
       });
     },
   });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -17,6 +17,7 @@ import { useT } from "@/lib/i18n/hooks";
 interface EventReservationModalProps {
   event: EventResponseDto;
   userReservations: ReservationResponseDto[];
+  initialSeatId: bigint;
   onClose: () => void;
   onReserve: (
     eventId: bigint,
@@ -27,6 +28,7 @@ interface EventReservationModalProps {
 export function EventReservationModal({
   event,
   userReservations,
+  initialSeatId,
   onClose,
   onReserve,
 }: EventReservationModalProps) {
@@ -36,6 +38,15 @@ export function EventReservationModal({
   const [isLoading, setIsLoading] = useState(false);
 
   const seats: SeatDto[] = event.location?.seats ?? [];
+
+  useEffect(() => {
+    if (initialSeatId) {
+      const initialSeat = seats.find((seat) => seat.id === initialSeatId);
+      if (initialSeat && !initialSeat.status) {
+        setSelectedSeats([initialSeat]);
+      }
+    }
+  }, [initialSeatId, seats]);
 
   const userReservedSeats = userReservations
     .filter((reservation) => reservation.eventId === event.id)
@@ -74,7 +85,7 @@ export function EventReservationModal({
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] h-[85vh] flex flex-col animate-in fade-in zoom-in duration-300">
+      <DialogContent className="w-[95vw] max-w-none max-h-[90vh] h-[85vh] flex flex-col animate-in fade-in zoom-in duration-300">
         <DialogHeader className="animate-in slide-in-from-top duration-300">
           <DialogTitle className="text-xl font-bold">
             {t("eventReservationModal.title", { eventName: event.name })}
@@ -89,35 +100,35 @@ export function EventReservationModal({
         <div className="flex-1 flex flex-col animate-in slide-in-from-bottom duration-500 min-h-0">
           <div className="flex gap-4 text-sm">
             <div className="flex items-center gap-2 animate-in slide-in-from-left duration-300">
-              <div className="size-4 bg-green-500 rounded transition-all duration-300 hover:scale-110"></div>
+              <div className="w-4 h-4 bg-green-500 rounded transition-all duration-300 hover:scale-110"></div>
               <span>{t("eventReservationModal.available")}</span>
             </div>
             <div
               className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
               style={{ animationDelay: "100ms" }}
             >
-              <div className="size-4 bg-blue-500 rounded transition-all duration-300 hover:scale-110"></div>
+              <div className="w-4 h-4 bg-blue-500 rounded transition-all duration-300 hover:scale-110"></div>
               <span>{t("eventReservationModal.selected")}</span>
             </div>
             <div
               className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
               style={{ animationDelay: "150ms" }}
             >
-              <div className="size-4 bg-yellow-500 rounded transition-all duration-300 hover:scale-110"></div>
+              <div className="w-4 h-4 bg-yellow-500 rounded transition-all duration-300 hover:scale-110"></div>
               <span>{t("eventReservationModal.myReserved")}</span>
             </div>
             <div
               className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
               style={{ animationDelay: "200ms" }}
             >
-              <div className="size-4 bg-red-500 rounded transition-all duration-300 hover:scale-110"></div>
+              <div className="w-4 h-4 bg-red-500 rounded transition-all duration-300 hover:scale-110"></div>
               <span>{t("eventReservationModal.reserved")}</span>
             </div>
             <div
               className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
               style={{ animationDelay: "300ms" }}
             >
-              <div className="size-4 bg-gray-500 rounded transition-all duration-300 hover:scale-110"></div>
+              <div className="w-4 h-4 bg-gray-500 rounded transition-all duration-300 hover:scale-110"></div>
               <span>{t("eventReservationModal.blocked")}</span>
             </div>
           </div>

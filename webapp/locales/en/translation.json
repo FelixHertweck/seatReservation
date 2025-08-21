@@ -10,10 +10,20 @@
     "backToHome": "Back to home"
   },
   "login": {
+    "logoutButton": "Logout",
+    "success": {
+      "title": "Login successful",
+      "description": "You have been successfully logged in."
+    },
     "welcomeBack": "Welcome back!",
     "alreadyLoggedIn": "You are already logged in.",
     "continueWithUser": "Continue with logged in user ({{username}})",
-    "logout": "Logout",
+    "logout": {
+      "success": {
+        "title": "Logout successful",
+        "description": "You have been successfully logged out."
+      }
+    },
     "signIn": "Sign In",
     "enterCredentials": "Enter your credentials to access your account",
     "username": "Username",
@@ -26,6 +36,10 @@
     "register": "Register"
   },
   "register": {
+    "success": {
+      "title": "Registration successful",
+      "description": "Your account has been successfully created."
+    },
     "createAccountTitle": "Create account",
     "enterInfo": "Enter your information to create your account",
     "firstName": "First name",
@@ -52,6 +66,34 @@
     "userManagementTab": "User Management",
     "exportDataTab": "Export Data"
   },
+  "admin": {
+    "user": {
+      "create": {
+        "success": {
+          "title": "User Created",
+          "description": "The user has been successfully created."
+        }
+      },
+      "import": {
+        "success": {
+          "title": "Users Imported",
+          "description": "The users have been successfully imported."
+        }
+      },
+      "update": {
+        "success": {
+          "title": "User Updated",
+          "description": "The user has been successfully updated."
+        }
+      },
+      "delete": {
+        "success": {
+          "title": "User Deleted",
+          "description": "The user has been successfully deleted."
+        }
+      }
+    }
+  },
   "eventsPage": {
     "title": "Events & Reservations",
     "description": "Browse events and manage your reservations",
@@ -74,7 +116,130 @@
     "reservationsTab": "Reservations",
     "allowancesTab": "Allowances"
   },
+  "manager": {
+    "event": {
+      "create": {
+        "success": {
+          "title": "Event Created",
+          "description": "The event has been successfully created."
+        }
+      },
+      "update": {
+        "success": {
+          "title": "Event Updated",
+          "description": "The event has been successfully updated."
+        }
+      },
+      "delete": {
+        "success": {
+          "title": "Event Deleted",
+          "description": "The event has been successfully deleted."
+        }
+      }
+    },
+    "location": {
+      "create": {
+        "success": {
+          "title": "Location Created",
+          "description": "The location has been successfully created."
+        }
+      },
+      "update": {
+        "success": {
+          "title": "Location Updated",
+          "description": "The location has been successfully updated."
+        }
+      },
+      "delete": {
+        "success": {
+          "title": "Location Deleted",
+          "description": "The location has been successfully deleted."
+        }
+      },
+      "importWithSeats": {
+        "success": {
+          "title": "Location with Seats Imported",
+          "description": "The location and its seats have been successfully imported."
+        }
+      },
+      "importSeats": {
+        "success": {
+          "title": "Seats Imported",
+          "description": "The seats have been successfully imported."
+        }
+      }
+    },
+    "seat": {
+      "create": {
+        "success": {
+          "title": "Seat Created",
+          "description": "The seat has been successfully created."
+        }
+      },
+      "update": {
+        "success": {
+          "title": "Seat Updated",
+          "description": "The seat has been successfully updated."
+        }
+      },
+      "delete": {
+        "success": {
+          "title": "Seat Deleted",
+          "description": "The seat has been successfully deleted."
+        }
+      }
+    },
+    "reservation": {
+      "create": {
+        "success": {
+          "title": "Reservation Created",
+          "description": "The reservation has been successfully created."
+        }
+      },
+      "delete": {
+        "success": {
+          "title": "Reservation Deleted",
+          "description": "The reservation has been successfully deleted."
+        }
+      },
+      "blockSeats": {
+        "success": {
+          "title": "Seats Blocked",
+          "description": "The selected seats have been successfully blocked."
+        }
+      }
+    },
+    "reservationAllowance": {
+      "create": {
+        "success": {
+          "title": "Allowance Created",
+          "description": "The reservation allowance has been successfully created."
+        }
+      },
+      "update": {
+        "success": {
+          "title": "Allowance Updated",
+          "description": "The reservation allowance has been successfully updated."
+        }
+      },
+      "delete": {
+        "success": {
+          "title": "Allowance Deleted",
+          "description": "The reservation allowance has been successfully deleted."
+        }
+      }
+    }
+  },
+  "manager.reservationAllowance.create.success.description": "The reservation allowance has been successfully created.",
+  "manager.reservationAllowance.update.success.description": "The reservation allowance has been successfully updated.",
+  "manager.reservationAllowance.delete.success.description": "The reservation allowance has been successfully deleted.",
   "profilePage": {
+    "update": {
+      "success": {
+        "title": "Profile Updated",
+        "description": "Your profile has been successfully updated."
+      }
+    },
     "authRequiredTitle": "Authentication Required",
     "authRequiredDescription": "Please log in to update your profile.",
     "profileUpdatedTitle": "Profile Updated",
@@ -95,7 +260,16 @@
     "tagsLabel": "Tags",
     "addTagPlaceholder": "Add new tag",
     "addButton": "Add",
-    "saveChangesButton": "Save Changes"
+    "saveChangesButton": "Save Changes",
+    "passwordSectionTitle": "Change Password",
+    "changePassword": "Change Password",
+    "cancelPasswordUpdate": "Cancel",
+    "newPasswordLabel": "New Password",
+    "newPasswordPlaceholder": "Enter your new password",
+    "confirmPasswordLabel": "Confirm Password",
+    "confirmPasswordPlaceholder": "Confirm your new password",
+    "passwordTooShort": "Password must be at least 8 characters long",
+    "passwordsDoNotMatch": "Passwords do not match"
   },
   "startPage": {
     "eventManagerTitle": "Seat Reservation System",
@@ -221,6 +395,20 @@
     "cancelButton": "Cancel",
     "reservingButton": "Reserving...",
     "reserveSeatsButton": "Reserve {{count}} Seat(s)"
+  },
+  "reservation": {
+    "delete": {
+      "success": {
+        "title": "Reservation Deleted",
+        "description": "Your reservation has been successfully deleted."
+      }
+    },
+    "create": {
+      "success": {
+        "title": "Reservation Created",
+        "description": "Your reservation has been successfully created."
+      }
+    }
   },
   "reservationCard": {
     "eventReservationTitle": "Event Reservation",

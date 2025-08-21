@@ -28,7 +28,6 @@ export default function ProfilePage() {
   const [originalEmail, setOriginalEmail] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
-  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPasswordSection, setShowPasswordSection] = useState(false);
@@ -57,7 +56,7 @@ export default function ProfilePage() {
   const isPasswordValid = newPassword.length >= 8;
   const doPasswordsMatch = newPassword === confirmPassword;
   const isPasswordUpdateValid = showPasswordSection
-    ? currentPassword.length > 0 && isPasswordValid && doPasswordsMatch
+    ? isPasswordValid && doPasswordsMatch
     : true;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -96,7 +95,6 @@ export default function ProfilePage() {
     });
 
     if (showPasswordSection) {
-      setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
       setShowPasswordSection(false);
@@ -208,7 +206,6 @@ export default function ProfilePage() {
                   onClick={() => {
                     setShowPasswordSection(!showPasswordSection);
                     if (showPasswordSection) {
-                      setCurrentPassword("");
                       setNewPassword("");
                       setConfirmPassword("");
                     }
@@ -223,19 +220,7 @@ export default function ProfilePage() {
               {showPasswordSection && (
                 <div className="space-y-4 bg-muted/50 p-4 rounded-lg">
                   <div>
-                    <Label htmlFor="currentPassword">
-                      {t("profilePage.currentPasswordLabel")}
-                    </Label>
-                    <Input
-                      id="currentPassword"
-                      type="password"
-                      value={currentPassword}
-                      onChange={(e) => setCurrentPassword(e.target.value)}
-                      placeholder={t("profilePage.currentPasswordPlaceholder")}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="newPassword">
+                    <Label htmlFor="newPassword" className="pb-2">
                       {t("profilePage.newPasswordLabel")}
                     </Label>
                     <Input
@@ -252,7 +237,7 @@ export default function ProfilePage() {
                     )}
                   </div>
                   <div>
-                    <Label htmlFor="confirmPassword">
+                    <Label htmlFor="confirmPassword" className="pb-2">
                       {t("profilePage.confirmPasswordLabel")}
                     </Label>
                     <Input
@@ -273,7 +258,9 @@ export default function ProfilePage() {
             </div>
 
             <div>
-              <Label htmlFor="tags">{t("profilePage.tagsLabel")}</Label>
+              <Label htmlFor="tags" className="pb-2">
+                {t("profilePage.tagsLabel")}
+              </Label>
               <div className="flex flex-wrap gap-2 mb-2">
                 {tags.map((tag) => (
                   <Badge

@@ -248,6 +248,7 @@ export default function EventsPage() {
         <EventReservationModal
           event={selectedEvent}
           userReservations={reservations}
+          initialSeatId={selectedReservation?.seat?.id || BigInt(0)}
           onClose={() => setSelectedEvent(null)}
           onReserve={createReservation}
         />

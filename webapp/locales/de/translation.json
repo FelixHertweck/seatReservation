@@ -10,10 +10,20 @@
     "backToHome": "Zur Startseite"
   },
   "login": {
+    "logoutButton": "Abmelden",
+    "success": {
+      "title": "Anmeldung erfolgreich",
+      "description": "Sie wurden erfolgreich angemeldet."
+    },
     "welcomeBack": "Willkommen zurück!",
     "alreadyLoggedIn": "Sie sind bereits angemeldet.",
     "continueWithUser": "Mit angemeldetem Benutzer fortfahren ({{username}})",
-    "logout": "Abmelden",
+    "logout": {
+      "success": {
+        "title": "Abmeldung erfolgreich",
+        "description": "Sie wurden erfolgreich abgemeldet."
+      }
+    },
     "signIn": "Anmelden",
     "enterCredentials": "Geben Sie Ihre Anmeldedaten ein, um auf Ihr Konto zuzugreifen",
     "username": "Benutzername",
@@ -26,6 +36,10 @@
     "register": "Registrieren"
   },
   "register": {
+    "success": {
+      "title": "Registrierung erfolgreich",
+      "description": "Ihr Konto wurde erfolgreich erstellt."
+    },
     "createAccountTitle": "Konto erstellen",
     "enterInfo": "Geben Sie Ihre Informationen ein, um Ihr Konto zu erstellen",
     "firstName": "Vorname",
@@ -52,6 +66,34 @@
     "userManagementTab": "Benutzerverwaltung",
     "exportDataTab": "Daten exportieren"
   },
+  "admin": {
+    "user": {
+      "create": {
+        "success": {
+          "title": "Benutzer erstellt",
+          "description": "Der Benutzer wurde erfolgreich erstellt."
+        }
+      },
+      "import": {
+        "success": {
+          "title": "Benutzer importiert",
+          "description": "Die Benutzer wurden erfolgreich importiert."
+        }
+      },
+      "update": {
+        "success": {
+          "title": "Benutzer aktualisiert",
+          "description": "Der Benutzer wurde erfolgreich aktualisiert."
+        }
+      },
+      "delete": {
+        "success": {
+          "title": "Benutzer gelöscht",
+          "description": "Der Benutzer wurde erfolgreich gelöscht."
+        }
+      }
+    }
+  },
   "eventsPage": {
     "title": "Veranstaltungen & Reservierungen",
     "description": "Veranstaltungen durchsuchen und Ihre Reservierungen verwalten",
@@ -74,7 +116,130 @@
     "reservationsTab": "Reservierungen",
     "allowancesTab": "Kontingente"
   },
+  "manager": {
+    "event": {
+      "create": {
+        "success": {
+          "title": "Veranstaltung erstellt",
+          "description": "Die Veranstaltung wurde erfolgreich erstellt."
+        }
+      },
+      "update": {
+        "success": {
+          "title": "Veranstaltung aktualisiert",
+          "description": "Die Veranstaltung wurde erfolgreich aktualisiert."
+        }
+      },
+      "delete": {
+        "success": {
+          "title": "Veranstaltung gelöscht",
+          "description": "Die Veranstaltung wurde erfolgreich gelöscht."
+        }
+      }
+    },
+    "location": {
+      "create": {
+        "success": {
+          "title": "Standort erstellt",
+          "description": "Der Standort wurde erfolgreich erstellt."
+        }
+      },
+      "update": {
+        "success": {
+          "title": "Standort aktualisiert",
+          "description": "Der Standort wurde erfolgreich aktualisiert."
+        }
+      },
+      "delete": {
+        "success": {
+          "title": "Standort gelöscht",
+          "description": "Der Standort wurde erfolgreich gelöscht."
+        }
+      },
+      "importWithSeats": {
+        "success": {
+          "title": "Standort mit Plätzen importiert",
+          "description": "Der Standort und die zugehörigen Plätze wurden erfolgreich importiert."
+        }
+      },
+      "importSeats": {
+        "success": {
+          "title": "Plätze importiert",
+          "description": "Die Plätze wurden erfolgreich importiert."
+        }
+      }
+    },
+    "seat": {
+      "create": {
+        "success": {
+          "title": "Platz erstellt",
+          "description": "Der Platz wurde erfolgreich erstellt."
+        }
+      },
+      "update": {
+        "success": {
+          "title": "Platz aktualisiert",
+          "description": "Der Platz wurde erfolgreich aktualisiert."
+        }
+      },
+      "delete": {
+        "success": {
+          "title": "Platz gelöscht",
+          "description": "Der Platz wurde erfolgreich gelöscht."
+        }
+      }
+    },
+    "reservation": {
+      "create": {
+        "success": {
+          "title": "Reservierung erstellt",
+          "description": "Die Reservierung wurde erfolgreich erstellt."
+        }
+      },
+      "delete": {
+        "success": {
+          "title": "Reservierung gelöscht",
+          "description": "Die Reservierung wurde erfolgreich gelöscht."
+        }
+      },
+      "blockSeats": {
+        "success": {
+          "title": "Plätze blockiert",
+          "description": "Die ausgewählten Plätze wurden erfolgreich blockiert."
+        }
+      }
+    },
+    "reservationAllowance": {
+      "create": {
+        "success": {
+          "title": "Kontingent erstellt",
+          "description": "Das Reservierungskontingent wurde erfolgreich erstellt."
+        }
+      },
+      "update": {
+        "success": {
+          "title": "Kontingent aktualisiert",
+          "description": "Das Reservierungskontingent wurde erfolgreich aktualisiert."
+        }
+      },
+      "delete": {
+        "success": {
+          "title": "Kontingent gelöscht",
+          "description": "Das Reservierungskontingent wurde erfolgreich gelöscht."
+        }
+      }
+    }
+  },
+  "manager.reservationAllowance.create.success.description": "Das Reservierungskontingent wurde erfolgreich erstellt.",
+  "manager.reservationAllowance.update.success.description": "Das Reservierungskontingent wurde erfolgreich aktualisiert.",
+  "manager.reservationAllowance.delete.success.description": "Das Reservierungskontingent wurde erfolgreich gelöscht.",
   "profilePage": {
+    "update": {
+      "success": {
+        "title": "Profil aktualisiert",
+        "description": "Ihr Profil wurde erfolgreich aktualisiert."
+      }
+    },
     "authRequiredTitle": "Authentifizierung erforderlich",
     "authRequiredDescription": "Bitte melden Sie sich an, um Ihr Profil zu aktualisieren.",
     "profileUpdatedTitle": "Profil aktualisiert",
@@ -95,7 +260,16 @@
     "tagsLabel": "Tags",
     "addTagPlaceholder": "Neuen Tag hinzufügen",
     "addButton": "Hinzufügen",
-    "saveChangesButton": "Änderungen speichern"
+    "saveChangesButton": "Änderungen speichern",
+    "passwordSectionTitle": "Passwort ändern",
+    "changePassword": "Passwort ändern",
+    "cancelPasswordUpdate": "Abbrechen",
+    "newPasswordLabel": "Neues Passwort",
+    "newPasswordPlaceholder": "Geben Sie Ihr neues Passwort ein",
+    "confirmPasswordLabel": "Passwort bestätigen",
+    "confirmPasswordPlaceholder": "Bestätigen Sie Ihr neues Passwort",
+    "passwordTooShort": "Passwort muss mindestens 8 Zeichen lang sein",
+    "passwordsDoNotMatch": "Die Passwörter stimmen nicht überein"
   },
   "startPage": {
     "eventManagerTitle": "Sitzplatz Reservierung",
@@ -221,6 +395,20 @@
     "cancelButton": "Abbrechen",
     "reservingButton": "Reserviere...",
     "reserveSeatsButton": "Reserviere {{count}} Platz/Plätze"
+  },
+  "reservation": {
+    "delete": {
+      "success": {
+        "title": "Reservierung gelöscht",
+        "description": "Ihre Reservierung wurde erfolgreich gelöscht."
+      }
+    },
+    "create": {
+      "success": {
+        "title": "Reservierung erstellt",
+        "description": "Ihre Reservierung wurde erfolgreich erstellt."
+      }
+    }
   },
   "reservationCard": {
     "eventReservationTitle": "Event-Reservierung",
