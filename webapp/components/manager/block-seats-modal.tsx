@@ -133,28 +133,28 @@ export function BlockSeatsModal({
 
           <div className="flex gap-4 text-sm">
             <div className="flex items-center gap-2 animate-in slide-in-from-left duration-300">
-              <div className="size-4 bg-green-500 dark:bg-green-400 rounded transition-all duration-300 hover:scale-110"></div>
+              <div className="w-4 h-4 bg-green-500 dark:bg-green-400 rounded transition-all duration-300 hover:scale-110"></div>
               <span>{t("blockSeatsModal.available")}</span>
             </div>
             <div
               className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
               style={{ animationDelay: "100ms" }}
             >
-              <div className="size-4 bg-blue-500 dark:bg-blue-400 rounded transition-all duration-300 hover:scale-110"></div>
+              <div className="w-4 h-4 bg-blue-500 dark:bg-blue-400 rounded transition-all duration-300 hover:scale-110"></div>
               <span>{t("blockSeatsModal.selectedToBlock")}</span>
             </div>
             <div
               className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
               style={{ animationDelay: "200ms" }}
             >
-              <div className="size-4 bg-red-500 dark:bg-red-400 rounded transition-all duration-300 hover:scale-110"></div>
+              <div className="w-4 h-4 bg-red-500 dark:bg-red-400 rounded transition-all duration-300 hover:scale-110"></div>
               <span>{t("blockSeatsModal.reserved")}</span>
             </div>
             <div
               className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
               style={{ animationDelay: "300ms" }}
             >
-              <div className="size-4 bg-gray-500 dark:bg-gray-400 rounded transition-all duration-300 hover:scale-110"></div>
+              <div className="w-4 h-4 bg-gray-500 dark:bg-gray-400 rounded transition-all duration-300 hover:scale-110"></div>
               <span>{t("blockSeatsModal.alreadyBlocked")}</span>
             </div>
           </div>

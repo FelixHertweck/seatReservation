@@ -156,7 +156,7 @@ export function AppSidebar() {
   return (
     <Sidebar
       collapsible="offcanvas"
-      className="border-r bg-linear-to-b from-sidebar-background to-sidebar-background/80 backdrop-blur-xs"
+      className="border-r bg-gradient-to-b from-sidebar-background to-sidebar-background/80 backdrop-blur-sm"
     >
       <SidebarMenu>
         <Link
@@ -203,12 +203,12 @@ export function AppSidebar() {
                       {item.badge && (
                         <Badge
                           variant="secondary"
-                          className="ml-auto text-xs bg-linear-to-r from-sidebar-primary/10 to-sidebar-accent/10 border-sidebar-primary/20 group-hover:scale-105 transition-transform duration-300"
+                          className="ml-auto text-xs bg-gradient-to-r from-sidebar-primary/10 to-sidebar-accent/10 border-sidebar-primary/20 group-hover:scale-105 transition-transform duration-300"
                         >
                           {item.badge}
                         </Badge>
                       )}
-                      <div className="absolute inset-0 bg-linear-to-r from-transparent via-sidebar-primary/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-sidebar-primary/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -218,7 +218,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border/50 bg-linear-to-r from-sidebar-background to-sidebar-accent/5 p-2">
+      <SidebarFooter className="border-t border-sidebar-border/50 bg-gradient-to-r from-sidebar-background to-sidebar-accent/5 p-2">
         <SidebarMenu>
           <SidebarMenuItem>
             {user ? (
@@ -229,7 +229,7 @@ export function AppSidebar() {
                     className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent/50 transition-all duration-300 hover:scale-[1.02] group"
                   >
                     <Avatar className="h-8 w-8 rounded-lg ring-2 ring-sidebar-primary/20 group-hover:ring-sidebar-primary/40 transition-all duration-300 group-hover:scale-110">
-                      <AvatarFallback className="rounded-lg bg-linear-to-br from-sidebar-primary to-sidebar-primary/80 text-sidebar-primary-foreground font-semibold group-hover:rotate-3 transition-transform duration-300">
+                      <AvatarFallback className="rounded-lg bg-gradient-to-br from-sidebar-primary to-sidebar-primary/80 text-sidebar-primary-foreground font-semibold group-hover:rotate-3 transition-transform duration-300">
                         {getUserInitials()}
                       </AvatarFallback>
                     </Avatar>
@@ -241,11 +241,11 @@ export function AppSidebar() {
                         {user.email}
                       </span>
                     </div>
-                    <div className="size-2 rounded-full bg-green-500 animate-pulse" />
+                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                   </SidebarMenuButton>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                  className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg shadow-xl border-sidebar-border/50 bg-sidebar-background/95 backdrop-blur-xs animate-in slide-in-from-bottom-2 duration-300"
+                  className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg shadow-xl border-sidebar-border/50 bg-sidebar-background/95 backdrop-blur-sm animate-in slide-in-from-bottom-2 duration-300"
                   side="bottom"
                   align="end"
                   sideOffset={4}
@@ -266,7 +266,7 @@ export function AppSidebar() {
                         <ThemeIcon className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
                         {getThemeLabel(themeOption)}
                         {theme === themeOption && (
-                          <div className="ml-auto size-2 rounded-full bg-sidebar-primary animate-pulse" />
+                          <div className="ml-auto w-2 h-2 rounded-full bg-sidebar-primary animate-pulse" />
                         )}
                       </DropdownMenuItem>
                     );
@@ -288,7 +288,7 @@ export function AppSidebar() {
                         <Globe className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
                         {getLanguageLabel(lang)}
                         {isCurrentLanguage && (
-                          <div className="ml-auto size-2 rounded-full bg-sidebar-primary animate-pulse" />
+                          <div className="ml-auto w-2 h-2 rounded-full bg-sidebar-primary animate-pulse" />
                         )}
                       </DropdownMenuItem>
                     );

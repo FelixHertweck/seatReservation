@@ -39,7 +39,7 @@ export function LoginRequiredPopup() {
 
   return (
     <Dialog open={!isLoading && !isLoggedIn}>
-      <DialogContent className="sm:max-w-[425px]" showCloseButton={false}>
+      <DialogContent className="sm:max-w-[425px]" noX={true}>
         <DialogHeader>
           <DialogTitle>{t("loginRequiredPopup.title")}</DialogTitle>
           <DialogDescription>

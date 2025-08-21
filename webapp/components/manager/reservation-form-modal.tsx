@@ -140,23 +140,23 @@ export function ReservationFormModal({
           <div className="flex-1 flex flex-col min-h-0 max-w-[calc(100%-20rem)]">
             <div className="flex gap-4 text-sm mb-4">
               <div className="flex items-center gap-2">
-                <div className="size-4 bg-green-500 dark:bg-green-400 rounded"></div>
+                <div className="w-4 h-4 bg-green-500 dark:bg-green-400 rounded"></div>
                 <span>{t("reservationFormModal.availableStatus")}</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="size-4 bg-blue-500 dark:bg-blue-400 rounded"></div>
+                <div className="w-4 h-4 bg-blue-500 dark:bg-blue-400 rounded"></div>
                 <span>{t("reservationFormModal.selectedStatus")}</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="size-4 bg-red-500 dark:bg-red-400 rounded"></div>
+                <div className="w-4 h-4 bg-red-500 dark:bg-red-400 rounded"></div>
                 <span>{t("reservationFormModal.reservedStatus")}</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="size-4 bg-yellow-500 dark:bg-yellow-400 rounded"></div>
+                <div className="w-4 h-4 bg-yellow-500 dark:bg-yellow-400 rounded"></div>
                 <span>{t("reservationFormModal.userReservedStatus")}</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="size-4 bg-gray-500 dark:bg-gray-400 rounded"></div>
+                <div className="w-4 h-4 bg-gray-500 dark:bg-gray-400 rounded"></div>
                 <span>{t("reservationFormModal.blockedStatus")}</span>
               </div>
             </div>
