@@ -61,7 +61,7 @@ export function BlockSeatsModal({
 
     try {
       const blockData: BlockSeatsRequestDto = {
-        eventId: BigInt(selectedEvent?.id ?? "undefined"),
+        eventId: BigInt(selectedEvent?.id || 0),
         seatIds: selectedSeats.map((seat) => seat.id!),
       };
       await onSubmit(blockData);
