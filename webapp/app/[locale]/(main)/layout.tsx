@@ -7,6 +7,7 @@ import {
 import { AppSidebar } from "@/components/app-sidebar";
 import "@/app/globals.css";
 import { LoginRequiredPopup } from "@/components/common/login-required-popup";
+import { EmailVerificationPrompt } from "@/components/common/EmailVerificationPrompt";
 
 export default function MainLayout({
   children,
@@ -28,6 +29,7 @@ export default function MainLayout({
         <main className="flex-1 p-4 lg:p-6">{children}</main>
       </SidebarInset>
       <LoginRequiredPopup />
+      <EmailVerificationPrompt />
     </SidebarProvider>
   );
 }

@@ -6,36 +6,45 @@ import InitQueryClient from "./initQueryClient";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { EmailVerificationPrompt } from "@/components/common/EmailVerificationPrompt";
+import { usePathname } from "next/navigation";
 import { useEffect } from "react";
-import i18next from "i18next";
+import { clearAllToasts } from "@/hooks/use-toast";
+import {
+  ToasterProvider,
+  useToasterControl,
+} from "@/hooks/use-toaster-control";
 
-export function ClientProviders({
-  children,
-  locale,
-}: {
-  children: React.ReactNode;
-  locale?: string;
-}) {
-  useEffect(() => {
-    if (locale && i18next.language !== locale) {
-      i18next.changeLanguage(locale);
-    }
-  }, [locale]);
-
+export function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
-    <CookiesProvider>
-      <InitQueryClient>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-          <Toaster />
-          <EmailVerificationPrompt />
-        </ThemeProvider>
-      </InitQueryClient>
-    </CookiesProvider>
+    <ToasterProvider>
+      <CookiesProvider>
+        <InitQueryClient>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+            <ToasterControlWrapper />
+            <EmailVerificationPrompt />
+          </ThemeProvider>
+        </InitQueryClient>
+      </CookiesProvider>
+    </ToasterProvider>
   );
+}
+
+function ToasterControlWrapper() {
+  const { toasterDisabled, disableToaster } = useToasterControl();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    clearAllToasts();
+    if (pathname.endsWith("start")) {
+      disableToaster();
+    }
+  }, [pathname]);
+
+  return <Toaster disabled={toasterDisabled} />;
 }
