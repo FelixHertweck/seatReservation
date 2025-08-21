@@ -88,7 +88,7 @@ export function SeatMapModal({
               />
             </div>
 
-            <div className="flex-shrink-0 bg-gray-50 p-3 md:p-4 rounded-lg border-t max-h-32 md:max-h-40 overflow-y-auto">
+            <div className="shrink-0 bg-gray-50 p-3 md:p-4 rounded-lg border-t max-h-32 md:max-h-40 overflow-y-auto">
               <div className="flex flex-col gap-2 md:gap-3">
                 <h3 className="font-semibold text-base md:text-lg">
                   {t("seatMapModal.yourReservedSeatsSectionTitle")}
