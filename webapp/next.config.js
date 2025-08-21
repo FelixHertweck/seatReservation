@@ -1,10 +1,7 @@
-// @ts-check
+import { PHASE_DEVELOPMENT_SERVER } from "next/constants.js";
+import process from "process";
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { PHASE_DEVELOPMENT_SERVER } = require("next/constants");
-const process = require("process");
-
-module.exports = (phase, { defaultConfig }) => {
+const nextConfig = (phase, { defaultConfig }) => {
   const isDev = phase === PHASE_DEVELOPMENT_SERVER;
   const buildMode = process.env.BUILD_MODE;
   if (isDev) {
@@ -34,3 +31,5 @@ module.exports = (phase, { defaultConfig }) => {
   }
   return {};
 };
+
+export default nextConfig;
