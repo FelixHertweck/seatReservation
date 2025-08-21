@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -37,7 +37,10 @@ export function EventReservationModal({
   const [selectedSeats, setSelectedSeats] = useState<SeatDto[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const seats: SeatDto[] = event.location?.seats ?? [];
+  const seats: SeatDto[] = useMemo(
+    () => event.location?.seats ?? [],
+    [event.location?.seats],
+  );
 
   useEffect(() => {
     if (initialSeatId) {
