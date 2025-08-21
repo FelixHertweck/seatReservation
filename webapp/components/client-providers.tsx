@@ -47,7 +47,7 @@ function ToasterControlWrapper() {
     } else {
       enableToaster();
     }
-  }, [pathname]);
+  }, [pathname, disableToaster, enableToaster]);
 
   return <Toaster disabled={toasterDisabled} />;
 }
