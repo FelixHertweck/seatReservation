@@ -273,7 +273,6 @@ export function SeatMap({
   );
 
   const handleTouchMove = useCallback(
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     (e: React.TouchEvent) => {
       e.preventDefault();
 
