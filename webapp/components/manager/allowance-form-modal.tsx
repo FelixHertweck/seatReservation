@@ -274,7 +274,7 @@ export function AllowanceFormModal({
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-(--radix-popover-trigger-width) p-0">
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
                   <Command>
                     {isCreating && allTags.length > 0 && (
                       <div className="p-2 border-b flex items-center gap-2">
@@ -282,7 +282,7 @@ export function AllowanceFormModal({
                           onValueChange={handleSelectUsersByTag}
                           value={selectedTag}
                         >
-                          <SelectTrigger className="grow">
+                          <SelectTrigger className="flex-grow">
                             <SelectValue
                               placeholder={t(
                                 "allowanceFormModal.filterByTagPlaceholder",
