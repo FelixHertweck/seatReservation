@@ -117,6 +117,7 @@ fi
 # Frontend check
 cd "$(dirname "$0")"
 cd ./webapp
+npm i
 
 if [ "$SKIP_LINT" = false ]; then
   echo "Running Frontend Linting check..."

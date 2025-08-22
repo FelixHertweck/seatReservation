@@ -4,3 +4,5 @@ node_modules
 api
 components/ui
 public
+package.json
+package-lock.json
