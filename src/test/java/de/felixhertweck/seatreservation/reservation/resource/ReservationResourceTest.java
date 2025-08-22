@@ -68,6 +68,8 @@ public class ReservationResourceTest {
         testEvent = new Event();
         testEvent.setName("Test Event for Reservation");
         testEvent.setEventLocation(location);
+        testEvent.setStartTime(LocalDateTime.now().plusDays(2));
+        testEvent.setEndTime(LocalDateTime.now().plusDays(2).plusHours(2));
         eventRepository.persist(testEvent);
 
         testSeat1 = new Seat("A1", location);
