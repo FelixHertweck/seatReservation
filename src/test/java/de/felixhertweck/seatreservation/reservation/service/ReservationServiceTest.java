@@ -80,11 +80,15 @@ class ReservationServiceTest {
 
         var location = new EventLocation();
         location.id = 1L;
+        location.setName("Test Location");
+        location.setAddress("Test Address");
 
         event = new Event();
         event.id = 1L;
         event.setName("Test Event for Reservation");
         event.setBookingDeadline(LocalDateTime.now().plusDays(1));
+        event.setStartTime(LocalDateTime.now().plusDays(2));
+        event.setEndTime(LocalDateTime.now().plusDays(2).plusHours(2));
         event.setEventLocation(location);
 
         seat1 = new Seat();
