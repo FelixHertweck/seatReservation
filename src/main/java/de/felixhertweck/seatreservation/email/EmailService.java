@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.Year;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -37,6 +38,7 @@ import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.reservation.service.ReservationService;
 import de.felixhertweck.seatreservation.utils.RandomUUIDString;
 import de.felixhertweck.seatreservation.utils.SvgRenderer;
+import io.quarkus.logging.Log;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -48,8 +50,39 @@ import org.jboss.logging.Logger;
  */
 @ApplicationScoped
 public class EmailService {
+    @ConfigProperty(name = "email.header.confirmation", defaultValue = "Email Confirmation")
+    private String EMAIL_HEADER_CONFIRMATION;
+
+    @ConfigProperty(name = "email.header.password-changed", defaultValue = "Password Changed")
+    private String EMAIL_HEADER_PASSWORD_CHANGED;
+
+    @ConfigProperty(
+            name = "email.header.reservation-confirmation",
+            defaultValue = "Reservation Confirmation")
+    private String EMAIL_HEADER_RESERVATION_CONFIRMATION;
+
+    @ConfigProperty(name = "email.header.reservation-update", defaultValue = "Reservation Update")
+    private String EMAIL_HEADER_RESERVATION_UPDATE;
+
+    @ConfigProperty(name = "email.header.reminder", defaultValue = "Reservation Reminder")
+    private String EMAIL_HEADER_REMINDER;
+
+    @ConfigProperty(
+            name = "email.header.reservation-overview",
+            defaultValue = "Reservation Overview")
+    private String EMAIL_HEADER_RESERVATION_OVERVIEW;
 
     private static final Logger LOG = Logger.getLogger(EmailService.class);
+
+    // Setter for testing purposes
+    public void setEMAIL_HEADER_CONFIRMATION(String EMAIL_HEADER_CONFIRMATION) {
+        this.EMAIL_HEADER_CONFIRMATION = EMAIL_HEADER_CONFIRMATION;
+    }
+
+    // Setter for testing purposes
+    public void setEMAIL_HEADER_REMINDER(String EMAIL_HEADER_REMINDER) {
+        this.EMAIL_HEADER_REMINDER = EMAIL_HEADER_REMINDER;
+    }
 
     @Inject Mailer mailer;
 
@@ -96,8 +129,8 @@ public class EmailService {
         LOG.debug("Placeholders replaced in email template.");
 
         // Create and send the email
-        Mail mail =
-                Mail.withHtml(user.getEmail(), "Please Confirm Your Email Address", htmlContent);
+        LOG.debugf("Email confirmation subject: %s", EMAIL_HEADER_CONFIRMATION);
+        Mail mail = Mail.withHtml(user.getEmail(), EMAIL_HEADER_CONFIRMATION, htmlContent);
 
         try {
             mailer.send(mail);
@@ -148,9 +181,16 @@ public class EmailService {
     }
 
     private String generateConfirmationLink(Long id, String token) {
-        return baseUrl + "/api/user/confirm-email" + "?id=" + id + "&token=" + token;
+        return baseUrl.trim() + "/api/user/confirm-email" + "?id=" + id + "&token=" + token;
     }
 
+    /**
+     * Sends a reservation confirmation email to the user.
+     *
+     * @param user The user to whom the email will be sent.
+     * @param reservations The list of reservations to include in the email.
+     * @throws IOException If an error occurs while sending the email.
+     */
     public void sendReservationConfirmation(User user, List<Reservation> reservations)
             throws IOException {
         LOG.infof("Attempting to send reservation confirmation to user: %s", user.getEmail());
@@ -208,16 +248,20 @@ public class EmailService {
 
         htmlContent =
                 htmlContent.replace("{userName}", user.getFirstname() + " " + user.getLastname());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
         htmlContent = htmlContent.replace("{eventName}", eventName != null ? eventName : "");
         htmlContent = htmlContent.replace("{eventLocation}", event.getEventLocation().getName());
-        htmlContent = htmlContent.replace("{eventStartTime}", event.getStartTime().toString());
-        htmlContent = htmlContent.replace("{eventEndTime}", event.getEndTime().toString());
+        htmlContent =
+                htmlContent.replace("{eventStartTime}", event.getStartTime().format(formatter));
+        htmlContent = htmlContent.replace("{eventEndTime}", event.getEndTime().format(formatter));
         htmlContent = htmlContent.replace("{seatList}", seatListHtml.toString());
         htmlContent = htmlContent.replace("{seatMap}", svgContent);
         htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
         LOG.debug("Placeholders replaced in reservation email template.");
 
-        Mail mail = Mail.withHtml(user.getEmail(), "Ihre Reservierungsbestätigung", htmlContent);
+        Mail mail =
+                Mail.withHtml(user.getEmail(), EMAIL_HEADER_RESERVATION_CONFIRMATION, htmlContent);
         try {
             mailer.send(mail);
             LOG.infof(
@@ -227,6 +271,113 @@ public class EmailService {
             LOG.errorf(
                     e,
                     "Failed to send reservation confirmation to %s for user ID: %d",
+                    user.getEmail(),
+                    user.id);
+        }
+    }
+
+    /**
+     * Sends an update reservation confirmation email to the user.
+     *
+     * @param user The user to whom the email will be sent.
+     * @param deletedReservations The list of deleted reservations.
+     * @param activeReservations The list of active reservations.
+     * @throws IOException If an I/O error occurs while sending the email.
+     */
+    public void sendUpdateReservationConfirmation(
+            User user, List<Reservation> deletedReservations, List<Reservation> activeReservations)
+            throws IOException {
+        LOG.infof(
+                "Attempting to send update reservation confirmation to user: %s", user.getEmail());
+        LOG.debug(
+                String.format(
+                        "User ID: %d, Number of reservations: %d",
+                        user.id, activeReservations != null ? activeReservations.size() : 0));
+        Log.debug(
+                String.format(
+                        "User ID: %d, Number of deleted reservations: %d",
+                        user.id, deletedReservations != null ? deletedReservations.size() : 0));
+
+        if (deletedReservations == null || deletedReservations.isEmpty()) {
+            LOG.warnf("No reservations deleted to user %s.", user.getEmail());
+            return;
+        }
+
+        Event event = deletedReservations.getFirst().getEvent();
+        String eventName = event.getName();
+        LOG.debugf("Event for reservation confirmation: %s (ID: %d)", eventName, event.id);
+
+        // Prepare data for SVG rendering
+        List<Seat> allSeats = seatRepository.findByEventLocation(event.getEventLocation());
+
+        LOG.debugf(
+                "Retrieved %d total seats and %d user reservations for event %s.",
+                allSeats.size(), activeReservations.size(), eventName);
+
+        Set<String> newSeatNumbers =
+                activeReservations.stream()
+                        .map(r -> r.getSeat().getSeatNumber())
+                        .collect(Collectors.toSet());
+        LOG.debugf("New seat numbers for confirmation: %s", newSeatNumbers);
+
+        Set<String> existingSeatNumbers =
+                activeReservations.stream()
+                        .map(r -> r.getSeat().getSeatNumber())
+                        .collect(Collectors.toSet());
+        existingSeatNumbers.removeAll(newSeatNumbers); // Keep only previously reserved seats
+        LOG.debugf("Existing seat numbers (excluding new ones): %s", existingSeatNumbers);
+
+        String svgContent = SvgRenderer.renderSeats(allSeats, newSeatNumbers, existingSeatNumbers);
+        LOG.debug("SVG content for seat map generated.");
+
+        StringBuilder activeSeatListHtml = new StringBuilder();
+        for (Reservation reservation : activeReservations) {
+            activeSeatListHtml
+                    .append("<li>")
+                    .append(reservation.getSeat().getSeatNumber())
+                    .append("</li>");
+        }
+        LOG.debugf("HTML list of seats generated: %s", activeSeatListHtml.toString());
+
+        StringBuilder deletedSeatListHtml = new StringBuilder();
+        for (Reservation reservation : deletedReservations) {
+            deletedSeatListHtml
+                    .append("<li>")
+                    .append(reservation.getSeat().getSeatNumber())
+                    .append("</li>");
+        }
+        LOG.debugf("HTML list of seats generated: %s", deletedSeatListHtml.toString());
+
+        String templatePath =
+                "src/main/resources/templates/email/reservation-update-confirmation.html";
+        String htmlContent = new String(Files.readAllBytes(Paths.get(templatePath)));
+        LOG.debugf("Reservation update confirmation template read from: %s", templatePath);
+
+        htmlContent =
+                htmlContent.replace("{userName}", user.getFirstname() + " " + user.getLastname());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+        htmlContent = htmlContent.replace("{eventName}", eventName != null ? eventName : "");
+        htmlContent = htmlContent.replace("{eventLocation}", event.getEventLocation().getName());
+        htmlContent =
+                htmlContent.replace("{eventStartTime}", event.getStartTime().format(formatter));
+        htmlContent = htmlContent.replace("{eventEndTime}", event.getEndTime().format(formatter));
+        htmlContent = htmlContent.replace("{activeSeatList}", activeSeatListHtml.toString());
+        htmlContent = htmlContent.replace("{deletedSeatList}", deletedSeatListHtml.toString());
+        htmlContent = htmlContent.replace("{seatMap}", svgContent);
+        htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
+        LOG.debug("Placeholders replaced in reservation email template.");
+
+        Mail mail = Mail.withHtml(user.getEmail(), EMAIL_HEADER_RESERVATION_UPDATE, htmlContent);
+        try {
+            mailer.send(mail);
+            LOG.infof(
+                    "Reservation update confirmation email sent successfully to %s for user ID: %d",
+                    user.getEmail(), user.id);
+        } catch (Exception e) {
+            LOG.errorf(
+                    e,
+                    "Failed to send reservation update confirmation to %s for user ID: %d",
                     user.getEmail(),
                     user.id);
         }
@@ -254,7 +405,7 @@ public class EmailService {
         LOG.debug("Placeholders replaced in password changed email template.");
 
         // Create and send the email
-        Mail mail = Mail.withHtml(user.getEmail(), "Ihr Passwort wurde geändert", htmlContent);
+        Mail mail = Mail.withHtml(user.getEmail(), EMAIL_HEADER_PASSWORD_CHANGED, htmlContent);
 
         try {
             mailer.send(mail);
@@ -317,8 +468,8 @@ public class EmailService {
         LOG.debug("Placeholders replaced in event reminder email template.");
 
         // Create and send the email
-        Mail mail =
-                Mail.withHtml(user.getEmail(), "Erinnerung: Ihr Event beginnt bald!", htmlContent);
+        LOG.debugf("Event reminder subject: %s", EMAIL_HEADER_REMINDER);
+        Mail mail = Mail.withHtml(user.getEmail(), EMAIL_HEADER_REMINDER, htmlContent);
 
         try {
             mailer.send(mail);
@@ -382,12 +533,9 @@ public class EmailService {
         Mail mail =
                 Mail.withHtml(
                         manager.getEmail(),
-                        "Reservierungsübersicht für Ihr Event: " + event.getName(),
+                        EMAIL_HEADER_RESERVATION_OVERVIEW + event.getName(),
                         htmlContent);
-        mail.addAttachment(
-                "reservations_" + event.id + ".csv",
-                csvData,
-                "text/csv"); // Korrigierte Reihenfolge der Argumente
+        mail.addAttachment("reservations_" + event.id + ".csv", csvData, "text/csv");
 
         try {
             mailer.send(mail);

@@ -327,6 +327,24 @@ public class ReservationService {
         LOG.infof(
                 "Reservation with ID %d deleted successfully for user %s.",
                 id, currentUser.getUsername());
+
+        List<Reservation> activeReservations =
+                reservationRepository.findByUserAndEvent(currentUser, reservation.getEvent());
+
+        try {
+            emailService.sendUpdateReservationConfirmation(
+                    currentUser, List.of(reservation), activeReservations);
+        } catch (IOException e) {
+            LOG.errorf(
+                    "Failed to send reservation update confirmation for user %s (ID: %d) and"
+                            + " reservation %d.",
+                    currentUser.getUsername(), currentUser.getId(), reservation.id);
+            return;
+        }
+
+        LOG.infof(
+                "Sent reservation update confirmation for user %s (ID: %d) and reservation %d.",
+                currentUser.getUsername(), currentUser.getId(), reservation.id);
     }
 
     public byte[] exportReservationsToCsv(Long eventId, User currentUser)

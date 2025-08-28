@@ -61,7 +61,7 @@ public class TokenService {
         String token =
                 Jwt.upn(user.getUsername())
                         .groups(user.getRoles())
-                        .claim(Claims.email, user.getEmail())
+                        .claim(Claims.email, user.getEmail() != null ? user.getEmail() : "")
                         .expiresIn(Duration.ofMinutes(expirationMinutes))
                         .sign();
         LOG.infof("JWT token generated successfully for user: %s", user.getUsername());

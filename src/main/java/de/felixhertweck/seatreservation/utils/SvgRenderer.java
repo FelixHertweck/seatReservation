@@ -74,11 +74,11 @@ public class SvgRenderer {
         for (Seat seat : allSeats) {
             String color;
             if (newReservedSeatNumbers.contains(seat.getSeatNumber())) {
-                color = "red";
+                color = "#2B7FFF";
             } else if (existingReservedSeatNumbers.contains(seat.getSeatNumber())) {
-                color = "blue";
+                color = "#F0B100";
             } else {
-                color = "gray";
+                color = "#00C950";
             }
 
             // Apply scaling to the coordinates when drawing
@@ -93,14 +93,14 @@ public class SvgRenderer {
                     .append(radius)
                     .append("\" fill=\"")
                     .append(color)
-                    .append("\" stroke=\"black\" stroke-width=\"1\" />\n");
+                    .append("\" stroke=\"#333333\" stroke-width=\"1\" />\n");
             sb.append("<text x=\"")
                     .append(cx)
                     .append("\" y=\"")
-                    .append(cy + radius + textHeight) // Position text below the circle
+                    .append(cy + (textHeight / 3))
                     .append("\" font-size=\"")
                     .append(textHeight)
-                    .append("\" text-anchor=\"middle\" fill=\"black\">")
+                    .append("\" text-anchor=\"middle\" fill=\"white\">")
                     .append(seat.getSeatNumber())
                     .append("</text>\n");
         }

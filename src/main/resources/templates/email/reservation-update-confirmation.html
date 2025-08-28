@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reservation Confirmation</title>
+    <title>Update Reservation Confirmation</title>
     <style>
         body {
             font-family: sans-serif;
@@ -36,23 +36,29 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">Your reservation confirmation</div>
+        <div class="header">Your reservation update confirmation</div>
         <p>Hello {userName},</p>
-        <p>Thank you for your reservation for the event "{eventName}".</p>
+        <p>Thank you for your reservation update for the event "{eventName}".</p>
         <p><strong>Location:</strong> {eventLocation}</p>
         <p><strong>Start:</strong> {eventStartTime}</p>
         <p><strong>End:</strong> {eventEndTime}</p>
-        <p>You have reserved the following seats:</p>
+        <p><strong>You have deleted the following seats:</strong></p>
         <ul>
-            {seatList}
+            {deletedSeatList}
         </ul>
-        <p>Here is an overview of your seats:</p>
+        <p>You have still reserved the following seats:</p>
+        <ul>
+            {activeSeatList}
+        </ul>
+        <p>Here is an overview of your current seats:</p>
         {seatMap}
         <div style="margin-top: 20px; text-align: center;">
             <span style="display: inline-block; width: 15px; height: 15px; background-color: #00C950; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
             <span style="vertical-align: middle; margin-right: 15px;">Available</span>
             <span style="display: inline-block; width: 15px; height: 15px; background-color: #2B7FFF; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
-            <span style="vertical-align: middle;">My Reserved</span>
+            <span style="vertical-align: middle; margin-right: 15px;">New Reserved</span>
+            <span style="display: inline-block; width: 15px; height: 15px; background-color: #F0B100; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
+            <span style="vertical-align: middle;">Already Reserved</span>
         </div>
         <p style="margin-top: 20px;">We wish you a great time at the event!</p>
         <p>Best regards</p>
