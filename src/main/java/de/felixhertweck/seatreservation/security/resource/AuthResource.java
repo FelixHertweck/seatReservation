@@ -33,6 +33,7 @@ import de.felixhertweck.seatreservation.security.dto.LoginRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
 import de.felixhertweck.seatreservation.security.service.AuthService;
 import de.felixhertweck.seatreservation.security.service.TokenService;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.jboss.logging.Logger;
 
 @Path("/api/auth")
@@ -47,6 +48,8 @@ public class AuthResource {
 
     @POST
     @Path("/login")
+    @APIResponse(responseCode = "200", description = "Login successful, JWT cookie set")
+    @APIResponse(responseCode = "401", description = "Unauthorized: Invalid credentials")
     public Response login(@Valid LoginRequestDTO loginRequest) {
         LOG.infof("Received login request for username: %s", loginRequest.getUsername());
         LOG.debugf("LoginRequestDTO: %s", loginRequest.toString());
@@ -60,6 +63,10 @@ public class AuthResource {
 
     @POST
     @Path("/register")
+    @APIResponse(responseCode = "200", description = "Registration successful, JWT cookie set")
+    @APIResponse(
+            responseCode = "409",
+            description = "Conflict: User with this username already exists")
     public Response register(@Valid RegisterRequestDTO registerRequest) {
         LOG.infof("Received registration request for username: %s", registerRequest.getUsername());
         LOG.debugf("RegisterRequestDTO: %s", registerRequest.toString());
@@ -75,6 +82,7 @@ public class AuthResource {
 
     @POST
     @Path("/logout")
+    @APIResponse(responseCode = "200", description = "Logout successful, JWT cookie cleared")
     public Response logout() {
         LOG.infof("Received logout request.");
         NewCookie jwtCookie =

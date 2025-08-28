@@ -36,6 +36,7 @@ import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.jboss.logging.Logger;
 
 /*
@@ -57,6 +58,11 @@ public class UserResource {
     @POST
     @Path("/admin/import")
     @RolesAllowed(Roles.ADMIN)
+    @APIResponse(responseCode = "200", description = "Users imported successfully")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only ADMIN role can access this resource")
     public Set<UserDTO> importUsers(Set<AdminUserCreationDto> userCreationDTOs) {
         LOG.infof(
                 "Received POST request to /api/users/admin/import for %d users.",
@@ -68,6 +74,14 @@ public class UserResource {
     @POST
     @Path("/admin")
     @RolesAllowed(Roles.ADMIN)
+    @APIResponse(responseCode = "201", description = "User created successfully")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only ADMIN role can access this resource")
+    @APIResponse(
+            responseCode = "409",
+            description = "Conflict: User with this username already exists")
     public UserDTO createUser(AdminUserCreationDto userCreationDTO) {
         LOG.infof(
                 "Received POST request to /api/users/admin for user: %s",
@@ -83,6 +97,15 @@ public class UserResource {
     @PUT
     @Path("/admin/{id}")
     @RolesAllowed(Roles.ADMIN)
+    @APIResponse(responseCode = "200", description = "User updated successfully")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only ADMIN role can access this resource")
+    @APIResponse(responseCode = "404", description = "Not Found: User with specified ID not found")
+    @APIResponse(
+            responseCode = "409",
+            description = "Conflict: User with this username already exists")
     public UserDTO updateUser(@PathParam("id") Long id, AdminUserUpdateDTO user) {
         LOG.infof("Received PUT request to /api/users/admin/%d for user update.", id);
         LOG.debugf("AdminUserUpdateDTO received for ID %d: %s", id, user.toString());
@@ -94,6 +117,12 @@ public class UserResource {
     @DELETE
     @Path("/admin/{id}")
     @RolesAllowed(Roles.ADMIN)
+    @APIResponse(responseCode = "204", description = "User deleted successfully")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only ADMIN role can access this resource")
+    @APIResponse(responseCode = "404", description = "Not Found: User with specified ID not found")
     public void deleteUser(@PathParam("id") Long id) {
         LOG.infof("Received DELETE request to /api/users/admin/%d for user deletion.", id);
         userService.deleteUser(id);
@@ -103,6 +132,13 @@ public class UserResource {
     @GET
     @Path("/manager")
     @RolesAllowed({Roles.ADMIN, Roles.MANAGER})
+    @APIResponse(
+            responseCode = "200",
+            description = "List of users (limited info) retrieved successfully")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only ADMIN or MANAGER roles can access this resource")
     public List<LimitedUserInfoDTO> getAllUsers() {
         LOG.infof("Received GET request to /api/users/manager to get all users (limited info).");
         List<LimitedUserInfoDTO> users = userService.getAllUsers();
@@ -113,6 +149,13 @@ public class UserResource {
     @GET
     @RolesAllowed({Roles.USER, Roles.MANAGER, Roles.ADMIN})
     @Path("/roles")
+    @APIResponse(
+            responseCode = "200",
+            description = "List of available roles retrieved successfully")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only authenticated users can access this resource")
     public List<String> availableRoles() {
         LOG.infof("Received GET request to /api/users/roles to get available roles.");
         List<String> roles = userService.getAvailableRoles();
@@ -123,6 +166,13 @@ public class UserResource {
     @GET
     @Path("/admin")
     @RolesAllowed(Roles.ADMIN)
+    @APIResponse(
+            responseCode = "200",
+            description = "List of users (admin view) retrieved successfully")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only ADMIN role can access this resource")
     public List<UserDTO> getAllUsersAsAdmin() {
         LOG.infof("Received GET request to /api/users/admin to get all users (admin view).");
         List<UserDTO> users = userService.getUsersAsAdmin();
@@ -133,6 +183,14 @@ public class UserResource {
     @PUT
     @Path("/me")
     @RolesAllowed({Roles.USER, Roles.MANAGER, Roles.ADMIN})
+    @APIResponse(responseCode = "200", description = "User profile updated successfully")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only authenticated users can access this resource")
+    @APIResponse(
+            responseCode = "409",
+            description = "Conflict: User with this username already exists")
     public UserDTO updateCurrentUserProfile(UserProfileUpdateDTO userProfileUpdateDTO) {
         String username = securityContext.getUserPrincipal().getName();
         LOG.infof("Received PUT request to /api/users/me to update profile for user: %s", username);
@@ -147,6 +205,11 @@ public class UserResource {
     @GET
     @Path("/me")
     @RolesAllowed({Roles.USER, Roles.ADMIN, Roles.MANAGER})
+    @APIResponse(responseCode = "200", description = "Current user profile retrieved successfully")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only authenticated users can access this resource")
     public UserDTO getCurrentUser() {
         String username = securityContext.getUserPrincipal().getName();
         LOG.infof("Received GET request to /api/users/me for current user: %s", username);

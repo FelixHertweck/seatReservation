@@ -649,7 +649,10 @@
         },
         "responses" : {
           "200" : {
-            "description" : "OK"
+            "description" : "Login successful, JWT cookie set"
+          },
+          "401" : {
+            "description" : "Unauthorized: Invalid credentials"
           },
           "400" : {
             "description" : "Bad Request"
@@ -663,7 +666,7 @@
       "post" : {
         "responses" : {
           "200" : {
-            "description" : "OK"
+            "description" : "Logout successful, JWT cookie cleared"
           }
         },
         "summary" : "Logout",
@@ -684,7 +687,10 @@
         },
         "responses" : {
           "200" : {
-            "description" : "OK"
+            "description" : "Registration successful, JWT cookie set"
+          },
+          "409" : {
+            "description" : "Conflict: User with this username already exists"
           },
           "400" : {
             "description" : "Bad Request"
@@ -711,10 +717,10 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
           }
         },
         "summary" : "Get Event Locations By Current Manager",
@@ -746,10 +752,13 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "409" : {
+            "description" : "Conflict: Event location with this name already exists"
           },
           "400" : {
             "description" : "Bad Request"
@@ -786,10 +795,13 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "409" : {
+            "description" : "Conflict: Event location with this name already exists"
           },
           "400" : {
             "description" : "Bad Request"
@@ -839,10 +851,13 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Event location with specified ID not found"
           },
           "400" : {
             "description" : "Bad Request"
@@ -878,7 +893,7 @@
         },
         "responses" : {
           "200" : {
-            "description" : "OK",
+            "description" : "Event location updated successfully",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -888,10 +903,16 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Event location with specified ID not found"
+          },
+          "409" : {
+            "description" : "Conflict: Event location with this name already exists"
           },
           "400" : {
             "description" : "Bad Request"
@@ -917,11 +938,17 @@
           "200" : {
             "description" : "OK"
           },
+          "204" : {
+            "description" : "Event location deleted successfully"
+          },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Event location with specified ID not found"
           }
         },
         "summary" : "Delete Event Location",
@@ -948,10 +975,10 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
           }
         },
         "summary" : "Get Events By Current Manager",
@@ -982,11 +1009,20 @@
               }
             }
           },
+          "201" : {
+            "description" : "Event created successfully"
+          },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Event location not found"
+          },
+          "409" : {
+            "description" : "Conflict: Event with this name already exists in this event location"
           },
           "400" : {
             "description" : "Bad Request"
@@ -1022,7 +1058,7 @@
         },
         "responses" : {
           "200" : {
-            "description" : "OK",
+            "description" : "Event updated successfully",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -1032,10 +1068,16 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Event or event location not found"
+          },
+          "409" : {
+            "description" : "Conflict: Event with this name already exists in this event location"
           },
           "400" : {
             "description" : "Bad Request"
@@ -1069,10 +1111,13 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Event with specified ID not found for the current manager"
           }
         },
         "summary" : "Get Event By Id",
@@ -1096,10 +1141,13 @@
             "description" : "Event deleted"
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Event with specified ID not found for the current manager"
           }
         },
         "summary" : "Delete Event",
@@ -1123,7 +1171,7 @@
         },
         "responses" : {
           "200" : {
-            "description" : "OK",
+            "description" : "Reservation allowance updated successfully",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -1133,10 +1181,16 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Allowance with specified ID not found"
+          },
+          "409" : {
+            "description" : "Conflict: Allowance already exists for this user and event"
           },
           "400" : {
             "description" : "Bad Request"
@@ -1161,11 +1215,12 @@
         },
         "responses" : {
           "200" : {
-            "description" : "OK",
+            "description" : "Reservation allowance set successfully",
             "content" : {
               "application/json" : {
                 "schema" : {
                   "type" : "array",
+                  "uniqueItems" : true,
                   "items" : {
                     "$ref" : "#/components/schemas/EventUserAllowancesDto"
                   }
@@ -1174,10 +1229,16 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Event or user not found"
+          },
+          "409" : {
+            "description" : "Conflict: Allowance already exists for this user and event"
           },
           "400" : {
             "description" : "Bad Request"
@@ -1192,7 +1253,7 @@
       "get" : {
         "responses" : {
           "200" : {
-            "description" : "OK",
+            "description" : "List of reservation allowances retrieved successfully",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -1205,10 +1266,10 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
           }
         },
         "summary" : "Get Reservation Allowances",
@@ -1231,7 +1292,7 @@
         } ],
         "responses" : {
           "200" : {
-            "description" : "OK",
+            "description" : "List of reservation allowances for a specific event retrieved successfully",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -1244,10 +1305,13 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Event with specified ID not found"
           }
         },
         "summary" : "Get Reservation Allowances By Event Id",
@@ -1270,7 +1334,7 @@
         } ],
         "responses" : {
           "200" : {
-            "description" : "OK",
+            "description" : "Reservation allowance retrieved successfully",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -1280,10 +1344,13 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Allowance with specified ID not found"
           }
         },
         "summary" : "Get Reservation Allowance By Id",
@@ -1307,10 +1374,13 @@
             "description" : "No Content"
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Allowance with specified ID not found"
           }
         },
         "summary" : "Delete Reservation Allowance",
@@ -1337,10 +1407,10 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
           }
         },
         "summary" : "Get All Reservations",
@@ -1374,11 +1444,20 @@
               }
             }
           },
+          "201" : {
+            "description" : "Reservations created successfully"
+          },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Event, user or seat not found"
+          },
+          "409" : {
+            "description" : "Conflict: Seat already reserved or event booking closed"
           },
           "400" : {
             "description" : "Bad Request"
@@ -1410,6 +1489,7 @@
               "application/json" : {
                 "schema" : {
                   "type" : "array",
+                  "uniqueItems" : true,
                   "items" : {
                     "$ref" : "#/components/schemas/DetailedReservationResponseDTO"
                   }
@@ -1418,10 +1498,16 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Event or seat not found"
+          },
+          "409" : {
+            "description" : "Conflict: Seat already blocked"
           },
           "400" : {
             "description" : "Bad Request"
@@ -1460,10 +1546,13 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Event with specified ID not found for the current manager"
           }
         },
         "summary" : "Get Reservations By Event Id",
@@ -1496,10 +1585,13 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Reservation with specified ID not found for the current manager"
           }
         },
         "summary" : "Get Reservation By Id",
@@ -1522,11 +1614,17 @@
           "200" : {
             "description" : "OK"
           },
+          "204" : {
+            "description" : "Reservation deleted successfully"
+          },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Reservation with specified ID not found for the current manager"
           }
         },
         "summary" : "Delete Reservation",
@@ -1553,10 +1651,10 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
           }
         },
         "summary" : "Get All Manager Seats",
@@ -1587,11 +1685,20 @@
               }
             }
           },
+          "201" : {
+            "description" : "Seat created successfully"
+          },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Event location not found"
+          },
+          "409" : {
+            "description" : "Conflict: Seat with this row and number already exists in this event location"
           },
           "400" : {
             "description" : "Bad Request"
@@ -1627,7 +1734,7 @@
         },
         "responses" : {
           "200" : {
-            "description" : "OK",
+            "description" : "Seat updated successfully",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -1637,10 +1744,16 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Seat with specified ID not found for the current manager"
+          },
+          "409" : {
+            "description" : "Conflict: Seat with this row and number already exists in this event location"
           },
           "400" : {
             "description" : "Bad Request"
@@ -1674,10 +1787,13 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Seat with specified ID not found for the current manager"
           }
         },
         "summary" : "Get Manager Seat By Id",
@@ -1700,11 +1816,17 @@
           "200" : {
             "description" : "OK"
           },
+          "204" : {
+            "description" : "Seat deleted successfully"
+          },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Seat with specified ID not found for the current manager"
           }
         },
         "summary" : "Delete Manager Seat",
@@ -1740,6 +1862,9 @@
           "400" : {
             "description" : "Invalid token"
           },
+          "401" : {
+            "description" : "Unauthorized"
+          },
           "404" : {
             "description" : "Token not found"
           },
@@ -1766,10 +1891,10 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only authenticated users can access this resource"
           }
         },
         "summary" : "Get Events",
@@ -1787,6 +1912,9 @@
         "responses" : {
           "204" : {
             "description" : "Email confirmation resent successfully"
+          },
+          "401" : {
+            "description" : "Unauthorized"
           },
           "404" : {
             "description" : "User not found"
@@ -1814,10 +1942,10 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only authenticated users can access this resource"
           }
         },
         "summary" : "Get My Reservations",
@@ -1851,11 +1979,20 @@
               }
             }
           },
+          "201" : {
+            "description" : "Reservations created successfully"
+          },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only authenticated users can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Event or seat not found"
+          },
+          "409" : {
+            "description" : "Conflict: Seat already reserved or event booking closed"
           },
           "400" : {
             "description" : "Bad Request"
@@ -1893,7 +2030,10 @@
             "description" : "Not Found - Event not found"
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
+          },
+          "500" : {
+            "description" : "Internal Server Error during CSV export"
           }
         },
         "summary" : "Export Reservations To Csv",
@@ -1926,10 +2066,13 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only authenticated users can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Reservation with specified ID not found for the current user"
           }
         },
         "summary" : "Get My Reservation By Id",
@@ -1953,10 +2096,13 @@
             "description" : "No Content"
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only authenticated users can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Reservation with specified ID not found for the current user"
           }
         },
         "summary" : "Delete Reservation",
@@ -1970,7 +2116,7 @@
       "get" : {
         "responses" : {
           "200" : {
-            "description" : "OK",
+            "description" : "List of users (admin view) retrieved successfully",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -1983,10 +2129,10 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only ADMIN role can access this resource"
           }
         },
         "summary" : "Get All Users As Admin",
@@ -2007,21 +2153,17 @@
           "required" : true
         },
         "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/UserDTO"
-                }
-              }
-            }
+          "201" : {
+            "description" : "User created successfully"
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only ADMIN role can access this resource"
+          },
+          "409" : {
+            "description" : "Conflict: User with this username already exists"
           },
           "400" : {
             "description" : "Bad Request"
@@ -2052,7 +2194,7 @@
         },
         "responses" : {
           "200" : {
-            "description" : "OK",
+            "description" : "Users imported successfully",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -2066,10 +2208,10 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only ADMIN role can access this resource"
           },
           "400" : {
             "description" : "Bad Request"
@@ -2105,7 +2247,7 @@
         },
         "responses" : {
           "200" : {
-            "description" : "OK",
+            "description" : "User updated successfully",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -2115,10 +2257,16 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only ADMIN role can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: User with specified ID not found"
+          },
+          "409" : {
+            "description" : "Conflict: User with this username already exists"
           },
           "400" : {
             "description" : "Bad Request"
@@ -2142,13 +2290,16 @@
         } ],
         "responses" : {
           "204" : {
-            "description" : "No Content"
+            "description" : "User deleted successfully"
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only ADMIN role can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: User with specified ID not found"
           }
         },
         "summary" : "Delete User",
@@ -2162,7 +2313,7 @@
       "get" : {
         "responses" : {
           "200" : {
-            "description" : "OK",
+            "description" : "List of users (limited info) retrieved successfully",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -2175,10 +2326,10 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only ADMIN or MANAGER roles can access this resource"
           }
         },
         "summary" : "Get All Users",
@@ -2202,7 +2353,7 @@
         },
         "responses" : {
           "200" : {
-            "description" : "OK",
+            "description" : "User profile updated successfully",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -2212,10 +2363,13 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only authenticated users can access this resource"
+          },
+          "409" : {
+            "description" : "Conflict: User with this username already exists"
           },
           "400" : {
             "description" : "Bad Request"
@@ -2230,7 +2384,7 @@
       "get" : {
         "responses" : {
           "200" : {
-            "description" : "OK",
+            "description" : "Current user profile retrieved successfully",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -2240,10 +2394,10 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only authenticated users can access this resource"
           }
         },
         "summary" : "Get Current User",
@@ -2257,7 +2411,7 @@
       "get" : {
         "responses" : {
           "200" : {
-            "description" : "OK",
+            "description" : "List of available roles retrieved successfully",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -2270,10 +2424,10 @@
             }
           },
           "401" : {
-            "description" : "Not Authorized"
+            "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Not Allowed"
+            "description" : "Forbidden: Only authenticated users can access this resource"
           }
         },
         "summary" : "Available Roles",

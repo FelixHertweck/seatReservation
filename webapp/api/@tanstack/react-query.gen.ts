@@ -2,7 +2,7 @@
 
 import { type Options, postApiAuthLogin, postApiAuthLogout, postApiAuthRegister, getApiManagerEventlocations, postApiManagerEventlocations, postApiManagerEventlocationsImport, postApiManagerEventlocationsImportById, deleteApiManagerEventlocationsById, putApiManagerEventlocationsById, getApiManagerEvents, postApiManagerEvents, deleteApiManagerEventsById, getApiManagerEventsById, putApiManagerEventsById, getApiManagerReservationAllowance, postApiManagerReservationAllowance, putApiManagerReservationAllowance, getApiManagerReservationAllowanceEventByEventId, deleteApiManagerReservationAllowanceById, getApiManagerReservationAllowanceById, getApiManagerReservations, postApiManagerReservations, postApiManagerReservationsBlock, getApiManagerReservationsEventById, deleteApiManagerReservationsById, getApiManagerReservationsById, getApiManagerSeats, postApiManagerSeats, deleteApiManagerSeatsById, getApiManagerSeatsById, putApiManagerSeatsById, getApiUserConfirmEmail, getApiUserEvents, postApiUserResendEmailConfirmation, getApiUserReservations, postApiUserReservations, getApiUserReservationsExportByEventIdCsv, deleteApiUserReservationsById, getApiUserReservationsById, getApiUsersAdmin, postApiUsersAdmin, postApiUsersAdminImport, deleteApiUsersAdminById, putApiUsersAdminById, getApiUsersManager, getApiUsersMe, putApiUsersMe, getApiUsersRoles } from '../sdk.gen';
 import { queryOptions, type UseMutationOptions, type DefaultError } from '@tanstack/react-query';
-import type { PostApiAuthLoginData, PostApiAuthLogoutData, PostApiAuthRegisterData, GetApiManagerEventlocationsData, PostApiManagerEventlocationsData, PostApiManagerEventlocationsResponse, PostApiManagerEventlocationsImportData, PostApiManagerEventlocationsImportResponse, PostApiManagerEventlocationsImportByIdData, PostApiManagerEventlocationsImportByIdResponse, DeleteApiManagerEventlocationsByIdData, PutApiManagerEventlocationsByIdData, PutApiManagerEventlocationsByIdResponse, GetApiManagerEventsData, PostApiManagerEventsData, PostApiManagerEventsResponse, DeleteApiManagerEventsByIdData, DeleteApiManagerEventsByIdResponse, GetApiManagerEventsByIdData, PutApiManagerEventsByIdData, PutApiManagerEventsByIdResponse, GetApiManagerReservationAllowanceData, PostApiManagerReservationAllowanceData, PostApiManagerReservationAllowanceResponse, PutApiManagerReservationAllowanceData, PutApiManagerReservationAllowanceResponse, GetApiManagerReservationAllowanceEventByEventIdData, DeleteApiManagerReservationAllowanceByIdData, DeleteApiManagerReservationAllowanceByIdResponse, GetApiManagerReservationAllowanceByIdData, GetApiManagerReservationsData, PostApiManagerReservationsData, PostApiManagerReservationsResponse, PostApiManagerReservationsBlockData, PostApiManagerReservationsBlockResponse, GetApiManagerReservationsEventByIdData, DeleteApiManagerReservationsByIdData, GetApiManagerReservationsByIdData, GetApiManagerSeatsData, PostApiManagerSeatsData, PostApiManagerSeatsResponse, DeleteApiManagerSeatsByIdData, GetApiManagerSeatsByIdData, PutApiManagerSeatsByIdData, PutApiManagerSeatsByIdResponse, GetApiUserConfirmEmailData, GetApiUserEventsData, PostApiUserResendEmailConfirmationData, PostApiUserResendEmailConfirmationResponse, GetApiUserReservationsData, PostApiUserReservationsData, PostApiUserReservationsResponse, GetApiUserReservationsExportByEventIdCsvData, DeleteApiUserReservationsByIdData, DeleteApiUserReservationsByIdResponse, GetApiUserReservationsByIdData, GetApiUsersAdminData, PostApiUsersAdminData, PostApiUsersAdminResponse, PostApiUsersAdminImportData, PostApiUsersAdminImportResponse, DeleteApiUsersAdminByIdData, DeleteApiUsersAdminByIdResponse, PutApiUsersAdminByIdData, PutApiUsersAdminByIdResponse, GetApiUsersManagerData, GetApiUsersMeData, PutApiUsersMeData, PutApiUsersMeResponse, GetApiUsersRolesData } from '../types.gen';
+import type { PostApiAuthLoginData, PostApiAuthLogoutData, PostApiAuthRegisterData, GetApiManagerEventlocationsData, PostApiManagerEventlocationsData, PostApiManagerEventlocationsResponse, PostApiManagerEventlocationsImportData, PostApiManagerEventlocationsImportResponse, PostApiManagerEventlocationsImportByIdData, PostApiManagerEventlocationsImportByIdResponse, DeleteApiManagerEventlocationsByIdData, DeleteApiManagerEventlocationsByIdResponse, PutApiManagerEventlocationsByIdData, PutApiManagerEventlocationsByIdResponse, GetApiManagerEventsData, PostApiManagerEventsData, PostApiManagerEventsResponse, DeleteApiManagerEventsByIdData, DeleteApiManagerEventsByIdResponse, GetApiManagerEventsByIdData, PutApiManagerEventsByIdData, PutApiManagerEventsByIdResponse, GetApiManagerReservationAllowanceData, PostApiManagerReservationAllowanceData, PostApiManagerReservationAllowanceResponse, PutApiManagerReservationAllowanceData, PutApiManagerReservationAllowanceResponse, GetApiManagerReservationAllowanceEventByEventIdData, DeleteApiManagerReservationAllowanceByIdData, DeleteApiManagerReservationAllowanceByIdResponse, GetApiManagerReservationAllowanceByIdData, GetApiManagerReservationsData, PostApiManagerReservationsData, PostApiManagerReservationsResponse, PostApiManagerReservationsBlockData, PostApiManagerReservationsBlockResponse, GetApiManagerReservationsEventByIdData, DeleteApiManagerReservationsByIdData, DeleteApiManagerReservationsByIdResponse, GetApiManagerReservationsByIdData, GetApiManagerSeatsData, PostApiManagerSeatsData, PostApiManagerSeatsResponse, DeleteApiManagerSeatsByIdData, DeleteApiManagerSeatsByIdResponse, GetApiManagerSeatsByIdData, PutApiManagerSeatsByIdData, PutApiManagerSeatsByIdResponse, GetApiUserConfirmEmailData, GetApiUserEventsData, PostApiUserResendEmailConfirmationData, PostApiUserResendEmailConfirmationResponse, GetApiUserReservationsData, PostApiUserReservationsData, PostApiUserReservationsResponse, GetApiUserReservationsExportByEventIdCsvData, DeleteApiUserReservationsByIdData, DeleteApiUserReservationsByIdResponse, GetApiUserReservationsByIdData, GetApiUsersAdminData, PostApiUsersAdminData, PostApiUsersAdminImportData, PostApiUsersAdminImportResponse, DeleteApiUsersAdminByIdData, DeleteApiUsersAdminByIdResponse, PutApiUsersAdminByIdData, PutApiUsersAdminByIdResponse, GetApiUsersManagerData, GetApiUsersMeData, PutApiUsersMeData, PutApiUsersMeResponse, GetApiUsersRolesData } from '../types.gen';
 import { client as _heyApiClient } from '../client.gen';
 
 export type QueryKey<TOptions extends Options> = [
@@ -285,8 +285,8 @@ export const postApiManagerEventlocationsImportByIdMutation = (options?: Partial
 /**
  * Delete Event Location
  */
-export const deleteApiManagerEventlocationsByIdMutation = (options?: Partial<Options<DeleteApiManagerEventlocationsByIdData>>): UseMutationOptions<unknown, DefaultError, Options<DeleteApiManagerEventlocationsByIdData>> => {
-    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<DeleteApiManagerEventlocationsByIdData>> = {
+export const deleteApiManagerEventlocationsByIdMutation = (options?: Partial<Options<DeleteApiManagerEventlocationsByIdData>>): UseMutationOptions<DeleteApiManagerEventlocationsByIdResponse, DefaultError, Options<DeleteApiManagerEventlocationsByIdData>> => {
+    const mutationOptions: UseMutationOptions<DeleteApiManagerEventlocationsByIdResponse, DefaultError, Options<DeleteApiManagerEventlocationsByIdData>> = {
         mutationFn: async (localOptions) => {
             const { data } = await deleteApiManagerEventlocationsById({
                 ...options,
@@ -675,8 +675,8 @@ export const getApiManagerReservationsEventByIdOptions = (options: Options<GetAp
 /**
  * Delete Reservation
  */
-export const deleteApiManagerReservationsByIdMutation = (options?: Partial<Options<DeleteApiManagerReservationsByIdData>>): UseMutationOptions<unknown, DefaultError, Options<DeleteApiManagerReservationsByIdData>> => {
-    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<DeleteApiManagerReservationsByIdData>> = {
+export const deleteApiManagerReservationsByIdMutation = (options?: Partial<Options<DeleteApiManagerReservationsByIdData>>): UseMutationOptions<DeleteApiManagerReservationsByIdResponse, DefaultError, Options<DeleteApiManagerReservationsByIdData>> => {
+    const mutationOptions: UseMutationOptions<DeleteApiManagerReservationsByIdResponse, DefaultError, Options<DeleteApiManagerReservationsByIdData>> = {
         mutationFn: async (localOptions) => {
             const { data } = await deleteApiManagerReservationsById({
                 ...options,
@@ -769,8 +769,8 @@ export const postApiManagerSeatsMutation = (options?: Partial<Options<PostApiMan
 /**
  * Delete Manager Seat
  */
-export const deleteApiManagerSeatsByIdMutation = (options?: Partial<Options<DeleteApiManagerSeatsByIdData>>): UseMutationOptions<unknown, DefaultError, Options<DeleteApiManagerSeatsByIdData>> => {
-    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<DeleteApiManagerSeatsByIdData>> = {
+export const deleteApiManagerSeatsByIdMutation = (options?: Partial<Options<DeleteApiManagerSeatsByIdData>>): UseMutationOptions<DeleteApiManagerSeatsByIdResponse, DefaultError, Options<DeleteApiManagerSeatsByIdData>> => {
+    const mutationOptions: UseMutationOptions<DeleteApiManagerSeatsByIdResponse, DefaultError, Options<DeleteApiManagerSeatsByIdData>> = {
         mutationFn: async (localOptions) => {
             const { data } = await deleteApiManagerSeatsById({
                 ...options,
@@ -1057,8 +1057,8 @@ export const postApiUsersAdminOptions = (options: Options<PostApiUsersAdminData>
 /**
  * Create User
  */
-export const postApiUsersAdminMutation = (options?: Partial<Options<PostApiUsersAdminData>>): UseMutationOptions<PostApiUsersAdminResponse, DefaultError, Options<PostApiUsersAdminData>> => {
-    const mutationOptions: UseMutationOptions<PostApiUsersAdminResponse, DefaultError, Options<PostApiUsersAdminData>> = {
+export const postApiUsersAdminMutation = (options?: Partial<Options<PostApiUsersAdminData>>): UseMutationOptions<unknown, DefaultError, Options<PostApiUsersAdminData>> => {
+    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<PostApiUsersAdminData>> = {
         mutationFn: async (localOptions) => {
             const { data } = await postApiUsersAdmin({
                 ...options,

@@ -60,6 +60,10 @@ public class ReservationResource {
                                     @Schema(
                                             type = SchemaType.ARRAY,
                                             implementation = ReservationResponseDTO.class)))
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only authenticated users can access this resource")
     public List<ReservationResponseDTO> getMyReservations() {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.infof(
@@ -79,6 +83,13 @@ public class ReservationResource {
             responseCode = "200",
             description = "OK",
             content = @Content(schema = @Schema(implementation = ReservationResponseDTO.class)))
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only authenticated users can access this resource")
+    @APIResponse(
+            responseCode = "404",
+            description = "Not Found: Reservation with specified ID not found for the current user")
     public ReservationResponseDTO getMyReservationById(@PathParam("id") Long id) {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.infof(
@@ -100,6 +111,15 @@ public class ReservationResource {
                                     @Schema(
                                             type = SchemaType.ARRAY,
                                             implementation = ReservationResponseDTO.class)))
+    @APIResponse(responseCode = "201", description = "Reservations created successfully")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only authenticated users can access this resource")
+    @APIResponse(responseCode = "404", description = "Not Found: Event or seat not found")
+    @APIResponse(
+            responseCode = "409",
+            description = "Conflict: Seat already reserved or event booking closed")
     public List<ReservationResponseDTO> createReservation(ReservationsRequestCreateDTO dto) {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.infof(
@@ -119,6 +139,13 @@ public class ReservationResource {
     @DELETE
     @Path("/{id}")
     @APIResponse(responseCode = "204", description = "No Content")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only authenticated users can access this resource")
+    @APIResponse(
+            responseCode = "404",
+            description = "Not Found: Reservation with specified ID not found for the current user")
     public void deleteReservation(@PathParam("id") Long id) {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.infof(
@@ -140,6 +167,8 @@ public class ReservationResource {
             content = @Content(mediaType = "text/csv"))
     @APIResponse(responseCode = "403", description = "Forbidden - User not authorized")
     @APIResponse(responseCode = "404", description = "Not Found - Event not found")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(responseCode = "500", description = "Internal Server Error during CSV export")
     public Response exportReservationsToCsv(@PathParam("eventId") Long eventId) {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.infof(

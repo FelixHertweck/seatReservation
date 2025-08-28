@@ -216,11 +216,15 @@ export type PostApiAuthLoginErrors = {
      * Bad Request
      */
     400: unknown;
+    /**
+     * Unauthorized: Invalid credentials
+     */
+    401: unknown;
 };
 
 export type PostApiAuthLoginResponses = {
     /**
-     * OK
+     * Login successful, JWT cookie set
      */
     200: unknown;
 };
@@ -234,7 +238,7 @@ export type PostApiAuthLogoutData = {
 
 export type PostApiAuthLogoutResponses = {
     /**
-     * OK
+     * Logout successful, JWT cookie cleared
      */
     200: unknown;
 };
@@ -251,11 +255,15 @@ export type PostApiAuthRegisterErrors = {
      * Bad Request
      */
     400: unknown;
+    /**
+     * Conflict: User with this username already exists
+     */
+    409: unknown;
 };
 
 export type PostApiAuthRegisterResponses = {
     /**
-     * OK
+     * Registration successful, JWT cookie set
      */
     200: unknown;
 };
@@ -269,11 +277,11 @@ export type GetApiManagerEventlocationsData = {
 
 export type GetApiManagerEventlocationsErrors = {
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
      */
     403: unknown;
 };
@@ -300,13 +308,17 @@ export type PostApiManagerEventlocationsErrors = {
      */
     400: unknown;
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
      */
     403: unknown;
+    /**
+     * Conflict: Event location with this name already exists
+     */
+    409: unknown;
 };
 
 export type PostApiManagerEventlocationsResponses = {
@@ -331,13 +343,17 @@ export type PostApiManagerEventlocationsImportErrors = {
      */
     400: unknown;
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
      */
     403: unknown;
+    /**
+     * Conflict: Event location with this name already exists
+     */
+    409: unknown;
 };
 
 export type PostApiManagerEventlocationsImportResponses = {
@@ -364,13 +380,17 @@ export type PostApiManagerEventlocationsImportByIdErrors = {
      */
     400: unknown;
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
      */
     403: unknown;
+    /**
+     * Not Found: Event location with specified ID not found
+     */
+    404: unknown;
 };
 
 export type PostApiManagerEventlocationsImportByIdResponses = {
@@ -393,13 +413,17 @@ export type DeleteApiManagerEventlocationsByIdData = {
 
 export type DeleteApiManagerEventlocationsByIdErrors = {
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
      */
     403: unknown;
+    /**
+     * Not Found: Event location with specified ID not found
+     */
+    404: unknown;
 };
 
 export type DeleteApiManagerEventlocationsByIdResponses = {
@@ -407,7 +431,13 @@ export type DeleteApiManagerEventlocationsByIdResponses = {
      * OK
      */
     200: unknown;
+    /**
+     * Event location deleted successfully
+     */
+    204: void;
 };
+
+export type DeleteApiManagerEventlocationsByIdResponse = DeleteApiManagerEventlocationsByIdResponses[keyof DeleteApiManagerEventlocationsByIdResponses];
 
 export type PutApiManagerEventlocationsByIdData = {
     body: EventLocationRequestDto;
@@ -424,18 +454,26 @@ export type PutApiManagerEventlocationsByIdErrors = {
      */
     400: unknown;
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
      */
     403: unknown;
+    /**
+     * Not Found: Event location with specified ID not found
+     */
+    404: unknown;
+    /**
+     * Conflict: Event location with this name already exists
+     */
+    409: unknown;
 };
 
 export type PutApiManagerEventlocationsByIdResponses = {
     /**
-     * OK
+     * Event location updated successfully
      */
     200: EventLocationResponseDto;
 };
@@ -451,11 +489,11 @@ export type GetApiManagerEventsData = {
 
 export type GetApiManagerEventsErrors = {
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
      */
     403: unknown;
 };
@@ -482,13 +520,21 @@ export type PostApiManagerEventsErrors = {
      */
     400: unknown;
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
      */
     403: unknown;
+    /**
+     * Not Found: Event location not found
+     */
+    404: unknown;
+    /**
+     * Conflict: Event with this name already exists in this event location
+     */
+    409: unknown;
 };
 
 export type PostApiManagerEventsResponses = {
@@ -496,6 +542,10 @@ export type PostApiManagerEventsResponses = {
      * OK
      */
     200: DetailedEventResponseDto;
+    /**
+     * Event created successfully
+     */
+    201: unknown;
 };
 
 export type PostApiManagerEventsResponse = PostApiManagerEventsResponses[keyof PostApiManagerEventsResponses];
@@ -511,13 +561,17 @@ export type DeleteApiManagerEventsByIdData = {
 
 export type DeleteApiManagerEventsByIdErrors = {
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
      */
     403: unknown;
+    /**
+     * Not Found: Event with specified ID not found for the current manager
+     */
+    404: unknown;
 };
 
 export type DeleteApiManagerEventsByIdResponses = {
@@ -540,13 +594,17 @@ export type GetApiManagerEventsByIdData = {
 
 export type GetApiManagerEventsByIdErrors = {
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
      */
     403: unknown;
+    /**
+     * Not Found: Event with specified ID not found for the current manager
+     */
+    404: unknown;
 };
 
 export type GetApiManagerEventsByIdResponses = {
@@ -573,18 +631,26 @@ export type PutApiManagerEventsByIdErrors = {
      */
     400: unknown;
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
      */
     403: unknown;
+    /**
+     * Not Found: Event or event location not found
+     */
+    404: unknown;
+    /**
+     * Conflict: Event with this name already exists in this event location
+     */
+    409: unknown;
 };
 
 export type PutApiManagerEventsByIdResponses = {
     /**
-     * OK
+     * Event updated successfully
      */
     200: DetailedEventResponseDto;
 };
@@ -600,18 +666,18 @@ export type GetApiManagerReservationAllowanceData = {
 
 export type GetApiManagerReservationAllowanceErrors = {
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
      */
     403: unknown;
 };
 
 export type GetApiManagerReservationAllowanceResponses = {
     /**
-     * OK
+     * List of reservation allowances retrieved successfully
      */
     200: Array<EventUserAllowancesDto>;
 };
@@ -631,18 +697,26 @@ export type PostApiManagerReservationAllowanceErrors = {
      */
     400: unknown;
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
      */
     403: unknown;
+    /**
+     * Not Found: Event or user not found
+     */
+    404: unknown;
+    /**
+     * Conflict: Allowance already exists for this user and event
+     */
+    409: unknown;
 };
 
 export type PostApiManagerReservationAllowanceResponses = {
     /**
-     * OK
+     * Reservation allowance set successfully
      */
     200: Array<EventUserAllowancesDto>;
 };
@@ -662,18 +736,26 @@ export type PutApiManagerReservationAllowanceErrors = {
      */
     400: unknown;
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
      */
     403: unknown;
+    /**
+     * Not Found: Allowance with specified ID not found
+     */
+    404: unknown;
+    /**
+     * Conflict: Allowance already exists for this user and event
+     */
+    409: unknown;
 };
 
 export type PutApiManagerReservationAllowanceResponses = {
     /**
-     * OK
+     * Reservation allowance updated successfully
      */
     200: EventUserAllowancesDto;
 };
@@ -691,18 +773,22 @@ export type GetApiManagerReservationAllowanceEventByEventIdData = {
 
 export type GetApiManagerReservationAllowanceEventByEventIdErrors = {
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
      */
     403: unknown;
+    /**
+     * Not Found: Event with specified ID not found
+     */
+    404: unknown;
 };
 
 export type GetApiManagerReservationAllowanceEventByEventIdResponses = {
     /**
-     * OK
+     * List of reservation allowances for a specific event retrieved successfully
      */
     200: Array<EventUserAllowancesDto>;
 };
@@ -720,13 +806,17 @@ export type DeleteApiManagerReservationAllowanceByIdData = {
 
 export type DeleteApiManagerReservationAllowanceByIdErrors = {
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
      */
     403: unknown;
+    /**
+     * Not Found: Allowance with specified ID not found
+     */
+    404: unknown;
 };
 
 export type DeleteApiManagerReservationAllowanceByIdResponses = {
@@ -749,18 +839,22 @@ export type GetApiManagerReservationAllowanceByIdData = {
 
 export type GetApiManagerReservationAllowanceByIdErrors = {
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
      */
     403: unknown;
+    /**
+     * Not Found: Allowance with specified ID not found
+     */
+    404: unknown;
 };
 
 export type GetApiManagerReservationAllowanceByIdResponses = {
     /**
-     * OK
+     * Reservation allowance retrieved successfully
      */
     200: EventUserAllowancesDto;
 };
@@ -776,11 +870,11 @@ export type GetApiManagerReservationsData = {
 
 export type GetApiManagerReservationsErrors = {
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
      */
     403: unknown;
 };
@@ -807,13 +901,21 @@ export type PostApiManagerReservationsErrors = {
      */
     400: unknown;
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
      */
     403: unknown;
+    /**
+     * Not Found: Event, user or seat not found
+     */
+    404: unknown;
+    /**
+     * Conflict: Seat already reserved or event booking closed
+     */
+    409: unknown;
 };
 
 export type PostApiManagerReservationsResponses = {
@@ -821,6 +923,10 @@ export type PostApiManagerReservationsResponses = {
      * OK
      */
     200: Array<DetailedReservationResponseDto>;
+    /**
+     * Reservations created successfully
+     */
+    201: unknown;
 };
 
 export type PostApiManagerReservationsResponse = PostApiManagerReservationsResponses[keyof PostApiManagerReservationsResponses];
@@ -838,13 +944,21 @@ export type PostApiManagerReservationsBlockErrors = {
      */
     400: unknown;
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
      */
     403: unknown;
+    /**
+     * Not Found: Event or seat not found
+     */
+    404: unknown;
+    /**
+     * Conflict: Seat already blocked
+     */
+    409: unknown;
 };
 
 export type PostApiManagerReservationsBlockResponses = {
@@ -867,13 +981,17 @@ export type GetApiManagerReservationsEventByIdData = {
 
 export type GetApiManagerReservationsEventByIdErrors = {
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
      */
     403: unknown;
+    /**
+     * Not Found: Event with specified ID not found for the current manager
+     */
+    404: unknown;
 };
 
 export type GetApiManagerReservationsEventByIdResponses = {
@@ -896,13 +1014,17 @@ export type DeleteApiManagerReservationsByIdData = {
 
 export type DeleteApiManagerReservationsByIdErrors = {
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
      */
     403: unknown;
+    /**
+     * Not Found: Reservation with specified ID not found for the current manager
+     */
+    404: unknown;
 };
 
 export type DeleteApiManagerReservationsByIdResponses = {
@@ -910,7 +1032,13 @@ export type DeleteApiManagerReservationsByIdResponses = {
      * OK
      */
     200: unknown;
+    /**
+     * Reservation deleted successfully
+     */
+    204: void;
 };
+
+export type DeleteApiManagerReservationsByIdResponse = DeleteApiManagerReservationsByIdResponses[keyof DeleteApiManagerReservationsByIdResponses];
 
 export type GetApiManagerReservationsByIdData = {
     body?: never;
@@ -923,13 +1051,17 @@ export type GetApiManagerReservationsByIdData = {
 
 export type GetApiManagerReservationsByIdErrors = {
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
      */
     403: unknown;
+    /**
+     * Not Found: Reservation with specified ID not found for the current manager
+     */
+    404: unknown;
 };
 
 export type GetApiManagerReservationsByIdResponses = {
@@ -950,11 +1082,11 @@ export type GetApiManagerSeatsData = {
 
 export type GetApiManagerSeatsErrors = {
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
      */
     403: unknown;
 };
@@ -981,13 +1113,21 @@ export type PostApiManagerSeatsErrors = {
      */
     400: unknown;
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
      */
     403: unknown;
+    /**
+     * Not Found: Event location not found
+     */
+    404: unknown;
+    /**
+     * Conflict: Seat with this row and number already exists in this event location
+     */
+    409: unknown;
 };
 
 export type PostApiManagerSeatsResponses = {
@@ -995,6 +1135,10 @@ export type PostApiManagerSeatsResponses = {
      * OK
      */
     200: SeatResponseDto;
+    /**
+     * Seat created successfully
+     */
+    201: unknown;
 };
 
 export type PostApiManagerSeatsResponse = PostApiManagerSeatsResponses[keyof PostApiManagerSeatsResponses];
@@ -1010,13 +1154,17 @@ export type DeleteApiManagerSeatsByIdData = {
 
 export type DeleteApiManagerSeatsByIdErrors = {
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
      */
     403: unknown;
+    /**
+     * Not Found: Seat with specified ID not found for the current manager
+     */
+    404: unknown;
 };
 
 export type DeleteApiManagerSeatsByIdResponses = {
@@ -1024,7 +1172,13 @@ export type DeleteApiManagerSeatsByIdResponses = {
      * OK
      */
     200: unknown;
+    /**
+     * Seat deleted successfully
+     */
+    204: void;
 };
+
+export type DeleteApiManagerSeatsByIdResponse = DeleteApiManagerSeatsByIdResponses[keyof DeleteApiManagerSeatsByIdResponses];
 
 export type GetApiManagerSeatsByIdData = {
     body?: never;
@@ -1037,13 +1191,17 @@ export type GetApiManagerSeatsByIdData = {
 
 export type GetApiManagerSeatsByIdErrors = {
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
      */
     403: unknown;
+    /**
+     * Not Found: Seat with specified ID not found for the current manager
+     */
+    404: unknown;
 };
 
 export type GetApiManagerSeatsByIdResponses = {
@@ -1070,18 +1228,26 @@ export type PutApiManagerSeatsByIdErrors = {
      */
     400: unknown;
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
      */
     403: unknown;
+    /**
+     * Not Found: Seat with specified ID not found for the current manager
+     */
+    404: unknown;
+    /**
+     * Conflict: Seat with this row and number already exists in this event location
+     */
+    409: unknown;
 };
 
 export type PutApiManagerSeatsByIdResponses = {
     /**
-     * OK
+     * Seat updated successfully
      */
     200: SeatResponseDto;
 };
@@ -1103,6 +1269,10 @@ export type GetApiUserConfirmEmailErrors = {
      * Invalid token
      */
     400: unknown;
+    /**
+     * Unauthorized
+     */
+    401: unknown;
     /**
      * Token not found
      */
@@ -1129,11 +1299,11 @@ export type GetApiUserEventsData = {
 
 export type GetApiUserEventsErrors = {
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only authenticated users can access this resource
      */
     403: unknown;
 };
@@ -1155,6 +1325,10 @@ export type PostApiUserResendEmailConfirmationData = {
 };
 
 export type PostApiUserResendEmailConfirmationErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
     /**
      * User not found
      */
@@ -1183,11 +1357,11 @@ export type GetApiUserReservationsData = {
 
 export type GetApiUserReservationsErrors = {
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only authenticated users can access this resource
      */
     403: unknown;
 };
@@ -1214,13 +1388,21 @@ export type PostApiUserReservationsErrors = {
      */
     400: unknown;
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only authenticated users can access this resource
      */
     403: unknown;
+    /**
+     * Not Found: Event or seat not found
+     */
+    404: unknown;
+    /**
+     * Conflict: Seat already reserved or event booking closed
+     */
+    409: unknown;
 };
 
 export type PostApiUserReservationsResponses = {
@@ -1228,6 +1410,10 @@ export type PostApiUserReservationsResponses = {
      * OK
      */
     200: Array<ReservationResponseDto>;
+    /**
+     * Reservations created successfully
+     */
+    201: unknown;
 };
 
 export type PostApiUserReservationsResponse = PostApiUserReservationsResponses[keyof PostApiUserReservationsResponses];
@@ -1243,7 +1429,7 @@ export type GetApiUserReservationsExportByEventIdCsvData = {
 
 export type GetApiUserReservationsExportByEventIdCsvErrors = {
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
@@ -1254,6 +1440,10 @@ export type GetApiUserReservationsExportByEventIdCsvErrors = {
      * Not Found - Event not found
      */
     404: unknown;
+    /**
+     * Internal Server Error during CSV export
+     */
+    500: unknown;
 };
 
 export type GetApiUserReservationsExportByEventIdCsvResponses = {
@@ -1274,13 +1464,17 @@ export type DeleteApiUserReservationsByIdData = {
 
 export type DeleteApiUserReservationsByIdErrors = {
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only authenticated users can access this resource
      */
     403: unknown;
+    /**
+     * Not Found: Reservation with specified ID not found for the current user
+     */
+    404: unknown;
 };
 
 export type DeleteApiUserReservationsByIdResponses = {
@@ -1303,13 +1497,17 @@ export type GetApiUserReservationsByIdData = {
 
 export type GetApiUserReservationsByIdErrors = {
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only authenticated users can access this resource
      */
     403: unknown;
+    /**
+     * Not Found: Reservation with specified ID not found for the current user
+     */
+    404: unknown;
 };
 
 export type GetApiUserReservationsByIdResponses = {
@@ -1330,18 +1528,18 @@ export type GetApiUsersAdminData = {
 
 export type GetApiUsersAdminErrors = {
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only ADMIN role can access this resource
      */
     403: unknown;
 };
 
 export type GetApiUsersAdminResponses = {
     /**
-     * OK
+     * List of users (admin view) retrieved successfully
      */
     200: Array<UserDto>;
 };
@@ -1361,23 +1559,25 @@ export type PostApiUsersAdminErrors = {
      */
     400: unknown;
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only ADMIN role can access this resource
      */
     403: unknown;
+    /**
+     * Conflict: User with this username already exists
+     */
+    409: unknown;
 };
 
 export type PostApiUsersAdminResponses = {
     /**
-     * OK
+     * User created successfully
      */
-    200: UserDto;
+    201: unknown;
 };
-
-export type PostApiUsersAdminResponse = PostApiUsersAdminResponses[keyof PostApiUsersAdminResponses];
 
 export type PostApiUsersAdminImportData = {
     body: Array<AdminUserCreationDto>;
@@ -1392,18 +1592,18 @@ export type PostApiUsersAdminImportErrors = {
      */
     400: unknown;
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only ADMIN role can access this resource
      */
     403: unknown;
 };
 
 export type PostApiUsersAdminImportResponses = {
     /**
-     * OK
+     * Users imported successfully
      */
     200: Array<UserDto>;
 };
@@ -1421,18 +1621,22 @@ export type DeleteApiUsersAdminByIdData = {
 
 export type DeleteApiUsersAdminByIdErrors = {
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only ADMIN role can access this resource
      */
     403: unknown;
+    /**
+     * Not Found: User with specified ID not found
+     */
+    404: unknown;
 };
 
 export type DeleteApiUsersAdminByIdResponses = {
     /**
-     * No Content
+     * User deleted successfully
      */
     204: void;
 };
@@ -1454,18 +1658,26 @@ export type PutApiUsersAdminByIdErrors = {
      */
     400: unknown;
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only ADMIN role can access this resource
      */
     403: unknown;
+    /**
+     * Not Found: User with specified ID not found
+     */
+    404: unknown;
+    /**
+     * Conflict: User with this username already exists
+     */
+    409: unknown;
 };
 
 export type PutApiUsersAdminByIdResponses = {
     /**
-     * OK
+     * User updated successfully
      */
     200: UserDto;
 };
@@ -1481,18 +1693,18 @@ export type GetApiUsersManagerData = {
 
 export type GetApiUsersManagerErrors = {
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only ADMIN or MANAGER roles can access this resource
      */
     403: unknown;
 };
 
 export type GetApiUsersManagerResponses = {
     /**
-     * OK
+     * List of users (limited info) retrieved successfully
      */
     200: Array<LimitedUserInfoDto>;
 };
@@ -1508,18 +1720,18 @@ export type GetApiUsersMeData = {
 
 export type GetApiUsersMeErrors = {
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only authenticated users can access this resource
      */
     403: unknown;
 };
 
 export type GetApiUsersMeResponses = {
     /**
-     * OK
+     * Current user profile retrieved successfully
      */
     200: UserDto;
 };
@@ -1539,18 +1751,22 @@ export type PutApiUsersMeErrors = {
      */
     400: unknown;
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only authenticated users can access this resource
      */
     403: unknown;
+    /**
+     * Conflict: User with this username already exists
+     */
+    409: unknown;
 };
 
 export type PutApiUsersMeResponses = {
     /**
-     * OK
+     * User profile updated successfully
      */
     200: UserDto;
 };
@@ -1566,18 +1782,18 @@ export type GetApiUsersRolesData = {
 
 export type GetApiUsersRolesErrors = {
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only authenticated users can access this resource
      */
     403: unknown;
 };
 
 export type GetApiUsersRolesResponses = {
     /**
-     * OK
+     * List of available roles retrieved successfully
      */
     200: Array<string>;
 };

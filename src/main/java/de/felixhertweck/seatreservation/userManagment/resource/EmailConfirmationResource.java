@@ -57,6 +57,7 @@ public class EmailConfirmationResource {
             description = "Confirms a user's email address using the provided token")
     @APIResponse(responseCode = "200", description = "Email confirmed successfully")
     @APIResponse(responseCode = "400", description = "Invalid token")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(responseCode = "404", description = "Token not found")
     @APIResponse(responseCode = "410", description = "Token expired")
     public Response confirmEmail(@QueryParam("id") Long id, @QueryParam("token") String token) {
@@ -110,6 +111,7 @@ public class EmailConfirmationResource {
                     "Resends the email confirmation for the authenticated user and extends the"
                             + " token's lifetime.")
     @APIResponse(responseCode = "204", description = "Email confirmation resent successfully")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(responseCode = "404", description = "User not found")
     @APIResponse(responseCode = "500", description = "Internal server error")
     public Response resendEmailConfirmation() {

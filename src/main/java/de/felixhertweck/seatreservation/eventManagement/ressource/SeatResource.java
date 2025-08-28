@@ -54,6 +54,16 @@ public class SeatResource {
             responseCode = "200",
             description = "OK",
             content = @Content(schema = @Schema(implementation = SeatResponseDTO.class)))
+    @APIResponse(responseCode = "201", description = "Seat created successfully")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(responseCode = "404", description = "Not Found: Event location not found")
+    @APIResponse(
+            responseCode = "409",
+            description =
+                    "Conflict: Seat with this row and number already exists in this event location")
     public SeatResponseDTO createSeat(SeatRequestDTO seatRequestDTO) {
         LOG.infof("Received POST request to /api/manager/seats to create a new seat.");
         LOG.debugf("SeatRequestDTO received: %s", seatRequestDTO.toString());
@@ -75,6 +85,10 @@ public class SeatResource {
                                     @Schema(
                                             type = SchemaType.ARRAY,
                                             implementation = SeatResponseDTO.class)))
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
     public List<SeatResponseDTO> getAllManagerSeats() {
         LOG.infof("Received GET request to /api/manager/seats to get all manager seats.");
         User currentUser = userSecurityContext.getCurrentUser();
@@ -89,6 +103,13 @@ public class SeatResource {
             responseCode = "200",
             description = "OK",
             content = @Content(schema = @Schema(implementation = SeatResponseDTO.class)))
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(
+            responseCode = "404",
+            description = "Not Found: Seat with specified ID not found for the current manager")
     public SeatResponseDTO getManagerSeatById(@PathParam("id") Long id) {
         LOG.infof("Received GET request to /api/manager/seats/%d.", id);
         User currentUser = userSecurityContext.getCurrentUser();
@@ -107,6 +128,18 @@ public class SeatResource {
             responseCode = "200",
             description = "OK",
             content = @Content(schema = @Schema(implementation = SeatResponseDTO.class)))
+    @APIResponse(responseCode = "200", description = "Seat updated successfully")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(
+            responseCode = "404",
+            description = "Not Found: Seat with specified ID not found for the current manager")
+    @APIResponse(
+            responseCode = "409",
+            description =
+                    "Conflict: Seat with this row and number already exists in this event location")
     public SeatResponseDTO updateManagerSeat(
             @PathParam("id") Long id, SeatRequestDTO seatUpdateDTO) {
         LOG.infof("Received PUT request to /api/manager/seats/%d to update seat.", id);
@@ -120,6 +153,14 @@ public class SeatResource {
     @DELETE
     @Path("/{id}")
     @APIResponse(responseCode = "200", description = "OK")
+    @APIResponse(responseCode = "204", description = "Seat deleted successfully")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(
+            responseCode = "404",
+            description = "Not Found: Seat with specified ID not found for the current manager")
     public void deleteManagerSeat(@PathParam("id") Long id) {
         LOG.infof("Received DELETE request to /api/manager/seats/%d to delete seat.", id);
         User currentUser = userSecurityContext.getCurrentUser();
