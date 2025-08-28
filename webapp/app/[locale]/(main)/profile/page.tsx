@@ -30,17 +30,71 @@ export default function ProfilePage() {
   const [newTag, setNewTag] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPasswordSection, setShowPasswordSection] = useState(false);
+  const [showPasswordSection, setShowPasswordSection] =
+    useState<boolean>(false);
+
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [originalFormData, setOriginalFormData] = useState({
+    firstname: "",
+    lastname: "",
+    email: "",
+    tags: [] as string[],
+  });
 
   useEffect(() => {
     if (user) {
-      setFirstname(user.firstname || "");
-      setLastname(user.lastname || "");
-      setEmail(user.email || "");
-      setOriginalEmail(user.email || "");
-      setTags(user.tags || []);
+      const initialData = {
+        firstname: user.firstname || "",
+        lastname: user.lastname || "",
+        email: user.email || "",
+        tags: user.tags || [],
+      };
+
+      setFirstname(initialData.firstname);
+      setLastname(initialData.lastname);
+      setEmail(initialData.email);
+      setOriginalEmail(initialData.email);
+      setTags(initialData.tags);
+
+      setOriginalFormData(initialData);
+      setHasUnsavedChanges(false);
     }
   }, [user]);
+
+  useEffect(() => {
+    const currentData = { firstname, lastname, email, tags };
+    const hasChanges =
+      JSON.stringify(currentData) !== JSON.stringify(originalFormData) ||
+      (showPasswordSection && (newPassword || confirmPassword));
+
+    setHasUnsavedChanges(!!hasChanges);
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasChanges) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [
+    firstname,
+    lastname,
+    email,
+    tags,
+    originalFormData,
+    showPasswordSection,
+    newPassword,
+    confirmPassword,
+  ]);
+
+  useEffect(() => {
+    (window as any).__profileHasUnsavedChanges = hasUnsavedChanges;
+    return () => {
+      (window as any).__profileHasUnsavedChanges = false;
+    };
+  }, [hasUnsavedChanges]);
 
   const handleAddTag = () => {
     if (newTag.trim() && !tags.includes(newTag.trim())) {
@@ -93,6 +147,10 @@ export default function ProfilePage() {
       title: t("profilePage.profileUpdatedTitle"),
       description: t("profilePage.profileUpdatedDescription"),
     });
+
+    const newFormData = { firstname, lastname, email, tags };
+    setOriginalFormData(newFormData);
+    setHasUnsavedChanges(false);
 
     if (showPasswordSection) {
       setNewPassword("");
@@ -169,29 +227,31 @@ export default function ProfilePage() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="mb-2"
               />
-              {!user?.emailVerified && (
-                <div className="flex flex-col items-start gap-2">
-                  <span className="text-xs text-gray-500">
-                    {t("profilePage.confirmationEmailInfo")}
-                  </span>
-                  <Button
-                    type="button"
-                    className="text-xs"
-                    size={"sm"}
-                    onClick={async () => {
-                      await resendConfirmation();
-                      toast({
-                        title: t("profilePage.confirmationEmailResentTitle"),
-                        description: t(
-                          "profilePage.confirmationEmailResentDescription",
-                        ),
-                      });
-                    }}
-                  >
-                    {t("profilePage.resendButton")}
-                  </Button>
-                </div>
-              )}
+              {!user?.emailVerified &&
+                user?.email &&
+                email === originalEmail && (
+                  <div className="flex flex-col items-start gap-2">
+                    <span className="text-xs text-gray-500">
+                      {t("profilePage.confirmationEmailInfo")}
+                    </span>
+                    <Button
+                      type="button"
+                      className="text-xs"
+                      size={"sm"}
+                      onClick={async () => {
+                        await resendConfirmation();
+                        toast({
+                          title: t("profilePage.confirmationEmailResentTitle"),
+                          description: t(
+                            "profilePage.confirmationEmailResentDescription",
+                          ),
+                        });
+                      }}
+                    >
+                      {t("profilePage.resendButton")}
+                    </Button>
+                  </div>
+                )}
             </div>
 
             <div className="border-t pt-4">
@@ -204,8 +264,9 @@ export default function ProfilePage() {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    setShowPasswordSection(!showPasswordSection);
-                    if (showPasswordSection) {
+                    const newShowPasswordSection = !showPasswordSection;
+                    setShowPasswordSection(newShowPasswordSection);
+                    if (newShowPasswordSection === false) {
                       setNewPassword("");
                       setConfirmPassword("");
                     }
@@ -299,7 +360,14 @@ export default function ProfilePage() {
                 </Button>
               </div>
             </div>
-            <Button type="submit" className="w-full">
+            <Button
+              type="submit"
+              className={`w-full transition-all duration-200 ${
+                hasUnsavedChanges
+                  ? "bg-primary hover:bg-primary/90 text-primary-foreground"
+                  : "bg-muted hover:bg-muted/80 text-muted-foreground"
+              }`}
+            >
               {t("profilePage.saveChangesButton")}
             </Button>
           </form>

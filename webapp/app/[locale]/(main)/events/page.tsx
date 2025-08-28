@@ -8,13 +8,6 @@ import { SeatMapModal } from "@/components/reservations/seat-map-modal";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useEvents } from "@/hooks/use-events";
 import { useReservations } from "@/hooks/use-reservations";
 import type { EventResponseDto, ReservationResponseDto } from "@/api";
@@ -36,7 +29,6 @@ export default function EventsPage() {
   const [selectedReservation, setSelectedReservation] =
     useState<ReservationResponseDto | null>(null);
   const [activeTab, setActiveTab] = useState("available");
-  const [selectedEventFilter, setSelectedEventFilter] = useState<string>("all");
   const [eventSearchQuery, setEventSearchQuery] = useState<string>("");
   const [reservationSearchQuery, setReservationSearchQuery] =
     useState<string>("");
@@ -62,26 +54,31 @@ export default function EventsPage() {
     });
   }, [events, eventSearchQuery]);
 
-  const filteredReservations = useMemo(() => {
+  const groupedReservations = useMemo(() => {
     if (!reservations) return [];
 
-    let filtered = [...reservations];
-
-    // Filter by selected event if not "all"
-    if (selectedEventFilter !== "all") {
-      const eventId = BigInt(selectedEventFilter);
-      filtered = filtered.filter(
-        (reservation) => reservation.eventId === eventId,
-      );
-    }
-
-    // Then apply search filter
-    return filtered.filter((reservation) =>
+    const filtered = reservations.filter((reservation) =>
       reservation.seat?.seatNumber
         ?.toLowerCase()
         .includes(reservationSearchQuery.toLowerCase()),
     );
-  }, [reservations, selectedEventFilter, reservationSearchQuery]);
+
+    const grouped = filtered.reduce(
+      (acc, reservation) => {
+        const eventId = reservation.eventId?.toString();
+        if (!eventId) return acc;
+
+        if (!acc[eventId]) {
+          acc[eventId] = [];
+        }
+        acc[eventId].push(reservation);
+        return acc;
+      },
+      {} as Record<string, ReservationResponseDto[]>,
+    );
+
+    return Object.values(grouped);
+  }, [reservations, reservationSearchQuery]);
 
   const handleEventSearch = (query: string) => {
     setEventSearchQuery(query);
@@ -98,11 +95,6 @@ export default function EventsPage() {
   const handleDeleteReservation = async (reservationId: bigint) => {
     await deleteReservation(reservationId);
   };
-
-  const eventsWithReservations =
-    events?.filter((event) =>
-      reservations.some((reservation) => reservation.eventId === event.id),
-    ) || [];
 
   const getEventReservations = (eventId: bigint | undefined) => {
     if (!eventId) return [];
@@ -139,47 +131,16 @@ export default function EventsPage() {
         </TabsList>
 
         <TabsContent value="reservations" className="space-y-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <SearchAndFilter
-                onSearch={handleReservationSearch}
-                onFilter={() => {}}
-                filterOptions={[]}
-              />
-            </div>
-            <div className="w-full sm:w-64">
-              <Select
-                value={selectedEventFilter}
-                onValueChange={setSelectedEventFilter}
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={t("eventsPage.filterByEventPlaceholder")}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">
-                    {t("eventsPage.allEventsFilter")}
-                  </SelectItem>
-                  {eventsWithReservations.map((event) => (
-                    <SelectItem
-                      key={event.id?.toString()}
-                      value={event.id?.toString() || ""}
-                    >
-                      {event.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          <SearchAndFilter
+            onSearch={handleReservationSearch}
+            onFilter={() => {}}
+            filterOptions={[]}
+          />
 
-          {filteredReservations.length === 0 ? (
+          {groupedReservations.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground text-lg">
-                {selectedEventFilter === "all"
-                  ? t("eventsPage.noReservationsYet")
-                  : t("eventsPage.noReservationsForSelectedEvent")}
+                {t("eventsPage.noReservationsYet")}
               </p>
               <p className="text-muted-foreground">
                 {t("eventsPage.switchToAvailableEvents")}
@@ -187,16 +148,22 @@ export default function EventsPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredReservations.map((reservation) => (
-                <ReservationCard
-                  key={reservation.id?.toString()}
-                  reservation={reservation}
-                  onViewSeats={() => handleViewReservationSeats(reservation)}
-                  onDelete={() =>
-                    reservation.id && handleDeleteReservation(reservation.id)
-                  }
-                />
-              ))}
+              {groupedReservations.map((eventReservations) => {
+                const firstReservation = eventReservations[0];
+                const event = events?.find(
+                  (e) => e.id === firstReservation.eventId,
+                );
+                return (
+                  <ReservationCard
+                    key={firstReservation.eventId?.toString()}
+                    reservations={eventReservations}
+                    eventName={event?.name}
+                    locationName={event?.location?.name}
+                    onViewSeats={handleViewReservationSeats}
+                    onDelete={handleDeleteReservation}
+                  />
+                );
+              })}
             </div>
           )}
         </TabsContent>

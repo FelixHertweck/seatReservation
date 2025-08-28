@@ -9,6 +9,12 @@
     "description": "Die angeforderte Seite konnte nicht gefunden werden.",
     "backToHome": "Zur Startseite"
   },
+  "logout": {
+    "success": {
+      "title": "Logout erfolgreich",
+      "description": "Sie wurden erfolgreich abgemeldet."
+    }
+  },
   "login": {
     "logoutButton": "Abmelden",
     "success": {
@@ -311,7 +317,10 @@
     "addButton": "Hinzufügen",
     "cancelButton": "Abbrechen",
     "createUserButton": "Benutzer erstellen",
-    "saveChangesButton": "Änderungen speichern"
+    "saveChangesButton": "Änderungen speichern",
+    "passwordPlaceholder": "Neues Passwort",
+    "passwordUpdatePlaceholder": "Passwort aktualisieren",
+    "passwordUpdateHint": "Das Passwort muss mindestens 8 Zeichen lang sein"
   },
   "userManagement": {
     "confirmDelete": "Sind Sie sicher, dass Sie {{username}} löschen möchten?",
@@ -348,11 +357,14 @@
     "title": "E-Mail-Verifizierung erforderlich",
     "emailSentTo": "Eine Bestätigungs-E-Mail wurde an ",
     "clickLinkToConfirm": " gesendet. Bitte klicken Sie auf den Link in der E-Mail, um Ihre Adresse zu bestätigen und fortzufahren.",
+    "reloadInfo": "Falls Sie die Email bereits bestätigt haben, laden Sie die Seite neu.",
     "ifEmailIncorrect": "Wenn diese E-Mail-Adresse falsch ist, können Sie sie auf Ihrer ",
     "profilePageLink": "Profilseite",
     "changeIt": " ändern.",
     "noEmailRegistered": "Für Ihr Konto ist keine E-Mail-Adresse registriert. Bitte fügen Sie eine E-Mail-Adresse hinzu und bestätigen Sie diese, um fortzufahren.",
-    "goToProfileButton": "Zum Profil"
+    "goToProfileButton": "Zum Profil",
+    "emailAlreadyVerifiedInfo": "Ihre E-Mail wurde bereits bestätigt. Bitte laden Sie die Seite neu, um die Änderungen zu sehen.",
+    "reloadPageButton": "Seite neu laden"
   },
   "loginRequiredPopup": {
     "title": "Anmeldung erforderlich",
@@ -421,7 +433,15 @@
     "rowLabel": "Reihe",
     "seatLabel": "Platz",
     "viewSeatButton": "Platz ansehen",
-    "cancelButton": "Abbrechen"
+    "cancelButton": "Abbrechen",
+    "showLessButton": "Weniger anzeigen",
+    "showMoreButton": "Mehr anzeigen"
+  },
+  "reservationDeleteModal": {
+    "title": "Reservierung löschen",
+    "description": "Möchten Sie die Reservierung für Platz {{seatNumber}} wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "cancelButton": "Abbrechen",
+    "confirmButton": "Löschen"
   },
   "seatMapModal": {
     "yourReservedSeatsTitle": "Ihre reservierten Plätze",
@@ -432,8 +452,7 @@
     "loadingText": "Wird geladen...",
     "yourReservedSeatsSectionTitle": "Ihre reservierten Plätze",
     "seatNumberButton": "Platz {{seatNumber}}",
-    "noSeatsReserved": "Keine Plätze reserviert",
-    "clickToHighlightHint": "💡 Klicken Sie auf eine Platznummer, um sie auf der Karte hervorzuheben"
+    "noSeatsReserved": "Keine Plätze reserviert"
   },
   "allowanceFormModal": {
     "validationErrorTitle": "Validierungsfehler",
@@ -651,7 +670,12 @@
     "english": "Englisch",
     "german": "Deutsch",
     "logout": "Abmelden",
-    "login": "Anmelden"
+    "login": "Anmelden",
+    "unsavedChangesTitle": "Ungespeicherte Änderungen",
+    "unsavedChangesDescription": "Sie haben ungespeicherte Änderungen auf dieser Seite. Was möchten Sie tun?",
+    "cancel": "Abbrechen",
+    "discardChanges": "Änderungen verwerfen",
+    "saveAndContinue": "Speichern & Fortfahren"
   },
   "seatManagement": {
     "title": "Sitzplatzverwaltung",

@@ -91,14 +91,32 @@ export function UserFormModal({
   };
 
   const handleSubmit = () => {
-    const userData: AdminUserUpdateDto = {
-      firstname,
-      lastname,
-      password: password === "••••••••" ? undefined : password,
-      email,
-      roles: selectedRoles,
-      tags,
-    };
+    let userData: AdminUserCreationDto | AdminUserUpdateDto;
+
+    if (isCreating) {
+      userData = {
+        username,
+        firstname,
+        lastname,
+        email,
+        password,
+        roles: selectedRoles,
+        tags,
+      };
+    } else {
+      userData = {
+        firstname,
+        lastname,
+        email,
+        roles: selectedRoles,
+        tags,
+      };
+
+      if (password !== "••••••••") {
+        userData.password = password;
+      }
+    }
+
     onSubmit(userData);
   };
 
@@ -167,17 +185,6 @@ export function UserFormModal({
               id="firstname"
               value={firstname}
               onChange={(e) => setFirstname(e.target.value)}
-              className="col-span-3"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="lastname" className="text-right">
-              {t("userFormModal.lastNameLabel")}
-            </Label>
-            <Input
-              id="lastname"
-              value={lastname}
-              onChange={(e) => setLastname(e.target.value)}
               className="col-span-3"
             />
           </div>

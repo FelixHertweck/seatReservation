@@ -9,6 +9,12 @@
     "description": "The requested page could not be found.",
     "backToHome": "Back to home"
   },
+  "logout": {
+    "success": {
+      "title": "Logout successful",
+      "description": "You have been successfully logged out."
+    }
+  },
   "login": {
     "logoutButton": "Logout",
     "success": {
@@ -311,7 +317,10 @@
     "addButton": "Add",
     "cancelButton": "Cancel",
     "createUserButton": "Create User",
-    "saveChangesButton": "Save Changes"
+    "saveChangesButton": "Save Changes",
+    "passwordPlaceholder": "New Password",
+    "passwordUpdatePlaceholder": "Update Password",
+    "passwordUpdateHint": "Password must be at least 8 characters long"
   },
   "userManagement": {
     "confirmDelete": "Are you sure you want to delete {{username}}?",
@@ -348,11 +357,14 @@
     "title": "Email Verification Required",
     "emailSentTo": "A confirmation email has been sent to ",
     "clickLinkToConfirm": ". Please click the link in the email to confirm your address and continue.",
+    "reloadInfo": "If you have already confirmed the email, please reload the page.",
     "ifEmailIncorrect": "If this email address is incorrect, you can change it on your ",
     "profilePageLink": "Profile Page",
     "changeIt": ".",
     "noEmailRegistered": "No email address is registered for your account. Please add an email address and confirm it to continue.",
-    "goToProfileButton": "Go to Profile"
+    "goToProfileButton": "Go to Profile",
+    "emailAlreadyVerifiedInfo": "Your email has already been verified. Please reload the page to see the changes.",
+    "reloadPageButton": "Reload Page"
   },
   "loginRequiredPopup": {
     "title": "Login Required",
@@ -421,7 +433,15 @@
     "rowLabel": "Row",
     "seatLabel": "Seat",
     "viewSeatButton": "View Seat",
-    "cancelButton": "Cancel"
+    "cancelButton": "Cancel",
+    "showLessButton": "Show Less",
+    "showMoreButton": "Show More"
+  },
+  "reservationDeleteModal": {
+    "title": "Delete Reservation",
+    "description": "Are you sure you want to delete the reservation for seat {{seatNumber}}? This action cannot be undone.",
+    "cancelButton": "Cancel",
+    "confirmButton": "Delete"
   },
   "seatMapModal": {
     "yourReservedSeatsTitle": "Your Reserved Seats",
@@ -432,8 +452,7 @@
     "loadingText": "Loading...",
     "yourReservedSeatsSectionTitle": "Your Reserved Seats",
     "seatNumberButton": "Seat {{seatNumber}}",
-    "noSeatsReserved": "No seats reserved",
-    "clickToHighlightHint": "💡 Click on a seat number to highlight it on the map"
+    "noSeatsReserved": "No seats reserved"
   },
   "allowanceFormModal": {
     "validationErrorTitle": "Validation Error",
@@ -651,7 +670,12 @@
     "english": "English",
     "german": "German",
     "logout": "Logout",
-    "login": "Login"
+    "login": "Login",
+    "unsavedChangesTitle": "Unsaved Changes",
+    "unsavedChangesDescription": "You have unsaved changes on this page. What would you like to do?",
+    "cancel": "Cancel",
+    "discardChanges": "Discard Changes",
+    "saveAndContinue": "Save & Continue"
   },
   "seatManagement": {
     "title": "Seat Management",
