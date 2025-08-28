@@ -330,6 +330,7 @@ public class ReservationService {
         LOG.debugf(
                 "Attempting to delete reservation with ID: %d for user: %s (ID: %d)",
                 id, currentUser.getUsername(), currentUser.getId());
+
         Reservation reservation =
                 reservationRepository
                         .findByIdOptional(id)
@@ -343,30 +344,34 @@ public class ReservationService {
                                             "Reservation with id " + id + " not found");
                                 });
 
-        if (currentUser.getRoles().contains(Roles.ADMIN)) {
-            LOG.debugf("User is ADMIN, deleting reservation with ID %d.", id);
-            reservationRepository.delete(reservation);
-            LOG.infof(
-                    "Reservation with ID %d deleted successfully by ADMIN user: %s (ID: %d)",
-                    id, currentUser.getUsername(), currentUser.getId());
+        if (!currentUser.getRoles().contains(Roles.ADMIN)
+                && !isManagerAllowedToAccessEvent(currentUser, reservation.getEvent())) {
+            LOG.warnf(
+                    "User %s (ID: %d) is not allowed to delete reservation with ID %d.",
+                    currentUser.getUsername(), currentUser.getId(), id);
+            throw new SecurityException("You are not allowed to delete this reservation.");
+        }
+
+        reservationRepository.delete(reservation);
+        LOG.infof("Reservation with ID %d deleted successfully.", id);
+
+        List<Reservation> activeReservations =
+                reservationRepository.findByUserAndEvent(currentUser, reservation.getEvent());
+
+        try {
+            emailService.sendUpdateReservationConfirmation(
+                    currentUser, List.of(reservation), activeReservations);
+        } catch (IOException e) {
+            LOG.errorf(
+                    "Failed to send reservation update confirmation for user %s (ID: %d) and"
+                            + " reservation %d.",
+                    currentUser.getUsername(), currentUser.getId(), reservation.id);
             return;
         }
 
-        if (currentUser.getRoles().contains(Roles.MANAGER)) {
-            if (isManagerAllowedToAccessEvent(currentUser, reservation.getEvent())) {
-                LOG.debugf("User is MANAGER and authorized, deleting reservation with ID %d.", id);
-                reservationRepository.delete(reservation);
-                LOG.infof(
-                        "Reservation with ID %d deleted successfully by manager: %s (ID: %d)",
-                        id, currentUser.getUsername(), currentUser.getId());
-                return;
-            }
-        }
-
-        LOG.warnf(
-                "User %s (ID: %d) is not allowed to delete reservation with ID %d.",
-                currentUser.getUsername(), currentUser.getId(), id);
-        throw new SecurityException("You are not allowed to delete this reservation.");
+        LOG.infof(
+                "Sent reservation update confirmation for user %s (ID: %d) and reservation %d.",
+                currentUser.getUsername(), currentUser.getId(), reservation.id);
     }
 
     /**

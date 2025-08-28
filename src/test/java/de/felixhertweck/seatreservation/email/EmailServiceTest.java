@@ -58,6 +58,8 @@ class EmailServiceTest {
     void setUp() {
         emailService.baseUrl = "http://localhost:8080";
         emailService.expirationMinutes = 60;
+        emailService.setEMAIL_HEADER_CONFIRMATION("Please Confirm Your Email Address");
+        emailService.setEMAIL_HEADER_REMINDER("Reminder: Your event is starting soon!");
     }
 
     private User createTestUser() {
@@ -177,7 +179,7 @@ class EmailServiceTest {
 
         Mail sentMail = mailCaptor.getValue();
         assertEquals(user.getEmail(), sentMail.getTo().getFirst());
-        assertEquals("Erinnerung: Ihr Event beginnt bald!", sentMail.getSubject());
+        assertEquals("Reminder: Your event is starting soon!", sentMail.getSubject());
         assertTrue(sentMail.getHtml().contains(user.getFirstname() + " " + user.getLastname()));
         assertTrue(sentMail.getHtml().contains(event.getName()));
         assertTrue(sentMail.getHtml().contains(event.getStartTime().toLocalDate().toString()));
