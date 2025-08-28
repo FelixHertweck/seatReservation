@@ -61,7 +61,7 @@ export function EventCard({ event, onReserve }: EventCardProps) {
         <div className="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors duration-300">
           <Clock className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
           {event.startTime && event.endTime
-            ? `${new Date(event.startTime).toLocaleTimeString()} - ${new Date(event.endTime).toLocaleTimeString()}`
+            ? `${new Date(event.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} - ${new Date(event.endTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
             : t("eventCard.timeTbd")}
         </div>
 
@@ -78,7 +78,11 @@ export function EventCard({ event, onReserve }: EventCardProps) {
         {event.bookingDeadline && (
           <div className="text-sm text-muted-foreground">
             {t("eventCard.bookingUntil")}:{" "}
-            {new Date(event.bookingDeadline).toLocaleString()}
+            {new Date(event.bookingDeadline).toLocaleDateString()},{" "}
+            {new Date(event.bookingDeadline).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
           </div>
         )}
       </CardContent>

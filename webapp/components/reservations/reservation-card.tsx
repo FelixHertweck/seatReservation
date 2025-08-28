@@ -1,6 +1,13 @@
 "use client";
 
-import { Calendar, MapPin, Trash2, Eye } from "lucide-react";
+import {
+  Calendar,
+  MapPin,
+  Trash2,
+  Eye,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,67 +20,155 @@ import {
 import { Badge } from "@/components/ui/badge";
 import type { ReservationResponseDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
+import { useState } from "react";
+import { DeleteConfirmationModal } from "./delete-confirmation-modal";
 
 interface ReservationCardProps {
-  reservation: ReservationResponseDto;
-  onViewSeats: () => void;
-  onDelete: () => void;
+  reservations: ReservationResponseDto[];
+  eventName?: string;
+  locationName?: string;
+  onViewSeats: (reservation: ReservationResponseDto) => void;
+  onDelete: (reservationId: bigint) => void;
 }
 
 export function ReservationCard({
-  reservation,
+  reservations,
+  eventName,
+  locationName,
   onViewSeats,
   onDelete,
 }: ReservationCardProps) {
   const t = useT();
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [reservationToDelete, setReservationToDelete] =
+    useState<ReservationResponseDto | null>(null);
+
+  const firstReservation = reservations[0];
+  if (!firstReservation) return null;
+
+  const maxVisibleSeats = 3;
+  const shouldShowExpandButton = reservations.length > maxVisibleSeats;
+  const visibleReservations = isExpanded
+    ? reservations
+    : reservations.slice(0, maxVisibleSeats);
+
+  const handleDeleteClick = (reservation: ReservationResponseDto) => {
+    setReservationToDelete(reservation);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (reservationToDelete?.id) {
+      onDelete(reservationToDelete.id);
+    }
+    setDeleteModalOpen(false);
+    setReservationToDelete(null);
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteModalOpen(false);
+    setReservationToDelete(null);
+  };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <CardTitle className="line-clamp-1">
-            {t("reservationCard.eventReservationTitle")}
-          </CardTitle>
-          <Badge variant="outline">
-            {t("reservationCard.seatBadge", {
-              seatNumber: reservation.seat?.seatNumber,
-            })}
-          </Badge>
-        </div>
-        <CardDescription>
-          {t("reservationCard.reservedOn")}{" "}
-          {reservation.reservationDateTime
-            ? new Date(reservation.reservationDateTime).toLocaleDateString()
-            : t("reservationCard.unknownDate")}
-        </CardDescription>
-      </CardHeader>
+    <>
+      <Card>
+        <CardHeader>
+          <div className="flex items-start justify-between">
+            <CardTitle className="line-clamp-1">
+              {t("reservationCard.eventReservationTitle")}
+            </CardTitle>
+            <Badge variant="outline">
+              {reservations.length}{" "}
+              {reservations.length === 1 ? "Platz" : "Plätze"}
+            </Badge>
+          </div>
+          <CardDescription>
+            {t("reservationCard.reservedOn")}{" "}
+            {firstReservation.reservationDateTime
+              ? new Date(
+                  firstReservation.reservationDateTime,
+                ).toLocaleDateString()
+              : t("reservationCard.unknownDate")}
+          </CardDescription>
+        </CardHeader>
 
-      <CardContent className="space-y-3">
-        <div className="flex items-center text-sm text-muted-foreground">
-          <MapPin className="mr-2 h-4 w-4" />
-          {t("reservationCard.locationLabel")}:{" "}
-          {reservation.seat?.locationId?.toString() ||
-            t("reservationCard.unknownLocation")}
-        </div>
+        <CardContent className="space-y-3">
+          <div className="flex items-center text-sm text-muted-foreground">
+            <MapPin className="mr-2 h-4 w-4" />
+            {t("reservationCard.locationLabel")}:{" "}
+            {locationName || t("reservationCard.unknownLocation")}
+          </div>
 
-        <div className="flex items-center text-sm text-muted-foreground">
-          <Calendar className="mr-2 h-4 w-4" />
-          {t("reservationCard.positionLabel")}: {t("reservationCard.rowLabel")}{" "}
-          {reservation.seat?.yCoordinate}, {t("reservationCard.seatLabel")}{" "}
-          {reservation.seat?.xCoordinate}
-        </div>
-      </CardContent>
+          <div className="flex items-center text-sm text-muted-foreground">
+            <Calendar className="mr-2 h-4 w-4" />
+            {eventName || t("reservationCard.unknownEvent")}
+          </div>
 
-      <CardFooter className="flex gap-2">
-        <Button variant="outline" size="sm" onClick={onViewSeats}>
-          <Eye className="mr-2 h-4 w-4" />
-          {t("reservationCard.viewSeatButton")}
-        </Button>
-        <Button variant="destructive" size="sm" onClick={onDelete}>
-          <Trash2 className="mr-2 h-4 w-4" />
-          {t("reservationCard.cancelButton")}
-        </Button>
-      </CardFooter>
-    </Card>
+          <div className="space-y-2 mt-4">
+            <div className="flex flex-wrap gap-2">
+              {visibleReservations.map((reservation) => (
+                <div
+                  key={reservation.id?.toString()}
+                  className="flex items-center gap-1 bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-sm"
+                >
+                  <span>{reservation.seat?.seatNumber}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDeleteClick(reservation)}
+                    className="h-4 w-4 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 ml-1"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+
+            {shouldShowExpandButton && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="w-full mt-2"
+              >
+                {isExpanded ? (
+                  <>
+                    <ChevronUp className="mr-2 h-4 w-4" />
+                    {t("reservationCard.showLessButton")}
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="mr-2 h-4 w-4" />
+                    {t("reservationCard.showMoreButton", {
+                      count: reservations.length - maxVisibleSeats,
+                    })}
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
+        </CardContent>
+
+        <CardFooter className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onViewSeats(firstReservation)}
+          >
+            <Eye className="mr-2 h-4 w-4" />
+            {t("reservationCard.viewSeatButton")}
+          </Button>
+        </CardFooter>
+      </Card>
+
+      <DeleteConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        seatNumber={reservationToDelete?.seat?.seatNumber}
+      />
+    </>
   );
 }

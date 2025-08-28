@@ -15,6 +15,7 @@ import { useAuth } from "@/hooks/use-auth";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useT } from "@/lib/i18n/hooks";
+import { RefreshCw, User } from "lucide-react";
 
 export function EmailVerificationPrompt() {
   const t = useT();
@@ -72,6 +73,8 @@ export function EmailVerificationPrompt() {
                 <span className="font-semibold">{user.email}</span>
                 {t("emailVerificationPrompt.clickLinkToConfirm")}
                 <br />
+                {t("emailVerificationPrompt.reloadInfo")}
+                <br />
                 <br />
                 {t("emailVerificationPrompt.ifEmailIncorrect")}
                 <Link
@@ -86,10 +89,24 @@ export function EmailVerificationPrompt() {
             ) : (
               <>{t("emailVerificationPrompt.noEmailRegistered")}</>
             )}
+            {user?.emailVerified && (
+              <p className="text-sm text-gray-500 mt-4">
+                {t("emailVerificationPrompt.emailAlreadyVerifiedInfo")}
+              </p>
+            )}
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter>
-          <Button onClick={handleGoToProfile}>
+        <DialogFooter className="flex flex-row sm:justify-end sm:space-x-2 sm:space-y-0">
+          <Button
+            onClick={() => window.location.reload()}
+            className="w-full sm:w-auto"
+            variant="outline-solid"
+          >
+            <RefreshCw className="mr-2 h-4 w-4" />
+            {t("emailVerificationPrompt.reloadPageButton")}
+          </Button>
+          <Button onClick={handleGoToProfile} className="w-full sm:w-auto">
+            <User className="mr-2 h-4 w-4" />
             {t("emailVerificationPrompt.goToProfileButton")}
           </Button>
         </DialogFooter>

@@ -368,7 +368,13 @@ export function ReservationManagement({
                     {reservation.reservationDateTime
                       ? new Date(
                           reservation.reservationDateTime,
-                        ).toLocaleDateString()
+                        ).toLocaleString([], {
+                          year: "numeric",
+                          month: "2-digit",
+                          day: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
                       : t("reservationManagement.unknownDate")}
                   </TableCell>
                   <TableCell>
