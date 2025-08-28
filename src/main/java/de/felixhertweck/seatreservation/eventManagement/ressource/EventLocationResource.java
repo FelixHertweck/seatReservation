@@ -63,6 +63,10 @@ public class EventLocationResource {
                                     @Schema(
                                             type = SchemaType.ARRAY,
                                             implementation = EventLocationResponseDTO.class)))
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
     public List<EventLocationResponseDTO> getEventLocationsByCurrentManager() {
         LOG.infof("Received GET request to /api/manager/eventlocations");
         User currentUser = userSecurityContext.getCurrentUser();
@@ -80,6 +84,13 @@ public class EventLocationResource {
             responseCode = "200",
             description = "OK",
             content = @Content(schema = @Schema(implementation = EventLocationResponseDTO.class)))
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(
+            responseCode = "409",
+            description = "Conflict: Event location with this name already exists")
     public EventLocationResponseDTO createEventLocation(@Valid EventLocationRequestDTO dto) {
         LOG.infof("Received POST request to /api/manager/eventlocations for new event location.");
         LOG.debugf("EventLocationRequestDTO received: %s", dto.toString());
@@ -96,6 +107,27 @@ public class EventLocationResource {
             responseCode = "200",
             description = "OK",
             content = @Content(schema = @Schema(implementation = EventLocationResponseDTO.class)))
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(
+            responseCode = "404",
+            description = "Not Found: Event location with specified ID not found")
+    @APIResponse(
+            responseCode = "409",
+            description = "Conflict: Event location with this name already exists")
+    @APIResponse(responseCode = "200", description = "Event location updated successfully")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(
+            responseCode = "404",
+            description = "Not Found: Event location with specified ID not found")
+    @APIResponse(
+            responseCode = "409",
+            description = "Conflict: Event location with this name already exists")
     public EventLocationResponseDTO updateEventLocation(
             @PathParam("id") Long id, @Valid EventLocationRequestDTO dto) {
         LOG.infof(
@@ -112,6 +144,14 @@ public class EventLocationResource {
     @DELETE
     @APIResponse(responseCode = "200", description = "OK")
     @Path("/{id}")
+    @APIResponse(responseCode = "204", description = "Event location deleted successfully")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(
+            responseCode = "404",
+            description = "Not Found: Event location with specified ID not found")
     public void deleteEventLocation(@PathParam("id") Long id) {
         LOG.infof(
                 "Received DELETE request to /api/manager/eventlocations/%d to delete event"
@@ -128,6 +168,13 @@ public class EventLocationResource {
             responseCode = "200",
             description = "OK",
             content = @Content(schema = @Schema(implementation = EventLocationResponseDTO.class)))
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(
+            responseCode = "409",
+            description = "Conflict: Event location with this name already exists")
     public EventLocationResponseDTO createEventLocationWithSeats(
             @Valid ImportEventLocationDto dto) {
         LOG.infof(
@@ -147,6 +194,13 @@ public class EventLocationResource {
             responseCode = "200",
             description = "OK",
             content = @Content(schema = @Schema(implementation = EventLocationResponseDTO.class)))
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(
+            responseCode = "404",
+            description = "Not Found: Event location with specified ID not found")
     public EventLocationResponseDTO importSeatsToEventLocation(
             @PathParam("id") Long id, @Valid Set<ImportSeatDto> seats) {
         LOG.infof(

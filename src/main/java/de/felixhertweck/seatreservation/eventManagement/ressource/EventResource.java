@@ -55,6 +55,15 @@ public class EventResource {
             responseCode = "200",
             description = "OK",
             content = @Content(schema = @Schema(implementation = DetailedEventResponseDTO.class)))
+    @APIResponse(responseCode = "201", description = "Event created successfully")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(responseCode = "404", description = "Not Found: Event location not found")
+    @APIResponse(
+            responseCode = "409",
+            description = "Conflict: Event with this name already exists in this event location")
     public DetailedEventResponseDTO createEvent(@Valid EventRequestDTO dto) {
         LOG.infof("Received POST request to /api/manager/events to create a new event.");
         LOG.debugf("EventRequestDTO received: %s", dto.toString());
@@ -70,6 +79,15 @@ public class EventResource {
             responseCode = "200",
             description = "OK",
             content = @Content(schema = @Schema(implementation = DetailedEventResponseDTO.class)))
+    @APIResponse(responseCode = "200", description = "Event updated successfully")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(responseCode = "404", description = "Not Found: Event or event location not found")
+    @APIResponse(
+            responseCode = "409",
+            description = "Conflict: Event with this name already exists in this event location")
     public DetailedEventResponseDTO updateEvent(
             @PathParam("id") Long id, @Valid EventRequestDTO dto) {
         LOG.infof("Received PUT request to /api/manager/events/%d to update event.", id);
@@ -90,6 +108,10 @@ public class EventResource {
                                     @Schema(
                                             type = SchemaType.ARRAY,
                                             implementation = DetailedEventResponseDTO.class)))
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
     public List<DetailedEventResponseDTO> getEventsByCurrentManager() {
         LOG.infof("Received GET request to /api/manager/events to get events by current manager.");
         User currentUser = userSecurityContext.getCurrentUser();
@@ -105,6 +127,13 @@ public class EventResource {
             responseCode = "200",
             description = "OK",
             content = @Content(schema = @Schema(implementation = DetailedEventResponseDTO.class)))
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(
+            responseCode = "404",
+            description = "Not Found: Event with specified ID not found for the current manager")
     public DetailedEventResponseDTO getEventById(@PathParam("id") Long id) {
         LOG.infof("Received GET request to /api/manager/events/%d.", id);
         User currentUser = userSecurityContext.getCurrentUser();
@@ -120,6 +149,13 @@ public class EventResource {
     @DELETE
     @Path("/{id}")
     @APIResponse(responseCode = "204", description = "Event deleted")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(
+            responseCode = "404",
+            description = "Not Found: Event with specified ID not found for the current manager")
     public void deleteEvent(@PathParam("id") Long id) {
         LOG.infof("Received DELETE request to /api/manager/events/%d to delete event.", id);
         User currentUser = userSecurityContext.getCurrentUser();

@@ -58,6 +58,10 @@ public class EventResource {
                                     @Schema(
                                             type = SchemaType.ARRAY,
                                             implementation = EventResponseDTO.class)))
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only authenticated users can access this resource")
     public List<EventResponseDTO> getEvents() {
         String username = securityIdentity.getPrincipal().getName();
         LOG.infof("Received GET request to /api/user/events for user: %s", username);

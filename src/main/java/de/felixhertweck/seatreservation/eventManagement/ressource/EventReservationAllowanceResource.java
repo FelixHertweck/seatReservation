@@ -62,6 +62,15 @@ public class EventReservationAllowanceResource {
                                     @Schema(
                                             type = SchemaType.ARRAY,
                                             implementation = EventUserAllowancesDto.class)))
+    @APIResponse(responseCode = "200", description = "Reservation allowance set successfully")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(responseCode = "404", description = "Not Found: Event or user not found")
+    @APIResponse(
+            responseCode = "409",
+            description = "Conflict: Allowance already exists for this user and event")
     public Set<EventUserAllowancesDto> setReservationsAllowedForUser(
             @Valid EventUserAllowancesCreateDto userReservationAllowanceDTO) {
         LOG.infof(
@@ -83,6 +92,17 @@ public class EventReservationAllowanceResource {
             responseCode = "200",
             description = "OK",
             content = @Content(schema = @Schema(implementation = EventUserAllowancesDto.class)))
+    @APIResponse(responseCode = "200", description = "Reservation allowance updated successfully")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(
+            responseCode = "404",
+            description = "Not Found: Allowance with specified ID not found")
+    @APIResponse(
+            responseCode = "409",
+            description = "Conflict: Allowance already exists for this user and event")
     public EventUserAllowancesDto updateReservationAllowance(
             @Valid EventUserAllowanceUpdateDto eventUserAllowanceUpdateDto) {
         LOG.infof(
@@ -103,6 +123,14 @@ public class EventReservationAllowanceResource {
 
     @GET
     @Path("/{id}")
+    @APIResponse(responseCode = "200", description = "Reservation allowance retrieved successfully")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(
+            responseCode = "404",
+            description = "Not Found: Allowance with specified ID not found")
     public EventUserAllowancesDto getReservationAllowanceById(@PathParam("id") Long id) {
         LOG.infof("Received GET request to /api/manager/reservationAllowance/%d.", id);
         User currentUser = userSecurityContext.getCurrentUser();
@@ -117,6 +145,13 @@ public class EventReservationAllowanceResource {
     }
 
     @GET
+    @APIResponse(
+            responseCode = "200",
+            description = "List of reservation allowances retrieved successfully")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
     public List<EventUserAllowancesDto> getReservationAllowances() {
         LOG.infof(
                 "Received GET request to /api/manager/reservationAllowance to get all allowances.");
@@ -129,6 +164,15 @@ public class EventReservationAllowanceResource {
 
     @GET
     @Path("/event/{eventId}")
+    @APIResponse(
+            responseCode = "200",
+            description =
+                    "List of reservation allowances for a specific event retrieved successfully")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(responseCode = "404", description = "Not Found: Event with specified ID not found")
     public List<EventUserAllowancesDto> getReservationAllowancesByEventId(
             @PathParam("eventId") Long eventId) {
         LOG.infof("Received GET request to /api/manager/reservationAllowance/event/%d.", eventId);
@@ -145,6 +189,13 @@ public class EventReservationAllowanceResource {
     @DELETE
     @Path("/{id}")
     @APIResponse(responseCode = "204", description = "No Content")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(
+            responseCode = "404",
+            description = "Not Found: Allowance with specified ID not found")
     public void deleteReservationAllowance(@PathParam("id") Long id) {
         LOG.infof(
                 "Received DELETE request to /api/manager/reservationAllowance/%d to delete"

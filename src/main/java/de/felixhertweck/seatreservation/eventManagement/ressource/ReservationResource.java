@@ -61,6 +61,10 @@ public class ReservationResource {
                                     @Schema(
                                             type = SchemaType.ARRAY,
                                             implementation = DetailedReservationResponseDTO.class)))
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
     public List<DetailedReservationResponseDTO> getAllReservations() {
         LOG.infof("Received GET request to /api/manager/reservations to get all reservations.");
         User currentUser = userSecurityContext.getCurrentUser();
@@ -81,6 +85,14 @@ public class ReservationResource {
                     @Content(
                             schema =
                                     @Schema(implementation = DetailedReservationResponseDTO.class)))
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(
+            responseCode = "404",
+            description =
+                    "Not Found: Reservation with specified ID not found for the current manager")
     public DetailedReservationResponseDTO getReservationById(@PathParam("id") Long id) {
         LOG.infof("Received GET request to /api/manager/reservations/%d.", id);
         User currentUser = userSecurityContext.getCurrentUser();
@@ -105,6 +117,13 @@ public class ReservationResource {
                                     @Schema(
                                             type = SchemaType.ARRAY,
                                             implementation = DetailedReservationResponseDTO.class)))
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(
+            responseCode = "404",
+            description = "Not Found: Event with specified ID not found for the current manager")
     public List<DetailedReservationResponseDTO> getReservationsByEventId(
             @PathParam("id") Long eventId) {
         LOG.infof("Received GET request to /api/manager/reservations/event/%d.", eventId);
@@ -126,6 +145,15 @@ public class ReservationResource {
                                     @Schema(
                                             type = SchemaType.ARRAY,
                                             implementation = DetailedReservationResponseDTO.class)))
+    @APIResponse(responseCode = "201", description = "Reservations created successfully")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(responseCode = "404", description = "Not Found: Event, user or seat not found")
+    @APIResponse(
+            responseCode = "409",
+            description = "Conflict: Seat already reserved or event booking closed")
     public Set<DetailedReservationResponseDTO> createReservations(ReservationRequestDTO dto) {
         LOG.infof("Received POST request to /api/manager/reservations to create new reservations.");
         LOG.debugf("ReservationRequestDTO received: %s", dto.toString());
@@ -141,6 +169,15 @@ public class ReservationResource {
     @DELETE
     @Path("/{id}")
     @APIResponse(responseCode = "200", description = "OK")
+    @APIResponse(responseCode = "204", description = "Reservation deleted successfully")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(
+            responseCode = "404",
+            description =
+                    "Not Found: Reservation with specified ID not found for the current manager")
     public void deleteReservation(@PathParam("id") Long id) {
         LOG.infof(
                 "Received DELETE request to /api/manager/reservations/%d to delete reservation.",
@@ -161,6 +198,13 @@ public class ReservationResource {
                                     @Schema(
                                             type = SchemaType.ARRAY,
                                             implementation = DetailedReservationResponseDTO.class)))
+    @APIResponse(responseCode = "200", description = "Seats blocked successfully")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(responseCode = "404", description = "Not Found: Event or seat not found")
+    @APIResponse(responseCode = "409", description = "Conflict: Seat already blocked")
     public Set<DetailedReservationResponseDTO> blockSeats(BlockSeatsRequestDTO dto) {
         LOG.infof(
                 "Received POST request to /api/manager/reservations/block to block seats for event"
