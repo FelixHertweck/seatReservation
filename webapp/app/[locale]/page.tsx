@@ -3,13 +3,13 @@
 import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { BouncingDotsLoader } from "@/components/ui/bouncing-dots-loader";
-import { useAuthStatus } from "@/hooks/use-auth-status";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function RootRedirectPage() {
   const params = useParams();
   const locale = params.locale as string;
 
-  const { isLoggedIn, isLoading } = useAuthStatus();
+  const { isLoggedIn, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
