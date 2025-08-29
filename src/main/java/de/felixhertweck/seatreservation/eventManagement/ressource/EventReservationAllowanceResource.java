@@ -62,7 +62,6 @@ public class EventReservationAllowanceResource {
                                     @Schema(
                                             type = SchemaType.ARRAY,
                                             implementation = EventUserAllowancesDto.class)))
-    @APIResponse(responseCode = "200", description = "Reservation allowance set successfully")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
@@ -92,7 +91,6 @@ public class EventReservationAllowanceResource {
             responseCode = "200",
             description = "OK",
             content = @Content(schema = @Schema(implementation = EventUserAllowancesDto.class)))
-    @APIResponse(responseCode = "200", description = "Reservation allowance updated successfully")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",

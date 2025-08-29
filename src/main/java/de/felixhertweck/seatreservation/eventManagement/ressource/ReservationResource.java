@@ -145,7 +145,6 @@ public class ReservationResource {
                                     @Schema(
                                             type = SchemaType.ARRAY,
                                             implementation = DetailedReservationResponseDTO.class)))
-    @APIResponse(responseCode = "201", description = "Reservations created successfully")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
@@ -168,7 +167,6 @@ public class ReservationResource {
 
     @DELETE
     @Path("/{id}")
-    @APIResponse(responseCode = "200", description = "OK")
     @APIResponse(responseCode = "204", description = "Reservation deleted successfully")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
@@ -198,7 +196,6 @@ public class ReservationResource {
                                     @Schema(
                                             type = SchemaType.ARRAY,
                                             implementation = DetailedReservationResponseDTO.class)))
-    @APIResponse(responseCode = "200", description = "Seats blocked successfully")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",

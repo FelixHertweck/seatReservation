@@ -473,7 +473,7 @@ export type PutApiManagerEventlocationsByIdErrors = {
 
 export type PutApiManagerEventlocationsByIdResponses = {
     /**
-     * Event location updated successfully
+     * OK
      */
     200: EventLocationResponseDto;
 };
@@ -542,10 +542,6 @@ export type PostApiManagerEventsResponses = {
      * OK
      */
     200: DetailedEventResponseDto;
-    /**
-     * Event created successfully
-     */
-    201: unknown;
 };
 
 export type PostApiManagerEventsResponse = PostApiManagerEventsResponses[keyof PostApiManagerEventsResponses];
@@ -650,7 +646,7 @@ export type PutApiManagerEventsByIdErrors = {
 
 export type PutApiManagerEventsByIdResponses = {
     /**
-     * Event updated successfully
+     * OK
      */
     200: DetailedEventResponseDto;
 };
@@ -716,7 +712,7 @@ export type PostApiManagerReservationAllowanceErrors = {
 
 export type PostApiManagerReservationAllowanceResponses = {
     /**
-     * Reservation allowance set successfully
+     * OK
      */
     200: Array<EventUserAllowancesDto>;
 };
@@ -755,7 +751,7 @@ export type PutApiManagerReservationAllowanceErrors = {
 
 export type PutApiManagerReservationAllowanceResponses = {
     /**
-     * Reservation allowance updated successfully
+     * OK
      */
     200: EventUserAllowancesDto;
 };
@@ -923,10 +919,6 @@ export type PostApiManagerReservationsResponses = {
      * OK
      */
     200: Array<DetailedReservationResponseDto>;
-    /**
-     * Reservations created successfully
-     */
-    201: unknown;
 };
 
 export type PostApiManagerReservationsResponse = PostApiManagerReservationsResponses[keyof PostApiManagerReservationsResponses];
@@ -1028,10 +1020,6 @@ export type DeleteApiManagerReservationsByIdErrors = {
 };
 
 export type DeleteApiManagerReservationsByIdResponses = {
-    /**
-     * OK
-     */
-    200: unknown;
     /**
      * Reservation deleted successfully
      */
@@ -1135,10 +1123,6 @@ export type PostApiManagerSeatsResponses = {
      * OK
      */
     200: SeatResponseDto;
-    /**
-     * Seat created successfully
-     */
-    201: unknown;
 };
 
 export type PostApiManagerSeatsResponse = PostApiManagerSeatsResponses[keyof PostApiManagerSeatsResponses];
@@ -1247,7 +1231,7 @@ export type PutApiManagerSeatsByIdErrors = {
 
 export type PutApiManagerSeatsByIdResponses = {
     /**
-     * Seat updated successfully
+     * OK
      */
     200: SeatResponseDto;
 };
@@ -1410,10 +1394,6 @@ export type PostApiUserReservationsResponses = {
      * OK
      */
     200: Array<ReservationResponseDto>;
-    /**
-     * Reservations created successfully
-     */
-    201: unknown;
 };
 
 export type PostApiUserReservationsResponse = PostApiUserReservationsResponses[keyof PostApiUserReservationsResponses];

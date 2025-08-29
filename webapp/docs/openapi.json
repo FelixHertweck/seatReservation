@@ -893,7 +893,7 @@
         },
         "responses" : {
           "200" : {
-            "description" : "Event location updated successfully",
+            "description" : "OK",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -1009,9 +1009,6 @@
               }
             }
           },
-          "201" : {
-            "description" : "Event created successfully"
-          },
           "401" : {
             "description" : "Unauthorized"
           },
@@ -1058,7 +1055,7 @@
         },
         "responses" : {
           "200" : {
-            "description" : "Event updated successfully",
+            "description" : "OK",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -1171,7 +1168,7 @@
         },
         "responses" : {
           "200" : {
-            "description" : "Reservation allowance updated successfully",
+            "description" : "OK",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -1215,12 +1212,11 @@
         },
         "responses" : {
           "200" : {
-            "description" : "Reservation allowance set successfully",
+            "description" : "OK",
             "content" : {
               "application/json" : {
                 "schema" : {
                   "type" : "array",
-                  "uniqueItems" : true,
                   "items" : {
                     "$ref" : "#/components/schemas/EventUserAllowancesDto"
                   }
@@ -1444,9 +1440,6 @@
               }
             }
           },
-          "201" : {
-            "description" : "Reservations created successfully"
-          },
           "401" : {
             "description" : "Unauthorized"
           },
@@ -1489,7 +1482,6 @@
               "application/json" : {
                 "schema" : {
                   "type" : "array",
-                  "uniqueItems" : true,
                   "items" : {
                     "$ref" : "#/components/schemas/DetailedReservationResponseDTO"
                   }
@@ -1611,9 +1603,6 @@
           }
         } ],
         "responses" : {
-          "200" : {
-            "description" : "OK"
-          },
           "204" : {
             "description" : "Reservation deleted successfully"
           },
@@ -1685,9 +1674,6 @@
               }
             }
           },
-          "201" : {
-            "description" : "Seat created successfully"
-          },
           "401" : {
             "description" : "Unauthorized"
           },
@@ -1734,7 +1720,7 @@
         },
         "responses" : {
           "200" : {
-            "description" : "Seat updated successfully",
+            "description" : "OK",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -1978,9 +1964,6 @@
                 }
               }
             }
-          },
-          "201" : {
-            "description" : "Reservations created successfully"
           },
           "401" : {
             "description" : "Unauthorized"
