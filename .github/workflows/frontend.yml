@@ -79,18 +79,6 @@ jobs:
               cd webapp 
               npm run generate:api
 
-      - name: Upload openapi 
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-openapi
-          path: webapp/docs
-
-      - name: Upload api client
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-api
-          path: webapp/api
-
       - name: Check for changes of api client
         run: git diff --exit-code -- webapp/api/
 

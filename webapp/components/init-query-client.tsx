@@ -16,7 +16,7 @@ export default function InitQueryClient({
   client.setConfig({
     baseUrl: `/`,
     throwOnError: true,
-    fetch: async (input: RequestInfo, init?: RequestInit) => {
+    fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
       const response = await fetch(input, init);
       if (!response.ok) {
         const error = new Error(response.statusText) as any;
@@ -53,7 +53,7 @@ export default function InitQueryClient({
             triggerLoginRequired();
             return false;
           }
-          return failureCount < 2;
+          return failureCount < 5;
         },
       },
 
