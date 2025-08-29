@@ -26,6 +26,7 @@ import type {
   EventRequestDto,
 } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
+import { PaginationWrapper } from "@/components/common/pagination-wrapper";
 
 export interface EventManagementProps {
   events: DetailedEventResponseDto[];
@@ -173,77 +174,95 @@ export function EventManagement({
           initialFilters={currentFilters}
         />
 
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t("eventManagement.tableHeaderName")}</TableHead>
-              <TableHead>
-                {t("eventManagement.tableHeaderDescription")}
-              </TableHead>
-              <TableHead>{t("eventManagement.tableHeaderStartTime")}</TableHead>
-              <TableHead>{t("eventManagement.tableHeaderEndTime")}</TableHead>
-              <TableHead>{t("eventManagement.tableHeaderLocation")}</TableHead>
-              <TableHead>{t("eventManagement.tableHeaderActions")}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredEvents.map((event) => {
-              const location = event.eventLocation;
-              return (
-                <TableRow key={event.id?.toString()}>
-                  <TableCell className="font-medium">{event.name}</TableCell>
-                  <TableCell className="max-w-xs truncate">
-                    {event.description}
-                  </TableCell>
-                  <TableCell>
-                    {event.startTime
-                      ? new Date(event.startTime).toLocaleString()
-                      : t("eventManagement.tbd")}
-                  </TableCell>
-                  <TableCell>
-                    {event.endTime
-                      ? new Date(event.endTime).toLocaleString()
-                      : t("eventManagement.tbd")}
-                  </TableCell>
-                  <TableCell>
-                    {location ? (
-                      <Button
-                        variant="link"
-                        className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
-                        onClick={() =>
-                          location.id && handleLocationClick(location.id)
-                        }
-                      >
-                        {location.name}
-                        <ExternalLink className="ml-1 h-3 w-3" />
-                      </Button>
-                    ) : (
-                      t("eventManagement.noLocation")
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEditEvent(event)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDeleteEvent(event)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+        <PaginationWrapper
+          data={filteredEvents}
+          itemsPerPage={100}
+          paginationLabel={t("eventManagement.paginationLabel")}
+        >
+          {(paginatedData) => (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("eventManagement.tableHeaderName")}</TableHead>
+                  <TableHead>
+                    {t("eventManagement.tableHeaderDescription")}
+                  </TableHead>
+                  <TableHead>
+                    {t("eventManagement.tableHeaderStartTime")}
+                  </TableHead>
+                  <TableHead>
+                    {t("eventManagement.tableHeaderEndTime")}
+                  </TableHead>
+                  <TableHead>
+                    {t("eventManagement.tableHeaderLocation")}
+                  </TableHead>
+                  <TableHead>
+                    {t("eventManagement.tableHeaderActions")}
+                  </TableHead>
                 </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+              </TableHeader>
+              <TableBody>
+                {paginatedData.map((event) => {
+                  const location = event.eventLocation;
+                  return (
+                    <TableRow key={event.id?.toString()}>
+                      <TableCell className="font-medium">
+                        {event.name}
+                      </TableCell>
+                      <TableCell className="max-w-xs truncate">
+                        {event.description}
+                      </TableCell>
+                      <TableCell>
+                        {event.startTime
+                          ? new Date(event.startTime).toLocaleString()
+                          : t("eventManagement.tbd")}
+                      </TableCell>
+                      <TableCell>
+                        {event.endTime
+                          ? new Date(event.endTime).toLocaleString()
+                          : t("eventManagement.tbd")}
+                      </TableCell>
+                      <TableCell>
+                        {location ? (
+                          <Button
+                            variant="link"
+                            className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                            onClick={() =>
+                              location.id && handleLocationClick(location.id)
+                            }
+                          >
+                            {location.name}
+                            <ExternalLink className="ml-1 h-3 w-3" />
+                          </Button>
+                        ) : (
+                          t("eventManagement.noLocation")
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditEvent(event)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDeleteEvent(event)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
+        </PaginationWrapper>
       </CardContent>
 
       {isModalOpen && (

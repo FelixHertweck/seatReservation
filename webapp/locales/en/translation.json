@@ -531,7 +531,8 @@
     "tableHeaderLocation": "Location",
     "tableHeaderActions": "Actions",
     "tbd": "TBD",
-    "noLocation": "No location"
+    "noLocation": "No location",
+    "paginationLabel": "Events"
   },
   "locationFormModal": {
     "createLocationTitle": "Create Location",
@@ -583,7 +584,8 @@
     "tableHeaderActions": "Actions",
     "seatsCount": "{{count}} seats",
     "noSeats": "0 seats",
-    "exportAsJsonTitle": "Export as JSON"
+    "exportAsJsonTitle": "Export as JSON",
+    "paginationLabel": "Locations"
   },
   "reservationAllowanceManagement": {
     "confirmDelete": "Are you sure you want to delete this allowance?",
@@ -596,7 +598,8 @@
     "tableHeaderAllowedReservations": "Allowed Reservations",
     "tableHeaderActions": "Actions",
     "unknownEvent": "Unknown event",
-    "unknownUser": "Unknown user"
+    "unknownUser": "Unknown user",
+    "paginationLabel": "Allowances"
   },
   "reservationFormModal": {
     "createReservationTitle": "Create Reservation",
@@ -642,7 +645,8 @@
     "confirmDelete": "Are you sure you want to delete this reservation?",
     "unknownEvent": "Unknown event",
     "unknownSeat": "Unknown seat",
-    "unknownDate": "Unknown"
+    "unknownDate": "Unknown",
+    "paginationLabel": "Reservations"
   },
   "seatFormModal": {
     "createSeatTitle": "Create Seat",
@@ -697,7 +701,8 @@
     },
     "unknownLocation": "Unknown location",
     "statusAvailable": "Available",
-    "confirmDelete": "Are you sure you want to delete seat {{seatNumber}}?"
+    "confirmDelete": "Are you sure you want to delete seat {{seatNumber}}?",
+    "paginationLabel": "Seats"
   },
   "userMultiSelect": {
     "tagsHint": "Tags (click to select all users with this tag)",
@@ -707,5 +712,8 @@
     "selectAll": "Select All",
     "noUsersFound": "No users found",
     "noUsersAvailable": "No users available"
+  },
+  "pagination-wrapper": {
+    "label": "Showing {{fromCount}} to {{toCount}} of {{totalCount}}"
   }
 }
