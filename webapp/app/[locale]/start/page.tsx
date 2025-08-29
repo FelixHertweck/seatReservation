@@ -172,7 +172,7 @@ export default async function StartPage({
                 <Button variant="ghost">{t("startPage.signInButton")}</Button>
               </Link>
               <Link href={`/${locale}/register`}>
-                <Button>{t("startPage.getStartedButton")}</Button>
+                <Button>{t("startPage.registerButton")}</Button>
               </Link>
             </div>
           </div>
@@ -198,22 +198,13 @@ export default async function StartPage({
             className="flex flex-col sm:flex-row gap-4 justify-center animate-in slide-in-from-bottom duration-700"
             style={{ animationDelay: "500ms" }}
           >
-            <Link href={`/${locale}/register`}>
+            <Link href={`/${locale}/login`}>
               <Button
                 size="lg"
                 className="group hover:scale-105 transition-all duration-300"
               >
                 {t("startPage.getStartedButton")}
                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
-              </Button>
-            </Link>
-            <Link href={`/${locale}/login`}>
-              <Button
-                variant="outline"
-                size="lg"
-                className="hover:scale-105 transition-all duration-300 bg-transparent"
-              >
-                {t("startPage.signInButton")}
               </Button>
             </Link>
           </div>

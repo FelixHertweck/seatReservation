@@ -281,6 +281,7 @@
     "eventManagerTitle": "Seat Reservation System",
     "signInButton": "Sign In",
     "getStartedButton": "Get Started",
+    "registerButton": "Register",
     "heroTitle": "SeatReservation",
     "heroDescription": "Access your events, reservations, and administrative tools. Sign in or register to get started.",
     "footerDescription": "The most comprehensive seat reservation platform for modern organizations.",
@@ -487,8 +488,8 @@
   "blockSeatsModal": {
     "title": "Block Seats",
     "description": "Select seats to block and prevent reservations",
-    "eventLocationLabel": "Event Location",
-    "selectEventLocationPlaceholder": "Select an event location",
+    "eventLabel": "Event",
+    "selectEventPlaceholder": "Select an event",
     "available": "Available",
     "selectedToBlock": "Selected to Block",
     "reserved": "Reserved",

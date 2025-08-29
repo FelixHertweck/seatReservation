@@ -103,9 +103,7 @@ export function BlockSeatsModal({
           className="flex-1 flex flex-col space-y-4 animate-in slide-in-from-bottom duration-500 min-h-0"
         >
           <div className="space-y-2">
-            <Label htmlFor="eventLocation">
-              {t("blockSeatsModal.eventLocationLabel")} *
-            </Label>
+            <Label htmlFor="event">{t("blockSeatsModal.eventLabel")} *</Label>
             <Select
               value={formData.eventId}
               onValueChange={handleEventChange}
@@ -113,9 +111,7 @@ export function BlockSeatsModal({
             >
               <SelectTrigger>
                 <SelectValue
-                  placeholder={t(
-                    "blockSeatsModal.selectEventLocationPlaceholder",
-                  )}
+                  placeholder={t("blockSeatsModal.selectEventPlaceholder")}
                 />
               </SelectTrigger>
               <SelectContent>

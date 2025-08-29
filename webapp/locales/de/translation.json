@@ -281,6 +281,7 @@
     "eventManagerTitle": "Sitzplatz Reservierung",
     "signInButton": "Anmelden",
     "getStartedButton": "Loslegen",
+    "registerButton": "Registrieren",
     "heroTitle": "SeatReservation",
     "heroDescription": "Greifen Sie auf Ihre Veranstaltungen, Reservierungen und Verwaltungstools zu. Melden Sie sich an oder registrieren Sie sich, um zu beginnen.",
     "footerDescription": "Die umfassendste Sitzplatz Reservierungs-Plattform für moderne Organisationen.",
@@ -487,8 +488,8 @@
   "blockSeatsModal": {
     "title": "Plätze blockieren",
     "description": "Wählen Sie Plätze zum Blockieren aus und verhindern Sie Reservierungen",
-    "eventLocationLabel": "Veranstaltungsort",
-    "selectEventLocationPlaceholder": "Veranstaltungsort auswählen",
+    "eventLabel": "Event",
+    "selectEventPlaceholder": "Event auswählen",
     "available": "Verfügbar",
     "selectedToBlock": "Zum Blockieren ausgewählt",
     "reserved": "Reserviert",
