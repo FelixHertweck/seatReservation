@@ -406,7 +406,8 @@
     "selectedSeatsTitle": "Ausgewählte Plätze:",
     "cancelButton": "Abbrechen",
     "reservingButton": "Reserviere...",
-    "reserveSeatsButton": "Reserviere {{count}} Platz/Plätze"
+    "reserveSeatsButton": "Reserviere {{count}} Platz/Plätze",
+    "reserveSeatButton": "Reserviere den Platz"
   },
   "reservation": {
     "delete": {
