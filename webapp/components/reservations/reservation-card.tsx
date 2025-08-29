@@ -81,7 +81,9 @@ export function ReservationCard({
             </CardTitle>
             <Badge variant="outline">
               {reservations.length}{" "}
-              {reservations.length === 1 ? "Platz" : "Plätze"}
+              {reservations.length === 1
+                ? t("reservationCard.seatSingular")
+                : t("reservationCard.seatPlural")}
             </Badge>
           </div>
           <CardDescription>

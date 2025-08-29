@@ -5,7 +5,6 @@ import { CookiesProvider } from "react-cookie";
 import InitQueryClient from "./init-query-client";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
-import { EmailVerificationPrompt } from "@/components/common/EmailVerificationPrompt";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { clearAllToasts } from "@/hooks/use-toast";
@@ -29,7 +28,6 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
             >
               {children}
               <ToasterControlWrapper />
-              <EmailVerificationPrompt />
             </ThemeProvider>
           </InitQueryClient>
         </LoginRequiredPopupProvider>

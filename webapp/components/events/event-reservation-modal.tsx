@@ -181,9 +181,7 @@ export function EventReservationModal({
               {isLoading
                 ? t("eventReservationModal.reservingButton")
                 : selectedSeats.length === 1
-                  ? t("eventReservationModal.reserveSeatButton", {
-                      count: selectedSeats.length,
-                    })
+                  ? t("eventReservationModal.reserveSeatButton")
                   : t("eventReservationModal.reserveSeatsButton", {
                       count: selectedSeats.length,
                     })}
