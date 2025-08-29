@@ -696,5 +696,14 @@
     "unknownLocation": "Unknown location",
     "statusAvailable": "Available",
     "confirmDelete": "Are you sure you want to delete seat {{seatNumber}}?"
+  },
+  "userMultiSelect": {
+    "tagsHint": "Tags (click to select all users with this tag)",
+    "usersSelected": "{{selectedCount}} of {{totalUsers}} users selected",
+    "filtered": " ({{filteredCount}} filtered)",
+    "clearAll": "Deselect All",
+    "selectAll": "Select All",
+    "noUsersFound": "No users found",
+    "noUsersAvailable": "No users available"
   }
 }

@@ -1,8 +1,6 @@
 "use client";
 
-import { CommandGroup } from "@/components/ui/command";
-import { CommandEmpty } from "@/components/ui/command";
-import { useState, useEffect, useMemo } from "react"; // Added useMemo
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -20,20 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Command,
-  CommandList,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
-import { ChevronsUpDown, XCircle } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
+import { UserMultiSelect } from "@/components/common/user-multi-select";
 import { toast } from "@/hooks/use-toast";
 import { useT } from "@/lib/i18n/hooks";
 
@@ -46,7 +31,7 @@ import type {
 } from "@/api";
 
 interface AllowanceFormModalProps {
-  allowance: EventUserAllowancesDto | null; // Null for creation, object for update
+  allowance: EventUserAllowancesDto | null;
   users: UserDto[];
   events: DetailedEventResponseDto[];
   isCreating: boolean;
@@ -75,8 +60,6 @@ export function AllowanceFormModal({
   const [allowedReservations, setAllowedReservations] = useState(
     allowance?.reservationsAllowedCount?.toString() || "",
   );
-  const [userSearchOpen, setUserSearchOpen] = useState(false);
-  const [selectedTag, setSelectedTag] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -91,39 +74,7 @@ export function AllowanceFormModal({
       setSelectedEventId(undefined);
       setAllowedReservations("");
     }
-    setSelectedTag(undefined); // Reset tag selection on modal open/mode change
   }, [allowance, isCreating]);
-
-  const allTags = Array.from(new Set(users.flatMap((user) => user.tags || [])));
-
-  const handleUserToggle = (userId: string, checked: boolean) => {
-    setSelectedUserIds((prev) =>
-      checked ? [...prev, userId] : prev.filter((id) => id !== userId),
-    );
-  };
-
-  const handleSelectUsersByTag = (tag: string) => {
-    setSelectedTag(tag);
-    const usersWithTagIds = users
-      .filter((user) => user.tags?.includes(tag))
-      .map((user) => user.id?.toString() || "")
-      .filter(Boolean) as string[];
-
-    // Add users with this tag that are not already selected
-    const newSelectedUsers = Array.from(
-      new Set([...selectedUserIds, ...usersWithTagIds]),
-    );
-    setSelectedUserIds(newSelectedUsers);
-  };
-
-  const handleClearTag = () => {
-    setSelectedTag(undefined);
-    // Do not clear selectedUserIds automatically, user can deselect manually
-  };
-
-  const handleClearAllSelectedUsers = () => {
-    setSelectedUserIds([]);
-  };
 
   const handleSubmit = async () => {
     if (!selectedEventId || !allowedReservations) {
@@ -160,7 +111,6 @@ export function AllowanceFormModal({
           description: t("allowanceFormModal.allowanceCreatedSuccess"),
         });
       } else {
-        // For update, ensure a single user is selected (or was pre-selected)
         if (!allowance?.id || selectedUserIds.length !== 1) {
           toast({
             title: t("allowanceFormModal.validationErrorTitle"),
@@ -194,29 +144,9 @@ export function AllowanceFormModal({
     }
   };
 
-  const filteredUsers = useMemo(() => {
-    if (!isCreating && allowance?.userId) {
-      // In update mode, only show the pre-selected user
-      return users.filter(
-        (user) => user.id?.toString() === allowance.userId?.toString(),
-      );
-    }
-    // In creation mode, filter by tag if selected, otherwise show all
-    return users.filter((user) => {
-      if (!selectedTag) return true;
-      return user.tags?.includes(selectedTag);
-    });
-  }, [users, selectedTag, isCreating, allowance]);
-
-  const getSelectedUsernames = () => {
-    return selectedUserIds
-      .map((id) => users.find((u) => u.id?.toString() === id)?.username)
-      .filter(Boolean) as string[];
-  };
-
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>
             {isCreating
@@ -224,7 +154,7 @@ export function AllowanceFormModal({
               : t("allowanceFormModal.editAllowanceTitle")}
           </DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
+        <div className="grid gap-6 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="event" className="text-right">
               {t("allowanceFormModal.eventLabel")}
@@ -232,7 +162,7 @@ export function AllowanceFormModal({
             <Select
               value={selectedEventId}
               onValueChange={setSelectedEventId}
-              disabled={!isCreating} // Event typically not editable after creation
+              disabled={!isCreating}
             >
               <SelectTrigger className="col-span-3">
                 <SelectValue
@@ -253,136 +183,31 @@ export function AllowanceFormModal({
           </div>
 
           <div className="grid grid-cols-4 items-start gap-4">
-            <Label htmlFor="users" className="text-right pt-2">
+            <Label className="text-right pt-2">
               {t("allowanceFormModal.usersLabel")}
             </Label>
-            <div className="col-span-3 flex flex-col gap-2">
-              <Popover open={userSearchOpen} onOpenChange={setUserSearchOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={userSearchOpen}
-                    className="w-full justify-between bg-transparent"
-                    disabled={!isCreating && selectedUserIds.length > 0} // Disable if not creating and user already selected for update
-                  >
-                    {selectedUserIds.length > 0
-                      ? t("allowanceFormModal.usersSelected", {
-                          count: selectedUserIds.length,
-                        })
-                      : t("allowanceFormModal.selectUsersPlaceholder")}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-(--radix-popover-trigger-width) p-0">
-                  <Command>
-                    {isCreating && allTags.length > 0 && (
-                      <div className="p-2 border-b flex items-center gap-2">
-                        <Select
-                          onValueChange={handleSelectUsersByTag}
-                          value={selectedTag}
-                        >
-                          <SelectTrigger className="grow">
-                            <SelectValue
-                              placeholder={t(
-                                "allowanceFormModal.filterByTagPlaceholder",
-                              )}
-                            />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {allTags.map((tag) => (
-                              <SelectItem key={tag} value={tag}>
-                                {tag}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        {selectedTag && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={handleClearTag}
-                            aria-label={t(
-                              "allowanceFormModal.clearTagSelectionAriaLabel",
-                            )}
-                          >
-                            <XCircle className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    )}
-                    <CommandInput
-                      placeholder={t(
-                        "allowanceFormModal.searchUserPlaceholder",
-                      )}
-                    />
-                    <CommandList>
-                      <CommandEmpty>
-                        {t("allowanceFormModal.noUserFound")}
-                      </CommandEmpty>
-                      <CommandGroup>
-                        {filteredUsers.map((user) => (
-                          <CommandItem
-                            key={user.id?.toString()}
-                            value={user.username}
-                            onSelect={() =>
-                              handleUserToggle(
-                                user.id?.toString() || "",
-                                !selectedUserIds.includes(
-                                  user.id?.toString() || "",
-                                ),
-                              )
-                            }
-                          >
-                            <Checkbox
-                              checked={selectedUserIds.includes(
-                                user.id?.toString() || "",
-                              )}
-                              onCheckedChange={(checked) =>
-                                handleUserToggle(
-                                  user.id?.toString() || "",
-                                  checked as boolean,
-                                )
-                              }
-                              className="mr-2"
-                            />
-                            {user.username}
-                            {user.tags && user.tags.length > 0 && (
-                              <div className="ml-auto flex gap-1">
-                                {user.tags.map((tag) => (
-                                  <Badge key={tag} variant="secondary">
-                                    {tag}
-                                  </Badge>
-                                ))}
-                              </div>
-                            )}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-
-              {isCreating && selectedUserIds.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {getSelectedUsernames().map((username) => (
-                    <Badge key={username} variant="outline">
-                      {username}
-                    </Badge>
-                  ))}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleClearAllSelectedUsers}
-                    className="text-xs text-red-500 hover:text-red-600"
-                  >
-                    {t("allowanceFormModal.clearAllButton")}
-                  </Button>
-                </div>
+            <div className="col-span-3">
+              {isCreating && (
+                <UserMultiSelect
+                  users={
+                    isCreating
+                      ? users
+                      : users.filter(
+                          (user) =>
+                            user.id?.toString() ===
+                            allowance?.userId?.toString(),
+                        )
+                  }
+                  selectedUserIds={selectedUserIds}
+                  onSelectionChange={setSelectedUserIds}
+                  label=""
+                  placeholder={t("allowanceFormModal.searchUserPlaceholder")}
+                  maxHeight="250px"
+                />
               )}
+
               {!isCreating && selectedUserIds.length > 0 && (
-                <div className="text-sm text-muted-foreground">
+                <div className="text-sm text-muted-foreground mt-2">
                   {t("allowanceFormModal.selectedUserLabel")}{" "}
                   {
                     users.find((u) => u.id?.toString() === selectedUserIds[0])
