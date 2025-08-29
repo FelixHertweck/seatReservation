@@ -5,7 +5,6 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
-import "@/app/globals.css";
 import { LoginRequiredPopup } from "@/components/common/login-required-popup";
 import { EmailVerificationPrompt } from "@/components/common/email-verification-prompt";
 

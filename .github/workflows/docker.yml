@@ -25,6 +25,11 @@ on:
         required: false
         type: string
         default: ${{ github.repository }}
+      docker-build-context:
+        description: "Docker build context"
+        required: false
+        type: string
+        default: "."
 
 permissions:
   contents: write
@@ -85,7 +90,7 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
           file: ${{ inputs.docker-file-path }}
-          context: .
+          context: ${{ inputs.docker-build-context }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
