@@ -180,9 +180,13 @@ export function EventReservationModal({
             >
               {isLoading
                 ? t("eventReservationModal.reservingButton")
-                : t("eventReservationModal.reserveSeatsButton", {
-                    count: selectedSeats.length,
-                  })}
+                : selectedSeats.length === 1
+                  ? t("eventReservationModal.reserveSeatButton", {
+                      count: selectedSeats.length,
+                    })
+                  : t("eventReservationModal.reserveSeatsButton", {
+                      count: selectedSeats.length,
+                    })}
             </Button>
           </div>
         </div>

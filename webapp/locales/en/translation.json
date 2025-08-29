@@ -406,7 +406,8 @@
     "selectedSeatsTitle": "Selected Seats:",
     "cancelButton": "Cancel",
     "reservingButton": "Reserving...",
-    "reserveSeatsButton": "Reserve {{count}} Seat(s)"
+    "reserveSeatsButton": "Reserve {{count}} Seats",
+    "reserveSeatButton": "Reserve Seat"
   },
   "reservation": {
     "delete": {
