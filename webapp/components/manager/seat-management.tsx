@@ -21,6 +21,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { SeatFormModal } from "@/components/manager/seat-form-modal";
+import { PaginationWrapper } from "@/components/common/pagination-wrapper";
 import type {
   SeatResponseDto,
   SeatRequestDto,
@@ -175,76 +176,94 @@ export function SeatManagement({
           initialFilters={currentFilters}
         />
 
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>
-                {t("seatManagement.table.seatNumberHeader")}
-              </TableHead>
-              <TableHead>{t("seatManagement.table.locationHeader")}</TableHead>
-              <TableHead>{t("seatManagement.table.positionHeader")}</TableHead>
-              <TableHead>{t("seatManagement.table.statusHeader")}</TableHead>
-              <TableHead>{t("seatManagement.table.actionsHeader")}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredSeats.map((seat) => {
-              const location = locations.find(
-                (loc) => loc.id === seat.eventLocationId,
-              );
-
-              return (
-                <TableRow key={seat.id?.toString()}>
-                  <TableCell className="font-medium">
-                    {seat.seatNumber}
-                  </TableCell>
-                  <TableCell>
-                    {location ? (
-                      <Button
-                        variant="link"
-                        className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
-                        onClick={() =>
-                          location.id && handleLocationClick(location.id)
-                        }
-                      >
-                        {location.name}
-                        <ExternalLink className="ml-1 h-3 w-3" />
-                      </Button>
-                    ) : (
-                      t("seatManagement.unknownLocation")
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    ({seat.xCoordinate}, {seat.yCoordinate})
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={seat.status ? "destructive" : "default"}>
-                      {seat.status || t("seatManagement.statusAvailable")}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEditSeat(seat)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDeleteSeat(seat)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+        <PaginationWrapper
+          data={filteredSeats}
+          itemsPerPage={100}
+          paginationLabel={t("seatManagement.paginationLabel")}
+        >
+          {(paginatedData) => (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>
+                    {t("seatManagement.table.seatNumberHeader")}
+                  </TableHead>
+                  <TableHead>
+                    {t("seatManagement.table.locationHeader")}
+                  </TableHead>
+                  <TableHead>
+                    {t("seatManagement.table.positionHeader")}
+                  </TableHead>
+                  <TableHead>
+                    {t("seatManagement.table.statusHeader")}
+                  </TableHead>
+                  <TableHead>
+                    {t("seatManagement.table.actionsHeader")}
+                  </TableHead>
                 </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+              </TableHeader>
+              <TableBody>
+                {paginatedData.map((seat) => {
+                  const location = locations.find(
+                    (loc) => loc.id === seat.eventLocationId,
+                  );
+
+                  return (
+                    <TableRow key={seat.id?.toString()}>
+                      <TableCell className="font-medium">
+                        {seat.seatNumber}
+                      </TableCell>
+                      <TableCell>
+                        {location ? (
+                          <Button
+                            variant="link"
+                            className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                            onClick={() =>
+                              location.id && handleLocationClick(location.id)
+                            }
+                          >
+                            {location.name}
+                            <ExternalLink className="ml-1 h-3 w-3" />
+                          </Button>
+                        ) : (
+                          t("seatManagement.unknownLocation")
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        ({seat.xCoordinate}, {seat.yCoordinate})
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={seat.status ? "destructive" : "default"}
+                        >
+                          {seat.status || t("seatManagement.statusAvailable")}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditSeat(seat)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDeleteSeat(seat)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
+        </PaginationWrapper>
       </CardContent>
 
       {isModalOpen && (

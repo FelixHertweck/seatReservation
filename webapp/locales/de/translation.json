@@ -531,7 +531,8 @@
     "tableHeaderLocation": "Ort",
     "tableHeaderActions": "Aktionen",
     "tbd": "TBD",
-    "noLocation": "Kein Ort"
+    "noLocation": "Kein Ort",
+    "paginationLabel": "Events"
   },
   "locationFormModal": {
     "createLocationTitle": "Standort erstellen",
@@ -583,7 +584,8 @@
     "tableHeaderActions": "Aktionen",
     "seatsCount": "{{count}} Plätze",
     "noSeats": "0 Plätze",
-    "exportAsJsonTitle": "Als JSON exportieren"
+    "exportAsJsonTitle": "Als JSON exportieren",
+    "paginationLabel": "Standorte"
   },
   "reservationAllowanceManagement": {
     "confirmDelete": "Sind Sie sicher, dass Sie dieses Kontingent löschen möchten?",
@@ -596,7 +598,8 @@
     "tableHeaderAllowedReservations": "Erlaubte Reservierungen",
     "tableHeaderActions": "Aktionen",
     "unknownEvent": "Unbekannte Veranstaltung",
-    "unknownUser": "Unbekannter Benutzer"
+    "unknownUser": "Unbekannter Benutzer",
+    "paginationLabel": "Kontingente"
   },
   "reservationFormModal": {
     "createReservationTitle": "Reservierung erstellen",
@@ -642,7 +645,8 @@
     "confirmDelete": "Sind Sie sicher, dass Sie diese Reservierung löschen möchten?",
     "unknownEvent": "Unbekannte Veranstaltung",
     "unknownSeat": "Unbekannter Platz",
-    "unknownDate": "Unbekannt"
+    "unknownDate": "Unbekannt",
+    "paginationLabel": "Reservierungen"
   },
   "seatFormModal": {
     "createSeatTitle": "Platz erstellen",
@@ -697,7 +701,8 @@
     },
     "unknownLocation": "Unbekannter Standort",
     "statusAvailable": "Verfügbar",
-    "confirmDelete": "Sind Sie sicher, dass Sie Sitzplatz {{seatNumber}} löschen möchten?"
+    "confirmDelete": "Sind Sie sicher, dass Sie Sitzplatz {{seatNumber}} löschen möchten?",
+    "paginationLabel": "Sitzplätze"
   },
   "userMultiSelect": {
     "tagsHint": "Tags (klicken um alle Benutzer mit diesem Tag auszuwählen)",
@@ -707,5 +712,8 @@
     "selectAll": "Alle auswählen",
     "noUsersFound": "Keine Benutzer gefunden",
     "noUsersAvailable": "Keine Benutzer verfügbar"
+  },
+  "pagination-wrapper": {
+    "label": "Zeige {{fromCount}} bis {{toCount}} von {{totalCount}}"
   }
 }

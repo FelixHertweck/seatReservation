@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/table";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { AllowanceFormModal } from "@/components/manager/allowance-form-modal";
+import { PaginationWrapper } from "@/components/common/pagination-wrapper";
 import type {
   EventUserAllowancesDto,
   EventUserAllowancesCreateDto,
@@ -191,74 +192,86 @@ export function ReservationAllowanceManagement({
           initialFilters={currentFilters}
         />
 
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>
-                {t("reservationAllowanceManagement.tableHeaderEvent")}
-              </TableHead>
-              <TableHead>
-                {t("reservationAllowanceManagement.tableHeaderUser")}
-              </TableHead>
-              <TableHead>
-                {t(
-                  "reservationAllowanceManagement.tableHeaderAllowedReservations",
-                )}
-              </TableHead>
-              <TableHead>
-                {t("reservationAllowanceManagement.tableHeaderActions")}
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredAllowances.map((allowance) => {
-              const event = events.find((e) => e.id === allowance.eventId);
-              const user = users.find((u) => u.id === allowance.userId);
-
-              return (
-                <TableRow key={allowance.id?.toString()}>
-                  <TableCell>
-                    {event ? (
-                      <Button
-                        variant="link"
-                        className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
-                        onClick={() => event.id && handleEventClick(event.id)}
-                      >
-                        {event.name}
-                        <ExternalLink className="ml-1 h-3 w-3" />
-                      </Button>
-                    ) : (
-                      t("reservationAllowanceManagement.unknownEvent")
+        <PaginationWrapper
+          data={filteredAllowances}
+          itemsPerPage={100}
+          paginationLabel={t("reservationAllowanceManagement.paginationLabel")}
+        >
+          {(paginatedData) => (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>
+                    {t("reservationAllowanceManagement.tableHeaderEvent")}
+                  </TableHead>
+                  <TableHead>
+                    {t("reservationAllowanceManagement.tableHeaderUser")}
+                  </TableHead>
+                  <TableHead>
+                    {t(
+                      "reservationAllowanceManagement.tableHeaderAllowedReservations",
                     )}
-                  </TableCell>
-                  <TableCell>
-                    {user?.username ||
-                      t("reservationAllowanceManagement.unknownUser")}
-                  </TableCell>
-                  <TableCell>{allowance.reservationsAllowedCount}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openEditModal(allowance)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDeleteAllowance(allowance)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+                  </TableHead>
+                  <TableHead>
+                    {t("reservationAllowanceManagement.tableHeaderActions")}
+                  </TableHead>
                 </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+              </TableHeader>
+              <TableBody>
+                {paginatedData.map((allowance) => {
+                  const event = events.find((e) => e.id === allowance.eventId);
+                  const user = users.find((u) => u.id === allowance.userId);
+
+                  return (
+                    <TableRow key={allowance.id?.toString()}>
+                      <TableCell>
+                        {event ? (
+                          <Button
+                            variant="link"
+                            className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                            onClick={() =>
+                              event.id && handleEventClick(event.id)
+                            }
+                          >
+                            {event.name}
+                            <ExternalLink className="ml-1 h-3 w-3" />
+                          </Button>
+                        ) : (
+                          t("reservationAllowanceManagement.unknownEvent")
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {user?.username ||
+                          t("reservationAllowanceManagement.unknownUser")}
+                      </TableCell>
+                      <TableCell>
+                        {allowance.reservationsAllowedCount}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openEditModal(allowance)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDeleteAllowance(allowance)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
+        </PaginationWrapper>
       </CardContent>
 
       {isCreateModalOpen && (

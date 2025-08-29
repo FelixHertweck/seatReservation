@@ -28,6 +28,7 @@ import {
 import { LocationFormModal } from "@/components/manager/location-form-modal";
 import { LocationImportModal } from "@/components/manager/location-import-modal";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
+import { PaginationWrapper } from "@/components/common/pagination-wrapper";
 import type {
   EventLocationResponseDto,
   EventLocationRequestDto,
@@ -223,88 +224,98 @@ export function LocationManagement({
             initialFilters={currentFilters}
           />
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t("locationManagement.tableHeaderName")}</TableHead>
-                <TableHead>
-                  {t("locationManagement.tableHeaderAddress")}
-                </TableHead>
-                <TableHead>
-                  {t("locationManagement.tableHeaderCapacity")}
-                </TableHead>
-                <TableHead>
-                  {t("locationManagement.tableHeaderManager")}
-                </TableHead>
-                <TableHead>
-                  {t("locationManagement.tableHeaderSeats")}
-                </TableHead>
-                <TableHead>
-                  {t("locationManagement.tableHeaderActions")}
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredLocations.map((location) => {
-                const seatCount = location.seats?.length || 0;
-
-                return (
-                  <TableRow key={location.id?.toString()}>
-                    <TableCell className="font-medium">
-                      {location.name}
-                    </TableCell>
-                    <TableCell>{location.address}</TableCell>
-                    <TableCell>{location.capacity}</TableCell>
-                    <TableCell>{location.manager?.username}</TableCell>
-                    <TableCell>
-                      {seatCount > 0 ? (
-                        <Button
-                          variant="link"
-                          className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
-                          onClick={() =>
-                            location.id && handleSeatsClick(location.id)
-                          }
-                        >
-                          {t("locationManagement.seatsCount", {
-                            count: seatCount,
-                          })}
-                          <ExternalLink className="ml-1 h-3 w-3" />
-                        </Button>
-                      ) : (
-                        t("locationManagement.noSeats")
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleExportLocation(location)}
-                          title={t("locationManagement.exportAsJsonTitle")}
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEditLocation(location)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleDeleteLocation(location)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+          <PaginationWrapper
+            data={filteredLocations}
+            itemsPerPage={100}
+            paginationLabel={t("locationManagement.paginationLabel")}
+          >
+            {(paginatedData) => (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>
+                      {t("locationManagement.tableHeaderName")}
+                    </TableHead>
+                    <TableHead>
+                      {t("locationManagement.tableHeaderAddress")}
+                    </TableHead>
+                    <TableHead>
+                      {t("locationManagement.tableHeaderCapacity")}
+                    </TableHead>
+                    <TableHead>
+                      {t("locationManagement.tableHeaderManager")}
+                    </TableHead>
+                    <TableHead>
+                      {t("locationManagement.tableHeaderSeats")}
+                    </TableHead>
+                    <TableHead>
+                      {t("locationManagement.tableHeaderActions")}
+                    </TableHead>
                   </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                </TableHeader>
+                <TableBody>
+                  {paginatedData.map((location) => {
+                    const seatCount = location.seats?.length || 0;
+
+                    return (
+                      <TableRow key={location.id?.toString()}>
+                        <TableCell className="font-medium">
+                          {location.name}
+                        </TableCell>
+                        <TableCell>{location.address}</TableCell>
+                        <TableCell>{location.capacity}</TableCell>
+                        <TableCell>{location.manager?.username}</TableCell>
+                        <TableCell>
+                          {seatCount > 0 ? (
+                            <Button
+                              variant="link"
+                              className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                              onClick={() =>
+                                location.id && handleSeatsClick(location.id)
+                              }
+                            >
+                              {t("locationManagement.seatsCount", {
+                                count: seatCount,
+                              })}
+                              <ExternalLink className="ml-1 h-3 w-3" />
+                            </Button>
+                          ) : (
+                            t("locationManagement.noSeats")
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleExportLocation(location)}
+                              title={t("locationManagement.exportAsJsonTitle")}
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEditLocation(location)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleDeleteLocation(location)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            )}
+          </PaginationWrapper>
         </div>
       </CardContent>
 

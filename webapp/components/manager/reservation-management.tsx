@@ -37,6 +37,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { PaginationWrapper } from "@/components/common/pagination-wrapper";
 import type {
   UserDto,
   DetailedEventResponseDto,
@@ -300,99 +301,109 @@ export function ReservationManagement({
           initialFilters={currentFilters}
         />
 
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>
-                {t("reservationManagement.tableHeaderUser")}
-              </TableHead>
-              <TableHead>
-                {t("reservationManagement.tableHeaderEvent")}
-              </TableHead>
-              <TableHead>
-                {t("reservationManagement.tableHeaderSeat")}
-              </TableHead>
-              <TableHead>
-                {t("reservationManagement.tableHeaderReservedDate")}
-              </TableHead>
-              <TableHead>
-                {t("reservationManagement.tableHeaderActions")}
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredReservations.map((reservation) => {
-              const event = events.find(
-                (event) => event.id === reservation.eventId,
-              );
-
-              return (
-                <TableRow key={reservation.id?.toString()}>
-                  <TableCell>{reservation.user?.username}</TableCell>
-                  <TableCell>
-                    {event ? (
-                      <Button
-                        variant="link"
-                        className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
-                        onClick={() => event.id && handleEventClick(event.id)}
-                      >
-                        {event.name}
-                        <ExternalLink className="ml-1 h-3 w-3" />
-                      </Button>
-                    ) : (
-                      t("reservationManagement.unknownEvent")
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {reservation.seat ? (
-                      <Button
-                        variant="link"
-                        className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
-                        onClick={() =>
-                          reservation.seat?.id &&
-                          handleSeatClick(reservation.seat.id)
-                        }
-                      >
-                        <Badge variant="outline">
-                          {reservation.seat.seatNumber}
-                        </Badge>
-                        <ExternalLink className="ml-1 h-3 w-3" />
-                      </Button>
-                    ) : (
-                      <Badge variant="outline">
-                        {t("reservationManagement.unknownSeat")}
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {reservation.reservationDateTime
-                      ? new Date(
-                          reservation.reservationDateTime,
-                        ).toLocaleString([], {
-                          year: "numeric",
-                          month: "2-digit",
-                          day: "2-digit",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
-                      : t("reservationManagement.unknownDate")}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDeleteReservation(reservation)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+        <PaginationWrapper
+          data={filteredReservations}
+          itemsPerPage={100}
+          paginationLabel={t("reservationManagement.paginationLabel")}
+        >
+          {(paginatedData) => (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>
+                    {t("reservationManagement.tableHeaderUser")}
+                  </TableHead>
+                  <TableHead>
+                    {t("reservationManagement.tableHeaderEvent")}
+                  </TableHead>
+                  <TableHead>
+                    {t("reservationManagement.tableHeaderSeat")}
+                  </TableHead>
+                  <TableHead>
+                    {t("reservationManagement.tableHeaderReservedDate")}
+                  </TableHead>
+                  <TableHead>
+                    {t("reservationManagement.tableHeaderActions")}
+                  </TableHead>
                 </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+              </TableHeader>
+              <TableBody>
+                {paginatedData.map((reservation) => {
+                  const event = events.find(
+                    (event) => event.id === reservation.eventId,
+                  );
+
+                  return (
+                    <TableRow key={reservation.id?.toString()}>
+                      <TableCell>{reservation.user?.username}</TableCell>
+                      <TableCell>
+                        {event ? (
+                          <Button
+                            variant="link"
+                            className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                            onClick={() =>
+                              event.id && handleEventClick(event.id)
+                            }
+                          >
+                            {event.name}
+                            <ExternalLink className="ml-1 h-3 w-3" />
+                          </Button>
+                        ) : (
+                          t("reservationManagement.unknownEvent")
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {reservation.seat ? (
+                          <Button
+                            variant="link"
+                            className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                            onClick={() =>
+                              reservation.seat?.id &&
+                              handleSeatClick(reservation.seat.id)
+                            }
+                          >
+                            <Badge variant="outline">
+                              {reservation.seat.seatNumber}
+                            </Badge>
+                            <ExternalLink className="ml-1 h-3 w-3" />
+                          </Button>
+                        ) : (
+                          <Badge variant="outline">
+                            {t("reservationManagement.unknownSeat")}
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {reservation.reservationDateTime
+                          ? new Date(
+                              reservation.reservationDateTime,
+                            ).toLocaleString([], {
+                              year: "numeric",
+                              month: "2-digit",
+                              day: "2-digit",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
+                          : t("reservationManagement.unknownDate")}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDeleteReservation(reservation)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
+        </PaginationWrapper>
       </CardContent>
 
       {isModalOpen && (
