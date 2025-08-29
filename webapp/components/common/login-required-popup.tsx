@@ -10,35 +10,24 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useAuthStatus } from "@/hooks/use-auth-status";
-import { setToastsDisabled } from "@/hooks/use-toast";
-import { useEffect } from "react";
 import { useT } from "@/lib/i18n/hooks";
+import { useLoginRequiredPopup } from "@/hooks/use-login-popup";
 
 export function LoginRequiredPopup() {
   const t = useT();
   const params = useParams();
   const locale = params.locale as string;
 
-  const { isLoggedIn, isLoading } = useAuthStatus();
+  const { isOpen, setIsOpen } = useLoginRequiredPopup();
   const router = useRouter();
 
   const handleLoginRedirect = () => {
+    setIsOpen(false); // Close the popup before redirecting
     router.push(`/${locale}/login`);
   };
 
-  useEffect(() => {
-    if (!isLoading && !isLoggedIn) {
-      setToastsDisabled(true);
-    }
-
-    return () => {
-      setToastsDisabled(false);
-    };
-  }, [isLoading, isLoggedIn]);
-
   return (
-    <Dialog open={!isLoading && !isLoggedIn}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[425px]" noX={true}>
         <DialogHeader>
           <DialogTitle>{t("loginRequiredPopup.title")}</DialogTitle>

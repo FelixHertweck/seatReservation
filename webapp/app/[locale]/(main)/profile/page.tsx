@@ -4,7 +4,6 @@ import type React from "react";
 
 import { useState, useEffect } from "react";
 import { useProfile } from "@/hooks/use-profile";
-import { useAuthStatus } from "@/hooks/use-auth-status";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,12 +14,13 @@ import { toast } from "@/hooks/use-toast";
 import type { UserProfileUpdateDto } from "@/api";
 import LoadingSkeleton from "./loading";
 import { useT } from "@/lib/i18n/hooks";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function ProfilePage() {
   const t = useT();
 
   const { user, updateProfile, isLoading, resendConfirmation } = useProfile();
-  const { isLoggedIn: isAuthenticated } = useAuthStatus();
+  const { isLoggedIn: isAuthenticated } = useAuth();
 
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");

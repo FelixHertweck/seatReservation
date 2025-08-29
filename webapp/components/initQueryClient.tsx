@@ -4,39 +4,59 @@ import type React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { client } from "@/api/client.gen";
 import { toast } from "@/hooks/use-toast";
-import { usePathname } from "next/navigation";
+import { useLoginRequiredPopup } from "@/hooks/use-login-popup";
 
 export default function InitQueryClient({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { triggerLoginRequired, setIsOpen, isOpen } = useLoginRequiredPopup();
+
   client.setConfig({
     baseUrl: `/`,
+    throwOnError: true,
+    fetch: async (input: RequestInfo, init?: RequestInit) => {
+      const response = await fetch(input, init);
+      if (!response.ok) {
+        const error = new Error(response.statusText) as any;
+        error.response = { status: response.status };
+        throw error;
+      }
+      if (isOpen) {
+        setIsOpen(false);
+      }
+      return response;
+    },
   });
-  const currentpath = usePathname();
-
-  const showToast = !(
-    currentpath.includes("login") || currentpath.includes("register")
-  );
 
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
         staleTime: 60000,
-        throwOnError: () => {
-          if (showToast) {
-            setTimeout(() => {
-              toast({
-                title: "An error occurred",
-                description: "Failed to retrieve data",
-                variant: "destructive",
-              });
-            }, 0);
+        refetchOnMount: true,
+        refetchOnWindowFocus: true,
+        throwOnError(error) {
+          const status = (error as any)?.response?.status;
+          if (status !== 401) {
+            toast({
+              title: "An error occurred",
+              description: error.message || "Please try again.",
+              variant: "destructive",
+            });
           }
           return false;
         },
+        retry: (failureCount, error) => {
+          const status = (error as any)?.response?.status;
+          if (status === 401 && failureCount > 0) {
+            triggerLoginRequired();
+            return false;
+          }
+          return failureCount < 2;
+        },
       },
+
       mutations: {
         onError: (error: Error) => {
           const errorTitle =
