@@ -696,5 +696,14 @@
     "unknownLocation": "Unbekannter Standort",
     "statusAvailable": "Verfügbar",
     "confirmDelete": "Sind Sie sicher, dass Sie Sitzplatz {{seatNumber}} löschen möchten?"
+  },
+  "userMultiSelect": {
+    "tagsHint": "Tags (klicken um alle Benutzer mit diesem Tag auszuwählen)",
+    "usersSelected": "{{selectedCount}} von {{totalUsers}} Benutzern ausgewählt",
+    "filtered": " ({{filteredCount}} gefiltert)",
+    "clearAll": "Alle abwählen",
+    "selectAll": "Alle auswählen",
+    "noUsersFound": "Keine Benutzer gefunden",
+    "noUsersAvailable": "Keine Benutzer verfügbar"
   }
 }
