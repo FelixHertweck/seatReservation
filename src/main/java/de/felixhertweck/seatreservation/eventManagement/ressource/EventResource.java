@@ -55,7 +55,6 @@ public class EventResource {
             responseCode = "200",
             description = "OK",
             content = @Content(schema = @Schema(implementation = DetailedEventResponseDTO.class)))
-    @APIResponse(responseCode = "201", description = "Event created successfully")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
@@ -79,7 +78,6 @@ public class EventResource {
             responseCode = "200",
             description = "OK",
             content = @Content(schema = @Schema(implementation = DetailedEventResponseDTO.class)))
-    @APIResponse(responseCode = "200", description = "Event updated successfully")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",

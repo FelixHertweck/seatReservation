@@ -111,7 +111,6 @@ public class ReservationResource {
                                     @Schema(
                                             type = SchemaType.ARRAY,
                                             implementation = ReservationResponseDTO.class)))
-    @APIResponse(responseCode = "201", description = "Reservations created successfully")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",

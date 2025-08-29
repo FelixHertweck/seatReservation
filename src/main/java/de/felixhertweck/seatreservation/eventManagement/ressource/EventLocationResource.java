@@ -117,17 +117,6 @@ public class EventLocationResource {
     @APIResponse(
             responseCode = "409",
             description = "Conflict: Event location with this name already exists")
-    @APIResponse(responseCode = "200", description = "Event location updated successfully")
-    @APIResponse(responseCode = "401", description = "Unauthorized")
-    @APIResponse(
-            responseCode = "403",
-            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
-    @APIResponse(
-            responseCode = "404",
-            description = "Not Found: Event location with specified ID not found")
-    @APIResponse(
-            responseCode = "409",
-            description = "Conflict: Event location with this name already exists")
     public EventLocationResponseDTO updateEventLocation(
             @PathParam("id") Long id, @Valid EventLocationRequestDTO dto) {
         LOG.infof(
@@ -142,8 +131,8 @@ public class EventLocationResource {
     }
 
     @DELETE
-    @APIResponse(responseCode = "200", description = "OK")
     @Path("/{id}")
+    @APIResponse(responseCode = "200", description = "OK")
     @APIResponse(responseCode = "204", description = "Event location deleted successfully")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(

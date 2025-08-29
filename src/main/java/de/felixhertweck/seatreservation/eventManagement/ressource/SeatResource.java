@@ -54,7 +54,6 @@ public class SeatResource {
             responseCode = "200",
             description = "OK",
             content = @Content(schema = @Schema(implementation = SeatResponseDTO.class)))
-    @APIResponse(responseCode = "201", description = "Seat created successfully")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
@@ -128,7 +127,6 @@ public class SeatResource {
             responseCode = "200",
             description = "OK",
             content = @Content(schema = @Schema(implementation = SeatResponseDTO.class)))
-    @APIResponse(responseCode = "200", description = "Seat updated successfully")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
