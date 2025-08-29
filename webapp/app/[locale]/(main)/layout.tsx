@@ -7,7 +7,7 @@ import {
 import { AppSidebar } from "@/components/app-sidebar";
 import "@/app/globals.css";
 import { LoginRequiredPopup } from "@/components/common/login-required-popup";
-import { EmailVerificationPrompt } from "@/components/common/EmailVerificationPrompt";
+import { EmailVerificationPrompt } from "@/components/common/email-verification-prompt";
 
 export default function MainLayout({
   children,

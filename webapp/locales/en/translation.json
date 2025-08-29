@@ -437,7 +437,9 @@
     "viewSeatButton": "View Seat",
     "cancelButton": "Cancel",
     "showLessButton": "Show Less",
-    "showMoreButton": "Show More"
+    "showMoreButton": "Show More",
+    "seatSingular": "Seat",
+    "seatPlural": "Seats"
   },
   "reservationDeleteModal": {
     "title": "Delete Reservation",

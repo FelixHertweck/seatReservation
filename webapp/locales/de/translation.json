@@ -437,7 +437,9 @@
     "viewSeatButton": "Platz ansehen",
     "cancelButton": "Abbrechen",
     "showLessButton": "Weniger anzeigen",
-    "showMoreButton": "Mehr anzeigen"
+    "showMoreButton": "Mehr anzeigen",
+    "seatSingular": "Platz",
+    "seatPlural": "Plätze"
   },
   "reservationDeleteModal": {
     "title": "Reservierung löschen",
