@@ -62,6 +62,7 @@ jobs:
         with:
           name: ${{ inputs.build-artifact-name }}
           path: ${{ inputs.build-artifact-path }}
+          retention-days: 4
 
       - name: Upload OpenAPI schema
         uses: actions/upload-artifact@v4
