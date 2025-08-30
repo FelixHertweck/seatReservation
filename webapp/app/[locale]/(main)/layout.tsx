@@ -7,6 +7,7 @@ import {
 import { AppSidebar } from "@/components/app-sidebar";
 import { LoginRequiredPopup } from "@/components/common/login-required-popup";
 import { EmailVerificationPrompt } from "@/components/common/email-verification-prompt";
+import { UnsavedChangesAlert } from "@/components/common/unsaved-changes-alert";
 
 export default function MainLayout({
   children,
@@ -29,6 +30,7 @@ export default function MainLayout({
       </SidebarInset>
       <LoginRequiredPopup />
       <EmailVerificationPrompt />
+      <UnsavedChangesAlert />
     </SidebarProvider>
   );
 }

@@ -13,23 +13,26 @@ import {
   useToasterControl,
 } from "@/hooks/use-toaster-control";
 import { LoginRequiredPopupProvider } from "@/hooks/use-login-popup";
+import { ProfileUnsavedChangesProvider } from "@/hooks/use-profile-unsaved-changes";
 
 export function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
     <ToasterProvider>
       <CookiesProvider>
         <LoginRequiredPopupProvider>
-          <InitQueryClient>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
-              {children}
-              <ToasterControlWrapper />
-            </ThemeProvider>
-          </InitQueryClient>
+          <ProfileUnsavedChangesProvider>
+            <InitQueryClient>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+                disableTransitionOnChange
+              >
+                {children}
+                <ToasterControlWrapper />
+              </ThemeProvider>
+            </InitQueryClient>
+          </ProfileUnsavedChangesProvider>
         </LoginRequiredPopupProvider>
       </CookiesProvider>
     </ToasterProvider>

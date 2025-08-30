@@ -15,6 +15,7 @@ import type { UserProfileUpdateDto } from "@/api";
 import LoadingSkeleton from "./loading";
 import { useT } from "@/lib/i18n/hooks";
 import { useAuth } from "@/hooks/use-auth";
+import { useProfileUnsavedChanges } from "@/hooks/use-profile-unsaved-changes";
 
 export default function ProfilePage() {
   const t = useT();
@@ -33,7 +34,8 @@ export default function ProfilePage() {
   const [showPasswordSection, setShowPasswordSection] =
     useState<boolean>(false);
 
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const { hasUnsavedChanges, setHasUnsavedChanges } =
+    useProfileUnsavedChanges();
   const [originalFormData, setOriginalFormData] = useState({
     firstname: "",
     lastname: "",
@@ -59,7 +61,7 @@ export default function ProfilePage() {
       setOriginalFormData(initialData);
       setHasUnsavedChanges(false);
     }
-  }, [user]);
+  }, [user, setHasUnsavedChanges]);
 
   useEffect(() => {
     const currentData = { firstname, lastname, email, tags };
@@ -87,14 +89,8 @@ export default function ProfilePage() {
     showPasswordSection,
     newPassword,
     confirmPassword,
+    setHasUnsavedChanges,
   ]);
-
-  useEffect(() => {
-    (window as any).__profileHasUnsavedChanges = hasUnsavedChanges;
-    return () => {
-      (window as any).__profileHasUnsavedChanges = false;
-    };
-  }, [hasUnsavedChanges]);
 
   const handleAddTag = () => {
     if (newTag.trim() && !tags.includes(newTag.trim())) {
