@@ -111,12 +111,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: frontend-build-standalone
+          include-hidden-files: true
           path: |
-            webapp/.next/standalone/
-            webapp/.next/static/
-            webapp/public/
+            webapp/.next/standalone
+            webapp/.next/static
+          if-no-files-found: error
           retention-days: 4
-
 
   frontend-docker:
     needs: nextjs-build
@@ -127,8 +127,7 @@ jobs:
     uses: ./.github/workflows/docker.yml
     with:
       build-artifact-name: frontend-build-standalone
-      build-artifact-path: webapp/
+      build-artifact-path: webapp/.next/
       docker-file-path: ./webapp/Dockerfile
       container-image-title: Frontend
       image-name: ${{ github.repository }}-frontend
-      docker-build-context: webapp/
