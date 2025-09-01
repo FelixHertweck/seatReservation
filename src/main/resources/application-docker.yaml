@@ -1,0 +1,31 @@
+quarkus:
+  datasource:
+    db-kind: postgresql
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    jdbc:
+      url: jdbc:postgresql://db:5432/seatReservation
+      
+  mailer:
+    mock: false
+    from: ${MAIL_FROM}
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+
+
+email:
+  redirect-url: ${APP_URL}
+
+smallrye:
+  jwt:
+    new-token:
+      issuer: ${APP_URL}
+    sign:
+      key:
+        location: /deployments/keys/privateKey.pem
+mp:
+  jwt:
+    publickey:
+      location: /deployments/keys/publicKey.pem

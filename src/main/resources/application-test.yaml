@@ -1,0 +1,11 @@
+smallrye:
+  jwt:
+    new-token:
+      issuer: http://localhost:8081
+
+quarkus:
+  mailer:
+    mock: true
+
+email:
+  redirect-url: http://localhost:8081

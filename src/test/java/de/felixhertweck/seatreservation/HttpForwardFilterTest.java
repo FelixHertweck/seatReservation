@@ -19,24 +19,24 @@
  */
 package de.felixhertweck.seatreservation;
 
+import jakarta.inject.Inject;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import static org.mockito.Mockito.*;
-
+import io.quarkus.test.junit.QuarkusTest;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
-@ExtendWith(MockitoExtension.class)
+@QuarkusTest
 public class HttpForwardFilterTest {
 
-    @InjectMocks private HttpForwardFilter filter;
+    @Inject private HttpForwardFilter filter;
 
     @Mock private HttpServletRequest request;
 
@@ -48,44 +48,54 @@ public class HttpForwardFilterTest {
 
     @Mock private ServletOutputStream servletOutputStream;
 
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
+
     @Test
     void doFilter_ForwardToRootPath() throws Exception {
-        when(response.getStatus()).thenReturn(404);
-        when(request.getRequestURI()).thenReturn("/some-path");
-        when(request.getRequestDispatcher("/")).thenReturn(dispatcher);
-        when(response.getOutputStream()).thenReturn(servletOutputStream);
+        Mockito.when(response.getStatus()).thenReturn(404);
+        Mockito.when(request.getRequestURI()).thenReturn("/some-path");
+        Mockito.when(request.getRequestDispatcher("/")).thenReturn(dispatcher);
+        Mockito.when(response.getOutputStream()).thenReturn(servletOutputStream);
 
         filter.doFilter(request, response, chain);
 
-        verify(response).setStatus(200);
-        verify(dispatcher).forward(request, response);
-        verify(chain, never()).doFilter(request, response);
+        Mockito.verify(response).setStatus(200);
+        Mockito.verify(dispatcher).forward(request, response);
+        Mockito.verify(chain, Mockito.never()).doFilter(request, response);
     }
 
     @Test
     void doFilter_NoForwardForApiOrQuarkusPath() throws Exception {
-        when(response.getStatus()).thenReturn(404);
-        when(request.getRequestURI()).thenReturn("/api/some-api-path");
+        Mockito.when(response.getStatus()).thenReturn(404);
+        Mockito.when(request.getRequestURI()).thenReturn("/api/some-api-path");
 
         filter.doFilter(request, response, chain);
 
-        verify(chain).doFilter(request, response);
-        verify(dispatcher, never()).forward(request, response);
+        Mockito.verify(chain).doFilter(request, response);
+        Mockito.verify(dispatcher, Mockito.never()).forward(request, response);
 
-        reset(chain);
-        when(request.getRequestURI()).thenReturn("/q/some-quarkus-path");
+        // Reset für zweiten Teil des Tests
+        Mockito.reset(chain, dispatcher);
+        Mockito.when(response.getStatus()).thenReturn(404); // Status neu setzen nach Reset
+        Mockito.when(request.getRequestURI()).thenReturn("/q/some-quarkus-path");
+
         filter.doFilter(request, response, chain);
-        verify(chain, times(1)).doFilter(request, response);
-        verify(dispatcher, never()).forward(request, response);
+
+        Mockito.verify(chain).doFilter(request, response);
+        Mockito.verify(dispatcher, Mockito.never()).forward(request, response);
     }
 
     @Test
     void doFilter_NoForwardForNon404Status() throws Exception {
-        when(response.getStatus()).thenReturn(200);
+        Mockito.when(response.getStatus()).thenReturn(200);
+        Mockito.when(request.getRequestURI()).thenReturn("/some-path");
 
         filter.doFilter(request, response, chain);
 
-        verify(chain).doFilter(request, response);
-        verify(dispatcher, never()).forward(request, response);
+        Mockito.verify(chain).doFilter(request, response);
+        Mockito.verify(dispatcher, Mockito.never()).forward(request, response);
     }
 }

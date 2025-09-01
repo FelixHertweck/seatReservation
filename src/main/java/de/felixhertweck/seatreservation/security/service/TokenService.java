@@ -34,7 +34,7 @@ public class TokenService {
 
     private static final Logger LOG = Logger.getLogger(TokenService.class);
 
-    @ConfigProperty(name = "jwt.token.expiration.minutes", defaultValue = "60")
+    @ConfigProperty(name = "smallrye.jwt.token.expiration.minutes", defaultValue = "60")
     long expirationMinutes;
 
     /**

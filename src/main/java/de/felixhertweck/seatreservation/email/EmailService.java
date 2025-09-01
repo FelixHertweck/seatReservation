@@ -20,8 +20,6 @@
 package de.felixhertweck.seatreservation.email;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.format.DateTimeFormatter;
@@ -74,16 +72,6 @@ public class EmailService {
 
     private static final Logger LOG = Logger.getLogger(EmailService.class);
 
-    // Setter for testing purposes
-    public void setEMAIL_HEADER_CONFIRMATION(String EMAIL_HEADER_CONFIRMATION) {
-        this.EMAIL_HEADER_CONFIRMATION = EMAIL_HEADER_CONFIRMATION;
-    }
-
-    // Setter for testing purposes
-    public void setEMAIL_HEADER_REMINDER(String EMAIL_HEADER_REMINDER) {
-        this.EMAIL_HEADER_REMINDER = EMAIL_HEADER_REMINDER;
-    }
-
     @Inject Mailer mailer;
 
     @Inject EmailVerificationRepository emailVerificationRepository;
@@ -94,11 +82,26 @@ public class EmailService {
 
     @Inject ReservationService reservationService;
 
-    @ConfigProperty(name = "email.confirmation.base.url", defaultValue = "")
+    @ConfigProperty(name = "email.redirect-url", defaultValue = "")
     String baseUrl;
 
-    @ConfigProperty(name = "email.confirmation.expiration.minutes", defaultValue = "60")
+    @ConfigProperty(name = "email.verification.expiration.minutes", defaultValue = "60")
     long expirationMinutes;
+
+    @ConfigProperty(name = "email.content.event-confirmation")
+    String emailContentEventConfirmation;
+
+    @ConfigProperty(name = "email.content.event-reminder")
+    String emailContentEventReminder;
+
+    @ConfigProperty(name = "email.content.password-changed")
+    String emailContentPasswordChanged;
+
+    @ConfigProperty(name = "email.content.reservation-confirmation")
+    String emailContentReservationConfirmation;
+
+    @ConfigProperty(name = "email.content.reservation-update-confirmation")
+    String emailContentReservationUpdateConfirmation;
 
     /**
      * Sends an email confirmation to the specified user.
@@ -116,10 +119,7 @@ public class EmailService {
                 generateConfirmationLink(emailVerification.id, emailVerification.getToken());
         LOG.debugf("Confirmation link generated: %s", confirmationLink);
 
-        // Read the HTML template
-        String templatePath = "src/main/resources/templates/email/email-confirmation.html";
-        String htmlContent = new String(Files.readAllBytes(Paths.get(templatePath)));
-        LOG.debugf("Email confirmation template read from: %s", templatePath);
+        String htmlContent = emailContentEventConfirmation;
 
         // Replace placeholders with actual values
         htmlContent =
@@ -242,9 +242,7 @@ public class EmailService {
         }
         LOG.debugf("HTML list of seats generated: %s", seatListHtml.toString());
 
-        String templatePath = "src/main/resources/templates/email/reservation-confirmation.html";
-        String htmlContent = new String(Files.readAllBytes(Paths.get(templatePath)));
-        LOG.debugf("Reservation confirmation template read from: %s", templatePath);
+        String htmlContent = emailContentReservationConfirmation;
 
         htmlContent =
                 htmlContent.replace("{userName}", user.getFirstname() + " " + user.getLastname());
@@ -348,10 +346,7 @@ public class EmailService {
         }
         LOG.debugf("HTML list of seats generated: %s", deletedSeatListHtml.toString());
 
-        String templatePath =
-                "src/main/resources/templates/email/reservation-update-confirmation.html";
-        String htmlContent = new String(Files.readAllBytes(Paths.get(templatePath)));
-        LOG.debugf("Reservation update confirmation template read from: %s", templatePath);
+        String htmlContent = emailContentReservationUpdateConfirmation;
 
         htmlContent =
                 htmlContent.replace("{userName}", user.getFirstname() + " " + user.getLastname());
@@ -393,10 +388,7 @@ public class EmailService {
         LOG.infof("Attempting to send password changed notification to user: %s", user.getEmail());
         LOG.debugf("User ID: %d, Username: %s", user.id, user.getUsername());
 
-        // Read the HTML template
-        String templatePath = "src/main/resources/templates/email/password-changed.html";
-        String htmlContent = new String(Files.readAllBytes(Paths.get(templatePath)));
-        LOG.debugf("Password changed notification template read from: %s", templatePath);
+        String htmlContent = emailContentPasswordChanged;
 
         // Replace placeholders with actual values
         htmlContent =
@@ -439,10 +431,7 @@ public class EmailService {
                         "User ID: %d, Event ID: %d, Number of reservations: %d",
                         user.id, event.id, reservations.size()));
 
-        // Read the HTML template
-        String templatePath = "src/main/resources/templates/email/event-reminder.html";
-        String htmlContent = new String(Files.readAllBytes(Paths.get(templatePath)));
-        LOG.debugf("Event reminder template read from: %s", templatePath);
+        String htmlContent = emailContentEventReminder;
 
         // Prepare seat list HTML
         StringBuilder seatListHtml = new StringBuilder();
@@ -504,12 +493,7 @@ public class EmailService {
         LOG.debugf(
                 "Generated CSV data of size %d bytes for event ID: %d", csvData.length, event.id);
 
-        // Read the HTML template (can be a generic one or a specific one for CSV export)
-        String templatePath =
-                "src/main/resources/templates/email/event-reminder.html"; // Reusing for simplicity,
-        // can create a new one
-        String htmlContent = new String(Files.readAllBytes(Paths.get(templatePath)));
-        LOG.debugf("Email template for CSV export read from: %s", templatePath);
+        String htmlContent = emailContentEventReminder;
 
         // Replace placeholders
         htmlContent =

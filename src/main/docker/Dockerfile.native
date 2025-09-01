@@ -26,4 +26,7 @@ COPY --chown=1001:root --chmod=0755 target/*-runner /work/application
 EXPOSE 8080
 USER 1001
 
-ENTRYPOINT ["./application", "-Dquarkus.http.host=0.0.0.0"]
+ENTRYPOINT ["./application", "-Dquarkus.http.host=0.0.0.0", "-Dquarkus.profile=docker"]
+
+HEALTHCHECK --interval=10s --timeout=5s --start-period=5s --retries=3 \
+  CMD curl --fail --silent --show-error http://localhost:8080/q/health/ready | grep 'UP' || exit 1

@@ -1,0 +1,408 @@
+
+smallrye:
+  jwt:
+    token:
+      expiration:
+        minutes: 60
+    always-check-authorization: true
+    new-token:
+      issuer: http://localhost:8080
+    sign:
+      key:
+        location: keys/privateKey.pem
+mp:
+  jwt:
+    token:
+      header: Cookie
+      cookie: jwt
+    verify:
+        publickey:
+            location: keys/publicKey.pem
+
+email:  
+  redirect-url: http://localhost:8080
+  verification:
+    expiration:
+      minutes: 120
+    cleanup:
+      enabled: true
+      batch-size: 100
+      interval: 10m
+
+
+  header:
+    confirmation: "Please Confirm Your Email Address"
+    password-changed: "Your Password Has Been Changed"
+    reservation-confirmation: "Your Reservation Confirmation"
+    reservation-update: "Your Reservation Update"
+    reminder: "Reminder: Your event is starting soon!"
+    reservation-overview: "Reservation overview for your event:"
+  
+
+  # Adjust this but keep the placeholders correctly
+  content: 
+    event-confirmation: |-
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Email Confirmation</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    line-height: 1.6;
+                    color: #333;
+                    max-width: 600px;
+                    margin: 0 auto;
+                    padding: 20px;
+                }
+                .container {
+                    background-color: #f9f9f9;
+                    border-radius: 8px;
+                    padding: 30px;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                }
+                .header {
+                    text-align: center;
+                    margin-bottom: 30px;
+                }
+                .logo {
+                    max-width: 150px;
+                    margin-bottom: 20px;
+                }
+                h1 {
+                    color: #2c3e50;
+                    margin-bottom: 20px;
+                }
+                .content {
+                    margin-bottom: 30px;
+                }
+                .button {
+                    display: inline-block;
+                    background-color: #3498db;
+                    color: white;
+                    text-decoration: none;
+                    padding: 12px 24px;
+                    border-radius: 4px;
+                    font-weight: bold;
+                    margin: 20px 0;
+                }
+                .button:hover {
+                    background-color: #2980b9;
+                }
+                .footer {
+                    text-align: center;
+                    font-size: 12px;
+                    color: #7f8c8d;
+                    margin-top: 30px;
+                    padding-top: 20px;
+                    border-top: 1px solid #eee;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Email Confirmation</h1>
+                </div>
+                <div class="content">
+                    <p>Hello {userName},</p>
+                    <p>Thank you for registering with our Seat Reservation System. To complete your registration and verify your email address, please click the button below:</p>
+                    
+                    <div style="text-align: center;">
+                        <a href="{confirmationLink}" class="button">Confirm Email Address</a>
+                    </div>
+                    
+                    <p>If the button doesn't work, you can also copy and paste the following link into your browser:</p>
+                    <p style="word-break: break-all;">{confirmationLink}</p>
+                    
+                    <p>This link will expire in 24 hours.</p>
+                    
+                    <p>If you did not create an account, you can safely ignore this email.</p>
+                </div>
+                <div class="footer">
+                    <p>&copy; {currentYear} Seat Reservation System. All rights reserved.</p>
+                    <p>This is an automated message, please do not reply to this email.</p>
+                </div>
+            </div>
+        </body>
+      </html>
+
+    event-reminder: |- 
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Event Reminder</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    line-height: 1.6;
+                    color: #333;
+                    background-color: #f4f4f4;
+                    margin: 0;
+                    padding: 20px;
+                }
+                .container {
+                    max-width: 600px;
+                    margin: 0 auto;
+                    background: #fff;
+                    padding: 30px;
+                    border-radius: 8px;
+                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                }
+                h1 {
+                    color: #0056b3;
+                }
+                .footer {
+                    margin-top: 20px;
+                    font-size: 0.8em;
+                    color: #777;
+                    text-align: center;
+                }
+                ul {
+                    list-style-type: none;
+                    padding: 0;
+                }
+                li {
+                    margin-bottom: 5px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>Reminder: Your Event Starts Soon!</h1>
+                <p>Hello {userName},</p>
+                <p>We would like to remind you that the event <strong>"{eventName}"</strong> is taking place tomorrow.</p>
+                <p><strong>Event Details:</strong></p>
+                <ul>
+                    <li><strong>Date:</strong> {eventDate}</li>
+                    <li><strong>Time:</strong> {eventTime}</li>
+                    <li><strong>Location:</strong> {eventLocation}</li>
+                </ul>
+                <p>You have reserved the following seats for this event:</p>
+                <ul>
+                    {seatList}
+                </ul>
+                <p>We look forward to seeing you!</p>
+                <p>Sincerely,</p>
+                <p>Your Seat Reservation Team</p>
+                <div class="footer">
+                    <p>&copy; {currentYear} Seat Reservation. All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+      </html>
+
+    password-changed: |-
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Password Changed</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    background-color: #f4f4f4;
+                    margin: 0;
+                    padding: 0;
+                }
+                .container {
+                    max-width: 600px;
+                    margin: 20px auto;
+                    background-color: #ffffff;
+                    padding: 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                }
+                .header {
+                    background-color: #007bff;
+                    color: #ffffff;
+                    padding: 10px 20px;
+                    border-radius: 8px 8px 0 0;
+                    text-align: center;
+                }
+                .content {
+                    padding: 20px;
+                    line-height: 1.6;
+                    color: #333333;
+                }
+                .footer {
+                    text-align: center;
+                    padding: 10px 20px;
+                    font-size: 12px;
+                    color: #777777;
+                    border-top: 1px solid #eeeeee;
+                    margin-top: 20px;
+                }
+                .button {
+                    display: inline-block;
+                    background-color: #007bff;
+                    color: #ffffff;
+                    padding: 10px 20px;
+                    text-decoration: none;
+                    border-radius: 5px;
+                    margin-top: 15px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Password Successfully Changed</h1>
+                </div>
+                <div class="content">
+                    <p>Hallo {userName},</p>
+                    <p>Your password for your account has been successfully changed.</p>
+                    <p>If you did not make this change, please contact us immediately.</p>
+                    <p>Thank you</p>
+                </div>
+                <div class="footer">
+                    <p>&copy; {currentYear} Seat Reservation. All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+      </html>
+
+
+    reservation-confirmation: |- 
+      <!DOCTYPE html>
+      <html lang="de">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Reservation Confirmation</title>
+            <style>
+                body {
+                    font-family: sans-serif;
+                    line-height: 1.6;
+                    color: #333;
+                }
+                .container {
+                    max-width: 600px;
+                    margin: 20px auto;
+                    padding: 20px;
+                    border: 1px solid #a0a0a0;
+                    border-radius: 5px;
+                }
+                .header {
+                    font-size: 24px;
+                    font-weight: bold;
+                    margin-bottom: 20px;
+                    text-align: center;
+                }
+                .footer {
+                    margin-top: 20px;
+                    font-size: 12px;
+                    text-align: center;
+                    color: #777;
+                }
+                ul {
+                    padding-left: 20px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">Your reservation confirmation</div>
+                <p>Hello {userName},</p>
+                <p>Thank you for your reservation for the event "{eventName}".</p>
+                <p><strong>Location:</strong> {eventLocation}</p>
+                <p><strong>Start:</strong> {eventStartTime}</p>
+                <p><strong>End:</strong> {eventEndTime}</p>
+                <p>You have reserved the following seats:</p>
+                <ul>
+                    {seatList}
+                </ul>
+                <p>Here is an overview of your seats:</p>
+                {seatMap}
+                <div style="margin-top: 20px; text-align: center;">
+                    <span style="display: inline-block; width: 15px; height: 15px; background-color: #00C950; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
+                    <span style="vertical-align: middle; margin-right: 15px;">Available</span>
+                    <span style="display: inline-block; width: 15px; height: 15px; background-color: #2B7FFF; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
+                    <span style="vertical-align: middle;">My Reserved</span>
+                </div>
+                <p style="margin-top: 20px;">We wish you a great time at the event!</p>
+                <p>Best regards</p>
+                <div class="footer">
+                    &copy; {currentYear} - All rights reserved
+                </div>
+            </div>
+        </body>
+      </html>
+
+    reservation-update-confirmation: |-
+      <!DOCTYPE html>
+      <html lang="de">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Update Reservation Confirmation</title>
+            <style>
+                body {
+                    font-family: sans-serif;
+                    line-height: 1.6;
+                    color: #333;
+                }
+                .container {
+                    max-width: 600px;
+                    margin: 20px auto;
+                    padding: 20px;
+                    border: 1px solid #a0a0a0;
+                    border-radius: 5px;
+                }
+                .header {
+                    font-size: 24px;
+                    font-weight: bold;
+                    margin-bottom: 20px;
+                    text-align: center;
+                }
+                .footer {
+                    margin-top: 20px;
+                    font-size: 12px;
+                    text-align: center;
+                    color: #777;
+                }
+                ul {
+                    padding-left: 20px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">Your reservation update confirmation</div>
+                <p>Hello {userName},</p>
+                <p>Thank you for your reservation update for the event "{eventName}".</p>
+                <p><strong>Location:</strong> {eventLocation}</p>
+                <p><strong>Start:</strong> {eventStartTime}</p>
+                <p><strong>End:</strong> {eventEndTime}</p>
+                <p><strong>You have deleted the following seats:</strong></p>
+                <ul>
+                    {deletedSeatList}
+                </ul>
+                <p>You have still reserved the following seats:</p>
+                <ul>
+                    {activeSeatList}
+                </ul>
+                <p>Here is an overview of your current seats:</p>
+                {seatMap}
+                <div style="margin-top: 20px; text-align: center;">
+                    <span style="display: inline-block; width: 15px; height: 15px; background-color: #00C950; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
+                    <span style="vertical-align: middle; margin-right: 15px;">Available</span>
+                    <span style="display: inline-block; width: 15px; height: 15px; background-color: #2B7FFF; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
+                    <span style="vertical-align: middle; margin-right: 15px;">New Reserved</span>
+                    <span style="display: inline-block; width: 15px; height: 15px; background-color: #F0B100; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
+                    <span style="vertical-align: middle;">Already Reserved</span>
+                </div>
+                <p style="margin-top: 20px;">We wish you a great time at the event!</p>
+                <p>Best regards</p>
+                <div class="footer">
+                    &copy; {currentYear} - All rights reserved
+                </div>
+            </div>
+        </body>
+      </html>
+    
