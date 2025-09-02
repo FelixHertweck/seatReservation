@@ -22,12 +22,18 @@ package de.felixhertweck.seatreservation.userManagment.dto;
 import java.util.Set;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
 
 public class AdminUserCreationDto {
 
     @NotNull(message = "Username cannot be null")
+    @Pattern(
+            regexp = "^[a-zA-Z0-9._-]{3,32}$",
+            message =
+                    "Username must be 3-32 characters long and contain only letters, numbers, dots,"
+                            + " underscores and hyphens")
     private final String username;
 
     @NoHtmlSanitize
