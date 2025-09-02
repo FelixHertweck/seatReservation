@@ -29,10 +29,10 @@ public class SeatRequestDTO {
     private Long eventLocationId;
 
     @NotNull(message = "X coordinate must not be null")
-    private int xCoordinate;
+    private Integer xCoordinate;
 
     @NotNull(message = "Y coordinate must not be null")
-    private int yCoordinate;
+    private Integer yCoordinate;
 
     public SeatRequestDTO() {
         // Default constructor for serialization/deserialization
@@ -54,11 +54,11 @@ public class SeatRequestDTO {
         return eventLocationId;
     }
 
-    public int getXCoordinate() {
+    public Integer getxCoordinate() {
         return xCoordinate;
     }
 
-    public int getYCoordinate() {
+    public Integer getyCoordinate() {
         return yCoordinate;
     }
 
@@ -70,11 +70,11 @@ public class SeatRequestDTO {
         this.eventLocationId = eventLocationId;
     }
 
-    public void setXCoordinate(int xCoordinate) {
+    public void setxCoordinate(Integer xCoordinate) {
         this.xCoordinate = xCoordinate;
     }
 
-    public void setYCoordinate(int yCoordinate) {
+    public void setyCoordinate(Integer yCoordinate) {
         this.yCoordinate = yCoordinate;
     }
 }

@@ -326,13 +326,13 @@ public class EventLocationServiceTest {
 
         ImportSeatDto seat1 = new ImportSeatDto();
         seat1.setSeatNumber("A1");
-        seat1.setXCoordinate(1);
-        seat1.setYCoordinate(1);
+        seat1.setxCoordinate(1);
+        seat1.setyCoordinate(1);
 
         ImportSeatDto seat2 = new ImportSeatDto();
         seat2.setSeatNumber("A2");
-        seat2.setXCoordinate(1);
-        seat2.setYCoordinate(2);
+        seat2.setxCoordinate(1);
+        seat2.setyCoordinate(2);
 
         dto.setSeats(List.of(seat1, seat2));
 

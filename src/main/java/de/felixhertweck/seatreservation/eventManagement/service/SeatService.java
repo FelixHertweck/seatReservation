@@ -83,7 +83,7 @@ public class SeatService {
                     eventLocation.getId());
             throw new IllegalArgumentException("Seat number cannot be empty");
         }
-        if (dto.getXCoordinate() < 0 || dto.getYCoordinate() < 0) {
+        if (dto.getxCoordinate().intValue() < 0 || dto.getyCoordinate().intValue() < 0) {
             LOG.warnf(
                     "Invalid seat data: coordinates are negative for seat number '%s' in event"
                             + " location ID %d.",
@@ -94,8 +94,8 @@ public class SeatService {
         Seat seat = new Seat();
         seat.setSeatNumber(dto.getSeatNumber());
         seat.setLocation(eventLocation);
-        seat.setXCoordinate(dto.getXCoordinate());
-        seat.setYCoordinate(dto.getYCoordinate());
+        seat.setxCoordinate(dto.getxCoordinate().intValue());
+        seat.setyCoordinate(dto.getyCoordinate().intValue());
         seatRepository.persist(seat);
         LOG.infof(
                 "Seat with ID %d created successfully for event location ID %d by manager: %s (ID:"
@@ -176,7 +176,7 @@ public class SeatService {
             LOG.warnf("Invalid seat data: seat number is empty for seat ID %d.", id);
             throw new IllegalArgumentException("Seat number cannot be empty");
         }
-        if (dto.getXCoordinate() < 0 || dto.getYCoordinate() < 0) {
+        if (dto.getxCoordinate().intValue() < 0 || dto.getyCoordinate().intValue() < 0) {
             LOG.warnf("Invalid seat data: coordinates are negative for seat ID %d.", id);
             throw new IllegalArgumentException("Coordinates cannot be negative");
         }
@@ -189,14 +189,14 @@ public class SeatService {
                 dto.getSeatNumber(),
                 seat.getLocation().getId(),
                 newEventLocation.getId(),
-                seat.getXCoordinate(),
-                dto.getXCoordinate(),
-                seat.getYCoordinate(),
-                dto.getYCoordinate());
+                seat.getxCoordinate(),
+                dto.getxCoordinate().intValue(),
+                seat.getyCoordinate(),
+                dto.getyCoordinate().intValue());
         seat.setSeatNumber(dto.getSeatNumber());
         seat.setLocation(newEventLocation);
-        seat.setXCoordinate(dto.getXCoordinate());
-        seat.setYCoordinate(dto.getYCoordinate());
+        seat.setxCoordinate(dto.getxCoordinate().intValue());
+        seat.setyCoordinate(dto.getyCoordinate().intValue());
         seatRepository.persist(seat);
         LOG.infof(
                 "Seat with ID %d updated successfully by manager: %s (ID: %d)",
