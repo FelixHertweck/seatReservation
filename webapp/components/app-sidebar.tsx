@@ -36,7 +36,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useTheme } from "next-themes";
 import { useT } from "@/lib/i18n/hooks";
 import { languages } from "@/lib/i18n/config";
@@ -66,6 +66,12 @@ export function AppSidebar() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [setOpen]);
+
+  useEffect(() => {
+    if (isMobile) {
+      setOpen(false);
+    }
+  }, [pathname, isMobile, setOpen]);
 
   const getMenuItems = () => {
     const baseItems = [
