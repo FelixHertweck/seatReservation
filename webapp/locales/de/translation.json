@@ -106,13 +106,13 @@
   "eventsPage": {
     "title": "Veranstaltungen & Reservierungen",
     "description": "Veranstaltungen durchsuchen und Ihre Reservierungen verwalten",
-    "availableEventsTab": "Verfügbare Veranstaltungen",
-    "myReservationsTab": "Meine Reservierungen",
+    "availableEventsTab": "Veranstaltungen",
+    "myReservationsTab": "Reservierungen",
     "filterByEventPlaceholder": "Nach Veranstaltung filtern",
     "allEventsFilter": "Alle Veranstaltungen",
     "noReservationsYet": "Sie haben noch keine Reservierungen.",
     "noReservationsForSelectedEvent": "Keine Reservierungen für die ausgewählte Veranstaltung gefunden.",
-    "switchToAvailableEvents": "Wechseln Sie zu \"Verfügbare Veranstaltungen\", um Ihre erste Reservierung vorzunehmen!",
+    "switchToAvailableEvents": "Wechseln Sie zu \"Veranstaltungen\", um Ihre erste Reservierung vorzunehmen!",
     "noEventsAvailable": "Derzeit sind keine Veranstaltungen verfügbar.",
     "tryAgainOrCheckSearch": "Bitte versuchen Sie es später erneut oder überprüfen Sie Ihre Suchkriterien."
   },
@@ -340,7 +340,8 @@
     "tableHeaderVerified": "Verifiziert",
     "tableHeaderActions": "Aktionen",
     "verifiedStatus": "Verifiziert",
-    "pendingStatus": "Ausstehend"
+    "pendingStatus": "Ausstehend",
+    "paginationLabel": "Benutzer"
   },
   "userImportModal": {
     "importUserDataTitle": "Benutzerdaten importieren",
@@ -410,7 +411,7 @@
     "selectedSeatsTitle": "Ausgewählte Plätze:",
     "cancelButton": "Abbrechen",
     "reservingButton": "Reserviere...",
-    "reserveSeatsButton": "Reserviere {{count}} Platz/Plätze",
+    "reserveSeatsButton": "Reserviere {{count}} Plätze",
     "reserveSeatButton": "Reserviere den Platz"
   },
   "reservation": {
@@ -428,7 +429,6 @@
     }
   },
   "reservationCard": {
-    "eventReservationTitle": "Event-Reservierung",
     "seatBadge": "Platz {{seatNumber}}",
     "reservedOn": "Reserviert am",
     "unknownDate": "Unbekanntes Datum",
@@ -442,7 +442,8 @@
     "showLessButton": "Weniger anzeigen",
     "showMoreButton": "Mehr anzeigen",
     "seatSingular": "Platz",
-    "seatPlural": "Plätze"
+    "seatPlural": "Plätze",
+    "bookingUntil": "Buchung bis"
   },
   "reservationDeleteModal": {
     "title": "Reservierung löschen",
@@ -502,7 +503,8 @@
     "seatsToBlockTitle": "Zu blockierende Plätze:",
     "cancelButton": "Abbrechen",
     "blockingButton": "Blockiere...",
-    "blockSeatsButton": "Blockiere {{count}} Platz/Plätze"
+    "blockSeatsButton": "Blockiere {{count}} Plätze",
+    "blockSeatButton": "Blockiere diesen Platz"
   },
   "eventFormModal": {
     "createEventTitle": "Veranstaltung erstellen",
@@ -671,7 +673,7 @@
     "events": "Veranstaltungen",
     "profile": "Profil",
     "manager": "Manager",
-    "userManagement": "Benutzerverwaltung",
+    "userManagement": "Benutzer- verwaltung",
     "admin": "Admin",
     "theme": "Theme",
     "light": "Hell",

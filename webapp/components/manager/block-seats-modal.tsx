@@ -203,9 +203,11 @@ export function BlockSeatsModal({
             >
               {isLoading
                 ? t("blockSeatsModal.blockingButton")
-                : t("blockSeatsModal.blockSeatsButton", {
-                    count: selectedSeats.length,
-                  })}
+                : selectedSeats.length === 1
+                  ? t("blockSeatsModal.blockSeatButton")
+                  : t("blockSeatsModal.blockSeatsButton", {
+                      count: selectedSeats.length,
+                    })}
             </Button>
           </div>
         </form>

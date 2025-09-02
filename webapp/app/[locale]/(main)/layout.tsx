@@ -8,6 +8,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { LoginRequiredPopup } from "@/components/common/login-required-popup";
 import { EmailVerificationPrompt } from "@/components/common/email-verification-prompt";
 import { UnsavedChangesAlert } from "@/components/common/unsaved-changes-alert";
+import Link from "next/link";
 
 export default function MainLayout({
   children,
@@ -22,7 +23,9 @@ export default function MainLayout({
           <SidebarTrigger className="hover:scale-110 transition-transform duration-200" />
           <div className="w-full flex-1">
             <h1 className="text-lg font-semibold md:text-xl">
-              Seat Reservation
+              <Link href="/" className={`bg-transparent`}>
+                Seat Reservation
+              </Link>
             </h1>
           </div>
         </header>

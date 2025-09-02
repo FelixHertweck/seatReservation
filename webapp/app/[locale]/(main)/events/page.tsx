@@ -159,6 +159,7 @@ export default function EventsPage() {
                     reservations={eventReservations}
                     eventName={event?.name}
                     locationName={event?.location?.name}
+                    bookingDeadline={event?.bookingDeadline}
                     onViewSeats={handleViewReservationSeats}
                     onDelete={handleDeleteReservation}
                   />

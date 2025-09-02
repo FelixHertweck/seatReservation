@@ -24,6 +24,7 @@ import { UserFormModal } from "@/components/admin/user-form-modal";
 import { UserImportModal } from "@/components/admin/user-import-modal";
 import type { UserDto, AdminUserCreationDto, AdminUserUpdateDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
+import { PaginationWrapper } from "@/components/common/pagination-wrapper";
 
 export interface UserManagementProps {
   users: UserDto[];
@@ -136,74 +137,94 @@ export function UserManagement({
           filterOptions={[]}
         />
 
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t("userManagement.tableHeaderUsername")}</TableHead>
-              <TableHead>{t("userManagement.tableHeaderName")}</TableHead>
-              <TableHead>{t("userManagement.tableHeaderEmail")}</TableHead>
-              <TableHead>{t("userManagement.tableHeaderRoles")}</TableHead>
-              <TableHead>{t("userManagement.tableHeaderTags")}</TableHead>{" "}
-              {/* New TableHead for Tags */}
-              <TableHead>{t("userManagement.tableHeaderVerified")}</TableHead>
-              <TableHead>{t("userManagement.tableHeaderActions")}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredUsers.map((user) => (
-              <TableRow key={user.id?.toString()}>
-                <TableCell className="font-medium">{user.username}</TableCell>
-                <TableCell>
-                  {user.firstname} {user.lastname}
-                </TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>
-                  <div className="flex gap-1 flex-wrap">
-                    {user.roles?.map((role) => (
-                      <Badge key={role} variant="outline">
-                        {role}
+        <PaginationWrapper
+          data={filteredUsers}
+          itemsPerPage={100}
+          paginationLabel={t("userManagement.paginationLabel")}
+        >
+          {(paginatedData) => (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>
+                    {t("userManagement.tableHeaderUsername")}
+                  </TableHead>
+                  <TableHead>{t("userManagement.tableHeaderName")}</TableHead>
+                  <TableHead>{t("userManagement.tableHeaderEmail")}</TableHead>
+                  <TableHead>{t("userManagement.tableHeaderRoles")}</TableHead>
+                  <TableHead>
+                    {t("userManagement.tableHeaderTags")}
+                  </TableHead>{" "}
+                  {/* New TableHead for Tags */}
+                  <TableHead>
+                    {t("userManagement.tableHeaderVerified")}
+                  </TableHead>
+                  <TableHead>
+                    {t("userManagement.tableHeaderActions")}
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginatedData.map((user) => (
+                  <TableRow key={user.id?.toString()}>
+                    <TableCell className="font-medium">
+                      {user.username}
+                    </TableCell>
+                    <TableCell>
+                      {user.firstname} {user.lastname}
+                    </TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-1 flex-wrap">
+                        {user.roles?.map((role) => (
+                          <Badge key={role} variant="outline">
+                            {role}
+                          </Badge>
+                        ))}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-1 flex-wrap">
+                        {user.tags?.map((tag) => (
+                          <Badge key={tag} variant="secondary">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={user.emailVerified ? "default" : "secondary"}
+                      >
+                        {user.emailVerified
+                          ? t("userManagement.verifiedStatus")
+                          : t("userManagement.pendingStatus")}
                       </Badge>
-                    ))}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-1 flex-wrap">
-                    {user.tags?.map((tag) => (
-                      <Badge key={tag} variant="secondary">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant={user.emailVerified ? "default" : "secondary"}>
-                    {user.emailVerified
-                      ? t("userManagement.verifiedStatus")
-                      : t("userManagement.pendingStatus")}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEditUser(user)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleDeleteUser(user)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditUser(user)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDeleteUser(user)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </PaginationWrapper>
       </CardContent>
 
       {isModalOpen && (

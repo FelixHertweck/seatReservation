@@ -27,6 +27,7 @@ interface ReservationCardProps {
   reservations: ReservationResponseDto[];
   eventName?: string;
   locationName?: string;
+  bookingDeadline?: Date;
   onViewSeats: (reservation: ReservationResponseDto) => void;
   onDelete: (reservationId: bigint) => void;
 }
@@ -35,6 +36,7 @@ export function ReservationCard({
   reservations,
   eventName,
   locationName,
+  bookingDeadline,
   onViewSeats,
   onDelete,
 }: ReservationCardProps) {
@@ -77,7 +79,7 @@ export function ReservationCard({
         <CardHeader>
           <div className="flex items-start justify-between">
             <CardTitle className="line-clamp-1">
-              {t("reservationCard.eventReservationTitle")}
+              {eventName || t("reservationCard.unknownEvent")}
             </CardTitle>
             <Badge variant="outline">
               {reservations.length}{" "}
@@ -105,7 +107,15 @@ export function ReservationCard({
 
           <div className="flex items-center text-sm text-muted-foreground">
             <Calendar className="mr-2 h-4 w-4" />
-            {eventName || t("reservationCard.unknownEvent")}
+            {t("reservationCard.bookingUntil")}:{" "}
+            {bookingDeadline
+              ? bookingDeadline.toLocaleDateString() +
+                " " +
+                bookingDeadline.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : t("reservationCard.unknownDate")}
           </div>
 
           <div className="space-y-2 mt-4">

@@ -428,7 +428,6 @@
     }
   },
   "reservationCard": {
-    "eventReservationTitle": "Event Reservation",
     "seatBadge": "Seat {{seatNumber}}",
     "reservedOn": "Reserved on",
     "unknownDate": "Unknown date",
@@ -442,7 +441,8 @@
     "showLessButton": "Show Less",
     "showMoreButton": "Show More",
     "seatSingular": "Seat",
-    "seatPlural": "Seats"
+    "seatPlural": "Seats",
+    "bookingUntil": "Booking until"
   },
   "reservationDeleteModal": {
     "title": "Delete Reservation",
