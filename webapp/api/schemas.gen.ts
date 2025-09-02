@@ -6,7 +6,7 @@ export const AdminUserCreationDtoSchema = {
     properties: {
         username: {
             type: 'string',
-            pattern: '^[a-zA-Z0-9._-]{3,20}$'
+            pattern: '^[a-zA-Z0-9._-]{3,32}$'
         },
         email: {
             type: 'string'
@@ -410,7 +410,7 @@ export const RegisterRequestDTOSchema = {
     properties: {
         username: {
             type: 'string',
-            pattern: '^[a-zA-Z0-9._-]{3,20}$'
+            pattern: '^[a-zA-Z0-9._-]{3,32}$'
         },
         firstname: {
             type: 'string',

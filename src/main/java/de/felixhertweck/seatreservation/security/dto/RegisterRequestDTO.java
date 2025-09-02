@@ -30,9 +30,9 @@ public class RegisterRequestDTO {
 
     @NotBlank(message = "Username must not be blank")
     @Pattern(
-            regexp = "^[a-zA-Z0-9._-]{3,20}$",
+            regexp = "^[a-zA-Z0-9._-]{3,32}$",
             message =
-                    "Username must be 3-20 characters long and contain only letters, numbers, dots,"
+                    "Username must be 3-32 characters long and contain only letters, numbers, dots,"
                             + " underscores and hyphens")
     private String username;
 
