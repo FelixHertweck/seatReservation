@@ -53,7 +53,7 @@ export default function InitQueryClient({
             triggerLoginRequired();
             return false;
           }
-          return failureCount < 5;
+          return failureCount < 2;
         },
       },
 
