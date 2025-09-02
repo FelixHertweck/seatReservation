@@ -23,9 +23,10 @@ export default function LoginPage() {
   const locale = params.locale as string;
   const t = useT();
 
-  const [username, setUsername] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [isLoadingForm, setIsLoadingForm] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
   const { user, isLoggedIn, login, logout } = useAuth();
   const router = useRouter();
   const [currentlyLoggingIn, setCurrentlyLoggingIn] = useState(false);
@@ -33,9 +34,15 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoadingForm(true);
+    setLoginError(null);
     try {
       setCurrentlyLoggingIn(true);
-      await login(username, password);
+      await login(identifier, password);
+      setCurrentlyLoggingIn(false);
+    } catch (error: any) {
+      if (error?.response?.status === 401) {
+        setLoginError(t("login.error.invalidCredentials"));
+      }
       setCurrentlyLoggingIn(false);
     } finally {
       setIsLoadingForm(false);
@@ -89,13 +96,13 @@ export default function LoginPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">{t("login.username")}</Label>
+              <Label htmlFor="identifier">{t("login.identifier")}</Label>
               <Input
-                id="username"
+                id="identifier"
                 type="text"
-                placeholder={t("login.enterUsername")}
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                placeholder={t("login.enterIdentifier")}
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
                 required
               />
             </div>
@@ -110,6 +117,11 @@ export default function LoginPage() {
                 required
               />
             </div>
+            {loginError && (
+              <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md p-3">
+                {loginError}
+              </div>
+            )}
             <Button type="submit" className="w-full" disabled={isLoadingForm}>
               {isLoadingForm ? t("login.signingIn") : t("login.signInButton")}
             </Button>

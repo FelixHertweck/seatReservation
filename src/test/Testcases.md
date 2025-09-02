@@ -30,6 +30,7 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | Testfall | Beschreibung |
 | :--- | :--- |
 | `authenticate_Success` | Authentifiziert einen Benutzer erfolgreich mit gültigen Anmeldeinformationen und gibt einen Token zurück. |
+| `authenticate_Success_WithEmail` | Authentifiziert einen Benutzer erfolgreich mit gültigen Anmeldeinformationen (E-Mail) und gibt einen Token zurück. |
 | `authenticate_AuthenticationFailedException_InvalidUsername` | Versucht, sich mit einem nicht existierenden Benutzernamen zu authentifizieren. Erwartet `AuthenticationFailedException`. |
 | `authenticate_AuthenticationFailedException_InvalidPassword` | Versucht, sich mit einem gültigen Benutzernamen, aber einem falschen Passwort zu authentifizieren. Erwartet `AuthenticationFailedException`. |
 

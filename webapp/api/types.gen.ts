@@ -121,7 +121,7 @@ export type LimitedUserInfoDto = {
 export type LocalDateTime = Date;
 
 export type LoginRequestDto = {
-    username: string;
+    identifier: string;
     password: string;
 };
 

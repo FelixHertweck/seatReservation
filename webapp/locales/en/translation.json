@@ -32,14 +32,17 @@
     },
     "signIn": "Sign In",
     "enterCredentials": "Enter your credentials to access your account",
-    "username": "Username",
-    "enterUsername": "Enter your username",
+    "identifier": "Username or Email",
+    "enterIdentifier": "Enter your username or email",
     "password": "Password",
     "enterPassword": "Enter your password",
     "signingIn": "Signing in...",
     "signInButton": "Sign In",
     "noAccount": "Don't have an account? ",
-    "register": "Register"
+    "register": "Register",
+    "error": {
+      "invalidCredentials": "Invalid username/email or password."
+    }
   },
   "register": {
     "success": {

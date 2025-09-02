@@ -51,13 +51,13 @@ public class AuthResource {
     @APIResponse(responseCode = "200", description = "Login successful, JWT cookie set")
     @APIResponse(responseCode = "401", description = "Unauthorized: Invalid credentials")
     public Response login(@Valid LoginRequestDTO loginRequest) {
-        LOG.infof("Received login request for username: %s", loginRequest.getUsername());
+        LOG.infof("Received login request for user identifier: %s", loginRequest.getIdentifier());
         LOG.debugf("LoginRequestDTO: %s", loginRequest.toString());
         String token =
-                authService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
+                authService.authenticate(loginRequest.getIdentifier(), loginRequest.getPassword());
 
         NewCookie jwtCookie = tokenService.createNewJwtCookie(token);
-        LOG.infof("User %s logged in successfully. JWT cookie set.", loginRequest.getUsername());
+        LOG.infof("User %s logged in successfully. JWT cookie set.", loginRequest.getIdentifier());
         return Response.ok().cookie(jwtCookie).build();
     }
 

@@ -69,6 +69,25 @@ public class AuthServiceTest {
     }
 
     @Test
+    void testAuthenticateSuccessWithEmail() throws AuthenticationFailedException {
+        String email = "test@example.com";
+        String password = "testpassword";
+        String passwordHash = BcryptUtil.bcryptHash(password);
+        String expectedToken = "mockedToken";
+
+        User user = new User();
+        user.setEmail(email);
+        user.setPasswordHash(passwordHash);
+
+        when(userRepository.findByEmail(email)).thenReturn(user);
+        when(tokenService.generateToken(user)).thenReturn(expectedToken);
+
+        String actualToken = authService.authenticate(email, password);
+
+        assertEquals(expectedToken, actualToken);
+    }
+
+    @Test
     void testAuthenticateFailureUserNotFound() {
         String username = "nonexistentuser";
         String password = "anypassword";

@@ -32,14 +32,17 @@
     },
     "signIn": "Anmelden",
     "enterCredentials": "Geben Sie Ihre Anmeldedaten ein, um auf Ihr Konto zuzugreifen",
-    "username": "Benutzername",
-    "enterUsername": "Geben Sie Ihren Benutzernamen ein",
+    "identifier": "Benutzername oder Email",
+    "enterIdentifier": "Geben Sie Ihren Benutzernamen oder Email ein",
     "password": "Passwort",
     "enterPassword": "Geben Sie Ihr Passwort ein",
     "signingIn": "Melde mich an...",
     "signInButton": "Anmelden",
     "noAccount": "Sie haben noch kein Konto? ",
-    "register": "Registrieren"
+    "register": "Registrieren",
+    "error": {
+      "invalidCredentials": "Ungültiger Benutzername/E-Mail oder Passwort."
+    }
   },
   "register": {
     "success": {

@@ -33,7 +33,7 @@ Authentifiziert einen Benutzer und setzt einen JWT-Cookie.
 -   **Request Body:** `LoginRequestDTO`
     ```json
     {
-      "username": "string",
+      "identifier": "string",
       "password": "string"
     }
     ```
