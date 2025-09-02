@@ -22,6 +22,7 @@ package de.felixhertweck.seatreservation.userManagment.dto;
 import java.util.Set;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
@@ -29,6 +30,11 @@ import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
 
 public class UserCreationDTO {
     @NotNull(message = "Username cannot be null")
+    @Pattern(
+            regexp = "^[a-zA-Z0-9._-]{3,20}$",
+            message =
+                    "Username must be 3-20 characters long and contain only letters, numbers, dots,"
+                            + " underscores and hyphens")
     private final String username;
 
     @NotNull(message = "Email cannot be null")
