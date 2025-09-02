@@ -246,8 +246,8 @@ public class EventLocationService {
                                     seatDto -> {
                                         Seat seat = new Seat();
                                         seat.setSeatNumber(seatDto.getSeatNumber());
-                                        seat.setXCoordinate(seatDto.getXCoordinate());
-                                        seat.setYCoordinate(seatDto.getYCoordinate());
+                                        seat.setxCoordinate(seatDto.getxCoordinate());
+                                        seat.setyCoordinate(seatDto.getyCoordinate());
                                         seat.setLocation(location);
                                         seatRepository.persist(seat);
 
@@ -316,8 +316,8 @@ public class EventLocationService {
                             seat, id, manager.getUsername(), manager.getId());
                     Seat newSeat = new Seat();
                     newSeat.setSeatNumber(seat.getSeatNumber());
-                    newSeat.setXCoordinate(seat.getXCoordinate());
-                    newSeat.setYCoordinate(seat.getYCoordinate());
+                    newSeat.setxCoordinate(seat.getxCoordinate());
+                    newSeat.setyCoordinate(seat.getyCoordinate());
                     newSeat.setLocation(location);
                     seatRepository.persist(newSeat);
                     newSeats.add(newSeat);

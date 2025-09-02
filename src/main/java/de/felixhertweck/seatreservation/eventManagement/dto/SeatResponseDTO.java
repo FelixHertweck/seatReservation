@@ -36,8 +36,8 @@ public record SeatResponseDTO(
                 seat.getId(),
                 seat.getSeatNumber(),
                 seat.getLocation().getId(),
-                seat.getXCoordinate(),
-                seat.getYCoordinate(),
+                seat.getxCoordinate(),
+                seat.getyCoordinate(),
                 null);
     }
 
@@ -46,8 +46,8 @@ public record SeatResponseDTO(
                 seat.getId(),
                 seat.getSeatNumber(),
                 seat.getLocation().getId(),
-                seat.getXCoordinate(),
-                seat.getYCoordinate(),
+                seat.getxCoordinate(),
+                seat.getyCoordinate(),
                 status);
     }
 }

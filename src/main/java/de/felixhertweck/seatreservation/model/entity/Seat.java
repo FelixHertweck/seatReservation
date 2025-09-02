@@ -62,11 +62,11 @@ public class Seat extends PanacheEntity {
         return location;
     }
 
-    public int getXCoordinate() {
+    public int getxCoordinate() {
         return xCoordinate;
     }
 
-    public int getYCoordinate() {
+    public int getyCoordinate() {
         return yCoordinate;
     }
 
@@ -78,11 +78,11 @@ public class Seat extends PanacheEntity {
         this.location = location;
     }
 
-    public void setXCoordinate(int xCoordinate) {
+    public void setxCoordinate(int xCoordinate) {
         this.xCoordinate = xCoordinate;
     }
 
-    public void setYCoordinate(int yCoordinate) {
+    public void setyCoordinate(int yCoordinate) {
         this.yCoordinate = yCoordinate;
     }
 

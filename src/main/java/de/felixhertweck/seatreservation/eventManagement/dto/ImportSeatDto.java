@@ -45,11 +45,11 @@ public class ImportSeatDto {
         return seatNumber;
     }
 
-    public int getXCoordinate() {
+    public int getxCoordinate() {
         return xCoordinate;
     }
 
-    public int getYCoordinate() {
+    public int getyCoordinate() {
         return yCoordinate;
     }
 
@@ -57,11 +57,11 @@ public class ImportSeatDto {
         this.seatNumber = seatNumber;
     }
 
-    public void setXCoordinate(int xCoordinate) {
+    public void setxCoordinate(int xCoordinate) {
         this.xCoordinate = xCoordinate;
     }
 
-    public void setYCoordinate(int yCoordinate) {
+    public void setyCoordinate(int yCoordinate) {
         this.yCoordinate = yCoordinate;
     }
 }

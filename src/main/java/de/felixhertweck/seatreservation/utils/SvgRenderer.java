@@ -48,10 +48,10 @@ public class SvgRenderer {
         int maxY = Integer.MIN_VALUE;
 
         for (Seat seat : allSeats) {
-            minX = Math.min(minX, seat.getXCoordinate());
-            minY = Math.min(minY, seat.getYCoordinate());
-            maxX = Math.max(maxX, seat.getXCoordinate());
-            maxY = Math.max(maxY, seat.getYCoordinate());
+            minX = Math.min(minX, seat.getxCoordinate());
+            minY = Math.min(minY, seat.getyCoordinate());
+            maxX = Math.max(maxX, seat.getxCoordinate());
+            maxY = Math.max(maxY, seat.getyCoordinate());
         }
 
         // Calculate viewBox dimensions based on scaled coordinates
@@ -82,8 +82,8 @@ public class SvgRenderer {
             }
 
             // Apply scaling to the coordinates when drawing
-            int cx = seat.getXCoordinate() * scale;
-            int cy = seat.getYCoordinate() * scale;
+            int cx = seat.getxCoordinate() * scale;
+            int cy = seat.getyCoordinate() * scale;
 
             sb.append("<circle cx=\"")
                     .append(cx)
