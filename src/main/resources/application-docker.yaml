@@ -14,6 +14,9 @@ quarkus:
     username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
 
+  hibernate-orm:
+    schema-management:
+      strategy: validate
 
 email:
   redirect-url: ${APP_URL}

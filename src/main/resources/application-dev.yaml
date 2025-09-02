@@ -6,3 +6,6 @@ quarkus:
     port: ${MAIL_PORT}
     username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
+  hibernate-orm:
+    schema-management:
+      strategy: update
