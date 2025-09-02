@@ -8,4 +8,4 @@ quarkus:
     password: ${MAIL_PASSWORD}
   hibernate-orm:
     schema-management:
-      strategy: update
+      strategy: drop-and-create
