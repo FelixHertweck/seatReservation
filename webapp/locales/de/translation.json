@@ -699,7 +699,6 @@
       "seatNumberHeader": "Sitzplatznummer",
       "locationHeader": "Standort",
       "positionHeader": "Position",
-      "statusHeader": "Status",
       "actionsHeader": "Aktionen"
     },
     "unknownLocation": "Unbekannter Standort",

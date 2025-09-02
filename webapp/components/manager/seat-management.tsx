@@ -195,9 +195,6 @@ export function SeatManagement({
                     {t("seatManagement.table.positionHeader")}
                   </TableHead>
                   <TableHead>
-                    {t("seatManagement.table.statusHeader")}
-                  </TableHead>
-                  <TableHead>
                     {t("seatManagement.table.actionsHeader")}
                   </TableHead>
                 </TableRow>
@@ -231,13 +228,6 @@ export function SeatManagement({
                       </TableCell>
                       <TableCell>
                         ({seat.xCoordinate}, {seat.yCoordinate})
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={seat.status ? "destructive" : "default"}
-                        >
-                          {seat.status || t("seatManagement.statusAvailable")}
-                        </Badge>
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-2">
