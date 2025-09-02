@@ -41,7 +41,7 @@ email:
 
   # Adjust this but keep the placeholders correctly
   content: 
-    event-confirmation: |-
+    email-confirmation: |-
       <!DOCTYPE html>
       <html lang="en">
         <head>
@@ -270,7 +270,7 @@ email:
 
     reservation-confirmation: |- 
       <!DOCTYPE html>
-      <html lang="de">
+      <html lang="en">
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -317,7 +317,8 @@ email:
                 <ul>
                     {seatList}
                 </ul>
-                <p>Here is an overview of your seats:</p>
+                <p><strong>Here is an overview of your seats:</strong></p>
+                <p>It is possible that the following display is not supported by your email client.</p>
                 {seatMap}
                 <div style="margin-top: 20px; text-align: center;">
                     <span style="display: inline-block; width: 15px; height: 15px; background-color: #00C950; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
@@ -336,7 +337,7 @@ email:
 
     reservation-update-confirmation: |-
       <!DOCTYPE html>
-      <html lang="de">
+      <html lang="en">
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -387,7 +388,8 @@ email:
                 <ul>
                     {activeSeatList}
                 </ul>
-                <p>Here is an overview of your current seats:</p>
+                <p><strong>Here is an overview of your current seats:</strong></p>
+                <p>It is possible that the following display is not supported by your email client.</p>
                 {seatMap}
                 <div style="margin-top: 20px; text-align: center;">
                     <span style="display: inline-block; width: 15px; height: 15px; background-color: #00C950; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>

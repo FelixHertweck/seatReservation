@@ -55,7 +55,7 @@ public class AdminUserInitializer {
             try {
                 userService.createAdminUserWithHashedPassword(
                         "admin",
-                        "admin@localhost.de",
+                        "admin@localhost",
                         ADMIN_PASSWORD_HASH,
                         "Admin",
                         "User",

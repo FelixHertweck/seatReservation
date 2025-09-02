@@ -88,8 +88,8 @@ public class EmailService {
     @ConfigProperty(name = "email.verification.expiration.minutes", defaultValue = "60")
     long expirationMinutes;
 
-    @ConfigProperty(name = "email.content.event-confirmation")
-    String emailContentEventConfirmation;
+    @ConfigProperty(name = "email.content.email-confirmation")
+    String emailContentEmailConfirmation;
 
     @ConfigProperty(name = "email.content.event-reminder")
     String emailContentEventReminder;
@@ -119,7 +119,7 @@ public class EmailService {
                 generateConfirmationLink(emailVerification.id, emailVerification.getToken());
         LOG.debugf("Confirmation link generated: %s", confirmationLink);
 
-        String htmlContent = emailContentEventConfirmation;
+        String htmlContent = emailContentEmailConfirmation;
 
         // Replace placeholders with actual values
         htmlContent =
