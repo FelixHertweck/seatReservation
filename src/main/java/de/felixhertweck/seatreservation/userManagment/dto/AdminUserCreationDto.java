@@ -31,7 +31,7 @@ public class AdminUserCreationDto {
     private final String username;
 
     @NoHtmlSanitize
-    @Email(regexp = ".+[@].+[\\\\.].+", message = "Invalid email format")
+    @Email(message = "Invalid email format")
     private final String email;
 
     @NotNull(message = "Password cannot be null")
