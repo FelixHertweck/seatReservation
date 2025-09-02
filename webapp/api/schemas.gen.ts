@@ -5,7 +5,8 @@ export const AdminUserCreationDtoSchema = {
     required: ['username', 'password', 'firstname', 'lastname'],
     properties: {
         username: {
-            type: 'string'
+            type: 'string',
+            pattern: '^[a-zA-Z0-9._-]{3,20}$'
         },
         email: {
             type: 'string'
@@ -390,9 +391,9 @@ export const LocalDateTimeSchema = {
 
 export const LoginRequestDTOSchema = {
     type: 'object',
-    required: ['username', 'password'],
+    required: ['identifier', 'password'],
     properties: {
-        username: {
+        identifier: {
             type: 'string',
             pattern: '\\S'
         },
@@ -409,7 +410,7 @@ export const RegisterRequestDTOSchema = {
     properties: {
         username: {
             type: 'string',
-            pattern: '\\S'
+            pattern: '^[a-zA-Z0-9._-]{3,20}$'
         },
         firstname: {
             type: 'string',

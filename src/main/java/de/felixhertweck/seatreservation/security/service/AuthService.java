@@ -47,29 +47,35 @@ public class AuthService {
     @Inject UserService userService;
 
     /**
-     * Authenticates a user with the given username and password.
+     * Authenticates a user with the given identifier and password.
      *
-     * @param username the username of the user
+     * @param identifier the identifier of the user
      * @param password the password of the user
      * @return a JWT token if authentication is successful
      * @throws AuthenticationFailedException if authentication fails
      */
-    public String authenticate(String username, String password)
+    public String authenticate(String identifier, String password)
             throws AuthenticationFailedException {
-        LOG.infof("Attempting to authenticate user: %s", username);
-        User user = userRepository.findByUsername(username);
+        LOG.infof("Attempting to authenticate user with identifier: %s", identifier);
+        User user;
+        if (isIdentifierEmail(identifier)) {
+            user = userRepository.findByEmail(identifier);
+        } else {
+            user = userRepository.findByUsername(identifier);
+        }
 
         if (user == null) {
-            LOG.warnf("Authentication failed for user %s: User not found.", username);
-            throw new AuthenticationFailedException("Failed to authenticate user: " + username);
+            LOG.warnf("Authentication failed for identifier %s: User not found.", identifier);
+            throw new AuthenticationFailedException("Failed to authenticate user: " + identifier);
         }
-        LOG.debugf("User %s found. Verifying password.", username);
 
         if (!BcryptUtil.matches(password, user.getPasswordHash())) {
-            LOG.warnf("Authentication failed for user %s: Invalid credentials.", username);
-            throw new AuthenticationFailedException("Failed to authenticate user: " + username);
+            LOG.warnf(
+                    "Authentication failed for user %s: Invalid credentials.", user.getUsername());
+            throw new AuthenticationFailedException(
+                    "Failed to authenticate user: " + user.getUsername());
         }
-        LOG.infof("User %s authenticated successfully. Generating token.", username);
+        LOG.infof("User %s authenticated successfully. Generating token.", user.getUsername());
 
         return tokenService.generateToken(user);
     }
@@ -101,5 +107,9 @@ public class AuthService {
                 "User %s registered successfully via AuthService.", registerRequest.getUsername());
 
         return tokenService.generateToken(user);
+    }
+
+    private boolean isIdentifierEmail(String identifier) {
+        return identifier.contains("@");
     }
 }

@@ -7,7 +7,8 @@
         "required" : [ "username", "password", "firstname", "lastname" ],
         "properties" : {
           "username" : {
-            "type" : "string"
+            "type" : "string",
+            "pattern" : "^[a-zA-Z0-9._-]{3,20}$"
           },
           "email" : {
             "type" : "string"
@@ -376,9 +377,9 @@
       },
       "LoginRequestDTO" : {
         "type" : "object",
-        "required" : [ "username", "password" ],
+        "required" : [ "identifier", "password" ],
         "properties" : {
-          "username" : {
+          "identifier" : {
             "type" : "string",
             "pattern" : "\\S"
           },
@@ -394,7 +395,7 @@
         "properties" : {
           "username" : {
             "type" : "string",
-            "pattern" : "\\S"
+            "pattern" : "^[a-zA-Z0-9._-]{3,20}$"
           },
           "firstname" : {
             "type" : "string",

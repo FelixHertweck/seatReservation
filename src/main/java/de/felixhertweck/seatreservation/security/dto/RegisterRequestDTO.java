@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.security.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
@@ -28,6 +29,11 @@ import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
 public class RegisterRequestDTO {
 
     @NotBlank(message = "Username must not be blank")
+    @Pattern(
+            regexp = "^[a-zA-Z0-9._-]{3,20}$",
+            message =
+                    "Username must be 3-20 characters long and contain only letters, numbers, dots,"
+                            + " underscores and hyphens")
     private String username;
 
     @NotBlank(message = "Firstname must not be blank")
@@ -38,7 +44,7 @@ public class RegisterRequestDTO {
 
     @NotBlank(message = "Email must not be blank")
     @NoHtmlSanitize
-    @Email(regexp = ".+[@].+[\\\\.].+", message = "Invalid email format")
+    @Email(message = "Invalid email format")
     private String email;
 
     @NotBlank(message = "Password must not be blank")

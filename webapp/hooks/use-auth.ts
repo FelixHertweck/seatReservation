@@ -10,7 +10,7 @@ import {
   postApiAuthLogoutMutation,
   postApiAuthRegisterMutation,
 } from "@/api/@tanstack/react-query.gen";
-import { RegisterRequestDto } from "@/api";
+import type { RegisterRequestDto } from "@/api";
 
 export function useAuth() {
   const t = useT();
@@ -22,7 +22,7 @@ export function useAuth() {
 
   const {
     data: user,
-    isLoading: isLoading,
+    isLoading,
     isSuccess,
     refetch: refetchUser,
   } = useQuery(getApiUsersMeOptions());
@@ -37,10 +37,20 @@ export function useAuth() {
         description: t("login.success.description"),
       });
     },
+    onError: (error: any) => {
+      // Only show toast for non-401 errors, let 401s be handled by the component
+      if (error?.response?.status !== 401) {
+        toast({
+          title: t("login.error.title"),
+          description: error.message || t("login.error.description"),
+          variant: "destructive",
+        });
+      }
+    },
   });
 
-  const login = async (username: string, password: string) => {
-    await loginMutation({ body: { username, password } });
+  const login = async (identifier: string, password: string) => {
+    await loginMutation({ body: { identifier, password } });
     await queryClient.invalidateQueries();
   };
 

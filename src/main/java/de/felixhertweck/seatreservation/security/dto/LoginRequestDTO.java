@@ -24,23 +24,24 @@ import jakarta.validation.constraints.NotBlank;
 import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
 
 public class LoginRequestDTO {
-    @NotBlank(message = "Username must not be blank")
-    private String username;
+    @NotBlank(message = "Identifier (username or email) must not be blank")
+    @NoHtmlSanitize
+    private String identifier;
 
     @NotBlank(message = "Password must not be blank")
     @NoHtmlSanitize
     private String password;
 
-    public String getUsername() {
-        return username;
+    public String getIdentifier() {
+        return identifier;
     }
 
     public String getPassword() {
         return password;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
     }
 
     public void setPassword(String password) {

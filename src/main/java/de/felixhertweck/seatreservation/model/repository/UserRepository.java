@@ -52,4 +52,15 @@ public class UserRepository implements PanacheRepository<User> {
         }
         return user;
     }
+
+    public User findByEmail(String email) {
+        LOG.debugf("Finding user by email: %s", email);
+        User user = find("email", email).firstResult();
+        if (user != null) {
+            LOG.debugf("User %s found.", email);
+        } else {
+            LOG.debugf("User %s not found.", email);
+        }
+        return user;
+    }
 }
