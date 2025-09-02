@@ -35,9 +35,12 @@ import de.felixhertweck.seatreservation.userManagment.exceptions.DuplicateUserEx
 import de.felixhertweck.seatreservation.userManagment.exceptions.InvalidUserException;
 import de.felixhertweck.seatreservation.userManagment.exceptions.TokenExpiredException;
 import de.felixhertweck.seatreservation.userManagment.exceptions.UserNotFoundException;
+import org.jboss.logging.Logger;
 
 @Provider
 public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
+
+    private static final Logger LOG = Logger.getLogger(GlobalExceptionHandler.class);
 
     @Override
     public Response toResponse(Exception exception) {
@@ -67,6 +70,9 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
                                 "An unexpected error occurred: " + exception.getMessage());
             }
         }
+
+        LOG.warnf(
+                "Exception occurred (handled by GlobalExceptionHandler): %s", exception.toString());
 
         return Response.status(status).entity(errorResponse).build();
     }
