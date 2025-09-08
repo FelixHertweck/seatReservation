@@ -13,6 +13,7 @@ quarkus:
     port: ${MAIL_PORT}
     username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
+    tls: true
 
   hibernate-orm:
     schema-management:

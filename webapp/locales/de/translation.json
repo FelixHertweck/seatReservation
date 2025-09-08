@@ -719,5 +719,10 @@
   },
   "pagination-wrapper": {
     "label": "Zeige {{fromCount}} bis {{toCount}} von {{totalCount}}"
+  },
+  "footer": {
+    "allRightsReserved": "Alle Rechte vorbehalten.",
+    "legalNotice": "Impressum",
+    "privacyPolicy": "Datenschutzerklärung"
   }
 }

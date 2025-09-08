@@ -9,12 +9,16 @@ import { LoginRequiredPopup } from "@/components/common/login-required-popup";
 import { EmailVerificationPrompt } from "@/components/common/email-verification-prompt";
 import { UnsavedChangesAlert } from "@/components/common/unsaved-changes-alert";
 import Link from "next/link";
+import { AppFooter } from "@/components/app-footer";
 
-export default function MainLayout({
+export default async function MainLayout({
+  params,
   children,
 }: {
   children: React.ReactNode;
+  params: Promise<{ locale: string }>;
 }) {
+  const { locale } = await params;
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -30,6 +34,7 @@ export default function MainLayout({
           </div>
         </header>
         <main className="flex-1 p-4 lg:p-6">{children}</main>
+        <AppFooter locale={locale} />
       </SidebarInset>
       <LoginRequiredPopup />
       <EmailVerificationPrompt />
