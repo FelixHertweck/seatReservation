@@ -1,4 +1,4 @@
-export default async function LegalNoticePage() {
+export default function LegalNoticePage() {
   return (
     <div className="container max-w-4xl py-8">
       <h1 className="text-3xl font-bold mb-8"></h1>
