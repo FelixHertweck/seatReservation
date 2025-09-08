@@ -213,7 +213,7 @@ export default async function StartPage({
 
       {/* Footer */}
       <footer className="border-t bg-accent/5 relative z-10">
-        <div className="container mx-auto px-4 py-12">
+        <div className="container mx-auto px-4 pt-12 pb-4">
           <div className="flex flex-col items-center justify-center text-center">
             <Link
               href="https://github.com/FelixHertweck/seatReservation"
@@ -233,6 +233,20 @@ export default async function StartPage({
                 </p>
               </div>
             </Link>
+            <div className="flex gap-6 text-sm mt-4">
+              <Link
+                href={`/${locale}/legal-notice`}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("footer.legalNotice")}
+              </Link>
+              <Link
+                href={`/${locale}/privacy`}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("footer.privacyPolicy")}
+              </Link>
+            </div>
           </div>
         </div>
       </footer>
