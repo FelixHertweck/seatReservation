@@ -78,8 +78,8 @@ export function SeatMapModal({
             <p>{t("seatMapModal.loadingText")}</p>
           </div>
         ) : (
-          <div className="flex-1 flex flex-col gap-4 min-h-0 overflow-hidden">
-            <div className="flex gap-4 text-sm">
+          <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+            <div className="flex gap-4 text-sm border-b pb-1">
               <div className="flex items-center gap-2 animate-in slide-in-from-left duration-300">
                 <div className="w-4 h-4 bg-green-500 rounded transition-all duration-300 hover:scale-110"></div>
                 <span>{t("eventReservationModal.available")}</span>
@@ -108,7 +108,7 @@ export function SeatMapModal({
               />
             </div>
 
-            <div className="shrink-0 bg-gray-50 p-3 md:p-4 rounded-lg border-t max-h-32 md:max-h-40 overflow-y-auto">
+            <div className="shrink-0 border-t max-h-32 md:max-h-40 overflow-y-auto">
               <div className="flex flex-col gap-2 md:gap-3">
                 <h3 className="font-semibold text-base md:text-lg">
                   {t("seatMapModal.yourReservedSeatsSectionTitle")}
@@ -120,8 +120,8 @@ export function SeatMapModal({
                         key={seat.id || index}
                         className={`px-2 py-1.5 md:px-3 md:py-2 text-sm rounded-md border transition-all hover:shadow-md ${
                           highlightedSeats.some((s) => s.id === seat.id)
-                            ? "bg-blue-500 text-white border-blue-600 shadow-md"
-                            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                            ? "bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white border-blue-600 shadow-md"
+                            : "bg-seatmap border rounded shadow-xs hover:bg-secondary"
                         }`}
                         onClick={() => handleSeatClick(seat)}
                       >
@@ -132,7 +132,7 @@ export function SeatMapModal({
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500 text-sm">
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">
                     {t("seatMapModal.noSeatsReserved")}
                   </p>
                 )}

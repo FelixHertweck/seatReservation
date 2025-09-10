@@ -101,7 +101,7 @@ export function EventReservationModal({
         </DialogHeader>
 
         <div className="flex-1 flex flex-col animate-in slide-in-from-bottom duration-500 min-h-0">
-          <div className="flex gap-4 text-sm">
+          <div className="flex gap-4 text-sm border-b pb-1">
             <div className="flex items-center gap-2 animate-in slide-in-from-left duration-300">
               <div className="w-4 h-4 bg-green-500 rounded transition-all duration-300 hover:scale-110"></div>
               <span>{t("eventReservationModal.available")}</span>
@@ -146,7 +146,7 @@ export function EventReservationModal({
           </div>
 
           {selectedSeats.length > 0 && (
-            <div className="m-0 animate-in slide-in-from-bottom duration-300 max-h-15 md:max-h-24 overflow-y-auto">
+            <div className="m-0 animate-in border-t slide-in-from-bottom duration-300 max-h-15 md:max-h-24 overflow-y-auto">
               <h4 className="font-medium text-sm md:text-base">
                 {t("eventReservationModal.selectedSeatsTitle")}
               </h4>
