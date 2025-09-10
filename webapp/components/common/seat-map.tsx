@@ -307,23 +307,23 @@ export function SeatMap({
   }, [resetView]);
 
   return (
-    <div className="relative w-full h-full bg-gray-50 dark:bg-gray-900 rounded-lg overflow-hidden">
+    <div className="relative w-full h-full rounded-lg overflow-hidden">
       <div className="absolute top-2 right-2 z-10 flex gap-2">
         <button
           onClick={zoomIn}
-          className="px-2 py-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded shadow-xs hover:bg-gray-50 dark:hover:bg-gray-700 text-sm dark:text-white"
+          className="px-2 py-1 bg-seatmap border rounded shadow-xs hover:bg-secondary text-sm dark:text-white"
         >
           +
         </button>
         <button
           onClick={zoomOut}
-          className="px-2 py-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded shadow-xs hover:bg-gray-50 dark:hover:bg-gray-700 text-sm dark:text-white"
+          className="px-2 py-1 bg-seatmap border rounded shadow-xs hover:bg-secondary text-sm dark:text-white"
         >
           -
         </button>
         <button
           onClick={resetView}
-          className="px-2 py-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded shadow-xs hover:bg-gray-50 dark:hover:bg-gray-700 text-sm dark:text-white"
+          className="px-2 py-1 bg-seatmap border rounded shadow-xs hover:bg-secondary text-sm dark:text-white"
         >
           {t("seatMap.resetButton")}
         </button>
@@ -351,7 +351,7 @@ export function SeatMap({
           }}
         >
           <div
-            className="border-2 border-gray-400 dark:border-gray-600 rounded-lg mb-0 bg-white/50 dark:bg-gray-800/50"
+            className="border-2 border rounded-lg mb-0 bg-seatmap"
             style={{
               width: `${maxX * 32 + (maxX - 1) * 4 + 32}px`,
               height: "120px",
@@ -363,7 +363,7 @@ export function SeatMap({
           </div>
 
           <div
-            className="border-2 border-gray-400 dark:border-gray-600 rounded-lg p-4 bg-white/50 dark:bg-gray-800/50"
+            className="border-2 border rounded-lg p-4 bg-seatmap"
             style={{
               width: `${maxX * 32 + (maxX - 1) * 4 + 32}px`,
               height: `${maxY * 32 + (maxY - 1) * 4 + 32}px`,
