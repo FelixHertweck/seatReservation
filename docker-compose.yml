@@ -8,17 +8,36 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      - frontend
-      - backend
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://0.0.0.0"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
+
 
   frontend:
     image: ghcr.io/felixhertweck/seatreservation-frontend:main
+    
     # ports:
     #   - "3000:3000" 
+
     networks:
       - app-network
+
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://0.0.0.0:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
+
 
   backend:    
     user: "${UID}:${GID}"
@@ -29,6 +48,9 @@ services:
 
     # ports:
     #   - "8080:8080" 
+    
+    # healthcheck already implemented in Dockerfile
+
     volumes:
       - ./keys:/deployments/keys:ro
 
@@ -54,7 +76,9 @@ services:
       - app-network
 
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+
 
   db:
     image: postgres:17-alpine
@@ -65,10 +89,20 @@ services:
       
     # ports:
     #  - "5432:5432"
+
     volumes:
       - db_data:/var/lib/postgresql/data
+      
     networks:
       - app-network
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
 
 networks:
   app-network:
