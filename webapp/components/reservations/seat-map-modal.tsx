@@ -86,6 +86,13 @@ export function SeatMapModal({
               </div>
               <div
                 className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
+                style={{ animationDelay: "100ms" }}
+              >
+                <div className="w-4 h-4 bg-yellow-500 rounded transition-all duration-300 hover:scale-110"></div>
+                <span>{t("eventReservationModal.myReserved")}</span>
+              </div>
+              <div
+                className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
                 style={{ animationDelay: "200ms" }}
               >
                 <div className="w-4 h-4 bg-red-500 rounded transition-all duration-300 hover:scale-110"></div>
@@ -104,6 +111,7 @@ export function SeatMapModal({
                 seats={seats}
                 selectedSeats={highlightedSeats}
                 onSeatSelect={() => {}} // Read-only
+                userReservedSeats={reservedSeats}
                 readonly
               />
             </div>
