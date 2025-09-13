@@ -12,6 +12,7 @@ import {
 } from "@/api/@tanstack/react-query.gen";
 import type { RegisterRequestDto } from "@/api";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { isValidRedirectUrl } from "@/lib/utils";
 
 export function useAuth() {
   const t = useT();
@@ -93,6 +94,8 @@ function redirectUser(router: AppRouterInstance, locale: string) {
   const urlParams = new URLSearchParams(window.location.search);
   const returnToUrl = urlParams.get("returnTo");
   router.push(
-    returnToUrl ? decodeURIComponent(returnToUrl) : `/${locale}/events`,
+    returnToUrl && isValidRedirectUrl(returnToUrl)
+      ? decodeURIComponent(returnToUrl)
+      : `/${locale}/events`,
   );
 }

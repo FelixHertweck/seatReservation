@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
 import { useParams, useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n/hooks";
+import { isValidRedirectUrl } from "@/lib/utils";
 
 export default function LoginPage() {
   const params = useParams();
@@ -54,7 +55,9 @@ export default function LoginPage() {
     const urlParams = new URLSearchParams(window.location.search);
     const returnToUrl = urlParams.get("returnTo");
     router.push(
-      returnToUrl ? decodeURIComponent(returnToUrl) : `/${locale}/events`,
+      returnToUrl && isValidRedirectUrl(returnToUrl)
+        ? decodeURIComponent(returnToUrl)
+        : `/${locale}/events`,
     );
   };
 
