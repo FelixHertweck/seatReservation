@@ -30,7 +30,7 @@ public class AdminUserCreationDto {
 
     @NotNull(message = "Username cannot be null")
     @Pattern(
-            regexp = "^[a-zA-Z0-9._-]{3,32}$",
+            regexp = "^[a-zA-Z0-9._-]{3,64}$",
             message =
                     "Username must be 3-32 characters long and contain only letters, numbers, dots,"
                             + " underscores and hyphens")
