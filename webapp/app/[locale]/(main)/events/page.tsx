@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { EventCard } from "@/components/events/event-card";
 import { EventReservationModal } from "@/components/events/event-reservation-modal";
 import { ReservationCard } from "@/components/reservations/reservation-card";
@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useEvents } from "@/hooks/use-events";
 import { useReservations } from "@/hooks/use-reservations";
+import { useAuth } from "@/hooks/use-auth";
 import type { EventResponseDto, ReservationResponseDto } from "@/api";
 import Loading from "./loading";
 import { useT } from "@/lib/i18n/hooks";
@@ -23,6 +24,7 @@ export default function EventsPage() {
     isLoading: reservationsLoading,
     deleteReservation,
   } = useReservations();
+  const { isLoggedIn } = useAuth();
   const [selectedEvent, setSelectedEvent] = useState<EventResponseDto | null>(
     null,
   );
@@ -32,6 +34,35 @@ export default function EventsPage() {
   const [eventSearchQuery, setEventSearchQuery] = useState<string>("");
   const [reservationSearchQuery, setReservationSearchQuery] =
     useState<string>("");
+
+  useEffect(() => {
+    if (eventsLoading || reservationsLoading || !isLoggedIn) return;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const eventIdFromUrl = urlParams.get("id");
+
+    if (eventIdFromUrl) {
+      const eventId = BigInt(eventIdFromUrl);
+      const event = events?.find((e) => e.id === eventId);
+
+      if (event) {
+        setActiveTab("reservations");
+        setReservationSearchQuery(event.name || "");
+      }
+
+      // Remove 'id' from URL
+      urlParams.delete("id");
+      const newUrl = `${window.location.pathname}${urlParams.toString() ? `?${urlParams.toString()}` : ""}`;
+      window.history.replaceState({}, "", newUrl);
+    }
+  }, [
+    events,
+    eventsLoading,
+    reservationsLoading,
+    isLoggedIn,
+    setActiveTab,
+    setReservationSearchQuery,
+  ]);
 
   const filteredEvents = useMemo(() => {
     if (!events) return [];
@@ -55,13 +86,14 @@ export default function EventsPage() {
   }, [events, eventSearchQuery]);
 
   const groupedReservations = useMemo(() => {
-    if (!reservations) return [];
+    if (!reservations || !events) return [];
 
-    const filtered = reservations.filter((reservation) =>
-      reservation.seat?.seatNumber
-        ?.toLowerCase()
-        .includes(reservationSearchQuery.toLowerCase()),
-    );
+    const filtered = reservations.filter((reservation) => {
+      const event = events.find((e) => e.id === reservation.eventId);
+      const eventName = event?.name?.toLowerCase() || "";
+
+      return eventName.includes(reservationSearchQuery.toLowerCase());
+    });
 
     const grouped = filtered.reduce(
       (acc, reservation) => {
@@ -78,7 +110,7 @@ export default function EventsPage() {
     );
 
     return Object.values(grouped);
-  }, [reservations, reservationSearchQuery]);
+  }, [reservations, reservationSearchQuery, events]);
 
   const handleEventSearch = (query: string) => {
     setEventSearchQuery(query);
@@ -135,6 +167,7 @@ export default function EventsPage() {
             onSearch={handleReservationSearch}
             onFilter={() => {}}
             filterOptions={[]}
+            initialQuery={reservationSearchQuery}
           />
 
           {groupedReservations.length === 0 ? (
@@ -174,6 +207,7 @@ export default function EventsPage() {
             onSearch={handleEventSearch}
             onFilter={() => {}}
             filterOptions={[]}
+            initialQuery={eventSearchQuery}
           />
 
           {filteredEvents.length === 0 ? (

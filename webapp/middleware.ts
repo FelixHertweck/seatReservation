@@ -19,13 +19,17 @@ export function middleware(request: NextRequest) {
   if (pathnameIsMissingLocale) {
     const locale = getLocale(request);
 
-    // Redirect to the same path with locale prefix
-    return NextResponse.redirect(
-      new URL(
-        `/${locale}${pathname.startsWith("/") ? "" : "/"}${pathname}`,
-        request.url,
-      ),
+    const redirectUrl = new URL(
+      `/${locale}${pathname.startsWith("/") ? "" : "/"}${pathname}`,
+      request.url,
     );
+
+    // Copy all search parameters from the original request
+    request.nextUrl.searchParams.forEach((value, key) => {
+      redirectUrl.searchParams.set(key, value);
+    });
+
+    return NextResponse.redirect(redirectUrl);
   }
 }
 

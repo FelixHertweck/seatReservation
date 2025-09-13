@@ -20,7 +20,8 @@ mp:
             location: keys/publicKey.pem
 
 email:  
-  redirect-url: http://localhost:8080
+  frontend-base-url: http://localhost:8080
+  backend-base-url: http://localhost:8080
   verification:
     expiration:
       minutes: 120
@@ -317,6 +318,7 @@ email:
                 <ul>
                     {seatList}
                 </ul>
+                <p>You can view the event details here: <a href="{eventLink}">View Event</a></p>
                 <p><strong>Here is an overview of your seats:</strong></p>
                 <p>It is possible that the following display is not supported by your email client.</p>
                 {seatMap}
@@ -388,6 +390,7 @@ email:
                 <ul>
                     {activeSeatList}
                 </ul>
+                <p>You can view the event details here: <a href="{eventLink}">View Event</a></p>
                 <p><strong>Here is an overview of your current seats:</strong></p>
                 <p>It is possible that the following display is not supported by your email client.</p>
                 {seatMap}

@@ -26,6 +26,7 @@ import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.*;
 
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
@@ -41,6 +42,9 @@ public class EmailConfirmationResource {
     @Inject UserService userService;
 
     @Inject SecurityContext securityContext;
+
+    @ConfigProperty(name = "email.frontend-base-url", defaultValue = "")
+    String frontendBaseUrl;
 
     /**
      * Confirms a user's email address using the provided id and token.
@@ -206,7 +210,9 @@ public class EmailConfirmationResource {
                 + "</strong> has been successfully confirmed.</p>\n"
                 + "        <p>You can now log in to your account and start using all features of"
                 + " the Seat Reservation System.</p>\n"
-                + "        <a href=\"/\" class=\"button\">Go to Homepage</a>\n"
+                + "        <a href=\""
+                + frontendBaseUrl
+                + "\" class=\"button\">Go to Homepage</a>\n"
                 + "    </div>\n"
                 + "</body>\n"
                 + "</html>";
@@ -273,7 +279,9 @@ public class EmailConfirmationResource {
                 + errorMessage
                 + "</p>\n"
                 + "        <p>Please try again or contact support if the problem persists.</p>\n"
-                + "        <a href=\"/\" class=\"button\">Go to Homepage</a>\n"
+                + "        <a href=\""
+                + frontendBaseUrl
+                + "\" class=\"button\">Go to Homepage</a>\n"
                 + "    </div>\n"
                 + "</body>\n"
                 + "</html>";

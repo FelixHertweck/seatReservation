@@ -37,6 +37,7 @@ export default function LoginPage() {
     setLoginError(null);
     try {
       setCurrentlyLoggingIn(true);
+
       await login(identifier, password);
       setCurrentlyLoggingIn(false);
     } catch (error: any) {
@@ -50,7 +51,11 @@ export default function LoginPage() {
   };
 
   const handleContinue = () => {
-    router.push(`/${locale}/events`);
+    const urlParams = new URLSearchParams(window.location.search);
+    const returnToUrl = urlParams.get("returnTo");
+    router.push(
+      returnToUrl ? decodeURIComponent(returnToUrl) : `/${locale}/events`,
+    );
   };
 
   const handleLogout = async () => {

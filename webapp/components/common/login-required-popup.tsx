@@ -23,7 +23,8 @@ export function LoginRequiredPopup() {
 
   const handleLoginRedirect = () => {
     setIsOpen(false); // Close the popup before redirecting
-    router.push(`/${locale}/login`);
+    const currentPath = window.location.pathname + window.location.search;
+    router.push(`/${locale}/login?returnTo=${encodeURIComponent(currentPath)}`);
   };
 
   return (
