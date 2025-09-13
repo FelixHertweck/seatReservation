@@ -11,6 +11,7 @@ import {
   postApiAuthRegisterMutation,
 } from "@/api/@tanstack/react-query.gen";
 import type { RegisterRequestDto } from "@/api";
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 export function useAuth() {
   const t = useT();
@@ -31,11 +32,7 @@ export function useAuth() {
     ...postApiAuthLoginMutation(),
     onSuccess: async () => {
       await refetchUser();
-      router.push(`/${locale}/events`);
-      toast({
-        title: t("login.success.title"),
-        description: t("login.success.description"),
-      });
+      redirectUser(router, locale);
     },
     onError: (error: any) => {
       // Only show toast for non-401 errors, let 401s be handled by the component
@@ -58,11 +55,7 @@ export function useAuth() {
     ...postApiAuthRegisterMutation(),
     onSuccess: async () => {
       await refetchUser();
-      router.push(`/${locale}/events`);
-      toast({
-        title: t("register.success.title"),
-        description: t("register.success.description"),
-      });
+      redirectUser(router, locale);
     },
   });
 
@@ -83,7 +76,7 @@ export function useAuth() {
 
   const logout = async () => {
     await logoutMutation({});
-    window.location.reload();
+    window.location.href = `/${locale}/`;
   };
 
   return {
@@ -94,4 +87,12 @@ export function useAuth() {
     register,
     logout,
   };
+}
+
+function redirectUser(router: AppRouterInstance, locale: string) {
+  const urlParams = new URLSearchParams(window.location.search);
+  const returnToUrl = urlParams.get("returnTo");
+  router.push(
+    returnToUrl ? decodeURIComponent(returnToUrl) : `/${locale}/events`,
+  );
 }

@@ -19,8 +19,9 @@ quarkus:
     schema-management:
       strategy: validate
 
-email:
-  redirect-url: ${APP_URL}
+email:  
+  frontend-base-url: ${APP_URL} # Change in case provide frontend on different URL
+  backend-base-url: ${APP_URL}
 
 smallrye:
   jwt:

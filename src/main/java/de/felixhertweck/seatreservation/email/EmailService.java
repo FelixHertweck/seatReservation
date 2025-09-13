@@ -82,8 +82,11 @@ public class EmailService {
 
     @Inject ReservationService reservationService;
 
-    @ConfigProperty(name = "email.redirect-url", defaultValue = "")
-    String baseUrl;
+    @ConfigProperty(name = "email.backend-base-url", defaultValue = "")
+    String backendBaseUrl;
+
+    @ConfigProperty(name = "email.frontend-base-url", defaultValue = "")
+    String frontendBaseUrl;
 
     @ConfigProperty(name = "email.verification.expiration.minutes", defaultValue = "60")
     long expirationMinutes;
@@ -181,7 +184,11 @@ public class EmailService {
     }
 
     private String generateConfirmationLink(Long id, String token) {
-        return baseUrl.trim() + "/api/user/confirm-email" + "?id=" + id + "&token=" + token;
+        return backendBaseUrl.trim() + "/api/user/confirm-email" + "?id=" + id + "&token=" + token;
+    }
+
+    private String generateEventLink(Long eventId) {
+        return frontendBaseUrl.trim() + "/events?id=" + eventId;
     }
 
     /**
@@ -254,6 +261,7 @@ public class EmailService {
                 htmlContent.replace("{eventStartTime}", event.getStartTime().format(formatter));
         htmlContent = htmlContent.replace("{eventEndTime}", event.getEndTime().format(formatter));
         htmlContent = htmlContent.replace("{seatList}", seatListHtml.toString());
+        htmlContent = htmlContent.replace("{eventLink}", generateEventLink(event.id));
         htmlContent = htmlContent.replace("{seatMap}", svgContent);
         htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
         LOG.debug("Placeholders replaced in reservation email template.");
@@ -359,6 +367,7 @@ public class EmailService {
         htmlContent = htmlContent.replace("{eventEndTime}", event.getEndTime().format(formatter));
         htmlContent = htmlContent.replace("{activeSeatList}", activeSeatListHtml.toString());
         htmlContent = htmlContent.replace("{deletedSeatList}", deletedSeatListHtml.toString());
+        htmlContent = htmlContent.replace("{eventLink}", generateEventLink(event.id));
         htmlContent = htmlContent.replace("{seatMap}", svgContent);
         htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
         LOG.debug("Placeholders replaced in reservation email template.");

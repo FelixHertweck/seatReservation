@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, X, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,7 @@ interface SearchAndFilterProps {
   onFilter: (filters: Record<string, unknown>) => void;
   filterOptions: FilterOption[];
   initialFilters?: Record<string, string>;
+  initialQuery?: string;
 }
 
 export function SearchAndFilter({
@@ -35,13 +36,18 @@ export function SearchAndFilter({
   onFilter,
   filterOptions,
   initialFilters = {},
+  initialQuery = "",
 }: SearchAndFilterProps) {
   const t = useT();
 
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [filters, setFilters] =
     useState<Record<string, unknown>>(initialFilters);
   const [showFilters, setShowFilters] = useState(false);
+
+  useEffect(() => {
+    setSearchQuery(initialQuery);
+  }, [initialQuery]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
