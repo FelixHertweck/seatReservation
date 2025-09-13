@@ -27,6 +27,11 @@ public class CsvToAdminUserDto {
                 String lastname = parts[1].trim();
                 String password = parts[2].trim();
                 String username = (firstname + "." + lastname).toLowerCase().replaceAll("\\s+", "");
+                
+                username = username.replace("ä", "ae")
+                                    .replace("ö", "oe")
+                                    .replace("ü", "ue")
+                                    .replace("ß", "ss");
 
                 if(firstname.isEmpty() || lastname.isEmpty() || password.isEmpty()) {
                     System.err.println("Skipping line due to empty fields: " + line);
