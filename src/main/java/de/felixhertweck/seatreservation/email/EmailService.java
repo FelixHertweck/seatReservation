@@ -253,7 +253,7 @@ public class EmailService {
 
         htmlContent =
                 htmlContent.replace("{userName}", user.getFirstname() + " " + user.getLastname());
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
         htmlContent = htmlContent.replace("{eventName}", eventName != null ? eventName : "");
         htmlContent = htmlContent.replace("{eventLocation}", event.getEventLocation().getName());
@@ -358,7 +358,7 @@ public class EmailService {
 
         htmlContent =
                 htmlContent.replace("{userName}", user.getFirstname() + " " + user.getLastname());
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
         htmlContent = htmlContent.replace("{eventName}", eventName != null ? eventName : "");
         htmlContent = htmlContent.replace("{eventLocation}", event.getEventLocation().getName());
