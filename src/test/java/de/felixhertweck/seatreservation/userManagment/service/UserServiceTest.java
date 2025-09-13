@@ -30,6 +30,10 @@ import java.util.Set;
 import jakarta.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
@@ -81,7 +85,19 @@ public class UserServiceTest {
                 .thenReturn(true); // Simulate successful persistence
 
         EmailVerification mockEmailVerification =
-                new EmailVerification(new User(), "token", LocalDateTime.now());
+                new EmailVerification(
+                        new User(
+                                "mock",
+                                "mock@example.com",
+                                true,
+                                "hash",
+                                "salt",
+                                "Mock",
+                                "User",
+                                Set.of(),
+                                Set.of()),
+                        "token",
+                        LocalDateTime.now());
         when(emailService.createEmailVerification(any(User.class)))
                 .thenReturn(mockEmailVerification);
 
@@ -181,7 +197,20 @@ public class UserServiceTest {
         when(userRepository.findByUsernameOptional(anyString())).thenReturn(Optional.empty());
         when(userRepository.isPersistent(any(User.class))).thenReturn(true);
         when(emailService.createEmailVerification(any(User.class)))
-                .thenReturn(new EmailVerification(new User(), "token", LocalDateTime.now()));
+                .thenReturn(
+                        new EmailVerification(
+                                new User(
+                                        "mock",
+                                        "mock@example.com",
+                                        true,
+                                        "hash",
+                                        "salt",
+                                        "Mock",
+                                        "User",
+                                        Set.of(),
+                                        Set.of()),
+                                "token",
+                                LocalDateTime.now()));
 
         // Simulate that another user already has this email, but it should not prevent creation
         // (assuming email uniqueness is not enforced at this layer for creation)
@@ -205,7 +234,20 @@ public class UserServiceTest {
         when(userRepository.findByUsernameOptional(anyString())).thenReturn(Optional.empty());
         when(userRepository.isPersistent(any(User.class))).thenReturn(true);
         when(emailService.createEmailVerification(any(User.class)))
-                .thenReturn(new EmailVerification(new User(), "token", LocalDateTime.now()));
+                .thenReturn(
+                        new EmailVerification(
+                                new User(
+                                        "mock",
+                                        "mock@example.com",
+                                        true,
+                                        "hash",
+                                        "salt",
+                                        "Mock",
+                                        "User",
+                                        Set.of(),
+                                        Set.of()),
+                                "token",
+                                LocalDateTime.now()));
         doThrow(new IOException("Email send failed"))
                 .when(emailService)
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
@@ -229,9 +271,11 @@ public class UserServiceTest {
                         "old@example.com",
                         true,
                         "oldhash",
+                        "salt",
                         "Old",
                         "User",
-                        Collections.singleton(Roles.USER));
+                        Collections.singleton(Roles.USER),
+                        Set.of());
         existingUser.id = 1L;
         final AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
@@ -267,9 +311,11 @@ public class UserServiceTest {
                         "old@example.com",
                         true,
                         "oldhash",
+                        "salt",
                         "John",
                         "Old",
-                        Collections.singleton(Roles.USER));
+                        Collections.singleton(Roles.USER),
+                        Set.of());
         existingUser.id = 1L;
         final AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
@@ -305,9 +351,11 @@ public class UserServiceTest {
                         "old@example.com",
                         true,
                         "oldhash",
+                        "salt",
                         "John",
                         "Doe",
-                        Collections.singleton(Roles.USER));
+                        Collections.singleton(Roles.USER),
+                        Set.of());
         existingUser.id = 1L;
         final AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
@@ -323,7 +371,10 @@ public class UserServiceTest {
         UserDTO updatedUser = userService.updateUser(1L, dto);
 
         assertNotNull(updatedUser);
-        assertTrue(BcryptUtil.matches("newpassword", existingUser.getPasswordHash()));
+        assertTrue(
+                BcryptUtil.matches(
+                        "newpassword" + existingUser.getPasswordSalt(),
+                        existingUser.getPasswordHash()));
         verify(userRepository, times(1)).persist(existingUser);
         verify(emailService, never())
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
@@ -342,9 +393,11 @@ public class UserServiceTest {
                         "old@example.com",
                         true,
                         "oldhash",
+                        "salt",
                         "John",
                         "Doe",
-                        Collections.singleton(Roles.USER));
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
         existingUser.id = 1L;
         final AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
@@ -363,6 +416,45 @@ public class UserServiceTest {
     }
 
     @Test
+    void updateUser_Success_PasswordSaltChangesOnPasswordUpdate()
+            throws IOException,
+                    UserNotFoundException,
+                    InvalidUserException,
+                    DuplicateUserException {
+        String initialSalt = "initialSalt";
+        User existingUser =
+                new User(
+                        "testuser",
+                        "old@example.com",
+                        true,
+                        BcryptUtil.bcryptHash("oldpassword" + initialSalt),
+                        initialSalt,
+                        "John",
+                        "Doe",
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
+        existingUser.id = 1L;
+        final AdminUserUpdateDTO dto =
+                new AdminUserUpdateDTO(
+                        null,
+                        null,
+                        "newpassword",
+                        null,
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
+
+        when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
+
+        userService.updateUser(1L, dto);
+
+        assertNotEquals(initialSalt, existingUser.getPasswordSalt());
+        assertTrue(
+                BcryptUtil.matches(
+                        "newpassword" + existingUser.getPasswordSalt(),
+                        existingUser.getPasswordHash()));
+    }
+
+    @Test
     void updateUser_Success_UpdateRoles()
             throws IOException,
                     UserNotFoundException,
@@ -374,9 +466,11 @@ public class UserServiceTest {
                         "old@example.com",
                         true,
                         "oldhash",
+                        "salt",
                         "John",
                         "Doe",
-                        new HashSet<>(Collections.singletonList(Roles.USER)));
+                        new HashSet<>(Collections.singletonList(Roles.USER)),
+                        Collections.emptySet());
         existingUser.id = 1L;
         Set<String> newRoles = new HashSet<>(Arrays.asList(Roles.USER, Roles.ADMIN));
         final AdminUserUpdateDTO dto =
@@ -405,9 +499,11 @@ public class UserServiceTest {
                         "old@example.com",
                         true,
                         "oldhash",
+                        "salt",
                         "John",
                         "Doe",
-                        Collections.singleton(Roles.USER));
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
         existingUser.id = 1L;
         final AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
@@ -425,7 +521,10 @@ public class UserServiceTest {
         assertNotNull(updatedUser);
         assertEquals("New", updatedUser.firstname());
         assertEquals("Name", updatedUser.lastname());
-        assertTrue(BcryptUtil.matches("newpass", existingUser.getPasswordHash()));
+        assertTrue(
+                BcryptUtil.matches(
+                        "newpass" + existingUser.getPasswordSalt(),
+                        existingUser.getPasswordHash()));
         assertEquals("old@example.com", updatedUser.email());
         verify(userRepository, times(1)).persist(existingUser);
         verify(emailService, never())
@@ -444,9 +543,11 @@ public class UserServiceTest {
                         "old@example.com",
                         true,
                         "oldhash",
+                        "salt",
                         "John",
                         "Doe",
-                        Collections.singleton(Roles.USER));
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
         existingUser.id = 1L;
         final AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
@@ -461,7 +562,20 @@ public class UserServiceTest {
         when(emailVerificationRepository.findByUserIdOptional(anyLong()))
                 .thenReturn(Optional.empty()); // No existing token
         when(emailService.createEmailVerification(any(User.class)))
-                .thenReturn(new EmailVerification(new User(), "token", LocalDateTime.now()));
+                .thenReturn(
+                        new EmailVerification(
+                                new User(
+                                        "mock",
+                                        "mock@example.com",
+                                        true,
+                                        "hash",
+                                        "salt",
+                                        "Mock",
+                                        "User",
+                                        Collections.emptySet(),
+                                        Collections.emptySet()),
+                                "token",
+                                LocalDateTime.now()));
 
         UserDTO updatedUser = userService.updateUser(1L, dto);
 
@@ -512,9 +626,11 @@ public class UserServiceTest {
                         "old@example.com",
                         true,
                         "oldhash",
+                        "salt",
                         "John",
                         "Doe",
-                        Collections.singleton(Roles.USER));
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
         existingUser.id = 1L;
         final AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
@@ -529,7 +645,20 @@ public class UserServiceTest {
         when(emailVerificationRepository.findByUserIdOptional(anyLong()))
                 .thenReturn(Optional.empty()); // No existing token
         when(emailService.createEmailVerification(any(User.class)))
-                .thenReturn(new EmailVerification(new User(), "token", LocalDateTime.now()));
+                .thenReturn(
+                        new EmailVerification(
+                                new User(
+                                        "mock",
+                                        "mock@example.com",
+                                        true,
+                                        "hash",
+                                        "salt",
+                                        "Mock",
+                                        "User",
+                                        Collections.emptySet(),
+                                        Collections.emptySet()),
+                                "token",
+                                LocalDateTime.now()));
 
         // Simulate another user already has this email, but it should not prevent update
         // (assuming email uniqueness is not enforced at this layer for update)
@@ -552,9 +681,11 @@ public class UserServiceTest {
                         "old@example.com",
                         true,
                         "oldhash",
+                        "salt",
                         "John",
                         "Doe",
-                        Collections.singleton(Roles.USER));
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
         existingUser.id = 1L;
         AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
@@ -569,7 +700,20 @@ public class UserServiceTest {
         when(emailVerificationRepository.findByUserIdOptional(anyLong()))
                 .thenReturn(Optional.empty());
         when(emailService.createEmailVerification(any(User.class)))
-                .thenReturn(new EmailVerification(new User(), "token", LocalDateTime.now()));
+                .thenReturn(
+                        new EmailVerification(
+                                new User(
+                                        "mock",
+                                        "mock@example.com",
+                                        true,
+                                        "hash",
+                                        "salt",
+                                        "Mock",
+                                        "User",
+                                        Collections.emptySet(),
+                                        Collections.emptySet()),
+                                "token",
+                                LocalDateTime.now()));
         doThrow(new IOException("Email send failed"))
                 .when(emailService)
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
@@ -588,9 +732,11 @@ public class UserServiceTest {
                         "test@example.com",
                         true,
                         "hash",
+                        "salt",
                         "John",
                         "Doe",
-                        Collections.singleton(Roles.USER));
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
         existingUser.id = 1L;
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
         when(userRepository.deleteById(1L)).thenReturn(true); // Mock deleteById to return true
@@ -618,9 +764,11 @@ public class UserServiceTest {
                         "test@example.com",
                         true,
                         "hash",
+                        "salt",
                         "John",
                         "Doe",
-                        Collections.singleton(Roles.USER));
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
         existingUser.id = 1L;
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
         when(userRepository.findById(1L)).thenReturn(existingUser); // Mock findById
@@ -647,18 +795,22 @@ public class UserServiceTest {
                         "a@a.com",
                         true,
                         "h1",
+                        "salt1",
                         "F1",
                         "L1",
-                        Collections.singleton(Roles.USER));
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
         User user2 =
                 new User(
                         "user2",
                         "b@b.com",
                         true,
                         "h2",
+                        "salt2",
                         "F2",
                         "L2",
-                        Collections.singleton(Roles.USER));
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
         when(userRepository.listAll()).thenReturn(Arrays.asList(user1, user2));
 
         List<LimitedUserInfoDTO> users = userService.getAllUsers();
@@ -705,9 +857,11 @@ public class UserServiceTest {
                         "old@example.com",
                         true,
                         "oldhash",
+                        "salt",
                         "Old",
                         "User",
-                        Collections.singleton(Roles.USER));
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
         final UserProfileUpdateDTO dto = new UserProfileUpdateDTO("New", null, null, null, null);
 
         when(userRepository.findByUsernameOptional("testuser"))
@@ -738,9 +892,11 @@ public class UserServiceTest {
                         "old@example.com",
                         true,
                         "oldhash",
+                        "salt",
                         "John",
                         "Old",
-                        Collections.singleton(Roles.USER));
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
         final UserProfileUpdateDTO dto = new UserProfileUpdateDTO(null, "New", null, null, null);
 
         when(userRepository.findByUsernameOptional("testuser"))
@@ -771,9 +927,11 @@ public class UserServiceTest {
                         "old@example.com",
                         true,
                         "oldhash",
+                        "salt",
                         "John",
                         "Doe",
-                        Collections.singleton(Roles.USER));
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
         final UserProfileUpdateDTO dto =
                 new UserProfileUpdateDTO(null, null, "newpassword", null, null);
 
@@ -785,7 +943,10 @@ public class UserServiceTest {
         UserDTO updatedUser = userService.updateUserProfile("testuser", dto);
 
         assertNotNull(updatedUser);
-        assertTrue(BcryptUtil.matches("newpassword", existingUser.getPasswordHash()));
+        assertTrue(
+                BcryptUtil.matches(
+                        "newpassword" + existingUser.getPasswordSalt(),
+                        existingUser.getPasswordHash()));
         verify(userRepository, times(1)).persist(existingUser);
         verify(emailService, never())
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
@@ -800,9 +961,11 @@ public class UserServiceTest {
                         "old@example.com",
                         true,
                         "oldhash",
+                        "salt",
                         "John",
                         "Doe",
-                        Collections.singleton(Roles.USER));
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
         UserProfileUpdateDTO dto =
                 new UserProfileUpdateDTO(null, null, null, "new@example.com", null);
 
@@ -811,7 +974,20 @@ public class UserServiceTest {
         when(emailVerificationRepository.findByUserIdOptional(anyLong()))
                 .thenReturn(Optional.empty());
         when(emailService.createEmailVerification(any(User.class)))
-                .thenReturn(new EmailVerification(new User(), "token", LocalDateTime.now()));
+                .thenReturn(
+                        new EmailVerification(
+                                new User(
+                                        "mock",
+                                        "mock@example.com",
+                                        true,
+                                        "hash",
+                                        "salt",
+                                        "Mock",
+                                        "User",
+                                        Collections.emptySet(),
+                                        Collections.emptySet()),
+                                "token",
+                                LocalDateTime.now()));
 
         UserDTO updatedUser = userService.updateUserProfile("testuser", dto);
 
@@ -859,9 +1035,11 @@ public class UserServiceTest {
                         "old@example.com",
                         true,
                         "oldhash",
+                        "salt",
                         "John",
                         "Doe",
-                        Collections.singleton(Roles.USER));
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
         final UserProfileUpdateDTO dto =
                 new UserProfileUpdateDTO(null, null, null, "duplicate@example.com", null);
 
@@ -872,7 +1050,20 @@ public class UserServiceTest {
         when(emailVerificationRepository.findByUserIdOptional(anyLong()))
                 .thenReturn(Optional.empty());
         when(emailService.createEmailVerification(any(User.class)))
-                .thenReturn(new EmailVerification(new User(), "token", LocalDateTime.now()));
+                .thenReturn(
+                        new EmailVerification(
+                                new User(
+                                        "mock",
+                                        "mock@example.com",
+                                        true,
+                                        "hash",
+                                        "salt",
+                                        "Mock",
+                                        "User",
+                                        Collections.emptySet(),
+                                        Collections.emptySet()),
+                                "token",
+                                LocalDateTime.now()));
 
         UserDTO updatedUser = userService.updateUserProfile("testuser", dto);
 
@@ -892,9 +1083,11 @@ public class UserServiceTest {
                         "old@example.com",
                         true,
                         "oldhash",
+                        "salt",
                         "John",
                         "Doe",
-                        Collections.singleton(Roles.USER));
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
         final UserProfileUpdateDTO dto =
                 new UserProfileUpdateDTO(null, null, null, "new@example.com", null);
 
@@ -905,7 +1098,20 @@ public class UserServiceTest {
         when(emailVerificationRepository.findByUserIdOptional(anyLong()))
                 .thenReturn(Optional.empty());
         when(emailService.createEmailVerification(any(User.class)))
-                .thenReturn(new EmailVerification(new User(), "token", LocalDateTime.now()));
+                .thenReturn(
+                        new EmailVerification(
+                                new User(
+                                        "mock",
+                                        "mock@example.com",
+                                        true,
+                                        "hash",
+                                        "salt",
+                                        "Mock",
+                                        "User",
+                                        Collections.emptySet(),
+                                        Collections.emptySet()),
+                                "token",
+                                LocalDateTime.now()));
         doThrow(new IOException("Email send failed"))
                 .when(emailService)
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
@@ -925,9 +1131,11 @@ public class UserServiceTest {
                         "old@example.com",
                         true,
                         "oldhash",
+                        "salt",
                         "John",
                         "Doe",
-                        Collections.singleton(Roles.USER));
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
         final UserProfileUpdateDTO dto =
                 new UserProfileUpdateDTO(null, null, "newpassword", null, null);
 
@@ -949,9 +1157,11 @@ public class UserServiceTest {
                         "test@example.com",
                         false,
                         "hash",
+                        "salt",
                         "John",
                         "Doe",
-                        Collections.singleton(Roles.USER));
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
         user.id = 1L;
         EmailVerification emailVerification =
                 new EmailVerification(user, "validtoken", LocalDateTime.now().plusMinutes(10));
@@ -1011,9 +1221,11 @@ public class UserServiceTest {
                         "test@example.com",
                         false,
                         "hash",
+                        "salt",
                         "John",
                         "Doe",
-                        Collections.singleton(Roles.USER));
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
         user.id = 1L;
         EmailVerification emailVerification =
                 new EmailVerification(user, "correcttoken", LocalDateTime.now().plusMinutes(10));
@@ -1041,9 +1253,11 @@ public class UserServiceTest {
                         "test@example.com",
                         false,
                         "hash",
+                        "salt",
                         "John",
                         "Doe",
-                        Collections.singleton(Roles.USER));
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
         user.id = 1L;
         EmailVerification emailVerification =
                 new EmailVerification(
@@ -1072,9 +1286,11 @@ public class UserServiceTest {
                         "test@example.com",
                         false,
                         "hash",
+                        "salt",
                         "John",
                         "Doe",
-                        Collections.singleton(Roles.USER));
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
         user.id = 1L;
         EmailVerification emailVerification =
                 new EmailVerification(user, "validtoken", LocalDateTime.now().plusMinutes(10));
@@ -1124,7 +1340,20 @@ public class UserServiceTest {
         when(userRepository.findByUsernameOptional("user2")).thenReturn(Optional.empty());
         when(userRepository.isPersistent(any(User.class))).thenReturn(true);
         when(emailService.createEmailVerification(any(User.class)))
-                .thenReturn(new EmailVerification(new User(), "token", LocalDateTime.now()));
+                .thenReturn(
+                        new EmailVerification(
+                                new User(
+                                        "mock",
+                                        "mock@example.com",
+                                        true,
+                                        "hash",
+                                        "salt",
+                                        "Mock",
+                                        "User",
+                                        Collections.emptySet(),
+                                        Collections.emptySet()),
+                                "token",
+                                LocalDateTime.now()));
 
         Set<UserDTO> importedUsers = userService.importUsers(dtos);
 
@@ -1185,7 +1414,20 @@ public class UserServiceTest {
         when(userRepository.findByUsernameOptional("existinguser"))
                 .thenReturn(Optional.of(new User())); // Simulate existing user
         when(emailService.createEmailVerification(any(User.class)))
-                .thenReturn(new EmailVerification(new User(), "token", LocalDateTime.now()));
+                .thenReturn(
+                        new EmailVerification(
+                                new User(
+                                        "mock",
+                                        "mock@example.com",
+                                        true,
+                                        "hash",
+                                        "salt",
+                                        "Mock",
+                                        "User",
+                                        Collections.emptySet(),
+                                        Collections.emptySet()),
+                                "token",
+                                LocalDateTime.now()));
 
         assertThrows(DuplicateUserException.class, () -> userService.importUsers(dtos));
         verify(userRepository, never()).persist(any(User.class));
@@ -1209,7 +1451,20 @@ public class UserServiceTest {
 
         when(userRepository.findByUsernameOptional("user1")).thenReturn(Optional.empty());
         when(emailService.createEmailVerification(any(User.class)))
-                .thenReturn(new EmailVerification(new User(), "token", LocalDateTime.now()));
+                .thenReturn(
+                        new EmailVerification(
+                                new User(
+                                        "mock",
+                                        "mock@example.com",
+                                        true,
+                                        "hash",
+                                        "salt",
+                                        "Mock",
+                                        "User",
+                                        Collections.emptySet(),
+                                        Collections.emptySet()),
+                                "token",
+                                LocalDateTime.now()));
         doThrow(new IOException("Email send failed"))
                 .when(emailService)
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));

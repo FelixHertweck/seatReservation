@@ -53,12 +53,14 @@ public class AuthServiceTest {
     void testAuthenticateSuccess() throws AuthenticationFailedException {
         String username = "testuser";
         String password = "testpassword";
-        String passwordHash = BcryptUtil.bcryptHash(password);
+        String salt = "randomSalt"; // Mock salt
+        String passwordHash = BcryptUtil.bcryptHash(password + salt);
         String expectedToken = "mockedToken";
 
         User user = new User();
         user.setUsername(username);
         user.setPasswordHash(passwordHash);
+        user.setPasswordSalt(salt);
 
         when(userRepository.findByUsername(username)).thenReturn(user);
         when(tokenService.generateToken(user)).thenReturn(expectedToken);
@@ -72,12 +74,14 @@ public class AuthServiceTest {
     void testAuthenticateSuccessWithEmail() throws AuthenticationFailedException {
         String email = "test@example.com";
         String password = "testpassword";
-        String passwordHash = BcryptUtil.bcryptHash(password);
+        String salt = "randomSalt"; // Mock salt
+        String passwordHash = BcryptUtil.bcryptHash(password + salt);
         String expectedToken = "mockedToken";
 
         User user = new User();
         user.setEmail(email);
         user.setPasswordHash(passwordHash);
+        user.setPasswordSalt(salt);
 
         when(userRepository.findByEmail(email)).thenReturn(user);
         when(tokenService.generateToken(user)).thenReturn(expectedToken);
@@ -108,11 +112,13 @@ public class AuthServiceTest {
         String username = "testuser";
         String correctPassword = "correctpassword";
         String wrongPassword = "wrongpassword";
-        String passwordHash = BcryptUtil.bcryptHash(correctPassword);
+        String salt = "randomSalt"; // Mock salt
+        String passwordHash = BcryptUtil.bcryptHash(correctPassword + salt);
 
         User user = new User();
         user.setUsername(username);
         user.setPasswordHash(passwordHash);
+        user.setPasswordSalt(salt);
 
         when(userRepository.findByUsername(username)).thenReturn(user);
 

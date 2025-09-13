@@ -41,10 +41,9 @@ public class AdminUserInitializer {
 
     @Inject UserService userService;
 
-    // Password hash for 'admin' from import.sql:
-    // '$2a$10$IagMwMnYnQAAq6n2p2oe9OOJJKGB7qp.O7NnVdWD6JFeMHwTSNS4q'
+    // Password hash for 'admin' and salt "Salt"
     private static final String ADMIN_PASSWORD_HASH =
-            "$2a$10$IagMwMnYnQAAq6n2p2oe9OOJJKGB7qp.O7NnVdWD6JFeMHwTSNS4q";
+            "$2a$12$G0LZJi5jGdl5wqspjaVYN.eXdZcZ3X9cMny/3m8mRM3vK/5Yf6TE6";
 
     @Transactional
     public void onStart(@Observes StartupEvent ev) {
@@ -56,6 +55,7 @@ public class AdminUserInitializer {
                 userService.createAdminUserWithHashedPassword(
                         "admin",
                         "admin@localhost",
+                        "Salt",
                         ADMIN_PASSWORD_HASH,
                         "Admin",
                         "User",

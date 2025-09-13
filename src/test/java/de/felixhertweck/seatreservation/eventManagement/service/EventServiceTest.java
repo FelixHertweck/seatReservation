@@ -84,9 +84,11 @@ public class EventServiceTest {
                         "admin@example.com",
                         true,
                         "hash",
+                        "salt",
                         "Admin",
                         "User",
-                        Set.of(Roles.ADMIN));
+                        Set.of(Roles.ADMIN),
+                        Set.of());
         adminUser.id = 1L;
         managerUser =
                 new User(
@@ -94,9 +96,11 @@ public class EventServiceTest {
                         "manager@example.com",
                         true,
                         "hash",
+                        "salt",
                         "Event",
                         "Manager",
-                        Set.of(Roles.MANAGER));
+                        Set.of(Roles.MANAGER),
+                        Set.of());
         managerUser.id = 3L;
         regularUser =
                 new User(
@@ -104,9 +108,11 @@ public class EventServiceTest {
                         "user@example.com",
                         true,
                         "hash",
+                        "salt",
                         "Regular",
                         "User",
-                        Set.of(Roles.USER));
+                        Set.of(Roles.USER),
+                        Set.of());
         regularUser.id = 2L;
 
         eventLocation = new EventLocation("Stadthalle", "Hauptstraße 1", managerUser, 100);
