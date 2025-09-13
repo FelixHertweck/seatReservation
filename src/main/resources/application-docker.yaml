@@ -17,7 +17,7 @@ quarkus:
 
   hibernate-orm:
     schema-management:
-      strategy: validate
+      strategy: update
 
 email:  
   frontend-base-url: ${APP_URL} # Change in case provide frontend on different URL
