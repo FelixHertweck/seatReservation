@@ -66,7 +66,7 @@ public class EventReservationAllowanceService {
             EventUserAllowancesCreateDto dto, User manager)
             throws EventNotFoundException, UserNotFoundException {
         LOG.debugf(
-                "Attempting to set reservation allowance for user ID: %d, event ID: %d by manager:"
+                "Attempting to set reservation allowance for user IDs: %s, event ID: %d by manager:"
                         + " %s (ID: %d)",
                 dto.getUserIds(), dto.getEventId(), manager.getUsername(), manager.getId());
         Event event = getEventById(dto.getEventId());
