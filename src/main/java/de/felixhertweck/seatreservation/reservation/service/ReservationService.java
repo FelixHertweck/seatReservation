@@ -384,7 +384,7 @@ public class ReservationService {
             writer.write("ID,Seat Number,First Name,Last Name,Reservation Date\n");
 
             long exportIdCounter = 1;
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
             for (Reservation reservation : reservations) {
                 ReservationExportDTO dto = new ReservationExportDTO(reservation, exportIdCounter++);
