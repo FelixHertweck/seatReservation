@@ -4,6 +4,8 @@ A comprehensive system for managing seat reservations for events. The system con
 
 ## Overview
 
+There is a [DeepWiki](https://deepwiki.com/FelixHertweck/seatReservation), check it out for documentation.
+
 After initial start there is a user account with username admin and password admin. Make sure to change the default credentials before deploying the application!
 
 This application provides a robust solution for managing event seat reservations. It allows users to browse events, reserve seats, and receive email notifications. The system supports different user roles with varying levels of access and capabilities, ensuring secure and efficient management of events and reservations.
