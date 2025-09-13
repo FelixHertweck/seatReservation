@@ -68,7 +68,10 @@ public class EventReservationAllowanceService {
         LOG.debugf(
                 "Attempting to set reservation allowance for user IDs: %s, event ID: %d by manager:"
                         + " %s (ID: %d)",
-                dto.getUserIds(), dto.getEventId(), manager.getUsername(), manager.getId());
+                dto.getUserIds().stream().map(Object::toString).collect(Collectors.joining(", ")),
+                dto.getEventId(),
+                manager.getUsername(),
+                manager.getId());
         Event event = getEventById(dto.getEventId());
 
         if (!event.getManager().id.equals(manager.getId())
