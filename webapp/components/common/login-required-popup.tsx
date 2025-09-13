@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n/hooks";
 import { useLoginRequiredPopup } from "@/hooks/use-login-popup";
+import { isValidRedirectUrl } from "@/lib/utils";
 
 export function LoginRequiredPopup() {
   const t = useT();
@@ -24,7 +25,13 @@ export function LoginRequiredPopup() {
   const handleLoginRedirect = () => {
     setIsOpen(false); // Close the popup before redirecting
     const currentPath = window.location.pathname + window.location.search;
-    router.push(`/${locale}/login?returnTo=${encodeURIComponent(currentPath)}`);
+    const encodedPath = encodeURIComponent(currentPath);
+    if (isValidRedirectUrl(encodedPath)) {
+      router.push(`/${locale}/login?returnTo=${encodedPath}`);
+      return;
+    }
+    // Fallback to home if currentPath is not valid
+    router.push(`/${locale}/`);
   };
 
   return (
