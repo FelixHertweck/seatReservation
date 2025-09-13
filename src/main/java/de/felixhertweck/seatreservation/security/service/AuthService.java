@@ -69,7 +69,9 @@ public class AuthService {
             throw new AuthenticationFailedException("Failed to authenticate user: " + identifier);
         }
 
-        if (!BcryptUtil.matches(password, user.getPasswordHash())) {
+        // Combine the provided password with the stored salt before hashing for comparison
+        String saltedPassword = password + user.getPasswordSalt();
+        if (!BcryptUtil.matches(saltedPassword, user.getPasswordHash())) {
             LOG.warnf(
                     "Authentication failed for user %s: Invalid credentials.", user.getUsername());
             throw new AuthenticationFailedException(

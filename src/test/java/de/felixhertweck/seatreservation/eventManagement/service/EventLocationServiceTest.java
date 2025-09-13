@@ -72,9 +72,11 @@ public class EventLocationServiceTest {
                         "admin@example.com",
                         true,
                         "hash",
+                        "salt",
                         "Admin",
                         "User",
-                        Set.of(Roles.ADMIN));
+                        Set.of(Roles.ADMIN),
+                        Set.of());
         adminUser.id = 1L;
         managerUser =
                 new User(
@@ -82,9 +84,11 @@ public class EventLocationServiceTest {
                         "manager@example.com",
                         true,
                         "hash",
+                        "salt",
                         "Event",
                         "Manager",
-                        Set.of(Roles.MANAGER));
+                        Set.of(Roles.MANAGER),
+                        Set.of());
         managerUser.id = 3L;
         regularUser =
                 new User(
@@ -92,9 +96,11 @@ public class EventLocationServiceTest {
                         "user@example.com",
                         true,
                         "hash",
+                        "salt",
                         "Regular",
                         "User",
-                        Set.of(Roles.USER));
+                        Set.of(Roles.USER),
+                        Set.of());
         regularUser.id = 2L;
 
         existingLocation = new EventLocation("Stadthalle", "Hauptstraße 1", managerUser, 100);

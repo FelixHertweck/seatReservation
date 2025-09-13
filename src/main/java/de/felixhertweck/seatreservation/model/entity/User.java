@@ -39,6 +39,8 @@ public class User extends PanacheEntity {
 
     @Column private String passwordHash;
 
+    @Column private String passwordSalt;
+
     @Column private String email;
 
     @Column private boolean emailVerified = false;
@@ -72,29 +74,24 @@ public class User extends PanacheEntity {
             String email,
             boolean emailVerified,
             String passwordHash,
-            String firstname,
-            String lastname,
-            Set<String> roles) {
-        this.username = username;
-        this.email = email;
-        this.emailVerified = emailVerified;
-        this.passwordHash = passwordHash;
-        this.firstname = firstname;
-        this.lastname = lastname;
-        this.roles = new HashSet<>(roles);
-    }
-
-    public User(
-            String username,
-            String email,
-            boolean emailVerified,
-            String passwordHash,
+            String passwordSalt,
             String firstname,
             String lastname,
             Set<String> roles,
             Set<String> tags) {
-        this(username, email, emailVerified, passwordHash, firstname, lastname, roles);
-        this.tags = new HashSet<>(tags);
+        this.username = username;
+        this.email = email;
+        this.emailVerified = emailVerified;
+        this.passwordHash = passwordHash;
+        this.passwordSalt = passwordSalt;
+        this.firstname = firstname;
+        this.lastname = lastname;
+        if (roles != null) {
+            this.roles = new HashSet<>(roles);
+        }
+        if (tags != null) {
+            this.tags = new HashSet<>(tags);
+        }
     }
 
     public Long getId() {
@@ -111,6 +108,14 @@ public class User extends PanacheEntity {
 
     public String getPasswordHash() {
         return passwordHash;
+    }
+
+    public String getPasswordSalt() {
+        return passwordSalt;
+    }
+
+    public void setPasswordSalt(String passwordSalt) {
+        this.passwordSalt = passwordSalt;
     }
 
     public Set<String> getRoles() {
@@ -190,6 +195,7 @@ public class User extends PanacheEntity {
                 && Objects.equals(firstname, that.firstname)
                 && Objects.equals(lastname, that.lastname)
                 && Objects.equals(passwordHash, that.passwordHash)
+                && Objects.equals(passwordSalt, that.passwordSalt)
                 && Objects.equals(email, that.email)
                 && Objects.equals(tags, that.tags)
                 && Objects.equals(roles, that.roles)
@@ -207,6 +213,7 @@ public class User extends PanacheEntity {
                 firstname,
                 lastname,
                 passwordHash,
+                passwordSalt,
                 email,
                 emailVerified,
                 tags,
@@ -229,6 +236,9 @@ public class User extends PanacheEntity {
                 + '\''
                 + ", passwordHash='"
                 + passwordHash
+                + '\''
+                + ", passwordSalt='"
+                + passwordSalt
                 + '\''
                 + ", email='"
                 + email

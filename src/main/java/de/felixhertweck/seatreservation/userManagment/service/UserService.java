@@ -20,8 +20,10 @@
 package de.felixhertweck.seatreservation.userManagment.service;
 
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -52,6 +54,8 @@ import org.jboss.logging.Logger;
 public class UserService {
 
     private static final Logger LOG = Logger.getLogger(UserService.class);
+
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     @Inject UserRepository userRepository;
 
@@ -118,20 +122,28 @@ public class UserService {
             throw new DuplicateUserException(
                     "User with username " + userCreationDTO.getUsername() + " already exists.");
         }
-        User user = new User();
-        user.setUsername(userCreationDTO.getUsername());
+        String email = null;
+
         if (userCreationDTO.getEmail() != null && !userCreationDTO.getEmail().trim().isEmpty()) {
-            user.setEmail(userCreationDTO.getEmail());
-            LOG.debugf("User email set to: %s", user.getEmail());
+            email = userCreationDTO.getEmail();
+            LOG.debugf("User email set to: %s", email);
         }
-        user.setPasswordHash(
-                BcryptUtil.bcryptHash(userCreationDTO.getPassword())); // Hash the password
-        user.setFirstname(userCreationDTO.getFirstname());
-        user.setLastname(userCreationDTO.getLastname());
-        user.setRoles(new HashSet<>(roles));
-        if (userCreationDTO.getTags() != null) {
-            user.setTags(new HashSet<>(userCreationDTO.getTags()));
-        }
+
+        String salt = generateSalt();
+        String passwordHash = BcryptUtil.bcryptHash(userCreationDTO.getPassword() + salt);
+
+        User user =
+                new User(
+                        userCreationDTO.getUsername(),
+                        email,
+                        false,
+                        passwordHash,
+                        salt,
+                        userCreationDTO.getFirstname(),
+                        userCreationDTO.getLastname(),
+                        roles,
+                        userCreationDTO.getTags());
+
         LOG.debugf(
                 "User object prepared: username=%s, firstname=%s, lastname=%s, roles=%s, tags=%s",
                 user.getUsername(),
@@ -167,16 +179,16 @@ public class UserService {
     }
 
     /**
-     * Creates a new admin user with a pre-hashed password. This method is intended for internal
-     * use, such as application initialization, where the password hash is already known.
+     * Creates a new users with a pre-hashed password. This method is intended for internal use,
+     * such as application initialization, where the password hash is already known.
      *
-     * @param username The username of the admin user.
-     * @param email The email of the admin user.
-     * @param passwordHash The pre-hashed password of the admin user.
-     * @param firstname The first name of the admin user.
-     * @param lastname The last name of the admin user.
-     * @param roles The roles to assign to the admin user.
-     * @param tags The tags to assign to the admin user.
+     * @param username The username of the user.
+     * @param email The email of the user.
+     * @param passwordHash The pre-hashed password of the user.
+     * @param firstname The first name of the user.
+     * @param lastname The last name of the user.
+     * @param roles The roles to assign to the user.
+     * @param tags The tags to assign to the user.
      * @return The created UserDTO.
      * @throws DuplicateUserException If a user with the same username or email already exists.
      * @throws RuntimeException If an error occurs while sending email confirmation.
@@ -185,6 +197,7 @@ public class UserService {
     public UserDTO createAdminUserWithHashedPassword(
             String username,
             String email,
+            String salt,
             String passwordHash,
             String firstname,
             String lastname,
@@ -198,17 +211,17 @@ public class UserService {
             throw new DuplicateUserException("User with username " + username + " already exists.");
         }
 
-        User user = new User();
-        user.setUsername(username);
-        user.setEmail(email);
-        user.setPasswordHash(passwordHash);
-        user.setFirstname(firstname);
-        user.setLastname(lastname);
-        user.setRoles(new HashSet<>(roles));
-        if (tags != null) {
-            user.setTags(new HashSet<>(tags));
-        }
-        user.setEmailVerified(true);
+        User user =
+                new User(
+                        username,
+                        email,
+                        true,
+                        passwordHash,
+                        salt,
+                        firstname,
+                        lastname,
+                        roles,
+                        tags);
 
         LOG.debugf(
                 "Admin user object prepared: username=%s, firstname=%s, lastname=%s, roles=%s,"
@@ -292,7 +305,11 @@ public class UserService {
         // Update password if provided
         if (password != null && !password.trim().isEmpty()) {
             LOG.debugf("Updating password for user ID %d.", existingUser.id);
-            existingUser.setPasswordHash(BcryptUtil.bcryptHash(password)); // Hash the password
+            String newSalt = generateSalt();
+            existingUser.setPasswordSalt(newSalt);
+            existingUser.setPasswordHash(
+                    BcryptUtil.bcryptHash(
+                            password + newSalt)); // Hash the new password with new salt
             // Send password changed notification email
             try {
                 LOG.debugf(
@@ -578,5 +595,11 @@ public class UserService {
         // Send email confirmation with the (updated or new) email verification
         emailService.sendEmailConfirmation(user, emailVerification);
         LOG.infof("Email confirmation resent to %s for user ID: %d", user.getEmail(), user.id);
+    }
+
+    private String generateSalt() {
+        byte[] salt = new byte[16];
+        SECURE_RANDOM.nextBytes(salt);
+        return Base64.getEncoder().encodeToString(salt);
     }
 }

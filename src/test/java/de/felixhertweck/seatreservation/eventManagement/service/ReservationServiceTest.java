@@ -78,9 +78,11 @@ public class ReservationServiceTest {
                         "admin@example.com",
                         true,
                         "hash",
+                        "salt",
                         "Admin",
                         "User",
-                        Set.of(Roles.ADMIN));
+                        Set.of(Roles.ADMIN),
+                        Set.of());
         adminUser.id = 1L;
 
         regularUser =
@@ -89,9 +91,11 @@ public class ReservationServiceTest {
                         "user@example.com",
                         true,
                         "hash",
+                        "salt",
                         "Regular",
                         "User",
-                        Set.of(Roles.USER));
+                        Set.of(Roles.USER),
+                        Set.of());
         regularUser.id = 2L;
 
         managerUser =
@@ -100,9 +104,11 @@ public class ReservationServiceTest {
                         "manager@example.com",
                         true,
                         "hash",
+                        "salt",
                         "Event",
                         "Manager",
-                        Set.of(Roles.MANAGER));
+                        Set.of(Roles.MANAGER),
+                        Set.of());
         managerUser.id = 3L;
 
         EventLocation eventLocation =

@@ -129,6 +129,7 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | `updateUserProfile_Success_UpdateFirstname` | Aktualisiert erfolgreich den Vornamen eines bestehenden Benutzers über seinen Benutzernamen. |
 | `updateUserProfile_Success_UpdateLastname` | Aktualisiert erfolgreich den Nachnamen eines bestehenden Benutzers über seinen Benutzernamen. |
 | `updateUserProfile_Success_UpdatePassword` | Aktualisiert erfolgreich das Passwort eines bestehenden Benutzers über seinen Benutzernamen. |
+| `updateUserProfile_Success_PasswordSaltChangesOnPasswordUpdate` | Überprüft, ob sich das Salt beim Aktualisieren des Passworts eines bestehenden Benutzers über seinen Benutzernamen ändert. |
 | `updateUserProfile_Success_UpdateEmail` | Aktualisiert erfolgreich die E-Mail-Adresse eines bestehenden Benutzers über seinen Benutzernamen und überprüft, ob die E-Mail-Verifizierung zurückgesetzt und eine neue Bestätigungs-E-Mail gesendet wird. |
 | `updateUserProfile_DoesNotUpdateRoles` | Stellt sicher, dass ein Versuch, die eigenen Rollen über diesen Endpunkt zu aktualisieren, ignoriert wird. |
 | `updateUserProfile_UserNotFoundException` | Versucht, das Profil eines nicht existierenden Benutzers zu aktualisieren. Erwartet `UserNotFoundException`. |
