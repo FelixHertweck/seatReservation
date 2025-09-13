@@ -22,6 +22,7 @@ package de.felixhertweck.seatreservation.eventManagement.ressource;
 import java.util.List;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.*;
 
@@ -63,7 +64,7 @@ public class SeatResource {
             responseCode = "409",
             description =
                     "Conflict: Seat with this row and number already exists in this event location")
-    public SeatResponseDTO createSeat(SeatRequestDTO seatRequestDTO) {
+    public SeatResponseDTO createSeat(@Valid SeatRequestDTO seatRequestDTO) {
         LOG.infof("Received POST request to /api/manager/seats to create a new seat.");
         LOG.debugf("SeatRequestDTO received: %s", seatRequestDTO.toString());
         User currentUser = userSecurityContext.getCurrentUser();
@@ -139,7 +140,7 @@ public class SeatResource {
             description =
                     "Conflict: Seat with this row and number already exists in this event location")
     public SeatResponseDTO updateManagerSeat(
-            @PathParam("id") Long id, SeatRequestDTO seatUpdateDTO) {
+            @PathParam("id") Long id, @Valid SeatRequestDTO seatUpdateDTO) {
         LOG.infof("Received PUT request to /api/manager/seats/%d to update seat.", id);
         LOG.debugf("SeatRequestDTO received for ID %d: %s", id, seatUpdateDTO.toString());
         User currentUser = userSecurityContext.getCurrentUser();

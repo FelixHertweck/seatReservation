@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.*;
@@ -63,7 +64,7 @@ public class UserResource {
     @APIResponse(
             responseCode = "403",
             description = "Forbidden: Only ADMIN role can access this resource")
-    public Set<UserDTO> importUsers(Set<AdminUserCreationDto> userCreationDTOs) {
+    public Set<UserDTO> importUsers(@Valid Set<AdminUserCreationDto> userCreationDTOs) {
         LOG.infof(
                 "Received POST request to /api/users/admin/import for %d users.",
                 userCreationDTOs.size());
@@ -82,7 +83,7 @@ public class UserResource {
     @APIResponse(
             responseCode = "409",
             description = "Conflict: User with this username already exists")
-    public UserDTO createUser(AdminUserCreationDto userCreationDTO) {
+    public UserDTO createUser(@Valid AdminUserCreationDto userCreationDTO) {
         LOG.infof(
                 "Received POST request to /api/users/admin for user: %s",
                 userCreationDTO.getUsername());
@@ -106,7 +107,7 @@ public class UserResource {
     @APIResponse(
             responseCode = "409",
             description = "Conflict: User with this username already exists")
-    public UserDTO updateUser(@PathParam("id") Long id, AdminUserUpdateDTO user) {
+    public UserDTO updateUser(@PathParam("id") Long id, @Valid AdminUserUpdateDTO user) {
         LOG.infof("Received PUT request to /api/users/admin/%d for user update.", id);
         LOG.debugf("AdminUserUpdateDTO received for ID %d: %s", id, user.toString());
         UserDTO updatedUser = userService.updateUser(id, user);
@@ -191,7 +192,7 @@ public class UserResource {
     @APIResponse(
             responseCode = "409",
             description = "Conflict: User with this username already exists")
-    public UserDTO updateCurrentUserProfile(UserProfileUpdateDTO userProfileUpdateDTO) {
+    public UserDTO updateCurrentUserProfile(@Valid UserProfileUpdateDTO userProfileUpdateDTO) {
         String username = securityContext.getUserPrincipal().getName();
         LOG.infof("Received PUT request to /api/users/me to update profile for user: %s", username);
         LOG.debugf(

@@ -22,6 +22,7 @@ package de.felixhertweck.seatreservation.reservation.resource;
 import java.util.List;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.*;
@@ -119,7 +120,7 @@ public class ReservationResource {
     @APIResponse(
             responseCode = "409",
             description = "Conflict: Seat already reserved or event booking closed")
-    public List<ReservationResponseDTO> createReservation(ReservationsRequestCreateDTO dto) {
+    public List<ReservationResponseDTO> createReservation(@Valid ReservationsRequestCreateDTO dto) {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.infof(
                 "Received POST request to /api/user/reservations for user: %s",

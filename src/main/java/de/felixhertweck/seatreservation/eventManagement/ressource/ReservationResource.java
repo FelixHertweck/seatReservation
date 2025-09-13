@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.*;
 
@@ -153,7 +154,8 @@ public class ReservationResource {
     @APIResponse(
             responseCode = "409",
             description = "Conflict: Seat already reserved or event booking closed")
-    public Set<DetailedReservationResponseDTO> createReservations(ReservationRequestDTO dto) {
+    public Set<DetailedReservationResponseDTO> createReservations(
+            @Valid ReservationRequestDTO dto) {
         LOG.infof("Received POST request to /api/manager/reservations to create new reservations.");
         LOG.debugf("ReservationRequestDTO received: %s", dto.toString());
         User currentUser = userSecurityContext.getCurrentUser();
@@ -202,7 +204,7 @@ public class ReservationResource {
             description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
     @APIResponse(responseCode = "404", description = "Not Found: Event or seat not found")
     @APIResponse(responseCode = "409", description = "Conflict: Seat already blocked")
-    public Set<DetailedReservationResponseDTO> blockSeats(BlockSeatsRequestDTO dto) {
+    public Set<DetailedReservationResponseDTO> blockSeats(@Valid BlockSeatsRequestDTO dto) {
         LOG.infof(
                 "Received POST request to /api/manager/reservations/block to block seats for event"
                         + " ID %d.",
