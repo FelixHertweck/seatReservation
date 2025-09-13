@@ -78,7 +78,7 @@ public class SvgRenderer {
             } else if (existingReservedSeatNumbers.contains(seat.getSeatNumber())) {
                 color = "#F0B100";
             } else {
-                color = "#00C950";
+                color = "#CCCCCC";
             }
 
             // Apply scaling to the coordinates when drawing

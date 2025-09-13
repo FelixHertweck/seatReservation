@@ -323,8 +323,6 @@ email:
                 <p>It is possible that the following display is not supported by your email client.</p>
                 {seatMap}
                 <div style="margin-top: 20px; text-align: center;">
-                    <span style="display: inline-block; width: 15px; height: 15px; background-color: #00C950; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
-                    <span style="vertical-align: middle; margin-right: 15px;">Available</span>
                     <span style="display: inline-block; width: 15px; height: 15px; background-color: #2B7FFF; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
                     <span style="vertical-align: middle;">My Reserved</span>
                 </div>
@@ -395,8 +393,6 @@ email:
                 <p>It is possible that the following display is not supported by your email client.</p>
                 {seatMap}
                 <div style="margin-top: 20px; text-align: center;">
-                    <span style="display: inline-block; width: 15px; height: 15px; background-color: #00C950; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
-                    <span style="vertical-align: middle; margin-right: 15px;">Available</span>
                     <span style="display: inline-block; width: 15px; height: 15px; background-color: #2B7FFF; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
                     <span style="vertical-align: middle; margin-right: 15px;">New Reserved</span>
                     <span style="display: inline-block; width: 15px; height: 15px; background-color: #F0B100; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
