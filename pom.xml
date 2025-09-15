@@ -309,6 +309,7 @@
       <properties>
         <skipITs>false</skipITs>
         <quarkus.native.enabled>true</quarkus.native.enabled>
+        <quarkus.native.additional-build-args>--initialize-at-run-time=de.felixhertweck.seatreservation.userManagment.service.UserService</quarkus.native.additional-build-args>
       </properties>
     </profile>
     <profile>
