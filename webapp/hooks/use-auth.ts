@@ -77,7 +77,8 @@ export function useAuth() {
 
   const logout = async () => {
     await logoutMutation({});
-    window.location.href = `/${locale}/`;
+    router.push(`/${locale}/`);
+    router.refresh();
   };
 
   return {
