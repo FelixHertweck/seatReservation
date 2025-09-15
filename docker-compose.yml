@@ -44,7 +44,7 @@ services:
     image: ghcr.io/felixhertweck/seatreservation-backend:main
 
     # Uncomment this line to use the native image
-    # image: ghcr.io/felixhertweck/seatreservation-backend-native:main
+    # image: ghcr.io/felixhertweck/seatreservation-backend-native:latest
 
     # ports:
     #   - "8080:8080" 
@@ -67,6 +67,8 @@ services:
       - MAIL_PORT=${MAIL_PORT}
       - MAIL_USERNAME=${MAIL_USERNAME}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - MAIL_TLS=${MAIL_TLS}
+      - MAIL_START_TLS=${MAIL_START_TLS}
 
       # Database configuration
       - POSTGRES_USER=${POSTGRES_USER}
