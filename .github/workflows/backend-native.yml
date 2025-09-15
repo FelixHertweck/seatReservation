@@ -15,7 +15,7 @@ jobs:
   maven-native:
     uses: ./.github/workflows/maven.yml
     with:
-      maven-args: "-Pnative"
+      maven-args: "-Pnative -Dquarkus.profile=docker"
       build-artifact-name: quarkus-app-native
       build-artifact-path: target/*-runner
 
