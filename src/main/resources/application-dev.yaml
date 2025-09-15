@@ -6,7 +6,9 @@ quarkus:
     port: ${MAIL_PORT}
     username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
-    tls: true
+    tls: ${MAIL_TLS}
+    start-tls: ${MAIL_START_TLS}
+
   hibernate-orm:
     schema-management:
       strategy: drop-and-create
