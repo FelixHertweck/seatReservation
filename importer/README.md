@@ -1,26 +1,25 @@
-
 # CSV → AdminUserCreationDto Importer
 
-Dieses kleine Java-Programm liest eine `input.csv` ein und schreibt die Daten als JSON in `output.json`.  
-Jede Zeile der CSV wird in ein `AdminUserCreationDto`-Objekt übersetzt.
+This small Java program reads an `input.csv` and writes the data as JSON to `output.json`.  
+Each line of the CSV is translated into an `AdminUserCreationDto` object.
 
 ---
 
-## 1. Aufbau der `input.csv`
+## 1. Structure of `input.csv`
 
-Die Datei **muss** im gleichen Verzeichnis liegen, in dem das Programm ausgeführt wird.  
-Spalten sind durch `,` (Komma) getrennt.
+The file **must** be in the same directory where the program is executed.  
+Columns are separated by `,` (comma).
 
-| Vorname | Nachname | Passwort |
-|---------|----------|----------|
-| Max     | Mustermann | geheim123 |
-| Anna    | Müller     | passwort |
+| First Name | Last Name | Password |
+|------------|-----------|----------|
+| Max        | Mustermann | secret123 |
+| Anna       | Müller     | password |
 
-**Beispiel `input.csv`:**
+**Example `input.csv`:**
 ```
 
-Max,Mustermann,geheim123
-Anna,Müller,passwort
+Max,Mustermann,secret123
+Anna,Müller,password
 
 ````
 
@@ -28,34 +27,34 @@ Anna,Müller,passwort
 
 ## 2. Output
 
-Die Ausgabedatei heißt immer `output.json` und liegt ebenfalls im Arbeitsverzeichnis.  
-Beispielausgabe für obiges CSV:
+The output file is always named `output.json` and is also located in the working directory.  
+Example output for the above CSV:
 
 ```json
 [
   {
     "username": "max.mustermann",
     "email": "max.mustermann@example.com",
-    "password": "geheim123",
+    "password": "secret123",
     "firstname": "Max",
     "lastname": "Mustermann"
   },
   {
     "username": "anna.müller",
     "email": "anna.müller@example.com",
-    "password": "passwort",
+    "password": "password",
     "firstname": "Anna",
     "lastname": "Müller"
   }
 ]
 ````
 
-## 3. Ausführen
+## 3. Execution
 
-Voraussetzungen:
+Prerequisites:
 
-* Java 8 oder neuer
-* Keine zusätzlichen Libraries nötig
+* Java 8 or newer
+* No additional libraries required
 
 
 ```bash
@@ -63,12 +62,12 @@ cd importer
 java CsvToAdminUserDto.java
 ```
 
-Danach findest du die Datei `output.json` im gleichen Verzeichnis.
+After execution, you will find the `output.json` file in the same directory.
 
 ---
 
-## 4. Anmerkungen
+## 4. Notes
 
-* Der **Username** wird immer aus `vorname.nachname` gebildet (alles kleingeschrieben).
-* Die **Email** wird automatisch als `username@example.com` gesetzt, da die CSV keine E-Mail-Spalte enthält.
-* Falls eine Zeile in der CSV weniger als 3 Spalten hat, wird sie ignoriert.
+* The **Username** is always formed from `firstname.lastname` (all lowercase).
+* The **Email** is automatically set as `username@example.com` as the CSV does not contain an email column.
+* If a line in the CSV has fewer than 3 columns, it will be ignored.
