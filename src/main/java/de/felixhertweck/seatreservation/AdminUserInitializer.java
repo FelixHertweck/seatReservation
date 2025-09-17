@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation;
 
+import java.security.SecureRandom;
 import java.util.Set;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
@@ -26,8 +27,9 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
-import de.felixhertweck.seatreservation.security.Roles;
-import de.felixhertweck.seatreservation.userManagment.exceptions.DuplicateUserException;
+import de.felixhertweck.seatreservation.model.entity.Roles;
+import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
+import de.felixhertweck.seatreservation.common.exception.DuplicateUserException;
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
 import io.quarkus.runtime.StartupEvent;
 import org.jboss.logging.Logger;
@@ -41,9 +43,18 @@ public class AdminUserInitializer {
 
     @Inject UserService userService;
 
-    // Password hash for 'admin' and salt "Salt"
-    private static final String ADMIN_PASSWORD_HASH =
-            "$2a$12$G0LZJi5jGdl5wqspjaVYN.eXdZcZ3X9cMny/3m8mRM3vK/5Yf6TE6";
+    private static final SecureRandom secureRandom = new SecureRandom();
+    private static final int PASSWORD_LENGTH = 12;
+
+    private static String generateRandomPassword() {
+        String chars =
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+";
+        StringBuilder sb = new StringBuilder(PASSWORD_LENGTH);
+        for (int i = 0; i < PASSWORD_LENGTH; i++) {
+            sb.append(chars.charAt(secureRandom.nextInt(chars.length())));
+        }
+        return sb.toString();
+    }
 
     @Transactional
     public void onStart(@Observes StartupEvent ev) {
@@ -51,16 +62,19 @@ public class AdminUserInitializer {
 
         if (userRepository.findByUsernameOptional("admin").isEmpty()) {
             LOG.info("Admin user not found. Creating admin user...");
+            String randomPassword = generateRandomPassword();
+            LOG.infof(
+                    """
+                    --------- IMPORTANT ---------
+                    Generated admin password: %s
+                    --------- IMPORTANT ---------\
+                    """,
+                    randomPassword);
+            UserCreationDTO userCreationDTO =
+                    new UserCreationDTO(
+                            "admin", null, randomPassword, "System", "Admin", Set.of("system"));
             try {
-                userService.createAdminUserWithHashedPassword(
-                        "admin",
-                        "admin@localhost",
-                        "Salt",
-                        ADMIN_PASSWORD_HASH,
-                        "Admin",
-                        "User",
-                        Set.of(Roles.ADMIN),
-                        Set.of());
+                userService.createUser(userCreationDTO, Set.of(Roles.ADMIN));
                 LOG.info("Admin user created successfully.");
             } catch (DuplicateUserException e) {
                 LOG.warnf("Admin user already exists, skipping creation: %s", e.getMessage());
