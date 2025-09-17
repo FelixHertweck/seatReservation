@@ -115,10 +115,10 @@ public class EmailService {
      */
     public void sendEmailConfirmation(User user, EmailVerification emailVerification)
             throws IOException {
-        if (skipForNullOrEmptyAdress(user.getEmail())) {
+        if (skipForNullOrEmptyAddress(user.getEmail())) {
             return;
         }
-        if (skipForLocalhostAdress(user.getEmail())) {
+        if (skipForLocalhostAddress(user.getEmail())) {
             return;
         }
 
@@ -207,10 +207,10 @@ public class EmailService {
      */
     public void sendReservationConfirmation(User user, List<Reservation> reservations)
             throws IOException {
-        if (skipForNullOrEmptyAdress(user.getEmail())) {
+        if (skipForNullOrEmptyAddress(user.getEmail())) {
             return;
         }
-        if (skipForLocalhostAdress(user.getEmail())) {
+        if (skipForLocalhostAddress(user.getEmail())) {
             return;
         }
 
@@ -307,10 +307,10 @@ public class EmailService {
     public void sendUpdateReservationConfirmation(
             User user, List<Reservation> deletedReservations, List<Reservation> activeReservations)
             throws IOException {
-        if (skipForNullOrEmptyAdress(user.getEmail())) {
+        if (skipForNullOrEmptyAddress(user.getEmail())) {
             return;
         }
-        if (skipForLocalhostAdress(user.getEmail())) {
+        if (skipForLocalhostAddress(user.getEmail())) {
             return;
         }
 
@@ -408,10 +408,10 @@ public class EmailService {
      * @throws IOException if the email template cannot be read
      */
     public void sendPasswordChangedNotification(User user) throws IOException {
-        if (skipForNullOrEmptyAdress(user.getEmail())) {
+        if (skipForNullOrEmptyAddress(user.getEmail())) {
             return;
         }
-        if (skipForLocalhostAdress(user.getEmail())) {
+        if (skipForLocalhostAddress(user.getEmail())) {
             return;
         }
 
@@ -453,10 +453,10 @@ public class EmailService {
      */
     public void sendEventReminder(User user, Event event, List<Reservation> reservations)
             throws IOException {
-        if (skipForNullOrEmptyAdress(user.getEmail())) {
+        if (skipForNullOrEmptyAddress(user.getEmail())) {
             return;
         }
-        if (skipForLocalhostAdress(user.getEmail())) {
+        if (skipForLocalhostAddress(user.getEmail())) {
             return;
         }
 
@@ -520,10 +520,10 @@ public class EmailService {
      * @throws IOException if the email template cannot be read or CSV export fails
      */
     public void sendEventReservationsCsvToManager(User manager, Event event) throws IOException {
-        if (skipForNullOrEmptyAdress(manager.getEmail())) {
+        if (skipForNullOrEmptyAddress(manager.getEmail())) {
             return;
         }
-        if (skipForLocalhostAdress(manager.getEmail())) {
+        if (skipForLocalhostAddress(manager.getEmail())) {
             return;
         }
         LOG.infof(
@@ -581,7 +581,7 @@ public class EmailService {
         }
     }
 
-    private boolean skipForNullOrEmptyAdress(String address) {
+    private boolean skipForNullOrEmptyAddress(String address) {
         if (address == null || address.isEmpty()) {
             Log.warn("Skipping email sending for null or empty address.");
             return true;
@@ -589,7 +589,7 @@ public class EmailService {
         return false;
     }
 
-    private boolean skipForLocalhostAdress(String address) {
+    private boolean skipForLocalhostAddress(String address) {
         if (address.endsWith("@localhost")) {
             LOG.infof("Skipping email sending for localhost address: %s", address);
             return true;
