@@ -31,14 +31,14 @@ import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 
+import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
 import de.felixhertweck.seatreservation.email.EmailService;
 import de.felixhertweck.seatreservation.eventManagement.dto.DetailedReservationResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.ReservationRequestDTO;
 import de.felixhertweck.seatreservation.eventManagement.exception.ReservationNotFoundException;
+import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.*;
 import de.felixhertweck.seatreservation.model.repository.*;
-import de.felixhertweck.seatreservation.security.Roles;
-import de.felixhertweck.seatreservation.userManagment.exceptions.UserNotFoundException;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped

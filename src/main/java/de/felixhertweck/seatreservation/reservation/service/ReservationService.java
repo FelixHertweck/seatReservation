@@ -34,21 +34,21 @@ import jakarta.inject.Inject;
 import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 
+import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.email.EmailService;
 import de.felixhertweck.seatreservation.eventManagement.dto.ReservationExportDTO;
 import de.felixhertweck.seatreservation.eventManagement.exception.ReservationNotFoundException;
+import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.*;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
-import de.felixhertweck.seatreservation.reservation.EventBookingClosedException;
-import de.felixhertweck.seatreservation.reservation.EventNotFoundException;
-import de.felixhertweck.seatreservation.reservation.NoSeatsAvailableException;
-import de.felixhertweck.seatreservation.reservation.SeatAlreadyReservedException;
 import de.felixhertweck.seatreservation.reservation.dto.ReservationResponseDTO;
 import de.felixhertweck.seatreservation.reservation.dto.ReservationsRequestCreateDTO;
-import de.felixhertweck.seatreservation.security.Roles;
+import de.felixhertweck.seatreservation.reservation.exception.EventBookingClosedException;
+import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableException;
+import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped

@@ -17,10 +17,10 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.userManagment.exceptions;
+package de.felixhertweck.seatreservation.common.exception;
 
-public class InvalidUserException extends RuntimeException {
-    public InvalidUserException(String message) {
+public class UserNotFoundException extends RuntimeException {
+    public UserNotFoundException(String message) {
         super(message);
     }
 }

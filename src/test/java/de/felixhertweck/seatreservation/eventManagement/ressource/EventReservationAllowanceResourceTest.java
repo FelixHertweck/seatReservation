@@ -27,11 +27,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
+import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowanceUpdateDto;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesDto;
 import de.felixhertweck.seatreservation.eventManagement.service.EventReservationAllowanceService;
 import de.felixhertweck.seatreservation.model.entity.User;
-import de.felixhertweck.seatreservation.reservation.EventNotFoundException;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;

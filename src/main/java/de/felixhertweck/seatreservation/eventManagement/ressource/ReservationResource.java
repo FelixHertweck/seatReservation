@@ -31,8 +31,8 @@ import de.felixhertweck.seatreservation.eventManagement.dto.BlockSeatsRequestDTO
 import de.felixhertweck.seatreservation.eventManagement.dto.DetailedReservationResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.ReservationRequestDTO;
 import de.felixhertweck.seatreservation.eventManagement.service.ReservationService;
+import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
-import de.felixhertweck.seatreservation.security.Roles;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;

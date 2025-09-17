@@ -17,10 +17,10 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.userManagment.exceptions;
+package de.felixhertweck.seatreservation.reservation.exception;
 
-public class UserNotFoundException extends RuntimeException {
-    public UserNotFoundException(String message) {
+public class NoSeatsAvailableException extends RuntimeException {
+    public NoSeatsAvailableException(String message) {
         super(message);
     }
 }

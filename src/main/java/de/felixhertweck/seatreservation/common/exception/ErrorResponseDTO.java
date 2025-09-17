@@ -17,10 +17,6 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.reservation;
+package de.felixhertweck.seatreservation.common.exception;
 
-public class NoSeatsAvailableException extends RuntimeException {
-    public NoSeatsAvailableException(String message) {
-        super(message);
-    }
-}
+public record ErrorResponseDTO(String message) {}

@@ -31,6 +31,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
+import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
+import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
 import de.felixhertweck.seatreservation.eventManagement.dto.DetailedEventResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventRequestDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowanceUpdateDto;
@@ -39,14 +41,12 @@ import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesD
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
+import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
-import de.felixhertweck.seatreservation.reservation.EventNotFoundException;
-import de.felixhertweck.seatreservation.security.Roles;
-import de.felixhertweck.seatreservation.userManagment.exceptions.UserNotFoundException;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;

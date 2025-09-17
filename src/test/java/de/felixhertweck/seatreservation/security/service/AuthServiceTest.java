@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
-import de.felixhertweck.seatreservation.security.AuthenticationFailedException;
+import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;

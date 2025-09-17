@@ -27,18 +27,18 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
+import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowanceUpdateDto;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesCreateDto;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesDto;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
+import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
-import de.felixhertweck.seatreservation.reservation.EventNotFoundException;
-import de.felixhertweck.seatreservation.security.Roles;
-import de.felixhertweck.seatreservation.userManagment.exceptions.UserNotFoundException;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
