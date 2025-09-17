@@ -115,6 +115,13 @@ public class EmailService {
      */
     public void sendEmailConfirmation(User user, EmailVerification emailVerification)
             throws IOException {
+        if (skipForNullOrEmptyAdress(user.getEmail())) {
+            return;
+        }
+        if (skipForLocalhostAdress(user.getEmail())) {
+            return;
+        }
+
         LOG.infof("Attempting to send email confirmation to user: %s", user.getEmail());
         LOG.debugf("User ID: %d, Username: %s", user.id, user.getUsername());
 
