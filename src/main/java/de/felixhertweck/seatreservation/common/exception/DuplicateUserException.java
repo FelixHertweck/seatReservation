@@ -17,6 +17,10 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.exception;
+package de.felixhertweck.seatreservation.common.exception;
 
-public record ErrorResponseDTO(String message) {}
+public class DuplicateUserException extends RuntimeException {
+    public DuplicateUserException(String message) {
+        super(message);
+    }
+}

@@ -17,10 +17,12 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.security;
+package de.felixhertweck.seatreservation.model.entity;
 
-public class AuthenticationFailedException extends RuntimeException {
-    public AuthenticationFailedException(String message) {
-        super(message);
-    }
+public class Roles {
+    public static final String ADMIN = "ADMIN";
+    public static final String USER = "USER";
+    public static final String MANAGER = "MANAGER";
+
+    public static final String[] ALL_ROLES = {ADMIN, USER, MANAGER};
 }

@@ -17,24 +17,25 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.exception;
+package de.felixhertweck.seatreservation;
 
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 
+import de.felixhertweck.seatreservation.common.exception.DuplicateUserException;
+import de.felixhertweck.seatreservation.common.exception.ErrorResponseDTO;
+import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
+import de.felixhertweck.seatreservation.common.exception.InvalidUserException;
+import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
 import de.felixhertweck.seatreservation.eventManagement.exception.EventLocationNotFoundException;
 import de.felixhertweck.seatreservation.eventManagement.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.eventManagement.exception.SeatNotFoundException;
-import de.felixhertweck.seatreservation.reservation.EventBookingClosedException;
-import de.felixhertweck.seatreservation.reservation.EventNotFoundException;
-import de.felixhertweck.seatreservation.reservation.NoSeatsAvailableException;
-import de.felixhertweck.seatreservation.reservation.SeatAlreadyReservedException;
-import de.felixhertweck.seatreservation.security.AuthenticationFailedException;
-import de.felixhertweck.seatreservation.userManagment.exceptions.DuplicateUserException;
-import de.felixhertweck.seatreservation.userManagment.exceptions.InvalidUserException;
+import de.felixhertweck.seatreservation.reservation.exception.EventBookingClosedException;
+import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableException;
+import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
+import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
 import de.felixhertweck.seatreservation.userManagment.exceptions.TokenExpiredException;
-import de.felixhertweck.seatreservation.userManagment.exceptions.UserNotFoundException;
 import org.jboss.logging.Logger;
 
 @Provider

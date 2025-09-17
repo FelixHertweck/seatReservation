@@ -33,20 +33,20 @@ import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
 import de.felixhertweck.seatreservation.common.dto.UserDTO;
+import de.felixhertweck.seatreservation.common.exception.DuplicateUserException;
+import de.felixhertweck.seatreservation.common.exception.InvalidUserException;
+import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
 import de.felixhertweck.seatreservation.email.EmailService;
 import de.felixhertweck.seatreservation.model.entity.EmailVerification;
+import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
-import de.felixhertweck.seatreservation.security.Roles;
 import de.felixhertweck.seatreservation.userManagment.dto.AdminUserCreationDto;
 import de.felixhertweck.seatreservation.userManagment.dto.AdminUserUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
-import de.felixhertweck.seatreservation.userManagment.exceptions.DuplicateUserException;
-import de.felixhertweck.seatreservation.userManagment.exceptions.InvalidUserException;
 import de.felixhertweck.seatreservation.userManagment.exceptions.TokenExpiredException;
-import de.felixhertweck.seatreservation.userManagment.exceptions.UserNotFoundException;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import org.jboss.logging.Logger;
 
@@ -174,66 +174,6 @@ public class UserService {
         }
         userRepository.persist(user);
         LOG.infof("User %s persisted successfully with ID: %d", user.getUsername(), user.id);
-
-        return new UserDTO(user);
-    }
-
-    /**
-     * Creates a new users with a pre-hashed password. This method is intended for internal use,
-     * such as application initialization, where the password hash is already known.
-     *
-     * @param username The username of the user.
-     * @param email The email of the user.
-     * @param passwordHash The pre-hashed password of the user.
-     * @param firstname The first name of the user.
-     * @param lastname The last name of the user.
-     * @param roles The roles to assign to the user.
-     * @param tags The tags to assign to the user.
-     * @return The created UserDTO.
-     * @throws DuplicateUserException If a user with the same username or email already exists.
-     * @throws RuntimeException If an error occurs while sending email confirmation.
-     */
-    @Transactional
-    public UserDTO createAdminUserWithHashedPassword(
-            String username,
-            String email,
-            String salt,
-            String passwordHash,
-            String firstname,
-            String lastname,
-            Set<String> roles,
-            Set<String> tags)
-            throws DuplicateUserException {
-        LOG.infof("Attempting to create new admin user with username: %s", username);
-
-        if (userRepository.findByUsernameOptional(username).isPresent()) {
-            LOG.warnf("Duplicate admin user creation attempt for username: %s", username);
-            throw new DuplicateUserException("User with username " + username + " already exists.");
-        }
-
-        User user =
-                new User(
-                        username,
-                        email,
-                        true,
-                        passwordHash,
-                        salt,
-                        firstname,
-                        lastname,
-                        roles,
-                        tags);
-
-        LOG.debugf(
-                "Admin user object prepared: username=%s, firstname=%s, lastname=%s, roles=%s,"
-                        + " tags=%s",
-                user.getUsername(),
-                user.getFirstname(),
-                user.getLastname(),
-                user.getRoles(),
-                user.getTags());
-
-        userRepository.persist(user);
-        LOG.infof("Admin user %s persisted successfully with ID: %d", user.getUsername(), user.id);
 
         return new UserDTO(user);
     }

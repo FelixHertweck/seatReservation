@@ -17,10 +17,10 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.reservation;
+package de.felixhertweck.seatreservation.reservation.exception;
 
-public class EventNotFoundException extends RuntimeException {
-    public EventNotFoundException(String message) {
+public class SeatAlreadyReservedException extends RuntimeException {
+    public SeatAlreadyReservedException(String message) {
         super(message);
     }
 }

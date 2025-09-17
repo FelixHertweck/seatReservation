@@ -27,13 +27,13 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 
-import de.felixhertweck.seatreservation.security.AuthenticationFailedException;
+import de.felixhertweck.seatreservation.common.exception.DuplicateUserException;
+import de.felixhertweck.seatreservation.common.exception.InvalidUserException;
 import de.felixhertweck.seatreservation.security.dto.LoginRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
+import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
 import de.felixhertweck.seatreservation.security.service.AuthService;
 import de.felixhertweck.seatreservation.security.service.TokenService;
-import de.felixhertweck.seatreservation.userManagment.exceptions.DuplicateUserException;
-import de.felixhertweck.seatreservation.userManagment.exceptions.InvalidUserException;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;

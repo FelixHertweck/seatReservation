@@ -17,10 +17,10 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.reservation;
+package de.felixhertweck.seatreservation.security.exceptions;
 
-public class SeatAlreadyReservedException extends RuntimeException {
-    public SeatAlreadyReservedException(String message) {
+public class AuthenticationFailedException extends RuntimeException {
+    public AuthenticationFailedException(String message) {
         super(message);
     }
 }

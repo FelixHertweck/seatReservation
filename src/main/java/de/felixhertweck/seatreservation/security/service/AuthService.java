@@ -23,14 +23,14 @@ import java.util.Set;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import de.felixhertweck.seatreservation.common.exception.DuplicateUserException;
+import de.felixhertweck.seatreservation.common.exception.InvalidUserException;
+import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
-import de.felixhertweck.seatreservation.security.AuthenticationFailedException;
-import de.felixhertweck.seatreservation.security.Roles;
 import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
+import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
-import de.felixhertweck.seatreservation.userManagment.exceptions.DuplicateUserException;
-import de.felixhertweck.seatreservation.userManagment.exceptions.InvalidUserException;
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import org.jboss.logging.Logger;
