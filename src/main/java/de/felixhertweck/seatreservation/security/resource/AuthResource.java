@@ -51,13 +51,13 @@ public class AuthResource {
     @APIResponse(responseCode = "200", description = "Login successful, JWT cookie set")
     @APIResponse(responseCode = "401", description = "Unauthorized: Invalid credentials")
     public Response login(@Valid LoginRequestDTO loginRequest) {
-        LOG.infof("Received login request for user identifier: %s", loginRequest.getIdentifier());
+        LOG.debugf("Received login request for user identifier: %s", loginRequest.getIdentifier());
         LOG.debugf("LoginRequestDTO: %s", loginRequest.toString());
         String token =
                 authService.authenticate(loginRequest.getIdentifier(), loginRequest.getPassword());
 
         NewCookie jwtCookie = tokenService.createNewJwtCookie(token);
-        LOG.infof("User %s logged in successfully. JWT cookie set.", loginRequest.getIdentifier());
+        LOG.debugf("User %s logged in successfully. JWT cookie set.", loginRequest.getIdentifier());
         return Response.ok().cookie(jwtCookie).build();
     }
 
@@ -68,14 +68,14 @@ public class AuthResource {
             responseCode = "409",
             description = "Conflict: User with this username already exists")
     public Response register(@Valid RegisterRequestDTO registerRequest) {
-        LOG.infof("Received registration request for username: %s", registerRequest.getUsername());
+        LOG.debugf("Received registration request for username: %s", registerRequest.getUsername());
         LOG.debugf("RegisterRequestDTO: %s", registerRequest.toString());
 
         String token = authService.register(registerRequest);
 
         NewCookie jwtCookie = tokenService.createNewJwtCookie(token);
 
-        LOG.infof("User %s registered successfully.", registerRequest.getUsername());
+        LOG.debugf("User %s registered successfully.", registerRequest.getUsername());
 
         return Response.ok().cookie(jwtCookie).build();
     }
@@ -84,7 +84,7 @@ public class AuthResource {
     @Path("/logout")
     @APIResponse(responseCode = "200", description = "Logout successful, JWT cookie cleared")
     public Response logout() {
-        LOG.infof("Received logout request.");
+        LOG.debugf("Received logout request.");
         NewCookie jwtCookie =
                 new NewCookie.Builder("jwt")
                         .value("")
@@ -93,7 +93,7 @@ public class AuthResource {
                         .httpOnly(true)
                         .secure(true)
                         .build();
-        LOG.infof("User logged out successfully. JWT cookie cleared.");
+        LOG.debugf("User logged out successfully. JWT cookie cleared.");
         return Response.ok().cookie(jwtCookie).build();
     }
 }

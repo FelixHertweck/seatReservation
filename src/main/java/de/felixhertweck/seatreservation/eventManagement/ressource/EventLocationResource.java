@@ -68,11 +68,11 @@ public class EventLocationResource {
             responseCode = "403",
             description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
     public List<EventLocationResponseDTO> getEventLocationsByCurrentManager() {
-        LOG.infof("Received GET request to /api/manager/eventlocations");
+        LOG.debugf("Received GET request to /api/manager/eventlocations");
         User currentUser = userSecurityContext.getCurrentUser();
         List<EventLocationResponseDTO> result =
                 eventLocationService.getEventLocationsByCurrentManager(currentUser);
-        LOG.infof(
+        LOG.debugf(
                 "Successfully responded to GET /api/manager/eventlocations with %d event"
                         + " locations.",
                 result.size());
@@ -92,7 +92,7 @@ public class EventLocationResource {
             responseCode = "409",
             description = "Conflict: Event location with this name already exists")
     public EventLocationResponseDTO createEventLocation(@Valid EventLocationRequestDTO dto) {
-        LOG.infof("Received POST request to /api/manager/eventlocations for new event location.");
+        LOG.debugf("Received POST request to /api/manager/eventlocations for new event location.");
         LOG.debugf("EventLocationRequestDTO received: %s", dto.toString());
         User currentUser = userSecurityContext.getCurrentUser();
         EventLocationResponseDTO result =
@@ -119,7 +119,7 @@ public class EventLocationResource {
             description = "Conflict: Event location with this name already exists")
     public EventLocationResponseDTO updateEventLocation(
             @PathParam("id") Long id, @Valid EventLocationRequestDTO dto) {
-        LOG.infof(
+        LOG.debugf(
                 "Received PUT request to /api/manager/eventlocations/%d to update event location.",
                 id);
         LOG.debugf("EventLocationRequestDTO received for ID %d: %s", id, dto.toString());
@@ -142,13 +142,13 @@ public class EventLocationResource {
             responseCode = "404",
             description = "Not Found: Event location with specified ID not found")
     public void deleteEventLocation(@PathParam("id") Long id) {
-        LOG.infof(
+        LOG.debugf(
                 "Received DELETE request to /api/manager/eventlocations/%d to delete event"
                         + " location.",
                 id);
         User currentUser = userSecurityContext.getCurrentUser();
         eventLocationService.deleteEventLocation(id, currentUser);
-        LOG.infof("Event location with ID %d deleted successfully.", id);
+        LOG.debugf("Event location with ID %d deleted successfully.", id);
     }
 
     @POST
@@ -166,14 +166,13 @@ public class EventLocationResource {
             description = "Conflict: Event location with this name already exists")
     public EventLocationResponseDTO createEventLocationWithSeats(
             @Valid ImportEventLocationDto dto) {
-        LOG.infof(
+        LOG.debugf(
                 "Received POST request to /api/manager/eventlocations/register for new event"
                         + " location with seats.");
-        LOG.debugf("EventLocationRegistrationDTO received: %s", dto.toString());
         User currentUser = userSecurityContext.getCurrentUser();
         EventLocationResponseDTO result =
                 eventLocationService.importEventLocation(dto, currentUser);
-        LOG.infof("Event location '%s' with seats created successfully.", result.name());
+        LOG.debugf("Event location '%s' with seats created successfully.", result.name());
         return result;
     }
 
@@ -192,14 +191,13 @@ public class EventLocationResource {
             description = "Not Found: Event location with specified ID not found")
     public EventLocationResponseDTO importSeatsToEventLocation(
             @PathParam("id") Long id, @Valid Set<ImportSeatDto> seats) {
-        LOG.infof(
+        LOG.debugf(
                 "Received POST request to /api/manager/eventlocations/import for new event"
                         + " location with seats.");
-        LOG.debugf("SeatRequestDTO received: %s", seats.toString());
         User currentUser = userSecurityContext.getCurrentUser();
         EventLocationResponseDTO result =
                 eventLocationService.importSeatsToEventLocation(id, seats, currentUser);
-        LOG.infof("Event location '%s' with seats created successfully.", result.name());
+        LOG.debugf("Event location '%s' with seats created successfully.", result.name());
         return result;
     }
 }

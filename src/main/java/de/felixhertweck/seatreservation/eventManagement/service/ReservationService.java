@@ -483,7 +483,7 @@ public class ReservationService {
 
         reservationRepository.persist(newReservations);
 
-        LOG.infof(
+        LOG.debugf(
                 "Successfully blocked %d seats for event ID %d by user: %s (ID: %d)",
                 seats.size(), eventId, currentUser.getUsername(), currentUser.getId());
         return newReservations.stream()

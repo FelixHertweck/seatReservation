@@ -136,7 +136,7 @@ public class SeatService {
                 "Attempting to retrieve seat with ID: %d for manager: %s (ID: %d)",
                 id, manager.getUsername(), manager.getId());
         Seat seat = findSeatEntityById(id, manager); // This already checks for ownership
-        LOG.infof(
+        LOG.debugf(
                 "Successfully retrieved seat with ID %d for manager: %s (ID: %d)",
                 id, manager.getUsername(), manager.getId());
         return new SeatResponseDTO(seat);
