@@ -65,11 +65,10 @@ public class SeatResource {
             description =
                     "Conflict: Seat with this row and number already exists in this event location")
     public SeatResponseDTO createSeat(@Valid SeatRequestDTO seatRequestDTO) {
-        LOG.infof("Received POST request to /api/manager/seats to create a new seat.");
-        LOG.debugf("SeatRequestDTO received: %s", seatRequestDTO.toString());
+        LOG.debugf("Received POST request to /api/manager/seats to create a new seat.");
         User currentUser = userSecurityContext.getCurrentUser();
         SeatResponseDTO result = seatService.createSeatManager(seatRequestDTO, currentUser);
-        LOG.infof(
+        LOG.debugf(
                 "Seat with ID %d created successfully for event location ID %d.",
                 result.id(), result.eventLocationId());
         return result;
@@ -90,10 +89,11 @@ public class SeatResource {
             responseCode = "403",
             description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
     public List<SeatResponseDTO> getAllManagerSeats() {
-        LOG.infof("Received GET request to /api/manager/seats to get all manager seats.");
+        LOG.debugf("Received GET request to /api/manager/seats to get all manager seats.");
         User currentUser = userSecurityContext.getCurrentUser();
         List<SeatResponseDTO> result = seatService.findAllSeatsForManager(currentUser);
-        LOG.infof("Successfully responded to GET /api/manager/seats with %d seats.", result.size());
+        LOG.debugf(
+                "Successfully responded to GET /api/manager/seats with %d seats.", result.size());
         return result;
     }
 
@@ -111,11 +111,11 @@ public class SeatResource {
             responseCode = "404",
             description = "Not Found: Seat with specified ID not found for the current manager")
     public SeatResponseDTO getManagerSeatById(@PathParam("id") Long id) {
-        LOG.infof("Received GET request to /api/manager/seats/%d.", id);
+        LOG.debugf("Received GET request to /api/manager/seats/%d.", id);
         User currentUser = userSecurityContext.getCurrentUser();
         SeatResponseDTO result = seatService.findSeatByIdForManager(id, currentUser);
         if (result != null) {
-            LOG.infof("Successfully retrieved seat with ID %d.", id);
+            LOG.debugf("Successfully retrieved seat with ID %d.", id);
         } else {
             LOG.warnf("Seat with ID %d not found.", id);
         }
@@ -141,11 +141,10 @@ public class SeatResource {
                     "Conflict: Seat with this row and number already exists in this event location")
     public SeatResponseDTO updateManagerSeat(
             @PathParam("id") Long id, @Valid SeatRequestDTO seatUpdateDTO) {
-        LOG.infof("Received PUT request to /api/manager/seats/%d to update seat.", id);
-        LOG.debugf("SeatRequestDTO received for ID %d: %s", id, seatUpdateDTO.toString());
+        LOG.debugf("Received PUT request to /api/manager/seats/%d to update seat.", id);
         User currentUser = userSecurityContext.getCurrentUser();
         SeatResponseDTO result = seatService.updateSeatForManager(id, seatUpdateDTO, currentUser);
-        LOG.infof("Seat with ID %d updated successfully.", id);
+        LOG.debugf("Seat with ID %d updated successfully.", id);
         return result;
     }
 
@@ -161,9 +160,9 @@ public class SeatResource {
             responseCode = "404",
             description = "Not Found: Seat with specified ID not found for the current manager")
     public void deleteManagerSeat(@PathParam("id") Long id) {
-        LOG.infof("Received DELETE request to /api/manager/seats/%d to delete seat.", id);
+        LOG.debugf("Received DELETE request to /api/manager/seats/%d to delete seat.", id);
         User currentUser = userSecurityContext.getCurrentUser();
         seatService.deleteSeatForManager(id, currentUser);
-        LOG.infof("Seat with ID %d deleted successfully.", id);
+        LOG.debugf("Seat with ID %d deleted successfully.", id);
     }
 }

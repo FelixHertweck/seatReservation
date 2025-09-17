@@ -68,7 +68,7 @@ public class ReservationResource {
             description = "Forbidden: Only authenticated users can access this resource")
     public List<ReservationResponseDTO> getMyReservations() {
         User currentUser = userSecurityContext.getCurrentUser();
-        LOG.infof(
+        LOG.debugf(
                 "Received GET request to /api/user/reservations for user: %s",
                 currentUser.getUsername());
         List<ReservationResponseDTO> reservations =
@@ -94,7 +94,7 @@ public class ReservationResource {
             description = "Not Found: Reservation with specified ID not found for the current user")
     public ReservationResponseDTO getMyReservationById(@PathParam("id") Long id) {
         User currentUser = userSecurityContext.getCurrentUser();
-        LOG.infof(
+        LOG.debugf(
                 "Received GET request to /api/user/reservations/%d for user: %s",
                 id, currentUser.getUsername());
         ReservationResponseDTO reservation =
@@ -123,15 +123,12 @@ public class ReservationResource {
             description = "Conflict: Seat already reserved or event booking closed")
     public List<ReservationResponseDTO> createReservation(@Valid ReservationsRequestCreateDTO dto) {
         User currentUser = userSecurityContext.getCurrentUser();
-        LOG.infof(
+        LOG.debugf(
                 "Received POST request to /api/user/reservations for user: %s",
                 currentUser.getUsername());
-        LOG.debugf(
-                "ReservationsRequestCreateDTO received for user %s: %s",
-                currentUser.getUsername(), dto.toString());
         List<ReservationResponseDTO> createdReservations =
                 reservationService.createReservationForUser(dto, currentUser);
-        LOG.infof(
+        LOG.debugf(
                 "Created %d reservations for user: %s",
                 createdReservations.size(), currentUser.getUsername());
         return createdReservations;
@@ -149,11 +146,11 @@ public class ReservationResource {
             description = "Not Found: Reservation with specified ID not found for the current user")
     public void deleteReservation(@PathParam("id") Long id) {
         User currentUser = userSecurityContext.getCurrentUser();
-        LOG.infof(
+        LOG.debugf(
                 "Received DELETE request to /api/user/reservations/%d for user: %s",
                 id, currentUser.getUsername());
         reservationService.deleteReservationForUser(id, currentUser);
-        LOG.infof(
+        LOG.debugf(
                 "Reservation with ID %d deleted successfully for user: %s",
                 id, currentUser.getUsername());
     }
@@ -172,12 +169,12 @@ public class ReservationResource {
     @APIResponse(responseCode = "500", description = "Internal Server Error during CSV export")
     public Response exportReservationsToCsv(@PathParam("eventId") Long eventId) {
         User currentUser = userSecurityContext.getCurrentUser();
-        LOG.infof(
+        LOG.debugf(
                 "Received GET request to /api/user/reservations/export/%d/csv for user: %s",
                 eventId, currentUser.getUsername());
         try {
             byte[] csvData = reservationService.exportReservationsToCsv(eventId, currentUser);
-            LOG.infof(
+            LOG.debugf(
                     "Successfully exported CSV for event ID %d for user: %s",
                     eventId, currentUser.getUsername());
             return Response.ok(csvData)
@@ -190,7 +187,7 @@ public class ReservationResource {
                     "User %s (ID: %d) attempted unauthorized CSV export for event ID %d: %s",
                     currentUser.getUsername(), currentUser.getId(), eventId, e.getMessage());
             return Response.status(Response.Status.FORBIDDEN).entity(e.getMessage()).build();
-        } catch (de.felixhertweck.seatreservation.reservation.EventNotFoundException e) {
+        } catch (EventNotFoundException e) {
             LOG.warnf(
                     "Event ID %d not found for CSV export requested by user %s (ID: %d): %s",
                     eventId, currentUser.getUsername(), currentUser.getId(), e.getMessage());

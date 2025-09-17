@@ -291,7 +291,7 @@ public class EventService {
                     manager.getUsername(), manager.getId(), id);
             throw new SecurityException("User is not authorized to view this event");
         }
-        LOG.infof(
+        LOG.debugf(
                 "Successfully retrieved event with ID %d for manager: %s (ID: %d)",
                 id, manager.getUsername(), manager.getId());
         return new DetailedEventResponseDTO(event);

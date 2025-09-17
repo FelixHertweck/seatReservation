@@ -67,11 +67,11 @@ public class ReservationResource {
             responseCode = "403",
             description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
     public List<DetailedReservationResponseDTO> getAllReservations() {
-        LOG.infof("Received GET request to /api/manager/reservations to get all reservations.");
+        LOG.debugf("Received GET request to /api/manager/reservations to get all reservations.");
         User currentUser = userSecurityContext.getCurrentUser();
         List<DetailedReservationResponseDTO> result =
                 reservationService.findAllReservations(currentUser);
-        LOG.infof(
+        LOG.debugf(
                 "Successfully responded to GET /api/manager/reservations with %d reservations.",
                 result.size());
         return result;
@@ -95,12 +95,12 @@ public class ReservationResource {
             description =
                     "Not Found: Reservation with specified ID not found for the current manager")
     public DetailedReservationResponseDTO getReservationById(@PathParam("id") Long id) {
-        LOG.infof("Received GET request to /api/manager/reservations/%d.", id);
+        LOG.debugf("Received GET request to /api/manager/reservations/%d.", id);
         User currentUser = userSecurityContext.getCurrentUser();
         DetailedReservationResponseDTO result =
                 reservationService.findReservationById(id, currentUser);
         if (result != null) {
-            LOG.infof("Successfully retrieved reservation with ID %d.", id);
+            LOG.debugf("Successfully retrieved reservation with ID %d.", id);
         } else {
             LOG.warnf("Reservation with ID %d not found.", id);
         }
@@ -127,11 +127,11 @@ public class ReservationResource {
             description = "Not Found: Event with specified ID not found for the current manager")
     public List<DetailedReservationResponseDTO> getReservationsByEventId(
             @PathParam("id") Long eventId) {
-        LOG.infof("Received GET request to /api/manager/reservations/event/%d.", eventId);
+        LOG.debugf("Received GET request to /api/manager/reservations/event/%d.", eventId);
         User currentUser = userSecurityContext.getCurrentUser();
         List<DetailedReservationResponseDTO> result =
                 reservationService.findReservationsByEventId(eventId, currentUser);
-        LOG.infof(
+        LOG.debugf(
                 "Successfully retrieved %d reservations for event ID %d.", result.size(), eventId);
         return result;
     }
@@ -156,12 +156,12 @@ public class ReservationResource {
             description = "Conflict: Seat already reserved or event booking closed")
     public Set<DetailedReservationResponseDTO> createReservations(
             @Valid ReservationRequestDTO dto) {
-        LOG.infof("Received POST request to /api/manager/reservations to create new reservations.");
-        LOG.debugf("ReservationRequestDTO received: %s", dto.toString());
+        LOG.debugf(
+                "Received POST request to /api/manager/reservations to create new reservations.");
         User currentUser = userSecurityContext.getCurrentUser();
         Set<DetailedReservationResponseDTO> results =
                 reservationService.createReservations(dto, currentUser);
-        LOG.infof(
+        LOG.debugf(
                 "Reservations created successfully for seat IDs %s and user ID %d.",
                 dto.getSeatIds(), dto.getUserId());
         return results;
@@ -179,12 +179,12 @@ public class ReservationResource {
             description =
                     "Not Found: Reservation with specified ID not found for the current manager")
     public void deleteReservation(@PathParam("id") Long id) {
-        LOG.infof(
+        LOG.debugf(
                 "Received DELETE request to /api/manager/reservations/%d to delete reservation.",
                 id);
         User currentUser = userSecurityContext.getCurrentUser();
         reservationService.deleteReservation(id, currentUser);
-        LOG.infof("Reservation with ID %d deleted successfully.", id);
+        LOG.debugf("Reservation with ID %d deleted successfully.", id);
     }
 
     @POST
@@ -205,15 +205,14 @@ public class ReservationResource {
     @APIResponse(responseCode = "404", description = "Not Found: Event or seat not found")
     @APIResponse(responseCode = "409", description = "Conflict: Seat already blocked")
     public Set<DetailedReservationResponseDTO> blockSeats(@Valid BlockSeatsRequestDTO dto) {
-        LOG.infof(
+        LOG.debugf(
                 "Received POST request to /api/manager/reservations/block to block seats for event"
                         + " ID %d.",
                 dto.getEventId());
-        LOG.debugf("BlockSeatsRequestDTO received: %s", dto.toString());
         User currentUser = userSecurityContext.getCurrentUser();
         Set<DetailedReservationResponseDTO> results =
                 reservationService.blockSeats(dto.getEventId(), dto.getSeatIds(), currentUser);
-        LOG.infof("Seats blocked successfully for event ID %d.", dto.getEventId());
+        LOG.debugf("Seats blocked successfully for event ID %d.", dto.getEventId());
         return results;
     }
 }

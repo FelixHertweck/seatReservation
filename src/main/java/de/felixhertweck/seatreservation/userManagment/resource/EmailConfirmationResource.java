@@ -67,8 +67,7 @@ public class EmailConfirmationResource {
     public Response confirmEmail(@QueryParam("id") Long id, @QueryParam("token") String token) {
         String email;
         try {
-            LOG.infof("Received GET request to /api/user/confirm-email with ID: %d", id);
-            LOG.debugf("Attempting to confirm email with ID: %d and token: %s", id, token);
+            LOG.debugf("Received GET request to /api/user/confirm-email with ID: %d", id);
             email = userService.verifyEmail(id, token);
             LOG.infof("Email for ID %d confirmed successfully: %s", id, email);
             return Response.ok(getSuccessHtml(email)).build();
@@ -121,7 +120,7 @@ public class EmailConfirmationResource {
     public Response resendEmailConfirmation() {
         String username = securityContext.getUserPrincipal().getName();
         try {
-            LOG.infof(
+            LOG.debugf(
                     "Received POST request to /api/user/resend-email-confirmation for user: %s",
                     username);
             userService.resendEmailConfirmation(username);

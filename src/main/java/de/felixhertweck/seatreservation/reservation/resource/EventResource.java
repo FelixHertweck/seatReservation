@@ -64,7 +64,7 @@ public class EventResource {
             description = "Forbidden: Only authenticated users can access this resource")
     public List<EventResponseDTO> getEvents() {
         String username = securityIdentity.getPrincipal().getName();
-        LOG.infof("Received GET request to /api/user/events for user: %s", username);
+        LOG.debugf("Received GET request to /api/user/events for user: %s", username);
         List<EventResponseDTO> events = eventService.getEventsForCurrentUser(username);
         LOG.debugf("Returning %d events for user: %s", events.size(), username);
         return events;

@@ -400,7 +400,7 @@ public class ReservationService {
             writer.flush();
         }
 
-        LOG.infof(
+        LOG.debugf(
                 "Successfully exported %d reservations for event ID %d to CSV by user: %s (ID: %d)",
                 reservations.size(), eventId, currentUser.getUsername(), currentUser.getId());
         return baos.toByteArray();

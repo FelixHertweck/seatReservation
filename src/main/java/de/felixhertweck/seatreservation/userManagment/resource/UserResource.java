@@ -65,7 +65,7 @@ public class UserResource {
             responseCode = "403",
             description = "Forbidden: Only ADMIN role can access this resource")
     public Set<UserDTO> importUsers(@Valid Set<AdminUserCreationDto> userCreationDTOs) {
-        LOG.infof(
+        LOG.debugf(
                 "Received POST request to /api/users/admin/import for %d users.",
                 userCreationDTOs.size());
         Set<UserDTO> importedUsers = userService.importUsers(userCreationDTOs);
@@ -84,14 +84,13 @@ public class UserResource {
             responseCode = "409",
             description = "Conflict: User with this username already exists")
     public UserDTO createUser(@Valid AdminUserCreationDto userCreationDTO) {
-        LOG.infof(
+        LOG.debugf(
                 "Received POST request to /api/users/admin for user: %s",
                 userCreationDTO.getUsername());
-        LOG.debugf("UserCreationDTO received: %s", userCreationDTO.toString());
         UserDTO createdUser =
                 userService.createUser(
                         new UserCreationDTO(userCreationDTO), userCreationDTO.getRoles());
-        LOG.infof("User %s created successfully by admin.", createdUser.username());
+        LOG.debugf("User %s created successfully by admin.", createdUser.username());
         return createdUser;
     }
 
@@ -108,10 +107,9 @@ public class UserResource {
             responseCode = "409",
             description = "Conflict: User with this username already exists")
     public UserDTO updateUser(@PathParam("id") Long id, @Valid AdminUserUpdateDTO user) {
-        LOG.infof("Received PUT request to /api/users/admin/%d for user update.", id);
-        LOG.debugf("AdminUserUpdateDTO received for ID %d: %s", id, user.toString());
+        LOG.debugf("Received PUT request to /api/users/admin/%d for user update.", id);
         UserDTO updatedUser = userService.updateUser(id, user);
-        LOG.infof("User with ID %d updated successfully by admin.", id);
+        LOG.debugf("User with ID %d updated successfully by admin.", id);
         return updatedUser;
     }
 
@@ -125,9 +123,9 @@ public class UserResource {
             description = "Forbidden: Only ADMIN role can access this resource")
     @APIResponse(responseCode = "404", description = "Not Found: User with specified ID not found")
     public void deleteUser(@PathParam("id") Long id) {
-        LOG.infof("Received DELETE request to /api/users/admin/%d for user deletion.", id);
+        LOG.debugf("Received DELETE request to /api/users/admin/%d for user deletion.", id);
         userService.deleteUser(id);
-        LOG.infof("User with ID %d deleted successfully by admin.", id);
+        LOG.debugf("User with ID %d deleted successfully by admin.", id);
     }
 
     @GET
@@ -141,7 +139,7 @@ public class UserResource {
             responseCode = "403",
             description = "Forbidden: Only ADMIN or MANAGER roles can access this resource")
     public List<LimitedUserInfoDTO> getAllUsers() {
-        LOG.infof("Received GET request to /api/users/manager to get all users (limited info).");
+        LOG.debugf("Received GET request to /api/users/manager to get all users (limited info).");
         List<LimitedUserInfoDTO> users = userService.getAllUsers();
         LOG.debugf("Returning %d limited user info DTOs.", users.size());
         return users;
@@ -158,7 +156,7 @@ public class UserResource {
             responseCode = "403",
             description = "Forbidden: Only authenticated users can access this resource")
     public List<String> availableRoles() {
-        LOG.infof("Received GET request to /api/users/roles to get available roles.");
+        LOG.debugf("Received GET request to /api/users/roles to get available roles.");
         List<String> roles = userService.getAvailableRoles();
         LOG.debugf("Returning %d available roles.", roles.size());
         return roles;
@@ -175,7 +173,7 @@ public class UserResource {
             responseCode = "403",
             description = "Forbidden: Only ADMIN role can access this resource")
     public List<UserDTO> getAllUsersAsAdmin() {
-        LOG.infof("Received GET request to /api/users/admin to get all users (admin view).");
+        LOG.debugf("Received GET request to /api/users/admin to get all users (admin view).");
         List<UserDTO> users = userService.getUsersAsAdmin();
         LOG.debugf("Returning %d user DTOs for admin view.", users.size());
         return users;
@@ -194,12 +192,10 @@ public class UserResource {
             description = "Conflict: User with this username already exists")
     public UserDTO updateCurrentUserProfile(@Valid UserProfileUpdateDTO userProfileUpdateDTO) {
         String username = securityContext.getUserPrincipal().getName();
-        LOG.infof("Received PUT request to /api/users/me to update profile for user: %s", username);
         LOG.debugf(
-                "UserProfileUpdateDTO received for %s: %s",
-                username, userProfileUpdateDTO.toString());
+                "Received PUT request to /api/users/me to update profile for user: %s", username);
         UserDTO updatedUser = userService.updateUserProfile(username, userProfileUpdateDTO);
-        LOG.infof("User profile for %s updated successfully.", username);
+        LOG.debugf("User profile for %s updated successfully.", username);
         return updatedUser;
     }
 
@@ -213,7 +209,7 @@ public class UserResource {
             description = "Forbidden: Only authenticated users can access this resource")
     public UserDTO getCurrentUser() {
         String username = securityContext.getUserPrincipal().getName();
-        LOG.infof("Received GET request to /api/users/me for current user: %s", username);
+        LOG.debugf("Received GET request to /api/users/me for current user: %s", username);
         UserDTO currentUser = new UserDTO(userSecurityContext.getCurrentUser());
         LOG.debugf("Returning current user DTO for %s.", username);
         return currentUser;

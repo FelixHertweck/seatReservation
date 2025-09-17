@@ -64,11 +64,10 @@ public class EventResource {
             responseCode = "409",
             description = "Conflict: Event with this name already exists in this event location")
     public DetailedEventResponseDTO createEvent(@Valid EventRequestDTO dto) {
-        LOG.infof("Received POST request to /api/manager/events to create a new event.");
-        LOG.debugf("EventRequestDTO received: %s", dto.toString());
+        LOG.debugf("Received POST request to /api/manager/events to create a new event.");
         User currentUser = userSecurityContext.getCurrentUser();
         DetailedEventResponseDTO result = eventService.createEvent(dto, currentUser);
-        LOG.infof("Event '%s' created successfully with ID %d.", result.name(), result.id());
+        LOG.debugf("Event '%s' created successfully with ID %d.", result.name(), result.id());
         return result;
     }
 
@@ -88,11 +87,10 @@ public class EventResource {
             description = "Conflict: Event with this name already exists in this event location")
     public DetailedEventResponseDTO updateEvent(
             @PathParam("id") Long id, @Valid EventRequestDTO dto) {
-        LOG.infof("Received PUT request to /api/manager/events/%d to update event.", id);
-        LOG.debugf("EventRequestDTO received for ID %d: %s", id, dto.toString());
+        LOG.debugf("Received PUT request to /api/manager/events/%d to update event.", id);
         User currentUser = userSecurityContext.getCurrentUser();
         DetailedEventResponseDTO result = eventService.updateEvent(id, dto, currentUser);
-        LOG.infof("Event with ID %d updated successfully.", id);
+        LOG.debugf("Event with ID %d updated successfully.", id);
         return result;
     }
 
@@ -111,10 +109,10 @@ public class EventResource {
             responseCode = "403",
             description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
     public List<DetailedEventResponseDTO> getEventsByCurrentManager() {
-        LOG.infof("Received GET request to /api/manager/events to get events by current manager.");
+        LOG.debugf("Received GET request to /api/manager/events to get events by current manager.");
         User currentUser = userSecurityContext.getCurrentUser();
         List<DetailedEventResponseDTO> result = eventService.getEventsByCurrentManager(currentUser);
-        LOG.infof(
+        LOG.debugf(
                 "Successfully responded to GET /api/manager/events with %d events.", result.size());
         return result;
     }
@@ -133,11 +131,11 @@ public class EventResource {
             responseCode = "404",
             description = "Not Found: Event with specified ID not found for the current manager")
     public DetailedEventResponseDTO getEventById(@PathParam("id") Long id) {
-        LOG.infof("Received GET request to /api/manager/events/%d.", id);
+        LOG.debugf("Received GET request to /api/manager/events/%d.", id);
         User currentUser = userSecurityContext.getCurrentUser();
         DetailedEventResponseDTO result = eventService.getEventByIdForManager(id, currentUser);
         if (result != null) {
-            LOG.infof("Successfully retrieved event with ID %d.", id);
+            LOG.debugf("Successfully retrieved event with ID %d.", id);
         } else {
             LOG.warnf("Event with ID %d not found.", id);
         }
@@ -155,9 +153,9 @@ public class EventResource {
             responseCode = "404",
             description = "Not Found: Event with specified ID not found for the current manager")
     public void deleteEvent(@PathParam("id") Long id) {
-        LOG.infof("Received DELETE request to /api/manager/events/%d to delete event.", id);
+        LOG.debugf("Received DELETE request to /api/manager/events/%d to delete event.", id);
         User currentUser = userSecurityContext.getCurrentUser();
         eventService.deleteEvent(id, currentUser);
-        LOG.infof("Event with ID %d deleted successfully.", id);
+        LOG.debugf("Event with ID %d deleted successfully.", id);
     }
 }

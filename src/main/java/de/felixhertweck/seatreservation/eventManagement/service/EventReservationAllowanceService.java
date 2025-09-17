@@ -203,7 +203,7 @@ public class EventReservationAllowanceService {
                     manager.getUsername(), manager.getId(), id);
             throw new SecurityException("User is not authorized to view this allowance");
         }
-        LOG.infof(
+        LOG.debugf(
                 "Successfully retrieved reservation allowance with ID %d for manager: %s (ID: %d)",
                 id, manager.getUsername(), manager.getId());
         return new EventUserAllowancesDto(allowance);
