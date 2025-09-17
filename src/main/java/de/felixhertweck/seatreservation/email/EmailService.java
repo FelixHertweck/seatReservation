@@ -200,6 +200,13 @@ public class EmailService {
      */
     public void sendReservationConfirmation(User user, List<Reservation> reservations)
             throws IOException {
+        if (skipForNullOrEmptyAdress(user.getEmail())) {
+            return;
+        }
+        if (skipForLocalhostAdress(user.getEmail())) {
+            return;
+        }
+
         LOG.infof("Attempting to send reservation confirmation to user: %s", user.getEmail());
         LOG.debug(
                 String.format(
@@ -293,6 +300,13 @@ public class EmailService {
     public void sendUpdateReservationConfirmation(
             User user, List<Reservation> deletedReservations, List<Reservation> activeReservations)
             throws IOException {
+        if (skipForNullOrEmptyAdress(user.getEmail())) {
+            return;
+        }
+        if (skipForLocalhostAdress(user.getEmail())) {
+            return;
+        }
+
         LOG.infof(
                 "Attempting to send update reservation confirmation to user: %s", user.getEmail());
         LOG.debug(
@@ -320,20 +334,13 @@ public class EmailService {
                 "Retrieved %d total seats and %d user reservations for event %s.",
                 allSeats.size(), activeReservations.size(), eventName);
 
-        Set<String> newSeatNumbers =
-                activeReservations.stream()
-                        .map(r -> r.getSeat().getSeatNumber())
-                        .collect(Collectors.toSet());
-        LOG.debugf("New seat numbers for confirmation: %s", newSeatNumbers);
-
         Set<String> existingSeatNumbers =
                 activeReservations.stream()
                         .map(r -> r.getSeat().getSeatNumber())
                         .collect(Collectors.toSet());
-        existingSeatNumbers.removeAll(newSeatNumbers); // Keep only previously reserved seats
         LOG.debugf("Existing seat numbers (excluding new ones): %s", existingSeatNumbers);
 
-        String svgContent = SvgRenderer.renderSeats(allSeats, newSeatNumbers, existingSeatNumbers);
+        String svgContent = SvgRenderer.renderSeats(allSeats, Set.of(), existingSeatNumbers);
         LOG.debug("SVG content for seat map generated.");
 
         StringBuilder activeSeatListHtml = new StringBuilder();
@@ -394,6 +401,13 @@ public class EmailService {
      * @throws IOException if the email template cannot be read
      */
     public void sendPasswordChangedNotification(User user) throws IOException {
+        if (skipForNullOrEmptyAdress(user.getEmail())) {
+            return;
+        }
+        if (skipForLocalhostAdress(user.getEmail())) {
+            return;
+        }
+
         LOG.infof("Attempting to send password changed notification to user: %s", user.getEmail());
         LOG.debugf("User ID: %d, Username: %s", user.id, user.getUsername());
 
@@ -432,6 +446,13 @@ public class EmailService {
      */
     public void sendEventReminder(User user, Event event, List<Reservation> reservations)
             throws IOException {
+        if (skipForNullOrEmptyAdress(user.getEmail())) {
+            return;
+        }
+        if (skipForLocalhostAdress(user.getEmail())) {
+            return;
+        }
+
         LOG.infof(
                 "Attempting to send event reminder to user: %s for event: %s",
                 user.getEmail(), event.getName());
@@ -492,6 +513,12 @@ public class EmailService {
      * @throws IOException if the email template cannot be read or CSV export fails
      */
     public void sendEventReservationsCsvToManager(User manager, Event event) throws IOException {
+        if (skipForNullOrEmptyAdress(manager.getEmail())) {
+            return;
+        }
+        if (skipForLocalhostAdress(manager.getEmail())) {
+            return;
+        }
         LOG.infof(
                 "Attempting to send reservation CSV export to manager: %s for event: %s",
                 manager.getEmail(), event.getName());
@@ -545,5 +572,21 @@ public class EmailService {
                     manager.id,
                     event.id);
         }
+    }
+
+    private boolean skipForNullOrEmptyAdress(String address) {
+        if (address == null || address.isEmpty()) {
+            Log.warn("Skipping email sending for null or empty address.");
+            return true;
+        }
+        return false;
+    }
+
+    private boolean skipForLocalhostAdress(String address) {
+        if (address.endsWith("@localhost")) {
+            LOG.infof("Skipping email sending for localhost address: %s", address);
+            return true;
+        }
+        return false;
     }
 }
