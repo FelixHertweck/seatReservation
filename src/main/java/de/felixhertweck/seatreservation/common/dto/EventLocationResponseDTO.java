@@ -21,10 +21,13 @@ package de.felixhertweck.seatreservation.common.dto;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
+import de.felixhertweck.seatreservation.model.entity.Seat;
 
 public record EventLocationResponseDTO(
         Long id,
@@ -46,19 +49,30 @@ public record EventLocationResponseDTO(
                 eventLocation.getManager() != null
                         ? new LimitedUserInfoDTO(eventLocation.getManager())
                         : null,
-                eventLocation.getSeats() != null
-                        ? eventLocation.getSeats().stream()
-                                .map(
-                                        seat -> {
-                                            ReservationStatus status =
-                                                    reservations.stream()
-                                                            .filter(r -> r.getSeat().equals(seat))
-                                                            .findFirst()
-                                                            .map(Reservation::getStatus)
-                                                            .orElse(null);
-                                            return new SeatDTO(seat, status);
-                                        })
-                                .toList()
-                        : List.of());
+                createSeatDTOs(eventLocation.getSeats(), reservations));
+    }
+
+    private static List<SeatDTO> createSeatDTOs(List<Seat> seats, List<Reservation> reservations) {
+        if (seats == null) {
+            return List.of();
+        }
+
+        // If no reservations are provided, return seats with null reservation status
+        if (reservations == null) {
+            return seats.stream().map(seat -> new SeatDTO(seat, null)).toList();
+        }
+
+        Map<Long, ReservationStatus> reservationStatusMap =
+                reservations.stream()
+                        .filter(r -> r.getSeat() != null)
+                        .collect(
+                                Collectors.toMap(
+                                        r -> r.getSeat().getId(),
+                                        Reservation::getStatus,
+                                        (existing, replacement) -> existing));
+
+        return seats.stream()
+                .map(seat -> new SeatDTO(seat, reservationStatusMap.get(seat.getId())))
+                .toList();
     }
 }
