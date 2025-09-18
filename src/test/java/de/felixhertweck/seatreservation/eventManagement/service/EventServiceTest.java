@@ -134,7 +134,7 @@ public class EventServiceTest {
 
     @Test
     void createEvent_Success() {
-        when(eventLocationRepository.findByIdWithRelations(eq(1L)))
+        when(eventLocationRepository.findByIdWithManager(eq(1L)))
                 .thenReturn(Optional.of(eventLocation));
         doAnswer(
                         invocation -> {

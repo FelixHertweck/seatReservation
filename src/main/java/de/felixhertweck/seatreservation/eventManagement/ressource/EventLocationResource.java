@@ -32,6 +32,8 @@ import de.felixhertweck.seatreservation.eventManagement.dto.EventLocationRespons
 import de.felixhertweck.seatreservation.eventManagement.dto.ImportEventLocationDto;
 import de.felixhertweck.seatreservation.eventManagement.dto.ImportSeatDto;
 import de.felixhertweck.seatreservation.eventManagement.service.EventLocationService;
+import de.felixhertweck.seatreservation.eventManagement.service.EventLocationService.InnerSeatInput;
+import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
@@ -70,13 +72,13 @@ public class EventLocationResource {
     public List<EventLocationResponseDTO> getEventLocationsByCurrentManager() {
         LOG.debugf("Received GET request to /api/manager/eventlocations");
         User currentUser = userSecurityContext.getCurrentUser();
-        List<EventLocationResponseDTO> result =
+        List<EventLocation> result =
                 eventLocationService.getEventLocationsByCurrentManager(currentUser);
         LOG.debugf(
                 "Successfully responded to GET /api/manager/eventlocations with %d event"
                         + " locations.",
                 result.size());
-        return result;
+        return result.stream().map(EventLocationResponseDTO::toDTO).toList();
     }
 
     @POST
@@ -95,10 +97,11 @@ public class EventLocationResource {
         LOG.debugf("Received POST request to /api/manager/eventlocations for new event location.");
         LOG.debugf("EventLocationRequestDTO received: %s", dto.toString());
         User currentUser = userSecurityContext.getCurrentUser();
-        EventLocationResponseDTO result =
-                eventLocationService.createEventLocation(dto, currentUser);
-        LOG.infof("Event location '%s' created successfully.", result.name());
-        return result;
+        EventLocation result =
+                eventLocationService.createEventLocation(
+                        dto.getName(), dto.getAddress(), dto.getCapacity(), currentUser);
+        LOG.infof("Event location '%s' created successfully.", result.getName());
+        return EventLocationResponseDTO.toDTO(result);
     }
 
     @PUT
@@ -124,10 +127,11 @@ public class EventLocationResource {
                 id);
         LOG.debugf("EventLocationRequestDTO received for ID %d: %s", id, dto.toString());
         User currentUser = userSecurityContext.getCurrentUser();
-        EventLocationResponseDTO result =
-                eventLocationService.updateEventLocation(id, dto, currentUser);
+        EventLocation result =
+                eventLocationService.updateEventLocation(
+                        id, dto.getName(), dto.getAddress(), dto.getCapacity(), currentUser);
         LOG.infof("Event location with ID %d updated successfully.", id);
-        return result;
+        return EventLocationResponseDTO.toDTO(result);
     }
 
     @DELETE
@@ -170,10 +174,23 @@ public class EventLocationResource {
                 "Received POST request to /api/manager/eventlocations/register for new event"
                         + " location with seats.");
         User currentUser = userSecurityContext.getCurrentUser();
-        EventLocationResponseDTO result =
-                eventLocationService.importEventLocation(dto, currentUser);
-        LOG.debugf("Event location '%s' with seats created successfully.", result.name());
-        return result;
+
+        EventLocation result =
+                eventLocationService.importEventLocation(
+                        dto.getName(),
+                        dto.getAddress(),
+                        dto.getCapacity(),
+                        dto.getSeats().stream()
+                                .map(
+                                        s ->
+                                                new InnerSeatInput(
+                                                        s.getSeatNumber(),
+                                                        s.getxCoordinate(),
+                                                        s.getyCoordinate()))
+                                .toList(),
+                        currentUser);
+        LOG.debugf("Event location '%s' with seats created successfully.", result.getName());
+        return EventLocationResponseDTO.toDTO(result);
     }
 
     @POST
@@ -195,9 +212,20 @@ public class EventLocationResource {
                 "Received POST request to /api/manager/eventlocations/import for new event"
                         + " location with seats.");
         User currentUser = userSecurityContext.getCurrentUser();
-        EventLocationResponseDTO result =
-                eventLocationService.importSeatsToEventLocation(id, seats, currentUser);
-        LOG.debugf("Event location '%s' with seats created successfully.", result.name());
-        return result;
+
+        EventLocation result =
+                eventLocationService.importSeatsToEventLocation(
+                        id,
+                        seats.stream()
+                                .map(
+                                        s ->
+                                                new InnerSeatInput(
+                                                        s.getSeatNumber(),
+                                                        s.getxCoordinate(),
+                                                        s.getyCoordinate()))
+                                .toList(),
+                        currentUser);
+        LOG.debugf("Event location '%s' with seats created successfully.", result.getName());
+        return EventLocationResponseDTO.toDTO(result);
     }
 }

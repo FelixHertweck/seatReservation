@@ -21,16 +21,11 @@ package de.felixhertweck.seatreservation.eventManagement.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
-import de.felixhertweck.seatreservation.eventManagement.dto.EventLocationRequestDTO;
-import de.felixhertweck.seatreservation.eventManagement.dto.EventLocationResponseDTO;
-import de.felixhertweck.seatreservation.eventManagement.dto.ImportEventLocationDto;
-import de.felixhertweck.seatreservation.eventManagement.dto.ImportSeatDto;
 import de.felixhertweck.seatreservation.eventManagement.exception.EventLocationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.Roles;
@@ -55,25 +50,23 @@ public class EventLocationService {
      *
      * @return A list of DTOs representing the EventLocations.
      */
-    public List<EventLocationResponseDTO> getEventLocationsByCurrentManager(User manager) {
+    public List<EventLocation> getEventLocationsByCurrentManager(User manager) {
         LOG.debugf(
                 "Attempting to retrieve event locations for manager: %s (ID: %d)",
                 manager.getUsername(), manager.getId());
         List<EventLocation> eventLocations;
         if (manager.getRoles().contains(Roles.ADMIN)) {
             LOG.debug("User is ADMIN, listing all event locations.");
-            eventLocations = eventLocationRepository.listAll();
+            eventLocations = eventLocationRepository.findAllWithManagerSeats();
         } else {
             LOG.debugf(
                     "User is MANAGER, listing event locations for manager ID: %d", manager.getId());
-            eventLocations = eventLocationRepository.findByManager(manager);
+            eventLocations = eventLocationRepository.findByManagerWithManagerSeats(manager);
         }
         LOG.infof(
                 "Retrieved %d event locations for manager: %s (ID: %d)",
                 eventLocations.size(), manager.getUsername(), manager.getId());
-        return eventLocations.stream()
-                .map(EventLocationResponseDTO::toDTO)
-                .collect(Collectors.toList());
+        return eventLocations;
     }
 
     /**
@@ -83,35 +76,30 @@ public class EventLocationService {
      * @return A DTO representing the newly created EventLocation.
      */
     @Transactional
-    public EventLocationResponseDTO createEventLocation(EventLocationRequestDTO dto, User manager)
+    public EventLocation createEventLocation(
+            String name, String address, int capacity, User manager)
             throws IllegalArgumentException {
         LOG.debugf(
                 "Attempting to create event location with name: %s, address: %s, capacity: %d for"
                         + " manager: %s (ID: %d)",
-                dto.getName(),
-                dto.getAddress(),
-                dto.getCapacity(),
-                manager.getUsername(),
-                manager.getId());
-        if (dto.getName() == null
-                || dto.getName().trim().isEmpty()
-                || dto.getAddress() == null
-                || dto.getAddress().trim().isEmpty()
-                || dto.getCapacity() == null
-                || dto.getCapacity() <= 0) {
+                name, address, capacity, manager.getUsername(), manager.getId());
+        if (name == null
+                || name.trim().isEmpty()
+                || address == null
+                || address.trim().isEmpty()
+                || capacity <= 0) {
             LOG.warnf(
                     "Invalid EventLocation data provided by manager: %s (ID: %d)",
                     manager.getUsername(), manager.getId());
             throw new IllegalArgumentException("Invalid EventLocation data provided.");
         }
 
-        EventLocation location =
-                new EventLocation(dto.getName(), dto.getAddress(), manager, dto.getCapacity());
+        EventLocation location = new EventLocation(name, address, manager, capacity);
         eventLocationRepository.persist(location);
         LOG.infof(
                 "Event location '%s' (ID: %d) created successfully by manager: %s (ID: %d)",
                 location.getName(), location.getId(), manager.getUsername(), manager.getId());
-        return EventLocationResponseDTO.toDTO(location);
+        return location;
     }
 
     /**
@@ -125,15 +113,15 @@ public class EventLocationService {
      * @throws SecurityException If the user is not authorized to update the EventLocation.
      */
     @Transactional
-    public EventLocationResponseDTO updateEventLocation(
-            Long id, EventLocationRequestDTO dto, User manager)
+    public EventLocation updateEventLocation(
+            Long id, String name, String address, int capacity, User manager)
             throws IllegalArgumentException, SecurityException {
         LOG.debugf(
                 "Attempting to update event location with ID: %d for manager: %s (ID: %d)",
                 id, manager.getUsername(), manager.getId());
         EventLocation location =
                 eventLocationRepository
-                        .findByIdOptional(id)
+                        .findByIdWithManagerSeats(id)
                         .orElseThrow(
                                 () -> {
                                     LOG.warnf(
@@ -157,19 +145,19 @@ public class EventLocationService {
                         + " capacity='%d' -> '%d'",
                 id,
                 location.getName(),
-                dto.getName(),
+                name,
                 location.getAddress(),
-                dto.getAddress(),
+                address,
                 location.getCapacity(),
-                dto.getCapacity());
-        location.setName(dto.getName());
-        location.setAddress(dto.getAddress());
-        location.setCapacity(dto.getCapacity());
+                capacity);
+        location.setName(name);
+        location.setAddress(address);
+        location.setCapacity(capacity);
         eventLocationRepository.persist(location);
         LOG.infof(
                 "Event location '%s' (ID: %d) updated successfully by manager: %s (ID: %d)",
                 location.getName(), location.getId(), manager.getUsername(), manager.getId());
-        return EventLocationResponseDTO.toDTO(location);
+        return location;
     }
 
     /**
@@ -218,36 +206,42 @@ public class EventLocationService {
      * EventLocation and optionally imports associated seats in a single transaction. The
      * authenticated user will be assigned as the manager of the new EventLocation.
      *
-     * @param dto The ImportEventLocationDto containing the EventLocation details and optional seat
-     *     data.
+     * @param name The name of the EventLocation to be imported.
+     * @param address The address of the EventLocation to be imported.
+     * @param capacity The capacity of the EventLocation to be imported.
+     * @param seats A list of InnerSeatInput objects containing the seat details to be imported
      * @param manager The currently authenticated user who will become the manager of the
      *     EventLocation.
      * @return A DTO representing the newly imported EventLocation with its seats.
      */
     @Transactional
-    public EventLocationResponseDTO importEventLocation(ImportEventLocationDto dto, User manager) {
+    public EventLocation importEventLocation(
+            String name,
+            String address,
+            int capacity,
+            List<InnerSeatInput> inputSeats,
+            User manager) {
         LOG.debugf(
                 "Importing event location: %s by manager: %s (ID: %d)",
-                dto, manager.getUsername(), manager.getId());
+                name, manager.getUsername(), manager.getId());
 
         EventLocation location = new EventLocation();
-        location.setName(dto.getName());
-        location.setAddress(dto.getAddress());
-        location.setCapacity(dto.getCapacity());
+        location.setName(name);
+        location.setAddress(address);
+        location.setCapacity(capacity);
         location.setManager(manager);
 
         eventLocationRepository.persist(location);
 
-        List<ImportSeatDto> seatDtos = dto.getSeats();
-        if (seatDtos != null) {
+        if (inputSeats != null) {
             List<Seat> seats =
-                    seatDtos.stream()
+                    inputSeats.stream()
                             .map(
                                     seatDto -> {
                                         Seat seat = new Seat();
-                                        seat.setSeatNumber(seatDto.getSeatNumber());
-                                        seat.setxCoordinate(seatDto.getxCoordinate());
-                                        seat.setyCoordinate(seatDto.getyCoordinate());
+                                        seat.setSeatNumber(seatDto.seatNumber());
+                                        seat.setxCoordinate(seatDto.xCoordinate());
+                                        seat.setyCoordinate(seatDto.yCoordinate());
                                         seat.setLocation(location);
                                         seatRepository.persist(seat);
 
@@ -260,7 +254,7 @@ public class EventLocationService {
         LOG.infof(
                 "Event location '%s' (ID: %d) imported successfully by manager: %s (ID: %d)",
                 location.getName(), location.getId(), manager.getUsername(), manager.getId());
-        return EventLocationResponseDTO.toDTO(location);
+        return location;
     }
 
     /**
@@ -269,7 +263,7 @@ public class EventLocationService {
      * of the EventLocation or has the ADMIN role.
      *
      * @param id The ID of the EventLocation to which seats should be imported.
-     * @param seats A set of ImportSeatDto objects containing the seat details to be imported.
+     * @param seats A set of InnerSeatInput objects containing the seat details to be imported.
      * @param manager The currently authenticated user attempting to import seats.
      * @return A DTO representing the updated EventLocation with the newly imported seats.
      * @throws EventLocationNotFoundException If the EventLocation with the specified ID is not
@@ -278,15 +272,15 @@ public class EventLocationService {
      *     EventLocation.
      */
     @Transactional
-    public EventLocationResponseDTO importSeatsToEventLocation(
-            Long id, Set<ImportSeatDto> seats, User manager)
+    public EventLocation importSeatsToEventLocation(
+            Long id, List<InnerSeatInput> seats, User manager)
             throws IllegalArgumentException, SecurityException {
         LOG.debugf(
                 "Importing seats to event location with ID: %d by manager: %s (ID: %d)",
                 id, manager.getUsername(), manager.getId());
         EventLocation location =
                 eventLocationRepository
-                        .findByIdOptional(id)
+                        .findByIdWithManagerSeats(id)
                         .orElseThrow(
                                 () -> {
                                     LOG.warnf(
@@ -315,9 +309,9 @@ public class EventLocationService {
                                     + " %d)",
                             seat, id, manager.getUsername(), manager.getId());
                     Seat newSeat = new Seat();
-                    newSeat.setSeatNumber(seat.getSeatNumber());
-                    newSeat.setxCoordinate(seat.getxCoordinate());
-                    newSeat.setyCoordinate(seat.getyCoordinate());
+                    newSeat.setSeatNumber(seat.seatNumber());
+                    newSeat.setxCoordinate(seat.xCoordinate());
+                    newSeat.setyCoordinate(seat.yCoordinate());
                     newSeat.setLocation(location);
                     seatRepository.persist(newSeat);
                     newSeats.add(newSeat);
@@ -325,6 +319,8 @@ public class EventLocationService {
 
         location.getSeats().addAll(newSeats);
 
-        return EventLocationResponseDTO.toDTO(location);
+        return location;
     }
+
+    public record InnerSeatInput(String seatNumber, int xCoordinate, int yCoordinate) {}
 }

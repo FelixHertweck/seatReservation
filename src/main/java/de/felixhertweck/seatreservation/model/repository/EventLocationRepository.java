@@ -37,10 +37,34 @@ public class EventLocationRepository implements PanacheRepository<EventLocation>
         return find("manager", manager).list();
     }
 
-    public Optional<EventLocation> findByIdWithRelations(Long id) {
+    public Optional<EventLocation> findByIdWithManager(Long id) {
         LOG.debugf("Finding for event location: %s", id);
         return find(
                         "SELECT e FROM EventLocation e JOIN FETCH e.manager WHERE e.id = :id",
+                        Parameters.with("id", id))
+                .firstResultOptional();
+    }
+
+    public List<EventLocation> findAllWithManagerSeats() {
+        return list(
+                "SELECT e FROM EventLocation e LEFT JOIN FETCH e.manager LEFT JOIN FETCH e.seats");
+    }
+
+    public List<EventLocation> findByManagerWithManagerSeats(User manager) {
+        return list(
+                "SELECT e FROM EventLocation e LEFT JOIN FETCH e.seats LEFT JOIN FETCH e.manager"
+                        + " WHERE e.manager = :manager",
+                Parameters.with("manager", manager));
+    }
+
+    public Optional<EventLocation> findByIdWithManagerSeats(Long id) {
+        return find(
+                        """
+                        SELECT e FROM EventLocation e
+                        LEFT JOIN FETCH e.manager
+                        LEFT JOIN FETCH e.seats
+                        WHERE e.id = :id
+                        """,
                         Parameters.with("id", id))
                 .firstResultOptional();
     }

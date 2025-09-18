@@ -74,7 +74,7 @@ public class EventService {
                 name, manager.getUsername(), manager.getId());
         EventLocation location =
                 eventLocationRepository
-                        .findByIdWithRelations(eventLocationId)
+                        .findByIdWithManager(eventLocationId)
                         .orElseThrow(
                                 () -> {
                                     LOG.warnf(
