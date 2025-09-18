@@ -31,6 +31,7 @@ import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowanceUp
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesCreateDto;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesResponseDto;
 import de.felixhertweck.seatreservation.eventManagement.service.EventReservationAllowanceService;
+import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
@@ -70,19 +71,22 @@ public class EventReservationAllowanceResource {
     @APIResponse(
             responseCode = "409",
             description = "Conflict: Allowance already exists for this user and event")
-    public Set<EventUserAllowancesResponseDto> setReservationsAllowedForUser(
-            @Valid EventUserAllowancesCreateDto userReservationAllowanceDTO) {
+    public List<EventUserAllowancesResponseDto> setReservationsAllowedForUser(
+            @Valid EventUserAllowancesCreateDto dto) {
         LOG.debugf(
                 "Received POST request to /api/manager/reservationAllowance to set reservation"
                         + " allowance.");
         User currentUser = userSecurityContext.getCurrentUser();
-        Set<EventUserAllowancesResponseDto> result =
+        Set<EventUserAllowance> result =
                 eventReservationAllowanceService.setReservationsAllowedForUser(
-                        userReservationAllowanceDTO, currentUser);
+                        dto.getEventId(),
+                        dto.getUserIds(),
+                        dto.getReservationsAllowedCount(),
+                        currentUser);
         LOG.debugf(
                 "Reservation allowance set successfully for user IDs %s and event ID %d.",
-                userReservationAllowanceDTO.getUserIds(), userReservationAllowanceDTO.getEventId());
-        return result;
+                dto.getUserIds(), dto.getEventId());
+        return result.stream().map(EventUserAllowancesResponseDto::toDTO).toList();
     }
 
     @PUT
@@ -104,19 +108,21 @@ public class EventReservationAllowanceResource {
             responseCode = "409",
             description = "Conflict: Allowance already exists for this user and event")
     public EventUserAllowancesResponseDto updateReservationAllowance(
-            @Valid EventUserAllowanceUpdateDto eventUserAllowanceUpdateDto) {
+            @Valid EventUserAllowanceUpdateDto dto) {
         LOG.debugf(
                 "Received PUT request to /api/manager/reservationAllowance to update reservation"
                         + " allowance with ID %d.",
-                eventUserAllowanceUpdateDto.id());
+                dto.id());
         User currentUser = userSecurityContext.getCurrentUser();
-        EventUserAllowancesResponseDto result =
+        EventUserAllowance result =
                 eventReservationAllowanceService.updateReservationAllowance(
-                        eventUserAllowanceUpdateDto, currentUser);
-        LOG.debugf(
-                "Reservation allowance with ID %d updated successfully.",
-                eventUserAllowanceUpdateDto.id());
-        return result;
+                        dto.id(),
+                        dto.eventId(),
+                        dto.userId(),
+                        dto.reservationsAllowedCount(),
+                        currentUser);
+        LOG.debugf("Reservation allowance with ID %d updated successfully.", dto.id());
+        return EventUserAllowancesResponseDto.toDTO(result);
     }
 
     @GET
@@ -132,14 +138,11 @@ public class EventReservationAllowanceResource {
     public EventUserAllowancesResponseDto getReservationAllowanceById(@PathParam("id") Long id) {
         LOG.debugf("Received GET request to /api/manager/reservationAllowance/%d.", id);
         User currentUser = userSecurityContext.getCurrentUser();
-        EventUserAllowancesResponseDto result =
+        EventUserAllowance result =
                 eventReservationAllowanceService.getReservationAllowanceById(id, currentUser);
-        if (result != null) {
-            LOG.debugf("Successfully retrieved reservation allowance with ID %d.", id);
-        } else {
-            LOG.warnf("Reservation allowance with ID %d not found.", id);
-        }
-        return result;
+
+        LOG.debugf("Successfully retrieved reservation allowance with ID %d.", id);
+        return EventUserAllowancesResponseDto.toDTO(result);
     }
 
     @GET
@@ -154,10 +157,10 @@ public class EventReservationAllowanceResource {
         LOG.debugf(
                 "Received GET request to /api/manager/reservationAllowance to get all allowances.");
         User currentUser = userSecurityContext.getCurrentUser();
-        List<EventUserAllowancesResponseDto> result =
+        List<EventUserAllowance> result =
                 eventReservationAllowanceService.getReservationAllowances(currentUser);
         LOG.debugf("Successfully retrieved %d reservation allowances.", result.size());
-        return result;
+        return result.stream().map(EventUserAllowancesResponseDto::toDTO).toList();
     }
 
     @GET
@@ -175,13 +178,13 @@ public class EventReservationAllowanceResource {
             @PathParam("eventId") Long eventId) {
         LOG.debugf("Received GET request to /api/manager/reservationAllowance/event/%d.", eventId);
         User currentUser = userSecurityContext.getCurrentUser();
-        List<EventUserAllowancesResponseDto> result =
+        List<EventUserAllowance> result =
                 eventReservationAllowanceService.getReservationAllowancesByEventId(
                         eventId, currentUser);
         LOG.debugf(
                 "Successfully retrieved %d reservation allowances for event ID %d.",
                 result.size(), eventId);
-        return result;
+        return result.stream().map(EventUserAllowancesResponseDto::toDTO).toList();
     }
 
     @DELETE

@@ -19,7 +19,7 @@
  */
 package de.felixhertweck.seatreservation.eventManagement.ressource;
 
-import java.util.Collections;
+import java.util.List;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
@@ -29,8 +29,9 @@ import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowanceUpdateDto;
-import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesResponseDto;
 import de.felixhertweck.seatreservation.eventManagement.service.EventReservationAllowanceService;
+import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import io.quarkus.test.InjectMock;
@@ -50,11 +51,21 @@ class EventReservationAllowanceResourceTest {
             user = "testUser",
             roles = {"MANAGER"})
     void getReservationAllowanceById_Success() {
-        EventUserAllowancesResponseDto dto = new EventUserAllowancesResponseDto(1L, 1L, 2L, 5);
+        // Create mock objects
+        User mockUser = new User();
+        mockUser.id = 2L;
+
+        Event mockEvent = new Event();
+        mockEvent.id = 1L;
+
+        EventUserAllowance mockAllowance = new EventUserAllowance(mockUser, mockEvent, 5);
+        mockAllowance.id = 1L;
+
+        // Setup mocks
         when(userSecurityContext.getCurrentUser()).thenReturn(new User());
         when(eventReservationAllowanceService.getReservationAllowanceById(
                         anyLong(), any(User.class)))
-                .thenReturn(dto);
+                .thenReturn(mockAllowance);
 
         given().when()
                 .get("/api/manager/reservationAllowance/1")
@@ -109,11 +120,20 @@ class EventReservationAllowanceResourceTest {
             user = "testUser",
             roles = {"MANAGER"})
     void getReservationAllowances_Success() {
+        // Create mock objects
+        User mockUser = new User();
+        mockUser.id = 2L;
+
+        Event mockEvent = new Event();
+        mockEvent.id = 1L;
+
+        EventUserAllowance mockAllowance = new EventUserAllowance(mockUser, mockEvent, 5);
+        mockAllowance.id = 1L;
+
+        // Setup mocks
         when(userSecurityContext.getCurrentUser()).thenReturn(new User());
         when(eventReservationAllowanceService.getReservationAllowances(any(User.class)))
-                .thenReturn(
-                        Collections.singletonList(
-                                new EventUserAllowancesResponseDto(1L, 1L, 2L, 5)));
+                .thenReturn(List.of(mockAllowance));
 
         given().when()
                 .get("/api/manager/reservationAllowance")
@@ -137,12 +157,21 @@ class EventReservationAllowanceResourceTest {
             user = "testUser",
             roles = {"MANAGER"})
     void getReservationAllowancesByEventId_Success() {
+        // Create mock objects
+        User mockUser = new User();
+        mockUser.id = 2L;
+
+        Event mockEvent = new Event();
+        mockEvent.id = 1L;
+
+        EventUserAllowance mockAllowance = new EventUserAllowance(mockUser, mockEvent, 5);
+        mockAllowance.id = 1L;
+
+        // Setup mocks
         when(userSecurityContext.getCurrentUser()).thenReturn(new User());
         when(eventReservationAllowanceService.getReservationAllowancesByEventId(
                         anyLong(), any(User.class)))
-                .thenReturn(
-                        Collections.singletonList(
-                                new EventUserAllowancesResponseDto(1L, 1L, 2L, 5)));
+                .thenReturn(List.of(mockAllowance));
 
         given().when()
                 .get("/api/manager/reservationAllowance/event/1")
@@ -167,13 +196,22 @@ class EventReservationAllowanceResourceTest {
             roles = {"MANAGER"})
     void updateReservationAllowance_Success() {
         EventUserAllowanceUpdateDto requestDto = new EventUserAllowanceUpdateDto(1L, 1L, 2L, 10);
-        EventUserAllowancesResponseDto responseDto =
-                new EventUserAllowancesResponseDto(1L, 1L, 2L, 10);
 
+        // Create mock objects
+        User mockUser = new User();
+        mockUser.id = 2L;
+
+        Event mockEvent = new Event();
+        mockEvent.id = 1L;
+
+        EventUserAllowance mockAllowance = new EventUserAllowance(mockUser, mockEvent, 10);
+        mockAllowance.id = 1L;
+
+        // Setup mocks
         when(userSecurityContext.getCurrentUser()).thenReturn(new User());
         when(eventReservationAllowanceService.updateReservationAllowance(
-                        any(EventUserAllowanceUpdateDto.class), any(User.class)))
-                .thenReturn(responseDto);
+                        anyLong(), anyLong(), anyLong(), any(int.class), any(User.class)))
+                .thenReturn(mockAllowance);
 
         given().contentType("application/json")
                 .body(requestDto)
@@ -196,7 +234,11 @@ class EventReservationAllowanceResourceTest {
 
         when(userSecurityContext.getCurrentUser()).thenReturn(new User());
         when(eventReservationAllowanceService.updateReservationAllowance(
-                        any(EventUserAllowanceUpdateDto.class), any(User.class)))
+                        any(Long.class),
+                        any(Long.class),
+                        any(Long.class),
+                        any(Integer.class),
+                        any(User.class)))
                 .thenThrow(new EventNotFoundException("Allowance not found"));
 
         given().contentType("application/json")
