@@ -14,7 +14,7 @@ import {
 import type {
   EventResponseDto,
   ReservationResponseDto,
-  ReservationsRequestCreateDto,
+  ReservationsRequestDto,
 } from "@/api";
 
 interface UseEventsReturn {
@@ -55,7 +55,7 @@ export function useEvents(): UseEventsReturn {
     eventId: bigint,
     seatIds: bigint[],
   ): Promise<ReservationResponseDto[]> => {
-    const data: ReservationsRequestCreateDto = {
+    const data: ReservationsRequestDto = {
       eventId,
       seatIds,
     };

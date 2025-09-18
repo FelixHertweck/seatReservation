@@ -487,7 +487,7 @@ export const ReservationStatusSchema = {
     enum: ['RESERVED', 'BLOCKED']
 } as const;
 
-export const ReservationsRequestCreateDTOSchema = {
+export const ReservationsRequestDTOSchema = {
     type: 'object',
     required: ['eventId', 'seatIds'],
     properties: {

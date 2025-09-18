@@ -468,7 +468,7 @@
         "type" : "string",
         "enum" : [ "RESERVED", "BLOCKED" ]
       },
-      "ReservationsRequestCreateDTO" : {
+      "ReservationsRequestDTO" : {
         "type" : "object",
         "required" : [ "eventId", "seatIds" ],
         "properties" : {
@@ -1946,7 +1946,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/ReservationsRequestCreateDTO"
+                "$ref" : "#/components/schemas/ReservationsRequestDTO"
               }
             }
           },
@@ -2428,7 +2428,7 @@
   } ],
   "info" : {
     "title" : "Seat Reservation API",
-    "version" : "1.0.0-SNAPSHOT",
+    "version" : "0.0.1",
     "description" : "The official REST API for Seat Reservation.",
     "contact" : {
       "name" : "FelixHertweck GitHub ",

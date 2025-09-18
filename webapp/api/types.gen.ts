@@ -155,7 +155,7 @@ export const ReservationStatus = {
 
 export type ReservationStatus = typeof ReservationStatus[keyof typeof ReservationStatus];
 
-export type ReservationsRequestCreateDto = {
+export type ReservationsRequestDto = {
     eventId: bigint;
     seatIds: Array<bigint>;
 };
@@ -1360,7 +1360,7 @@ export type GetApiUserReservationsResponses = {
 export type GetApiUserReservationsResponse = GetApiUserReservationsResponses[keyof GetApiUserReservationsResponses];
 
 export type PostApiUserReservationsData = {
-    body: ReservationsRequestCreateDto;
+    body: ReservationsRequestDto;
     path?: never;
     query?: never;
     url: '/api/user/reservations';

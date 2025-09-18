@@ -671,7 +671,7 @@ Ruft eine bestimmte Reservierung des aktuellen Benutzers ab.
 Erstellt eine oder mehrere neue Reservierungen für den aktuellen Benutzer.
 
 -   **Rollen:** `USER`
--   **Request Body:** `ReservationsRequestCreateDTO`
+-   **Request Body:** `ReservationsRequestDto`
 -   **Responses:**
     -   `200 OK`: Reservierung(en) erfolgreich erstellt. Gibt eine Liste von `ReservationResponseDTO` zurück.
     -   `400 Bad Request`: Ungültige Anfrage (z.B. mehr Plätze als erlaubt).

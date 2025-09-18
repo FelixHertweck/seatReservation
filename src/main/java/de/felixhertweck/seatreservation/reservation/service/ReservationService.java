@@ -45,7 +45,7 @@ import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepos
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.reservation.dto.ReservationResponseDTO;
-import de.felixhertweck.seatreservation.reservation.dto.ReservationsRequestCreateDTO;
+import de.felixhertweck.seatreservation.reservation.dto.ReservationsRequestDTO;
 import de.felixhertweck.seatreservation.reservation.exception.EventBookingClosedException;
 import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
@@ -98,12 +98,12 @@ public class ReservationService {
 
     @Transactional
     public List<ReservationResponseDTO> createReservationForUser(
-            ReservationsRequestCreateDTO dto, User currentUser)
+            ReservationsRequestDTO dto, User currentUser)
             throws NoSeatsAvailableException, EventBookingClosedException {
         LOG.infof(
                 "Attempting to create reservation for user %s for event ID %d with %d seats.",
                 currentUser.getUsername(), dto.getEventId(), dto.getSeatIds().size());
-        LOG.debugf("ReservationsRequestCreateDTO: %s", dto.toString());
+        LOG.debugf("ReservationsRequestDto: %s", dto.toString());
 
         if (currentUser.getEmail() == null
                 || currentUser.getEmail().trim().isEmpty()
