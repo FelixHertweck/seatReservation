@@ -632,7 +632,7 @@ Ruft alle Events ab, für die der aktuelle Benutzer eine Berechtigung hat.
 
 -   **Rollen:** `USER`
 -   **Responses:**
-    -   `200 OK`: Gibt eine Liste von `EventResponseDTO` Objekten zurück, inklusive der Anzahl erlaubter Reservierungen.
+    -   `200 OK`: Gibt eine Liste von `EventResponseDTO` Objekten zurück, inklusive der Anzahl erlaubter Reservierungen und dem Status aller Sitzplätze.
 
 ---
 

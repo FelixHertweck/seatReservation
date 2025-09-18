@@ -251,6 +251,28 @@ export const putApiManagerSeatsByIdResponseTransformer = async (data: any): Prom
     return data;
 };
 
+const seatWithStatusDtoSchemaResponseTransformer = (data: any) => {
+    if (data.id) {
+        data.id = BigInt(data.id.toString());
+    }
+    return data;
+};
+
+const eventLocationWithStatusDtoSchemaResponseTransformer = (data: any) => {
+    if (data.id) {
+        data.id = BigInt(data.id.toString());
+    }
+    if (data.manager) {
+        data.manager = limitedUserInfoDtoSchemaResponseTransformer(data.manager);
+    }
+    if (data.seats) {
+        data.seats = data.seats.map((item: any) => {
+            return seatWithStatusDtoSchemaResponseTransformer(item);
+        });
+    }
+    return data;
+};
+
 const eventResponseDtoSchemaResponseTransformer = (data: any) => {
     if (data.id) {
         data.id = BigInt(data.id.toString());
@@ -265,7 +287,7 @@ const eventResponseDtoSchemaResponseTransformer = (data: any) => {
         data.bookingDeadline = localDateTimeSchemaResponseTransformer(data.bookingDeadline);
     }
     if (data.location) {
-        data.location = eventLocationResponseDtoSchemaResponseTransformer(data.location);
+        data.location = eventLocationWithStatusDtoSchemaResponseTransformer(data.location);
     }
     return data;
 };

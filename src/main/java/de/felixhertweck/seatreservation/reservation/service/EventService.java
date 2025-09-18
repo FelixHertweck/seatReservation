@@ -53,11 +53,7 @@ public class EventService {
 
         List<EventResponseDTO> events =
                 eventUserAllowanceRepository.findByUser(user).stream()
-                        .map(
-                                allowance ->
-                                        new EventResponseDTO(
-                                                allowance.getEvent(),
-                                                allowance.getReservationsAllowedCount()))
+                        .map(EventResponseDTO::toDTO)
                         .toList();
         LOG.infof("Returning %d events for user: %s", events.size(), username);
         return events;

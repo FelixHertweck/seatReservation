@@ -195,6 +195,35 @@ export const EventLocationResponseDTOSchema = {
     }
 } as const;
 
+export const EventLocationWithStatusDTOSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            type: 'integer',
+            format: 'int64'
+        },
+        name: {
+            type: 'string'
+        },
+        address: {
+            type: 'string'
+        },
+        capacity: {
+            type: 'integer',
+            format: 'int32'
+        },
+        manager: {
+            '$ref': '#/components/schemas/LimitedUserInfoDTO'
+        },
+        seats: {
+            type: 'array',
+            items: {
+                '$ref': '#/components/schemas/SeatWithStatusDTO'
+            }
+        }
+    }
+} as const;
+
 export const EventRequestDTOSchema = {
     type: 'object',
     required: ['name', 'description', 'startTime', 'endTime', 'bookingDeadline', 'eventLocationId'],
@@ -244,7 +273,7 @@ export const EventResponseDTOSchema = {
             '$ref': '#/components/schemas/LocalDateTime'
         },
         location: {
-            '$ref': '#/components/schemas/EventLocationResponseDTO'
+            '$ref': '#/components/schemas/EventLocationWithStatusDTO'
         },
         reservationsAllowed: {
             type: 'integer',
@@ -570,6 +599,30 @@ export const SeatResponseDTOSchema = {
         eventLocationId: {
             type: 'integer',
             format: 'int64'
+        },
+        xCoordinate: {
+            type: 'integer',
+            format: 'int32'
+        },
+        yCoordinate: {
+            type: 'integer',
+            format: 'int32'
+        },
+        status: {
+            '$ref': '#/components/schemas/ReservationStatus'
+        }
+    }
+} as const;
+
+export const SeatWithStatusDTOSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            type: 'integer',
+            format: 'int64'
+        },
+        seatNumber: {
+            type: 'string'
         },
         xCoordinate: {
             type: 'integer',

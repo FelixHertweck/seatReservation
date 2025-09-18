@@ -59,6 +59,15 @@ export type EventLocationResponseDto = {
     seats?: Array<SeatDto>;
 };
 
+export type EventLocationWithStatusDto = {
+    id?: bigint;
+    name?: string;
+    address?: string;
+    capacity?: number;
+    manager?: LimitedUserInfoDto;
+    seats?: Array<SeatWithStatusDto>;
+};
+
 export type EventRequestDto = {
     name: string;
     description: string;
@@ -75,7 +84,7 @@ export type EventResponseDto = {
     startTime?: LocalDateTime;
     endTime?: LocalDateTime;
     bookingDeadline?: LocalDateTime;
-    location?: EventLocationResponseDto;
+    location?: EventLocationWithStatusDto;
     reservationsAllowed?: number;
 };
 
@@ -180,6 +189,14 @@ export type SeatResponseDto = {
     id?: bigint;
     seatNumber?: string;
     eventLocationId?: bigint;
+    xCoordinate?: number;
+    yCoordinate?: number;
+    status?: ReservationStatus;
+};
+
+export type SeatWithStatusDto = {
+    id?: bigint;
+    seatNumber?: string;
     xCoordinate?: number;
     yCoordinate?: number;
     status?: ReservationStatus;

@@ -20,9 +20,14 @@
 package de.felixhertweck.seatreservation.reservation.dto;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
-import de.felixhertweck.seatreservation.common.dto.EventLocationResponseDTO;
+import de.felixhertweck.seatreservation.common.dto.EventLocationWithStatusDTO;
+import de.felixhertweck.seatreservation.common.dto.SeatWithStatusDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
+import de.felixhertweck.seatreservation.model.entity.Reservation;
 
 public record EventResponseDTO(
         Long id,
@@ -31,17 +36,30 @@ public record EventResponseDTO(
         LocalDateTime startTime,
         LocalDateTime endTime,
         LocalDateTime bookingDeadline,
-        EventLocationResponseDTO location,
+        EventLocationWithStatusDTO location,
         Integer reservationsAllowed) {
-    public EventResponseDTO(Event event, Integer reservationsAllowed) {
-        this(
+
+    public static EventResponseDTO toDTO(EventUserAllowance allowance) {
+        Event event = allowance.getEvent();
+        Integer reservationsAllowed = allowance.getReservationsAllowedCount();
+
+        List<SeatWithStatusDTO> seats = new ArrayList<>();
+
+        for (Reservation reservation : event.getReservations()) {
+            seats.add(SeatWithStatusDTO.toDTO(reservation.getSeat(), reservation.getStatus()));
+        }
+
+        EventLocationWithStatusDTO location =
+                EventLocationWithStatusDTO.toDTO(event.getEventLocation(), seats);
+
+        return new EventResponseDTO(
                 event.getId(),
                 event.getName(),
                 event.getDescription(),
                 event.getStartTime(),
                 event.getEndTime(),
                 event.getBookingDeadline(),
-                new EventLocationResponseDTO(event.getEventLocation(), event.getReservations()),
+                location,
                 reservationsAllowed);
     }
 }
