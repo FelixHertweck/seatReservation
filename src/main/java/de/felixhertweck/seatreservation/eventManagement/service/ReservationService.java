@@ -19,9 +19,14 @@
  */
 package de.felixhertweck.seatreservation.eventManagement.service;
 
+import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,12 +36,13 @@ import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 
+import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
 import de.felixhertweck.seatreservation.email.EmailService;
 import de.felixhertweck.seatreservation.eventManagement.dto.DetailedReservationResponseDTO;
+import de.felixhertweck.seatreservation.eventManagement.dto.ReservationExportDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.ReservationRequestDTO;
 import de.felixhertweck.seatreservation.eventManagement.exception.ReservationNotFoundException;
-import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.*;
 import de.felixhertweck.seatreservation.model.repository.*;
 import org.jboss.logging.Logger;
@@ -493,5 +499,77 @@ public class ReservationService {
 
     public List<Reservation> findByEvent(Event event) {
         return reservationRepository.find("event", event).list();
+    }
+
+    /**
+     * Exports reservations for a specific event to a CSV format. Access is restricted based on user
+     * roles: - ADMIN: Allows exporting reservations for any event. - MANAGER: Allows exporting
+     * reservations only for events the manager is allowed to manage. - Other roles: Throws
+     * SecurityException.
+     *
+     * @param eventId The ID of the event for which to export reservations.
+     * @param currentUser The user performing the action.
+     * @return A byte array representing the CSV data.
+     * @throws EventNotFoundException If the event is not found.
+     * @throws SecurityException If the current user does not have the necessary permissions.
+     * @throws IOException If an I/O error occurs during CSV generation.
+     */
+    public byte[] exportReservationsToCsv(Long eventId, User currentUser)
+            throws EventNotFoundException, SecurityException, IOException {
+        LOG.infof(
+                "Attempting to export reservations for event ID %d by user: %s (ID: %d)",
+                eventId, currentUser.getUsername(), currentUser.getId());
+
+        Event event =
+                eventRepository
+                        .findByIdOptional(eventId)
+                        .orElseThrow(
+                                () -> {
+                                    LOG.warnf(
+                                            "Event with ID %d not found for CSV export.", eventId);
+                                    return new EventNotFoundException(
+                                            "Event with id " + eventId + " not found");
+                                });
+
+        if (!event.getManager().equals(currentUser)
+                && !currentUser.getRoles().contains(Roles.ADMIN)) {
+            LOG.warnf(
+                    "User %s (ID: %d) is not authorized to export reservations for event ID %d.",
+                    currentUser.getUsername(), currentUser.getId(), eventId);
+            throw new SecurityException(
+                    "User is not authorized to export this event's reservations");
+        }
+
+        List<Reservation> reservations = reservationRepository.findByEventId(eventId);
+
+        // Sort by seat number
+        reservations.sort(Comparator.comparing(r -> r.getSeat().getSeatNumber()));
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(baos))) {
+            // CSV Header
+            writer.write("ID,Seat Number,First Name,Last Name,Reservation Date\n");
+
+            long exportIdCounter = 1;
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+
+            for (Reservation reservation : reservations) {
+                ReservationExportDTO dto = new ReservationExportDTO(reservation, exportIdCounter++);
+                writer.write(
+                        String.format(
+                                "%d,%s,%s,%s,%s\n",
+                                dto.getId(),
+                                dto.getSeatNumber(),
+                                dto.getFirstName(),
+                                dto.getLastName(),
+                                dto.getReservationDate().format(formatter)));
+            }
+            writer.flush();
+        }
+
+        LOG.debugf(
+                "Successfully exported %d reservations for event ID %d to CSV by user: %s (ID: %d)",
+                reservations.size(), eventId, currentUser.getUsername(), currentUser.getId());
+        return baos.toByteArray();
     }
 }

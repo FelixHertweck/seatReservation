@@ -24,10 +24,8 @@ import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.*;
 
-import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.reservation.dto.ReservationResponseDTO;
@@ -153,55 +151,5 @@ public class ReservationResource {
         LOG.debugf(
                 "Reservation with ID %d deleted successfully for user: %s",
                 id, currentUser.getUsername());
-    }
-
-    @GET
-    @Path("/export/{eventId}/csv")
-    @RolesAllowed({Roles.MANAGER, Roles.ADMIN})
-    @Produces("text/csv")
-    @APIResponse(
-            responseCode = "200",
-            description = "CSV export of reservations for a specific event",
-            content = @Content(mediaType = "text/csv"))
-    @APIResponse(responseCode = "403", description = "Forbidden - User not authorized")
-    @APIResponse(responseCode = "404", description = "Not Found - Event not found")
-    @APIResponse(responseCode = "401", description = "Unauthorized")
-    @APIResponse(responseCode = "500", description = "Internal Server Error during CSV export")
-    public Response exportReservationsToCsv(@PathParam("eventId") Long eventId) {
-        User currentUser = userSecurityContext.getCurrentUser();
-        LOG.debugf(
-                "Received GET request to /api/user/reservations/export/%d/csv for user: %s",
-                eventId, currentUser.getUsername());
-        try {
-            byte[] csvData = reservationService.exportReservationsToCsv(eventId, currentUser);
-            LOG.debugf(
-                    "Successfully exported CSV for event ID %d for user: %s",
-                    eventId, currentUser.getUsername());
-            return Response.ok(csvData)
-                    .header(
-                            "Content-Disposition",
-                            "attachment; filename=\"reservations_event_" + eventId + ".csv\"")
-                    .build();
-        } catch (SecurityException e) {
-            LOG.warnf(
-                    "User %s (ID: %d) attempted unauthorized CSV export for event ID %d: %s",
-                    currentUser.getUsername(), currentUser.getId(), eventId, e.getMessage());
-            return Response.status(Response.Status.FORBIDDEN).entity(e.getMessage()).build();
-        } catch (EventNotFoundException e) {
-            LOG.warnf(
-                    "Event ID %d not found for CSV export requested by user %s (ID: %d): %s",
-                    eventId, currentUser.getUsername(), currentUser.getId(), e.getMessage());
-            return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
-        } catch (Exception e) {
-            LOG.errorf(
-                    e,
-                    "Failed to export CSV for event ID %d for user %s (ID: %d)",
-                    eventId,
-                    currentUser.getUsername(),
-                    currentUser.getId());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Internal server error during CSV export")
-                    .build();
-        }
     }
 }
