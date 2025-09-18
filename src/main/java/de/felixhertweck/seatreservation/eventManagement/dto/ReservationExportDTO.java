@@ -31,12 +31,26 @@ public class ReservationExportDTO {
     private String lastName;
     private LocalDateTime reservationDate;
 
-    public ReservationExportDTO(Reservation reservation, Long exportId) {
-        this.id = exportId;
-        this.seatNumber = reservation.getSeat().getSeatNumber();
-        this.firstName = reservation.getUser().getFirstname();
-        this.lastName = reservation.getUser().getLastname();
-        this.reservationDate = reservation.getReservationDate();
+    public ReservationExportDTO(
+            Long id,
+            String seatNumber,
+            String firstName,
+            String lastName,
+            LocalDateTime reservationDate) {
+        this.id = id;
+        this.seatNumber = seatNumber;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.reservationDate = reservationDate;
+    }
+
+    public static ReservationExportDTO toDTO(Reservation reservation, Long exportId) {
+        return new ReservationExportDTO(
+                exportId,
+                reservation.getSeat().getSeatNumber(),
+                reservation.getUser().getFirstname(),
+                reservation.getUser().getLastname(),
+                reservation.getReservationDate());
     }
 
     public Long getId() {

@@ -23,8 +23,8 @@ import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 
 public record EventUserAllowancesResponseDto(
         Long id, Long eventId, Long userId, int reservationsAllowedCount) {
-    public EventUserAllowancesResponseDto(EventUserAllowance eventUserAllowance) {
-        this(
+    public static EventUserAllowancesResponseDto toDTO(EventUserAllowance eventUserAllowance) {
+        return new EventUserAllowancesResponseDto(
                 eventUserAllowance.id,
                 eventUserAllowance.getEvent().id,
                 eventUserAllowance.getUser().id,

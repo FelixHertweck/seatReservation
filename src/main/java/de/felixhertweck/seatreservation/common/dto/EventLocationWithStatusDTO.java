@@ -39,7 +39,7 @@ public record EventLocationWithStatusDTO(
                 eventLocation.getAddress(),
                 eventLocation.getCapacity(),
                 eventLocation.getManager() != null
-                        ? new LimitedUserInfoDTO(eventLocation.getManager())
+                        ? LimitedUserInfoDTO.toDTO(eventLocation.getManager())
                         : null,
                 seats);
     }

@@ -61,7 +61,7 @@ public class ReservationService {
         LOG.infof(
                 "Found %d reservations for user: %s",
                 reservations.size(), currentUser.getUsername());
-        return reservations.stream().map(ReservationResponseDTO::new).toList();
+        return reservations.stream().map(ReservationResponseDTO::toDTO).toList();
     }
 
     public ReservationResponseDTO findReservationByIdForUser(Long id, User currentUser) {
@@ -86,7 +86,7 @@ public class ReservationService {
             throw new SecurityException("You are not allowed to access this reservation");
         }
         LOG.infof("Reservation with ID %d found for user %s.", id, currentUser.getUsername());
-        return new ReservationResponseDTO(reservation);
+        return ReservationResponseDTO.toDTO(reservation);
     }
 
     @Transactional
@@ -255,7 +255,7 @@ public class ReservationService {
         }
 
         return newReservations.stream()
-                .map(ReservationResponseDTO::new)
+                .map(ReservationResponseDTO::toDTO)
                 .collect(Collectors.toList());
     }
 

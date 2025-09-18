@@ -169,7 +169,7 @@ public class UserResource {
     public List<LimitedUserInfoDTO> getAllUsers() {
         LOG.debugf("Received GET request to /api/users/manager to get all users (limited info).");
         List<LimitedUserInfoDTO> users =
-                userService.getAllUsers().stream().map(LimitedUserInfoDTO::new).toList();
+                userService.getAllUsers().stream().map(LimitedUserInfoDTO::toDTO).toList();
         LOG.debugf("Returning %d limited user info DTOs.", users.size());
         return users;
     }

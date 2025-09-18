@@ -25,7 +25,7 @@ import de.felixhertweck.seatreservation.model.entity.User;
 
 public record LimitedUserInfoDTO(Long id, String username, Set<String> tags) {
 
-    public LimitedUserInfoDTO(User user) {
-        this(user.getId(), user.getUsername(), user.getTags());
+    public static LimitedUserInfoDTO toDTO(User user) {
+        return new LimitedUserInfoDTO(user.getId(), user.getUsername(), user.getTags());
     }
 }

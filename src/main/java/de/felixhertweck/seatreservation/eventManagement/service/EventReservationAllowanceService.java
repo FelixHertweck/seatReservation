@@ -103,7 +103,7 @@ public class EventReservationAllowanceService {
                                     dto.getReservationsAllowedCount());
                             eventUserAllowanceRepository.persist(allowance);
 
-                            resultAllowances.add(new EventUserAllowancesResponseDto((allowance)));
+                            resultAllowances.add(EventUserAllowancesResponseDto.toDTO(allowance));
                         });
 
         LOG.infof(
@@ -166,7 +166,7 @@ public class EventReservationAllowanceService {
                 "Reservation allowance with ID %d updated successfully to count %d by manager: %s"
                         + " (ID: %d)",
                 dto.id(), dto.reservationsAllowedCount(), manager.getUsername(), manager.getId());
-        return new EventUserAllowancesResponseDto(allowance);
+        return EventUserAllowancesResponseDto.toDTO(allowance);
     }
 
     /**
@@ -206,7 +206,7 @@ public class EventReservationAllowanceService {
         LOG.debugf(
                 "Successfully retrieved reservation allowance with ID %d for manager: %s (ID: %d)",
                 id, manager.getUsername(), manager.getId());
-        return new EventUserAllowancesResponseDto(allowance);
+        return EventUserAllowancesResponseDto.toDTO(allowance);
     }
 
     /**
@@ -238,7 +238,7 @@ public class EventReservationAllowanceService {
                 "Retrieved %d reservation allowances for user: %s (ID: %d)",
                 allowances.size(), currentUser.getUsername(), currentUser.getId());
         return allowances.stream()
-                .map(EventUserAllowancesResponseDto::new)
+                .map(EventUserAllowancesResponseDto::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -269,7 +269,7 @@ public class EventReservationAllowanceService {
         }
         List<EventUserAllowancesResponseDto> result =
                 eventUserAllowanceRepository.findByEventId(eventId).stream()
-                        .map(EventUserAllowancesResponseDto::new)
+                        .map(EventUserAllowancesResponseDto::toDTO)
                         .collect(Collectors.toList());
         LOG.infof(
                 "Retrieved %d reservation allowances for event ID %d by user: %s (ID: %d)",

@@ -27,8 +27,9 @@ import de.felixhertweck.seatreservation.model.entity.Reservation;
 
 public record ManagerReservationResponseDTO(
         Long id, UserDTO user, Long eventId, SeatDTO seat, LocalDateTime reservationDate) {
-    public ManagerReservationResponseDTO(Reservation reservation) {
-        this(
+
+    public static ManagerReservationResponseDTO toDTO(Reservation reservation) {
+        return new ManagerReservationResponseDTO(
                 reservation.id,
                 UserDTO.toDTO(reservation.getUser()),
                 reservation.getEvent().getId(),

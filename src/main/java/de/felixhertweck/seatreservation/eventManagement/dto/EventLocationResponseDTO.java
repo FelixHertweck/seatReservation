@@ -40,7 +40,7 @@ public record EventLocationResponseDTO(
                         : List.of();
         LimitedUserInfoDTO manager =
                 eventLocation.getManager() != null
-                        ? new LimitedUserInfoDTO(eventLocation.getManager())
+                        ? LimitedUserInfoDTO.toDTO(eventLocation.getManager())
                         : null;
 
         return new EventLocationResponseDTO(

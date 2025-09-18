@@ -76,12 +76,12 @@ public class ReservationService {
         if (currentUser.getRoles().contains(Roles.ADMIN)) {
             LOG.debug("User is ADMIN, listing all reservations.");
             return reservationRepository.listAll().stream()
-                    .map(ManagerReservationResponseDTO::new)
+                    .map(ManagerReservationResponseDTO::toDTO)
                     .toList();
         }
         List<ManagerReservationResponseDTO> result =
                 reservationRepository.find("event.manager", currentUser).list().stream()
-                        .map(ManagerReservationResponseDTO::new)
+                        .map(ManagerReservationResponseDTO::toDTO)
                         .toList();
         LOG.infof(
                 "Retrieved %d reservations for manager: %s (ID: %d)",
@@ -117,19 +117,19 @@ public class ReservationService {
                                             "Reservation with id " + id + " not found");
                                 });
 
-        // Admins können jede Reservierung sehen
+        // Admins can access all reservations
         if (currentUser.getRoles().contains(Roles.ADMIN)) {
             LOG.infof(
                     "Successfully retrieved reservation with ID %d for ADMIN user: %s (ID: %d)",
                     id, currentUser.getUsername(), currentUser.getId());
-            return new ManagerReservationResponseDTO(reservation);
+            return ManagerReservationResponseDTO.toDTO(reservation);
         }
 
         if (isManagerAllowedToAccessEvent(currentUser, reservation.getEvent())) {
             LOG.infof(
                     "Successfully retrieved reservation with ID %d for manager: %s (ID: %d)",
                     id, currentUser.getUsername(), currentUser.getId());
-            return new ManagerReservationResponseDTO(reservation);
+            return ManagerReservationResponseDTO.toDTO(reservation);
         }
 
         LOG.warnf(
@@ -169,7 +169,7 @@ public class ReservationService {
 
         List<ManagerReservationResponseDTO> result =
                 reservationRepository.find("event", event).list().stream()
-                        .map(ManagerReservationResponseDTO::new)
+                        .map(ManagerReservationResponseDTO::toDTO)
                         .toList();
         LOG.infof(
                 "Retrieved %d reservations for event ID %d by user: %s (ID: %d)",
@@ -317,7 +317,7 @@ public class ReservationService {
         }
 
         return existingReservations.stream()
-                .map(ManagerReservationResponseDTO::new)
+                .map(ManagerReservationResponseDTO::toDTO)
                 .collect(Collectors.toSet());
     }
 
@@ -493,7 +493,7 @@ public class ReservationService {
                 "Successfully blocked %d seats for event ID %d by user: %s (ID: %d)",
                 seats.size(), eventId, currentUser.getUsername(), currentUser.getId());
         return newReservations.stream()
-                .map(ManagerReservationResponseDTO::new)
+                .map(ManagerReservationResponseDTO::toDTO)
                 .collect(Collectors.toSet());
     }
 
@@ -554,7 +554,8 @@ public class ReservationService {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
             for (Reservation reservation : reservations) {
-                ReservationExportDTO dto = new ReservationExportDTO(reservation, exportIdCounter++);
+                ReservationExportDTO dto =
+                        ReservationExportDTO.toDTO(reservation, exportIdCounter++);
                 writer.write(
                         String.format(
                                 "%d,%s,%s,%s,%s\n",
