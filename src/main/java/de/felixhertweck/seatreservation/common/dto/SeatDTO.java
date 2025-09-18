@@ -27,7 +27,7 @@ public record SeatDTO(
         Long id, String seatNumber, Long locationId, int xCoordinate, int yCoordinate) {
 
     public static SeatDTO toDTO(Seat seat) {
-        Long locationId = seat.getLocation().id;
+        Long locationId = (seat.getLocation() != null) ? seat.getLocation().getId() : null;
         return new SeatDTO(
                 seat.getId(),
                 seat.getSeatNumber(),

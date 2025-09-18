@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.eventManagement.ressource;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -30,6 +31,7 @@ import de.felixhertweck.seatreservation.common.dto.SeatDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.SeatRequestDTO;
 import de.felixhertweck.seatreservation.eventManagement.service.SeatService;
 import de.felixhertweck.seatreservation.model.entity.Roles;
+import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -67,7 +69,8 @@ public class SeatResource {
     public SeatDTO createSeat(@Valid SeatRequestDTO seatRequestDTO) {
         LOG.debugf("Received POST request to /api/manager/seats to create a new seat.");
         User currentUser = userSecurityContext.getCurrentUser();
-        SeatDTO result = seatService.createSeatManager(seatRequestDTO, currentUser);
+        Seat seat = seatService.createSeatManager(seatRequestDTO, currentUser);
+        SeatDTO result = SeatDTO.toDTO(seat);
         LOG.debugf(
                 "Seat with ID %d created successfully for event location ID %d.",
                 result.id(), result.locationId());
@@ -91,7 +94,8 @@ public class SeatResource {
     public List<SeatDTO> getAllManagerSeats() {
         LOG.debugf("Received GET request to /api/manager/seats to get all manager seats.");
         User currentUser = userSecurityContext.getCurrentUser();
-        List<SeatDTO> result = seatService.findAllSeatsForManager(currentUser);
+        List<Seat> seats = seatService.findAllSeatsForManager(currentUser);
+        List<SeatDTO> result = seats.stream().map(SeatDTO::toDTO).collect(Collectors.toList());
         LOG.debugf(
                 "Successfully responded to GET /api/manager/seats with %d seats.", result.size());
         return result;
@@ -113,12 +117,9 @@ public class SeatResource {
     public SeatDTO getManagerSeatById(@PathParam("id") Long id) {
         LOG.debugf("Received GET request to /api/manager/seats/%d.", id);
         User currentUser = userSecurityContext.getCurrentUser();
-        SeatDTO result = seatService.findSeatByIdForManager(id, currentUser);
-        if (result != null) {
-            LOG.debugf("Successfully retrieved seat with ID %d.", id);
-        } else {
-            LOG.warnf("Seat with ID %d not found.", id);
-        }
+        Seat seat = seatService.findSeatByIdForManager(id, currentUser);
+        SeatDTO result = SeatDTO.toDTO(seat);
+        LOG.debugf("Successfully retrieved seat with ID %d.", id);
         return result;
     }
 
@@ -143,7 +144,8 @@ public class SeatResource {
             @PathParam("id") Long id, @Valid SeatRequestDTO seatUpdateDTO) {
         LOG.debugf("Received PUT request to /api/manager/seats/%d to update seat.", id);
         User currentUser = userSecurityContext.getCurrentUser();
-        SeatDTO result = seatService.updateSeatForManager(id, seatUpdateDTO, currentUser);
+        Seat seat = seatService.updateSeatForManager(id, seatUpdateDTO, currentUser);
+        SeatDTO result = SeatDTO.toDTO(seat);
         LOG.debugf("Seat with ID %d updated successfully.", id);
         return result;
     }

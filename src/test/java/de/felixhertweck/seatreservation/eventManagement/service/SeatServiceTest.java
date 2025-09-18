@@ -32,7 +32,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
-import de.felixhertweck.seatreservation.common.dto.SeatDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.SeatRequestDTO;
 import de.felixhertweck.seatreservation.eventManagement.exception.SeatNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.Event;
@@ -141,13 +140,13 @@ public class SeatServiceTest {
                 .when(seatRepository)
                 .persist(any(Seat.class));
 
-        SeatDTO createdSeat = seatService.createSeatManager(dto, managerUser);
+        Seat createdSeat = seatService.createSeatManager(dto, managerUser);
 
         assertNotNull(createdSeat);
-        assertEquals("B2", createdSeat.seatNumber());
-        assertEquals(eventLocation.id, createdSeat.locationId());
-        assertEquals(2, createdSeat.xCoordinate());
-        assertEquals(2, createdSeat.yCoordinate());
+        assertEquals("B2", createdSeat.getSeatNumber());
+        assertEquals(eventLocation.id, createdSeat.getLocation().getId());
+        assertEquals(2, createdSeat.getxCoordinate());
+        assertEquals(2, createdSeat.getyCoordinate());
         verify(seatRepository, times(1)).persist(any(Seat.class));
     }
 
@@ -170,13 +169,13 @@ public class SeatServiceTest {
                 .when(seatRepository)
                 .persist(any(Seat.class));
 
-        SeatDTO createdSeat = seatService.createSeatManager(dto, adminUser);
+        Seat createdSeat = seatService.createSeatManager(dto, adminUser);
 
         assertNotNull(createdSeat);
-        assertEquals("C3", createdSeat.seatNumber());
-        assertEquals(eventLocation.id, createdSeat.locationId());
-        assertEquals(3, createdSeat.xCoordinate());
-        assertEquals(3, createdSeat.yCoordinate());
+        assertEquals("C3", createdSeat.getSeatNumber());
+        assertEquals(eventLocation.id, createdSeat.getLocation().getId());
+        assertEquals(3, createdSeat.getxCoordinate());
+        assertEquals(3, createdSeat.getyCoordinate());
         verify(seatRepository, times(1)).persist(any(Seat.class));
     }
 
@@ -226,35 +225,27 @@ public class SeatServiceTest {
         EventLocation otherLocation = new EventLocation("Hall 2", "Addr 2", regularUser, 50);
         otherLocation.id = 2L; // Assign an ID for consistency
         List<Seat> allSeats = Arrays.asList(existingSeat, new Seat("C1", otherLocation, 3, 3));
-        when(seatRepository.listAll()).thenReturn(allSeats);
-        List<SeatDTO> result = seatService.findAllSeatsForManager(adminUser);
+        when(seatRepository.findAllWithLocation()).thenReturn(allSeats);
+        List<Seat> result = seatService.findAllSeatsForManager(adminUser);
 
         assertNotNull(result);
         assertEquals(2, result.size());
-        verify(seatRepository, times(1)).listAll();
+        verify(seatRepository, times(1)).findAllWithLocation();
     }
 
     @Test
     void findAllSeatsForManager_Success_AsManager() {
-        EventLocation otherLocation =
-                new EventLocation("Other Hall", "Other Address", regularUser, 50);
-        otherLocation.id = 2L;
-        Seat otherSeat = new Seat("X1", otherLocation, 1, 1);
-        otherSeat.id = 2L;
-
         List<Seat> managerSeats = Collections.singletonList(existingSeat);
-        when(eventLocationRepository.findByManager(managerUser))
-                .thenReturn(Collections.singletonList(eventLocation));
-        when(seatRepository.findByEventLocation(eventLocation)).thenReturn(managerSeats);
+        when(seatRepository.findAllForManagerWithLocation(managerUser)).thenReturn(managerSeats);
 
-        List<SeatDTO> result = seatService.findAllSeatsForManager(managerUser);
+        List<Seat> result = seatService.findAllSeatsForManager(managerUser);
 
         assertNotNull(result);
         assertEquals(1, result.size()); // Should only find the one seat they manage
-        assertEquals(existingSeat.getSeatNumber(), result.getFirst().seatNumber());
-        assertEquals(existingSeat.getxCoordinate(), result.getFirst().xCoordinate());
-        assertEquals(existingSeat.getyCoordinate(), result.getFirst().yCoordinate());
-        verify(seatRepository, times(1)).findByEventLocation(eventLocation);
+        assertEquals(existingSeat.getSeatNumber(), result.getFirst().getSeatNumber());
+        assertEquals(existingSeat.getxCoordinate(), result.getFirst().getxCoordinate());
+        assertEquals(existingSeat.getyCoordinate(), result.getFirst().getyCoordinate());
+        verify(seatRepository, times(1)).findAllForManagerWithLocation(managerUser);
     }
 
     @Test
@@ -263,40 +254,43 @@ public class SeatServiceTest {
                 .thenReturn(Collections.emptyList());
         // No direct seatRepository.list call when managerLocations is empty
 
-        List<SeatDTO> result = seatService.findAllSeatsForManager(managerUser);
+        when(seatRepository.findAllForManagerWithLocation(managerUser))
+                .thenReturn(Collections.emptyList());
+
+        List<Seat> result = seatService.findAllSeatsForManager(managerUser);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
-        verify(seatRepository, never()).findByEventLocation(any(EventLocation.class));
+        verify(seatRepository, times(1)).findAllForManagerWithLocation(managerUser);
     }
 
     @Test
     void findSeatByIdForManager_Success_AsAdmin() {
-        when(seatRepository.findByIdOptional(existingSeat.id))
+        when(seatRepository.findByIdWithLocation(existingSeat.id))
                 .thenReturn(Optional.of(existingSeat));
-        SeatDTO foundSeat = seatService.findSeatByIdForManager(existingSeat.id, adminUser);
+        Seat foundSeat = seatService.findSeatByIdForManager(existingSeat.id, adminUser);
 
         assertNotNull(foundSeat);
-        assertEquals(existingSeat.getSeatNumber(), foundSeat.seatNumber());
-        assertEquals(existingSeat.getxCoordinate(), foundSeat.xCoordinate());
-        assertEquals(existingSeat.getyCoordinate(), foundSeat.yCoordinate());
+        assertEquals(existingSeat.getSeatNumber(), foundSeat.getSeatNumber());
+        assertEquals(existingSeat.getxCoordinate(), foundSeat.getxCoordinate());
+        assertEquals(existingSeat.getyCoordinate(), foundSeat.getyCoordinate());
     }
 
     @Test
     void findSeatByIdForManager_Success_AsManager() {
-        when(seatRepository.findByIdOptional(existingSeat.id))
+        when(seatRepository.findByIdWithLocation(existingSeat.id))
                 .thenReturn(Optional.of(existingSeat));
-        SeatDTO foundSeat = seatService.findSeatByIdForManager(existingSeat.id, managerUser);
+        Seat foundSeat = seatService.findSeatByIdForManager(existingSeat.id, managerUser);
 
         assertNotNull(foundSeat);
-        assertEquals(existingSeat.getSeatNumber(), foundSeat.seatNumber());
-        assertEquals(existingSeat.getxCoordinate(), foundSeat.xCoordinate());
-        assertEquals(existingSeat.getyCoordinate(), foundSeat.yCoordinate());
+        assertEquals(existingSeat.getSeatNumber(), foundSeat.getSeatNumber());
+        assertEquals(existingSeat.getxCoordinate(), foundSeat.getxCoordinate());
+        assertEquals(existingSeat.getyCoordinate(), foundSeat.getyCoordinate());
     }
 
     @Test
     void findSeatByIdForManager_NotFound() {
-        when(seatRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
+        when(seatRepository.findByIdWithLocation(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(
                 SeatNotFoundException.class,
@@ -313,7 +307,7 @@ public class SeatServiceTest {
         seatInOtherLocation.setLocation(otherLocation);
         seatInOtherLocation.id = 2L;
 
-        when(seatRepository.findByIdOptional(seatInOtherLocation.id))
+        when(seatRepository.findByIdWithLocation(seatInOtherLocation.id))
                 .thenReturn(Optional.of(seatInOtherLocation));
         assertThrows(
                 SecurityException.class,
@@ -328,17 +322,17 @@ public class SeatServiceTest {
         dto.setxCoordinate(10);
         dto.setyCoordinate(10);
 
-        when(seatRepository.findByIdOptional(existingSeat.id))
+        when(seatRepository.findByIdWithLocation(existingSeat.id))
                 .thenReturn(Optional.of(existingSeat));
         when(eventLocationRepository.findByIdOptional(eventLocation.id))
                 .thenReturn(Optional.of(eventLocation));
 
-        SeatDTO updatedSeat = seatService.updateSeatForManager(existingSeat.id, dto, managerUser);
+        Seat updatedSeat = seatService.updateSeatForManager(existingSeat.id, dto, managerUser);
 
         assertNotNull(updatedSeat);
-        assertEquals("Updated A1", updatedSeat.seatNumber());
-        assertEquals(10, updatedSeat.xCoordinate());
-        assertEquals(10, updatedSeat.yCoordinate());
+        assertEquals("Updated A1", updatedSeat.getSeatNumber());
+        assertEquals(10, updatedSeat.getxCoordinate());
+        assertEquals(10, updatedSeat.getyCoordinate());
         verify(seatRepository, times(1)).persist(existingSeat);
     }
 
@@ -350,17 +344,17 @@ public class SeatServiceTest {
         dto.setxCoordinate(20);
         dto.setyCoordinate(20);
 
-        when(seatRepository.findByIdOptional(existingSeat.id))
+        when(seatRepository.findByIdWithLocation(existingSeat.id))
                 .thenReturn(Optional.of(existingSeat));
         when(eventLocationRepository.findByIdOptional(eventLocation.id))
                 .thenReturn(Optional.of(eventLocation));
 
-        SeatDTO updatedSeat = seatService.updateSeatForManager(existingSeat.id, dto, adminUser);
+        Seat updatedSeat = seatService.updateSeatForManager(existingSeat.id, dto, adminUser);
 
         assertNotNull(updatedSeat);
-        assertEquals("Updated A1 by Admin", updatedSeat.seatNumber());
-        assertEquals(20, updatedSeat.xCoordinate());
-        assertEquals(20, updatedSeat.yCoordinate());
+        assertEquals("Updated A1 by Admin", updatedSeat.getSeatNumber());
+        assertEquals(20, updatedSeat.getxCoordinate());
+        assertEquals(20, updatedSeat.getyCoordinate());
         verify(seatRepository, times(1)).persist(existingSeat);
     }
 
@@ -372,7 +366,7 @@ public class SeatServiceTest {
         dto.setxCoordinate(10);
         dto.setyCoordinate(10);
 
-        when(seatRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
+        when(seatRepository.findByIdWithLocation(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(
                 SeatNotFoundException.class,
@@ -388,7 +382,7 @@ public class SeatServiceTest {
         dto.setxCoordinate(-1); // Invalid coordinate
         dto.setyCoordinate(10);
 
-        when(seatRepository.findByIdOptional(existingSeat.id))
+        when(seatRepository.findByIdWithLocation(existingSeat.id))
                 .thenReturn(Optional.of(existingSeat));
         when(eventLocationRepository.findByIdOptional(eventLocation.id))
                 .thenReturn(Optional.of(eventLocation));
@@ -423,7 +417,7 @@ public class SeatServiceTest {
         dto.setxCoordinate(10);
         dto.setyCoordinate(10);
 
-        when(seatRepository.findByIdOptional(seatInOtherLocation.id))
+        when(seatRepository.findByIdWithLocation(seatInOtherLocation.id))
                 .thenReturn(Optional.of(seatInOtherLocation));
         when(eventLocationRepository.findByIdOptional(otherLocation.id))
                 .thenReturn(Optional.of(otherLocation));
@@ -446,7 +440,7 @@ public class SeatServiceTest {
         dto.setxCoordinate(10);
         dto.setyCoordinate(10);
 
-        when(seatRepository.findByIdOptional(existingSeat.id))
+        when(seatRepository.findByIdWithLocation(existingSeat.id))
                 .thenReturn(Optional.of(existingSeat));
         when(eventLocationRepository.findByIdOptional(newOtherLocation.id))
                 .thenReturn(Optional.of(newOtherLocation));
@@ -459,7 +453,7 @@ public class SeatServiceTest {
 
     @Test
     void deleteSeat_Success_AsManager() {
-        when(seatRepository.findByIdOptional(existingSeat.id))
+        when(seatRepository.findByIdWithLocation(existingSeat.id))
                 .thenReturn(Optional.of(existingSeat));
         doNothing().when(seatRepository).delete(any(Seat.class));
 
@@ -470,7 +464,7 @@ public class SeatServiceTest {
 
     @Test
     void deleteSeat_Success_AsAdmin() {
-        when(seatRepository.findByIdOptional(existingSeat.id))
+        when(seatRepository.findByIdWithLocation(existingSeat.id))
                 .thenReturn(Optional.of(existingSeat));
         doNothing().when(seatRepository).delete(any(Seat.class));
 
@@ -481,7 +475,7 @@ public class SeatServiceTest {
 
     @Test
     void deleteSeat_NotFound() {
-        when(seatRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
+        when(seatRepository.findByIdWithLocation(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(
                 SeatNotFoundException.class,
@@ -499,7 +493,7 @@ public class SeatServiceTest {
         seatInOtherLocation.setLocation(otherLocation);
         seatInOtherLocation.id = 2L;
 
-        when(seatRepository.findByIdOptional(seatInOtherLocation.id))
+        when(seatRepository.findByIdWithLocation(seatInOtherLocation.id))
                 .thenReturn(Optional.of(seatInOtherLocation));
 
         assertThrows(
@@ -510,7 +504,7 @@ public class SeatServiceTest {
 
     @Test
     void findSeatEntityById_Success() {
-        when(seatRepository.findByIdOptional(existingSeat.id))
+        when(seatRepository.findByIdWithLocation(existingSeat.id))
                 .thenReturn(Optional.of(existingSeat));
         Seat foundSeat = seatService.findSeatEntityById(existingSeat.id, adminUser);
 
@@ -520,7 +514,7 @@ public class SeatServiceTest {
 
     @Test
     void findSeatEntityById_ForbiddenException() {
-        when(seatRepository.findByIdOptional(existingSeat.id))
+        when(seatRepository.findByIdWithLocation(existingSeat.id))
                 .thenReturn(Optional.of(existingSeat));
 
         assertThrows(

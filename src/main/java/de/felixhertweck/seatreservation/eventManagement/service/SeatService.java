@@ -19,14 +19,11 @@
  */
 package de.felixhertweck.seatreservation.eventManagement.service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
-import de.felixhertweck.seatreservation.common.dto.SeatDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.SeatRequestDTO;
 import de.felixhertweck.seatreservation.eventManagement.exception.SeatNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
@@ -47,7 +44,7 @@ public class SeatService {
     @Inject EventLocationRepository eventLocationRepository;
 
     @Transactional
-    public SeatDTO createSeatManager(SeatRequestDTO dto, User manager) {
+    public Seat createSeatManager(SeatRequestDTO dto, User manager) {
         LOG.debugf(
                 "Attempting to create seat with number: %s for event location ID: %d by manager: %s"
                         + " (ID: %d)",
@@ -83,7 +80,7 @@ public class SeatService {
                     eventLocation.getId());
             throw new IllegalArgumentException("Seat number cannot be empty");
         }
-        if (dto.getxCoordinate().intValue() < 0 || dto.getyCoordinate().intValue() < 0) {
+        if (dto.getxCoordinate() < 0 || dto.getyCoordinate() < 0) {
             LOG.warnf(
                     "Invalid seat data: coordinates are negative for seat number '%s' in event"
                             + " location ID %d.",
@@ -94,44 +91,34 @@ public class SeatService {
         Seat seat = new Seat();
         seat.setSeatNumber(dto.getSeatNumber());
         seat.setLocation(eventLocation);
-        seat.setxCoordinate(dto.getxCoordinate().intValue());
-        seat.setyCoordinate(dto.getyCoordinate().intValue());
+        seat.setxCoordinate(dto.getxCoordinate());
+        seat.setyCoordinate(dto.getyCoordinate());
         seatRepository.persist(seat);
         LOG.infof(
                 "Seat with ID %d created successfully for event location ID %d by manager: %s (ID:"
                         + " %d)",
                 seat.id, eventLocation.getId(), manager.getUsername(), manager.getId());
-        return SeatDTO.toDTO(seat);
+        return seat;
     }
 
-    public List<SeatDTO> findAllSeatsForManager(User manager) {
+    public List<Seat> findAllSeatsForManager(User manager) {
         LOG.debugf(
                 "Attempting to retrieve all seats for manager: %s (ID: %d)",
                 manager.getUsername(), manager.getId());
+        List<Seat> result;
         if (manager.getRoles().contains(Roles.ADMIN)) {
             LOG.debug("User is ADMIN, listing all seats.");
-            return seatRepository.listAll().stream()
-                    .map(SeatDTO::toDTO)
-                    .collect(Collectors.toList());
-        }
-        List<EventLocation> managerLocations;
-        if (manager.getRoles().contains(Roles.ADMIN)) {
-            managerLocations = new ArrayList<>(eventLocationRepository.listAll());
+            result = seatRepository.findAllWithLocation();
         } else {
-            managerLocations = new ArrayList<>(eventLocationRepository.findByManager(manager));
+            result = seatRepository.findAllForManagerWithLocation(manager);
         }
-        List<SeatDTO> result =
-                managerLocations.stream()
-                        .flatMap(location -> seatRepository.findByEventLocation(location).stream())
-                        .map(SeatDTO::toDTO)
-                        .collect(Collectors.toList());
         LOG.infof(
                 "Retrieved %d seats for manager: %s (ID: %d)",
                 result.size(), manager.getUsername(), manager.getId());
         return result;
     }
 
-    public SeatDTO findSeatByIdForManager(Long id, User manager) {
+    public Seat findSeatByIdForManager(Long id, User manager) {
         LOG.debugf(
                 "Attempting to retrieve seat with ID: %d for manager: %s (ID: %d)",
                 id, manager.getUsername(), manager.getId());
@@ -139,11 +126,11 @@ public class SeatService {
         LOG.debugf(
                 "Successfully retrieved seat with ID %d for manager: %s (ID: %d)",
                 id, manager.getUsername(), manager.getId());
-        return SeatDTO.toDTO(seat);
+        return seat;
     }
 
     @Transactional
-    public SeatDTO updateSeatForManager(Long id, SeatRequestDTO dto, User manager) {
+    public Seat updateSeatForManager(Long id, SeatRequestDTO dto, User manager) {
         LOG.debugf(
                 "Attempting to update seat with ID: %d for manager: %s (ID: %d)",
                 id, manager.getUsername(), manager.getId());
@@ -176,7 +163,7 @@ public class SeatService {
             LOG.warnf("Invalid seat data: seat number is empty for seat ID %d.", id);
             throw new IllegalArgumentException("Seat number cannot be empty");
         }
-        if (dto.getxCoordinate().intValue() < 0 || dto.getyCoordinate().intValue() < 0) {
+        if (dto.getxCoordinate() < 0 || dto.getyCoordinate() < 0) {
             LOG.warnf("Invalid seat data: coordinates are negative for seat ID %d.", id);
             throw new IllegalArgumentException("Coordinates cannot be negative");
         }
@@ -190,18 +177,18 @@ public class SeatService {
                 seat.getLocation().getId(),
                 newEventLocation.getId(),
                 seat.getxCoordinate(),
-                dto.getxCoordinate().intValue(),
+                dto.getxCoordinate(),
                 seat.getyCoordinate(),
-                dto.getyCoordinate().intValue());
+                dto.getyCoordinate());
         seat.setSeatNumber(dto.getSeatNumber());
         seat.setLocation(newEventLocation);
-        seat.setxCoordinate(dto.getxCoordinate().intValue());
-        seat.setyCoordinate(dto.getyCoordinate().intValue());
+        seat.setxCoordinate(dto.getxCoordinate());
+        seat.setyCoordinate(dto.getyCoordinate());
         seatRepository.persist(seat);
         LOG.infof(
                 "Seat with ID %d updated successfully by manager: %s (ID: %d)",
                 id, manager.getUsername(), manager.getId());
-        return SeatDTO.toDTO(seat);
+        return seat;
     }
 
     @Transactional
@@ -220,10 +207,9 @@ public class SeatService {
         LOG.debugf(
                 "Attempting to find seat entity by ID: %d for user: %s (ID: %d)",
                 id, currentUser.getUsername(), currentUser.getId());
-        // Check if user has access to linked location
         Seat seat =
                 seatRepository
-                        .findByIdOptional(id)
+                        .findByIdWithLocation(id)
                         .orElseThrow(
                                 () -> {
                                     LOG.warnf(
