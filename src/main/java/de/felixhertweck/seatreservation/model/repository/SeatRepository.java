@@ -37,6 +37,7 @@ public class SeatRepository implements PanacheRepository<Seat> {
 
     /**
      * Finds all seats for a given event location
+     *
      * @param eventLocation the event location to find seats for
      * @return list of seats for the given event location
      */
@@ -47,7 +48,9 @@ public class SeatRepository implements PanacheRepository<Seat> {
         return seats;
     }
 
-    /** Finds a seat by ID with location eagerly loaded to avoid LazyInitializationException
+    /**
+     * Finds a seat by ID with location eagerly loaded to avoid LazyInitializationException
+     *
      * @param id the ID of the seat to find
      * @return an Optional containing the found seat, or empty if not found
      */
@@ -70,9 +73,11 @@ public class SeatRepository implements PanacheRepository<Seat> {
                 .list();
     }
 
-    /** Finds all seats with location eagerly loaded (for admins) 
+    /**
+     * Finds all seats with location eagerly loaded (for admins)
+     *
      * @return list of all seats with locations
-    */
+     */
     public List<Seat> findAllWithLocation() {
         LOG.debugf("Finding all seats with location loaded");
         return find("SELECT s FROM Seat s JOIN FETCH s.location").list();

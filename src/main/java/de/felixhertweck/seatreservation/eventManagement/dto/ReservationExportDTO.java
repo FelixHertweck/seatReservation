@@ -31,6 +31,8 @@ public class ReservationExportDTO {
     private String lastName;
     private LocalDateTime reservationDate;
 
+    public ReservationExportDTO() {}
+
     public ReservationExportDTO(
             Long id,
             String seatNumber,

@@ -44,4 +44,34 @@ public class ReservationRepository implements PanacheRepository<Reservation> {
     public void persistAll(List<Reservation> newReservations) {
         newReservations.forEach(this::persist);
     }
+
+    public List<Reservation> findAllWithRelations() {
+        return find("SELECT r FROM Reservation r JOIN FETCH r.user JOIN FETCH r.event JOIN FETCH"
+                        + " r.seat JOIN FETCH r.seat.location")
+                .list();
+    }
+
+    public List<Reservation> findByEventManagerWithRelations(User manager) {
+        return find(
+                        "SELECT r FROM Reservation r JOIN FETCH r.user JOIN FETCH r.event JOIN"
+                            + " FETCH r.seat JOIN FETCH r.seat.location WHERE r.event.manager = ?1",
+                        manager)
+                .list();
+    }
+
+    public java.util.Optional<Reservation> findByIdWithRelations(Long id) {
+        return find(
+                        "SELECT r FROM Reservation r JOIN FETCH r.user JOIN FETCH r.event JOIN"
+                                + " FETCH r.seat JOIN FETCH r.seat.location WHERE r.id = ?1",
+                        id)
+                .firstResultOptional();
+    }
+
+    public List<Reservation> findByEventIdWithRelations(Long eventId) {
+        return find(
+                        "SELECT r FROM Reservation r JOIN FETCH r.user JOIN FETCH r.event JOIN"
+                                + " FETCH r.seat JOIN FETCH r.seat.location WHERE r.event.id = ?1",
+                        eventId)
+                .list();
+    }
 }

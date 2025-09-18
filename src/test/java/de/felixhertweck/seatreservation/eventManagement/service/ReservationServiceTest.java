@@ -31,8 +31,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import de.felixhertweck.seatreservation.eventManagement.dto.ManagerReservationRequestDTO;
-import de.felixhertweck.seatreservation.eventManagement.dto.ManagerReservationResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.*;
@@ -138,10 +136,6 @@ public class ReservationServiceTest {
 
     @Test
     void createReservation_Success_AsAdmin() {
-        ManagerReservationRequestDTO dto = new ManagerReservationRequestDTO();
-        dto.setEventId(event.id);
-        dto.setSeatIds(Set.of(seat.id));
-        dto.setUserId(regularUser.id);
 
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
@@ -162,11 +156,12 @@ public class ReservationServiceTest {
                 .when(reservationRepository)
                 .persist(any(Reservation.class));
 
-        Set<ManagerReservationResponseDTO> created =
-                reservationService.createReservations(dto, adminUser);
+        Set<Reservation> created =
+                reservationService.createReservations(
+                        event.id, regularUser.id, Set.of(seat.id), true, adminUser);
 
         assertNotNull(created);
-        assertEquals(regularUser.id, created.iterator().next().user().id());
+        assertEquals(regularUser.id, created.iterator().next().getUser().getId());
         verify(reservationRepository).persist(any(Reservation.class));
         verify(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
         assertEquals(0, allowance.getReservationsAllowedCount()); // Allowance should be decremented
@@ -174,11 +169,6 @@ public class ReservationServiceTest {
 
     @Test
     void createReservation_Success_AsAdmin_NoAllowanceDeduction() {
-        ManagerReservationRequestDTO dto = new ManagerReservationRequestDTO();
-        dto.setEventId(event.id);
-        dto.setSeatIds(Set.of(seat.id));
-        dto.setUserId(regularUser.id);
-        dto.setDeductAllowance(false); // Set to false to skip deduction
 
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
@@ -194,11 +184,12 @@ public class ReservationServiceTest {
                 .when(reservationRepository)
                 .persist(any(Reservation.class));
 
-        Set<ManagerReservationResponseDTO> created =
-                reservationService.createReservations(dto, adminUser);
+        Set<Reservation> created =
+                reservationService.createReservations(
+                        event.id, regularUser.id, Set.of(seat.id), false, adminUser);
 
         assertNotNull(created);
-        assertEquals(regularUser.id, created.iterator().next().user().id());
+        assertEquals(regularUser.id, created.iterator().next().getUser().getId());
         verify(reservationRepository).persist(any(Reservation.class));
         verify(eventUserAllowanceRepository, never())
                 .persist(any(EventUserAllowance.class)); // Verify allowance was not persisted
@@ -206,12 +197,6 @@ public class ReservationServiceTest {
 
     @Test
     void createReservation_Success_AsManager_NoAllowanceDeduction() {
-        ManagerReservationRequestDTO dto = new ManagerReservationRequestDTO();
-        dto.setEventId(event.id);
-        dto.setSeatIds(Set.of(seat.id));
-        dto.setUserId(regularUser.id);
-        dto.setDeductAllowance(false); // Set to false to skip deduction
-
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
         when(seatRepository.findByIdOptional(seat.id)).thenReturn(Optional.of(seat));
@@ -226,11 +211,12 @@ public class ReservationServiceTest {
                 .when(reservationRepository)
                 .persist(any(Reservation.class));
 
-        Set<ManagerReservationResponseDTO> created =
-                reservationService.createReservations(dto, managerUser);
+        Set<Reservation> created =
+                reservationService.createReservations(
+                        event.id, regularUser.id, Set.of(seat.id), false, managerUser);
 
         assertNotNull(created);
-        assertEquals(regularUser.id, created.iterator().next().user().id());
+        assertEquals(regularUser.id, created.iterator().next().getUser().getId());
         verify(reservationRepository).persist(any(Reservation.class));
         verify(eventUserAllowanceRepository, never())
                 .persist(any(EventUserAllowance.class)); // Verify allowance was not persisted
@@ -238,11 +224,6 @@ public class ReservationServiceTest {
 
     @Test
     void createReservation_Success_AsManager() {
-        ManagerReservationRequestDTO dto = new ManagerReservationRequestDTO();
-        dto.setEventId(event.id);
-        dto.setSeatIds(Set.of(seat.id));
-        dto.setUserId(regularUser.id);
-
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
         when(seatRepository.findByIdOptional(seat.id)).thenReturn(Optional.of(seat));
@@ -253,11 +234,12 @@ public class ReservationServiceTest {
                 .thenReturn(allowanceQuery);
         doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
 
-        Set<ManagerReservationResponseDTO> created =
-                reservationService.createReservations(dto, managerUser);
+        Set<Reservation> created =
+                reservationService.createReservations(
+                        event.id, regularUser.id, Set.of(seat.id), true, managerUser);
 
         assertNotNull(created);
-        assertEquals(regularUser.id, created.iterator().next().user().id());
+        assertEquals(regularUser.id, created.iterator().next().getUser().getId());
         verify(reservationRepository).persist(any(Reservation.class));
         verify(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
         assertEquals(0, allowance.getReservationsAllowedCount()); // Allowance should be decremented
@@ -265,27 +247,19 @@ public class ReservationServiceTest {
 
     @Test
     void createReservation_Forbidden_AsUser() {
-        ManagerReservationRequestDTO dto = new ManagerReservationRequestDTO();
-        dto.setEventId(event.id);
-        dto.setSeatIds(Set.of(seat.id));
-        dto.setUserId(regularUser.id);
-
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
         when(seatRepository.findByIdOptional(seat.id)).thenReturn(Optional.of(seat));
 
         assertThrows(
                 SecurityException.class,
-                () -> reservationService.createReservations(dto, regularUser));
+                () ->
+                        reservationService.createReservations(
+                                event.id, regularUser.id, Set.of(seat.id), true, regularUser));
     }
 
     @Test
     void createReservation_NoAllowance() {
-        ManagerReservationRequestDTO dto = new ManagerReservationRequestDTO();
-        dto.setEventId(event.id);
-        dto.setSeatIds(Set.of(seat.id));
-        dto.setUserId(regularUser.id);
-
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
         when(seatRepository.findByIdOptional(seat.id)).thenReturn(Optional.of(seat));
@@ -297,15 +271,13 @@ public class ReservationServiceTest {
 
         assertThrows(
                 IllegalArgumentException.class,
-                () -> reservationService.createReservations(dto, adminUser));
+                () ->
+                        reservationService.createReservations(
+                                event.id, regularUser.id, Set.of(seat.id), true, adminUser));
     }
 
     @Test
     void createReservation_AllowanceZero() {
-        ManagerReservationRequestDTO dto = new ManagerReservationRequestDTO();
-        dto.setEventId(event.id);
-        dto.setSeatIds(Set.of(seat.id));
-        dto.setUserId(regularUser.id);
         allowance.setReservationsAllowedCount(0);
 
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
@@ -319,36 +291,36 @@ public class ReservationServiceTest {
 
         assertThrows(
                 IllegalArgumentException.class,
-                () -> reservationService.createReservations(dto, managerUser));
+                () ->
+                        reservationService.createReservations(
+                                event.id, regularUser.id, Set.of(seat.id), true, managerUser));
     }
 
     @Test
     void findReservationById_Success_AsAdmin() {
-        when(reservationRepository.findByIdOptional(reservation.id))
+        when(reservationRepository.findByIdWithRelations(reservation.id))
                 .thenReturn(Optional.of(reservation));
 
-        ManagerReservationResponseDTO found =
-                reservationService.findReservationById(reservation.id, adminUser);
+        Reservation found = reservationService.findReservationById(reservation.id, adminUser);
 
         assertNotNull(found);
-        assertEquals(reservation.id, found.id());
+        assertEquals(reservation.id, found.id);
     }
 
     @Test
     void findReservationById_Success_AsManager() {
-        when(reservationRepository.findByIdOptional(reservation.id))
+        when(reservationRepository.findByIdWithRelations(reservation.id))
                 .thenReturn(Optional.of(reservation));
 
-        ManagerReservationResponseDTO found =
-                reservationService.findReservationById(reservation.id, managerUser);
+        Reservation found = reservationService.findReservationById(reservation.id, managerUser);
 
         assertNotNull(found);
-        assertEquals(reservation.id, found.id());
+        assertEquals(reservation.id, found.id);
     }
 
     @Test
     void findReservationById_Forbidden() {
-        when(reservationRepository.findByIdOptional(reservation.id))
+        when(reservationRepository.findByIdWithRelations(reservation.id))
                 .thenReturn(Optional.of(reservation));
         User otherManager = new User();
         otherManager.id = 4L;
@@ -393,28 +365,27 @@ public class ReservationServiceTest {
 
     @Test
     void findAllReservations_Success_AsAdmin() {
-        when(reservationRepository.listAll()).thenReturn(List.of(reservation));
+        when(reservationRepository.findAllWithRelations()).thenReturn(List.of(reservation));
 
         var result = reservationService.findAllReservations(adminUser);
 
         assertNotNull(result);
         assertFalse(result.isEmpty());
         assertEquals(1, result.size());
-        verify(reservationRepository).listAll();
+        verify(reservationRepository).findAllWithRelations();
     }
 
     @Test
     void findAllReservations_Success_AsManager() {
-        @SuppressWarnings("unchecked")
-        PanacheQuery<Reservation> reservationQuery = mock(PanacheQuery.class);
-        when(reservationQuery.list()).thenReturn(List.of(reservation));
-        when(reservationRepository.find("event.manager", managerUser)).thenReturn(reservationQuery);
+        when(reservationRepository.findByEventManagerWithRelations(managerUser))
+                .thenReturn(List.of(reservation));
 
         var result = reservationService.findAllReservations(managerUser);
 
         assertNotNull(result);
         assertFalse(result.isEmpty());
         assertEquals(1, result.size());
+        verify(reservationRepository).findByEventManagerWithRelations(managerUser);
     }
 
     @Test

@@ -33,6 +33,7 @@ import de.felixhertweck.seatreservation.eventManagement.dto.BlockSeatsRequestDTO
 import de.felixhertweck.seatreservation.eventManagement.dto.ManagerReservationRequestDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.ManagerReservationResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.service.ReservationService;
+import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
@@ -71,8 +72,9 @@ public class ReservationResource {
     public List<ManagerReservationResponseDTO> getAllReservations() {
         LOG.debugf("Received GET request to /api/manager/reservations to get all reservations.");
         User currentUser = userSecurityContext.getCurrentUser();
+        List<Reservation> reservations = reservationService.findAllReservations(currentUser);
         List<ManagerReservationResponseDTO> result =
-                reservationService.findAllReservations(currentUser);
+                reservations.stream().map(ManagerReservationResponseDTO::toDTO).toList();
         LOG.debugf(
                 "Successfully responded to GET /api/manager/reservations with %d reservations.",
                 result.size());
@@ -98,13 +100,9 @@ public class ReservationResource {
     public ManagerReservationResponseDTO getReservationById(@PathParam("id") Long id) {
         LOG.debugf("Received GET request to /api/manager/reservations/%d.", id);
         User currentUser = userSecurityContext.getCurrentUser();
-        ManagerReservationResponseDTO result =
-                reservationService.findReservationById(id, currentUser);
-        if (result != null) {
-            LOG.debugf("Successfully retrieved reservation with ID %d.", id);
-        } else {
-            LOG.warnf("Reservation with ID %d not found.", id);
-        }
+        Reservation reservation = reservationService.findReservationById(id, currentUser);
+        ManagerReservationResponseDTO result = ManagerReservationResponseDTO.toDTO(reservation);
+        LOG.debugf("Successfully retrieved reservation with ID %d.", id);
         return result;
     }
 
@@ -130,8 +128,10 @@ public class ReservationResource {
             @PathParam("id") Long eventId) {
         LOG.debugf("Received GET request to /api/manager/reservations/event/%d.", eventId);
         User currentUser = userSecurityContext.getCurrentUser();
-        List<ManagerReservationResponseDTO> result =
+        List<Reservation> reservations =
                 reservationService.findReservationsByEventId(eventId, currentUser);
+        List<ManagerReservationResponseDTO> result =
+                reservations.stream().map(ManagerReservationResponseDTO::toDTO).toList();
         LOG.debugf(
                 "Successfully retrieved %d reservations for event ID %d.", result.size(), eventId);
         return result;
@@ -160,8 +160,17 @@ public class ReservationResource {
         LOG.debugf(
                 "Received POST request to /api/manager/reservations to create new reservations.");
         User currentUser = userSecurityContext.getCurrentUser();
+        Set<Reservation> reservations =
+                reservationService.createReservations(
+                        dto.getEventId(),
+                        dto.getUserId(),
+                        dto.getSeatIds(),
+                        dto.isDeductAllowance(),
+                        currentUser);
         Set<ManagerReservationResponseDTO> results =
-                reservationService.createReservations(dto, currentUser);
+                reservations.stream()
+                        .map(ManagerReservationResponseDTO::toDTO)
+                        .collect(java.util.stream.Collectors.toSet());
         LOG.debugf(
                 "Reservations created successfully for seat IDs %s and user ID %d.",
                 dto.getSeatIds(), dto.getUserId());
@@ -211,8 +220,12 @@ public class ReservationResource {
                         + " ID %d.",
                 dto.getEventId());
         User currentUser = userSecurityContext.getCurrentUser();
-        Set<ManagerReservationResponseDTO> results =
+        Set<Reservation> reservations =
                 reservationService.blockSeats(dto.getEventId(), dto.getSeatIds(), currentUser);
+        Set<ManagerReservationResponseDTO> results =
+                reservations.stream()
+                        .map(ManagerReservationResponseDTO::toDTO)
+                        .collect(java.util.stream.Collectors.toSet());
         LOG.debugf("Seats blocked successfully for event ID %d.", dto.getEventId());
         return results;
     }

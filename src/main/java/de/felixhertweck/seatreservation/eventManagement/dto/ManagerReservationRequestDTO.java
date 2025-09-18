@@ -36,6 +36,16 @@ public class ManagerReservationRequestDTO {
 
     private boolean deductAllowance = true;
 
+    public ManagerReservationRequestDTO() {}
+
+    public ManagerReservationRequestDTO(
+            Long eventId, Long userId, Set<Long> seatIds, boolean deductAllowance) {
+        this.eventId = eventId;
+        this.userId = userId;
+        this.seatIds = seatIds;
+        this.deductAllowance = deductAllowance;
+    }
+
     public Long getEventId() {
         return eventId;
     }
