@@ -176,15 +176,6 @@ export type SeatRequestDto = {
     yCoordinate: number;
 };
 
-export type SeatResponseDto = {
-    id?: bigint;
-    seatNumber?: string;
-    eventLocationId?: bigint;
-    xCoordinate?: number;
-    yCoordinate?: number;
-    status?: ReservationStatus;
-};
-
 export type UserDto = {
     id?: bigint;
     username?: string;
@@ -1083,7 +1074,7 @@ export type GetApiManagerSeatsResponses = {
     /**
      * OK
      */
-    200: Array<SeatResponseDto>;
+    200: Array<SeatDto>;
 };
 
 export type GetApiManagerSeatsResponse = GetApiManagerSeatsResponses[keyof GetApiManagerSeatsResponses];
@@ -1122,7 +1113,7 @@ export type PostApiManagerSeatsResponses = {
     /**
      * OK
      */
-    200: SeatResponseDto;
+    200: SeatDto;
 };
 
 export type PostApiManagerSeatsResponse = PostApiManagerSeatsResponses[keyof PostApiManagerSeatsResponses];
@@ -1192,7 +1183,7 @@ export type GetApiManagerSeatsByIdResponses = {
     /**
      * OK
      */
-    200: SeatResponseDto;
+    200: SeatDto;
 };
 
 export type GetApiManagerSeatsByIdResponse = GetApiManagerSeatsByIdResponses[keyof GetApiManagerSeatsByIdResponses];
@@ -1233,7 +1224,7 @@ export type PutApiManagerSeatsByIdResponses = {
     /**
      * OK
      */
-    200: SeatResponseDto;
+    200: SeatDto;
 };
 
 export type PutApiManagerSeatsByIdResponse = PutApiManagerSeatsByIdResponses[keyof PutApiManagerSeatsByIdResponses];

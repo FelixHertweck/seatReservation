@@ -32,8 +32,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
+import de.felixhertweck.seatreservation.common.dto.SeatDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.SeatRequestDTO;
-import de.felixhertweck.seatreservation.eventManagement.dto.SeatResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.exception.SeatNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
@@ -141,11 +141,11 @@ public class SeatServiceTest {
                 .when(seatRepository)
                 .persist(any(Seat.class));
 
-        SeatResponseDTO createdSeat = seatService.createSeatManager(dto, managerUser);
+        SeatDTO createdSeat = seatService.createSeatManager(dto, managerUser);
 
         assertNotNull(createdSeat);
         assertEquals("B2", createdSeat.seatNumber());
-        assertEquals(eventLocation.id, createdSeat.eventLocationId());
+        assertEquals(eventLocation.id, createdSeat.locationId());
         assertEquals(2, createdSeat.xCoordinate());
         assertEquals(2, createdSeat.yCoordinate());
         verify(seatRepository, times(1)).persist(any(Seat.class));
@@ -170,11 +170,11 @@ public class SeatServiceTest {
                 .when(seatRepository)
                 .persist(any(Seat.class));
 
-        SeatResponseDTO createdSeat = seatService.createSeatManager(dto, adminUser);
+        SeatDTO createdSeat = seatService.createSeatManager(dto, adminUser);
 
         assertNotNull(createdSeat);
         assertEquals("C3", createdSeat.seatNumber());
-        assertEquals(eventLocation.id, createdSeat.eventLocationId());
+        assertEquals(eventLocation.id, createdSeat.locationId());
         assertEquals(3, createdSeat.xCoordinate());
         assertEquals(3, createdSeat.yCoordinate());
         verify(seatRepository, times(1)).persist(any(Seat.class));
@@ -227,7 +227,7 @@ public class SeatServiceTest {
         otherLocation.id = 2L; // Assign an ID for consistency
         List<Seat> allSeats = Arrays.asList(existingSeat, new Seat("C1", otherLocation, 3, 3));
         when(seatRepository.listAll()).thenReturn(allSeats);
-        List<SeatResponseDTO> result = seatService.findAllSeatsForManager(adminUser);
+        List<SeatDTO> result = seatService.findAllSeatsForManager(adminUser);
 
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -247,7 +247,7 @@ public class SeatServiceTest {
                 .thenReturn(Collections.singletonList(eventLocation));
         when(seatRepository.findByEventLocation(eventLocation)).thenReturn(managerSeats);
 
-        List<SeatResponseDTO> result = seatService.findAllSeatsForManager(managerUser);
+        List<SeatDTO> result = seatService.findAllSeatsForManager(managerUser);
 
         assertNotNull(result);
         assertEquals(1, result.size()); // Should only find the one seat they manage
@@ -263,7 +263,7 @@ public class SeatServiceTest {
                 .thenReturn(Collections.emptyList());
         // No direct seatRepository.list call when managerLocations is empty
 
-        List<SeatResponseDTO> result = seatService.findAllSeatsForManager(managerUser);
+        List<SeatDTO> result = seatService.findAllSeatsForManager(managerUser);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
@@ -274,7 +274,7 @@ public class SeatServiceTest {
     void findSeatByIdForManager_Success_AsAdmin() {
         when(seatRepository.findByIdOptional(existingSeat.id))
                 .thenReturn(Optional.of(existingSeat));
-        SeatResponseDTO foundSeat = seatService.findSeatByIdForManager(existingSeat.id, adminUser);
+        SeatDTO foundSeat = seatService.findSeatByIdForManager(existingSeat.id, adminUser);
 
         assertNotNull(foundSeat);
         assertEquals(existingSeat.getSeatNumber(), foundSeat.seatNumber());
@@ -286,8 +286,7 @@ public class SeatServiceTest {
     void findSeatByIdForManager_Success_AsManager() {
         when(seatRepository.findByIdOptional(existingSeat.id))
                 .thenReturn(Optional.of(existingSeat));
-        SeatResponseDTO foundSeat =
-                seatService.findSeatByIdForManager(existingSeat.id, managerUser);
+        SeatDTO foundSeat = seatService.findSeatByIdForManager(existingSeat.id, managerUser);
 
         assertNotNull(foundSeat);
         assertEquals(existingSeat.getSeatNumber(), foundSeat.seatNumber());
@@ -334,8 +333,7 @@ public class SeatServiceTest {
         when(eventLocationRepository.findByIdOptional(eventLocation.id))
                 .thenReturn(Optional.of(eventLocation));
 
-        SeatResponseDTO updatedSeat =
-                seatService.updateSeatForManager(existingSeat.id, dto, managerUser);
+        SeatDTO updatedSeat = seatService.updateSeatForManager(existingSeat.id, dto, managerUser);
 
         assertNotNull(updatedSeat);
         assertEquals("Updated A1", updatedSeat.seatNumber());
@@ -357,8 +355,7 @@ public class SeatServiceTest {
         when(eventLocationRepository.findByIdOptional(eventLocation.id))
                 .thenReturn(Optional.of(eventLocation));
 
-        SeatResponseDTO updatedSeat =
-                seatService.updateSeatForManager(existingSeat.id, dto, adminUser);
+        SeatDTO updatedSeat = seatService.updateSeatForManager(existingSeat.id, dto, adminUser);
 
         assertNotNull(updatedSeat);
         assertEquals("Updated A1 by Admin", updatedSeat.seatNumber());

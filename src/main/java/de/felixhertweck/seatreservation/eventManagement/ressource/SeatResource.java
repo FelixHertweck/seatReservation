@@ -26,8 +26,8 @@ import jakarta.validation.Valid;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.*;
 
+import de.felixhertweck.seatreservation.common.dto.SeatDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.SeatRequestDTO;
-import de.felixhertweck.seatreservation.eventManagement.dto.SeatResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.service.SeatService;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
@@ -54,7 +54,7 @@ public class SeatResource {
     @APIResponse(
             responseCode = "200",
             description = "OK",
-            content = @Content(schema = @Schema(implementation = SeatResponseDTO.class)))
+            content = @Content(schema = @Schema(implementation = SeatDTO.class)))
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
@@ -64,13 +64,13 @@ public class SeatResource {
             responseCode = "409",
             description =
                     "Conflict: Seat with this row and number already exists in this event location")
-    public SeatResponseDTO createSeat(@Valid SeatRequestDTO seatRequestDTO) {
+    public SeatDTO createSeat(@Valid SeatRequestDTO seatRequestDTO) {
         LOG.debugf("Received POST request to /api/manager/seats to create a new seat.");
         User currentUser = userSecurityContext.getCurrentUser();
-        SeatResponseDTO result = seatService.createSeatManager(seatRequestDTO, currentUser);
+        SeatDTO result = seatService.createSeatManager(seatRequestDTO, currentUser);
         LOG.debugf(
                 "Seat with ID %d created successfully for event location ID %d.",
-                result.id(), result.eventLocationId());
+                result.id(), result.locationId());
         return result;
     }
 
@@ -83,15 +83,15 @@ public class SeatResource {
                             schema =
                                     @Schema(
                                             type = SchemaType.ARRAY,
-                                            implementation = SeatResponseDTO.class)))
+                                            implementation = SeatDTO.class)))
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
             description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
-    public List<SeatResponseDTO> getAllManagerSeats() {
+    public List<SeatDTO> getAllManagerSeats() {
         LOG.debugf("Received GET request to /api/manager/seats to get all manager seats.");
         User currentUser = userSecurityContext.getCurrentUser();
-        List<SeatResponseDTO> result = seatService.findAllSeatsForManager(currentUser);
+        List<SeatDTO> result = seatService.findAllSeatsForManager(currentUser);
         LOG.debugf(
                 "Successfully responded to GET /api/manager/seats with %d seats.", result.size());
         return result;
@@ -102,7 +102,7 @@ public class SeatResource {
     @APIResponse(
             responseCode = "200",
             description = "OK",
-            content = @Content(schema = @Schema(implementation = SeatResponseDTO.class)))
+            content = @Content(schema = @Schema(implementation = SeatDTO.class)))
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
@@ -110,10 +110,10 @@ public class SeatResource {
     @APIResponse(
             responseCode = "404",
             description = "Not Found: Seat with specified ID not found for the current manager")
-    public SeatResponseDTO getManagerSeatById(@PathParam("id") Long id) {
+    public SeatDTO getManagerSeatById(@PathParam("id") Long id) {
         LOG.debugf("Received GET request to /api/manager/seats/%d.", id);
         User currentUser = userSecurityContext.getCurrentUser();
-        SeatResponseDTO result = seatService.findSeatByIdForManager(id, currentUser);
+        SeatDTO result = seatService.findSeatByIdForManager(id, currentUser);
         if (result != null) {
             LOG.debugf("Successfully retrieved seat with ID %d.", id);
         } else {
@@ -127,7 +127,7 @@ public class SeatResource {
     @APIResponse(
             responseCode = "200",
             description = "OK",
-            content = @Content(schema = @Schema(implementation = SeatResponseDTO.class)))
+            content = @Content(schema = @Schema(implementation = SeatDTO.class)))
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
@@ -139,11 +139,11 @@ public class SeatResource {
             responseCode = "409",
             description =
                     "Conflict: Seat with this row and number already exists in this event location")
-    public SeatResponseDTO updateManagerSeat(
+    public SeatDTO updateManagerSeat(
             @PathParam("id") Long id, @Valid SeatRequestDTO seatUpdateDTO) {
         LOG.debugf("Received PUT request to /api/manager/seats/%d to update seat.", id);
         User currentUser = userSecurityContext.getCurrentUser();
-        SeatResponseDTO result = seatService.updateSeatForManager(id, seatUpdateDTO, currentUser);
+        SeatDTO result = seatService.updateSeatForManager(id, seatUpdateDTO, currentUser);
         LOG.debugf("Seat with ID %d updated successfully.", id);
         return result;
     }

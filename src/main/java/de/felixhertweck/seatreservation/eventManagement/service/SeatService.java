@@ -26,8 +26,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import de.felixhertweck.seatreservation.common.dto.SeatDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.SeatRequestDTO;
-import de.felixhertweck.seatreservation.eventManagement.dto.SeatResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.exception.SeatNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.Roles;
@@ -47,7 +47,7 @@ public class SeatService {
     @Inject EventLocationRepository eventLocationRepository;
 
     @Transactional
-    public SeatResponseDTO createSeatManager(SeatRequestDTO dto, User manager) {
+    public SeatDTO createSeatManager(SeatRequestDTO dto, User manager) {
         LOG.debugf(
                 "Attempting to create seat with number: %s for event location ID: %d by manager: %s"
                         + " (ID: %d)",
@@ -101,18 +101,16 @@ public class SeatService {
                 "Seat with ID %d created successfully for event location ID %d by manager: %s (ID:"
                         + " %d)",
                 seat.id, eventLocation.getId(), manager.getUsername(), manager.getId());
-        return new SeatResponseDTO(seat);
+        return new SeatDTO(seat);
     }
 
-    public List<SeatResponseDTO> findAllSeatsForManager(User manager) {
+    public List<SeatDTO> findAllSeatsForManager(User manager) {
         LOG.debugf(
                 "Attempting to retrieve all seats for manager: %s (ID: %d)",
                 manager.getUsername(), manager.getId());
         if (manager.getRoles().contains(Roles.ADMIN)) {
             LOG.debug("User is ADMIN, listing all seats.");
-            return seatRepository.listAll().stream()
-                    .map(SeatResponseDTO::new)
-                    .collect(Collectors.toList());
+            return seatRepository.listAll().stream().map(SeatDTO::new).collect(Collectors.toList());
         }
         List<EventLocation> managerLocations;
         if (manager.getRoles().contains(Roles.ADMIN)) {
@@ -120,10 +118,10 @@ public class SeatService {
         } else {
             managerLocations = new ArrayList<>(eventLocationRepository.findByManager(manager));
         }
-        List<SeatResponseDTO> result =
+        List<SeatDTO> result =
                 managerLocations.stream()
                         .flatMap(location -> seatRepository.findByEventLocation(location).stream())
-                        .map(SeatResponseDTO::new)
+                        .map(SeatDTO::new)
                         .collect(Collectors.toList());
         LOG.infof(
                 "Retrieved %d seats for manager: %s (ID: %d)",
@@ -131,7 +129,7 @@ public class SeatService {
         return result;
     }
 
-    public SeatResponseDTO findSeatByIdForManager(Long id, User manager) {
+    public SeatDTO findSeatByIdForManager(Long id, User manager) {
         LOG.debugf(
                 "Attempting to retrieve seat with ID: %d for manager: %s (ID: %d)",
                 id, manager.getUsername(), manager.getId());
@@ -139,11 +137,11 @@ public class SeatService {
         LOG.debugf(
                 "Successfully retrieved seat with ID %d for manager: %s (ID: %d)",
                 id, manager.getUsername(), manager.getId());
-        return new SeatResponseDTO(seat);
+        return new SeatDTO(seat);
     }
 
     @Transactional
-    public SeatResponseDTO updateSeatForManager(Long id, SeatRequestDTO dto, User manager) {
+    public SeatDTO updateSeatForManager(Long id, SeatRequestDTO dto, User manager) {
         LOG.debugf(
                 "Attempting to update seat with ID: %d for manager: %s (ID: %d)",
                 id, manager.getUsername(), manager.getId());
@@ -201,7 +199,7 @@ public class SeatService {
         LOG.infof(
                 "Seat with ID %d updated successfully by manager: %s (ID: %d)",
                 id, manager.getUsername(), manager.getId());
-        return new SeatResponseDTO(seat);
+        return new SeatDTO(seat);
     }
 
     @Transactional

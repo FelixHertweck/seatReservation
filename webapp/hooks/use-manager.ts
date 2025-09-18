@@ -7,7 +7,7 @@ import type {
   DetailedEventResponseDto,
   EventRequestDto,
   EventLocationResponseDto,
-  SeatResponseDto,
+  SeatDto,
   DetailedReservationResponseDto,
   EventUserAllowancesDto,
   EventLocationRequestDto,
@@ -240,7 +240,7 @@ export function useManager(): UseManagerReturn {
     onSuccess: (data) => {
       queryClient.setQueriesData(
         { queryKey: getApiManagerSeatsQueryKey() },
-        (oldData: SeatResponseDto[] | undefined) => {
+        (oldData: SeatDto[] | undefined) => {
           return oldData ? [...oldData, data] : [data];
         },
       );
@@ -257,7 +257,7 @@ export function useManager(): UseManagerReturn {
     onSuccess: (data) => {
       queryClient.setQueriesData(
         { queryKey: getApiManagerSeatsQueryKey() },
-        (oldData: SeatResponseDto[] | undefined) => {
+        (oldData: SeatDto[] | undefined) => {
           return oldData
             ? oldData.map((seat) => (seat.id === data.id ? data : seat))
             : [data];
@@ -275,7 +275,7 @@ export function useManager(): UseManagerReturn {
     onSuccess: (_, variables) => {
       queryClient.setQueriesData(
         { queryKey: getApiManagerSeatsQueryKey() },
-        (oldData: SeatResponseDto[] | undefined) => {
+        (oldData: SeatDto[] | undefined) => {
           return oldData
             ? oldData.filter((seat) => seat.id !== variables.path.id)
             : [];
