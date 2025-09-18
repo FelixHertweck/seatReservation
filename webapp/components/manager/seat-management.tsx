@@ -23,17 +23,17 @@ import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { SeatFormModal } from "@/components/manager/seat-form-modal";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
 import type {
-  SeatResponseDto,
+  SeatDto,
   SeatRequestDto,
   EventLocationResponseDto,
 } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 
 export interface SeatManagementProps {
-  seats: SeatResponseDto[];
+  seats: SeatDto[];
   locations: EventLocationResponseDto[];
-  createSeat: (seat: SeatRequestDto) => Promise<SeatResponseDto>;
-  updateSeat: (id: bigint, seat: SeatRequestDto) => Promise<SeatResponseDto>;
+  createSeat: (seat: SeatRequestDto) => Promise<SeatDto>;
+  updateSeat: (id: bigint, seat: SeatRequestDto) => Promise<SeatDto>;
   deleteSeat: (id: bigint) => Promise<unknown>;
   onNavigateToLocation?: (locationId: bigint) => void;
   initialFilter?: Record<string, string>;
@@ -51,7 +51,7 @@ export function SeatManagement({
   const t = useT();
 
   const [filteredSeats, setFilteredSeats] = useState(seats);
-  const [selectedSeat, setSelectedSeat] = useState<SeatResponseDto | null>(
+  const [selectedSeat, setSelectedSeat] = useState<SeatDto | null>(
     null,
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -75,7 +75,7 @@ export function SeatManagement({
               ?.toLowerCase()
               .includes(searchQuery.toLowerCase()) ||
             locations
-              .find((loc) => loc.id === seat.eventLocationId)
+              .find((loc) => loc.id === seat.locationId)
               ?.name?.toLowerCase()
               .includes(searchQuery.toLowerCase()),
         );
@@ -84,7 +84,7 @@ export function SeatManagement({
       // Apply filters
       if (filters.locationId) {
         filtered = filtered.filter(
-          (seat) => seat.eventLocationId?.toString() === filters.locationId,
+          (seat) => seat.locationId?.toString() === filters.locationId,
         );
       }
       if (filters.seatId) {
@@ -120,13 +120,13 @@ export function SeatManagement({
     setIsModalOpen(true);
   };
 
-  const handleEditSeat = (seat: SeatResponseDto) => {
+  const handleEditSeat = (seat: SeatDto) => {
     setSelectedSeat(seat);
     setIsCreating(false);
     setIsModalOpen(true);
   };
 
-  const handleDeleteSeat = async (seat: SeatResponseDto) => {
+  const handleDeleteSeat = async (seat: SeatDto) => {
     if (
       seat.id &&
       confirm(
@@ -202,7 +202,7 @@ export function SeatManagement({
               <TableBody>
                 {paginatedData.map((seat) => {
                   const location = locations.find(
-                    (loc) => loc.id === seat.eventLocationId,
+                    (loc) => loc.id === seat.locationId,
                   );
 
                   return (

@@ -185,15 +185,6 @@ export type SeatRequestDto = {
     yCoordinate: number;
 };
 
-export type SeatResponseDto = {
-    id?: bigint;
-    seatNumber?: string;
-    eventLocationId?: bigint;
-    xCoordinate?: number;
-    yCoordinate?: number;
-    status?: ReservationStatus;
-};
-
 export type SeatWithStatusDto = {
     id?: bigint;
     seatNumber?: string;
@@ -1012,6 +1003,41 @@ export type GetApiManagerReservationsEventByIdResponses = {
 
 export type GetApiManagerReservationsEventByIdResponse = GetApiManagerReservationsEventByIdResponses[keyof GetApiManagerReservationsEventByIdResponses];
 
+export type GetApiManagerReservationsExportByEventIdCsvData = {
+    body?: never;
+    path: {
+        eventId: bigint;
+    };
+    query?: never;
+    url: '/api/manager/reservations/export/{eventId}/csv';
+};
+
+export type GetApiManagerReservationsExportByEventIdCsvErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Forbidden - User not authorized
+     */
+    403: unknown;
+    /**
+     * Not Found - Event not found
+     */
+    404: unknown;
+    /**
+     * Internal Server Error during CSV export
+     */
+    500: unknown;
+};
+
+export type GetApiManagerReservationsExportByEventIdCsvResponses = {
+    /**
+     * CSV export of reservations for a specific event
+     */
+    200: unknown;
+};
+
 export type DeleteApiManagerReservationsByIdData = {
     body?: never;
     path: {
@@ -1100,7 +1126,7 @@ export type GetApiManagerSeatsResponses = {
     /**
      * OK
      */
-    200: Array<SeatResponseDto>;
+    200: Array<SeatDto>;
 };
 
 export type GetApiManagerSeatsResponse = GetApiManagerSeatsResponses[keyof GetApiManagerSeatsResponses];
@@ -1139,7 +1165,7 @@ export type PostApiManagerSeatsResponses = {
     /**
      * OK
      */
-    200: SeatResponseDto;
+    200: SeatDto;
 };
 
 export type PostApiManagerSeatsResponse = PostApiManagerSeatsResponses[keyof PostApiManagerSeatsResponses];
@@ -1209,7 +1235,7 @@ export type GetApiManagerSeatsByIdResponses = {
     /**
      * OK
      */
-    200: SeatResponseDto;
+    200: SeatDto;
 };
 
 export type GetApiManagerSeatsByIdResponse = GetApiManagerSeatsByIdResponses[keyof GetApiManagerSeatsByIdResponses];
@@ -1250,7 +1276,7 @@ export type PutApiManagerSeatsByIdResponses = {
     /**
      * OK
      */
-    200: SeatResponseDto;
+    200: SeatDto;
 };
 
 export type PutApiManagerSeatsByIdResponse = PutApiManagerSeatsByIdResponses[keyof PutApiManagerSeatsByIdResponses];
@@ -1414,41 +1440,6 @@ export type PostApiUserReservationsResponses = {
 };
 
 export type PostApiUserReservationsResponse = PostApiUserReservationsResponses[keyof PostApiUserReservationsResponses];
-
-export type GetApiUserReservationsExportByEventIdCsvData = {
-    body?: never;
-    path: {
-        eventId: bigint;
-    };
-    query?: never;
-    url: '/api/user/reservations/export/{eventId}/csv';
-};
-
-export type GetApiUserReservationsExportByEventIdCsvErrors = {
-    /**
-     * Unauthorized
-     */
-    401: unknown;
-    /**
-     * Forbidden - User not authorized
-     */
-    403: unknown;
-    /**
-     * Not Found - Event not found
-     */
-    404: unknown;
-    /**
-     * Internal Server Error during CSV export
-     */
-    500: unknown;
-};
-
-export type GetApiUserReservationsExportByEventIdCsvResponses = {
-    /**
-     * CSV export of reservations for a specific event
-     */
-    200: unknown;
-};
 
 export type DeleteApiUserReservationsByIdData = {
     body?: never;

@@ -586,34 +586,6 @@ export const SeatRequestDTOSchema = {
     }
 } as const;
 
-export const SeatResponseDTOSchema = {
-    type: 'object',
-    properties: {
-        id: {
-            type: 'integer',
-            format: 'int64'
-        },
-        seatNumber: {
-            type: 'string'
-        },
-        eventLocationId: {
-            type: 'integer',
-            format: 'int64'
-        },
-        xCoordinate: {
-            type: 'integer',
-            format: 'int32'
-        },
-        yCoordinate: {
-            type: 'integer',
-            format: 'int32'
-        },
-        status: {
-            '$ref': '#/components/schemas/ReservationStatus'
-        }
-    }
-} as const;
-
 export const SeatWithStatusDTOSchema = {
     type: 'object',
     properties: {

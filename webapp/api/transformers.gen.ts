@@ -219,35 +219,25 @@ export const getApiManagerReservationsByIdResponseTransformer = async (data: any
     return data;
 };
 
-const seatResponseDtoSchemaResponseTransformer = (data: any) => {
-    if (data.id) {
-        data.id = BigInt(data.id.toString());
-    }
-    if (data.eventLocationId) {
-        data.eventLocationId = BigInt(data.eventLocationId.toString());
-    }
-    return data;
-};
-
 export const getApiManagerSeatsResponseTransformer = async (data: any): Promise<GetApiManagerSeatsResponse> => {
     data = data.map((item: any) => {
-        return seatResponseDtoSchemaResponseTransformer(item);
+        return seatDtoSchemaResponseTransformer(item);
     });
     return data;
 };
 
 export const postApiManagerSeatsResponseTransformer = async (data: any): Promise<PostApiManagerSeatsResponse> => {
-    data = seatResponseDtoSchemaResponseTransformer(data);
+    data = seatDtoSchemaResponseTransformer(data);
     return data;
 };
 
 export const getApiManagerSeatsByIdResponseTransformer = async (data: any): Promise<GetApiManagerSeatsByIdResponse> => {
-    data = seatResponseDtoSchemaResponseTransformer(data);
+    data = seatDtoSchemaResponseTransformer(data);
     return data;
 };
 
 export const putApiManagerSeatsByIdResponseTransformer = async (data: any): Promise<PutApiManagerSeatsByIdResponse> => {
-    data = seatResponseDtoSchemaResponseTransformer(data);
+    data = seatDtoSchemaResponseTransformer(data);
     return data;
 };
 

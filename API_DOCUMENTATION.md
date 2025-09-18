@@ -381,7 +381,7 @@ Ruft alle Sitzplätze ab, die zu den Locations des aktuellen Managers gehören.
 
 -   **Rollen:** `MANAGER`, `ADMIN`
 -   **Responses:**
-    -   `200 OK`: Gibt eine Liste von `SeatResponseDTO` Objekten zurück.
+    -   `200 OK`: Gibt eine Liste von `SeatDto` Objekten zurück.
 
 ---
 
@@ -392,7 +392,7 @@ Erstellt einen neuen Sitzplatz.
 -   **Rollen:** `MANAGER`, `ADMIN`
 -   **Request Body:** `SeatRequestDTO`
 -   **Responses:**
-    -   `200 OK`: Sitzplatz erfolgreich erstellt. Gibt `SeatResponseDTO` zurück.
+    -   `200 OK`: Sitzplatz erfolgreich erstellt. Gibt `SeatDto` zurück.
     -   `404 Not Found`: Zugehörige Location nicht gefunden oder keine Berechtigung.
 
 ---
@@ -404,7 +404,7 @@ Ruft einen bestimmten Sitzplatz anhand seiner ID ab.
 -   **Rollen:** `MANAGER`, `ADMIN`
 -   **Path Parameter:** `id` (Long) - Die ID des Sitzplatzes.
 -   **Responses:**
-    -   `200 OK`: Gibt `SeatResponseDTO` zurück.
+    -   `200 OK`: Gibt `SeatDto` zurück.
     -   `404 Not Found`: Sitzplatz nicht gefunden oder keine Berechtigung.
 
 ---
@@ -417,7 +417,7 @@ Aktualisiert einen Sitzplatz.
 -   **Path Parameter:** `id` (Long) - Die ID des Sitzplatzes.
 -   **Request Body:** `SeatRequestDTO`
 -   **Responses:**
-    -   `200 OK`: Sitzplatz erfolgreich aktualisiert. Gibt `SeatResponseDTO` zurück.
+    -   `200 OK`: Sitzplatz erfolgreich aktualisiert. Gibt `SeatDto` zurück.
     -   `404 Not Found`: Sitzplatz oder Location nicht gefunden oder keine Berechtigung.
 ---
 

@@ -563,33 +563,6 @@
           }
         }
       },
-      "SeatResponseDTO" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "seatNumber" : {
-            "type" : "string"
-          },
-          "eventLocationId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "xCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "yCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "status" : {
-            "$ref" : "#/components/schemas/ReservationStatus"
-          }
-        }
-      },
       "SeatWithStatusDTO" : {
         "type" : "object",
         "properties" : {
@@ -1606,6 +1579,44 @@
         } ]
       }
     },
+    "/api/manager/reservations/export/{eventId}/csv" : {
+      "get" : {
+        "parameters" : [ {
+          "name" : "eventId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "CSV export of reservations for a specific event",
+            "content" : {
+              "text/csv" : { }
+            }
+          },
+          "403" : {
+            "description" : "Forbidden - User not authorized"
+          },
+          "404" : {
+            "description" : "Not Found - Event not found"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "500" : {
+            "description" : "Internal Server Error during CSV export"
+          }
+        },
+        "summary" : "Export Reservations To Csv",
+        "tags" : [ "Reservation Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
+        } ]
+      }
+    },
     "/api/manager/reservations/{id}" : {
       "get" : {
         "parameters" : [ {
@@ -1685,7 +1696,7 @@
                 "schema" : {
                   "type" : "array",
                   "items" : {
-                    "$ref" : "#/components/schemas/SeatResponseDTO"
+                    "$ref" : "#/components/schemas/SeatDTO"
                   }
                 }
               }
@@ -1721,7 +1732,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/SeatResponseDTO"
+                  "$ref" : "#/components/schemas/SeatDTO"
                 }
               }
             }
@@ -1776,7 +1787,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/SeatResponseDTO"
+                  "$ref" : "#/components/schemas/SeatDTO"
                 }
               }
             }
@@ -1819,7 +1830,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/SeatResponseDTO"
+                  "$ref" : "#/components/schemas/SeatDTO"
                 }
               }
             }
@@ -2037,44 +2048,6 @@
         "tags" : [ "Reservation Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "USER", "MANAGER", "ADMIN" ]
-        } ]
-      }
-    },
-    "/api/user/reservations/export/{eventId}/csv" : {
-      "get" : {
-        "parameters" : [ {
-          "name" : "eventId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "CSV export of reservations for a specific event",
-            "content" : {
-              "text/csv" : { }
-            }
-          },
-          "403" : {
-            "description" : "Forbidden - User not authorized"
-          },
-          "404" : {
-            "description" : "Not Found - Event not found"
-          },
-          "401" : {
-            "description" : "Unauthorized"
-          },
-          "500" : {
-            "description" : "Internal Server Error during CSV export"
-          }
-        },
-        "summary" : "Export Reservations To Csv",
-        "tags" : [ "Reservation Resource" ],
-        "security" : [ {
-          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
         } ]
       }
     },

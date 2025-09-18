@@ -21,14 +21,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type {
-  SeatResponseDto,
   SeatRequestDto,
   EventLocationResponseDto,
+  SeatDto,
 } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 
 interface SeatFormModalProps {
-  seat: SeatResponseDto | null;
+  seat: SeatDto | null;
   locations: EventLocationResponseDto[];
   isCreating: boolean;
   onSubmit: (seatData: SeatRequestDto) => Promise<void>;
@@ -46,7 +46,7 @@ export function SeatFormModal({
 
   const [formData, setFormData] = useState({
     seatNumber: seat?.seatNumber || "",
-    eventLocationId: seat?.eventLocationId?.toString() || "",
+    eventLocationId: seat?.locationId?.toString() || "",
     xCoordinate: seat?.xCoordinate?.toString() || "",
     yCoordinate: seat?.yCoordinate?.toString() || "",
   });
