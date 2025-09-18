@@ -31,9 +31,9 @@ import jakarta.ws.rs.*;
 import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
 import de.felixhertweck.seatreservation.common.dto.UserDTO;
 import de.felixhertweck.seatreservation.model.entity.Roles;
+import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.userManagment.dto.AdminUserCreationDto;
 import de.felixhertweck.seatreservation.userManagment.dto.AdminUserUpdateDTO;
-import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
@@ -68,7 +68,19 @@ public class UserResource {
         LOG.debugf(
                 "Received POST request to /api/users/admin/import for %d users.",
                 userCreationDTOs.size());
-        Set<UserDTO> importedUsers = userService.importUsers(userCreationDTOs);
+        Set<UserDTO> importedUsers = new java.util.HashSet<>();
+        for (AdminUserCreationDto dto : userCreationDTOs) {
+            User user =
+                    userService.createUser(
+                            dto.getUsername(),
+                            dto.getEmail(),
+                            dto.getPassword(),
+                            dto.getFirstname(),
+                            dto.getLastname(),
+                            dto.getRoles(),
+                            dto.getTags());
+            importedUsers.add(new UserDTO(user));
+        }
         return importedUsers;
     }
 
@@ -87,9 +99,16 @@ public class UserResource {
         LOG.debugf(
                 "Received POST request to /api/users/admin for user: %s",
                 userCreationDTO.getUsername());
-        UserDTO createdUser =
+        User user =
                 userService.createUser(
-                        new UserCreationDTO(userCreationDTO), userCreationDTO.getRoles());
+                        userCreationDTO.getUsername(),
+                        userCreationDTO.getEmail(),
+                        userCreationDTO.getPassword(),
+                        userCreationDTO.getFirstname(),
+                        userCreationDTO.getLastname(),
+                        userCreationDTO.getRoles(),
+                        userCreationDTO.getTags());
+        UserDTO createdUser = new UserDTO(user);
         LOG.debugf("User %s created successfully by admin.", createdUser.username());
         return createdUser;
     }
@@ -108,7 +127,16 @@ public class UserResource {
             description = "Conflict: User with this username already exists")
     public UserDTO updateUser(@PathParam("id") Long id, @Valid AdminUserUpdateDTO user) {
         LOG.debugf("Received PUT request to /api/users/admin/%d for user update.", id);
-        UserDTO updatedUser = userService.updateUser(id, user);
+        User updated =
+                userService.updateUser(
+                        id,
+                        user.getFirstname(),
+                        user.getLastname(),
+                        user.getPassword(),
+                        user.getEmail(),
+                        user.getRoles(),
+                        user.getTags());
+        UserDTO updatedUser = new UserDTO(updated);
         LOG.debugf("User with ID %d updated successfully by admin.", id);
         return updatedUser;
     }
@@ -140,7 +168,8 @@ public class UserResource {
             description = "Forbidden: Only ADMIN or MANAGER roles can access this resource")
     public List<LimitedUserInfoDTO> getAllUsers() {
         LOG.debugf("Received GET request to /api/users/manager to get all users (limited info).");
-        List<LimitedUserInfoDTO> users = userService.getAllUsers();
+        List<LimitedUserInfoDTO> users =
+                userService.getAllUsers().stream().map(LimitedUserInfoDTO::new).toList();
         LOG.debugf("Returning %d limited user info DTOs.", users.size());
         return users;
     }
@@ -174,7 +203,7 @@ public class UserResource {
             description = "Forbidden: Only ADMIN role can access this resource")
     public List<UserDTO> getAllUsersAsAdmin() {
         LOG.debugf("Received GET request to /api/users/admin to get all users (admin view).");
-        List<UserDTO> users = userService.getUsersAsAdmin();
+        List<UserDTO> users = userService.getUsersAsAdmin().stream().map(UserDTO::new).toList();
         LOG.debugf("Returning %d user DTOs for admin view.", users.size());
         return users;
     }
@@ -194,7 +223,15 @@ public class UserResource {
         String username = securityContext.getUserPrincipal().getName();
         LOG.debugf(
                 "Received PUT request to /api/users/me to update profile for user: %s", username);
-        UserDTO updatedUser = userService.updateUserProfile(username, userProfileUpdateDTO);
+        User updated =
+                userService.updateUserProfile(
+                        username,
+                        userProfileUpdateDTO.getFirstname(),
+                        userProfileUpdateDTO.getLastname(),
+                        userProfileUpdateDTO.getPassword(),
+                        userProfileUpdateDTO.getEmail(),
+                        userProfileUpdateDTO.getTags());
+        UserDTO updatedUser = new UserDTO(updated);
         LOG.debugf("User profile for %s updated successfully.", username);
         return updatedUser;
     }

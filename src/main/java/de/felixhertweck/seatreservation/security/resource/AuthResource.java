@@ -71,7 +71,13 @@ public class AuthResource {
         LOG.debugf("Received registration request for username: %s", registerRequest.getUsername());
         LOG.debugf("RegisterRequestDTO: %s", registerRequest.toString());
 
-        String token = authService.register(registerRequest);
+        String token =
+                authService.register(
+                        registerRequest.getUsername(),
+                        registerRequest.getEmail(),
+                        registerRequest.getPassword(),
+                        registerRequest.getFirstname(),
+                        registerRequest.getLastname());
 
         NewCookie jwtCookie = tokenService.createNewJwtCookie(token);
 

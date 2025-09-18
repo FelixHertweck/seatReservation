@@ -29,7 +29,6 @@ import jakarta.transaction.Transactional;
 import de.felixhertweck.seatreservation.common.exception.DuplicateUserException;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
-import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
 import io.quarkus.runtime.StartupEvent;
 import org.jboss.logging.Logger;
@@ -70,11 +69,15 @@ public class AdminUserInitializer {
                     --------- IMPORTANT ---------\
                     """,
                     randomPassword);
-            UserCreationDTO userCreationDTO =
-                    new UserCreationDTO(
-                            "admin", null, randomPassword, "System", "Admin", Set.of("system"));
             try {
-                userService.createUser(userCreationDTO, Set.of(Roles.ADMIN));
+                userService.createUser(
+                        "admin",
+                        null,
+                        randomPassword,
+                        "System",
+                        "Admin",
+                        Set.of(Roles.ADMIN),
+                        Set.of("system"));
                 LOG.info("Admin user created successfully.");
             } catch (DuplicateUserException e) {
                 LOG.warnf("Admin user already exists, skipping creation: %s", e.getMessage());

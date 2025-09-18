@@ -36,8 +36,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
-import de.felixhertweck.seatreservation.common.dto.UserDTO;
 import de.felixhertweck.seatreservation.common.exception.DuplicateUserException;
 import de.felixhertweck.seatreservation.common.exception.InvalidUserException;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
@@ -47,7 +45,6 @@ import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
-import de.felixhertweck.seatreservation.userManagment.dto.AdminUserCreationDto;
 import de.felixhertweck.seatreservation.userManagment.dto.AdminUserUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
@@ -101,11 +98,19 @@ public class UserServiceTest {
         when(emailService.createEmailVerification(any(User.class)))
                 .thenReturn(mockEmailVerification);
 
-        UserDTO createdUser = userService.createUser(dto, Set.of(Roles.USER));
+        User createdUser =
+                userService.createUser(
+                        dto.getUsername(),
+                        dto.getEmail(),
+                        dto.getPassword(),
+                        dto.getFirstname(),
+                        dto.getLastname(),
+                        Set.of(Roles.USER),
+                        dto.getTags());
 
         assertNotNull(createdUser);
-        assertEquals("testuser", createdUser.username());
-        assertEquals("test@example.com", createdUser.email());
+        assertEquals("testuser", createdUser.getUsername());
+        assertEquals("test@example.com", createdUser.getEmail());
         verify(userRepository, times(1)).persist(any(User.class));
         verify(emailService, times(1))
                 .sendEmailConfirmation(any(User.class), eq(mockEmailVerification));
@@ -118,11 +123,19 @@ public class UserServiceTest {
         when(userRepository.findByUsernameOptional(anyString())).thenReturn(Optional.empty());
         when(userRepository.isPersistent(any(User.class))).thenReturn(true);
 
-        UserDTO createdUser = userService.createUser(dto, Set.of(Roles.USER));
+        User createdUser =
+                userService.createUser(
+                        dto.getUsername(),
+                        dto.getEmail(),
+                        dto.getPassword(),
+                        dto.getFirstname(),
+                        dto.getLastname(),
+                        Set.of(Roles.USER),
+                        dto.getTags());
 
         assertNotNull(createdUser);
-        assertEquals("testuser", createdUser.username());
-        assertNull(createdUser.email());
+        assertEquals("testuser", createdUser.getUsername());
+        assertNull(createdUser.getEmail());
         verify(userRepository, times(1)).persist(any(User.class));
         verify(emailService, never()).createEmailVerification(any(User.class));
         verify(emailService, never())
@@ -132,7 +145,10 @@ public class UserServiceTest {
     @Test
     void createUser_InvalidUserException_NullDTO() throws IOException {
         assertThrows(
-                InvalidUserException.class, () -> userService.createUser(null, Set.of(Roles.USER)));
+                InvalidUserException.class,
+                () ->
+                        userService.createUser(
+                                null, null, null, null, null, Set.of(Roles.USER), null));
         verify(userRepository, never()).persist(any(User.class));
         verify(emailService, never()).createEmailVerification(any(User.class));
         verify(emailService, never())
@@ -144,12 +160,30 @@ public class UserServiceTest {
         final UserCreationDTO dto =
                 new UserCreationDTO("", "test@example.com", "password", "John", "Doe", null);
         assertThrows(
-                InvalidUserException.class, () -> userService.createUser(dto, Set.of(Roles.USER)));
+                InvalidUserException.class,
+                () ->
+                        userService.createUser(
+                                dto.getUsername(),
+                                dto.getEmail(),
+                                dto.getPassword(),
+                                dto.getFirstname(),
+                                dto.getLastname(),
+                                Set.of(Roles.USER),
+                                dto.getTags()));
 
         final UserCreationDTO dto2 =
                 new UserCreationDTO("   ", "test@example.com", "password", "John", "Doe", null);
         assertThrows(
-                InvalidUserException.class, () -> userService.createUser(dto2, Set.of(Roles.USER)));
+                InvalidUserException.class,
+                () ->
+                        userService.createUser(
+                                dto2.getUsername(),
+                                dto2.getEmail(),
+                                dto2.getPassword(),
+                                dto2.getFirstname(),
+                                dto2.getLastname(),
+                                Set.of(Roles.USER),
+                                dto2.getTags()));
 
         verify(userRepository, never()).persist(any(User.class));
         verify(emailService, never()).createEmailVerification(any(User.class));
@@ -162,12 +196,30 @@ public class UserServiceTest {
         final UserCreationDTO dto =
                 new UserCreationDTO("testuser", "test@example.com", "", "John", "Doe", null);
         assertThrows(
-                InvalidUserException.class, () -> userService.createUser(dto, Set.of(Roles.USER)));
+                InvalidUserException.class,
+                () ->
+                        userService.createUser(
+                                dto.getUsername(),
+                                dto.getEmail(),
+                                dto.getPassword(),
+                                dto.getFirstname(),
+                                dto.getLastname(),
+                                Set.of(Roles.USER),
+                                dto.getTags()));
 
         final UserCreationDTO dto2 =
                 new UserCreationDTO("testuser", "test@example.com", "   ", "John", "Doe", null);
         assertThrows(
-                InvalidUserException.class, () -> userService.createUser(dto2, Set.of(Roles.USER)));
+                InvalidUserException.class,
+                () ->
+                        userService.createUser(
+                                dto2.getUsername(),
+                                dto2.getEmail(),
+                                dto2.getPassword(),
+                                dto2.getFirstname(),
+                                dto2.getLastname(),
+                                Set.of(Roles.USER),
+                                dto2.getTags()));
 
         verify(userRepository, never()).persist(any(User.class));
     }
@@ -182,7 +234,15 @@ public class UserServiceTest {
 
         assertThrows(
                 DuplicateUserException.class,
-                () -> userService.createUser(dto, Set.of(Roles.USER)));
+                () ->
+                        userService.createUser(
+                                dto.getUsername(),
+                                dto.getEmail(),
+                                dto.getPassword(),
+                                dto.getFirstname(),
+                                dto.getLastname(),
+                                Set.of(Roles.USER),
+                                dto.getTags()));
         verify(userRepository, never()).persist(any(User.class));
         verify(emailService, never()).createEmailVerification(any(User.class));
         verify(emailService, never())
@@ -215,11 +275,19 @@ public class UserServiceTest {
         // Simulate that another user already has this email, but it should not prevent creation
         // (assuming email uniqueness is not enforced at this layer for creation)
 
-        UserDTO createdUser = userService.createUser(dto, Set.of(Roles.USER));
+        User createdUser =
+                userService.createUser(
+                        dto.getUsername(),
+                        dto.getEmail(),
+                        dto.getPassword(),
+                        dto.getFirstname(),
+                        dto.getLastname(),
+                        Set.of(Roles.USER),
+                        dto.getTags());
 
         assertNotNull(createdUser);
-        assertEquals("newuser", createdUser.username());
-        assertEquals("existing@example.com", createdUser.email());
+        assertEquals("newuser", createdUser.getUsername());
+        assertEquals("existing@example.com", createdUser.getEmail());
         verify(userRepository, times(1)).persist(any(User.class));
         verify(emailService, times(1)).createEmailVerification(any(User.class));
         verify(emailService, times(1))
@@ -252,7 +320,17 @@ public class UserServiceTest {
                 .when(emailService)
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
 
-        assertThrows(RuntimeException.class, () -> userService.createUser(dto, Set.of(Roles.USER)));
+        assertThrows(
+                RuntimeException.class,
+                () ->
+                        userService.createUser(
+                                dto.getUsername(),
+                                dto.getEmail(),
+                                dto.getPassword(),
+                                dto.getFirstname(),
+                                dto.getLastname(),
+                                Set.of(Roles.USER),
+                                dto.getTags()));
         verify(userRepository, never()).persist(any(User.class));
         verify(emailService, times(1)).createEmailVerification(any(User.class));
         verify(emailService, times(1))
@@ -288,12 +366,20 @@ public class UserServiceTest {
 
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
 
-        UserDTO updatedUser = userService.updateUser(1L, dto);
+        User updatedUser =
+                userService.updateUser(
+                        1L,
+                        dto.getFirstname(),
+                        dto.getLastname(),
+                        dto.getPassword(),
+                        dto.getEmail(),
+                        dto.getRoles(),
+                        dto.getTags());
 
         assertNotNull(updatedUser);
-        assertEquals("New", updatedUser.firstname());
-        assertEquals("User", updatedUser.lastname());
-        assertEquals("old@example.com", updatedUser.email());
+        assertEquals("New", updatedUser.getFirstname());
+        assertEquals("User", updatedUser.getLastname());
+        assertEquals("old@example.com", updatedUser.getEmail());
         verify(userRepository, times(1)).persist(existingUser);
         verify(emailService, never())
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
@@ -328,12 +414,20 @@ public class UserServiceTest {
 
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
 
-        UserDTO updatedUser = userService.updateUser(1L, dto);
+        User updatedUser =
+                userService.updateUser(
+                        1L,
+                        dto.getFirstname(),
+                        dto.getLastname(),
+                        dto.getPassword(),
+                        dto.getEmail(),
+                        dto.getRoles(),
+                        dto.getTags());
 
         assertNotNull(updatedUser);
-        assertEquals("John", updatedUser.firstname());
-        assertEquals("New", updatedUser.lastname());
-        assertEquals("old@example.com", updatedUser.email());
+        assertEquals("John", updatedUser.getFirstname());
+        assertEquals("New", updatedUser.getLastname());
+        assertEquals("old@example.com", updatedUser.getEmail());
         verify(userRepository, times(1)).persist(existingUser);
         verify(emailService, never())
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
@@ -368,7 +462,15 @@ public class UserServiceTest {
 
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
 
-        UserDTO updatedUser = userService.updateUser(1L, dto);
+        User updatedUser =
+                userService.updateUser(
+                        1L,
+                        dto.getFirstname(),
+                        dto.getLastname(),
+                        dto.getPassword(),
+                        dto.getEmail(),
+                        dto.getRoles(),
+                        dto.getTags());
 
         assertNotNull(updatedUser);
         assertTrue(
@@ -410,7 +512,14 @@ public class UserServiceTest {
 
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
 
-        userService.updateUser(1L, dto);
+        userService.updateUser(
+                1L,
+                dto.getFirstname(),
+                dto.getLastname(),
+                dto.getPassword(),
+                dto.getEmail(),
+                dto.getRoles(),
+                dto.getTags());
 
         verify(emailService, times(1)).sendPasswordChangedNotification(existingUser);
     }
@@ -445,7 +554,14 @@ public class UserServiceTest {
 
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
 
-        userService.updateUser(1L, dto);
+        userService.updateUser(
+                1L,
+                dto.getFirstname(),
+                dto.getLastname(),
+                dto.getPassword(),
+                dto.getEmail(),
+                dto.getRoles(),
+                dto.getTags());
 
         assertNotEquals(initialSalt, existingUser.getPasswordSalt());
         assertTrue(
@@ -478,7 +594,15 @@ public class UserServiceTest {
 
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
 
-        UserDTO updatedUser = userService.updateUser(1L, dto);
+        User updatedUser =
+                userService.updateUser(
+                        1L,
+                        dto.getFirstname(),
+                        dto.getLastname(),
+                        dto.getPassword(),
+                        dto.getEmail(),
+                        dto.getRoles(),
+                        dto.getTags());
 
         assertNotNull(updatedUser);
         assertEquals(newRoles, existingUser.getRoles());
@@ -516,16 +640,24 @@ public class UserServiceTest {
 
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
 
-        UserDTO updatedUser = userService.updateUser(1L, dto);
+        User updatedUser =
+                userService.updateUser(
+                        1L,
+                        dto.getFirstname(),
+                        dto.getLastname(),
+                        dto.getPassword(),
+                        dto.getEmail(),
+                        dto.getRoles(),
+                        dto.getTags());
 
         assertNotNull(updatedUser);
-        assertEquals("New", updatedUser.firstname());
-        assertEquals("Name", updatedUser.lastname());
+        assertEquals("New", updatedUser.getFirstname());
+        assertEquals("Name", updatedUser.getLastname());
         assertTrue(
                 BcryptUtil.matches(
                         "newpass" + existingUser.getPasswordSalt(),
                         existingUser.getPasswordHash()));
-        assertEquals("old@example.com", updatedUser.email());
+        assertEquals("old@example.com", updatedUser.getEmail());
         verify(userRepository, times(1)).persist(existingUser);
         verify(emailService, never())
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
@@ -577,10 +709,18 @@ public class UserServiceTest {
                                 "token",
                                 LocalDateTime.now()));
 
-        UserDTO updatedUser = userService.updateUser(1L, dto);
+        User updatedUser =
+                userService.updateUser(
+                        1L,
+                        dto.getFirstname(),
+                        dto.getLastname(),
+                        dto.getPassword(),
+                        dto.getEmail(),
+                        dto.getRoles(),
+                        dto.getTags());
 
         assertNotNull(updatedUser);
-        assertEquals("new@example.com", updatedUser.email());
+        assertEquals("new@example.com", updatedUser.getEmail());
         assertFalse(existingUser.isEmailVerified());
         verify(userRepository, times(1)).persist(existingUser);
         verify(emailService, times(1)).createEmailVerification(any(User.class));
@@ -600,15 +740,29 @@ public class UserServiceTest {
                         Collections.emptySet());
         when(userRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> userService.updateUser(1L, dto));
+        assertThrows(
+                UserNotFoundException.class,
+                () ->
+                        userService.updateUser(
+                                1L,
+                                dto.getFirstname(),
+                                dto.getLastname(),
+                                dto.getPassword(),
+                                dto.getEmail(),
+                                dto.getRoles(),
+                                dto.getTags()));
         verify(userRepository, never()).persist(any(User.class));
         verify(emailService, never())
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
     @Test
-    void updateUser_InvalidUserException_NullDTO() throws IOException {
-        assertThrows(InvalidUserException.class, () -> userService.updateUser(1L, null));
+    void updateUser_UserNotFoundException_NullDTO() throws IOException {
+        when(userRepository.findByIdOptional(1L)).thenReturn(Optional.empty());
+
+        assertThrows(
+                UserNotFoundException.class,
+                () -> userService.updateUser(1L, null, null, null, null, null, null));
         verify(userRepository, never()).persist(any(User.class));
         verify(emailService, never())
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
@@ -663,10 +817,18 @@ public class UserServiceTest {
         // Simulate another user already has this email, but it should not prevent update
         // (assuming email uniqueness is not enforced at this layer for update)
 
-        UserDTO updatedUser = userService.updateUser(1L, dto);
+        User updatedUser =
+                userService.updateUser(
+                        1L,
+                        dto.getFirstname(),
+                        dto.getLastname(),
+                        dto.getPassword(),
+                        dto.getEmail(),
+                        dto.getRoles(),
+                        dto.getTags());
 
         assertNotNull(updatedUser);
-        assertEquals("duplicate@example.com", updatedUser.email());
+        assertEquals("duplicate@example.com", updatedUser.getEmail());
         verify(userRepository, times(1)).persist(existingUser);
         verify(emailService, times(1)).createEmailVerification(any(User.class));
         verify(emailService, times(1))
@@ -718,7 +880,17 @@ public class UserServiceTest {
                 .when(emailService)
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
 
-        assertThrows(RuntimeException.class, () -> userService.updateUser(1L, dto));
+        assertThrows(
+                RuntimeException.class,
+                () ->
+                        userService.updateUser(
+                                1L,
+                                dto.getFirstname(),
+                                dto.getLastname(),
+                                dto.getPassword(),
+                                dto.getEmail(),
+                                dto.getRoles(),
+                                dto.getTags()));
         verify(emailService, times(1)).createEmailVerification(any(User.class));
         verify(emailService, times(1))
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
@@ -773,10 +945,10 @@ public class UserServiceTest {
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
         when(userRepository.findById(1L)).thenReturn(existingUser); // Mock findById
 
-        UserDTO foundUser = userService.getUserById(1L);
+        User foundUser = userService.getUserById(1L);
 
         assertNotNull(foundUser);
-        assertEquals(existingUser.id, foundUser.id());
+        assertEquals(existingUser.id, foundUser.getId());
     }
 
     @Test
@@ -813,19 +985,19 @@ public class UserServiceTest {
                         Collections.emptySet());
         when(userRepository.listAll()).thenReturn(Arrays.asList(user1, user2));
 
-        List<LimitedUserInfoDTO> users = userService.getAllUsers();
+        List<User> users = userService.getAllUsers();
 
         assertNotNull(users);
         assertEquals(2, users.size());
-        assertTrue(users.stream().anyMatch(u -> u.username().equals(user1.getUsername())));
-        assertTrue(users.stream().anyMatch(u -> u.username().equals(user2.getUsername())));
+        assertTrue(users.stream().anyMatch(u -> u.getUsername().equals(user1.getUsername())));
+        assertTrue(users.stream().anyMatch(u -> u.getUsername().equals(user2.getUsername())));
     }
 
     @Test
     void getAllUsers_Success_NoUsers() {
         when(userRepository.listAll()).thenReturn(Collections.emptyList());
 
-        List<LimitedUserInfoDTO> users = userService.getAllUsers();
+        List<User> users = userService.getAllUsers();
 
         assertNotNull(users);
         assertTrue(users.isEmpty());
@@ -869,12 +1041,19 @@ public class UserServiceTest {
         when(userRepository.findByUsername("testuser"))
                 .thenReturn(existingUser); // Mock findByUsername
 
-        UserDTO updatedUser = userService.updateUserProfile("testuser", dto);
+        User updatedUser =
+                userService.updateUserProfile(
+                        "testuser",
+                        dto.getFirstname(),
+                        dto.getLastname(),
+                        dto.getPassword(),
+                        dto.getEmail(),
+                        dto.getTags());
 
         assertNotNull(updatedUser);
-        assertEquals("New", updatedUser.firstname());
-        assertEquals("User", updatedUser.lastname());
-        assertEquals("old@example.com", updatedUser.email());
+        assertEquals("New", updatedUser.getFirstname());
+        assertEquals("User", updatedUser.getLastname());
+        assertEquals("old@example.com", updatedUser.getEmail());
         verify(userRepository, times(1)).persist(existingUser);
         verify(emailService, never())
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
@@ -904,12 +1083,19 @@ public class UserServiceTest {
         when(userRepository.findByUsername("testuser"))
                 .thenReturn(existingUser); // Mock findByUsername
 
-        UserDTO updatedUser = userService.updateUserProfile("testuser", dto);
+        User updatedUser =
+                userService.updateUserProfile(
+                        "testuser",
+                        dto.getFirstname(),
+                        dto.getLastname(),
+                        dto.getPassword(),
+                        dto.getEmail(),
+                        dto.getTags());
 
         assertNotNull(updatedUser);
-        assertEquals("John", updatedUser.firstname());
-        assertEquals("New", updatedUser.lastname());
-        assertEquals("old@example.com", updatedUser.email());
+        assertEquals("John", updatedUser.getFirstname());
+        assertEquals("New", updatedUser.getLastname());
+        assertEquals("old@example.com", updatedUser.getEmail());
         verify(userRepository, times(1)).persist(existingUser);
         verify(emailService, never())
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
@@ -940,7 +1126,14 @@ public class UserServiceTest {
         when(userRepository.findByUsername("testuser"))
                 .thenReturn(existingUser); // Mock findByUsername
 
-        UserDTO updatedUser = userService.updateUserProfile("testuser", dto);
+        User updatedUser =
+                userService.updateUserProfile(
+                        "testuser",
+                        dto.getFirstname(),
+                        dto.getLastname(),
+                        dto.getPassword(),
+                        dto.getEmail(),
+                        dto.getTags());
 
         assertNotNull(updatedUser);
         assertTrue(
@@ -989,10 +1182,17 @@ public class UserServiceTest {
                                 "token",
                                 LocalDateTime.now()));
 
-        UserDTO updatedUser = userService.updateUserProfile("testuser", dto);
+        User updatedUser =
+                userService.updateUserProfile(
+                        "testuser",
+                        dto.getFirstname(),
+                        dto.getLastname(),
+                        dto.getPassword(),
+                        dto.getEmail(),
+                        dto.getTags());
 
         assertNotNull(updatedUser);
-        assertEquals("new@example.com", updatedUser.email());
+        assertEquals("new@example.com", updatedUser.getEmail());
         assertFalse(existingUser.isEmailVerified());
         verify(userRepository, times(1)).persist(existingUser);
         verify(emailService, times(1)).createEmailVerification(any(User.class));
@@ -1008,16 +1208,26 @@ public class UserServiceTest {
 
         assertThrows(
                 UserNotFoundException.class,
-                () -> userService.updateUserProfile("nonexistent", dto));
+                () ->
+                        userService.updateUserProfile(
+                                "nonexistent",
+                                dto.getFirstname(),
+                                dto.getLastname(),
+                                dto.getPassword(),
+                                dto.getEmail(),
+                                dto.getTags()));
         verify(userRepository, never()).persist(any(User.class));
         verify(emailService, never())
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
     @Test
-    void updateUserProfile_InvalidUserException_NullDTO() throws IOException {
+    void updateUserProfile_UserNotFoundException_NullDTO() throws IOException {
+        when(userRepository.findByUsernameOptional("testuser")).thenReturn(Optional.empty());
+
         assertThrows(
-                InvalidUserException.class, () -> userService.updateUserProfile("testuser", null));
+                UserNotFoundException.class,
+                () -> userService.updateUserProfile("testuser", null, null, null, null, null));
         verify(userRepository, never()).persist(any(User.class));
         verify(emailService, never())
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
@@ -1065,10 +1275,17 @@ public class UserServiceTest {
                                 "token",
                                 LocalDateTime.now()));
 
-        UserDTO updatedUser = userService.updateUserProfile("testuser", dto);
+        User updatedUser =
+                userService.updateUserProfile(
+                        "testuser",
+                        dto.getFirstname(),
+                        dto.getLastname(),
+                        dto.getPassword(),
+                        dto.getEmail(),
+                        dto.getTags());
 
         assertNotNull(updatedUser);
-        assertEquals("duplicate@example.com", updatedUser.email());
+        assertEquals("duplicate@example.com", updatedUser.getEmail());
         verify(userRepository, times(1)).persist(any(User.class));
         verify(emailService, times(1)).createEmailVerification(any(User.class));
         verify(emailService, times(1))
@@ -1116,7 +1333,16 @@ public class UserServiceTest {
                 .when(emailService)
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
 
-        assertThrows(RuntimeException.class, () -> userService.updateUserProfile("testuser", dto));
+        assertThrows(
+                RuntimeException.class,
+                () ->
+                        userService.updateUserProfile(
+                                "testuser",
+                                dto.getFirstname(),
+                                dto.getLastname(),
+                                dto.getPassword(),
+                                dto.getEmail(),
+                                dto.getTags()));
         verify(emailService, times(1)).createEmailVerification(any(User.class));
         verify(emailService, times(1))
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
@@ -1145,7 +1371,16 @@ public class UserServiceTest {
                 .when(emailService)
                 .sendPasswordChangedNotification(any(User.class));
 
-        assertThrows(RuntimeException.class, () -> userService.updateUserProfile("testuser", dto));
+        assertThrows(
+                RuntimeException.class,
+                () ->
+                        userService.updateUserProfile(
+                                "testuser",
+                                dto.getFirstname(),
+                                dto.getLastname(),
+                                dto.getPassword(),
+                                dto.getEmail(),
+                                dto.getTags()));
         verify(emailService, times(1)).sendPasswordChangedNotification(existingUser);
     }
 
@@ -1310,170 +1545,5 @@ public class UserServiceTest {
         // Second attempt should throw an exception because the token is no longer found
         assertThrows(
                 IllegalArgumentException.class, () -> userService.verifyEmail(100L, "validtoken"));
-    }
-
-    @Test
-    void importUsers_Success() throws InvalidUserException, DuplicateUserException, IOException {
-        Set<AdminUserCreationDto> dtos = new HashSet<>();
-        AdminUserCreationDto dto1 =
-                new AdminUserCreationDto(
-                        "user1",
-                        "user1@example.com",
-                        "pass1",
-                        "First1",
-                        "Last1",
-                        Set.of(Roles.USER),
-                        null);
-        AdminUserCreationDto dto2 =
-                new AdminUserCreationDto(
-                        "user2",
-                        "user2@example.com",
-                        "pass2",
-                        "First2",
-                        "Last2",
-                        Set.of(Roles.MANAGER),
-                        null);
-        dtos.add(dto1);
-        dtos.add(dto2);
-
-        when(userRepository.findByUsernameOptional("user1")).thenReturn(Optional.empty());
-        when(userRepository.findByUsernameOptional("user2")).thenReturn(Optional.empty());
-        when(userRepository.isPersistent(any(User.class))).thenReturn(true);
-        when(emailService.createEmailVerification(any(User.class)))
-                .thenReturn(
-                        new EmailVerification(
-                                new User(
-                                        "mock",
-                                        "mock@example.com",
-                                        true,
-                                        "hash",
-                                        "salt",
-                                        "Mock",
-                                        "User",
-                                        Collections.emptySet(),
-                                        Collections.emptySet()),
-                                "token",
-                                LocalDateTime.now()));
-
-        Set<UserDTO> importedUsers = userService.importUsers(dtos);
-
-        assertNotNull(importedUsers);
-        assertEquals(2, importedUsers.size());
-        verify(userRepository, times(2)).persist(any(User.class));
-        verify(emailService, times(2))
-                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
-    }
-
-    @Test
-    void importUsers_EmptySet() throws InvalidUserException, DuplicateUserException, IOException {
-        Set<AdminUserCreationDto> dtos = Collections.emptySet();
-
-        Set<UserDTO> importedUsers = userService.importUsers(dtos);
-
-        assertNotNull(importedUsers);
-        assertTrue(importedUsers.isEmpty());
-        verify(userRepository, never()).persist(any(User.class));
-        verify(emailService, never())
-                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
-    }
-
-    @Test
-    void importUsers_InvalidUserException() throws IOException {
-        Set<AdminUserCreationDto> dtos = new HashSet<>();
-        AdminUserCreationDto invalidDto =
-                new AdminUserCreationDto(
-                        "",
-                        "invalid@example.com",
-                        "pass",
-                        "Invalid",
-                        "User",
-                        Set.of(Roles.USER),
-                        null); // Invalid username
-        dtos.add(invalidDto);
-
-        assertThrows(InvalidUserException.class, () -> userService.importUsers(dtos));
-        verify(userRepository, never()).persist(any(User.class));
-        verify(emailService, never())
-                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
-    }
-
-    @Test
-    void importUsers_DuplicateUserException() throws IOException {
-        Set<AdminUserCreationDto> dtos = new HashSet<>();
-        AdminUserCreationDto duplicateDto =
-                new AdminUserCreationDto(
-                        "existinguser",
-                        "existing@example.com",
-                        "pass",
-                        "Existing",
-                        "User",
-                        Set.of(Roles.USER),
-                        null);
-        dtos.add(duplicateDto);
-
-        when(userRepository.findByUsernameOptional("existinguser"))
-                .thenReturn(Optional.of(new User())); // Simulate existing user
-        when(emailService.createEmailVerification(any(User.class)))
-                .thenReturn(
-                        new EmailVerification(
-                                new User(
-                                        "mock",
-                                        "mock@example.com",
-                                        true,
-                                        "hash",
-                                        "salt",
-                                        "Mock",
-                                        "User",
-                                        Collections.emptySet(),
-                                        Collections.emptySet()),
-                                "token",
-                                LocalDateTime.now()));
-
-        assertThrows(DuplicateUserException.class, () -> userService.importUsers(dtos));
-        verify(userRepository, never()).persist(any(User.class));
-        verify(emailService, never())
-                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
-    }
-
-    @Test
-    void importUsers_EmailSendFailure() throws IOException {
-        Set<AdminUserCreationDto> dtos = new HashSet<>();
-        AdminUserCreationDto dto1 =
-                new AdminUserCreationDto(
-                        "user1",
-                        "user1@example.com",
-                        "pass1",
-                        "First1",
-                        "Last1",
-                        Set.of(Roles.USER),
-                        null);
-        dtos.add(dto1);
-
-        when(userRepository.findByUsernameOptional("user1")).thenReturn(Optional.empty());
-        when(emailService.createEmailVerification(any(User.class)))
-                .thenReturn(
-                        new EmailVerification(
-                                new User(
-                                        "mock",
-                                        "mock@example.com",
-                                        true,
-                                        "hash",
-                                        "salt",
-                                        "Mock",
-                                        "User",
-                                        Collections.emptySet(),
-                                        Collections.emptySet()),
-                                "token",
-                                LocalDateTime.now()));
-        doThrow(new IOException("Email send failed"))
-                .when(emailService)
-                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
-
-        assertThrows(RuntimeException.class, () -> userService.importUsers(dtos));
-        verify(userRepository, never())
-                .persist(any(User.class)); // Should not persist if email send fails and
-        // transaction rolls back
-        verify(emailService, times(1))
-                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 }

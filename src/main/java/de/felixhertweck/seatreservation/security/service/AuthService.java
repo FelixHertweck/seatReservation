@@ -28,9 +28,7 @@ import de.felixhertweck.seatreservation.common.exception.InvalidUserException;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
-import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
-import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import org.jboss.logging.Logger;
@@ -85,28 +83,31 @@ public class AuthService {
     /**
      * Registers a new user with the given registration details.
      *
-     * @param registerRequest the registration details
+     * @param username the username of the new user
+     * @param email the email of the new user
+     * @param password the password of the new user
+     * @param firstname the first name of the new user
+     * @param lastname the last name of the new user
      * @return a JWT token if registration is successful
      * @throws DuplicateUserException if the user already exists
      * @throws InvalidUserException if the user details are invalid
      */
-    public String register(RegisterRequestDTO registerRequest)
+    public String register(
+            String username, String email, String password, String firstname, String lastname)
             throws DuplicateUserException, InvalidUserException {
-        LOG.infof("Attempting to register new user: %s", registerRequest.getUsername());
+        LOG.infof("Attempting to register new user: %s", username);
 
-        UserCreationDTO userCreationDTO = new UserCreationDTO(registerRequest);
+        userService.createUser(
+                username, email, password, firstname, lastname, Set.of(Roles.USER), null);
 
-        userService.createUser(userCreationDTO, Set.of(Roles.USER));
-
-        User user = userRepository.findByUsername(registerRequest.getUsername());
+        User user = userRepository.findByUsername(username);
 
         if (user == null) {
-            LOG.warnf("User %s not found after registration.", registerRequest.getUsername());
-            throw new InvalidUserException("User not found: " + registerRequest.getUsername());
+            LOG.warnf("User %s not found after registration.", username);
+            throw new InvalidUserException("User not found: " + username);
         }
 
-        LOG.infof(
-                "User %s registered successfully via AuthService.", registerRequest.getUsername());
+        LOG.infof("User %s registered successfully via AuthService.", username);
 
         return tokenService.generateToken(user);
     }

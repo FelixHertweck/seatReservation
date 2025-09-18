@@ -165,7 +165,12 @@ public class AuthResourceTest {
 
         Mockito.doAnswer(invocation -> null)
                 .when(authService)
-                .register(Mockito.any(RegisterRequestDTO.class));
+                .register(
+                        registerRequest.getUsername(),
+                        registerRequest.getEmail(),
+                        registerRequest.getPassword(),
+                        registerRequest.getFirstname(),
+                        registerRequest.getLastname());
 
         given().contentType(MediaType.APPLICATION_JSON)
                 .body(registerRequest)
@@ -188,7 +193,12 @@ public class AuthResourceTest {
         String errorMessage = "User with username existinguser already exists.";
         Mockito.doThrow(new DuplicateUserException(errorMessage))
                 .when(authService)
-                .register(Mockito.any(RegisterRequestDTO.class));
+                .register(
+                        registerRequest.getUsername(),
+                        registerRequest.getEmail(),
+                        registerRequest.getPassword(),
+                        registerRequest.getFirstname(),
+                        registerRequest.getLastname());
 
         given().contentType(MediaType.APPLICATION_JSON)
                 .body(registerRequest)

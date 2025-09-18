@@ -24,15 +24,12 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
-import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
-import de.felixhertweck.seatreservation.common.dto.UserDTO;
 import de.felixhertweck.seatreservation.common.exception.DuplicateUserException;
 import de.felixhertweck.seatreservation.common.exception.InvalidUserException;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
@@ -42,10 +39,6 @@ import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
-import de.felixhertweck.seatreservation.userManagment.dto.AdminUserCreationDto;
-import de.felixhertweck.seatreservation.userManagment.dto.AdminUserUpdateDTO;
-import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
-import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.exceptions.TokenExpiredException;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import org.jboss.logging.Logger;
@@ -64,85 +57,63 @@ public class UserService {
     @Inject EmailVerificationRepository emailVerificationRepository;
 
     /**
-     * Imports a set of users from the provided DTOs. Send directly email verification if email is
-     * set.
+     * Creates a new user in the system. No DTOs are handled in this service layer.
      *
-     * @param adminUserCreationDtos The set of user creation DTOs to import.
-     * @return A set of UserDTOs representing the imported users.
+     * @param username the username
+     * @param email the email (optional)
+     * @param password the raw password (will be salted and hashed)
+     * @param firstname the first name
+     * @param lastname the last name
+     * @param roles roles to assign
+     * @param tags tags to assign (optional)
+     * @return the persisted User entity
+     * @throws InvalidUserException if input is invalid
+     * @throws DuplicateUserException if username already exists
      */
     @Transactional
-    public Set<UserDTO> importUsers(Set<AdminUserCreationDto> adminUserCreationDtos)
+    public User createUser(
+            String username,
+            String email,
+            String password,
+            String firstname,
+            String lastname,
+            Set<String> roles,
+            Set<String> tags)
             throws InvalidUserException, DuplicateUserException {
-        LOG.infof("Importing %d users.", adminUserCreationDtos.size());
-
-        Set<UserDTO> importedUsers = new HashSet<>();
-        for (AdminUserCreationDto adminUser : adminUserCreationDtos) {
-            UserDTO user = createUser(new UserCreationDTO(adminUser), adminUser.getRoles());
-            importedUsers.add(user);
-        }
-        return importedUsers;
-    }
-
-    /**
-     * Creates a new user with the provided dto.
-     *
-     * @param userCreationDTO The DTO containing user creation dto.
-     * @param roles The roles to assign to the user.
-     * @return The created UserDTO.
-     * @throws InvalidUserException If the provided data is invalid.
-     * @throws DuplicateUserException If a user with the same username or email already exists.
-     * @throws RuntimeException If an error occurs while sending email confirmation.
-     */
-    @Transactional
-    public UserDTO createUser(UserCreationDTO userCreationDTO, Set<String> roles)
-            throws InvalidUserException, DuplicateUserException {
-        if (userCreationDTO == null) {
-            LOG.warn("UserCreationDTO is null during user creation.");
-            throw new InvalidUserException("User creation data cannot be null.");
-        }
-
-        LOG.infof("Attempting to create new user with username: %s", userCreationDTO.getUsername());
-        LOG.debugf("UserCreationDTO: %s", userCreationDTO.toString());
-
-        if (userCreationDTO.getUsername() == null
-                || userCreationDTO.getUsername().trim().isEmpty()) {
+        if (username == null || username.trim().isEmpty()) {
             LOG.warn("Username is empty or null during user creation.");
             throw new InvalidUserException("Username cannot be empty.");
         }
-        if (userCreationDTO.getPassword() == null
-                || userCreationDTO.getPassword().trim().isEmpty()) {
+        if (password == null || password.trim().isEmpty()) {
             LOG.warn("Password is empty or null during user creation.");
             throw new InvalidUserException("Password cannot be empty.");
         }
 
-        if (userRepository.findByUsernameOptional(userCreationDTO.getUsername()).isPresent()) {
-            LOG.warnf(
-                    "Duplicate user creation attempt for username: %s",
-                    userCreationDTO.getUsername());
-            throw new DuplicateUserException(
-                    "User with username " + userCreationDTO.getUsername() + " already exists.");
+        if (userRepository.findByUsernameOptional(username).isPresent()) {
+            LOG.warnf("Duplicate user creation attempt for username: %s", username);
+            throw new DuplicateUserException("User with username " + username + " already exists.");
         }
-        String email = null;
 
-        if (userCreationDTO.getEmail() != null && !userCreationDTO.getEmail().trim().isEmpty()) {
-            email = userCreationDTO.getEmail();
-            LOG.debugf("User email set to: %s", email);
+        String effectiveEmail = null;
+        if (email != null && !email.trim().isEmpty()) {
+            effectiveEmail = email;
+            LOG.debugf("User email set to: %s", effectiveEmail);
         }
 
         String salt = generateSalt();
-        String passwordHash = BcryptUtil.bcryptHash(userCreationDTO.getPassword() + salt);
+        String passwordHash = BcryptUtil.bcryptHash(password + salt);
 
         User user =
                 new User(
-                        userCreationDTO.getUsername(),
-                        email,
+                        username,
+                        effectiveEmail,
                         false,
                         passwordHash,
                         salt,
-                        userCreationDTO.getFirstname(),
-                        userCreationDTO.getLastname(),
+                        firstname,
+                        lastname,
                         roles,
-                        userCreationDTO.getTags());
+                        tags);
 
         LOG.debugf(
                 "User object prepared: username=%s, firstname=%s, lastname=%s, roles=%s, tags=%s",
@@ -175,7 +146,7 @@ public class UserService {
         userRepository.persist(user);
         LOG.infof("User %s persisted successfully with ID: %d", user.getUsername(), user.id);
 
-        return new UserDTO(user);
+        return user;
     }
 
     private void updateUserCore(
@@ -288,7 +259,12 @@ public class UserService {
      * Updates an existing user with the provided dto.
      *
      * @param id The ID of the user to update.
-     * @param user The DTO containing user profile update data.
+     * @param firstname The new first name.
+     * @param lastname The new last name.
+     * @param password The new raw password.
+     * @param email The new email address.
+     * @param roles The new set of roles.
+     * @param tags The new set of tags.
      * @return The updated UserDTO.
      * @throws UserNotFoundException If the user with the given ID does not exist.
      * @throws InvalidUserException If the provided data is invalid.
@@ -296,14 +272,16 @@ public class UserService {
      * @throws RuntimeException If an error occurs while sending email confirmation.
      */
     @Transactional
-    public UserDTO updateUser(Long id, AdminUserUpdateDTO user) throws UserNotFoundException {
-        if (user == null) {
-            LOG.warnf("AdminUserUpdateDTO is null for user ID: %d.", id);
-            throw new InvalidUserException("User update data cannot be null.");
-        }
-
+    public User updateUser(
+            Long id,
+            String firstname,
+            String lastname,
+            String password,
+            String email,
+            Set<String> roles,
+            Set<String> tags)
+            throws UserNotFoundException {
         LOG.infof("Attempting to update user with ID: %d by admin.", id);
-        LOG.debugf("AdminUserUpdateDTO for ID %d: %s", id, user.toString());
 
         User existingUser =
                 userRepository
@@ -315,23 +293,17 @@ public class UserService {
                                             "User with id " + id + " not found.");
                                 });
 
-        updateUserCore(
-                existingUser,
-                user.getEmail(),
-                user.getFirstname(),
-                user.getLastname(),
-                user.getPassword(),
-                user.getTags());
+        updateUserCore(existingUser, email, firstname, lastname, password, tags);
 
-        if (user.getRoles() != null) {
+        if (roles != null) {
             LOG.debugf(
                     "Updating roles for user ID %d from %s to %s",
-                    existingUser.id, existingUser.getRoles(), user.getRoles());
-            existingUser.setRoles(user.getRoles());
+                    existingUser.id, existingUser.getRoles(), roles);
+            existingUser.setRoles(roles);
         }
         userRepository.persist(existingUser);
         LOG.infof("User with ID %d updated successfully by admin.", existingUser.id);
-        return new UserDTO(existingUser);
+        return existingUser;
     }
 
     /**
@@ -351,7 +323,7 @@ public class UserService {
         LOG.infof("User with ID %d deleted successfully.", id);
     }
 
-    public UserDTO getUserById(Long id) {
+    public User getUserById(Long id) {
         LOG.infof("Attempting to retrieve user with ID: %d.", id);
         User user =
                 userRepository
@@ -363,21 +335,20 @@ public class UserService {
                                             "User with id " + id + " not found.");
                                 });
         LOG.infof("User with ID %d retrieved successfully.", id);
-        return new UserDTO(user);
+        return user;
     }
 
-    public List<LimitedUserInfoDTO> getAllUsers() {
-        LOG.infof("Retrieving all users (limited info).");
-        List<LimitedUserInfoDTO> users =
-                userRepository.listAll().stream().map(LimitedUserInfoDTO::new).toList();
-        LOG.debugf("Returning %d limited user info DTOs.", users.size());
+    public List<User> getAllUsers() {
+        LOG.infof("Retrieving all users.");
+        List<User> users = userRepository.listAll();
+        LOG.debugf("Returning %d users.", users.size());
         return users;
     }
 
-    public List<UserDTO> getUsersAsAdmin() {
+    public List<User> getUsersAsAdmin() {
         LOG.infof("Retrieving all users (admin view).");
-        List<UserDTO> users = userRepository.listAll().stream().map(UserDTO::new).toList();
-        LOG.debugf("Returning %d user DTOs for admin view.", users.size());
+        List<User> users = userRepository.listAll();
+        LOG.debugf("Returning %d users for admin view.", users.size());
         return users;
     }
 
@@ -389,15 +360,15 @@ public class UserService {
     }
 
     @Transactional
-    public UserDTO updateUserProfile(String username, UserProfileUpdateDTO userProfileUpdateDTO)
+    public User updateUserProfile(
+            String username,
+            String firstname,
+            String lastname,
+            String password,
+            String email,
+            Set<String> tags)
             throws UserNotFoundException {
-        if (userProfileUpdateDTO == null) {
-            LOG.warnf("UserProfileUpdateDTO is null for username: %s.", username);
-            throw new InvalidUserException("User profile update data cannot be null.");
-        }
-
         LOG.infof("Attempting to update user profile for username: %s.", username);
-        LOG.debugf("UserProfileUpdateDTO for %s: %s", username, userProfileUpdateDTO.toString());
 
         User existingUser =
                 userRepository
@@ -411,17 +382,11 @@ public class UserService {
                                             "User with username " + username + " not found.");
                                 });
 
-        updateUserCore(
-                existingUser,
-                userProfileUpdateDTO.getEmail(),
-                userProfileUpdateDTO.getFirstname(),
-                userProfileUpdateDTO.getLastname(),
-                userProfileUpdateDTO.getPassword(),
-                userProfileUpdateDTO.getTags());
+        updateUserCore(existingUser, email, firstname, lastname, password, tags);
 
         userRepository.persist(existingUser);
         LOG.infof("User profile for username %s updated successfully.", username);
-        return new UserDTO(existingUser);
+        return existingUser;
     }
 
     /**
