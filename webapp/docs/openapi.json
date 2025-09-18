@@ -535,33 +535,6 @@
           }
         }
       },
-      "SeatResponseDTO" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "seatNumber" : {
-            "type" : "string"
-          },
-          "eventLocationId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "xCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "yCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "status" : {
-            "$ref" : "#/components/schemas/ReservationStatus"
-          }
-        }
-      },
       "UserDTO" : {
         "type" : "object",
         "properties" : {
@@ -1634,7 +1607,7 @@
                 "schema" : {
                   "type" : "array",
                   "items" : {
-                    "$ref" : "#/components/schemas/SeatResponseDTO"
+                    "$ref" : "#/components/schemas/SeatDTO"
                   }
                 }
               }
@@ -1670,7 +1643,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/SeatResponseDTO"
+                  "$ref" : "#/components/schemas/SeatDTO"
                 }
               }
             }
@@ -1725,7 +1698,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/SeatResponseDTO"
+                  "$ref" : "#/components/schemas/SeatDTO"
                 }
               }
             }
@@ -1768,7 +1741,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/SeatResponseDTO"
+                  "$ref" : "#/components/schemas/SeatDTO"
                 }
               }
             }
@@ -2428,7 +2401,7 @@
   } ],
   "info" : {
     "title" : "Seat Reservation API",
-    "version" : "1.0.0-SNAPSHOT",
+    "version" : "0.0.1",
     "description" : "The official REST API for Seat Reservation.",
     "contact" : {
       "name" : "FelixHertweck GitHub ",
