@@ -30,9 +30,9 @@ public record ManagerReservationResponseDTO(
     public ManagerReservationResponseDTO(Reservation reservation) {
         this(
                 reservation.id,
-                new UserDTO(reservation.getUser()),
+                UserDTO.toDTO(reservation.getUser()),
                 reservation.getEvent().getId(),
-                new SeatDTO(reservation.getSeat()),
+                SeatDTO.toDTO(reservation.getSeat()),
                 reservation.getReservationDate());
     }
 }

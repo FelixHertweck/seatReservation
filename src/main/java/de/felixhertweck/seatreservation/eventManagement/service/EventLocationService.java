@@ -27,8 +27,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
-import de.felixhertweck.seatreservation.common.dto.EventLocationResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventLocationRequestDTO;
+import de.felixhertweck.seatreservation.eventManagement.dto.EventLocationResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.ImportEventLocationDto;
 import de.felixhertweck.seatreservation.eventManagement.dto.ImportSeatDto;
 import de.felixhertweck.seatreservation.eventManagement.exception.EventLocationNotFoundException;
@@ -72,7 +72,7 @@ public class EventLocationService {
                 "Retrieved %d event locations for manager: %s (ID: %d)",
                 eventLocations.size(), manager.getUsername(), manager.getId());
         return eventLocations.stream()
-                .map(EventLocationResponseDTO::new)
+                .map(EventLocationResponseDTO::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -111,7 +111,7 @@ public class EventLocationService {
         LOG.infof(
                 "Event location '%s' (ID: %d) created successfully by manager: %s (ID: %d)",
                 location.getName(), location.getId(), manager.getUsername(), manager.getId());
-        return new EventLocationResponseDTO(location);
+        return EventLocationResponseDTO.toDTO(location);
     }
 
     /**
@@ -169,7 +169,7 @@ public class EventLocationService {
         LOG.infof(
                 "Event location '%s' (ID: %d) updated successfully by manager: %s (ID: %d)",
                 location.getName(), location.getId(), manager.getUsername(), manager.getId());
-        return new EventLocationResponseDTO(location);
+        return EventLocationResponseDTO.toDTO(location);
     }
 
     /**
@@ -260,7 +260,7 @@ public class EventLocationService {
         LOG.infof(
                 "Event location '%s' (ID: %d) imported successfully by manager: %s (ID: %d)",
                 location.getName(), location.getId(), manager.getUsername(), manager.getId());
-        return new EventLocationResponseDTO(location);
+        return EventLocationResponseDTO.toDTO(location);
     }
 
     /**
@@ -325,6 +325,6 @@ public class EventLocationService {
 
         location.getSeats().addAll(newSeats);
 
-        return new EventLocationResponseDTO(location);
+        return EventLocationResponseDTO.toDTO(location);
     }
 }

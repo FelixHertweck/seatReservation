@@ -32,9 +32,8 @@ public record UserDTO(
         boolean emailVerified,
         Set<String> roles,
         Set<String> tags) {
-
-    public UserDTO(User user) {
-        this(
+    public static UserDTO toDTO(User user) {
+        return new UserDTO(
                 user.getId(),
                 user.getUsername(),
                 user.getFirstname(),

@@ -558,9 +558,6 @@ export const SeatDTOSchema = {
         yCoordinate: {
             type: 'integer',
             format: 'int32'
-        },
-        status: {
-            '$ref': '#/components/schemas/ReservationStatus'
         }
     }
 } as const;

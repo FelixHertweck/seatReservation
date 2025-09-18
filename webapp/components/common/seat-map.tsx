@@ -5,15 +5,15 @@ import React from "react";
 import type { ReactElement } from "react";
 
 import { cn } from "@/lib/utils";
-import type { SeatDto } from "@/api";
+import type { SeatWithStatusDto } from "@/api";
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useT } from "@/lib/i18n/hooks";
 
 interface SeatMapProps {
-  seats: SeatDto[];
-  selectedSeats: SeatDto[];
-  userReservedSeats?: SeatDto[];
-  onSeatSelect: (seat: SeatDto) => void;
+  seats: SeatWithStatusDto[];
+  selectedSeats: SeatWithStatusDto[];
+  userReservedSeats?: SeatWithStatusDto[];
+  onSeatSelect: (seat: SeatWithStatusDto) => void;
   readonly?: boolean;
 }
 
@@ -25,11 +25,11 @@ const SeatComponent = React.memo(
     zoom,
     onSeatSelect,
   }: {
-    seat: SeatDto | undefined;
+    seat: SeatWithStatusDto | undefined;
     seatColor: string;
     clickable: boolean;
     zoom: number;
-    onSeatSelect: (seat: SeatDto) => void;
+    onSeatSelect: (seat: SeatWithStatusDto) => void;
   }) => {
     const t = useT();
 
@@ -92,7 +92,7 @@ export function SeatMap({
       const maxY = Math.max(...seats.map((s) => s.yCoordinate || 0));
 
       // Create a map for O(1) seat lookup
-      const seatPositionMap = new Map<string, SeatDto>();
+      const seatPositionMap = new Map<string, SeatWithStatusDto>();
       seats.forEach((seat) => {
         if (seat.xCoordinate && seat.yCoordinate) {
           seatPositionMap.set(`${seat.xCoordinate}-${seat.yCoordinate}`, seat);
@@ -114,7 +114,7 @@ export function SeatMap({
     }, [seats, selectedSeats, userReservedSeats]);
 
   const getSeatColor = useCallback(
-    (seat: SeatDto | undefined) => {
+    (seat: SeatWithStatusDto | undefined) => {
       if (!seat) return "transparent";
 
       const isSelected = selectedSeatIds.has(seat.id);
@@ -138,7 +138,7 @@ export function SeatMap({
   );
 
   const canSelectSeat = useCallback(
-    (seat: SeatDto | undefined) => {
+    (seat: SeatWithStatusDto | undefined) => {
       if (!seat || readonly) return false;
       const isUserReserved = userReservedSeatIds.has(seat.id);
       if (isUserReserved) return true;

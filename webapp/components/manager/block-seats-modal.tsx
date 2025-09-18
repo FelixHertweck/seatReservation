@@ -24,7 +24,7 @@ import { SeatMap } from "@/components/common/seat-map";
 import type {
   BlockSeatsRequestDto,
   ManagerEventResponseDto,
-  SeatDto,
+  SeatWithStatusDto,
 } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 
@@ -45,13 +45,13 @@ export function BlockSeatsModal({
     eventId: "",
     seatIds: [] as string[],
   });
-  const [selectedSeats, setSelectedSeats] = useState<SeatDto[]>([]);
+  const [selectedSeats, setSelectedSeats] = useState<SeatWithStatusDto[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const selectedEvent = events?.find(
     (loc) => loc.id?.toString() === formData.eventId,
   );
-  const availableSeats: SeatDto[] = selectedEvent?.eventLocation?.seats ?? [];
+  const availableSeats: SeatWithStatusDto[] = selectedEvent?.eventLocation?.seats ?? [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,7 +70,7 @@ export function BlockSeatsModal({
     }
   };
 
-  const handleSeatSelect = (seat: SeatDto) => {
+  const handleSeatSelect = (seat: SeatWithStatusDto) => {
     setSelectedSeats((prev) => {
       const isSelected = prev.some((s) => s.id === seat.id);
       if (isSelected) {

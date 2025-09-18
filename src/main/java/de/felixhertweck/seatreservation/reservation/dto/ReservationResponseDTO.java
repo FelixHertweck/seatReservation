@@ -31,7 +31,7 @@ public record ReservationResponseDTO(
                 reservation.id,
                 reservation.getUser().id,
                 reservation.getEvent().id,
-                new SeatDTO(reservation.getSeat()),
+                SeatDTO.toDTO(reservation.getSeat()),
                 reservation.getReservationDate());
     }
 }

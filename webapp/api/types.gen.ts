@@ -175,7 +175,6 @@ export type SeatDto = {
     locationId?: bigint;
     xCoordinate?: number;
     yCoordinate?: number;
-    status?: ReservationStatus;
 };
 
 export type SeatRequestDto = {

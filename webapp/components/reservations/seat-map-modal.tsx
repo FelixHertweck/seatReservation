@@ -9,11 +9,11 @@ import {
 } from "@/components/ui/dialog";
 import { SeatMap } from "@/components/common/seat-map";
 import { useState } from "react";
-import type { ReservationResponseDto, SeatDto } from "@/api";
+import type { ReservationResponseDto, SeatWithStatusDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 
 interface SeatMapModalProps {
-  seats: SeatDto[];
+  seats: SeatWithStatusDto[];
   reservation: ReservationResponseDto;
   eventReservations: ReservationResponseDto[];
   onClose: () => void;
@@ -29,7 +29,7 @@ export function SeatMapModal({
 }: SeatMapModalProps) {
   const t = useT();
 
-  const [highlightedSeats, setHighlightedSeats] = useState<SeatDto[]>([]);
+  const [highlightedSeats, setHighlightedSeats] = useState<SeatWithStatusDto[]>([]);
 
   const reservedSeats = eventReservations
     .map((res) => res.seat)
@@ -38,7 +38,7 @@ export function SeatMapModal({
         seat !== null && seat !== undefined,
     );
 
-  const handleSeatClick = (seat: SeatDto) => {
+  const handleSeatClick = (seat: SeatWithStatusDto) => {
     setHighlightedSeats((prev) => {
       const isAlreadyHighlighted = prev.some((s) => s.id === seat.id);
       if (isAlreadyHighlighted) {

@@ -101,7 +101,7 @@ public class SeatService {
                 "Seat with ID %d created successfully for event location ID %d by manager: %s (ID:"
                         + " %d)",
                 seat.id, eventLocation.getId(), manager.getUsername(), manager.getId());
-        return new SeatDTO(seat);
+        return SeatDTO.toDTO(seat);
     }
 
     public List<SeatDTO> findAllSeatsForManager(User manager) {
@@ -110,7 +110,9 @@ public class SeatService {
                 manager.getUsername(), manager.getId());
         if (manager.getRoles().contains(Roles.ADMIN)) {
             LOG.debug("User is ADMIN, listing all seats.");
-            return seatRepository.listAll().stream().map(SeatDTO::new).collect(Collectors.toList());
+            return seatRepository.listAll().stream()
+                    .map(SeatDTO::toDTO)
+                    .collect(Collectors.toList());
         }
         List<EventLocation> managerLocations;
         if (manager.getRoles().contains(Roles.ADMIN)) {
@@ -121,7 +123,7 @@ public class SeatService {
         List<SeatDTO> result =
                 managerLocations.stream()
                         .flatMap(location -> seatRepository.findByEventLocation(location).stream())
-                        .map(SeatDTO::new)
+                        .map(SeatDTO::toDTO)
                         .collect(Collectors.toList());
         LOG.infof(
                 "Retrieved %d seats for manager: %s (ID: %d)",
@@ -137,7 +139,7 @@ public class SeatService {
         LOG.debugf(
                 "Successfully retrieved seat with ID %d for manager: %s (ID: %d)",
                 id, manager.getUsername(), manager.getId());
-        return new SeatDTO(seat);
+        return SeatDTO.toDTO(seat);
     }
 
     @Transactional
@@ -199,7 +201,7 @@ public class SeatService {
         LOG.infof(
                 "Seat with ID %d updated successfully by manager: %s (ID: %d)",
                 id, manager.getUsername(), manager.getId());
-        return new SeatDTO(seat);
+        return SeatDTO.toDTO(seat);
     }
 
     @Transactional

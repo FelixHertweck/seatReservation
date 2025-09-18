@@ -24,7 +24,7 @@ import { Input } from "@/components/ui/input";
 import { SeatMap } from "@/components/common/seat-map";
 import type {
   ManagerEventResponseDto,
-  SeatDto,
+  SeatWithStatusDto,
   UserDto,
   ManagerReservationRequestDto,
   ManagerReservationResponseDto,
@@ -54,14 +54,14 @@ export function ReservationFormModal({
     seatIds: [] as string[],
     deductAllowance: true,
   });
-  const [selectedSeats, setSelectedSeats] = useState<SeatDto[]>([]);
+  const [selectedSeats, setSelectedSeats] = useState<SeatWithStatusDto[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [userSearch, setUserSearch] = useState("");
 
   const selectedEvent = events?.find(
     (event) => event.id?.toString() === formData.eventId,
   );
-  const availableSeats: SeatDto[] = selectedEvent?.eventLocation?.seats ?? [];
+  const availableSeats: SeatWithStatusDto[] = selectedEvent?.eventLocation?.seats ?? [];
 
   const filteredUsers = users
     .filter((user) => {
@@ -92,7 +92,7 @@ export function ReservationFormModal({
     }
   };
 
-  const handleSeatSelect = (seat: SeatDto) => {
+  const handleSeatSelect = (seat: SeatWithStatusDto) => {
     setSelectedSeats((prev) => {
       const isSelected = prev.some((s) => s.id === seat.id);
       if (isSelected) {
@@ -111,7 +111,7 @@ export function ReservationFormModal({
   const isFormValid =
     formData.eventId && formData.userId && selectedSeats.length > 0;
 
-  const userReservedSeats: SeatDto[] =
+  const userReservedSeats: SeatWithStatusDto[] =
     formData.userId && formData.eventId
       ? reservations
           .filter(
@@ -120,7 +120,7 @@ export function ReservationFormModal({
               reservation.eventId?.toString() === formData.eventId,
           )
           .map((reservation) => reservation.seat)
-          .filter((seat): seat is SeatDto => seat !== undefined)
+          .filter((seat): seat is SeatWithStatusDto => seat !== undefined)
       : [];
 
   return (

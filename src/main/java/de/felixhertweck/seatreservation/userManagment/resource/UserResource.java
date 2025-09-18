@@ -79,7 +79,7 @@ public class UserResource {
                             dto.getLastname(),
                             dto.getRoles(),
                             dto.getTags());
-            importedUsers.add(new UserDTO(user));
+            importedUsers.add(UserDTO.toDTO(user));
         }
         return importedUsers;
     }
@@ -108,7 +108,7 @@ public class UserResource {
                         userCreationDTO.getLastname(),
                         userCreationDTO.getRoles(),
                         userCreationDTO.getTags());
-        UserDTO createdUser = new UserDTO(user);
+        UserDTO createdUser = UserDTO.toDTO(user);
         LOG.debugf("User %s created successfully by admin.", createdUser.username());
         return createdUser;
     }
@@ -136,7 +136,7 @@ public class UserResource {
                         user.getEmail(),
                         user.getRoles(),
                         user.getTags());
-        UserDTO updatedUser = new UserDTO(updated);
+        UserDTO updatedUser = UserDTO.toDTO(updated);
         LOG.debugf("User with ID %d updated successfully by admin.", id);
         return updatedUser;
     }
@@ -203,7 +203,7 @@ public class UserResource {
             description = "Forbidden: Only ADMIN role can access this resource")
     public List<UserDTO> getAllUsersAsAdmin() {
         LOG.debugf("Received GET request to /api/users/admin to get all users (admin view).");
-        List<UserDTO> users = userService.getUsersAsAdmin().stream().map(UserDTO::new).toList();
+        List<UserDTO> users = userService.getUsersAsAdmin().stream().map(UserDTO::toDTO).toList();
         LOG.debugf("Returning %d user DTOs for admin view.", users.size());
         return users;
     }
@@ -231,7 +231,7 @@ public class UserResource {
                         userProfileUpdateDTO.getPassword(),
                         userProfileUpdateDTO.getEmail(),
                         userProfileUpdateDTO.getTags());
-        UserDTO updatedUser = new UserDTO(updated);
+        UserDTO updatedUser = UserDTO.toDTO(updated);
         LOG.debugf("User profile for %s updated successfully.", username);
         return updatedUser;
     }
@@ -247,7 +247,7 @@ public class UserResource {
     public UserDTO getCurrentUser() {
         String username = securityContext.getUserPrincipal().getName();
         LOG.debugf("Received GET request to /api/users/me for current user: %s", username);
-        UserDTO currentUser = new UserDTO(userSecurityContext.getCurrentUser());
+        UserDTO currentUser = UserDTO.toDTO(userSecurityContext.getCurrentUser());
         LOG.debugf("Returning current user DTO for %s.", username);
         return currentUser;
     }
