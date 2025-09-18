@@ -20,15 +20,28 @@
 package de.felixhertweck.seatreservation.model.repository;
 
 import java.util.List;
+import java.util.Optional;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.User;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import io.quarkus.panache.common.Parameters;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class EventLocationRepository implements PanacheRepository<EventLocation> {
+    private static final Logger LOG = Logger.getLogger(EventLocationRepository.class);
+
     public List<EventLocation> findByManager(User manager) {
         return find("manager", manager).list();
+    }
+
+    public Optional<EventLocation> findByIdWithRelations(Long id) {
+        LOG.debugf("Finding for event location: %s", id);
+        return find(
+                        "SELECT e FROM EventLocation e JOIN FETCH e.manager WHERE e.id = :id",
+                        Parameters.with("id", id))
+                .firstResultOptional();
     }
 }

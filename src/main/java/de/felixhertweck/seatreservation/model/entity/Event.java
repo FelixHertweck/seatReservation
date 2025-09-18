@@ -122,6 +122,10 @@ public class Event extends PanacheEntity {
         return userAllowances;
     }
 
+    public void setUserAllowances(Set<EventUserAllowance> userAllowances) {
+        this.userAllowances = userAllowances;
+    }
+
     public User getManager() {
         return manager;
     }

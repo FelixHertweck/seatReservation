@@ -36,6 +36,7 @@ import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
+import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
@@ -51,6 +52,8 @@ public class EventResourceTest {
     @Inject EventLocationRepository eventLocationRepository;
 
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
+
+    @Inject SeatRepository seatRepository;
 
     @Inject UserRepository userRepository;
 
@@ -96,6 +99,7 @@ public class EventResourceTest {
     void tearDown() {
         eventUserAllowanceRepository.deleteAll();
         eventRepository.deleteAll();
+        seatRepository.deleteAll();
         eventLocationRepository.deleteAll();
         userRepository.delete("username", "manager2");
     }

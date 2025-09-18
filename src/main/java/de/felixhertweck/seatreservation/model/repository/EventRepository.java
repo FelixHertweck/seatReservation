@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.model.repository;
 
 import java.util.List;
+import java.util.Optional;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import de.felixhertweck.seatreservation.model.entity.Event;
@@ -31,5 +32,13 @@ public class EventRepository implements PanacheRepository<Event> {
 
     public List<Event> findByManager(User manager) {
         return find("manager", manager).list();
+    }
+
+    public Optional<Event> findOptionalByIdWithManagerReservations(Long id) {
+        return find(
+                        "SELECT e FROM Event e LEFT JOIN FETCH e.manager LEFT JOIN FETCH"
+                            + " e.reservations LEFT JOIN FETCH e.userAllowances WHERE e.id = ?1",
+                        id)
+                .firstResultOptional();
     }
 }

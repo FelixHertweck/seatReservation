@@ -29,15 +29,14 @@ import jakarta.inject.Inject;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
-import de.felixhertweck.seatreservation.eventManagement.dto.EventRequestDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowanceUpdateDto;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesCreateDto;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesResponseDto;
-import de.felixhertweck.seatreservation.eventManagement.dto.ManagerEventResponseDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
@@ -128,19 +127,14 @@ public class EventServiceTest {
                         eventLocation,
                         managerUser);
         existingEvent.id = 1L;
+
+        existingEvent.setReservations(List.of());
+        existingEvent.setUserAllowances(Set.of());
     }
 
     @Test
     void createEvent_Success() {
-        EventRequestDTO dto = new EventRequestDTO();
-        dto.setName("New Event");
-        dto.setDescription("New Description");
-        dto.setStartTime(LocalDateTime.now().plusDays(5));
-        dto.setEndTime(LocalDateTime.now().plusDays(6));
-        dto.setBookingDeadline(LocalDateTime.now().plusDays(4));
-        dto.setEventLocationId(eventLocation.id);
-
-        when(eventLocationRepository.findByIdOptional(eventLocation.id))
+        when(eventLocationRepository.findByIdWithRelations(eq(1L)))
                 .thenReturn(Optional.of(eventLocation));
         doAnswer(
                         invocation -> {
@@ -151,133 +145,145 @@ public class EventServiceTest {
                 .when(eventRepository)
                 .persist(any(Event.class));
 
-        ManagerEventResponseDTO createdEvent = eventService.createEvent(dto, managerUser);
-
+        Event createdEvent =
+                eventService.createEvent(
+                        "New Event",
+                        "New Description",
+                        LocalDateTime.now().plusDays(5),
+                        LocalDateTime.now().plusDays(6),
+                        LocalDateTime.now().plusDays(4),
+                        1L,
+                        managerUser);
         assertNotNull(createdEvent);
-        assertEquals("New Event", createdEvent.name());
-        assertEquals(eventLocation.id, createdEvent.eventLocation().id());
+        assertEquals("New Event", createdEvent.getName());
+        assertEquals(eventLocation.id, createdEvent.getEventLocation().id);
         verify(eventRepository, times(1)).persist(any(Event.class));
     }
 
     @Test
     void createEvent_IllegalArgumentException_LocationNotFound() {
-        EventRequestDTO dto = new EventRequestDTO();
-        dto.setName("New Event");
-        dto.setDescription("New Description");
-        dto.setStartTime(LocalDateTime.now().plusDays(5));
-        dto.setEndTime(LocalDateTime.now().plusDays(6));
-        dto.setBookingDeadline(LocalDateTime.now().plusDays(4));
-        dto.setEventLocationId(99L); // Non-existent location ID
-
         when(eventLocationRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(
-                IllegalArgumentException.class, () -> eventService.createEvent(dto, managerUser));
+                IllegalArgumentException.class,
+                () ->
+                        eventService.createEvent(
+                                "New Event",
+                                "New Description",
+                                LocalDateTime.now().plusDays(5),
+                                LocalDateTime.now().plusDays(6),
+                                LocalDateTime.now().plusDays(4),
+                                99L,
+                                managerUser));
         verify(eventRepository, never()).persist(any(Event.class));
     }
 
     @Test
     void updateEvent_Success_AsManager() throws EventNotFoundException {
-        EventRequestDTO dto = new EventRequestDTO();
-        dto.setName("Updated Event");
-        dto.setDescription("Updated Description");
-        dto.setStartTime(LocalDateTime.now().plusDays(10));
-        dto.setEndTime(LocalDateTime.now().plusDays(11));
-        dto.setBookingDeadline(LocalDateTime.now().plusDays(9));
-        dto.setEventLocationId(eventLocation.id);
-
-        when(eventRepository.findByIdOptional(existingEvent.id))
+        when(eventRepository.findOptionalByIdWithManagerReservations(existingEvent.id))
                 .thenReturn(Optional.of(existingEvent));
         when(eventLocationRepository.findByIdOptional(eventLocation.id))
                 .thenReturn(Optional.of(eventLocation));
 
-        ManagerEventResponseDTO updatedEvent =
-                eventService.updateEvent(existingEvent.id, dto, managerUser);
+        Event updatedEvent =
+                eventService.updateEvent(
+                        existingEvent.id,
+                        "Updated Event",
+                        "Updated Description",
+                        LocalDateTime.now().plusDays(10),
+                        LocalDateTime.now().plusDays(11),
+                        LocalDateTime.now().plusDays(9),
+                        eventLocation.id,
+                        managerUser);
 
         assertNotNull(updatedEvent);
-        assertEquals("Updated Event", updatedEvent.name());
+        assertEquals("Updated Event", updatedEvent.getName());
         verify(eventRepository, times(1)).persist(existingEvent);
     }
 
     @Test
     void updateEvent_Success_AsAdmin() throws EventNotFoundException {
-        EventRequestDTO dto = new EventRequestDTO();
-        dto.setName("Updated Event Admin");
-        dto.setDescription("Updated Description Admin");
-        dto.setStartTime(LocalDateTime.now().plusDays(10));
-        dto.setEndTime(LocalDateTime.now().plusDays(11));
-        dto.setBookingDeadline(LocalDateTime.now().plusDays(9));
-        dto.setEventLocationId(eventLocation.id);
-
-        when(eventRepository.findByIdOptional(existingEvent.id))
+        when(eventRepository.findOptionalByIdWithManagerReservations(existingEvent.id))
                 .thenReturn(Optional.of(existingEvent));
         when(eventLocationRepository.findByIdOptional(eventLocation.id))
                 .thenReturn(Optional.of(eventLocation));
 
-        ManagerEventResponseDTO updatedEvent =
-                eventService.updateEvent(existingEvent.id, dto, adminUser);
+        Event updatedEvent =
+                eventService.updateEvent(
+                        existingEvent.id,
+                        "Updated Event Admin",
+                        "Updated Description Admin",
+                        LocalDateTime.now().plusDays(10),
+                        LocalDateTime.now().plusDays(11),
+                        LocalDateTime.now().plusDays(9),
+                        eventLocation.id,
+                        adminUser);
 
         assertNotNull(updatedEvent);
-        assertEquals("Updated Event Admin", updatedEvent.name());
+        assertEquals("Updated Event Admin", updatedEvent.getName());
         verify(eventRepository, times(1)).persist(existingEvent);
     }
 
     @Test
     void updateEvent_EventNotFoundException() {
-        EventRequestDTO dto = new EventRequestDTO();
-        dto.setName("Updated Event");
-        dto.setDescription("Updated Description");
-        dto.setStartTime(LocalDateTime.now().plusDays(10));
-        dto.setEndTime(LocalDateTime.now().plusDays(11));
-        dto.setBookingDeadline(LocalDateTime.now().plusDays(9));
-        dto.setEventLocationId(eventLocation.id);
-
-        when(eventRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
+        when(eventRepository.findOptionalByIdWithManagerReservations(anyLong()))
+                .thenReturn(Optional.empty());
 
         assertThrows(
                 EventNotFoundException.class,
-                () -> eventService.updateEvent(99L, dto, managerUser));
+                () ->
+                        eventService.updateEvent(
+                                99L,
+                                "Updated Event",
+                                "Updated Description",
+                                LocalDateTime.now().plusDays(10),
+                                LocalDateTime.now().plusDays(11),
+                                LocalDateTime.now().plusDays(9),
+                                eventLocation.id,
+                                managerUser));
         verify(eventRepository, never()).persist(any(Event.class));
     }
 
     @Test
     void updateEvent_ForbiddenException_NotManagerOrAdmin() {
-        EventRequestDTO dto = new EventRequestDTO();
-        dto.setName("Updated Event");
-        dto.setDescription("Updated Description");
-        dto.setStartTime(LocalDateTime.now().plusDays(10));
-        dto.setEndTime(LocalDateTime.now().plusDays(11));
-        dto.setBookingDeadline(LocalDateTime.now().plusDays(9));
-        dto.setEventLocationId(eventLocation.id);
-
-        when(eventRepository.findByIdOptional(existingEvent.id))
+        when(eventRepository.findOptionalByIdWithManagerReservations(existingEvent.id))
                 .thenReturn(Optional.of(existingEvent));
         when(eventLocationRepository.findByIdOptional(eventLocation.id))
                 .thenReturn(Optional.of(eventLocation));
 
         assertThrows(
                 SecurityException.class,
-                () -> eventService.updateEvent(existingEvent.id, dto, regularUser));
+                () ->
+                        eventService.updateEvent(
+                                existingEvent.id,
+                                "Updated Event",
+                                "Updated Description",
+                                LocalDateTime.now().plusDays(10),
+                                LocalDateTime.now().plusDays(11),
+                                LocalDateTime.now().plusDays(9),
+                                eventLocation.id,
+                                regularUser));
         verify(eventRepository, never()).persist(any(Event.class));
     }
 
     @Test
     void updateEvent_IllegalArgumentException_LocationNotFound() {
-        EventRequestDTO dto = new EventRequestDTO();
-        dto.setName("Updated Event");
-        dto.setDescription("Updated Description");
-        dto.setStartTime(LocalDateTime.now().plusDays(10));
-        dto.setEndTime(LocalDateTime.now().plusDays(11));
-        dto.setBookingDeadline(LocalDateTime.now().plusDays(9));
-        dto.setEventLocationId(99L); // Non-existent location ID
-
-        when(eventRepository.findByIdOptional(existingEvent.id))
+        when(eventRepository.findOptionalByIdWithManagerReservations(existingEvent.id))
                 .thenReturn(Optional.of(existingEvent));
         when(eventLocationRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(
                 IllegalArgumentException.class,
-                () -> eventService.updateEvent(existingEvent.id, dto, managerUser));
+                () ->
+                        eventService.updateEvent(
+                                existingEvent.id,
+                                "Updated Event",
+                                "Updated Description",
+                                LocalDateTime.now().plusDays(10),
+                                LocalDateTime.now().plusDays(11),
+                                LocalDateTime.now().plusDays(9),
+                                99L,
+                                managerUser));
         verify(eventRepository, never()).persist(any(Event.class));
     }
 
@@ -296,7 +302,7 @@ public class EventServiceTest {
                                 regularUser));
         when(eventRepository.listAll()).thenReturn(allEvents);
 
-        List<ManagerEventResponseDTO> result = eventService.getEventsByCurrentManager(adminUser);
+        List<Event> result = eventService.getEventsByCurrentManager(adminUser);
 
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -309,11 +315,11 @@ public class EventServiceTest {
         List<Event> managerEvents = List.of(existingEvent);
         when(eventRepository.findByManager(managerUser)).thenReturn(managerEvents);
 
-        List<ManagerEventResponseDTO> result = eventService.getEventsByCurrentManager(managerUser);
+        List<Event> result = eventService.getEventsByCurrentManager(managerUser);
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(existingEvent.getName(), result.getFirst().name());
+        assertEquals(existingEvent.getName(), result.getFirst().getName());
         verify(eventRepository, times(1)).findByManager(managerUser);
         verify(eventRepository, never()).listAll();
     }
@@ -322,7 +328,7 @@ public class EventServiceTest {
     void getEventsByCurrentManager_Success_NoEventsForManager() {
         when(eventRepository.findByManager(managerUser)).thenReturn(Collections.emptyList());
 
-        List<ManagerEventResponseDTO> result = eventService.getEventsByCurrentManager(managerUser);
+        List<Event> result = eventService.getEventsByCurrentManager(managerUser);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
@@ -336,8 +342,9 @@ public class EventServiceTest {
         EventUserAllowancesCreateDto dto =
                 new EventUserAllowancesCreateDto(Set.of(regularUser.id), existingEvent.id, 5);
 
-        when(eventRepository.findByIdOptional(existingEvent.id))
+        when(eventRepository.findOptionalByIdWithManagerReservations(1L))
                 .thenReturn(Optional.of(existingEvent));
+        when(eventRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingEvent));
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
         // Mocking PanacheQuery for find method when no existing allowance is found
         @SuppressWarnings("unchecked")
@@ -369,8 +376,9 @@ public class EventServiceTest {
         EventUserAllowance existingAllowance =
                 new EventUserAllowance(regularUser, existingEvent, 5);
 
-        when(eventRepository.findByIdOptional(existingEvent.id))
+        when(eventRepository.findOptionalByIdWithManagerReservations(1L))
                 .thenReturn(Optional.of(existingEvent));
+        when(eventRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingEvent));
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
         // Mocking PanacheQuery for find method
         @SuppressWarnings("unchecked")
@@ -397,8 +405,9 @@ public class EventServiceTest {
         ArgumentCaptor<EventUserAllowance> allowanceCaptor =
                 ArgumentCaptor.forClass(EventUserAllowance.class);
 
-        when(eventRepository.findByIdOptional(existingEvent.id))
+        when(eventRepository.findOptionalByIdWithManagerReservations(1L))
                 .thenReturn(Optional.of(existingEvent));
+        when(eventRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingEvent));
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
         @SuppressWarnings("unchecked")
         io.quarkus.hibernate.orm.panache.PanacheQuery<EventUserAllowance> mockQuery =
@@ -426,7 +435,8 @@ public class EventServiceTest {
         EventUserAllowancesCreateDto dto =
                 new EventUserAllowancesCreateDto(Set.of(regularUser.id), 99L, 5);
 
-        when(eventRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
+        when(eventRepository.findOptionalByIdWithManagerReservations(anyLong()))
+                .thenReturn(Optional.empty());
 
         assertThrows(
                 EventNotFoundException.class,
@@ -441,8 +451,9 @@ public class EventServiceTest {
         EventUserAllowancesCreateDto dto =
                 new EventUserAllowancesCreateDto(Set.of(99L), existingEvent.id, 5);
 
-        when(eventRepository.findByIdOptional(existingEvent.id))
+        when(eventRepository.findOptionalByIdWithManagerReservations(1L))
                 .thenReturn(Optional.of(existingEvent));
+        when(eventRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingEvent));
         when(userRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(
@@ -458,8 +469,9 @@ public class EventServiceTest {
         EventUserAllowancesCreateDto dto =
                 new EventUserAllowancesCreateDto(Set.of(regularUser.id), existingEvent.id, 5);
 
-        when(eventRepository.findByIdOptional(existingEvent.id))
+        when(eventRepository.findOptionalByIdWithManagerReservations(1L))
                 .thenReturn(Optional.of(existingEvent));
+        when(eventRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingEvent));
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
 
         assertThrows(
@@ -472,15 +484,21 @@ public class EventServiceTest {
 
     @Test
     void updateEvent_NotFound() {
-        EventRequestDTO dto = new EventRequestDTO();
-        dto.setName("Updated Event");
-        dto.setEventLocationId(eventLocation.id);
-
-        when(eventRepository.findByIdOptional(99L)).thenReturn(Optional.empty());
+        when(eventRepository.findOptionalByIdWithManagerReservations(99L))
+                .thenReturn(Optional.empty());
 
         assertThrows(
                 EventNotFoundException.class,
-                () -> eventService.updateEvent(99L, dto, managerUser));
+                () ->
+                        eventService.updateEvent(
+                                99L,
+                                "Updated Event",
+                                null,
+                                null,
+                                null,
+                                null,
+                                eventLocation.id,
+                                managerUser));
     }
 
     @Test

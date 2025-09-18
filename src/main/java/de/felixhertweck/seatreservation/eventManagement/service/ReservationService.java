@@ -39,7 +39,6 @@ import jakarta.transaction.Transactional;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
 import de.felixhertweck.seatreservation.email.EmailService;
-import de.felixhertweck.seatreservation.eventManagement.dto.ReservationExportDTO;
 import de.felixhertweck.seatreservation.eventManagement.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.*;
 import de.felixhertweck.seatreservation.model.repository.*;
@@ -529,7 +528,7 @@ public class ReservationService {
                     "User is not authorized to export this event's reservations");
         }
 
-        List<Reservation> reservations = reservationRepository.findByEventId(eventId);
+        List<Reservation> reservations = reservationRepository.findByEventIdWithRelations(eventId);
 
         // Sort by seat number
         reservations.sort(Comparator.comparing(r -> r.getSeat().getSeatNumber()));
@@ -543,16 +542,15 @@ public class ReservationService {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
             for (Reservation reservation : reservations) {
-                ReservationExportDTO dto =
-                        ReservationExportDTO.toDTO(reservation, exportIdCounter++);
+                long currentExportId = exportIdCounter++;
+                String seatNumber = reservation.getSeat().getSeatNumber();
+                String firstName = reservation.getUser().getFirstname();
+                String lastName = reservation.getUser().getLastname();
+                String reservationDate = reservation.getReservationDate().format(formatter);
                 writer.write(
                         String.format(
                                 "%d,%s,%s,%s,%s\n",
-                                dto.getId(),
-                                dto.getSeatNumber(),
-                                dto.getFirstName(),
-                                dto.getLastName(),
-                                dto.getReservationDate().format(formatter)));
+                                currentExportId, seatNumber, firstName, lastName, reservationDate));
             }
             writer.flush();
         }

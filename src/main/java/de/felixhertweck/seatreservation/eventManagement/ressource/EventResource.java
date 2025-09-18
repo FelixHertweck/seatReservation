@@ -29,6 +29,7 @@ import jakarta.ws.rs.*;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventRequestDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.ManagerEventResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.service.EventService;
+import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
@@ -66,9 +67,17 @@ public class EventResource {
     public ManagerEventResponseDTO createEvent(@Valid EventRequestDTO dto) {
         LOG.debugf("Received POST request to /api/manager/events to create a new event.");
         User currentUser = userSecurityContext.getCurrentUser();
-        ManagerEventResponseDTO result = eventService.createEvent(dto, currentUser);
-        LOG.debugf("Event '%s' created successfully with ID %d.", result.name(), result.id());
-        return result;
+        Event result =
+                eventService.createEvent(
+                        dto.getName(),
+                        dto.getDescription(),
+                        dto.getStartTime(),
+                        dto.getEndTime(),
+                        dto.getBookingDeadline(),
+                        dto.getEventLocationId(),
+                        currentUser);
+        LOG.debugf("Event '%s' created successfully with ID %d.", result.getName(), result.getId());
+        return ManagerEventResponseDTO.toDTO(result);
     }
 
     @PUT
@@ -89,9 +98,18 @@ public class EventResource {
             @PathParam("id") Long id, @Valid EventRequestDTO dto) {
         LOG.debugf("Received PUT request to /api/manager/events/%d to update event.", id);
         User currentUser = userSecurityContext.getCurrentUser();
-        ManagerEventResponseDTO result = eventService.updateEvent(id, dto, currentUser);
+        Event result =
+                eventService.updateEvent(
+                        id,
+                        dto.getName(),
+                        dto.getDescription(),
+                        dto.getStartTime(),
+                        dto.getEndTime(),
+                        dto.getBookingDeadline(),
+                        dto.getEventLocationId(),
+                        currentUser);
         LOG.debugf("Event with ID %d updated successfully.", id);
-        return result;
+        return ManagerEventResponseDTO.toDTO(result);
     }
 
     @GET
@@ -111,10 +129,10 @@ public class EventResource {
     public List<ManagerEventResponseDTO> getEventsByCurrentManager() {
         LOG.debugf("Received GET request to /api/manager/events to get events by current manager.");
         User currentUser = userSecurityContext.getCurrentUser();
-        List<ManagerEventResponseDTO> result = eventService.getEventsByCurrentManager(currentUser);
+        List<Event> result = eventService.getEventsByCurrentManager(currentUser);
         LOG.debugf(
                 "Successfully responded to GET /api/manager/events with %d events.", result.size());
-        return result;
+        return result.stream().map(ManagerEventResponseDTO::toDTO).toList();
     }
 
     @GET
@@ -133,13 +151,13 @@ public class EventResource {
     public ManagerEventResponseDTO getEventById(@PathParam("id") Long id) {
         LOG.debugf("Received GET request to /api/manager/events/%d.", id);
         User currentUser = userSecurityContext.getCurrentUser();
-        ManagerEventResponseDTO result = eventService.getEventByIdForManager(id, currentUser);
+        Event result = eventService.getEventByIdForManager(id, currentUser);
         if (result != null) {
             LOG.debugf("Successfully retrieved event with ID %d.", id);
         } else {
             LOG.warnf("Event with ID %d not found.", id);
         }
-        return result;
+        return ManagerEventResponseDTO.toDTO(result);
     }
 
     @DELETE

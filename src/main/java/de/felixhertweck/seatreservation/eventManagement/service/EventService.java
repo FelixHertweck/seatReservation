@@ -21,14 +21,11 @@ package de.felixhertweck.seatreservation.eventManagement.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
-import de.felixhertweck.seatreservation.eventManagement.dto.EventRequestDTO;
-import de.felixhertweck.seatreservation.eventManagement.dto.ManagerEventResponseDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.Roles;
@@ -54,43 +51,50 @@ public class EventService {
      * This ensures that only the creator (manager) can later modify the event, unless the user is
      * an administrator.
      *
-     * @param dto The DTO containing the details of the Event to be created.
-     * @return A DTO representing the newly created Event.
+     * @param name The name of the Event.
+     * @param description The description of the Event.
+     * @param startTime The start time of the Event.
+     * @param endTime The end time of the Event.
+     * @param bookingDeadline The booking deadline for the Event.
+     * @param eventLocationId The ID of the EventLocation where the Event will take place
+     * @param manager The currently authenticated user who will be set as the manager of the Event.
+     * @return The newly created Event.
      */
     @Transactional
-    public ManagerEventResponseDTO createEvent(EventRequestDTO dto, User manager) {
+    public Event createEvent(
+            String name,
+            String description,
+            LocalDateTime startTime,
+            LocalDateTime endTime,
+            LocalDateTime bookingDeadline,
+            Long eventLocationId,
+            User manager) {
         LOG.debugf(
                 "Attempting to create event with name: %s for manager: %s (ID: %d)",
-                dto.getName(), manager.getUsername(), manager.getId());
+                name, manager.getUsername(), manager.getId());
         EventLocation location =
                 eventLocationRepository
-                        .findByIdOptional(dto.getEventLocationId())
+                        .findByIdWithRelations(eventLocationId)
                         .orElseThrow(
                                 () -> {
                                     LOG.warnf(
                                             "EventLocation with id %d not found for event"
                                                     + " creation.",
-                                            dto.getEventLocationId());
+                                            eventLocationId);
                                     return new IllegalArgumentException(
                                             "EventLocation with id "
-                                                    + dto.getEventLocationId()
+                                                    + eventLocationId
                                                     + " not found");
                                 });
 
         Event event =
                 new Event(
-                        dto.getName(),
-                        dto.getDescription(),
-                        dto.getStartTime(),
-                        dto.getEndTime(),
-                        dto.getBookingDeadline(),
-                        location,
-                        manager);
+                        name, description, startTime, endTime, bookingDeadline, location, manager);
         eventRepository.persist(event);
         LOG.infof(
                 "Event '%s' (ID: %d) created successfully by manager: %s (ID: %d)",
                 event.getName(), event.getId(), manager.getUsername(), manager.getId());
-        return ManagerEventResponseDTO.toDTO(event);
+        return event;
     }
 
     /**
@@ -98,20 +102,34 @@ public class EventService {
      * authenticated user is the manager of the Event or has the ADMIN role.
      *
      * @param id The ID of the Event to be updated.
-     * @param dto The DTO containing the updated details of the Event.
-     * @return A DTO representing the updated Event.
+     * @param name The new name of the Event.
+     * @param description The new description of the Event.
+     * @param startTime The new start time of the Event.
+     * @param endTime The new end time of the Event.
+     * @param bookingDeadline The new booking deadline for the Event.
+     * @param eventLocationId The ID of the new EventLocation where the Event will take place
+     * @param manager The currently authenticated user attempting the update.
+     * @return The updated Event.
      * @throws EventNotFoundException If the Event with the specified ID is not found.
      * @throws SecurityException If the user is not authorized to update the Event.
      */
     @Transactional
-    public ManagerEventResponseDTO updateEvent(Long id, EventRequestDTO dto, User manager)
+    public Event updateEvent(
+            Long id,
+            String name,
+            String description,
+            LocalDateTime startTime,
+            LocalDateTime endTime,
+            LocalDateTime bookingDeadline,
+            Long eventLocationId,
+            User manager)
             throws EventNotFoundException, IllegalArgumentException {
         LOG.debugf(
                 "Attempting to update event with ID: %d for manager: %s (ID: %d)",
                 id, manager.getUsername(), manager.getId());
         Event event =
                 eventRepository
-                        .findByIdOptional(id)
+                        .findOptionalByIdWithManagerReservations(id)
                         .orElseThrow(
                                 () -> {
                                     LOG.warnf(
@@ -133,15 +151,15 @@ public class EventService {
 
         EventLocation location =
                 eventLocationRepository
-                        .findByIdOptional(dto.getEventLocationId())
+                        .findByIdOptional(eventLocationId)
                         .orElseThrow(
                                 () -> {
                                     LOG.warnf(
                                             "EventLocation with id %d not found for event update.",
-                                            dto.getEventLocationId());
+                                            eventLocationId);
                                     return new IllegalArgumentException(
                                             "EventLocation with id "
-                                                    + dto.getEventLocationId()
+                                                    + eventLocationId
                                                     + " not found");
                                 });
 
@@ -151,28 +169,28 @@ public class EventService {
                         + " eventLocationId='%d' -> '%d'",
                 id,
                 event.getName(),
-                dto.getName(),
+                name,
                 event.getDescription(),
-                dto.getDescription(),
+                description,
                 event.getStartTime(),
-                dto.getStartTime(),
+                startTime,
                 event.getEndTime(),
-                dto.getEndTime(),
+                endTime,
                 event.getBookingDeadline(),
-                dto.getBookingDeadline(),
+                bookingDeadline,
                 event.getEventLocation().getId(),
-                dto.getEventLocationId());
-        event.setName(dto.getName());
-        event.setDescription(dto.getDescription());
-        event.setStartTime(dto.getStartTime());
-        event.setEndTime(dto.getEndTime());
-        event.setBookingDeadline(dto.getBookingDeadline());
+                location.getId());
+        event.setName(name);
+        event.setDescription(description);
+        event.setStartTime(startTime);
+        event.setEndTime(endTime);
+        event.setBookingDeadline(bookingDeadline);
         event.setEventLocation(location);
         eventRepository.persist(event);
         LOG.infof(
                 "Event '%s' (ID: %d) updated successfully by manager: %s (ID: %d)",
                 event.getName(), event.getId(), manager.getUsername(), manager.getId());
-        return ManagerEventResponseDTO.toDTO(event);
+        return event;
     }
 
     /**
@@ -193,7 +211,7 @@ public class EventService {
      *
      * @return A list of DTOs representing the Events.
      */
-    public List<ManagerEventResponseDTO> getEventsByCurrentManager(User manager) {
+    public List<Event> getEventsByCurrentManager(User manager) {
         LOG.debugf(
                 "Attempting to retrieve events for manager: %s (ID: %d)",
                 manager.getUsername(), manager.getId());
@@ -210,7 +228,7 @@ public class EventService {
         LOG.infof(
                 "Retrieved %d events for manager: %s (ID: %d)",
                 events.size(), manager.getUsername(), manager.getId());
-        return events.stream().map(ManagerEventResponseDTO::toDTO).collect(Collectors.toList());
+        return events;
     }
 
     /**
@@ -279,7 +297,7 @@ public class EventService {
      * @throws EventNotFoundException If the Event with the specified ID is not found.
      * @throws SecurityException If the user is not authorized to view the Event.
      */
-    public ManagerEventResponseDTO getEventByIdForManager(Long id, User manager)
+    public Event getEventByIdForManager(Long id, User manager)
             throws EventNotFoundException, SecurityException {
         LOG.debugf(
                 "Attempting to retrieve event with ID: %d for manager: %s (ID: %d)",
@@ -294,6 +312,6 @@ public class EventService {
         LOG.debugf(
                 "Successfully retrieved event with ID %d for manager: %s (ID: %d)",
                 id, manager.getUsername(), manager.getId());
-        return ManagerEventResponseDTO.toDTO(event);
+        return event;
     }
 }
