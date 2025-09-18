@@ -72,7 +72,12 @@ public class AdminUserInitializer {
                     randomPassword);
             UserCreationDTO userCreationDTO =
                     new UserCreationDTO(
-                            "admin", null, randomPassword, "System", "Admin", Set.of("system"));
+                            "admin",
+                            "admin@localhost",
+                            randomPassword,
+                            "System",
+                            "Admin",
+                            Set.of("system"));
             try {
                 userService.createUser(userCreationDTO, Set.of(Roles.ADMIN));
                 LOG.info("Admin user created successfully.");

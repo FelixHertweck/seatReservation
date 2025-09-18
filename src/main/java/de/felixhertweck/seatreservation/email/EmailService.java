@@ -49,26 +49,26 @@ import org.jboss.logging.Logger;
 @ApplicationScoped
 public class EmailService {
     @ConfigProperty(name = "email.header.confirmation", defaultValue = "Email Confirmation")
-    private String EMAIL_HEADER_CONFIRMATION;
+    String EMAIL_HEADER_CONFIRMATION;
 
     @ConfigProperty(name = "email.header.password-changed", defaultValue = "Password Changed")
-    private String EMAIL_HEADER_PASSWORD_CHANGED;
+    String EMAIL_HEADER_PASSWORD_CHANGED;
 
     @ConfigProperty(
             name = "email.header.reservation-confirmation",
             defaultValue = "Reservation Confirmation")
-    private String EMAIL_HEADER_RESERVATION_CONFIRMATION;
+    String EMAIL_HEADER_RESERVATION_CONFIRMATION;
 
     @ConfigProperty(name = "email.header.reservation-update", defaultValue = "Reservation Update")
-    private String EMAIL_HEADER_RESERVATION_UPDATE;
+    String EMAIL_HEADER_RESERVATION_UPDATE;
 
     @ConfigProperty(name = "email.header.reminder", defaultValue = "Reservation Reminder")
-    private String EMAIL_HEADER_REMINDER;
+    String EMAIL_HEADER_REMINDER;
 
     @ConfigProperty(
             name = "email.header.reservation-overview",
             defaultValue = "Reservation Overview")
-    private String EMAIL_HEADER_RESERVATION_OVERVIEW;
+    String EMAIL_HEADER_RESERVATION_OVERVIEW;
 
     private static final Logger LOG = Logger.getLogger(EmailService.class);
 
