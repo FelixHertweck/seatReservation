@@ -121,7 +121,7 @@ export type ManagerEventResponseDto = {
     startTime?: LocalDateTime;
     endTime?: LocalDateTime;
     bookingDeadline?: LocalDateTime;
-    eventLocation?: EventLocationResponseDto;
+    eventLocation?: EventLocationWithStatusDto;
     managerId?: bigint;
     eventUserAllowancesIds?: Array<bigint>;
 };
@@ -138,7 +138,7 @@ export type ManagerReservationResponseDto = {
     user?: UserDto;
     eventId?: bigint;
     seat?: SeatDto;
-    reservationDateTime?: LocalDateTime;
+    reservationDate?: LocalDateTime;
 };
 
 export type RegisterRequestDto = {

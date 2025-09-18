@@ -374,9 +374,9 @@ export function ReservationManagement({
                         )}
                       </TableCell>
                       <TableCell>
-                        {reservation.reservationDateTime
+                        {reservation.reservationDate
                           ? new Date(
-                              reservation.reservationDateTime,
+                              reservation.reservationDate,
                             ).toLocaleString([], {
                               year: "numeric",
                               month: "2-digit",

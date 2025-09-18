@@ -90,7 +90,7 @@ public class EventService {
         LOG.infof(
                 "Event '%s' (ID: %d) created successfully by manager: %s (ID: %d)",
                 event.getName(), event.getId(), manager.getUsername(), manager.getId());
-        return new ManagerEventResponseDTO(event);
+        return ManagerEventResponseDTO.toDTO(event);
     }
 
     /**
@@ -172,7 +172,7 @@ public class EventService {
         LOG.infof(
                 "Event '%s' (ID: %d) updated successfully by manager: %s (ID: %d)",
                 event.getName(), event.getId(), manager.getUsername(), manager.getId());
-        return new ManagerEventResponseDTO(event);
+        return ManagerEventResponseDTO.toDTO(event);
     }
 
     /**
@@ -210,7 +210,7 @@ public class EventService {
         LOG.infof(
                 "Retrieved %d events for manager: %s (ID: %d)",
                 events.size(), manager.getUsername(), manager.getId());
-        return events.stream().map(ManagerEventResponseDTO::new).collect(Collectors.toList());
+        return events.stream().map(ManagerEventResponseDTO::toDTO).collect(Collectors.toList());
     }
 
     /**
@@ -294,6 +294,6 @@ public class EventService {
         LOG.debugf(
                 "Successfully retrieved event with ID %d for manager: %s (ID: %d)",
                 id, manager.getUsername(), manager.getId());
-        return new ManagerEventResponseDTO(event);
+        return ManagerEventResponseDTO.toDTO(event);
     }
 }

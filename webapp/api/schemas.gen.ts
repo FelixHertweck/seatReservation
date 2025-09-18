@@ -393,7 +393,7 @@ export const ManagerEventResponseDTOSchema = {
             '$ref': '#/components/schemas/LocalDateTime'
         },
         eventLocation: {
-            '$ref': '#/components/schemas/EventLocationResponseDTO'
+            '$ref': '#/components/schemas/EventLocationWithStatusDTO'
         },
         managerId: {
             type: 'integer',
@@ -428,7 +428,8 @@ export const ManagerReservationRequestDTOSchema = {
             items: {
                 type: 'integer',
                 format: 'int64'
-            }
+            },
+            minItems: 1
         },
         deductAllowance: {
             type: 'boolean'
@@ -453,7 +454,7 @@ export const ManagerReservationResponseDTOSchema = {
         seat: {
             '$ref': '#/components/schemas/SeatDTO'
         },
-        reservationDateTime: {
+        reservationDate: {
             '$ref': '#/components/schemas/LocalDateTime'
         }
     }

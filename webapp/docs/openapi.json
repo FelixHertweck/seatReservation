@@ -379,7 +379,7 @@
             "$ref" : "#/components/schemas/LocalDateTime"
           },
           "eventLocation" : {
-            "$ref" : "#/components/schemas/EventLocationResponseDTO"
+            "$ref" : "#/components/schemas/EventLocationWithStatusDTO"
           },
           "managerId" : {
             "type" : "integer",
@@ -413,7 +413,8 @@
             "items" : {
               "type" : "integer",
               "format" : "int64"
-            }
+            },
+            "minItems" : 1
           },
           "deductAllowance" : {
             "type" : "boolean"
@@ -437,7 +438,7 @@
           "seat" : {
             "$ref" : "#/components/schemas/SeatDTO"
           },
-          "reservationDateTime" : {
+          "reservationDate" : {
             "$ref" : "#/components/schemas/LocalDateTime"
           }
         }

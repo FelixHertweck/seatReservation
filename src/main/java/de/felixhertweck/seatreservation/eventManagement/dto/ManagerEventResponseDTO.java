@@ -20,11 +20,15 @@
 package de.felixhertweck.seatreservation.eventManagement.dto;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import de.felixhertweck.seatreservation.common.dto.EventLocationResponseDTO;
+import de.felixhertweck.seatreservation.common.dto.EventLocationWithStatusDTO;
+import de.felixhertweck.seatreservation.common.dto.SeatWithStatusDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.Reservation;
 
 public record ManagerEventResponseDTO(
         Long id,
@@ -33,23 +37,39 @@ public record ManagerEventResponseDTO(
         LocalDateTime startTime,
         LocalDateTime endTime,
         LocalDateTime bookingDeadline,
-        EventLocationResponseDTO eventLocation,
+        EventLocationWithStatusDTO eventLocation,
         Long managerId,
         Set<Long> eventUserAllowancesIds) {
-    public ManagerEventResponseDTO(Event event) {
-        this(
+
+    public static ManagerEventResponseDTO toDTO(Event event) {
+        List<SeatWithStatusDTO> seats = new ArrayList<>();
+
+        for (Reservation reservation : event.getReservations()) {
+            seats.add(SeatWithStatusDTO.toDTO(reservation.getSeat(), reservation.getStatus()));
+        }
+
+        EventLocationWithStatusDTO location =
+                EventLocationWithStatusDTO.toDTO(event.getEventLocation(), seats);
+
+        Long managerId =
+                event.getEventLocation().getManager() != null
+                        ? event.getEventLocation().getManager().getId()
+                        : null;
+
+        Set<Long> eventUserAllowancesIds =
+                event.getUserAllowances().stream()
+                        .map(allowance -> allowance.id)
+                        .collect(Collectors.toSet());
+
+        return new ManagerEventResponseDTO(
                 event.getId(),
                 event.getName(),
                 event.getDescription(),
                 event.getStartTime(),
                 event.getEndTime(),
                 event.getBookingDeadline(),
-                new EventLocationResponseDTO(event.getEventLocation(), event.getReservations()),
-                event.getManager() != null ? event.getManager().getId() : null,
-                event.getUserAllowances() != null
-                        ? event.getUserAllowances().stream()
-                                .map(userAllowance -> userAllowance.id)
-                                .collect(Collectors.toSet())
-                        : Set.of());
+                location,
+                managerId,
+                eventUserAllowancesIds);
     }
 }
