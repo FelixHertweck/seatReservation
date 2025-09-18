@@ -29,11 +29,11 @@ import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import de.felixhertweck.seatreservation.eventManagement.service.ReservationService;
 import de.felixhertweck.seatreservation.model.entity.*;
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
-import de.felixhertweck.seatreservation.reservation.service.ReservationService;
 import de.felixhertweck.seatreservation.utils.RandomUUIDString;
 import de.felixhertweck.seatreservation.utils.SvgRenderer;
 import io.quarkus.logging.Log;
