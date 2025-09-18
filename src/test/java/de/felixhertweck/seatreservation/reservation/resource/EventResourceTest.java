@@ -42,6 +42,7 @@ public class EventResourceTest {
     @Inject EventRepository eventRepository;
     @Inject EventLocationRepository eventLocationRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
+    @Inject SeatRepository seatRepository;
 
     @BeforeEach
     @Transactional
@@ -74,6 +75,7 @@ public class EventResourceTest {
     void tearDown() {
         eventUserAllowanceRepository.deleteAll();
         eventRepository.deleteAll();
+        seatRepository.deleteAll();
         eventLocationRepository.deleteAll();
     }
 

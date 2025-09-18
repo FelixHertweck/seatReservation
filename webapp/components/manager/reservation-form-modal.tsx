@@ -61,7 +61,8 @@ export function ReservationFormModal({
   const selectedEvent = events?.find(
     (event) => event.id?.toString() === formData.eventId,
   );
-  const availableSeats: SeatWithStatusDto[] = selectedEvent?.eventLocation?.seats ?? [];
+  const availableSeats: SeatWithStatusDto[] =
+    selectedEvent?.eventLocation?.seats ?? [];
 
   const filteredUsers = users
     .filter((user) => {

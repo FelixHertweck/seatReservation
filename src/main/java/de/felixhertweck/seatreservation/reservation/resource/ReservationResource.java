@@ -26,6 +26,7 @@ import jakarta.validation.Valid;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.*;
 
+import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.reservation.dto.ReservationResponseDTO;
@@ -69,12 +70,13 @@ public class ReservationResource {
         LOG.debugf(
                 "Received GET request to /api/user/reservations for user: %s",
                 currentUser.getUsername());
-        List<ReservationResponseDTO> reservations =
-                reservationService.findReservationsByUser(currentUser);
+        List<Reservation> reservations = reservationService.findReservationsByUser(currentUser);
+        List<ReservationResponseDTO> reservationDTOs =
+                reservations.stream().map(ReservationResponseDTO::toDTO).toList();
         LOG.debugf(
                 "Returning %d reservations for user: %s",
-                reservations.size(), currentUser.getUsername());
-        return reservations;
+                reservationDTOs.size(), currentUser.getUsername());
+        return reservationDTOs;
     }
 
     @GET
@@ -95,10 +97,10 @@ public class ReservationResource {
         LOG.debugf(
                 "Received GET request to /api/user/reservations/%d for user: %s",
                 id, currentUser.getUsername());
-        ReservationResponseDTO reservation =
-                reservationService.findReservationByIdForUser(id, currentUser);
+        Reservation reservation = reservationService.findReservationByIdForUser(id, currentUser);
+        ReservationResponseDTO reservationDTO = ReservationResponseDTO.toDTO(reservation);
         LOG.debugf("Returning reservation with ID %d for user: %s", id, currentUser.getUsername());
-        return reservation;
+        return reservationDTO;
     }
 
     @POST
@@ -124,12 +126,15 @@ public class ReservationResource {
         LOG.debugf(
                 "Received POST request to /api/user/reservations for user: %s",
                 currentUser.getUsername());
-        List<ReservationResponseDTO> createdReservations =
-                reservationService.createReservationForUser(dto, currentUser);
+        List<Reservation> createdReservations =
+                reservationService.createReservationForUser(
+                        dto.getEventId(), dto.getSeatIds(), currentUser);
+        List<ReservationResponseDTO> reservationDTOs =
+                createdReservations.stream().map(ReservationResponseDTO::toDTO).toList();
         LOG.debugf(
                 "Created %d reservations for user: %s",
-                createdReservations.size(), currentUser.getUsername());
-        return createdReservations;
+                reservationDTOs.size(), currentUser.getUsername());
+        return reservationDTOs;
     }
 
     @DELETE

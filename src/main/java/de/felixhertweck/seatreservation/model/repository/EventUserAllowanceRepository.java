@@ -32,6 +32,18 @@ public class EventUserAllowanceRepository implements PanacheRepository<EventUser
         return find("user", user).list();
     }
 
+    public List<EventUserAllowance> findByUserWithEventLocation(User user) {
+        return find(
+                        "SELECT eua FROM EventUserAllowance eua "
+                                + "JOIN FETCH eua.event e "
+                                + "LEFT JOIN FETCH e.event_location el "
+                                + "LEFT JOIN FETCH el.manager "
+                                + "JOIN FETCH eua.user "
+                                + "WHERE eua.user = ?1",
+                        user)
+                .list();
+    }
+
     public List<EventUserAllowance> findByEventId(Long eventId) {
         return find("event.id", eventId).list();
     }

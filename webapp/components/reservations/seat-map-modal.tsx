@@ -29,7 +29,9 @@ export function SeatMapModal({
 }: SeatMapModalProps) {
   const t = useT();
 
-  const [highlightedSeats, setHighlightedSeats] = useState<SeatWithStatusDto[]>([]);
+  const [highlightedSeats, setHighlightedSeats] = useState<SeatWithStatusDto[]>(
+    [],
+  );
 
   const reservedSeats = eventReservations
     .map((res) => res.seat)

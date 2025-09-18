@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.PersistenceException;
@@ -37,8 +37,6 @@ import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
-import de.felixhertweck.seatreservation.reservation.dto.ReservationResponseDTO;
-import de.felixhertweck.seatreservation.reservation.dto.ReservationsRequestDTO;
 import de.felixhertweck.seatreservation.reservation.exception.EventBookingClosedException;
 import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
@@ -55,16 +53,16 @@ public class ReservationService {
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
     @Inject EmailService emailService;
 
-    public List<ReservationResponseDTO> findReservationsByUser(User currentUser) {
+    public List<Reservation> findReservationsByUser(User currentUser) {
         LOG.infof("Attempting to find reservations for user: %s", currentUser.getUsername());
         List<Reservation> reservations = reservationRepository.findByUser(currentUser);
         LOG.infof(
                 "Found %d reservations for user: %s",
                 reservations.size(), currentUser.getUsername());
-        return reservations.stream().map(ReservationResponseDTO::toDTO).toList();
+        return reservations;
     }
 
-    public ReservationResponseDTO findReservationByIdForUser(Long id, User currentUser) {
+    public Reservation findReservationByIdForUser(Long id, User currentUser) {
         LOG.infof(
                 "Attempting to find reservation with ID %d for user: %s",
                 id, currentUser.getUsername());
@@ -86,17 +84,16 @@ public class ReservationService {
             throw new SecurityException("You are not allowed to access this reservation");
         }
         LOG.infof("Reservation with ID %d found for user %s.", id, currentUser.getUsername());
-        return ReservationResponseDTO.toDTO(reservation);
+        return reservation;
     }
 
     @Transactional
-    public List<ReservationResponseDTO> createReservationForUser(
-            ReservationsRequestDTO dto, User currentUser)
+    public List<Reservation> createReservationForUser(
+            Long eventId, Set<Long> seatIds, User currentUser)
             throws NoSeatsAvailableException, EventBookingClosedException {
         LOG.infof(
                 "Attempting to create reservation for user %s for event ID %d with %d seats.",
-                currentUser.getUsername(), dto.getEventId(), dto.getSeatIds().size());
-        LOG.debugf("ReservationsRequestDto: %s", dto.toString());
+                currentUser.getUsername(), eventId, seatIds.size());
 
         if (currentUser.getEmail() == null
                 || currentUser.getEmail().trim().isEmpty()
@@ -108,7 +105,7 @@ public class ReservationService {
                     "User must have a verified email address to create a reservation.");
         }
 
-        if (dto.getSeatIds() == null || dto.getSeatIds().isEmpty()) {
+        if (seatIds == null || seatIds.isEmpty()) {
             LOG.warnf(
                     "User %s attempted to create reservation with no seats selected.",
                     currentUser.getUsername());
@@ -118,20 +115,20 @@ public class ReservationService {
         // Validate the eventId, ensure it exists
         Event event =
                 eventRepository
-                        .findByIdOptional(dto.getEventId())
+                        .findByIdOptional(eventId)
                         .orElseThrow(
                                 () -> {
                                     LOG.warnf(
                                             "Event with ID %d not found for reservation creation by"
                                                     + " user %s.",
-                                            dto.getEventId(), currentUser.getUsername());
+                                            eventId, currentUser.getUsername());
                                     return new EventNotFoundException("Event or Seat not found");
                                 });
         LOG.debugf("Event %s (ID: %d) found for reservation.", event.getName(), event.id);
 
         // Validate the seatIds, ensure they exist
         List<Seat> seats =
-                dto.getSeatIds().stream()
+                seatIds.stream()
                         .map(
                                 seatId ->
                                         seatRepository
@@ -254,9 +251,7 @@ public class ReservationService {
             LOG.error("Failed to send reservation confirmation email", e);
         }
 
-        return newReservations.stream()
-                .map(ReservationResponseDTO::toDTO)
-                .collect(Collectors.toList());
+        return newReservations;
     }
 
     @Transactional

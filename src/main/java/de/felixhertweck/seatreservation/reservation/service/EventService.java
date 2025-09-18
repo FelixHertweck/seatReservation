@@ -25,10 +25,12 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
+import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
+import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
+import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
-import de.felixhertweck.seatreservation.reservation.dto.EventResponseDTO;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
@@ -38,9 +40,10 @@ public class EventService {
 
     @Inject UserRepository userRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
+    @Inject ReservationRepository reservationRepository;
 
     @Transactional
-    public List<EventResponseDTO> getEventsForCurrentUser(String username)
+    public List<InnerAllowanceReservationResponses> getEventsForCurrentUser(String username)
             throws UserNotFoundException {
         LOG.infof("Attempting to retrieve events for current user: %s", username);
         User user = userRepository.findByUsername(username);
@@ -51,11 +54,22 @@ public class EventService {
         }
         LOG.debugf("User %s found. Retrieving event allowances.", username);
 
-        List<EventResponseDTO> events =
-                eventUserAllowanceRepository.findByUser(user).stream()
-                        .map(EventResponseDTO::toDTO)
+        List<InnerAllowanceReservationResponses> events =
+                eventUserAllowanceRepository.findByUserWithEventLocation(user).stream()
+                        .map(
+                                allowance -> {
+                                    List<Reservation> reservations =
+                                            reservationRepository.findByUserAndEvent(
+                                                    user, allowance.getEvent());
+                                    return new InnerAllowanceReservationResponses(
+                                            allowance, reservations);
+                                })
                         .toList();
         LOG.infof("Returning %d events for user: %s", events.size(), username);
         return events;
     }
+
+    /** Helper record to encapsulate allowance and reservations together */
+    public record InnerAllowanceReservationResponses(
+            EventUserAllowance allowance, List<Reservation> reservations) {}
 }

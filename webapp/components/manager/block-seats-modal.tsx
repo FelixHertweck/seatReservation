@@ -51,7 +51,8 @@ export function BlockSeatsModal({
   const selectedEvent = events?.find(
     (loc) => loc.id?.toString() === formData.eventId,
   );
-  const availableSeats: SeatWithStatusDto[] = selectedEvent?.eventLocation?.seats ?? [];
+  const availableSeats: SeatWithStatusDto[] =
+    selectedEvent?.eventLocation?.seats ?? [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

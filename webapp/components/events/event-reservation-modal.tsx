@@ -11,7 +11,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { SeatMap } from "@/components/common/seat-map";
 import { Badge } from "@/components/ui/badge";
-import type { EventResponseDto, ReservationResponseDto, SeatWithStatusDto } from "@/api";
+import type {
+  EventResponseDto,
+  ReservationResponseDto,
+  SeatWithStatusDto,
+} from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 
 interface EventReservationModalProps {
@@ -54,7 +58,9 @@ export function EventReservationModal({
   const userReservedSeats = userReservations
     .filter((reservation) => reservation.eventId === event.id)
     .map((reservation) => reservation.seat)
-    .filter((seat): seat is SeatWithStatusDto => seat !== null && seat !== undefined);
+    .filter(
+      (seat): seat is SeatWithStatusDto => seat !== null && seat !== undefined,
+    );
 
   const handleSeatSelect = (seat: SeatWithStatusDto) => {
     if (seat.status) return; // Can't select reserved or blocked seats

@@ -25,11 +25,13 @@ import de.felixhertweck.seatreservation.model.entity.Seat;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record SeatDTO(
         Long id, String seatNumber, Long locationId, int xCoordinate, int yCoordinate) {
+
     public static SeatDTO toDTO(Seat seat) {
+        Long locationId = seat.getLocation().id;
         return new SeatDTO(
                 seat.getId(),
                 seat.getSeatNumber(),
-                seat.getLocation().id,
+                locationId,
                 seat.getxCoordinate(),
                 seat.getyCoordinate());
     }

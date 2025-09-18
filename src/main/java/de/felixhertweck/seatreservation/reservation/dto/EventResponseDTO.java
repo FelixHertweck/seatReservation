@@ -38,19 +38,22 @@ public record EventResponseDTO(
         LocalDateTime bookingDeadline,
         EventLocationWithStatusDTO location,
         Integer reservationsAllowed) {
-
-    public static EventResponseDTO toDTO(EventUserAllowance allowance) {
+    public static EventResponseDTO toDTO(
+            EventUserAllowance allowance, List<Reservation> reservations) {
         Event event = allowance.getEvent();
         Integer reservationsAllowed = allowance.getReservationsAllowedCount();
 
         List<SeatWithStatusDTO> seats = new ArrayList<>();
-
-        for (Reservation reservation : event.getReservations()) {
+        List<Reservation> safeReservations =
+                reservations != null ? reservations : java.util.Collections.emptyList();
+        for (Reservation reservation : safeReservations) {
             seats.add(SeatWithStatusDTO.toDTO(reservation.getSeat(), reservation.getStatus()));
         }
 
-        EventLocationWithStatusDTO location =
-                EventLocationWithStatusDTO.toDTO(event.getEventLocation(), seats);
+        EventLocationWithStatusDTO location = null;
+        if (event.getEventLocation() != null) {
+            location = EventLocationWithStatusDTO.toDTO(event.getEventLocation(), seats);
+        }
 
         return new EventResponseDTO(
                 event.getId(),

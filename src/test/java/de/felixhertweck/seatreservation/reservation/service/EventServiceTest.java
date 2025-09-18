@@ -28,11 +28,13 @@ import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
+import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
-import de.felixhertweck.seatreservation.reservation.dto.EventResponseDTO;
+import de.felixhertweck.seatreservation.reservation.service.EventService.InnerAllowanceReservationResponses;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,6 +49,8 @@ class EventServiceTest {
 
     @InjectMock EventUserAllowanceRepository eventUserAllowanceRepository;
 
+    @InjectMock ReservationRepository reservationRepository;
+
     private User user;
     private Event event;
     private EventUserAllowance allowance;
@@ -57,7 +61,7 @@ class EventServiceTest {
         user.id = 1L;
         user.setUsername("testuser");
 
-        var location = new de.felixhertweck.seatreservation.model.entity.EventLocation();
+        var location = new EventLocation();
         location.id = 1L;
 
         event = new Event();
@@ -73,14 +77,18 @@ class EventServiceTest {
     @Test
     void getEventsForCurrentUser_Success() {
         when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(eventUserAllowanceRepository.findByUser(user)).thenReturn(List.of(allowance));
+        when(eventUserAllowanceRepository.findByUserWithEventLocation(user))
+                .thenReturn(List.of(allowance));
+        when(reservationRepository.findByUserAndEvent(user, event))
+                .thenReturn(Collections.emptyList());
 
-        List<EventResponseDTO> result = eventService.getEventsForCurrentUser("testuser");
+        List<InnerAllowanceReservationResponses> result =
+                eventService.getEventsForCurrentUser("testuser");
 
         assertFalse(result.isEmpty());
         assertEquals(1, result.size());
-        assertEquals(event.id, result.getFirst().id());
-        assertEquals(5, result.getFirst().reservationsAllowed());
+        assertEquals(event.id, result.getFirst().allowance().getEvent().id);
+        assertEquals(5, result.getFirst().allowance().getReservationsAllowedCount());
     }
 
     @Test
@@ -95,9 +103,11 @@ class EventServiceTest {
     @Test
     void getEventsForCurrentUser_Success_NoEvents() {
         when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(eventUserAllowanceRepository.findByUser(user)).thenReturn(Collections.emptyList());
+        when(eventUserAllowanceRepository.findByUserWithEventLocation(user))
+                .thenReturn(Collections.emptyList());
 
-        List<EventResponseDTO> result = eventService.getEventsForCurrentUser("testuser");
+        List<InnerAllowanceReservationResponses> result =
+                eventService.getEventsForCurrentUser("testuser");
 
         assertTrue(result.isEmpty());
     }

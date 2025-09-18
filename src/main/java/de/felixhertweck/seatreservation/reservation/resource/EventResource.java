@@ -30,6 +30,7 @@ import jakarta.ws.rs.core.MediaType;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.reservation.dto.EventResponseDTO;
 import de.felixhertweck.seatreservation.reservation.service.EventService;
+import de.felixhertweck.seatreservation.reservation.service.EventService.InnerAllowanceReservationResponses;
 import io.quarkus.security.identity.SecurityIdentity;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -65,7 +66,12 @@ public class EventResource {
     public List<EventResponseDTO> getEvents() {
         String username = securityIdentity.getPrincipal().getName();
         LOG.debugf("Received GET request to /api/user/events for user: %s", username);
-        List<EventResponseDTO> events = eventService.getEventsForCurrentUser(username);
+        List<InnerAllowanceReservationResponses> allowanceReservationMap =
+                eventService.getEventsForCurrentUser(username);
+        List<EventResponseDTO> events =
+                allowanceReservationMap.stream()
+                        .map(ir -> EventResponseDTO.toDTO(ir.allowance(), ir.reservations()))
+                        .toList();
         LOG.debugf("Returning %d events for user: %s", events.size(), username);
         return events;
     }
