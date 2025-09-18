@@ -177,7 +177,7 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | `getEventsByCurrentManager_Success_AsManager` | Ruft Events ab, die dem aktuellen Manager gehören. |
 | `getEventsByCurrentManager_Success_NoEventsForManager` | Ruft eine leere Liste ab, wenn der Manager keine Events verwaltet. |
 
-### setReservationsAllowedForUser(EventUserAllowancesDto dto, User manager)
+### setReservationsAllowedForUser(EventUserAllowancesResponseDto dto, User manager)
 
 | Testfall | Beschreibung |
 | :--- | :--- |
@@ -240,7 +240,7 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | `createReservation_BadRequestException_AllowanceZero` | Versucht, eine Reservierung zu erstellen, wenn die Reservierungserlaubnis des Benutzers 0 ist. Erwartet `BadRequestException`. |
 | `createReservation_Forbidden_AsUser` | Versucht, eine Reservierung als normaler Benutzer zu erstellen, was fehlschlagen sollte. |
 
-### updateReservation(Long id, ReservationRequestDTO dto, User currentUser)
+### updateReservation(Long id, ManagerReservationRequestDto dto, User currentUser)
 
 | Testfall | Beschreibung |
 | :--- | :--- |

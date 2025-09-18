@@ -40,9 +40,9 @@ import {
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
 import type {
   UserDto,
-  DetailedEventResponseDto,
-  DetailedReservationResponseDto,
-  ReservationRequestDto,
+  ManagerEventResponseDto,
+  ManagerReservationResponseDto,
+  ManagerReservationRequestDto,
   BlockSeatsRequestDto,
 } from "@/api";
 import { customSerializer } from "@/lib/jsonBodySerializer";
@@ -50,15 +50,15 @@ import { useT } from "@/lib/i18n/hooks";
 
 export interface ReservationManagementProps {
   users: UserDto[];
-  events: DetailedEventResponseDto[];
-  reservations: DetailedReservationResponseDto[];
+  events: ManagerEventResponseDto[];
+  reservations: ManagerReservationResponseDto[];
   createReservation: (
-    reservation: ReservationRequestDto,
-  ) => Promise<DetailedReservationResponseDto[]>;
+    reservation: ManagerReservationRequestDto,
+  ) => Promise<ManagerReservationResponseDto[]>;
   deleteReservation: (id: bigint) => Promise<unknown>;
   blockSeats: (
     request: BlockSeatsRequestDto,
-  ) => Promise<DetailedReservationResponseDto[]>;
+  ) => Promise<ManagerReservationResponseDto[]>;
   onNavigateToEvent?: (eventId: bigint) => void;
   onNavigateToSeat?: (seatId: bigint) => void;
   initialFilter?: Record<string, string>;
@@ -150,7 +150,7 @@ export function ReservationManagement({
   };
 
   const handleDeleteReservation = async (
-    reservation: DetailedReservationResponseDto,
+    reservation: ManagerReservationResponseDto,
   ) => {
     if (reservation.id && confirm(t("reservationManagement.confirmDelete"))) {
       await deleteReservation(reservation.id);

@@ -66,7 +66,7 @@ const localDateTimeSchemaResponseTransformer = (data: any) => {
     return data;
 };
 
-const detailedEventResponseDtoSchemaResponseTransformer = (data: any) => {
+const managerEventResponseDtoSchemaResponseTransformer = (data: any) => {
     if (data.id) {
         data.id = BigInt(data.id.toString());
     }
@@ -96,27 +96,27 @@ const detailedEventResponseDtoSchemaResponseTransformer = (data: any) => {
 
 export const getApiManagerEventsResponseTransformer = async (data: any): Promise<GetApiManagerEventsResponse> => {
     data = data.map((item: any) => {
-        return detailedEventResponseDtoSchemaResponseTransformer(item);
+        return managerEventResponseDtoSchemaResponseTransformer(item);
     });
     return data;
 };
 
 export const postApiManagerEventsResponseTransformer = async (data: any): Promise<PostApiManagerEventsResponse> => {
-    data = detailedEventResponseDtoSchemaResponseTransformer(data);
+    data = managerEventResponseDtoSchemaResponseTransformer(data);
     return data;
 };
 
 export const getApiManagerEventsByIdResponseTransformer = async (data: any): Promise<GetApiManagerEventsByIdResponse> => {
-    data = detailedEventResponseDtoSchemaResponseTransformer(data);
+    data = managerEventResponseDtoSchemaResponseTransformer(data);
     return data;
 };
 
 export const putApiManagerEventsByIdResponseTransformer = async (data: any): Promise<PutApiManagerEventsByIdResponse> => {
-    data = detailedEventResponseDtoSchemaResponseTransformer(data);
+    data = managerEventResponseDtoSchemaResponseTransformer(data);
     return data;
 };
 
-const eventUserAllowancesDtoSchemaResponseTransformer = (data: any) => {
+const eventUserAllowancesResponseDtoSchemaResponseTransformer = (data: any) => {
     if (data.id) {
         data.id = BigInt(data.id.toString());
     }
@@ -131,32 +131,32 @@ const eventUserAllowancesDtoSchemaResponseTransformer = (data: any) => {
 
 export const getApiManagerReservationAllowanceResponseTransformer = async (data: any): Promise<GetApiManagerReservationAllowanceResponse> => {
     data = data.map((item: any) => {
-        return eventUserAllowancesDtoSchemaResponseTransformer(item);
+        return eventUserAllowancesResponseDtoSchemaResponseTransformer(item);
     });
     return data;
 };
 
 export const postApiManagerReservationAllowanceResponseTransformer = async (data: any): Promise<PostApiManagerReservationAllowanceResponse> => {
     data = data.map((item: any) => {
-        return eventUserAllowancesDtoSchemaResponseTransformer(item);
+        return eventUserAllowancesResponseDtoSchemaResponseTransformer(item);
     });
     return data;
 };
 
 export const putApiManagerReservationAllowanceResponseTransformer = async (data: any): Promise<PutApiManagerReservationAllowanceResponse> => {
-    data = eventUserAllowancesDtoSchemaResponseTransformer(data);
+    data = eventUserAllowancesResponseDtoSchemaResponseTransformer(data);
     return data;
 };
 
 export const getApiManagerReservationAllowanceEventByEventIdResponseTransformer = async (data: any): Promise<GetApiManagerReservationAllowanceEventByEventIdResponse> => {
     data = data.map((item: any) => {
-        return eventUserAllowancesDtoSchemaResponseTransformer(item);
+        return eventUserAllowancesResponseDtoSchemaResponseTransformer(item);
     });
     return data;
 };
 
 export const getApiManagerReservationAllowanceByIdResponseTransformer = async (data: any): Promise<GetApiManagerReservationAllowanceByIdResponse> => {
-    data = eventUserAllowancesDtoSchemaResponseTransformer(data);
+    data = eventUserAllowancesResponseDtoSchemaResponseTransformer(data);
     return data;
 };
 
@@ -167,7 +167,7 @@ const userDtoSchemaResponseTransformer = (data: any) => {
     return data;
 };
 
-const detailedReservationResponseDtoSchemaResponseTransformer = (data: any) => {
+const managerReservationResponseDtoSchemaResponseTransformer = (data: any) => {
     if (data.id) {
         data.id = BigInt(data.id.toString());
     }
@@ -188,34 +188,34 @@ const detailedReservationResponseDtoSchemaResponseTransformer = (data: any) => {
 
 export const getApiManagerReservationsResponseTransformer = async (data: any): Promise<GetApiManagerReservationsResponse> => {
     data = data.map((item: any) => {
-        return detailedReservationResponseDtoSchemaResponseTransformer(item);
+        return managerReservationResponseDtoSchemaResponseTransformer(item);
     });
     return data;
 };
 
 export const postApiManagerReservationsResponseTransformer = async (data: any): Promise<PostApiManagerReservationsResponse> => {
     data = data.map((item: any) => {
-        return detailedReservationResponseDtoSchemaResponseTransformer(item);
+        return managerReservationResponseDtoSchemaResponseTransformer(item);
     });
     return data;
 };
 
 export const postApiManagerReservationsBlockResponseTransformer = async (data: any): Promise<PostApiManagerReservationsBlockResponse> => {
     data = data.map((item: any) => {
-        return detailedReservationResponseDtoSchemaResponseTransformer(item);
+        return managerReservationResponseDtoSchemaResponseTransformer(item);
     });
     return data;
 };
 
 export const getApiManagerReservationsEventByIdResponseTransformer = async (data: any): Promise<GetApiManagerReservationsEventByIdResponse> => {
     data = data.map((item: any) => {
-        return detailedReservationResponseDtoSchemaResponseTransformer(item);
+        return managerReservationResponseDtoSchemaResponseTransformer(item);
     });
     return data;
 };
 
 export const getApiManagerReservationsByIdResponseTransformer = async (data: any): Promise<GetApiManagerReservationsByIdResponse> => {
-    data = detailedReservationResponseDtoSchemaResponseTransformer(data);
+    data = managerReservationResponseDtoSchemaResponseTransformer(data);
     return data;
 };
 

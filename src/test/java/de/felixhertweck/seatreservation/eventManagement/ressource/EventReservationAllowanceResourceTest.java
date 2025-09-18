@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowanceUpdateDto;
-import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesDto;
+import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesResponseDto;
 import de.felixhertweck.seatreservation.eventManagement.service.EventReservationAllowanceService;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
@@ -50,7 +50,7 @@ class EventReservationAllowanceResourceTest {
             user = "testUser",
             roles = {"MANAGER"})
     void getReservationAllowanceById_Success() {
-        EventUserAllowancesDto dto = new EventUserAllowancesDto(1L, 1L, 2L, 5);
+        EventUserAllowancesResponseDto dto = new EventUserAllowancesResponseDto(1L, 1L, 2L, 5);
         when(userSecurityContext.getCurrentUser()).thenReturn(new User());
         when(eventReservationAllowanceService.getReservationAllowanceById(
                         anyLong(), any(User.class)))
@@ -111,7 +111,9 @@ class EventReservationAllowanceResourceTest {
     void getReservationAllowances_Success() {
         when(userSecurityContext.getCurrentUser()).thenReturn(new User());
         when(eventReservationAllowanceService.getReservationAllowances(any(User.class)))
-                .thenReturn(Collections.singletonList(new EventUserAllowancesDto(1L, 1L, 2L, 5)));
+                .thenReturn(
+                        Collections.singletonList(
+                                new EventUserAllowancesResponseDto(1L, 1L, 2L, 5)));
 
         given().when()
                 .get("/api/manager/reservationAllowance")
@@ -138,7 +140,9 @@ class EventReservationAllowanceResourceTest {
         when(userSecurityContext.getCurrentUser()).thenReturn(new User());
         when(eventReservationAllowanceService.getReservationAllowancesByEventId(
                         anyLong(), any(User.class)))
-                .thenReturn(Collections.singletonList(new EventUserAllowancesDto(1L, 1L, 2L, 5)));
+                .thenReturn(
+                        Collections.singletonList(
+                                new EventUserAllowancesResponseDto(1L, 1L, 2L, 5)));
 
         given().when()
                 .get("/api/manager/reservationAllowance/event/1")
@@ -163,7 +167,8 @@ class EventReservationAllowanceResourceTest {
             roles = {"MANAGER"})
     void updateReservationAllowance_Success() {
         EventUserAllowanceUpdateDto requestDto = new EventUserAllowanceUpdateDto(1L, 1L, 2L, 10);
-        EventUserAllowancesDto responseDto = new EventUserAllowancesDto(1L, 1L, 2L, 10);
+        EventUserAllowancesResponseDto responseDto =
+                new EventUserAllowancesResponseDto(1L, 1L, 2L, 10);
 
         when(userSecurityContext.getCurrentUser()).thenReturn(new User());
         when(eventReservationAllowanceService.updateReservationAllowance(

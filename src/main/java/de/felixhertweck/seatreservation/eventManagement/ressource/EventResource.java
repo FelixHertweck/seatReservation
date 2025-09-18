@@ -26,8 +26,8 @@ import jakarta.validation.Valid;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.*;
 
-import de.felixhertweck.seatreservation.eventManagement.dto.DetailedEventResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventRequestDTO;
+import de.felixhertweck.seatreservation.eventManagement.dto.ManagerEventResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.service.EventService;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
@@ -54,7 +54,7 @@ public class EventResource {
     @APIResponse(
             responseCode = "200",
             description = "OK",
-            content = @Content(schema = @Schema(implementation = DetailedEventResponseDTO.class)))
+            content = @Content(schema = @Schema(implementation = ManagerEventResponseDTO.class)))
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
@@ -63,10 +63,10 @@ public class EventResource {
     @APIResponse(
             responseCode = "409",
             description = "Conflict: Event with this name already exists in this event location")
-    public DetailedEventResponseDTO createEvent(@Valid EventRequestDTO dto) {
+    public ManagerEventResponseDTO createEvent(@Valid EventRequestDTO dto) {
         LOG.debugf("Received POST request to /api/manager/events to create a new event.");
         User currentUser = userSecurityContext.getCurrentUser();
-        DetailedEventResponseDTO result = eventService.createEvent(dto, currentUser);
+        ManagerEventResponseDTO result = eventService.createEvent(dto, currentUser);
         LOG.debugf("Event '%s' created successfully with ID %d.", result.name(), result.id());
         return result;
     }
@@ -76,7 +76,7 @@ public class EventResource {
     @APIResponse(
             responseCode = "200",
             description = "OK",
-            content = @Content(schema = @Schema(implementation = DetailedEventResponseDTO.class)))
+            content = @Content(schema = @Schema(implementation = ManagerEventResponseDTO.class)))
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
@@ -85,11 +85,11 @@ public class EventResource {
     @APIResponse(
             responseCode = "409",
             description = "Conflict: Event with this name already exists in this event location")
-    public DetailedEventResponseDTO updateEvent(
+    public ManagerEventResponseDTO updateEvent(
             @PathParam("id") Long id, @Valid EventRequestDTO dto) {
         LOG.debugf("Received PUT request to /api/manager/events/%d to update event.", id);
         User currentUser = userSecurityContext.getCurrentUser();
-        DetailedEventResponseDTO result = eventService.updateEvent(id, dto, currentUser);
+        ManagerEventResponseDTO result = eventService.updateEvent(id, dto, currentUser);
         LOG.debugf("Event with ID %d updated successfully.", id);
         return result;
     }
@@ -103,15 +103,15 @@ public class EventResource {
                             schema =
                                     @Schema(
                                             type = SchemaType.ARRAY,
-                                            implementation = DetailedEventResponseDTO.class)))
+                                            implementation = ManagerEventResponseDTO.class)))
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
             description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
-    public List<DetailedEventResponseDTO> getEventsByCurrentManager() {
+    public List<ManagerEventResponseDTO> getEventsByCurrentManager() {
         LOG.debugf("Received GET request to /api/manager/events to get events by current manager.");
         User currentUser = userSecurityContext.getCurrentUser();
-        List<DetailedEventResponseDTO> result = eventService.getEventsByCurrentManager(currentUser);
+        List<ManagerEventResponseDTO> result = eventService.getEventsByCurrentManager(currentUser);
         LOG.debugf(
                 "Successfully responded to GET /api/manager/events with %d events.", result.size());
         return result;
@@ -122,7 +122,7 @@ public class EventResource {
     @APIResponse(
             responseCode = "200",
             description = "OK",
-            content = @Content(schema = @Schema(implementation = DetailedEventResponseDTO.class)))
+            content = @Content(schema = @Schema(implementation = ManagerEventResponseDTO.class)))
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
@@ -130,10 +130,10 @@ public class EventResource {
     @APIResponse(
             responseCode = "404",
             description = "Not Found: Event with specified ID not found for the current manager")
-    public DetailedEventResponseDTO getEventById(@PathParam("id") Long id) {
+    public ManagerEventResponseDTO getEventById(@PathParam("id") Long id) {
         LOG.debugf("Received GET request to /api/manager/events/%d.", id);
         User currentUser = userSecurityContext.getCurrentUser();
-        DetailedEventResponseDTO result = eventService.getEventByIdForManager(id, currentUser);
+        ManagerEventResponseDTO result = eventService.getEventByIdForManager(id, currentUser);
         if (result != null) {
             LOG.debugf("Successfully retrieved event with ID %d.", id);
         } else {

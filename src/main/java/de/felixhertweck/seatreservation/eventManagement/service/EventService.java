@@ -27,8 +27,8 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
-import de.felixhertweck.seatreservation.eventManagement.dto.DetailedEventResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventRequestDTO;
+import de.felixhertweck.seatreservation.eventManagement.dto.ManagerEventResponseDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.Roles;
@@ -58,7 +58,7 @@ public class EventService {
      * @return A DTO representing the newly created Event.
      */
     @Transactional
-    public DetailedEventResponseDTO createEvent(EventRequestDTO dto, User manager) {
+    public ManagerEventResponseDTO createEvent(EventRequestDTO dto, User manager) {
         LOG.debugf(
                 "Attempting to create event with name: %s for manager: %s (ID: %d)",
                 dto.getName(), manager.getUsername(), manager.getId());
@@ -90,7 +90,7 @@ public class EventService {
         LOG.infof(
                 "Event '%s' (ID: %d) created successfully by manager: %s (ID: %d)",
                 event.getName(), event.getId(), manager.getUsername(), manager.getId());
-        return new DetailedEventResponseDTO(event);
+        return new ManagerEventResponseDTO(event);
     }
 
     /**
@@ -104,7 +104,7 @@ public class EventService {
      * @throws SecurityException If the user is not authorized to update the Event.
      */
     @Transactional
-    public DetailedEventResponseDTO updateEvent(Long id, EventRequestDTO dto, User manager)
+    public ManagerEventResponseDTO updateEvent(Long id, EventRequestDTO dto, User manager)
             throws EventNotFoundException, IllegalArgumentException {
         LOG.debugf(
                 "Attempting to update event with ID: %d for manager: %s (ID: %d)",
@@ -172,7 +172,7 @@ public class EventService {
         LOG.infof(
                 "Event '%s' (ID: %d) updated successfully by manager: %s (ID: %d)",
                 event.getName(), event.getId(), manager.getUsername(), manager.getId());
-        return new DetailedEventResponseDTO(event);
+        return new ManagerEventResponseDTO(event);
     }
 
     /**
@@ -193,7 +193,7 @@ public class EventService {
      *
      * @return A list of DTOs representing the Events.
      */
-    public List<DetailedEventResponseDTO> getEventsByCurrentManager(User manager) {
+    public List<ManagerEventResponseDTO> getEventsByCurrentManager(User manager) {
         LOG.debugf(
                 "Attempting to retrieve events for manager: %s (ID: %d)",
                 manager.getUsername(), manager.getId());
@@ -210,7 +210,7 @@ public class EventService {
         LOG.infof(
                 "Retrieved %d events for manager: %s (ID: %d)",
                 events.size(), manager.getUsername(), manager.getId());
-        return events.stream().map(DetailedEventResponseDTO::new).collect(Collectors.toList());
+        return events.stream().map(ManagerEventResponseDTO::new).collect(Collectors.toList());
     }
 
     /**
@@ -279,7 +279,7 @@ public class EventService {
      * @throws EventNotFoundException If the Event with the specified ID is not found.
      * @throws SecurityException If the user is not authorized to view the Event.
      */
-    public DetailedEventResponseDTO getEventByIdForManager(Long id, User manager)
+    public ManagerEventResponseDTO getEventByIdForManager(Long id, User manager)
             throws EventNotFoundException, SecurityException {
         LOG.debugf(
                 "Attempting to retrieve event with ID: %d for manager: %s (ID: %d)",
@@ -294,6 +294,6 @@ public class EventService {
         LOG.debugf(
                 "Successfully retrieved event with ID %d for manager: %s (ID: %d)",
                 id, manager.getUsername(), manager.getId());
-        return new DetailedEventResponseDTO(event);
+        return new ManagerEventResponseDTO(event);
     }
 }

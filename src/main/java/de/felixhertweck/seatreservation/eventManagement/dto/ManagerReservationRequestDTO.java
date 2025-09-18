@@ -20,9 +20,10 @@
 package de.felixhertweck.seatreservation.eventManagement.dto;
 
 import java.util.Set;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
-public class ReservationRequestDTO {
+public class ManagerReservationRequestDTO {
     @NotNull(message = "Event ID must not be null")
     private Long eventId;
 
@@ -30,6 +31,7 @@ public class ReservationRequestDTO {
     private Long userId;
 
     @NotNull(message = "Seat ID must not be null")
+    @NotEmpty(message = "Seat IDs must not be empty")
     private Set<Long> seatIds;
 
     private boolean deductAllowance = true;

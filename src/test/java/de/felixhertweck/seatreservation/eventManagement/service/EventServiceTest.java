@@ -33,11 +33,11 @@ import static org.mockito.Mockito.*;
 
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
-import de.felixhertweck.seatreservation.eventManagement.dto.DetailedEventResponseDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventRequestDTO;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowanceUpdateDto;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesCreateDto;
-import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesDto;
+import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesResponseDto;
+import de.felixhertweck.seatreservation.eventManagement.dto.ManagerEventResponseDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
@@ -151,7 +151,7 @@ public class EventServiceTest {
                 .when(eventRepository)
                 .persist(any(Event.class));
 
-        DetailedEventResponseDTO createdEvent = eventService.createEvent(dto, managerUser);
+        ManagerEventResponseDTO createdEvent = eventService.createEvent(dto, managerUser);
 
         assertNotNull(createdEvent);
         assertEquals("New Event", createdEvent.name());
@@ -191,7 +191,7 @@ public class EventServiceTest {
         when(eventLocationRepository.findByIdOptional(eventLocation.id))
                 .thenReturn(Optional.of(eventLocation));
 
-        DetailedEventResponseDTO updatedEvent =
+        ManagerEventResponseDTO updatedEvent =
                 eventService.updateEvent(existingEvent.id, dto, managerUser);
 
         assertNotNull(updatedEvent);
@@ -214,7 +214,7 @@ public class EventServiceTest {
         when(eventLocationRepository.findByIdOptional(eventLocation.id))
                 .thenReturn(Optional.of(eventLocation));
 
-        DetailedEventResponseDTO updatedEvent =
+        ManagerEventResponseDTO updatedEvent =
                 eventService.updateEvent(existingEvent.id, dto, adminUser);
 
         assertNotNull(updatedEvent);
@@ -296,7 +296,7 @@ public class EventServiceTest {
                                 regularUser));
         when(eventRepository.listAll()).thenReturn(allEvents);
 
-        List<DetailedEventResponseDTO> result = eventService.getEventsByCurrentManager(adminUser);
+        List<ManagerEventResponseDTO> result = eventService.getEventsByCurrentManager(adminUser);
 
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -309,7 +309,7 @@ public class EventServiceTest {
         List<Event> managerEvents = List.of(existingEvent);
         when(eventRepository.findByManager(managerUser)).thenReturn(managerEvents);
 
-        List<DetailedEventResponseDTO> result = eventService.getEventsByCurrentManager(managerUser);
+        List<ManagerEventResponseDTO> result = eventService.getEventsByCurrentManager(managerUser);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -322,7 +322,7 @@ public class EventServiceTest {
     void getEventsByCurrentManager_Success_NoEventsForManager() {
         when(eventRepository.findByManager(managerUser)).thenReturn(Collections.emptyList());
 
-        List<DetailedEventResponseDTO> result = eventService.getEventsByCurrentManager(managerUser);
+        List<ManagerEventResponseDTO> result = eventService.getEventsByCurrentManager(managerUser);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
@@ -496,7 +496,7 @@ public class EventServiceTest {
         when(eventUserAllowanceRepository.findByIdOptional(existingAllowance.id))
                 .thenReturn(Optional.of(existingAllowance));
 
-        EventUserAllowancesDto result =
+        EventUserAllowancesResponseDto result =
                 eventReservationAllowanceService.updateReservationAllowance(dto, managerUser);
 
         assertNotNull(result);
@@ -517,7 +517,7 @@ public class EventServiceTest {
         when(eventUserAllowanceRepository.findByIdOptional(existingAllowance.id))
                 .thenReturn(Optional.of(existingAllowance));
 
-        EventUserAllowancesDto result =
+        EventUserAllowancesResponseDto result =
                 eventReservationAllowanceService.updateReservationAllowance(dto, adminUser);
 
         assertNotNull(result);
@@ -568,7 +568,7 @@ public class EventServiceTest {
         when(eventUserAllowanceRepository.findByIdOptional(allowance.id))
                 .thenReturn(Optional.of(allowance));
 
-        EventUserAllowancesDto result =
+        EventUserAllowancesResponseDto result =
                 eventReservationAllowanceService.getReservationAllowanceById(
                         allowance.id, managerUser);
 
@@ -587,7 +587,7 @@ public class EventServiceTest {
         when(eventUserAllowanceRepository.findByIdOptional(allowance.id))
                 .thenReturn(Optional.of(allowance));
 
-        EventUserAllowancesDto result =
+        EventUserAllowancesResponseDto result =
                 eventReservationAllowanceService.getReservationAllowanceById(
                         allowance.id, adminUser);
 

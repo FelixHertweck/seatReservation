@@ -22,11 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { SeatFormModal } from "@/components/manager/seat-form-modal";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
-import type {
-  SeatDto,
-  SeatRequestDto,
-  EventLocationResponseDto,
-} from "@/api";
+import type { SeatDto, SeatRequestDto, EventLocationResponseDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 
 export interface SeatManagementProps {
@@ -51,9 +47,7 @@ export function SeatManagement({
   const t = useT();
 
   const [filteredSeats, setFilteredSeats] = useState(seats);
-  const [selectedSeat, setSelectedSeat] = useState<SeatDto | null>(
-    null,
-  );
+  const [selectedSeat, setSelectedSeat] = useState<SeatDto | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [currentFilters, setCurrentFilters] =

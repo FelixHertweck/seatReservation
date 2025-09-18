@@ -31,7 +31,7 @@ import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowanceUpdateDto;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesCreateDto;
-import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesDto;
+import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesResponseDto;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.Roles;
@@ -62,7 +62,7 @@ public class EventReservationAllowanceService {
      * @return A set of DTOs representing the updated reservation allowances for the users.
      */
     @Transactional
-    public Set<EventUserAllowancesDto> setReservationsAllowedForUser(
+    public Set<EventUserAllowancesResponseDto> setReservationsAllowedForUser(
             EventUserAllowancesCreateDto dto, User manager)
             throws EventNotFoundException, UserNotFoundException {
         LOG.debugf(
@@ -83,7 +83,7 @@ public class EventReservationAllowanceService {
             throw new SecurityException("User is not the manager of this event");
         }
 
-        Set<EventUserAllowancesDto> resultAllowances = new HashSet<>();
+        Set<EventUserAllowancesResponseDto> resultAllowances = new HashSet<>();
 
         dto.getUserIds()
                 .forEach(
@@ -103,7 +103,7 @@ public class EventReservationAllowanceService {
                                     dto.getReservationsAllowedCount());
                             eventUserAllowanceRepository.persist(allowance);
 
-                            resultAllowances.add(new EventUserAllowancesDto((allowance)));
+                            resultAllowances.add(new EventUserAllowancesResponseDto((allowance)));
                         });
 
         LOG.infof(
@@ -130,7 +130,7 @@ public class EventReservationAllowanceService {
      * @return A DTO representing the updated reservation allowance.
      */
     @Transactional
-    public EventUserAllowancesDto updateReservationAllowance(
+    public EventUserAllowancesResponseDto updateReservationAllowance(
             EventUserAllowanceUpdateDto dto, User manager)
             throws EventNotFoundException, SecurityException {
         LOG.debugf(
@@ -166,7 +166,7 @@ public class EventReservationAllowanceService {
                 "Reservation allowance with ID %d updated successfully to count %d by manager: %s"
                         + " (ID: %d)",
                 dto.id(), dto.reservationsAllowedCount(), manager.getUsername(), manager.getId());
-        return new EventUserAllowancesDto(allowance);
+        return new EventUserAllowancesResponseDto(allowance);
     }
 
     /**
@@ -180,7 +180,7 @@ public class EventReservationAllowanceService {
      * @throws SecurityException If the user is not authorized to view this allowance.
      * @return A DTO representing the reservation allowance.
      */
-    public EventUserAllowancesDto getReservationAllowanceById(Long id, User manager) {
+    public EventUserAllowancesResponseDto getReservationAllowanceById(Long id, User manager) {
         LOG.debugf(
                 "Attempting to retrieve reservation allowance with ID: %d for manager: %s (ID: %d)",
                 id, manager.getUsername(), manager.getId());
@@ -206,7 +206,7 @@ public class EventReservationAllowanceService {
         LOG.debugf(
                 "Successfully retrieved reservation allowance with ID %d for manager: %s (ID: %d)",
                 id, manager.getUsername(), manager.getId());
-        return new EventUserAllowancesDto(allowance);
+        return new EventUserAllowancesResponseDto(allowance);
     }
 
     /**
@@ -218,7 +218,7 @@ public class EventReservationAllowanceService {
      * @throws SecurityException If the user is not authorized to view the allowances.
      * @return A list of DTOs representing the reservation allowances for the current user.
      */
-    public List<EventUserAllowancesDto> getReservationAllowances(User currentUser)
+    public List<EventUserAllowancesResponseDto> getReservationAllowances(User currentUser)
             throws SecurityException {
         LOG.debugf(
                 "Attempting to retrieve all reservation allowances for user: %s (ID: %d)",
@@ -237,7 +237,9 @@ public class EventReservationAllowanceService {
         LOG.infof(
                 "Retrieved %d reservation allowances for user: %s (ID: %d)",
                 allowances.size(), currentUser.getUsername(), currentUser.getId());
-        return allowances.stream().map(EventUserAllowancesDto::new).collect(Collectors.toList());
+        return allowances.stream()
+                .map(EventUserAllowancesResponseDto::new)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -251,7 +253,7 @@ public class EventReservationAllowanceService {
      * @throws EventNotFoundException If the event with the specified ID is not found.
      * @return A list of DTOs representing the reservation allowances for the specified event.
      */
-    public List<EventUserAllowancesDto> getReservationAllowancesByEventId(
+    public List<EventUserAllowancesResponseDto> getReservationAllowancesByEventId(
             Long eventId, User currentUser) throws SecurityException, EventNotFoundException {
         LOG.debugf(
                 "Attempting to retrieve reservation allowances for event ID: %d by user: %s (ID:"
@@ -265,9 +267,9 @@ public class EventReservationAllowanceService {
                     currentUser.getUsername(), currentUser.getId(), eventId);
             throw new SecurityException("User is not authorized to view allowances for this event");
         }
-        List<EventUserAllowancesDto> result =
+        List<EventUserAllowancesResponseDto> result =
                 eventUserAllowanceRepository.findByEventId(eventId).stream()
-                        .map(EventUserAllowancesDto::new)
+                        .map(EventUserAllowancesResponseDto::new)
                         .collect(Collectors.toList());
         LOG.infof(
                 "Retrieved %d reservation allowances for event ID %d by user: %s (ID: %d)",

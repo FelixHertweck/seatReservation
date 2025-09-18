@@ -311,7 +311,7 @@ Ruft alle Events ab, die vom aktuellen Manager verwaltet werden.
 
 -   **Rollen:** `MANAGER`, `ADMIN`
 -   **Responses:**
-    -   `200 OK`: Gibt eine Liste von `DetailedEventResponseDTO` Objekten zurück.
+    -   `200 OK`: Gibt eine Liste von `ManagerEventResponseDto` Objekten zurück.
 
 ---
 
@@ -322,7 +322,7 @@ Ruft ein bestimmtes Event anhand seiner ID ab.
 -   **Rollen:** `MANAGER`, `ADMIN`
 -   **Path Parameter:** `id` (Long) - Die ID des Events.
 -   **Responses:**
-    -   `200 OK`: Gibt `DetailedEventResponseDTO` zurück.
+    -   `200 OK`: Gibt `ManagerEventResponseDto` zurück.
     -   `403 Forbidden`: Keine Berechtigung.
     -   `404 Not Found`: Event nicht gefunden.
 
@@ -335,7 +335,7 @@ Erstellt ein neues Event.
 -   **Rollen:** `MANAGER`, `ADMIN`
 -   **Request Body:** `EventRequestDTO`
 -   **Responses:**
-    -   `200 OK`: Event erfolgreich erstellt. Gibt `DetailedEventResponseDTO` zurück.
+    -   `200 OK`: Event erfolgreich erstellt. Gibt `ManagerEventResponseDto` zurück.
     -   `400 Bad Request`: Ungültige Daten.
     -   `404 Not Found`: Zugehörige Location nicht gefunden.
 
@@ -349,7 +349,7 @@ Aktualisiert ein bestehendes Event.
 -   **Path Parameter:** `id` (Long) - Die ID des Events.
 -   **Request Body:** `EventRequestDTO`
 -   **Responses:**
-    -   `200 OK`: Event erfolgreich aktualisiert. Gibt `DetailedEventResponseDTO` zurück.
+    -   `200 OK`: Event erfolgreich aktualisiert. Gibt `ManagerEventResponseDto` zurück.
     -   `404 Not Found`: Event nicht gefunden oder keine Berechtigung.
 
 ---
@@ -434,9 +434,9 @@ Basispfad: `/api/manager/reservationAllowance`
 Setzt oder aktualisiert die Anzahl der erlaubten Reservierungen für einen Benutzer für ein Event.
 
 -   **Rollen:** `MANAGER`, `ADMIN`
--   **Request Body:** `EventUserAllowancesDto`
+-   **Request Body:** `EventUserAllowancesResponseDto`
 -   **Responses:**
-    -   `200 OK`: Berechtigung erfolgreich gesetzt/aktualisiert. Gibt `EventUserAllowancesDto` zurück.
+    -   `200 OK`: Berechtigung erfolgreich gesetzt/aktualisiert. Gibt `EventUserAllowancesResponseDto` zurück.
     -   `403 Forbidden`: Keine Berechtigung.
     -   `404 Not Found`: Event oder Benutzer nicht gefunden.
 
@@ -449,7 +449,7 @@ Ruft eine spezifische Reservierungsberechtigung anhand ihrer ID ab.
 -   **Rollen:** `MANAGER`, `ADMIN`
 -   **Path Parameter:** `id` (Long) - Die ID der Berechtigung.
 -   **Responses:**
-    -   `200 OK`: Gibt `EventUserAllowancesDto` zurück.
+    -   `200 OK`: Gibt `EventUserAllowancesResponseDto` zurück.
     -   `403 Forbidden`: Keine Berechtigung.
     -   `404 Not Found`: Berechtigung nicht gefunden.
 
@@ -461,7 +461,7 @@ Ruft alle Reservierungsberechtigungen ab.
 
 -   **Rollen:** `MANAGER`, `ADMIN`
 -   **Responses:**
-    -   `200 OK`: Gibt eine Liste von `EventUserAllowancesDto` zurück.
+    -   `200 OK`: Gibt eine Liste von `EventUserAllowancesResponseDto` zurück.
     -   `403 Forbidden`: Keine Berechtigung.
 
 ---
@@ -473,7 +473,7 @@ Ruft alle Reservierungsberechtigungen für ein bestimmtes Event ab.
 -   **Rollen:** `MANAGER`, `ADMIN`
 -   **Path Parameter:** `eventId` (Long) - Die ID des Events.
 -   **Responses:**
-    -   `200 OK`: Gibt eine Liste von `EventUserAllowancesDto` zurück.
+    -   `200 OK`: Gibt eine Liste von `EventUserAllowancesResponseDto` zurück.
     -   `403 Forbidden`: Keine Berechtigung.
     -   `404 Not Found`: Event nicht gefunden.
 
@@ -497,7 +497,7 @@ Aktualisiert eine bestehende Reservierungsberechtigung.
 -   **Rollen:** `MANAGER`, `ADMIN`
 -   **Request Body:** `EventUserAllowanceUpdateDto`
 -   **Responses:**
-    -   `200 OK`: Berechtigung erfolgreich aktualisiert. Gibt `EventUserAllowancesDto` zurück.
+    -   `200 OK`: Berechtigung erfolgreich aktualisiert. Gibt `EventUserAllowancesResponseDto` zurück.
     -   `403 Forbidden`: Keine Berechtigung.
     -   `404 Not Found`: Berechtigung nicht gefunden.
 
@@ -517,7 +517,7 @@ Ruft alle Reservierungen für die Events des aktuellen Managers ab.
 
 -   **Rollen:** `MANAGER`, `ADMIN`
 -   **Responses:**
-    -   `200 OK`: Gibt eine Liste von `DetailedReservationResponseDTO` Objekten zurück.
+    -   `200 OK`: Gibt eine Liste von `ManagerReservationResponseDto` Objekten zurück.
 
 ---
 
@@ -528,7 +528,7 @@ Ruft eine bestimmte Reservierung anhand ihrer ID ab.
 -   **Rollen:** `MANAGER`, `ADMIN`
 -   **Path Parameter:** `id` (Long) - Die ID der Reservierung.
 -   **Responses:**
-    -   `200 OK`: Gibt `DetailedReservationResponseDTO` zurück.
+    -   `200 OK`: Gibt `ManagerReservationResponseDto` zurück.
     -   `404 Not Found`: Reservierung nicht gefunden oder keine Berechtigung.
 
 ---
@@ -540,7 +540,7 @@ Ruft alle Reservierungen für ein bestimmtes Event ab.
 -   **Rollen:** `MANAGER`, `ADMIN`
 -   **Path Parameter:** `id` (Long) - Die ID des Events.
 -   **Responses:**
-    -   `200 OK`: Gibt eine Liste von `DetailedReservationResponseDTO` Objekten zurück.
+    -   `200 OK`: Gibt eine Liste von `ManagerReservationResponseDto` Objekten zurück.
     -   `403 Forbidden`: Keine Berechtigung für dieses Event.
 
 ---
@@ -552,7 +552,7 @@ Erstellt eine neue Reservierung.
 -   **Rollen:** `MANAGER`, `ADMIN`
 -   **Request Body:** `ReservationRequestDTO`
 -   **Responses:**
-    -   `200 OK`: Reservierung erfolgreich erstellt. Gibt `DetailedReservationResponseDTO` zurück.
+    -   `200 OK`: Reservierung erfolgreich erstellt. Gibt `ManagerReservationResponseDto` zurück.
     -   `404 Not Found`: Benutzer, Event oder Sitzplatz nicht gefunden.
     -   `409 Conflict`: Sitzplatz bereits reserviert.
 
@@ -566,7 +566,7 @@ Aktualisiert eine bestehende Reservierung.
 -   **Path Parameter:** `id` (Long) - Die ID der Reservierung.
 -   **Request Body:** `ReservationRequestDTO`
 -   **Responses:**
-    -   `200 OK`: Reservierung erfolgreich aktualisiert. Gibt `DetailedReservationResponseDTO` zurück.
+    -   `200 OK`: Reservierung erfolgreich aktualisiert. Gibt `ManagerReservationResponseDto` zurück.
     -   `404 Not Found`: Reservierung, Event oder Benutzer nicht gefunden oder keine Berechtigung.
 
 ---

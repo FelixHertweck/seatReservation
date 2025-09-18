@@ -24,16 +24,16 @@ import { useT } from "@/lib/i18n/hooks";
 
 import type {
   UserDto,
-  DetailedEventResponseDto,
-  EventUserAllowancesDto,
   EventUserAllowanceUpdateDto,
   EventUserAllowancesCreateDto,
+  EventUserAllowancesResponseDto,
+  ManagerEventResponseDto,
 } from "@/api";
 
 interface AllowanceFormModalProps {
-  allowance: EventUserAllowancesDto | null;
+  allowance: EventUserAllowancesResponseDto | null;
   users: UserDto[];
-  events: DetailedEventResponseDto[];
+  events: ManagerEventResponseDto[];
   isCreating: boolean;
   onSubmit: (
     allowanceData: EventUserAllowancesCreateDto | EventUserAllowanceUpdateDto,

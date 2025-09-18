@@ -29,7 +29,7 @@ import jakarta.ws.rs.*;
 
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowanceUpdateDto;
 import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesCreateDto;
-import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesDto;
+import de.felixhertweck.seatreservation.eventManagement.dto.EventUserAllowancesResponseDto;
 import de.felixhertweck.seatreservation.eventManagement.service.EventReservationAllowanceService;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
@@ -61,7 +61,7 @@ public class EventReservationAllowanceResource {
                             schema =
                                     @Schema(
                                             type = SchemaType.ARRAY,
-                                            implementation = EventUserAllowancesDto.class)))
+                                            implementation = EventUserAllowancesResponseDto.class)))
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
@@ -70,13 +70,13 @@ public class EventReservationAllowanceResource {
     @APIResponse(
             responseCode = "409",
             description = "Conflict: Allowance already exists for this user and event")
-    public Set<EventUserAllowancesDto> setReservationsAllowedForUser(
+    public Set<EventUserAllowancesResponseDto> setReservationsAllowedForUser(
             @Valid EventUserAllowancesCreateDto userReservationAllowanceDTO) {
         LOG.debugf(
                 "Received POST request to /api/manager/reservationAllowance to set reservation"
                         + " allowance.");
         User currentUser = userSecurityContext.getCurrentUser();
-        Set<EventUserAllowancesDto> result =
+        Set<EventUserAllowancesResponseDto> result =
                 eventReservationAllowanceService.setReservationsAllowedForUser(
                         userReservationAllowanceDTO, currentUser);
         LOG.debugf(
@@ -89,7 +89,10 @@ public class EventReservationAllowanceResource {
     @APIResponse(
             responseCode = "200",
             description = "OK",
-            content = @Content(schema = @Schema(implementation = EventUserAllowancesDto.class)))
+            content =
+                    @Content(
+                            schema =
+                                    @Schema(implementation = EventUserAllowancesResponseDto.class)))
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
@@ -100,14 +103,14 @@ public class EventReservationAllowanceResource {
     @APIResponse(
             responseCode = "409",
             description = "Conflict: Allowance already exists for this user and event")
-    public EventUserAllowancesDto updateReservationAllowance(
+    public EventUserAllowancesResponseDto updateReservationAllowance(
             @Valid EventUserAllowanceUpdateDto eventUserAllowanceUpdateDto) {
         LOG.debugf(
                 "Received PUT request to /api/manager/reservationAllowance to update reservation"
                         + " allowance with ID %d.",
                 eventUserAllowanceUpdateDto.id());
         User currentUser = userSecurityContext.getCurrentUser();
-        EventUserAllowancesDto result =
+        EventUserAllowancesResponseDto result =
                 eventReservationAllowanceService.updateReservationAllowance(
                         eventUserAllowanceUpdateDto, currentUser);
         LOG.debugf(
@@ -126,10 +129,10 @@ public class EventReservationAllowanceResource {
     @APIResponse(
             responseCode = "404",
             description = "Not Found: Allowance with specified ID not found")
-    public EventUserAllowancesDto getReservationAllowanceById(@PathParam("id") Long id) {
+    public EventUserAllowancesResponseDto getReservationAllowanceById(@PathParam("id") Long id) {
         LOG.debugf("Received GET request to /api/manager/reservationAllowance/%d.", id);
         User currentUser = userSecurityContext.getCurrentUser();
-        EventUserAllowancesDto result =
+        EventUserAllowancesResponseDto result =
                 eventReservationAllowanceService.getReservationAllowanceById(id, currentUser);
         if (result != null) {
             LOG.debugf("Successfully retrieved reservation allowance with ID %d.", id);
@@ -147,11 +150,11 @@ public class EventReservationAllowanceResource {
     @APIResponse(
             responseCode = "403",
             description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
-    public List<EventUserAllowancesDto> getReservationAllowances() {
+    public List<EventUserAllowancesResponseDto> getReservationAllowances() {
         LOG.debugf(
                 "Received GET request to /api/manager/reservationAllowance to get all allowances.");
         User currentUser = userSecurityContext.getCurrentUser();
-        List<EventUserAllowancesDto> result =
+        List<EventUserAllowancesResponseDto> result =
                 eventReservationAllowanceService.getReservationAllowances(currentUser);
         LOG.debugf("Successfully retrieved %d reservation allowances.", result.size());
         return result;
@@ -168,11 +171,11 @@ public class EventReservationAllowanceResource {
             responseCode = "403",
             description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
     @APIResponse(responseCode = "404", description = "Not Found: Event with specified ID not found")
-    public List<EventUserAllowancesDto> getReservationAllowancesByEventId(
+    public List<EventUserAllowancesResponseDto> getReservationAllowancesByEventId(
             @PathParam("eventId") Long eventId) {
         LOG.debugf("Received GET request to /api/manager/reservationAllowance/event/%d.", eventId);
         User currentUser = userSecurityContext.getCurrentUser();
-        List<EventUserAllowancesDto> result =
+        List<EventUserAllowancesResponseDto> result =
                 eventReservationAllowanceService.getReservationAllowancesByEventId(
                         eventId, currentUser);
         LOG.debugf(

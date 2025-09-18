@@ -22,24 +22,24 @@ import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { AllowanceFormModal } from "@/components/manager/allowance-form-modal";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
 import type {
-  EventUserAllowancesDto,
+  EventUserAllowancesResponseDto,
   EventUserAllowancesCreateDto,
   EventUserAllowanceUpdateDto,
-  DetailedEventResponseDto,
+  ManagerEventResponseDto,
   LimitedUserInfoDto,
 } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 
 export interface ReservationAllowanceManagementProps {
-  allowances: EventUserAllowancesDto[];
-  events: DetailedEventResponseDto[];
+  allowances: EventUserAllowancesResponseDto[];
+  events: ManagerEventResponseDto[];
   users: LimitedUserInfoDto[];
   createReservationAllowance: (
     allowance: EventUserAllowancesCreateDto,
-  ) => Promise<EventUserAllowancesDto[]>;
+  ) => Promise<EventUserAllowancesResponseDto[]>;
   updateReservationAllowance: (
     allowance: EventUserAllowanceUpdateDto,
-  ) => Promise<EventUserAllowancesDto>;
+  ) => Promise<EventUserAllowancesResponseDto>;
   deleteReservationAllowance: (id: bigint) => Promise<void>;
   onNavigateToEvent?: (eventId: bigint) => void;
   initialFilter?: Record<string, string>;
@@ -61,7 +61,7 @@ export function ReservationAllowanceManagement({
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedAllowance, setSelectedAllowance] =
-    useState<EventUserAllowancesDto | null>(null);
+    useState<EventUserAllowancesResponseDto | null>(null);
   const [currentFilters, setCurrentFilters] =
     useState<Record<string, string>>(initialFilter);
 
@@ -137,12 +137,14 @@ export function ReservationAllowanceManagement({
     setIsCreateModalOpen(true);
   };
 
-  const openEditModal = (allowance: EventUserAllowancesDto) => {
+  const openEditModal = (allowance: EventUserAllowancesResponseDto) => {
     setSelectedAllowance(allowance);
     setIsEditModalOpen(true);
   };
 
-  const handleDeleteAllowance = async (allowance: EventUserAllowancesDto) => {
+  const handleDeleteAllowance = async (
+    allowance: EventUserAllowancesResponseDto,
+  ) => {
     if (
       allowance.id &&
       confirm(t("reservationAllowanceManagement.confirmDelete"))

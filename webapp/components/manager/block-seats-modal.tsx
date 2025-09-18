@@ -23,13 +23,13 @@ import { Badge } from "@/components/ui/badge";
 import { SeatMap } from "@/components/common/seat-map";
 import type {
   BlockSeatsRequestDto,
-  DetailedEventResponseDto,
+  ManagerEventResponseDto,
   SeatDto,
 } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 
 interface BlockSeatsModalProps {
-  events: DetailedEventResponseDto[];
+  events: ManagerEventResponseDto[];
   onSubmit: (blockData: BlockSeatsRequestDto) => Promise<void>;
   onClose: () => void;
 }

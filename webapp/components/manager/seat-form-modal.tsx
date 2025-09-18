@@ -20,11 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type {
-  SeatRequestDto,
-  EventLocationResponseDto,
-  SeatDto,
-} from "@/api";
+import type { SeatRequestDto, EventLocationResponseDto, SeatDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 
 interface SeatFormModalProps {

@@ -23,19 +23,19 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { SeatMap } from "@/components/common/seat-map";
 import type {
-  DetailedEventResponseDto,
-  ReservationRequestDto,
+  ManagerEventResponseDto,
   SeatDto,
   UserDto,
-  DetailedReservationResponseDto,
+  ManagerReservationRequestDto,
+  ManagerReservationResponseDto,
 } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 
 interface ReservationFormModalProps {
   users: UserDto[];
-  events: DetailedEventResponseDto[];
-  reservations?: DetailedReservationResponseDto[];
-  onSubmit: (reservationData: ReservationRequestDto) => Promise<void>;
+  events: ManagerEventResponseDto[];
+  reservations?: ManagerReservationResponseDto[];
+  onSubmit: (reservationData: ManagerReservationRequestDto) => Promise<void>;
   onClose: () => void;
 }
 
@@ -80,7 +80,7 @@ export function ReservationFormModal({
     setIsLoading(true);
 
     try {
-      const reservationData: ReservationRequestDto = {
+      const reservationData: ManagerReservationRequestDto = {
         eventId: BigInt(formData.eventId),
         userId: BigInt(formData.userId),
         seatIds: selectedSeats.map((seat) => seat.id!),

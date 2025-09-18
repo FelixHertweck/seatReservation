@@ -19,20 +19,15 @@
  */
 package de.felixhertweck.seatreservation.eventManagement.dto;
 
-import java.time.LocalDateTime;
+import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 
-import de.felixhertweck.seatreservation.common.dto.SeatDTO;
-import de.felixhertweck.seatreservation.common.dto.UserDTO;
-import de.felixhertweck.seatreservation.model.entity.Reservation;
-
-public record DetailedReservationResponseDTO(
-        Long id, UserDTO user, Long eventId, SeatDTO seat, LocalDateTime reservationDateTime) {
-    public DetailedReservationResponseDTO(Reservation reservation) {
+public record EventUserAllowancesResponseDto(
+        Long id, Long eventId, Long userId, int reservationsAllowedCount) {
+    public EventUserAllowancesResponseDto(EventUserAllowance eventUserAllowance) {
         this(
-                reservation.id,
-                new UserDTO(reservation.getUser()),
-                reservation.getEvent().getId(),
-                new SeatDTO(reservation.getSeat()),
-                reservation.getReservationDate());
+                eventUserAllowance.id,
+                eventUserAllowance.getEvent().id,
+                eventUserAllowance.getUser().id,
+                eventUserAllowance.getReservationsAllowedCount());
     }
 }

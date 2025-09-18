@@ -21,7 +21,7 @@ import {
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { EventFormModal } from "@/components/manager/event-form-modal";
 import type {
-  DetailedEventResponseDto,
+  ManagerEventResponseDto,
   EventLocationResponseDto,
   EventRequestDto,
 } from "@/api";
@@ -29,13 +29,13 @@ import { useT } from "@/lib/i18n/hooks";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
 
 export interface EventManagementProps {
-  events: DetailedEventResponseDto[];
+  events: ManagerEventResponseDto[];
   allLocations: EventLocationResponseDto[];
-  createEvent: (event: EventRequestDto) => Promise<DetailedEventResponseDto>;
+  createEvent: (event: EventRequestDto) => Promise<ManagerEventResponseDto>;
   updateEvent: (
     id: bigint,
     event: EventRequestDto,
-  ) => Promise<DetailedEventResponseDto>;
+  ) => Promise<ManagerEventResponseDto>;
   deleteEvent: (id: bigint) => Promise<void>;
   onNavigateToLocation?: (locationId: bigint) => void;
   initialFilter?: Record<string, string>;
@@ -54,7 +54,7 @@ export function EventManagement({
 
   const [filteredEvents, setFilteredEvents] = useState(events);
   const [selectedEvent, setSelectedEvent] =
-    useState<DetailedEventResponseDto | null>(null);
+    useState<ManagerEventResponseDto | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [currentFilters, setCurrentFilters] =
@@ -118,13 +118,13 @@ export function EventManagement({
     setIsModalOpen(true);
   };
 
-  const handleEditEvent = (event: DetailedEventResponseDto) => {
+  const handleEditEvent = (event: ManagerEventResponseDto) => {
     setSelectedEvent(event);
     setIsCreating(false);
     setIsModalOpen(true);
   };
 
-  const handleDeleteEvent = async (event: DetailedEventResponseDto) => {
+  const handleDeleteEvent = async (event: ManagerEventResponseDto) => {
     if (
       event.id &&
       confirm(t("eventManagement.confirmDelete", { eventName: event.name }))

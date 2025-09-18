@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 import de.felixhertweck.seatreservation.common.dto.EventLocationResponseDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;
 
-public record DetailedEventResponseDTO(
+public record ManagerEventResponseDTO(
         Long id,
         String name,
         String description,
@@ -36,7 +36,7 @@ public record DetailedEventResponseDTO(
         EventLocationResponseDTO eventLocation,
         Long managerId,
         Set<Long> eventUserAllowancesIds) {
-    public DetailedEventResponseDTO(Event event) {
+    public ManagerEventResponseDTO(Event event) {
         this(
                 event.getId(),
                 event.getName(),
