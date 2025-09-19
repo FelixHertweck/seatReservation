@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { EventManagement } from "@/components/manager/event-management";
-import { LocationManagement } from "@/components/manager/location-management";
-import { SeatManagement } from "@/components/manager/seat-management";
-import { ReservationManagement } from "@/components/manager/reservation-management";
-import { ReservationAllowanceManagement } from "@/components/manager/reservation-allowance-management";
+import { EventManagement } from "@/components/management/event-management";
+import { LocationManagement } from "@/components/management/location-management";
+import { SeatManagement } from "@/components/management/seat-management";
+import { ReservationManagement } from "@/components/management/reservation-management";
+import { ReservationAllowanceManagement } from "@/components/management/reservation-allowance-management";
 import { useManager } from "@/hooks/use-manager";
 import Loading from "./loading";
 import { useT } from "@/lib/i18n/hooks";

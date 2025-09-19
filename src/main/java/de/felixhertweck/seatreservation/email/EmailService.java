@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import de.felixhertweck.seatreservation.eventManagement.service.ReservationService;
+import de.felixhertweck.seatreservation.management.service.ReservationService;
 import de.felixhertweck.seatreservation.model.entity.*;
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
@@ -369,12 +369,16 @@ public class EmailService {
 
         LOG.debugf(
                 "Retrieved %d total seats and %d user reservations for event %s.",
-                allSeats.size(), activeReservations.size(), eventName);
+                allSeats.size(),
+                activeReservations != null ? activeReservations.size() : 0,
+                eventName);
 
         Set<String> existingSeatNumbers =
-                activeReservations.stream()
-                        .map(r -> r.getSeat().getSeatNumber())
-                        .collect(Collectors.toSet());
+                activeReservations != null
+                        ? activeReservations.stream()
+                                .map(r -> r.getSeat().getSeatNumber())
+                                .collect(Collectors.toSet())
+                        : Set.of();
         LOG.debugf("Existing seat numbers (excluding new ones): %s", existingSeatNumbers);
 
         String svgContent = SvgRenderer.renderSeats(allSeats, Set.of(), existingSeatNumbers);
@@ -488,10 +492,8 @@ public class EmailService {
      * @param user the user to whom the reminder email will be sent
      * @param event the event for which the reminder is being sent
      * @param reservations the list of reservations made by the user for the event
-     * @throws IOException if the email template cannot be read
      */
-    public void sendEventReminder(User user, Event event, List<Reservation> reservations)
-            throws IOException {
+    public void sendEventReminder(User user, Event event, List<Reservation> reservations) {
         if (skipForNullOrEmptyAddress(user.getEmail())) {
             return;
         }

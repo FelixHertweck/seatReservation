@@ -29,8 +29,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
-import de.felixhertweck.seatreservation.eventManagement.service.EventService;
-import de.felixhertweck.seatreservation.eventManagement.service.ReservationService;
+import de.felixhertweck.seatreservation.management.service.EventService;
+import de.felixhertweck.seatreservation.management.service.ReservationService;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.User;
