@@ -46,7 +46,7 @@ export function AppSidebar() {
   const t = useT();
 
   const { user, logout } = useAuth();
-  const { setOpen, isMobile } = useSidebar();
+  const { setOpen, setOpenMobile, isMobile } = useSidebar();
   const { theme, setTheme, resolvedTheme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
@@ -69,9 +69,9 @@ export function AppSidebar() {
 
   useEffect(() => {
     if (isMobile) {
-      setOpen(false);
+      setOpenMobile(false);
     }
-  }, [pathname, isMobile, setOpen]);
+  }, [pathname, isMobile, setOpenMobile]);
 
   const getMenuItems = () => {
     const baseItems = [
