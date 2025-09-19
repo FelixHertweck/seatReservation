@@ -77,6 +77,8 @@ public class EventService {
                                                     + " not found");
                                 });
 
+        validateEventTiming(dto);
+
         Event event =
                 new Event(
                         dto.getName(),
@@ -144,6 +146,8 @@ public class EventService {
                                                     + dto.getEventLocationId()
                                                     + " not found");
                                 });
+
+        validateEventTiming(dto);
 
         LOG.debugf(
                 "Updating event ID %d: name='%s' -> '%s', description='%s' -> '%s', startTime='%s'"
@@ -295,5 +299,23 @@ public class EventService {
                 "Successfully retrieved event with ID %d for manager: %s (ID: %d)",
                 id, manager.getUsername(), manager.getId());
         return new DetailedEventResponseDTO(event);
+    }
+
+    /**
+     * Validates event timing constraints.
+     *
+     * @param dto The event request DTO containing the timing information
+     * @throws IllegalArgumentException if timing constraints are violated
+     */
+    private void validateEventTiming(EventRequestDTO dto) {
+        if (dto.getStartTime().isAfter(dto.getEndTime())
+                || dto.getStartTime().isEqual(dto.getEndTime())) {
+            throw new IllegalArgumentException("Start time must be before end time");
+        }
+
+        if (dto.getBookingDeadline().isAfter(dto.getEndTime())
+                || dto.getBookingDeadline().isEqual(dto.getEndTime())) {
+            throw new IllegalArgumentException("Booking deadline must be before end time");
+        }
     }
 }
