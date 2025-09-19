@@ -304,6 +304,8 @@ email:
                 ul {
                     padding-left: 20px;
                 }
+                .hidden { display: none; }
+                .visible { display: block; }
             </style>
         </head>
         <body>
@@ -314,9 +316,13 @@ email:
                 <p><strong>Location:</strong> {eventLocation}</p>
                 <p><strong>Start:</strong> {eventStartTime}</p>
                 <p><strong>End:</strong> {eventEndTime}</p>
-                <p>You have reserved the following seats:</p>
+                <p>You have new reserved the following seats:</p>
                 <ul>
                     {seatList}
+                </ul>
+                <p class={existingHeaderVisible}>You have already reserved the following seats:</p>
+                <ul class={existingHeaderVisible}>
+                    {existingSeatList}
                 </ul>
                 <p>You can view the event details here: <a href="{eventLink}">View Event</a></p>
                 <p><strong>Here is an overview of your seats:</strong></p>
@@ -325,6 +331,8 @@ email:
                 <div style="margin-top: 20px; text-align: center;">
                     <span style="display: inline-block; width: 15px; height: 15px; background-color: #2B7FFF; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
                     <span style="vertical-align: middle;">My Reserved</span>
+                    <span style="display: inline-block; width: 15px; height: 15px; background-color: #F0B100; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
+                    <span style="vertical-align: middle;">Already Reserved</span>
                 </div>
                 <p style="margin-top: 20px;">We wish you a great time at the event!</p>
                 <p>Best regards</p>
@@ -370,6 +378,8 @@ email:
                 ul {
                     padding-left: 20px;
                 }
+                .hidden { display: none; }
+                .visible { display: block; }
             </style>
         </head>
         <body>
@@ -380,12 +390,12 @@ email:
                 <p><strong>Location:</strong> {eventLocation}</p>
                 <p><strong>Start:</strong> {eventStartTime}</p>
                 <p><strong>End:</strong> {eventEndTime}</p>
-                <p><strong>You have deleted the following seats:</strong></p>
+                <p>You have deleted the following seats:</p>
                 <ul>
                     {deletedSeatList}
                 </ul>
-                <p>You have still reserved the following seats:</p>
-                <ul>
+                <p class={existingHeaderVisible}>You have still reserved the following seats:</p>
+                <ul class={existingHeaderVisible}>
                     {activeSeatList}
                 </ul>
                 <p>You can view the event details here: <a href="{eventLink}">View Event</a></p>

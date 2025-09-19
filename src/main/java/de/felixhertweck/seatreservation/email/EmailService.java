@@ -278,6 +278,21 @@ public class EmailService {
         htmlContent = htmlContent.replace("{eventLink}", generateEventLink(event.id));
         htmlContent = htmlContent.replace("{seatMap}", svgContent);
         htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
+
+        // Show or hide existing reservations section based on presence of existing seats
+        if (existingSeatNumbers.isEmpty()) {
+            htmlContent = htmlContent.replace("{existingHeaderVisible}", "hidden");
+            htmlContent = htmlContent.replace("{existingSeatList}", "");
+        } else {
+            htmlContent = htmlContent.replace("{existingHeaderVisible}", "visible");
+            StringBuilder existingSeatListHtml = new StringBuilder();
+            for (String seatNumber : existingSeatNumbers) {
+                existingSeatListHtml.append("<li>").append(seatNumber).append("</li>");
+            }
+            htmlContent =
+                    htmlContent.replace("{existingSeatList}", existingSeatListHtml.toString());
+        }
+
         LOG.debug("Placeholders replaced in reservation email template.");
 
         Mail mail =
@@ -350,15 +365,6 @@ public class EmailService {
         String svgContent = SvgRenderer.renderSeats(allSeats, Set.of(), existingSeatNumbers);
         LOG.debug("SVG content for seat map generated.");
 
-        StringBuilder activeSeatListHtml = new StringBuilder();
-        for (Reservation reservation : activeReservations) {
-            activeSeatListHtml
-                    .append("<li>")
-                    .append(reservation.getSeat().getSeatNumber())
-                    .append("</li>");
-        }
-        LOG.debugf("HTML list of seats generated: %s", activeSeatListHtml.toString());
-
         StringBuilder deletedSeatListHtml = new StringBuilder();
         for (Reservation reservation : deletedReservations) {
             deletedSeatListHtml
@@ -379,11 +385,29 @@ public class EmailService {
         htmlContent =
                 htmlContent.replace("{eventStartTime}", event.getStartTime().format(formatter));
         htmlContent = htmlContent.replace("{eventEndTime}", event.getEndTime().format(formatter));
-        htmlContent = htmlContent.replace("{activeSeatList}", activeSeatListHtml.toString());
+
         htmlContent = htmlContent.replace("{deletedSeatList}", deletedSeatListHtml.toString());
         htmlContent = htmlContent.replace("{eventLink}", generateEventLink(event.id));
         htmlContent = htmlContent.replace("{seatMap}", svgContent);
         htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
+
+        if (activeReservations.isEmpty()) {
+            htmlContent = htmlContent.replace("{existingHeaderVisible}", "hidden");
+            htmlContent = htmlContent.replace("{activeSeatList}", "");
+
+        } else {
+            htmlContent = htmlContent.replace("{existingHeaderVisible}", "visible");
+            StringBuilder activeSeatListHtml = new StringBuilder();
+            for (Reservation reservation : activeReservations) {
+                activeSeatListHtml
+                        .append("<li>")
+                        .append(reservation.getSeat().getSeatNumber())
+                        .append("</li>");
+            }
+            LOG.debugf("HTML list of seats generated: %s", activeSeatListHtml.toString());
+            htmlContent = htmlContent.replace("{activeSeatList}", activeSeatListHtml.toString());
+        }
+
         LOG.debug("Placeholders replaced in reservation email template.");
 
         Mail mail = Mail.withHtml(user.getEmail(), EMAIL_HEADER_RESERVATION_UPDATE, htmlContent);
