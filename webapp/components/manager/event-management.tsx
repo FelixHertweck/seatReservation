@@ -194,6 +194,9 @@ export function EventManagement({
                     {t("eventManagement.tableHeaderEndTime")}
                   </TableHead>
                   <TableHead>
+                    {t("eventManagement.tableHeaderBookingDeadline")}
+                  </TableHead>
+                  <TableHead>
                     {t("eventManagement.tableHeaderLocation")}
                   </TableHead>
                   <TableHead>
@@ -220,6 +223,11 @@ export function EventManagement({
                       <TableCell>
                         {event.endTime
                           ? new Date(event.endTime).toLocaleString()
+                          : t("eventManagement.tbd")}
+                      </TableCell>
+                      <TableCell>
+                        {event.bookingDeadline
+                          ? new Date(event.bookingDeadline).toLocaleString()
                           : t("eventManagement.tbd")}
                       </TableCell>
                       <TableCell>

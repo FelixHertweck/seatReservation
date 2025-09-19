@@ -390,7 +390,7 @@
   },
   "eventCard": {
     "statusAvailable": "Available",
-    "statusFull": "Full",
+    "statusFull": "Not Available",
     "tbd": "TBD",
     "timeTbd": "Time TBD",
     "locationTbd": "Location TBD",
@@ -531,6 +531,7 @@
     "tableHeaderDescription": "Description",
     "tableHeaderStartTime": "Start Time",
     "tableHeaderEndTime": "End Time",
+    "tableHeaderBookingDeadline": "Booking Deadline",
     "tableHeaderLocation": "Location",
     "tableHeaderActions": "Actions",
     "tbd": "TBD",
