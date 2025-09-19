@@ -59,7 +59,7 @@ public class EventService {
                                                 allowance.getEvent(),
                                                 allowance.getReservationsAllowedCount()))
                         .toList();
-        LOG.infof("Returning %d events for user: %s", events.size(), username);
+        LOG.debugf("Returning %d events for user: %s", events.size(), username);
         return events;
     }
 }
