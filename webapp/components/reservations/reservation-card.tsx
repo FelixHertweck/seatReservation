@@ -125,7 +125,12 @@ export function ReservationCard({
                   key={reservation.id?.toString()}
                   className="flex items-center gap-1 bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-sm"
                 >
-                  <span>{reservation.seat?.seatNumber}</span>
+                  <span>
+                    {reservation.seat?.seatNumber +
+                      (reservation.seat?.seatRow
+                        ? " (" + reservation.seat.seatRow + ")"
+                        : "")}
+                  </span>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -179,7 +184,12 @@ export function ReservationCard({
         isOpen={deleteModalOpen}
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
-        seatNumber={reservationToDelete?.seat?.seatNumber}
+        seatNumber={
+          reservationToDelete?.seat?.seatNumber +
+          (reservationToDelete?.seat?.seatRow
+            ? " (" + reservationToDelete.seat.seatRow + ")"
+            : "")
+        }
       />
     </>
   );

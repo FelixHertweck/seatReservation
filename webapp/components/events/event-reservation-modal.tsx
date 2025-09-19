@@ -158,7 +158,8 @@ export function EventReservationModal({
                     className="animate-in zoom-in duration-300 hover:scale-105 transition-transform text-xs md:text-sm px-2 py-1"
                     style={{ animationDelay: `${index * 50}ms` }}
                   >
-                    {seat.seatNumber}
+                    {seat.seatNumber +
+                      (seat.seatRow ? " (" + seat.seatRow + ")" : "")}
                   </Badge>
                 ))}
               </div>

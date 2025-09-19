@@ -225,7 +225,7 @@ public class SeatServiceTest {
     void findAllSeatsForManager_Success_AsAdmin() {
         EventLocation otherLocation = new EventLocation("Hall 2", "Addr 2", regularUser, 50);
         otherLocation.id = 2L; // Assign an ID for consistency
-        List<Seat> allSeats = Arrays.asList(existingSeat, new Seat("C1", otherLocation, 3, 3));
+        List<Seat> allSeats = Arrays.asList(existingSeat, new Seat("C1", otherLocation, "1", 3, 3));
         when(seatRepository.listAll()).thenReturn(allSeats);
         List<SeatDTO> result = seatService.findAllSeatsForManager(adminUser);
 
@@ -239,7 +239,7 @@ public class SeatServiceTest {
         EventLocation otherLocation =
                 new EventLocation("Other Hall", "Other Address", regularUser, 50);
         otherLocation.id = 2L;
-        Seat otherSeat = new Seat("X1", otherLocation, 1, 1);
+        Seat otherSeat = new Seat("X1", otherLocation, "1", 1, 1);
         otherSeat.id = 2L;
 
         List<Seat> managerSeats = Collections.singletonList(existingSeat);

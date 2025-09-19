@@ -124,7 +124,7 @@ public class ReservationServiceTest {
         event.setBookingDeadline(LocalDateTime.now().plusDays(1));
         event.setManager(managerUser);
 
-        seat = new Seat("A1", eventLocation, 1, 1);
+        seat = new Seat("A1", eventLocation, "1", 1, 1);
         seat.id = 1L;
 
         reservation =

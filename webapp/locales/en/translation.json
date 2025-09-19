@@ -384,7 +384,7 @@
     "clearAllButton": "Clear all"
   },
   "seatMap": {
-    "seatTitle": "Seat {{seatNumber}}",
+    "seatTitle": "Seat {{seatNumber}} ({{seatRow}})",
     "resetButton": "Reset",
     "stageText": "STAGE"
   },
@@ -659,6 +659,7 @@
     "updateSeatDescription": "Update seat information",
     "seatNumberLabel": "Seat Number",
     "locationLabel": "Location",
+    "rowLabel": "Row",
     "selectLocationPlaceholder": "Select a location",
     "xCoordinateLabel": "X Coordinate",
     "yCoordinateLabel": "Y Coordinate",
@@ -698,6 +699,7 @@
     },
     "table": {
       "seatNumberHeader": "Seat Number",
+      "seatRowHeader": "Seat Row",
       "locationHeader": "Location",
       "positionHeader": "Position",
       "actionsHeader": "Actions"

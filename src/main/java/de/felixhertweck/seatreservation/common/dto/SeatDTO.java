@@ -27,6 +27,7 @@ import de.felixhertweck.seatreservation.model.entity.Seat;
 public record SeatDTO(
         Long id,
         String seatNumber,
+        String seatRow,
         Long locationId,
         int xCoordinate,
         int yCoordinate,
@@ -35,6 +36,7 @@ public record SeatDTO(
         this(
                 seat.getId(),
                 seat.getSeatNumber(),
+                seat.getSeatRow(),
                 seat.getLocation().id,
                 seat.getxCoordinate(),
                 seat.getyCoordinate(),
@@ -45,6 +47,7 @@ public record SeatDTO(
         this(
                 seat.getId(),
                 seat.getSeatNumber(),
+                seat.getSeatRow(),
                 seat.getLocation().id,
                 seat.getxCoordinate(),
                 seat.getyCoordinate(),

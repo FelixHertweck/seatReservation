@@ -71,7 +71,8 @@ export function SeatManagement({
             locations
               .find((loc) => loc.id === seat.locationId)
               ?.name?.toLowerCase()
-              .includes(searchQuery.toLowerCase()),
+              .includes(searchQuery.toLowerCase()) ||
+            seat.seatRow?.toLowerCase().includes(searchQuery.toLowerCase()),
         );
       }
 
@@ -186,6 +187,9 @@ export function SeatManagement({
                     {t("seatManagement.table.locationHeader")}
                   </TableHead>
                   <TableHead>
+                    {t("seatManagement.table.seatRowHeader")}
+                  </TableHead>
+                  <TableHead>
                     {t("seatManagement.table.positionHeader")}
                   </TableHead>
                   <TableHead>
@@ -220,6 +224,7 @@ export function SeatManagement({
                           t("seatManagement.unknownLocation")
                         )}
                       </TableCell>
+                      <TableCell>{seat.seatRow}</TableCell>
                       <TableCell>
                         ({seat.xCoordinate}, {seat.yCoordinate})
                       </TableCell>

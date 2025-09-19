@@ -42,6 +42,7 @@ export function SeatFormModal({
 
   const [formData, setFormData] = useState({
     seatNumber: seat?.seatNumber || "",
+    seatRow: seat?.seatRow || "",
     eventLocationId: seat?.locationId?.toString() || "",
     xCoordinate: seat?.xCoordinate?.toString() || "",
     yCoordinate: seat?.yCoordinate?.toString() || "",
@@ -55,6 +56,7 @@ export function SeatFormModal({
     try {
       const seatData: SeatRequestDto = {
         seatNumber: formData.seatNumber,
+        seatRow: formData.seatRow,
         eventLocationId: BigInt(formData.eventLocationId),
         xCoordinate: Number.parseInt(formData.xCoordinate),
         yCoordinate: Number.parseInt(formData.yCoordinate),
@@ -122,6 +124,21 @@ export function SeatFormModal({
             </Select>
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="seatRow">{t("seatFormModal.rowLabel")}</Label>
+            <Input
+              id="seatRow"
+              type="text"
+              value={formData.seatRow}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  seatRow: e.target.value,
+                }))
+              }
+              required
+            />
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="xCoordinate">

@@ -517,6 +517,9 @@ export const SeatDTOSchema = {
         seatNumber: {
             type: 'string'
         },
+        seatRow: {
+            type: 'string'
+        },
         locationId: {
             type: 'integer',
             format: 'int64'
@@ -537,7 +540,7 @@ export const SeatDTOSchema = {
 
 export const SeatRequestDTOSchema = {
     type: 'object',
-    required: ['seatNumber', 'eventLocationId', 'xCoordinate', 'yCoordinate'],
+    required: ['seatNumber', 'eventLocationId', 'xCoordinate', 'yCoordinate', 'seatRow'],
     properties: {
         seatNumber: {
             type: 'string'
@@ -553,6 +556,9 @@ export const SeatRequestDTOSchema = {
         yCoordinate: {
             type: 'integer',
             format: 'int32'
+        },
+        seatRow: {
+            type: 'string'
         }
     }
 } as const;

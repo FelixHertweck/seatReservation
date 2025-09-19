@@ -265,7 +265,8 @@ export function ReservationFormModal({
                         variant="outline"
                         className="bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-700"
                       >
-                        {seat.seatNumber}
+                        {seat.seatNumber +
+                          (seat.seatRow ? " (" + seat.seatRow + ")" : "")}
                       </Badge>
                     ))}
                   </div>

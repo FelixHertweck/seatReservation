@@ -83,19 +83,27 @@ public class SeatService {
                     eventLocation.getId());
             throw new IllegalArgumentException("Seat number cannot be empty");
         }
-        if (dto.getxCoordinate().intValue() < 0 || dto.getyCoordinate().intValue() < 0) {
+        if (dto.getxCoordinate() < 0 || dto.getyCoordinate() < 0) {
             LOG.warnf(
                     "Invalid seat data: coordinates are negative for seat number '%s' in event"
                             + " location ID %d.",
                     dto.getSeatNumber(), eventLocation.getId());
             throw new IllegalArgumentException("Coordinates cannot be negative");
         }
+        if (dto.getSeatNumber() == null || dto.getSeatNumber().trim().isEmpty()) {
+            LOG.warnf(
+                    "Invalid seat data: seat number is empty for event location ID %d.",
+                    eventLocation.getId());
+            throw new IllegalArgumentException("Seat number cannot be empty");
+        }
 
-        Seat seat = new Seat();
-        seat.setSeatNumber(dto.getSeatNumber());
-        seat.setLocation(eventLocation);
-        seat.setxCoordinate(dto.getxCoordinate().intValue());
-        seat.setyCoordinate(dto.getyCoordinate().intValue());
+        Seat seat =
+                new Seat(
+                        dto.getSeatNumber(),
+                        eventLocation,
+                        dto.getSeatRow(),
+                        dto.getxCoordinate(),
+                        dto.getyCoordinate());
         seatRepository.persist(seat);
         LOG.infof(
                 "Seat with ID %d created successfully for event location ID %d by manager: %s (ID:"
@@ -174,7 +182,7 @@ public class SeatService {
             LOG.warnf("Invalid seat data: seat number is empty for seat ID %d.", id);
             throw new IllegalArgumentException("Seat number cannot be empty");
         }
-        if (dto.getxCoordinate().intValue() < 0 || dto.getyCoordinate().intValue() < 0) {
+        if (dto.getxCoordinate() < 0 || dto.getyCoordinate() < 0) {
             LOG.warnf("Invalid seat data: coordinates are negative for seat ID %d.", id);
             throw new IllegalArgumentException("Coordinates cannot be negative");
         }
@@ -188,13 +196,13 @@ public class SeatService {
                 seat.getLocation().getId(),
                 newEventLocation.getId(),
                 seat.getxCoordinate(),
-                dto.getxCoordinate().intValue(),
+                dto.getxCoordinate(),
                 seat.getyCoordinate(),
-                dto.getyCoordinate().intValue());
+                dto.getyCoordinate());
         seat.setSeatNumber(dto.getSeatNumber());
         seat.setLocation(newEventLocation);
-        seat.setxCoordinate(dto.getxCoordinate().intValue());
-        seat.setyCoordinate(dto.getyCoordinate().intValue());
+        seat.setxCoordinate(dto.getxCoordinate());
+        seat.setyCoordinate(dto.getyCoordinate());
         seatRepository.persist(seat);
         LOG.infof(
                 "Seat with ID %d updated successfully by manager: %s (ID: %d)",

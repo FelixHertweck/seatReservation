@@ -178,7 +178,8 @@ export function BlockSeatsModal({
                     className="animate-in zoom-in duration-300 hover:scale-105 transition-transform bg-orange-100 dark:bg-orange-900 border-orange-300 dark:border-orange-700"
                     style={{ animationDelay: `${index * 50}ms` }}
                   >
-                    {seat.seatNumber}
+                    {seat.seatNumber +
+                      (seat.seatRow ? " (" + seat.seatRow + ")" : "")}
                   </Badge>
                 ))}
               </div>
