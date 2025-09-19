@@ -49,11 +49,11 @@ import {
   postApiManagerEventlocationsImportMutation,
   postApiManagerEventlocationsImportByIdMutation,
 } from "@/api/@tanstack/react-query.gen";
-import type { EventManagementProps } from "@/components/manager/event-management";
-import type { LocationManagementProps } from "@/components/manager/location-management";
-import type { ReservationAllowanceManagementProps } from "@/components/manager/reservation-allowance-management";
-import type { ReservationManagementProps } from "@/components/manager/reservation-management";
-import type { SeatManagementProps } from "@/components/manager/seat-management";
+import type { EventManagementProps } from "@/components/management/event-management";
+import type { LocationManagementProps } from "@/components/management/location-management";
+import type { ReservationAllowanceManagementProps } from "@/components/management/reservation-allowance-management";
+import type { ReservationManagementProps } from "@/components/management/reservation-management";
+import type { SeatManagementProps } from "@/components/management/seat-management";
 
 interface UseManagerReturn {
   isLoading: boolean;
