@@ -50,7 +50,10 @@ const SeatComponent = React.memo(
           clickable && "cursor-pointer",
         )}
         onClick={handleClick}
-        title={t("seatMap.seatTitle", { seatNumber: seat.seatNumber })}
+        title={t("seatMap.seatTitle", {
+          seatNumber: seat.seatNumber,
+          seatRow: seat.seatRow,
+        })}
       >
         <div
           className={cn(
@@ -58,7 +61,9 @@ const SeatComponent = React.memo(
             seatColor,
           )}
         >
-          {zoom > 0.8 ? seat.seatNumber : ""}
+          {zoom > 0.8
+            ? seat.seatNumber + (seat.seatRow ? " (" + seat.seatRow + ")" : "")
+            : ""}
         </div>
       </div>
     );

@@ -134,7 +134,9 @@ export function SeatMapModal({
                         onClick={() => handleSeatClick(seat)}
                       >
                         {t("seatMapModal.seatNumberButton", {
-                          seatNumber: seat.seatNumber,
+                          seatNumber:
+                            seat.seatNumber +
+                            (seat.seatRow ? " (" + seat.seatRow + ")" : ""),
                         })}
                       </button>
                     ))}

@@ -72,9 +72,9 @@ public class ReservationResourceTest {
         testEvent.setEndTime(LocalDateTime.now().plusDays(2).plusHours(2));
         eventRepository.persist(testEvent);
 
-        testSeat1 = new Seat("A1", location);
-        testSeat2 = new Seat("A2", location);
-        testSeat3 = new Seat("A3", location);
+        testSeat1 = new Seat("A1", "Row 1", location);
+        testSeat2 = new Seat("A2", "Row 2", location);
+        testSeat3 = new Seat("A3", "Row 3", location);
         seatRepository.persist(testSeat1);
         seatRepository.persist(testSeat2);
         seatRepository.persist(testSeat3);

@@ -163,6 +163,7 @@ export type ReservationsRequestCreateDto = {
 export type SeatDto = {
     id?: bigint;
     seatNumber?: string;
+    seatRow?: string;
     locationId?: bigint;
     xCoordinate?: number;
     yCoordinate?: number;
@@ -174,6 +175,7 @@ export type SeatRequestDto = {
     eventLocationId: bigint;
     xCoordinate: number;
     yCoordinate: number;
+    seatRow: string;
 };
 
 export type UserDto = {

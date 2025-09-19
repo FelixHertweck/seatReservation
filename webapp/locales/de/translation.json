@@ -385,7 +385,7 @@
     "clearAllButton": "Alle löschen"
   },
   "seatMap": {
-    "seatTitle": "Platz {{seatNumber}}",
+    "seatTitle": "Platz {{seatNumber}} ({{seatRow}})",
     "resetButton": "Zurücksetzen",
     "stageText": "BÜHNE"
   },
@@ -661,6 +661,7 @@
     "updateSeatDescription": "Platzinformationen aktualisieren",
     "seatNumberLabel": "Platznummer",
     "locationLabel": "Standort",
+    "rowLabel": "Reihe",
     "selectLocationPlaceholder": "Standort auswählen",
     "xCoordinateLabel": "X-Koordinate",
     "yCoordinateLabel": "Y-Koordinate",
@@ -700,6 +701,7 @@
     },
     "table": {
       "seatNumberHeader": "Sitzplatznummer",
+      "seatRowHeader": "Reihe",
       "locationHeader": "Standort",
       "positionHeader": "Position",
       "actionsHeader": "Aktionen"

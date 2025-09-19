@@ -497,6 +497,9 @@
           "seatNumber" : {
             "type" : "string"
           },
+          "seatRow" : {
+            "type" : "string"
+          },
           "locationId" : {
             "type" : "integer",
             "format" : "int64"
@@ -516,7 +519,7 @@
       },
       "SeatRequestDTO" : {
         "type" : "object",
-        "required" : [ "seatNumber", "eventLocationId", "xCoordinate", "yCoordinate" ],
+        "required" : [ "seatNumber", "eventLocationId", "xCoordinate", "yCoordinate", "seatRow" ],
         "properties" : {
           "seatNumber" : {
             "type" : "string"
@@ -532,6 +535,9 @@
           "yCoordinate" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "seatRow" : {
+            "type" : "string"
           }
         }
       },

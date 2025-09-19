@@ -19,13 +19,13 @@
  */
 package de.felixhertweck.seatreservation.eventManagement.ressource;
 
-import java.util.Map;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 
+import de.felixhertweck.seatreservation.eventManagement.dto.SeatRequestDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
@@ -74,6 +74,7 @@ public class SeatResourceTest {
 
         testSeat = new Seat();
         testSeat.setSeatNumber("A1");
+        testSeat.setSeatRow("R: 1");
         testSeat.setLocation(testLocation);
         seatRepository.persist(testSeat);
     }
@@ -135,16 +136,7 @@ public class SeatResourceTest {
             roles = {"MANAGER"})
     void testCreateSeat() {
         given().contentType("application/json")
-                .body(
-                        Map.of(
-                                "seatNumber",
-                                "A2",
-                                "eventLocationId",
-                                testLocation.id,
-                                "xCoordinate",
-                                1,
-                                "yCoordinate",
-                                2))
+                .body(new SeatRequestDTO("A2", "R: 2", testLocation.id, 1, 2))
                 .when()
                 .post("/api/manager/seats")
                 .then()
@@ -171,16 +163,7 @@ public class SeatResourceTest {
             roles = {"MANAGER"})
     void testUpdateManagerSeat() {
         given().contentType("application/json")
-                .body(
-                        Map.of(
-                                "seatNumber",
-                                "A3",
-                                "eventLocationId",
-                                testLocation.id,
-                                "xCoordinate",
-                                1,
-                                "yCoordinate",
-                                3))
+                .body(new SeatRequestDTO("A3", "R: 2", testLocation.id, 1, 3))
                 .when()
                 .put("/api/manager/seats/" + testSeat.id)
                 .then()
@@ -194,16 +177,7 @@ public class SeatResourceTest {
             roles = {"MANAGER"})
     void testUpdateManagerSeatNotFound() {
         given().contentType("application/json")
-                .body(
-                        Map.of(
-                                "seatNumber",
-                                "A3",
-                                "eventLocationId",
-                                testLocation.id,
-                                "xCoordinate",
-                                1,
-                                "yCoordinate",
-                                3))
+                .body(new SeatRequestDTO("A3", "R: 2", testLocation.id, 1, 3))
                 .when()
                 .put("/api/manager/seats/999")
                 .then()

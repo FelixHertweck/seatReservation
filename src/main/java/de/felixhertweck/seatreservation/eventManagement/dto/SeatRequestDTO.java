@@ -34,16 +34,24 @@ public class SeatRequestDTO {
     @NotNull(message = "Y coordinate must not be null")
     private Integer yCoordinate;
 
+    @NotNull(message = "Row must not be null")
+    private String seatRow;
+
     public SeatRequestDTO() {
         // Default constructor for serialization/deserialization
     }
 
     public SeatRequestDTO(
-            String seatNumber, Long eventLocationId, int xCoordinate, int yCoordinate) {
+            String seatNumber,
+            String seatRow,
+            Long eventLocationId,
+            int xCoordinate,
+            int yCoordinate) {
         this.seatNumber = seatNumber;
         this.eventLocationId = eventLocationId;
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
+        this.seatRow = seatRow;
     }
 
     public String getSeatNumber() {
@@ -62,6 +70,10 @@ public class SeatRequestDTO {
         return yCoordinate;
     }
 
+    public String getSeatRow() {
+        return seatRow;
+    }
+
     public void setSeatNumber(String seatNumber) {
         this.seatNumber = seatNumber;
     }
@@ -76,5 +88,9 @@ public class SeatRequestDTO {
 
     public void setyCoordinate(Integer yCoordinate) {
         this.yCoordinate = yCoordinate;
+    }
+
+    public void setSeatRow(String seatRow) {
+        this.seatRow = seatRow;
     }
 }

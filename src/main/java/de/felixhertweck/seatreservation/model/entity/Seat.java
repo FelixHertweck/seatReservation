@@ -40,16 +40,25 @@ public class Seat extends PanacheEntity {
 
     private int yCoordinate;
 
+    private String seatRow;
+
     public Seat() {}
 
-    public Seat(String seatNumber, EventLocation location) {
+    public Seat(String seatNumber, String seatRow, EventLocation location) {
         this.seatNumber = seatNumber;
         this.location = location;
+        this.seatRow = seatRow;
     }
 
-    public Seat(String seatNumber, EventLocation location, int xCoordinate, int yCoordinate) {
+    public Seat(
+            String seatNumber,
+            EventLocation location,
+            String seatRow,
+            int xCoordinate,
+            int yCoordinate) {
         this.seatNumber = seatNumber;
         this.location = location;
+        this.seatRow = seatRow;
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
     }
@@ -88,6 +97,14 @@ public class Seat extends PanacheEntity {
 
     public Long getId() {
         return id;
+    }
+
+    public String getSeatRow() {
+        return seatRow;
+    }
+
+    public void setSeatRow(String seatRow) {
+        this.seatRow = seatRow;
     }
 
     @Override

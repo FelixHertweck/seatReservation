@@ -85,6 +85,7 @@ export function LocationImportModal({
         for (const seat of parsedData) {
           if (
             !seat.seatNumber ||
+            !seat.seatRow ||
             seat.xCoordinate === undefined ||
             seat.yCoordinate === undefined
           ) {

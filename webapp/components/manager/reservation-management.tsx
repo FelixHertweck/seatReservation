@@ -108,6 +108,9 @@ export function ReservationManagement({
               .includes(searchQuery.toLowerCase()) ||
             reservation.seat?.seatNumber
               ?.toLowerCase()
+              .includes(searchQuery.toLowerCase()) ||
+            reservation.seat?.seatRow
+              ?.toLowerCase()
               .includes(searchQuery.toLowerCase()),
         );
       }

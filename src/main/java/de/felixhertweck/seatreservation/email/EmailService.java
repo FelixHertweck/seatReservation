@@ -238,20 +238,26 @@ public class EmailService {
                 "Retrieved %d total seats and %d user reservations for event %s.",
                 allSeats.size(), allUserReservationsForEvent.size(), eventName);
 
-        Set<String> newSeatNumbers =
-                reservations.stream()
-                        .map(r -> r.getSeat().getSeatNumber())
-                        .collect(Collectors.toSet());
+        Set<Seat> newSeatNumbers =
+                reservations.stream().map(Reservation::getSeat).collect(Collectors.toSet());
         LOG.debugf("New seat numbers for confirmation: %s", newSeatNumbers);
 
-        Set<String> existingSeatNumbers =
+        Set<Seat> existingSeatNumbers =
                 allUserReservationsForEvent.stream()
-                        .map(r -> r.getSeat().getSeatNumber())
+                        .map(Reservation::getSeat)
                         .collect(Collectors.toSet());
         existingSeatNumbers.removeAll(newSeatNumbers); // Keep only previously reserved seats
         LOG.debugf("Existing seat numbers (excluding new ones): %s", existingSeatNumbers);
 
-        String svgContent = SvgRenderer.renderSeats(allSeats, newSeatNumbers, existingSeatNumbers);
+        String svgContent =
+                SvgRenderer.renderSeats(
+                        allSeats,
+                        newSeatNumbers.stream()
+                                .map(Seat::getSeatNumber)
+                                .collect(Collectors.toSet()),
+                        existingSeatNumbers.stream()
+                                .map(Seat::getSeatNumber)
+                                .collect(Collectors.toSet()));
         LOG.debug("SVG content for seat map generated.");
 
         StringBuilder seatListHtml = new StringBuilder();
@@ -259,6 +265,9 @@ public class EmailService {
             seatListHtml
                     .append("<li>")
                     .append(reservation.getSeat().getSeatNumber())
+                    .append("(")
+                    .append(reservation.getSeat().getSeatRow())
+                    .append(" )")
                     .append("</li>");
         }
         LOG.debugf("HTML list of seats generated: %s", seatListHtml.toString());
@@ -286,8 +295,14 @@ public class EmailService {
         } else {
             htmlContent = htmlContent.replace("{existingHeaderVisible}", "visible");
             StringBuilder existingSeatListHtml = new StringBuilder();
-            for (String seatNumber : existingSeatNumbers) {
-                existingSeatListHtml.append("<li>").append(seatNumber).append("</li>");
+            for (Seat seat : existingSeatNumbers) {
+                existingSeatListHtml
+                        .append("<li>")
+                        .append(seat.getSeatNumber())
+                        .append("(Reihe: ")
+                        .append(seat.getSeatRow())
+                        .append(" )")
+                        .append("</li>");
             }
             htmlContent =
                     htmlContent.replace("{existingSeatList}", existingSeatListHtml.toString());
