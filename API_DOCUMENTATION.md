@@ -1,299 +1,270 @@
-# API-Dokumentation
+# API Documentation
 
-Dies ist die API-Dokumentation für das Sitzplatzreservierungssystem.
+This is the API documentation for the seat reservation system.
 
-## Inhaltsverzeichnis
+## Table of Contents
 
-- [Authentifizierung](#authentifizierung)
-- [Benutzerverwaltung (Admin)](#benutzerverwaltung-admin)
-- [Benutzerprofil (Benutzer)](#benutzerprofil-benutzer)
-- [E-Mail-Bestätigung](#e-mail-bestätigung)
-- [Event-Locations (Manager/Admin)](#event-locations-manageradmin)
+- [Authentication](#authentication)
+- [User Management (Admin)](#user-management-admin)
+- [User Profile (User)](#user-profile-user)
+- [Email Confirmation](#email-confirmation)
+- [Event Locations (Manager/Admin)](#event-locations-manageradmin)
 - [Events (Manager/Admin)](#events-manageradmin)
-- [Sitzplätze (Manager/Admin)](#sitzplätze-manageradmin)
-- [Reservierungen (Manager/Admin)](#reservierungen-manageradmin)
-- [Events (Benutzer)](#events-benutzer)
-- [Reservierungen (Benutzer)](#reservierungen-benutzer)
+- [Seats (Manager/Admin)](#seats-manageradmin)
+- [Reservations (Manager/Admin)](#reservations-manageradmin)
+- [Events (User)](#events-user)
+- [Reservations (User)](#reservations-user)
 
 ---
 
-## Authentifizierung
+## Authentication
 
 ### AuthResource
 
-Basispfad: `/api/auth`
+Base path: `/api/auth`
 
 ---
 
 #### POST /login
 
-Authentifiziert einen Benutzer und setzt einen JWT-Cookie.
+Authenticates a user and sets a JWT cookie.
 
--   **Rollen:** Öffentlich
+-   **Roles:** Public
 -   **Request Body:** `LoginRequestDTO`
-    ```json
-    {
-      "identifier": "string",
-      "password": "string"
-    }
-    ```
 -   **Responses:**
-    -   `200 OK`: Erfolgreiche Anmeldung. Setzt einen `jwt`-Cookie.
-    -   `401 Unauthorized`: Ungültige Anmeldeinformationen oder E-Mail nicht bestätigt.
+    -   `200 OK`: Successful login. Sets a `jwt` cookie.
+    -   `401 Unauthorized`: Invalid credentials or email not confirmed.
 
 ---
 
-## Benutzerverwaltung (Admin)
+## User Management (Admin)
 
 ### UserResource
 
-Basispfad: `/api/users`
+Base path: `/api/users`
 
 ---
 
 #### POST /admin
 
-Erstellt einen neuen Benutzer.
+Creates a new user.
 
--   **Rollen:** `ADMIN`
+-   **Roles:** `ADMIN`
 -   **Request Body:** `UserCreationDTO`
 -   **Responses:**
-    -   `200 OK`: Benutzer erfolgreich erstellt. Gibt `UserDTO` zurück.
-    -   `400 Bad Request`: Ungültige Daten (z.B. doppelter Benutzername).
-    -   `403 Forbidden`: Zugriff verweigert (Rolle ist nicht `ADMIN`).
+    -   `200 OK`: User successfully created. Returns `UserDTO`.
+    -   `400 Bad Request`: Invalid data (e.g., duplicate username).
+    -   `403 Forbidden`: Access denied (role is not `ADMIN`).
 
 ---
 
 #### PUT /admin/{id}
 
-Aktualisiert einen bestehenden Benutzer.
+Updates an existing user.
 
--   **Rollen:** `ADMIN`
--   **Path Parameter:** `id` (Long) - Die ID des Benutzers.
+-   **Roles:** `ADMIN`
+-   **Path Parameter:** `id` (Long) - The user ID.
 -   **Request Body:** `AdminUserUpdateDTO`
 -   **Responses:**
-    -   `200 OK`: Benutzer erfolgreich aktualisiert. Gibt `UserDTO` zurück.
-    -   `404 Not Found`: Benutzer nicht gefunden.
-    -   `403 Forbidden`: Zugriff verweigert.
+    -   `200 OK`: User successfully updated. Returns `UserDTO`.
+    -   `404 Not Found`: User not found.
+    -   `403 Forbidden`: Access denied.
 
 ---
 
 #### DELETE /admin/{id}
 
-Löscht einen Benutzer.
+Deletes a user.
 
--   **Rollen:** `ADMIN`
--   **Path Parameter:** `id` (Long) - Die ID des Benutzers.
+-   **Roles:** `ADMIN`
+-   **Path Parameter:** `id` (Long) - The user ID.
 -   **Responses:**
-    -   `200 OK`: Benutzer erfolgreich gelöscht.
-    -   `404 Not Found`: Benutzer nicht gefunden.
-    -   `403 Forbidden`: Zugriff verweigert.
+    -   `200 OK`: User successfully deleted.
+    -   `404 Not Found`: User not found.
+    -   `403 Forbidden`: Access denied.
 
 ---
 
 #### GET /manager
 
-Ruft eine Liste aller Benutzer mit eingeschränkten Informationen ab.
+Retrieves a list of all users with limited information.
 
--   **Rollen:** `ADMIN`, `MANAGER`
+-   **Roles:** `ADMIN`, `MANAGER`
 -   **Responses:**
-    -   `200 OK`: Gibt eine Liste von `LimitedUserInfoDTO` Objekten zurück.
-    -   `403 Forbidden`: Zugriff verweigert.
+    -   `200 OK`: Returns a list of `LimitedUserInfoDTO` objects.
+    -   `403 Forbidden`: Access denied.
 
 ---
 
 #### GET /admin/roles
 
-Ruft alle verfügbaren Benutzerrollen ab.
+Retrieves all available user roles.
 
--   **Rollen:** `ADMIN`
+-   **Roles:** `ADMIN`
 -   **Responses:**
-    -   `200 OK`: Gibt eine Liste der verfügbaren Rollen (Strings) zurück.
-    -   `403 Forbidden`: Zugriff verweigert.
+    -   `200 OK`: Returns a list of available roles (Strings).
+    -   `403 Forbidden`: Access denied.
 
 ---
 
 #### GET /admin
 
-Ruft die vollständigen Daten aller Benutzer ab.
+Retrieves complete data of all users.
 
--   **Rollen:** `ADMIN`
+-   **Roles:** `ADMIN`
 -   **Responses:**
-    -   `200 OK`: Gibt eine Liste von `UserDTO` Objekten zurück.
-    -   `403 Forbidden`: Zugriff verweigert.
+    -   `200 OK`: Returns a list of `UserDTO` objects.
+    -   `403 Forbidden`: Access denied.
 
 ---
 
 #### POST /admin/import
 
-Importiert Set von Benutzern.
+Imports a set of users.
 
--   **Rollen:** `ADMIN`
+-   **Roles:** `ADMIN`
 -   **Request Body:** `Set<AdminUserUpdateDTO>`
 -   **Responses:**
-   -   `200 OK`: Benutzer erfolgreich importiert. Gibt eine Liste von `UserDTO` Objekten zurück.
-   -   `400 Bad Request`: Ungültiges Format.
-   -   `403 Forbidden`: Zugriff verweigert (Rolle ist nicht `ADMIN`).
-   -   `500 Internal Server Error`: Interner Serverfehler beim Import.
+    -   `200 OK`: Users successfully imported. Returns a list of `UserDTO` objects.
+    -   `400 Bad Request`: Invalid format.
+    -   `403 Forbidden`: Access denied (role is not `ADMIN`).
+    -   `500 Internal Server Error`: Internal server error during import.
 
 ---
 
-## Benutzerprofil (Benutzer)
+## User Profile (User)
 
 ### UserResource
 
-Basispfad: `/api/users`
+Base path: `/api/users`
 
 ---
 
 #### PUT /me
 
-Aktualisiert das Profil des aktuell angemeldeten Benutzers.
+Updates the profile of the currently logged-in user.
 
--   **Rollen:** `USER`
+-   **Roles:** `USER`
 -   **Request Body:** `UserProfileUpdateDTO`
 -   **Responses:**
-    -   `200 OK`: Profil erfolgreich aktualisiert. Gibt `UserDTO` zurück.
-    -   `400 Bad Request`: Ungültige Daten.
-    -   `401 Unauthorized`: Nicht authentifiziert.
+    -   `200 OK`: Profile successfully updated. Returns `UserDTO`.
+    -   `400 Bad Request`: Invalid data.
+    -   `401 Unauthorized`: Not authenticated.
 
 ---
 
 #### GET /me
 
-Ruft die Daten des aktuell angemeldeten Benutzers ab.
+Retrieves data of the currently logged-in user.
 
--   **Rollen:** `USER`, `ADMIN`, `MANAGER`
+-   **Roles:** `USER`, `ADMIN`, `MANAGER`
 -   **Responses:**
-    -   `200 OK`: Gibt das `UserDTO` Objekt des aktuellen Benutzers zurück.
+    -   `200 OK`: Returns the `UserDTO` object of the current user.
 
 ---
 
-## E-Mail-Bestätigung
+## Email Confirmation
 
 ### EmailConfirmationResource
 
-Basispfad: `/api/user`
+Base path: `/api/user`
 
 ---
 
 #### GET /confirm-email
 
-Bestätigt die E-Mail-Adresse eines Benutzers.
+Confirms a user's email address.
 
--   **Rollen:** Öffentlich
--   **Query Parameter:**
-    -   `id` (Long): Die Bestätigungs-ID.
-    -   `token` (String): Das Bestätigungs-Token.
+-   **Roles:** Public
+-   **Query Parameters:**
+    -   `id` (Long): The confirmation ID.
+    -   `token` (String): The confirmation token.
 -   **Responses:**
-    -   `200 OK`: E-Mail erfolgreich bestätigt (gibt HTML-Seite zurück).
-    -   `400 Bad Request`: Ungültiger Token (gibt HTML-Fehlerseite zurück).
-    -   `404 Not Found`: Token nicht gefunden (gibt HTML-Fehlerseite zurück).
-    -   `410 Gone`: Token abgelaufen.
+    -   `200 OK`: Email successfully confirmed (returns HTML page).
+    -   `400 Bad Request`: Invalid token (returns HTML error page).
+    -   `404 Not Found`: Token not found (returns HTML error page).
+    -   `410 Gone`: Token expired.
 
 ---
 
-## Event-Locations (Manager/Admin)
+## Event Locations (Manager/Admin)
 
 ### EventLocationResource
 
-Basispfad: `/api/manager/eventlocations`
+Base path: `/api/manager/eventlocations`
 
 ---
 
 #### GET /
 
-Ruft alle Event-Locations für den aktuellen Manager ab.
+Retrieves all event locations for the current manager.
 
--   **Rollen:** `MANAGER`, `ADMIN`
+-   **Roles:** `MANAGER`, `ADMIN`
 -   **Responses:**
-    -   `200 OK`: Gibt eine Liste von `EventLocationResponseDTO` Objekten zurück.
+    -   `200 OK`: Returns a list of `EventLocationResponseDTO` objects.
 
 ---
 
 #### POST /
 
-Erstellt eine neue Event-Location.
+Creates a new event location.
 
--   **Rollen:** `MANAGER`, `ADMIN`
+-   **Roles:** `MANAGER`, `ADMIN`
 -   **Request Body:** `EventLocationRequestDTO`
 -   **Responses:**
-    -   `200 OK`: Location erfolgreich erstellt. Gibt `EventLocationResponseDTO` zurück.
-    -   `400 Bad Request`: Ungültige Eingabedaten.
+    -   `200 OK`: Location successfully created. Returns `EventLocationResponseDTO`.
+    -   `400 Bad Request`: Invalid input data.
 
 ---
 
 #### PUT /{id}
 
-Aktualisiert eine bestehende Event-Location.
+Updates an existing event location.
 
--   **Rollen:** `MANAGER`, `ADMIN`
--   **Path Parameter:** `id` (Long) - Die ID der Event-Location.
+-   **Roles:** `MANAGER`, `ADMIN`
+-   **Path Parameter:** `id` (Long) - The event location ID.
 -   **Request Body:** `EventLocationRequestDTO`
 -   **Responses:**
-    -   `200 OK`: Location erfolgreich aktualisiert. Gibt `EventLocationResponseDTO` zurück.
-    -   `404 Not Found`: Location nicht gefunden oder keine Berechtigung.
+    -   `200 OK`: Location successfully updated. Returns `EventLocationResponseDTO`.
+    -   `404 Not Found`: Location not found or no permission.
 
 ---
 
 #### DELETE /{id}
 
-Löscht eine Event-Location.
+Deletes an event location.
 
--   **Rollen:** `MANAGER`, `ADMIN`
--   **Path Parameter:** `id` (Long) - Die ID der Event-Location.
+-   **Roles:** `MANAGER`, `ADMIN`
+-   **Path Parameter:** `id` (Long) - The event location ID.
 -   **Responses:**
-    -   `200 OK`: Location erfolgreich gelöscht.
-    -   `404 Not Found`: Location nicht gefunden oder keine Berechtigung.
+    -   `200 OK`: Location successfully deleted.
+    -   `404 Not Found`: Location not found or no permission.
 
 ---
 
 #### POST /import
 
-Erstellt eine neue Event-Location zusammen mit einer Liste von Sitzplätzen.
+Creates a new event location along with a list of seats.
 
--   **Rollen:** `MANAGER`, `ADMIN`
+-   **Roles:** `MANAGER`, `ADMIN`
 -   **Request Body:** `ImportEventLocationDto`
-    ```json
-    {
-      "name": "string",
-      "address": "string",
-      "capacity": "integer",
-      "seats": [
-        {
-          "seatNumber": "string",
-          "xCoordinate": "integer",
-          "yCoordinate": "integer"
-        }
-      ]
-    }
-    ```
 -   **Responses:**
-    -   `200 OK`: Location und Sitzplätze erfolgreich erstellt. Gibt `EventLocationResponseDTO` zurück.
-    -   `400 Bad Request`: Ungültige Eingabedaten.
+    -   `200 OK`: Location and seats successfully created. Returns `EventLocationResponseDTO`.
+    -   `400 Bad Request`: Invalid input data.
 ---
 
 #### POST /importSeats/{id}
 
-Importiert eine Liste von Sitzplätzen zu einer bestehenden Event-Location.
+Imports a list of seats to an existing event location.
 
--   **Rollen:** `MANAGER`, `ADMIN`
--   **Path Parameter:** `id` (Long) - Die ID der Event-Location.
+-   **Roles:** `MANAGER`, `ADMIN`
+-   **Path Parameter:** `id` (Long) - The event location ID.
 -   **Request Body:** `Set<ImportSeatDto>`
-    ```json
-    [
-      {
-        "seatNumber": "string",
-        "xCoordinate": "integer",
-        "yCoordinate": "integer"
-      }
-    ]
-    ```
 -   **Responses:**
-    -   `200 OK`: Sitze erfolgreich importiert. Gibt `EventLocationResponseDTO` zurück.
-    -   `400 Bad Request`: Ungültige Eingabedaten.
-    -   `403 Forbidden`: Keine Berechtigung.
-    -   `404 Not Found`: Location nicht gefunden.
+    -   `200 OK`: Seats successfully imported. Returns `EventLocationResponseDTO`.
+    -   `400 Bad Request`: Invalid input data.
+    -   `403 Forbidden`: No permission.
+    -   `404 Not Found`: Location not found.
 
 ---
 
@@ -301,392 +272,386 @@ Importiert eine Liste von Sitzplätzen zu einer bestehenden Event-Location.
 
 ### EventResource
 
-Basispfad: `/api/manager/events`
+Base path: `/api/manager/events`
 
 ---
 
 #### GET /
 
-Ruft alle Events ab, die vom aktuellen Manager verwaltet werden.
+Retrieves all events managed by the current manager.
 
--   **Rollen:** `MANAGER`, `ADMIN`
+-   **Roles:** `MANAGER`, `ADMIN`
 -   **Responses:**
-    -   `200 OK`: Gibt eine Liste von `DetailedEventResponseDTO` Objekten zurück.
+    -   `200 OK`: Returns a list of `DetailedEventResponseDTO` objects.
 
 ---
 
 #### GET /{id}
 
-Ruft ein bestimmtes Event anhand seiner ID ab.
+Retrieves a specific event by its ID.
 
--   **Rollen:** `MANAGER`, `ADMIN`
--   **Path Parameter:** `id` (Long) - Die ID des Events.
+-   **Roles:** `MANAGER`, `ADMIN`
+-   **Path Parameter:** `id` (Long) - The event ID.
 -   **Responses:**
-    -   `200 OK`: Gibt `DetailedEventResponseDTO` zurück.
-    -   `403 Forbidden`: Keine Berechtigung.
-    -   `404 Not Found`: Event nicht gefunden.
+    -   `200 OK`: Returns `DetailedEventResponseDTO`.
+    -   `403 Forbidden`: No permission.
+    -   `404 Not Found`: Event not found.
 
 ---
 
 #### POST /
 
-Erstellt ein neues Event.
+Creates a new event.
 
--   **Rollen:** `MANAGER`, `ADMIN`
+-   **Roles:** `MANAGER`, `ADMIN`
 -   **Request Body:** `EventRequestDTO`
 -   **Responses:**
-    -   `200 OK`: Event erfolgreich erstellt. Gibt `DetailedEventResponseDTO` zurück.
-    -   `400 Bad Request`: Ungültige Daten.
-    -   `404 Not Found`: Zugehörige Location nicht gefunden.
+    -   `200 OK`: Event successfully created. Returns `DetailedEventResponseDTO`.
+    -   `400 Bad Request`: Invalid data.
+    -   `404 Not Found`: Associated location not found.
 
 ---
 
 #### PUT /{id}
 
-Aktualisiert ein bestehendes Event.
+Updates an existing event.
 
--   **Rollen:** `MANAGER`, `ADMIN`
--   **Path Parameter:** `id` (Long) - Die ID des Events.
+-   **Roles:** `MANAGER`, `ADMIN`
+-   **Path Parameter:** `id` (Long) - The event ID.
 -   **Request Body:** `EventRequestDTO`
 -   **Responses:**
-    -   `200 OK`: Event erfolgreich aktualisiert. Gibt `DetailedEventResponseDTO` zurück.
-    -   `404 Not Found`: Event nicht gefunden oder keine Berechtigung.
+    -   `200 OK`: Event successfully updated. Returns `DetailedEventResponseDTO`.
+    -   `404 Not Found`: Event not found or no permission.
 
 ---
 
 #### DELETE /{id}
 
-Löscht ein Event.
+Deletes an event.
 
--   **Rollen:** `MANAGER`, `ADMIN`
--   **Path Parameter:** `id` (Long) - Die ID des Events.
+-   **Roles:** `MANAGER`, `ADMIN`
+-   **Path Parameter:** `id` (Long) - The event ID.
 -   **Responses:**
-    -   `204 No Content`: Event erfolgreich gelöscht.
-    -   `403 Forbidden`: Keine Berechtigung zum Löschen.
-    -   `404 Not Found`: Event nicht gefunden.
+    -   `204 No Content`: Event successfully deleted.
+    -   `403 Forbidden`: No permission to delete.
+    -   `404 Not Found`: Event not found.
 
 ---
 
-## Sitzplätze (Manager/Admin)
+## Seats (Manager/Admin)
 
 ### SeatResource
 
-Basispfad: `/api/manager/seats`
+Base path: `/api/manager/seats`
 
 ---
 
 #### GET /
 
-Ruft alle Sitzplätze ab, die zu den Locations des aktuellen Managers gehören.
+Retrieves all seats belonging to the current manager's locations.
 
--   **Rollen:** `MANAGER`, `ADMIN`
+-   **Roles:** `MANAGER`, `ADMIN`
 -   **Responses:**
-    -   `200 OK`: Gibt eine Liste von `SeatDTO` Objekten zurück.
+    -   `200 OK`: Returns a list of `SeatDTO` objects.
 
 ---
 
 #### POST /
 
-Erstellt einen neuen Sitzplatz.
+Creates a new seat.
 
--   **Rollen:** `MANAGER`, `ADMIN`
+-   **Roles:** `MANAGER`, `ADMIN`
 -   **Request Body:** `SeatRequestDTO`
 -   **Responses:**
-    -   `200 OK`: Sitzplatz erfolgreich erstellt. Gibt `SeatDTO` zurück.
-    -   `404 Not Found`: Zugehörige Location nicht gefunden oder keine Berechtigung.
+    -   `200 OK`: Seat successfully created. Returns `SeatDTO`.
+    -   `404 Not Found`: Associated location not found or no permission.
 
 ---
 
 #### GET /{id}
 
-Ruft einen bestimmten Sitzplatz anhand seiner ID ab.
+Retrieves a specific seat by its ID.
 
--   **Rollen:** `MANAGER`, `ADMIN`
--   **Path Parameter:** `id` (Long) - Die ID des Sitzplatzes.
+-   **Roles:** `MANAGER`, `ADMIN`
+-   **Path Parameter:** `id` (Long) - The seat ID.
 -   **Responses:**
-    -   `200 OK`: Gibt `SeatDTO` zurück.
-    -   `404 Not Found`: Sitzplatz nicht gefunden oder keine Berechtigung.
+    -   `200 OK`: Returns `SeatDTO`.
+    -   `404 Not Found`: Seat not found or no permission.
 
 ---
 
 #### PUT /{id}
 
-Aktualisiert einen Sitzplatz.
+Updates a seat.
 
--   **Rollen:** `MANAGER`, `ADMIN`
--   **Path Parameter:** `id` (Long) - Die ID des Sitzplatzes.
+-   **Roles:** `MANAGER`, `ADMIN`
+-   **Path Parameter:** `id` (Long) - The seat ID.
 -   **Request Body:** `SeatRequestDTO`
 -   **Responses:**
-    -   `200 OK`: Sitzplatz erfolgreich aktualisiert. Gibt `SeatDTO` zurück.
-    -   `404 Not Found`: Sitzplatz oder Location nicht gefunden oder keine Berechtigung.
+    -   `200 OK`: Seat successfully updated. Returns `SeatDTO`.
+    -   `404 Not Found`: Seat or location not found or no permission.
 ---
 
-## Reservierungsberechtigungen (Manager/Admin)
+## Reservation Permissions (Manager/Admin)
 
 ### EventUserReservationAllowance
 
-Basispfad: `/api/manager/reservationAllowance`
+Base path: `/api/manager/reservationAllowance`
 
 ---
 
 #### POST /
 
-Setzt oder aktualisiert die Anzahl der erlaubten Reservierungen für einen Benutzer für ein Event.
+Sets or updates the number of allowed reservations for a user for an event.
 
--   **Rollen:** `MANAGER`, `ADMIN`
+-   **Roles:** `MANAGER`, `ADMIN`
 -   **Request Body:** `EventUserAllowancesDto`
 -   **Responses:**
-    -   `200 OK`: Berechtigung erfolgreich gesetzt/aktualisiert. Gibt `EventUserAllowancesDto` zurück.
-    -   `403 Forbidden`: Keine Berechtigung.
-    -   `404 Not Found`: Event oder Benutzer nicht gefunden.
+    -   `200 OK`: Permission successfully set/updated. Returns `EventUserAllowancesDto`.
+    -   `403 Forbidden`: No permission.
+    -   `404 Not Found`: Event or user not found.
 
 ---
 
 #### GET /{id}
 
-Ruft eine spezifische Reservierungsberechtigung anhand ihrer ID ab.
+Retrieves a specific reservation permission by its ID.
 
--   **Rollen:** `MANAGER`, `ADMIN`
--   **Path Parameter:** `id` (Long) - Die ID der Berechtigung.
+-   **Roles:** `MANAGER`, `ADMIN`
+-   **Path Parameter:** `id` (Long) - The permission ID.
 -   **Responses:**
-    -   `200 OK`: Gibt `EventUserAllowancesDto` zurück.
-    -   `403 Forbidden`: Keine Berechtigung.
-    -   `404 Not Found`: Berechtigung nicht gefunden.
+    -   `200 OK`: Returns `EventUserAllowancesDto`.
+    -   `403 Forbidden`: No permission.
+    -   `404 Not Found`: Permission not found.
 
 ---
 
 #### GET /
 
-Ruft alle Reservierungsberechtigungen ab.
+Retrieves all reservation permissions.
 
--   **Rollen:** `MANAGER`, `ADMIN`
+-   **Roles:** `MANAGER`, `ADMIN`
 -   **Responses:**
-    -   `200 OK`: Gibt eine Liste von `EventUserAllowancesDto` zurück.
-    -   `403 Forbidden`: Keine Berechtigung.
+    -   `200 OK`: Returns a list of `EventUserAllowancesDto`.
+    -   `403 Forbidden`: No permission.
 
 ---
 
 #### GET /event/{eventId}
 
-Ruft alle Reservierungsberechtigungen für ein bestimmtes Event ab.
+Retrieves all reservation permissions for a specific event.
 
--   **Rollen:** `MANAGER`, `ADMIN`
--   **Path Parameter:** `eventId` (Long) - Die ID des Events.
+-   **Roles:** `MANAGER`, `ADMIN`
+-   **Path Parameter:** `eventId` (Long) - The event ID.
 -   **Responses:**
-    -   `200 OK`: Gibt eine Liste von `EventUserAllowancesDto` zurück.
-    -   `403 Forbidden`: Keine Berechtigung.
-    -   `404 Not Found`: Event nicht gefunden.
+    -   `200 OK`: Returns a list of `EventUserAllowancesDto`.
+    -   `403 Forbidden`: No permission.
+    -   `404 Not Found`: Event not found.
 
 ---
 
 #### DELETE /{id}
 
-Löscht eine Reservierungsberechtigung.
+Deletes a reservation permission.
 
--   **Rollen:** `MANAGER`, `ADMIN`
--   **Path Parameter:** `id` (Long) - Die ID der Berechtigung.
+-   **Roles:** `MANAGER`, `ADMIN`
+-   **Path Parameter:** `id` (Long) - The permission ID.
 -   **Responses:**
-    -   `204 No Content`: Berechtigung erfolgreich gelöscht.
-    -   `403 Forbidden`: Keine Berechtigung.
-    -   `404 Not Found`: Berechtigung nicht gefunden.
+    -   `204 No Content`: Permission successfully deleted.
+    -   `403 Forbidden`: No permission.
+    -   `404 Not Found`: Permission not found.
 
 #### PUT /
 
-Aktualisiert eine bestehende Reservierungsberechtigung.
+Updates an existing reservation permission.
 
--   **Rollen:** `MANAGER`, `ADMIN`
+-   **Roles:** `MANAGER`, `ADMIN`
 -   **Request Body:** `EventUserAllowanceUpdateDto`
 -   **Responses:**
-    -   `200 OK`: Berechtigung erfolgreich aktualisiert. Gibt `EventUserAllowancesDto` zurück.
-    -   `403 Forbidden`: Keine Berechtigung.
-    -   `404 Not Found`: Berechtigung nicht gefunden.
+    -   `200 OK`: Permission successfully updated. Returns `EventUserAllowancesDto`.
+    -   `403 Forbidden`: No permission.
+    -   `404 Not Found`: Permission not found.
 
 ---
 
-## Reservierungen (Manager/Admin)
+## Reservations (Manager/Admin)
 
 ### ReservationResource
 
-Basispfad: `/api/manager/reservations`
+Base path: `/api/manager/reservations`
 
 ---
 
 #### GET /
 
-Ruft alle Reservierungen für die Events des aktuellen Managers ab.
+Retrieves all reservations for the current manager's events.
 
--   **Rollen:** `MANAGER`, `ADMIN`
+-   **Roles:** `MANAGER`, `ADMIN`
 -   **Responses:**
-    -   `200 OK`: Gibt eine Liste von `DetailedReservationResponseDTO` Objekten zurück.
+    -   `200 OK`: Returns a list of `DetailedReservationResponseDTO` objects.
 
 ---
 
 #### GET /{id}
 
-Ruft eine bestimmte Reservierung anhand ihrer ID ab.
+Retrieves a specific reservation by its ID.
 
--   **Rollen:** `MANAGER`, `ADMIN`
--   **Path Parameter:** `id` (Long) - Die ID der Reservierung.
+-   **Roles:** `MANAGER`, `ADMIN`
+-   **Path Parameter:** `id` (Long) - The reservation ID.
 -   **Responses:**
-    -   `200 OK`: Gibt `DetailedReservationResponseDTO` zurück.
-    -   `404 Not Found`: Reservierung nicht gefunden oder keine Berechtigung.
+    -   `200 OK`: Returns `DetailedReservationResponseDTO`.
+    -   `404 Not Found`: Reservation not found or no permission.
 
 ---
 
 #### GET /event/{id}
 
-Ruft alle Reservierungen für ein bestimmtes Event ab.
+Retrieves all reservations for a specific event.
 
--   **Rollen:** `MANAGER`, `ADMIN`
--   **Path Parameter:** `id` (Long) - Die ID des Events.
+-   **Roles:** `MANAGER`, `ADMIN`
+-   **Path Parameter:** `id` (Long) - The event ID.
 -   **Responses:**
-    -   `200 OK`: Gibt eine Liste von `DetailedReservationResponseDTO` Objekten zurück.
-    -   `403 Forbidden`: Keine Berechtigung für dieses Event.
+    -   `200 OK`: Returns a list of `DetailedReservationResponseDTO` objects.
+    -   `403 Forbidden`: No permission for this event.
 
 ---
 
 #### POST /
 
-Erstellt eine neue Reservierung.
+Creates a new reservation.
 
--   **Rollen:** `MANAGER`, `ADMIN`
+-   **Roles:** `MANAGER`, `ADMIN`
 -   **Request Body:** `ReservationRequestDTO`
 -   **Responses:**
-    -   `200 OK`: Reservierung erfolgreich erstellt. Gibt `DetailedReservationResponseDTO` zurück.
-    -   `404 Not Found`: Benutzer, Event oder Sitzplatz nicht gefunden.
-    -   `409 Conflict`: Sitzplatz bereits reserviert.
+    -   `200 OK`: Reservation successfully created. Returns `DetailedReservationResponseDTO`.
+    -   `404 Not Found`: User, event, or seat not found.
+    -   `409 Conflict`: Seat already reserved.
 
 ---
 
 #### PUT /{id}
 
-Aktualisiert eine bestehende Reservierung.
+Updates an existing reservation.
 
--   **Rollen:** `MANAGER`, `ADMIN`
--   **Path Parameter:** `id` (Long) - Die ID der Reservierung.
+-   **Roles:** `MANAGER`, `ADMIN`
+-   **Path Parameter:** `id` (Long) - The reservation ID.
 -   **Request Body:** `ReservationRequestDTO`
 -   **Responses:**
-    -   `200 OK`: Reservierung erfolgreich aktualisiert. Gibt `DetailedReservationResponseDTO` zurück.
-    -   `404 Not Found`: Reservierung, Event oder Benutzer nicht gefunden oder keine Berechtigung.
+    -   `200 OK`: Reservation successfully updated. Returns `DetailedReservationResponseDTO`.
+    -   `404 Not Found`: Reservation, event, or user not found or no permission.
 
 ---
 
 #### DELETE /{id}
 
-Löscht eine Reservierung.
+Deletes a reservation.
 
--   **Rollen:** `MANAGER`, `ADMIN`
--   **Path Parameter:** `id` (Long) - Die ID der Reservierung.
+-   **Roles:** `MANAGER`, `ADMIN`
+-   **Path Parameter:** `id` (Long) - The reservation ID.
 -   **Responses:**
-    -   `200 OK`: Reservierung erfolgreich gelöscht.
-    -   `404 Not Found`: Reservierung nicht gefunden oder keine Berechtigung.
+    -   `200 OK`: Reservation successfully deleted.
+    -   `404 Not Found`: Reservation not found or no permission.
 
 ---
 
 #### POST /block
 
-Blockiert eine beliebige Anzahl von Sitzen für ein Event.
+Blocks any number of seats for an event.
 
--   **Rollen:** `MANAGER`, `ADMIN`
+-   **Roles:** `MANAGER`, `ADMIN`
 -   **Request Body:** `BlockSeatsRequestDTO`
-    ```json
-    {
-      "eventId": "long",
-      "seatIds": ["long"]
-    }
-    ```
 -   **Responses:**
-    -   `204 No Content`: Sitze erfolgreich blockiert.
-    -   `403 Forbidden`: Keine Berechtigung.
-    -   `404 Not Found`: Event oder Sitzplatz nicht gefunden.
-    -   `409 Conflict`: Sitzplatz bereits reserviert oder blockiert.
+    -   `204 No Content`: Seats successfully blocked.
+    -   `403 Forbidden`: No permission.
+    -   `404 Not Found`: Event or seat not found.
+    -   `409 Conflict`: Seat already reserved or blocked.
 
 ---
 
 #### GET /export/{eventId}/csv
 
-Exportiert alle Reservierungen für ein bestimmtes Event als CSV-Datei.
+Exports all reservations for a specific event as a CSV file.
 
--   **Rollen:** `MANAGER`, `ADMIN`
--   **Path Parameter:** `eventId` (Long) - Die ID des Events.
+-   **Roles:** `MANAGER`, `ADMIN`
+-   **Path Parameter:** `eventId` (Long) - The event ID.
 -   **Produces:** `text/csv`
 -   **Responses:**
-    -   `200 OK`: CSV-Datei erfolgreich exportiert.
-    -   `403 Forbidden`: Keine Berechtigung (Benutzer ist nicht der Manager des Events oder kein Admin).
-    -   `404 Not Found`: Event nicht gefunden.
-    -   `500 Internal Server Error`: Interner Serverfehler beim Export.
+    -   `200 OK`: CSV file successfully exported.
+    -   `403 Forbidden`: No permission (user is not the event manager or not an admin).
+    -   `404 Not Found`: Event not found.
+    -   `500 Internal Server Error`: Internal server error during export.
 
 ---
 
-## Events (Benutzer)
+## Events (User)
 
 ### EventResource
 
-Basispfad: `/api/user/events`
+Base path: `/api/user/events`
 
 ---
 
 #### GET /
 
-Ruft alle Events ab, für die der aktuelle Benutzer eine Berechtigung hat.
+Retrieves all events for which the current user has permission.
 
--   **Rollen:** `USER`
+-   **Roles:** `USER`
 -   **Responses:**
-    -   `200 OK`: Gibt eine Liste von `EventResponseDTO` Objekten zurück, inklusive der Anzahl erlaubter Reservierungen.
+    -   `200 OK`: Returns a list of `EventResponseDTO` objects, including the number of allowed reservations.
 
 ---
 
-## Reservierungen (Benutzer)
+## Reservations (User)
 
 ### ReservationResource
 
-Basispfad: `/api/user/reservations`
+Base path: `/api/user/reservations`
 
 ---
 
 #### GET /
 
-Ruft alle Reservierungen des aktuellen Benutzers ab.
+Retrieves all reservations of the current user.
 
--   **Rollen:** `USER`
+-   **Roles:** `USER`
 -   **Responses:**
-    -   `200 OK`: Gibt eine Liste von `ReservationResponseDTO` Objekten zurück.
+    -   `200 OK`: Returns a list of `ReservationResponseDTO` objects.
 
 ---
 
 #### GET /{id}
 
-Ruft eine bestimmte Reservierung des aktuellen Benutzers ab.
+Retrieves a specific reservation of the current user.
 
--   **Rollen:** `USER`
--   **Path Parameter:** `id` (Long) - Die ID der Reservierung.
+-   **Roles:** `USER`
+-   **Path Parameter:** `id` (Long) - The reservation ID.
 -   **Responses:**
-    -   `200 OK`: Gibt `ReservationResponseDTO` zurück.
-    -   `404 Not Found`: Reservierung gehört nicht dem Benutzer oder existiert nicht.
+    -   `200 OK`: Returns `ReservationResponseDTO`.
+    -   `404 Not Found`: Reservation does not belong to the user or does not exist.
 
 ---
 
 #### POST /
 
-Erstellt eine oder mehrere neue Reservierungen für den aktuellen Benutzer.
+Creates one or more new reservations for the current user.
 
--   **Rollen:** `USER`
+-   **Roles:** `USER`
 -   **Request Body:** `ReservationsRequestCreateDTO`
 -   **Responses:**
-    -   `200 OK`: Reservierung(en) erfolgreich erstellt. Gibt eine Liste von `ReservationResponseDTO` zurück.
-    -   `400 Bad Request`: Ungültige Anfrage (z.B. mehr Plätze als erlaubt).
-    -   `403 Forbidden`: Keine Berechtigung für das Event.
-    -   `404 Not Found`: Event oder Sitzplatz nicht gefunden.
-    -   `409 Conflict`: Sitzplatz bereits reserviert.
+    -   `200 OK`: Reservation(s) successfully created. Returns a list of `ReservationResponseDTO`.
+    -   `400 Bad Request`: Invalid request (e.g., more seats than allowed).
+    -   `403 Forbidden`: No permission for the event.
+    -   `404 Not Found`: Event or seat not found.
+    -   `409 Conflict`: Seat already reserved.
 
 ---
 
 #### DELETE /{id}
 
-Löscht eine Reservierung des aktuellen Benutzers.
+Deletes a reservation of the current user.
 
--   **Rollen:** `USER`
--   **Path Parameter:** `id` (Long) - Die ID der Reservierung.
+-   **Roles:** `USER`
+-   **Path Parameter:** `id` (Long) - The reservation ID.
 -   **Responses:**
-    -   `204 No Content`: Reservierung erfolgreich gelöscht.
-    -   `404 Not Found`: Reservierung gehört nicht dem Benutzer oder existiert nicht.
+    -   `204 No Content`: Reservation successfully deleted.
+    -   `404 Not Found`: Reservation does not belong to the user or does not exist.
