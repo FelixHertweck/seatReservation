@@ -549,7 +549,11 @@
     "cancelButton": "Cancel",
     "savingButton": "Saving...",
     "createButton": "Create",
-    "updateButton": "Update"
+    "updateButton": "Update",
+    "addMarkerButton": "Add Marker",
+    "markerLabel": "Marker",
+    "xCoordinateLabel": "X Coordinate",
+    "yCoordinateLabel": "Y Coordinate"
   },
   "locationImportModal": {
     "importLocationDataTitle": "Import Location Data",
@@ -584,6 +588,7 @@
     "tableHeaderAddress": "Address",
     "tableHeaderCapacity": "Capacity",
     "tableHeaderManager": "Manager",
+    "tableHeaderMarker": "Marker",
     "tableHeaderSeats": "Seats",
     "tableHeaderActions": "Actions",
     "seatsCount": "{{count}} seats",

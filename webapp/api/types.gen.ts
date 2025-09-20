@@ -44,10 +44,23 @@ export type DetailedReservationResponseDto = {
     reservationDateTime?: LocalDateTime;
 };
 
+export type EventLocationMakerDto = {
+    label?: string;
+    xCoordinate?: number;
+    yCoordinate?: number;
+};
+
+export type EventLocationMakerRequestDto = {
+    label: string;
+    xCoordinate: number;
+    yCoordinate: number;
+};
+
 export type EventLocationRequestDto = {
     name: string;
     address: string;
     capacity: number;
+    markers?: Array<EventLocationMakerRequestDto>;
 };
 
 export type EventLocationResponseDto = {
@@ -57,6 +70,7 @@ export type EventLocationResponseDto = {
     capacity?: number;
     manager?: LimitedUserInfoDto;
     seats?: Array<SeatDto>;
+    markers?: Array<EventLocationMakerDto>;
 };
 
 export type EventRequestDto = {

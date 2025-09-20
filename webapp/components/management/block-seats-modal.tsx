@@ -159,6 +159,7 @@ export function BlockSeatsModal({
             <div className="flex-1 min-h-0">
               <SeatMap
                 seats={availableSeats}
+                markers={selectedEvent?.eventLocation?.markers ?? []}
                 selectedSeats={selectedSeats}
                 onSeatSelect={handleSeatSelect}
               />
@@ -175,7 +176,7 @@ export function BlockSeatsModal({
                   <Badge
                     key={seat.id?.toString()}
                     variant="outline"
-                    className="animate-in zoom-in duration-300 hover:scale-105 transition-transform bg-orange-100 dark:bg-orange-900 border-orange-300 dark:border-orange-700"
+                    className="animate-in zoom-in duration-300 hover:scale-105 transition-transform bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-700"
                     style={{ animationDelay: `${index * 50}ms` }}
                   >
                     {seat.seatNumber +

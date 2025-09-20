@@ -246,6 +246,9 @@ export function LocationManagement({
                       {t("locationManagement.tableHeaderManager")}
                     </TableHead>
                     <TableHead>
+                      {t("locationManagement.tableHeaderMarker")}
+                    </TableHead>
+                    <TableHead>
                       {t("locationManagement.tableHeaderSeats")}
                     </TableHead>
                     <TableHead>
@@ -256,6 +259,15 @@ export function LocationManagement({
                 <TableBody>
                   {paginatedData.map((location) => {
                     const seatCount = location.seats?.length || 0;
+                    const markersDisplay =
+                      location.markers && location.markers.length > 0
+                        ? location.markers
+                            .map(
+                              (marker) =>
+                                `${marker.label} (${marker.xCoordinate}, ${marker.yCoordinate})`,
+                            )
+                            .join(", ")
+                        : "-";
 
                     return (
                       <TableRow key={location.id?.toString()}>
@@ -265,6 +277,12 @@ export function LocationManagement({
                         <TableCell>{location.address}</TableCell>
                         <TableCell>{location.capacity}</TableCell>
                         <TableCell>{location.manager?.username}</TableCell>
+                        <TableCell
+                          className="text-sm max-w-48 truncate"
+                          title={markersDisplay}
+                        >
+                          {markersDisplay}
+                        </TableCell>
                         <TableCell>
                           {seatCount > 0 ? (
                             <Button

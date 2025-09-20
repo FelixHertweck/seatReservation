@@ -28,14 +28,12 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.dto.EventLocationResponseDTO;
+import de.felixhertweck.seatreservation.management.dto.EventLocationMakerRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.ImportEventLocationDto;
 import de.felixhertweck.seatreservation.management.dto.ImportSeatDto;
 import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
-import de.felixhertweck.seatreservation.model.entity.EventLocation;
-import de.felixhertweck.seatreservation.model.entity.Roles;
-import de.felixhertweck.seatreservation.model.entity.Seat;
-import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.entity.*;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import org.jboss.logging.Logger;
@@ -47,6 +45,21 @@ public class EventLocationService {
 
     @Inject EventLocationRepository eventLocationRepository;
     @Inject SeatRepository seatRepository;
+
+    /**
+     * Validates that the user has permission to manage the given event location. Permission is
+     * granted if the user is the manager of the location or has ADMIN role.
+     *
+     * @param location The event location to check permissions for
+     * @param manager The user attempting the operation
+     * @throws SecurityException If the user is not authorized
+     */
+    private void validateManagerPermission(EventLocation location, User manager) {
+        if (!location.getManager().id.equals(manager.getId())
+                && !manager.getRoles().contains(Roles.ADMIN)) {
+            throw new SecurityException("User is not the manager of this location");
+        }
+    }
 
     /**
      * Retrieves a list of EventLocations belonging to the currently authenticated manager. If the
@@ -107,6 +120,8 @@ public class EventLocationService {
 
         EventLocation location =
                 new EventLocation(dto.getName(), dto.getAddress(), manager, dto.getCapacity());
+        // Set markers after location is created to avoid circular dependency
+        location.setMarkers(convertToMarkerEntities(dto.getmarkers(), location));
         eventLocationRepository.persist(location);
         LOG.infof(
                 "Event location '%s' (ID: %d) created successfully by manager: %s (ID: %d)",
@@ -144,12 +159,13 @@ public class EventLocationService {
                                             "EventLocation with id " + id + " not found");
                                 });
 
-        if (!location.getManager().id.equals(manager.getId())
-                && !manager.getRoles().contains(Roles.ADMIN)) {
+        try {
+            validateManagerPermission(location, manager);
+        } catch (SecurityException e) {
             LOG.warnf(
                     "User %s (ID: %d) is not authorized to update event location with ID %d.",
                     manager.getUsername(), manager.getId(), id);
-            throw new SecurityException("User is not the manager of this location");
+            throw e;
         }
 
         LOG.debugf(
@@ -165,11 +181,50 @@ public class EventLocationService {
         location.setName(dto.getName());
         location.setAddress(dto.getAddress());
         location.setCapacity(dto.getCapacity());
+
+        // Update markers: Handle potential immutable collections
+        List<EventLocationMarker> currentMarkers = location.getMarkers();
+
+        // Create a new mutable list for markers
+        List<EventLocationMarker> newMarkersList = new ArrayList<>();
+        if (dto.getmarkers() != null) {
+            newMarkersList.addAll(convertToMarkerEntities(dto.getmarkers(), location));
+        }
+
+        // If the current list is mutable, clear and add new items
+        try {
+            currentMarkers.clear();
+            currentMarkers.addAll(newMarkersList);
+        } catch (UnsupportedOperationException e) {
+            // If immutable, replace with new mutable list
+            location.setMarkers(newMarkersList);
+        }
+
         eventLocationRepository.persist(location);
         LOG.infof(
                 "Event location '%s' (ID: %d) updated successfully by manager: %s (ID: %d)",
                 location.getName(), location.getId(), manager.getUsername(), manager.getId());
         return new EventLocationResponseDTO(location);
+    }
+
+    private List<EventLocationMarker> convertToMarkerEntities(
+            List<EventLocationMakerRequestDTO> dtoMarkers, EventLocation eventLocation) {
+        if (dtoMarkers == null) {
+            return new ArrayList<>();
+        }
+        return new ArrayList<>(
+                dtoMarkers.stream()
+                        .map(
+                                markerDto -> {
+                                    EventLocationMarker marker =
+                                            new EventLocationMarker(
+                                                    markerDto.getLabel(),
+                                                    markerDto.getxCoordinate(),
+                                                    markerDto.getyCoordinate());
+                                    marker.setEventLocation(eventLocation);
+                                    return marker;
+                                })
+                        .toList());
     }
 
     /**
@@ -199,12 +254,13 @@ public class EventLocationService {
                                             "EventLocation with id " + id + " not found");
                                 });
 
-        if (!location.getManager().id.equals(manager.getId())
-                && !manager.getRoles().contains(Roles.ADMIN)) {
+        try {
+            validateManagerPermission(location, manager);
+        } catch (SecurityException e) {
             LOG.warnf(
                     "User %s (ID: %d) is not authorized to delete event location with ID %d.",
                     manager.getUsername(), manager.getId(), id);
-            throw new SecurityException("User is not the manager of this location");
+            throw e;
         }
 
         eventLocationRepository.delete(location);
@@ -229,6 +285,18 @@ public class EventLocationService {
         LOG.debugf(
                 "Importing event location: %s by manager: %s (ID: %d)",
                 dto, manager.getUsername(), manager.getId());
+
+        // Validate input data
+        if (dto.getName() == null
+                || dto.getName().trim().isEmpty()
+                || dto.getAddress() == null
+                || dto.getAddress().trim().isEmpty()
+                || dto.getCapacity() <= 0) {
+            LOG.warnf(
+                    "Invalid EventLocation data provided for import by manager: %s (ID: %d)",
+                    manager.getUsername(), manager.getId());
+            throw new IllegalArgumentException("Invalid EventLocation data provided.");
+        }
 
         EventLocation location = new EventLocation();
         location.setName(dto.getName());
@@ -290,7 +358,7 @@ public class EventLocationService {
                         .orElseThrow(
                                 () -> {
                                     LOG.warnf(
-                                            "EventLocation with ID %d not found for deletion by"
+                                            "EventLocation with ID %d not found for seat import by"
                                                     + " manager: %s (ID: %d)",
                                             id, manager.getUsername(), manager.getId());
                                     return new EventLocationNotFoundException(
@@ -298,12 +366,14 @@ public class EventLocationService {
                                 });
 
         // Check if manager has rights or user is admin
-        if (!location.getManager().id.equals(manager.getId())
-                && !manager.getRoles().contains(Roles.ADMIN)) {
+        try {
+            validateManagerPermission(location, manager);
+        } catch (SecurityException e) {
             LOG.warnf(
-                    "User %s (ID: %d) is not authorized to delete event location with ID %d.",
+                    "User %s (ID: %d) is not authorized to import seats to event location with ID"
+                            + " %d.",
                     manager.getUsername(), manager.getId(), id);
-            throw new SecurityException("User is not the manager of this location");
+            throw e;
         }
 
         List<Seat> newSeats = new ArrayList<>();

@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.management.dto;
 
+import java.util.List;
 import jakarta.validation.constraints.NotNull;
 
 public class EventLocationRequestDTO {
@@ -30,6 +31,8 @@ public class EventLocationRequestDTO {
 
     @NotNull(message = "Capacity must not be null")
     private Integer capacity;
+
+    private List<EventLocationMakerRequestDTO> markers;
 
     public String getName() {
         return name;
@@ -53,6 +56,14 @@ public class EventLocationRequestDTO {
 
     public void setCapacity(Integer capacity) {
         this.capacity = capacity;
+    }
+
+    public List<EventLocationMakerRequestDTO> getmarkers() {
+        return markers;
+    }
+
+    public void setmarkers(List<EventLocationMakerRequestDTO> markers) {
+        this.markers = markers;
     }
 
     public EventLocationRequestDTO() {}

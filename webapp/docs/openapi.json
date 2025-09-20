@@ -146,6 +146,39 @@
           }
         }
       },
+      "EventLocationMakerDTO" : {
+        "type" : "object",
+        "properties" : {
+          "label" : {
+            "type" : "string"
+          },
+          "xCoordinate" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "yCoordinate" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "EventLocationMakerRequestDTO" : {
+        "type" : "object",
+        "required" : [ "label", "xCoordinate", "yCoordinate" ],
+        "properties" : {
+          "label" : {
+            "type" : "string"
+          },
+          "xCoordinate" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "yCoordinate" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
       "EventLocationRequestDTO" : {
         "type" : "object",
         "required" : [ "name", "address", "capacity" ],
@@ -159,6 +192,12 @@
           "capacity" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "markers" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/EventLocationMakerRequestDTO"
+            }
           }
         }
       },
@@ -186,6 +225,12 @@
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/SeatDTO"
+            }
+          },
+          "markers" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/EventLocationMakerDTO"
             }
           }
         }

@@ -239,6 +239,10 @@ export default function EventsPage() {
             events.find((event) => event.id === selectedReservation?.eventId)
               ?.location?.seats || []
           }
+          markers={
+            events.find((event) => event.id === selectedReservation?.eventId)
+              ?.location?.markers || []
+          }
           reservation={selectedReservation}
           eventReservations={getEventReservations(selectedReservation.eventId)}
           onClose={() => setSelectedReservation(null)}

@@ -5,12 +5,13 @@ import React from "react";
 import type { ReactElement } from "react";
 
 import { cn } from "@/lib/utils";
-import type { SeatDto } from "@/api";
+import type { EventLocationMakerDto, SeatDto } from "@/api";
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useT } from "@/lib/i18n/hooks";
 
 interface SeatMapProps {
   seats: SeatDto[];
+  markers: EventLocationMakerDto[];
   selectedSeats: SeatDto[];
   userReservedSeats?: SeatDto[];
   onSeatSelect: (seat: SeatDto) => void;
@@ -46,7 +47,7 @@ const SeatComponent = React.memo(
     return (
       <div
         className={cn(
-          "w-8 h-8 flex items-center justify-center text-xs font-medium transition-colors relative",
+          "w-8 h-8 flex items-center justify-center text-xs font-medium transition-colors relative z-10",
           clickable && "cursor-pointer",
         )}
         onClick={handleClick}
@@ -61,9 +62,7 @@ const SeatComponent = React.memo(
             seatColor,
           )}
         >
-          {zoom > 0.8
-            ? seat.seatNumber + (seat.seatRow ? " (" + seat.seatRow + ")" : "")
-            : ""}
+          {zoom > 0.8 ? seat.seatNumber : ""}
         </div>
       </div>
     );
@@ -72,8 +71,35 @@ const SeatComponent = React.memo(
 
 SeatComponent.displayName = "SeatComponent";
 
+const MarkerComponent = React.memo(
+  ({ marker, zoom }: { marker: EventLocationMakerDto; zoom: number }) => {
+    const t = useT();
+
+    return (
+      <div
+        className="absolute z-0 flex items-center justify-center text-xs font-medium text-gray-700 dark:text-gray-300"
+        style={{
+          left: `${((marker.xCoordinate || 1) - 1) * 36 + 11}px`,
+          top: `${((marker.yCoordinate || 1) - 1) * 36 + 14}px`,
+          width: `${40}px`,
+          height: `36px`,
+          fontSize: `10px`,
+        }}
+        title={marker.label || ""}
+      >
+        <div className="w-full h-full flex items-center justify-center font-medium">
+          {zoom > 0.6 ? marker.label : ""}
+        </div>
+      </div>
+    );
+  },
+);
+
+MarkerComponent.displayName = "MarkerComponent";
+
 export function SeatMap({
   seats,
+  markers,
   selectedSeats,
   userReservedSeats = [],
   onSeatSelect,
@@ -88,35 +114,52 @@ export function SeatMap({
   const [lastTouchDistance, setLastTouchDistance] = useState<number | null>(
     null,
   );
-  const containerRef = useRef<HTMLDivElement>(null);
+
   const mapRef = useRef<HTMLDivElement>(null);
 
-  const { maxX, maxY, seatPositionMap, selectedSeatIds, userReservedSeatIds } =
-    useMemo(() => {
-      const maxX = Math.max(...seats.map((s) => s.xCoordinate || 0));
-      const maxY = Math.max(...seats.map((s) => s.yCoordinate || 0));
+  const {
+    maxX,
+    maxY,
+    seatPositionMap,
+    selectedSeatIds,
+    userReservedSeatIds,
+    renderedMarkers,
+  } = useMemo(() => {
+    const seatMaxX = Math.max(...seats.map((s) => s.xCoordinate || 0));
+    const seatMaxY = Math.max(...seats.map((s) => s.yCoordinate || 0));
+    const markerMaxX = Math.max(...markers.map((m) => m.xCoordinate || 0));
+    const markerMaxY = Math.max(...markers.map((m) => m.yCoordinate || 0));
 
-      // Create a map for O(1) seat lookup
-      const seatPositionMap = new Map<string, SeatDto>();
-      seats.forEach((seat) => {
-        if (seat.xCoordinate && seat.yCoordinate) {
-          seatPositionMap.set(`${seat.xCoordinate}-${seat.yCoordinate}`, seat);
-        }
-      });
+    const maxX = Math.max(seatMaxX, markerMaxX);
+    const maxY = Math.max(seatMaxY, markerMaxY);
 
-      // Create a Set for O(1) selected seat lookup
-      const selectedSeatIds = new Set(selectedSeats.map((s) => s.id));
+    // Create a map for O(1) seat lookup
+    const seatPositionMap = new Map<string, SeatDto>();
+    seats.forEach((seat) => {
+      if (seat.xCoordinate && seat.yCoordinate) {
+        seatPositionMap.set(`${seat.xCoordinate}-${seat.yCoordinate}`, seat);
+      }
+    });
 
-      const userReservedSeatIds = new Set(userReservedSeats.map((s) => s.id));
+    // Create a Set for O(1) selected seat lookup
+    const selectedSeatIds = new Set(selectedSeats.map((s) => s.id));
 
-      return {
-        maxX,
-        maxY,
-        seatPositionMap,
-        selectedSeatIds,
-        userReservedSeatIds,
-      };
-    }, [seats, selectedSeats, userReservedSeats]);
+    const userReservedSeatIds = new Set(userReservedSeats.map((s) => s.id));
+
+    // Filter markers with valid coordinates
+    const renderedMarkers = markers.filter(
+      (marker) => marker.xCoordinate && marker.yCoordinate,
+    );
+
+    return {
+      maxX,
+      maxY,
+      seatPositionMap,
+      selectedSeatIds,
+      userReservedSeatIds,
+      renderedMarkers,
+    };
+  }, [seats, selectedSeats, userReservedSeats, markers]);
 
   const getSeatColor = useCallback(
     (seat: SeatDto | undefined) => {
@@ -181,11 +224,25 @@ export function SeatMap({
     onSeatSelect,
   ]);
 
-  const handleWheel = useCallback((e: React.WheelEvent) => {
+  const wheelRef = useRef<HTMLDivElement>(null);
+
+  const handleWheel = useCallback((e: WheelEvent) => {
     e.preventDefault();
     const delta = e.deltaY > 0 ? 0.9 : 1.1;
     setZoom((prev) => Math.max(0.1, Math.min(3, prev * delta)));
   }, []);
+
+  // Register wheel event listener as non-passive
+  useEffect(() => {
+    const element = wheelRef.current;
+    if (!element) return;
+
+    element.addEventListener("wheel", handleWheel, { passive: false });
+
+    return () => {
+      element.removeEventListener("wheel", handleWheel);
+    };
+  }, [handleWheel]);
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
@@ -223,8 +280,8 @@ export function SeatMap({
   }, []);
 
   const resetView = useCallback(() => {
-    if (containerRef.current && maxX > 0 && maxY > 0) {
-      const container = containerRef.current;
+    if (wheelRef.current && maxX > 0 && maxY > 0) {
+      const container = wheelRef.current;
       const containerWidth = container.clientWidth - 32;
       const containerHeight = container.clientHeight - 120;
 
@@ -335,9 +392,8 @@ export function SeatMap({
       </div>
 
       <div
-        ref={containerRef}
+        ref={wheelRef}
         className="w-full h-full p-4 pt-16 cursor-grab active:cursor-grabbing flex items-center justify-center"
-        onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -368,14 +424,24 @@ export function SeatMap({
           </div>
 
           <div
-            className="border-2 border rounded-lg p-4 bg-seatmap"
+            className="border-2 border rounded-lg p-4 bg-seatmap relative"
             style={{
               width: `${maxX * 32 + (maxX - 1) * 4 + 32}px`,
               height: `${maxY * 32 + (maxY - 1) * 4 + 32}px`,
             }}
           >
+            {/* Marker Layer - Hintergrund */}
+            {renderedMarkers.map((marker, index) => (
+              <MarkerComponent
+                key={`marker-${index}`}
+                marker={marker}
+                zoom={zoom}
+              />
+            ))}
+
+            {/* Sitzplatz Layer - Vordergrund */}
             <div
-              className="grid gap-1"
+              className="grid gap-1 relative z-10"
               style={{
                 gridTemplateColumns: `repeat(${maxX}, 1fr)`,
                 width: `${maxX * 32 + (maxX - 1) * 4}px`,
