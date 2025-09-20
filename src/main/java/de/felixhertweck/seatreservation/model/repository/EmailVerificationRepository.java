@@ -19,8 +19,6 @@
  */
 package de.felixhertweck.seatreservation.model.repository;
 
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -70,53 +68,5 @@ public class EmailVerificationRepository implements PanacheRepository<EmailVerif
             LOG.debugf("No EmailVerification found for user ID: %d", userId);
         }
         return result;
-    }
-
-    /**
-     * Finds expired email verification entries with a limit for batch processing.
-     *
-     * @param batchSize maximum number of entries to return
-     * @return List of expired EmailVerification entities (limited by batchSize)
-     */
-    public List<EmailVerification> findExpiredEntries(int batchSize) {
-        LOG.debugf("Finding expired EmailVerification entries with batch size: %d", batchSize);
-        List<EmailVerification> entries =
-                find("expirationTime < ?1", LocalDateTime.now()).page(0, batchSize).list();
-        LOG.debugf("Found %d expired EmailVerification entries.", entries.size());
-        return entries;
-    }
-
-    /**
-     * Deletes all expired email verification entries.
-     *
-     * @return number of deleted entries
-     */
-    @Transactional
-    public long deleteExpiredEntries() {
-        LOG.infof("Deleting all expired EmailVerification entries.");
-        long deletedCount = delete("expirationTime < ?1", LocalDateTime.now());
-        LOG.infof("Deleted %d expired EmailVerification entries.", deletedCount);
-        return deletedCount;
-    }
-
-    /**
-     * Deletes expired email verification entries in batches.
-     *
-     * @param batchSize maximum number of entries to delete in one batch
-     * @return number of deleted entries
-     */
-    @Transactional
-    public long deleteExpiredEntriesInBatch(int batchSize) {
-        LOG.debugf("Deleting expired EmailVerification entries in batch with size: %d", batchSize);
-        List<EmailVerification> expiredEntries = findExpiredEntries(batchSize);
-        if (expiredEntries.isEmpty()) {
-            LOG.debug("No expired EmailVerification entries found in batch.");
-            return 0;
-        }
-
-        List<Long> ids = expiredEntries.stream().map(e -> e.id).toList();
-        long deletedCount = delete("id in ?1", ids);
-        LOG.debugf("Deleted %d expired EmailVerification entries in current batch.", deletedCount);
-        return deletedCount;
     }
 }
