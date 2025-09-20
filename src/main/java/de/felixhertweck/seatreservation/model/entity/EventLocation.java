@@ -40,6 +40,13 @@ public class EventLocation extends PanacheEntity {
     @OneToMany(mappedBy = "location", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Seat> seats = new ArrayList<>();
 
+    @OneToMany(
+            mappedBy = "eventLocation",
+            fetch = FetchType.EAGER,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    private List<EventLocationMarker> markers = new ArrayList<>();
+
     public EventLocation() {}
 
     public EventLocation(String name, String address, User manager, Integer capacity) {
@@ -47,6 +54,19 @@ public class EventLocation extends PanacheEntity {
         this.address = address;
         this.manager = manager;
         this.capacity = capacity;
+    }
+
+    public EventLocation(
+            String name,
+            String address,
+            User manager,
+            Integer capacity,
+            List<EventLocationMarker> markers) {
+        this.name = name;
+        this.address = address;
+        this.manager = manager;
+        this.capacity = capacity;
+        this.markers = markers != null ? new ArrayList<>(markers) : new ArrayList<>();
     }
 
     public String getName() {
@@ -91,6 +111,14 @@ public class EventLocation extends PanacheEntity {
 
     public Long getId() {
         return id;
+    }
+
+    public List<EventLocationMarker> getMarkers() {
+        return markers;
+    }
+
+    public void setMarkers(List<EventLocationMarker> markers) {
+        this.markers = markers;
     }
 
     @Override

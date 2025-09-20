@@ -35,7 +35,8 @@ public record EventLocationResponseDTO(
         String address,
         Integer capacity,
         LimitedUserInfoDTO manager,
-        List<SeatDTO> seats) {
+        List<SeatDTO> seats,
+        List<EventLocationMakerDTO> markers) {
     public EventLocationResponseDTO(EventLocation eventLocation) {
         this(eventLocation, Collections.emptyList());
     }
@@ -49,7 +50,8 @@ public record EventLocationResponseDTO(
                 eventLocation.getManager() != null
                         ? new LimitedUserInfoDTO(eventLocation.getManager())
                         : null,
-                createSeatDTOs(eventLocation.getSeats(), reservations));
+                createSeatDTOs(eventLocation.getSeats(), reservations),
+                eventLocation.getMarkers().stream().map(EventLocationMakerDTO::new).toList());
     }
 
     private static List<SeatDTO> createSeatDTOs(List<Seat> seats, List<Reservation> reservations) {

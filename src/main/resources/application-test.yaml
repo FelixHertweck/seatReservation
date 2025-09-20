@@ -6,6 +6,8 @@ smallrye:
 quarkus:
   mailer:
     mock: true
+  hibernate-orm:
+    sql-load-script: import-test.sql
 
 email:
   redirect-url: http://localhost:8081

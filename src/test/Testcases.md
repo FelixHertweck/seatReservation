@@ -340,6 +340,71 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | `importSeatsToEventLocation_Success_AsAdmin` | Importiert erfolgreich Sitze zu einer bestehenden EventLocation als Administrator. |
 | `importSeatsToEventLocation_NotFound` | Versucht, Sitze zu einer nicht existierenden EventLocation zu importieren. |
 | `importSeatsToEventLocation_Forbidden` | Versucht, Sitze zu einer EventLocation zu importieren, für die keine Berechtigung besteht. |
+| `createEventLocation_WithMarkers_Success` | Erstellt erfolgreich eine neue EventLocation mit Markern. |
+| `createEventLocation_WithNullMarkers_Success` | Erstellt erfolgreich eine neue EventLocation mit null-Marker-Liste. |
+| `createEventLocation_WithEmptyMarkers_Success` | Erstellt erfolgreich eine neue EventLocation mit leerer Marker-Liste. |
+| `updateEventLocation_WithMarkers_Success` | Aktualisiert erfolgreich eine bestehende EventLocation mit neuen Markern. |
+| `updateEventLocation_ClearingMarkers_Success` | Aktualisiert erfolgreich eine bestehende EventLocation und löscht alle Marker. |
+| `convertToMarkerEntities_ValidInput` | Testet die Konvertierung von Marker-DTOs zu Entitäten mit verschiedenen Grenzwerten. |
+
+## EventLocationMarker Tests
+
+### EventLocationMarker
+
+| Testfall | Beschreibung |
+| :--- | :--- |
+| `testDefaultConstructor` | Überprüft die korrekte Initialisierung mit dem Default-Konstruktor. |
+| `testParameterizedConstructor` | Überprüft die korrekte Initialisierung mit dem parametrisierten Konstruktor. |
+| `testSettersAndGetters` | Testet alle Setter und Getter Methoden. |
+| `testEquals_SameObject` | Überprüft equals() mit demselben Objekt. |
+| `testEquals_EqualObjects` | Überprüft equals() mit identischen Objekten. |
+| `testEquals_DifferentLabel` | Überprüft equals() mit unterschiedlichen Labels. |
+| `testEquals_DifferentXCoordinate` | Überprüft equals() mit unterschiedlichen X-Koordinaten. |
+| `testEquals_DifferentYCoordinate` | Überprüft equals() mit unterschiedlichen Y-Koordinaten. |
+| `testEquals_NullObject` | Überprüft equals() mit null-Objekt. |
+| `testEquals_DifferentClass` | Überprüft equals() mit anderem Klassentyp. |
+| `testEquals_NullValues` | Überprüft equals() mit null-Werten in beiden Objekten. |
+| `testEquals_MixedNullValues` | Überprüft equals() mit gemischten null-Werten. |
+| `testHashCode_EqualObjects` | Überprüft konsistente hashCode() Werte für gleiche Objekte. |
+| `testHashCode_DifferentObjects` | Überprüft unterschiedliche hashCode() Werte für unterschiedliche Objekte. |
+| `testHashCode_NullValues` | Überprüft hashCode() mit null-Werten. |
+| `testToString` | Überprüft die toString() Ausgabe mit normalen Werten. |
+| `testToString_NullValues` | Überprüft die toString() Ausgabe mit null-Werten. |
+| `testCoordinatesBoundaries` | Testet Grenzwerte für Koordinaten (Integer.MAX_VALUE, Integer.MIN_VALUE). |
+| `testEmptyLabel` | Testet Verhalten mit leerem Label. |
+
+### EventLocationMakerRequestDTO
+
+| Testfall | Beschreibung |
+| :--- | :--- |
+| `testDefaultConstructor` | Überprüft die korrekte Initialisierung mit dem Default-Konstruktor. |
+| `testParameterizedConstructor` | Überprüft die korrekte Initialisierung mit dem parametrisierten Konstruktor. |
+| `testSettersAndGetters` | Testet alle Setter und Getter Methoden. |
+| `testSettersWithNullValues` | Testet Setter mit null-Werten. |
+| `testWithBoundaryValues` | Testet Grenzwerte für Koordinaten. |
+| `testWithZeroCoordinates` | Testet Verhalten mit Null-Koordinaten. |
+| `testWithNegativeCoordinates` | Testet Verhalten mit negativen Koordinaten. |
+| `testLongLabel` | Testet Verhalten mit sehr langem Label. |
+| `testSetterChaining` | Testet unabhängiges Funktionieren der Setter. |
+| `testOverwriteValues` | Testet das Überschreiben von Werten. |
+
+### EventLocationMakerDTO
+
+| Testfall | Beschreibung |
+| :--- | :--- |
+| `testConstructorWithMarkerEntity` | Überprüft Konstruktor mit EventLocationMarker-Entität. |
+| `testDirectConstructor` | Überprüft direkten Konstruktor mit Parametern. |
+| `testWithZeroCoordinates` | Testet Verhalten mit Null-Koordinaten. |
+| `testWithNegativeCoordinates` | Testet Verhalten mit negativen Koordinaten. |
+| `testWithBoundaryValues` | Testet Grenzwerte für Koordinaten. |
+| `testWithNullLabel` | Testet Verhalten mit null-Label. |
+| `testWithEmptyLabel` | Testet Verhalten mit leerem Label. |
+| `testWithLongLabel` | Testet Verhalten mit sehr langem Label. |
+| `testRecordEquality` | Testet Record-Gleichheit und Unterschiede. |
+| `testRecordHashCode` | Testet Record-HashCode-Konsistenz. |
+| `testRecordToString` | Testet Record-toString-Methode. |
+| `testConversionConsistency` | Testet Konsistenz bei Konvertierung von Entity zu DTO. |
+| `testNullCoordinatesInEntity` | Testet Verhalten bei null-Koordinaten in Entity (NullPointerException erwartet). |
 
 ## Seat Service
 

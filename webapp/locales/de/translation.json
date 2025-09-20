@@ -551,7 +551,11 @@
     "cancelButton": "Abbrechen",
     "savingButton": "Speichern...",
     "createButton": "Erstellen",
-    "updateButton": "Aktualisieren"
+    "updateButton": "Aktualisieren",
+    "addMarkerButton": "Marker hinzufügen",
+    "markerLabel": "Marker",
+    "xCoordinateLabel": "X-Koordinate",
+    "yCoordinateLabel": "Y-Koordinate"
   },
   "locationImportModal": {
     "importLocationDataTitle": "Standortdaten importieren",
@@ -586,6 +590,7 @@
     "tableHeaderAddress": "Adresse",
     "tableHeaderCapacity": "Kapazität",
     "tableHeaderManager": "Manager",
+    "tableHeaderMarker": "Marker",
     "tableHeaderSeats": "Plätze",
     "tableHeaderActions": "Aktionen",
     "seatsCount": "{{count}} Plätze",

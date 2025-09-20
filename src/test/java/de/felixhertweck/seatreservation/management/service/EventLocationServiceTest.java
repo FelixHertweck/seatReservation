@@ -30,11 +30,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import de.felixhertweck.seatreservation.common.dto.EventLocationResponseDTO;
+import de.felixhertweck.seatreservation.management.dto.EventLocationMakerRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.ImportEventLocationDto;
 import de.felixhertweck.seatreservation.management.dto.ImportSeatDto;
 import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
+import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
@@ -437,5 +439,227 @@ public class EventLocationServiceTest {
                                 existingLocation.id, seats, regularUser));
         verify(eventLocationRepository, times(1)).findByIdOptional(existingLocation.id);
         verify(seatRepository, never()).persist(any(Seat.class));
+    }
+
+    @Test
+    void createEventLocation_WithMarkers_Success() {
+        EventLocationRequestDTO dto = new EventLocationRequestDTO();
+        dto.setName("Concert Hall");
+        dto.setAddress("Music Street 1");
+        dto.setCapacity(300);
+
+        List<EventLocationMakerRequestDTO> markers =
+                List.of(
+                        new EventLocationMakerRequestDTO("Main Entrance", 100, 200),
+                        new EventLocationMakerRequestDTO("Emergency Exit", 50, 250),
+                        new EventLocationMakerRequestDTO("Stage", 150, 50));
+        dto.setmarkers(markers);
+
+        doAnswer(
+                        invocation -> {
+                            EventLocation location = invocation.getArgument(0);
+                            location.id = 15L;
+                            return null;
+                        })
+                .when(eventLocationRepository)
+                .persist(any(EventLocation.class));
+
+        EventLocationResponseDTO result =
+                eventLocationService.createEventLocation(dto, managerUser);
+
+        assertNotNull(result);
+        assertEquals("Concert Hall", result.name());
+        assertEquals(3, result.markers().size());
+
+        // Verify marker content
+        assertEquals("Main Entrance", result.markers().get(0).label());
+        assertEquals(100, result.markers().get(0).xCoordinate());
+        assertEquals(200, result.markers().get(0).yCoordinate());
+
+        assertEquals("Emergency Exit", result.markers().get(1).label());
+        assertEquals("Stage", result.markers().get(2).label());
+
+        ArgumentCaptor<EventLocation> locationCaptor = ArgumentCaptor.forClass(EventLocation.class);
+        verify(eventLocationRepository, times(1)).persist(locationCaptor.capture());
+
+        EventLocation capturedLocation = locationCaptor.getValue();
+        assertEquals(3, capturedLocation.getMarkers().size());
+    }
+
+    @Test
+    void createEventLocation_WithNullMarkers_Success() {
+        EventLocationRequestDTO dto = new EventLocationRequestDTO();
+        dto.setName("Simple Hall");
+        dto.setAddress("Simple Street 1");
+        dto.setCapacity(100);
+        dto.setmarkers(null);
+
+        doAnswer(
+                        invocation -> {
+                            EventLocation location = invocation.getArgument(0);
+                            location.id = 16L;
+                            return null;
+                        })
+                .when(eventLocationRepository)
+                .persist(any(EventLocation.class));
+
+        EventLocationResponseDTO result =
+                eventLocationService.createEventLocation(dto, managerUser);
+
+        assertNotNull(result);
+        assertEquals("Simple Hall", result.name());
+        assertTrue(result.markers().isEmpty());
+
+        ArgumentCaptor<EventLocation> locationCaptor = ArgumentCaptor.forClass(EventLocation.class);
+        verify(eventLocationRepository, times(1)).persist(locationCaptor.capture());
+
+        EventLocation capturedLocation = locationCaptor.getValue();
+        assertTrue(capturedLocation.getMarkers().isEmpty());
+    }
+
+    @Test
+    void createEventLocation_WithEmptyMarkers_Success() {
+        EventLocationRequestDTO dto = new EventLocationRequestDTO();
+        dto.setName("Empty Markers Hall");
+        dto.setAddress("Empty Street 1");
+        dto.setCapacity(150);
+        dto.setmarkers(Collections.emptyList());
+
+        doAnswer(
+                        invocation -> {
+                            EventLocation location = invocation.getArgument(0);
+                            location.id = 17L;
+                            return null;
+                        })
+                .when(eventLocationRepository)
+                .persist(any(EventLocation.class));
+
+        EventLocationResponseDTO result =
+                eventLocationService.createEventLocation(dto, managerUser);
+
+        assertNotNull(result);
+        assertEquals("Empty Markers Hall", result.name());
+        assertTrue(result.markers().isEmpty());
+    }
+
+    @Test
+    void updateEventLocation_WithMarkers_Success() {
+        when(eventLocationRepository.findByIdOptional(existingLocation.id))
+                .thenReturn(Optional.of(existingLocation));
+        doAnswer(
+                        invocation -> {
+                            invocation.getArgument(0);
+                            return null;
+                        })
+                .when(eventLocationRepository)
+                .persist(any(EventLocation.class));
+
+        EventLocationRequestDTO updateDto = new EventLocationRequestDTO();
+        updateDto.setName("Updated Hall");
+        updateDto.setAddress("Updated Street 1");
+        updateDto.setCapacity(250);
+
+        List<EventLocationMakerRequestDTO> newMarkers =
+                List.of(
+                        new EventLocationMakerRequestDTO("Updated Entrance", 120, 220),
+                        new EventLocationMakerRequestDTO("VIP Area", 200, 100));
+        updateDto.setmarkers(newMarkers);
+
+        EventLocationResponseDTO result =
+                eventLocationService.updateEventLocation(
+                        existingLocation.id, updateDto, managerUser);
+
+        assertNotNull(result);
+        assertEquals("Updated Hall", result.name());
+        assertEquals(2, result.markers().size());
+        assertEquals("Updated Entrance", result.markers().get(0).label());
+        assertEquals("VIP Area", result.markers().get(1).label());
+
+        ArgumentCaptor<EventLocation> locationCaptor = ArgumentCaptor.forClass(EventLocation.class);
+        verify(eventLocationRepository, times(1)).persist(locationCaptor.capture());
+
+        EventLocation capturedLocation = locationCaptor.getValue();
+        assertEquals(2, capturedLocation.getMarkers().size());
+    }
+
+    @Test
+    void updateEventLocation_ClearingMarkers_Success() {
+        // Setup existing location with markers
+        List<EventLocationMarker> existingMarkers =
+                List.of(
+                        new EventLocationMarker("Old Entrance", 10, 20),
+                        new EventLocationMarker("Old Exit", 30, 40));
+        existingLocation.setMarkers(existingMarkers);
+
+        when(eventLocationRepository.findByIdOptional(existingLocation.id))
+                .thenReturn(Optional.of(existingLocation));
+        doAnswer(
+                        invocation -> {
+                            invocation.getArgument(0);
+                            return null;
+                        })
+                .when(eventLocationRepository)
+                .persist(any(EventLocation.class));
+
+        EventLocationRequestDTO updateDto = new EventLocationRequestDTO();
+        updateDto.setName("Cleared Hall");
+        updateDto.setAddress("Cleared Street 1");
+        updateDto.setCapacity(100);
+        updateDto.setmarkers(Collections.emptyList()); // Clear markers
+
+        EventLocationResponseDTO result =
+                eventLocationService.updateEventLocation(
+                        existingLocation.id, updateDto, managerUser);
+
+        assertNotNull(result);
+        assertEquals("Cleared Hall", result.name());
+        assertTrue(result.markers().isEmpty());
+
+        ArgumentCaptor<EventLocation> locationCaptor = ArgumentCaptor.forClass(EventLocation.class);
+        verify(eventLocationRepository, times(1)).persist(locationCaptor.capture());
+
+        EventLocation capturedLocation = locationCaptor.getValue();
+        assertTrue(capturedLocation.getMarkers().isEmpty());
+    }
+
+    @Test
+    void convertToMarkerEntities_ValidInput() {
+        // This is indirectly tested through the create and update tests, but let's add specific
+        // validation
+        EventLocationRequestDTO dto = new EventLocationRequestDTO();
+        dto.setName("Test Hall");
+        dto.setAddress("Test Street");
+        dto.setCapacity(100);
+
+        List<EventLocationMakerRequestDTO> markerDtos =
+                List.of(
+                        new EventLocationMakerRequestDTO("Test Marker 1", 0, 0),
+                        new EventLocationMakerRequestDTO("Test Marker 2", -50, -100),
+                        new EventLocationMakerRequestDTO(
+                                "Test Marker 3", Integer.MAX_VALUE, Integer.MIN_VALUE));
+        dto.setmarkers(markerDtos);
+
+        doAnswer(
+                        invocation -> {
+                            EventLocation location = invocation.getArgument(0);
+                            location.id = 18L;
+                            return null;
+                        })
+                .when(eventLocationRepository)
+                .persist(any(EventLocation.class));
+
+        EventLocationResponseDTO result =
+                eventLocationService.createEventLocation(dto, managerUser);
+
+        assertNotNull(result);
+        assertEquals(3, result.markers().size());
+
+        // Test boundary values are preserved
+        assertEquals(0, result.markers().get(0).xCoordinate());
+        assertEquals(0, result.markers().get(0).yCoordinate());
+        assertEquals(-50, result.markers().get(1).xCoordinate());
+        assertEquals(-100, result.markers().get(1).yCoordinate());
+        assertEquals(Integer.MAX_VALUE, result.markers().get(2).xCoordinate());
+        assertEquals(Integer.MIN_VALUE, result.markers().get(2).yCoordinate());
     }
 }

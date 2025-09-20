@@ -149,6 +149,41 @@ export const DetailedReservationResponseDTOSchema = {
     }
 } as const;
 
+export const EventLocationMakerDTOSchema = {
+    type: 'object',
+    properties: {
+        label: {
+            type: 'string'
+        },
+        xCoordinate: {
+            type: 'integer',
+            format: 'int32'
+        },
+        yCoordinate: {
+            type: 'integer',
+            format: 'int32'
+        }
+    }
+} as const;
+
+export const EventLocationMakerRequestDTOSchema = {
+    type: 'object',
+    required: ['label', 'xCoordinate', 'yCoordinate'],
+    properties: {
+        label: {
+            type: 'string'
+        },
+        xCoordinate: {
+            type: 'integer',
+            format: 'int32'
+        },
+        yCoordinate: {
+            type: 'integer',
+            format: 'int32'
+        }
+    }
+} as const;
+
 export const EventLocationRequestDTOSchema = {
     type: 'object',
     required: ['name', 'address', 'capacity'],
@@ -162,6 +197,12 @@ export const EventLocationRequestDTOSchema = {
         capacity: {
             type: 'integer',
             format: 'int32'
+        },
+        markers: {
+            type: 'array',
+            items: {
+                '$ref': '#/components/schemas/EventLocationMakerRequestDTO'
+            }
         }
     }
 } as const;
@@ -190,6 +231,12 @@ export const EventLocationResponseDTOSchema = {
             type: 'array',
             items: {
                 '$ref': '#/components/schemas/SeatDTO'
+            }
+        },
+        markers: {
+            type: 'array',
+            items: {
+                '$ref': '#/components/schemas/EventLocationMakerDTO'
             }
         }
     }

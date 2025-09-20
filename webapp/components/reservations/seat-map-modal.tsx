@@ -9,11 +9,16 @@ import {
 } from "@/components/ui/dialog";
 import { SeatMap } from "@/components/common/seat-map";
 import { useState } from "react";
-import type { ReservationResponseDto, SeatDto } from "@/api";
+import type {
+  EventLocationMakerDto,
+  ReservationResponseDto,
+  SeatDto,
+} from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 
 interface SeatMapModalProps {
   seats: SeatDto[];
+  markers: EventLocationMakerDto[];
   reservation: ReservationResponseDto;
   eventReservations: ReservationResponseDto[];
   onClose: () => void;
@@ -22,6 +27,7 @@ interface SeatMapModalProps {
 
 export function SeatMapModal({
   seats,
+  markers,
   reservation,
   eventReservations,
   onClose,
@@ -109,6 +115,7 @@ export function SeatMapModal({
             <div className="flex-1 min-h-0 min-w-0">
               <SeatMap
                 seats={seats}
+                markers={markers}
                 selectedSeats={highlightedSeats}
                 onSeatSelect={() => {}} // Read-only
                 userReservedSeats={reservedSeats}

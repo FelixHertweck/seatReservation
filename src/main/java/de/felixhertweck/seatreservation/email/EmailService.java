@@ -257,7 +257,8 @@ public class EmailService {
                                 .collect(Collectors.toSet()),
                         existingSeatNumbers.stream()
                                 .map(Seat::getSeatNumber)
-                                .collect(Collectors.toSet()));
+                                .collect(Collectors.toSet()),
+                        event.getEventLocation().getMarkers());
         LOG.debug("SVG content for seat map generated.");
 
         StringBuilder seatListHtml = new StringBuilder();
@@ -381,7 +382,12 @@ public class EmailService {
                         : Set.of();
         LOG.debugf("Existing seat numbers (excluding new ones): %s", existingSeatNumbers);
 
-        String svgContent = SvgRenderer.renderSeats(allSeats, Set.of(), existingSeatNumbers);
+        String svgContent =
+                SvgRenderer.renderSeats(
+                        allSeats,
+                        Set.of(),
+                        existingSeatNumbers,
+                        event.getEventLocation().getMarkers());
         LOG.debug("SVG content for seat map generated.");
 
         StringBuilder deletedSeatListHtml = new StringBuilder();

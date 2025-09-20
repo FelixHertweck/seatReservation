@@ -28,6 +28,7 @@ import type {
   SeatDto,
   UserDto,
   DetailedReservationResponseDto,
+  EventLocationMakerDto,
 } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 
@@ -62,6 +63,8 @@ export function ReservationFormModal({
     (event) => event.id?.toString() === formData.eventId,
   );
   const availableSeats: SeatDto[] = selectedEvent?.eventLocation?.seats ?? [];
+  const availableMarkers: EventLocationMakerDto[] =
+    selectedEvent?.eventLocation?.markers ?? [];
 
   const filteredUsers = users
     .filter((user) => {
@@ -166,6 +169,7 @@ export function ReservationFormModal({
                 <div className="w-full h-full max-h-[60vh] flex items-center justify-center">
                   <SeatMap
                     seats={availableSeats}
+                    markers={availableMarkers}
                     selectedSeats={selectedSeats}
                     userReservedSeats={userReservedSeats}
                     onSeatSelect={handleSeatSelect}

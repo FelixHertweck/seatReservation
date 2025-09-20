@@ -22,6 +22,7 @@ package de.felixhertweck.seatreservation.utils;
 import java.util.Collection;
 import java.util.Set;
 
+import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 
 public class SvgRenderer {
@@ -30,6 +31,14 @@ public class SvgRenderer {
             Collection<Seat> allSeats,
             Set<String> newReservedSeatNumbers,
             Set<String> existingReservedSeatNumbers) {
+        return renderSeats(allSeats, newReservedSeatNumbers, existingReservedSeatNumbers, null);
+    }
+
+    public static String renderSeats(
+            Collection<Seat> allSeats,
+            Set<String> newReservedSeatNumbers,
+            Set<String> existingReservedSeatNumbers,
+            Collection<EventLocationMarker> markers) {
 
         if (allSeats == null || allSeats.isEmpty()) {
             return "";
@@ -40,8 +49,9 @@ public class SvgRenderer {
         int radius = 15; // Radius of the circle representing a seat
         int padding = 20; // Padding around the entire seat map
         int textHeight = 12; // Font size for the seat number
+        int markerTextHeight = 10; // Font size for marker labels
 
-        // Calculate Bounding Box of logical coordinates
+        // Calculate Bounding Box of logical coordinates for seats
         int minX = Integer.MAX_VALUE;
         int minY = Integer.MAX_VALUE;
         int maxX = Integer.MIN_VALUE;
@@ -52,6 +62,18 @@ public class SvgRenderer {
             minY = Math.min(minY, seat.getyCoordinate());
             maxX = Math.max(maxX, seat.getxCoordinate());
             maxY = Math.max(maxY, seat.getyCoordinate());
+        }
+
+        // Include markers in bounding box calculation if they exist
+        if (markers != null && !markers.isEmpty()) {
+            for (EventLocationMarker marker : markers) {
+                if (marker.getxCoordinate() != null && marker.getyCoordinate() != null) {
+                    minX = Math.min(minX, marker.getxCoordinate());
+                    minY = Math.min(minY, marker.getyCoordinate());
+                    maxX = Math.max(maxX, marker.getxCoordinate());
+                    maxY = Math.max(maxY, marker.getyCoordinate());
+                }
+            }
         }
 
         // Calculate viewBox dimensions based on scaled coordinates
@@ -71,6 +93,36 @@ public class SvgRenderer {
                 .append(viewboxHeight)
                 .append("\" xmlns=\"http://www.w3.org/2000/svg\">\n");
 
+        // Render markers first (as background layer)
+        if (markers != null && !markers.isEmpty()) {
+            for (EventLocationMarker marker : markers) {
+                if (marker.getxCoordinate() != null
+                        && marker.getyCoordinate() != null
+                        && marker.getLabel() != null
+                        && !marker.getLabel().trim().isEmpty()) {
+
+                    int markerX = marker.getxCoordinate() * scale;
+                    int markerY = marker.getyCoordinate() * scale;
+
+                    // Render marker label as text only
+                    String label = marker.getLabel();
+
+                    sb.append("<text x=\"")
+                            .append(markerX)
+                            .append("\" y=\"")
+                            .append(markerY + (markerTextHeight / 3))
+                            .append("\" font-size=\"")
+                            .append(markerTextHeight)
+                            .append(
+                                    "\" text-anchor=\"middle\" fill=\"#666666\""
+                                            + " font-weight=\"bold\">")
+                            .append(escapeXml(label))
+                            .append("</text>\n");
+                }
+            }
+        }
+
+        // Render seats (as foreground layer)
         for (Seat seat : allSeats) {
             String color;
             if (newReservedSeatNumbers.contains(seat.getSeatNumber())) {
@@ -107,5 +159,14 @@ public class SvgRenderer {
 
         sb.append("</svg>");
         return sb.toString();
+    }
+
+    private static String escapeXml(String text) {
+        if (text == null) return "";
+        return text.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
     }
 }
