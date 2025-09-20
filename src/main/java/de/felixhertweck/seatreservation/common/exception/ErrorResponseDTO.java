@@ -19,4 +19,8 @@
  */
 package de.felixhertweck.seatreservation.common.exception;
 
-public record ErrorResponseDTO(String message) {}
+public record ErrorResponseDTO(String message) {
+    public String getMessage() {
+        return message;
+    }
+}

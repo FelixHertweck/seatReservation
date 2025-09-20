@@ -208,7 +208,7 @@ public class ReservationResourceTest {
                 .when()
                 .post("/api/user/reservations")
                 .then()
-                .statusCode(406); // NoSeatsAvailableException -> NOT_ACCEPTABLE
+                .statusCode(400); // NoSeatsAvailableException -> BAD_REQUEST
     }
 
     @Test

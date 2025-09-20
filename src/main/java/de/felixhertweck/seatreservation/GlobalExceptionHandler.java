@@ -49,12 +49,12 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
         Response.Status status;
 
         switch (exception) {
-            case EventBookingClosedException ignored -> status = Response.Status.NOT_ACCEPTABLE;
+            case EventBookingClosedException ignored -> status = Response.Status.BAD_REQUEST;
             case EventNotFoundException ignored -> status = Response.Status.NOT_FOUND;
             case EventLocationNotFoundException ignored -> status = Response.Status.NOT_FOUND;
             case ReservationNotFoundException ignored -> status = Response.Status.NOT_FOUND;
             case SeatNotFoundException ignored -> status = Response.Status.NOT_FOUND;
-            case NoSeatsAvailableException ignored -> status = Response.Status.NOT_ACCEPTABLE;
+            case NoSeatsAvailableException ignored -> status = Response.Status.BAD_REQUEST;
             case SeatAlreadyReservedException ignored -> status = Response.Status.CONFLICT;
             case AuthenticationFailedException ignored -> status = Response.Status.UNAUTHORIZED;
             case DuplicateUserException ignored -> status = Response.Status.CONFLICT;
@@ -66,9 +66,6 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
             case IllegalStateException ignored -> status = Response.Status.BAD_REQUEST;
             default -> {
                 status = Response.Status.INTERNAL_SERVER_ERROR;
-                errorResponse =
-                        new ErrorResponseDTO(
-                                "An unexpected error occurred: " + exception.getMessage());
             }
         }
 

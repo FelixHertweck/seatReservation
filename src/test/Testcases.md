@@ -33,6 +33,14 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | `authenticate_Success_WithEmail` | Authentifiziert einen Benutzer erfolgreich mit gültigen Anmeldeinformationen (E-Mail) und gibt einen Token zurück. |
 | `authenticate_AuthenticationFailedException_InvalidUsername` | Versucht, sich mit einem nicht existierenden Benutzernamen zu authentifizieren. Erwartet `AuthenticationFailedException`. |
 | `authenticate_AuthenticationFailedException_InvalidPassword` | Versucht, sich mit einem gültigen Benutzernamen, aber einem falschen Passwort zu authentifizieren. Erwartet `AuthenticationFailedException`. |
+| `testAuthenticateFailureEmailNotFound` | Versucht, sich mit einer nicht existierenden E-Mail-Adresse zu authentifizieren. Erwartet `AuthenticationFailedException`. |
+| `testAuthenticateWithEmailWrongPassword` | Versucht, sich mit einer gültigen E-Mail-Adresse, aber einem falschen Passwort zu authentifizieren. Erwartet `AuthenticationFailedException`. |
+| `testAuthenticateWithEmailIdentifier` | Überprüft, dass E-Mail-Adressen korrekt als E-Mails identifiziert werden und die E-Mail-basierte Suche verwendet wird. |
+| `testAuthenticateWithEmptyPassword` | Versucht, sich mit einem leeren Passwort zu authentifizieren. Erwartet `AuthenticationFailedException`. |
+| `testAuthenticateIdentifierDetection` | Testet die korrekte Erkennung von E-Mail vs. Benutzername als Identifier. |
+| `testAuthenticateUsernameIdentification` | Überprüft, dass Benutzernamen ohne @-Symbol korrekt als Benutzernamen erkannt werden. |
+| `testAuthenticateWithInvalidHash` | Testet das Verhalten bei ungültigem Passwort-Hash-Format. Erwartet `RuntimeException`. |
+| `testAuthenticateSpecialCharactersInPassword` | Testet die Authentifizierung mit Sonderzeichen im Passwort. |
 
 ### TokenService
 
@@ -41,6 +49,14 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | `generateToken_Success` | Generiert erfolgreich einen JWT-Token für einen gegebenen Benutzer. |
 | `generateToken_ValidTokenContent` | Überprüft, ob der generierte Token die korrekten Benutzerinformationen (z.B. Benutzername, Rollen) enthält. |
 | `generateToken_TokenExpiration` | Überprüft, ob der generierte Token eine korrekte Ablaufzeit hat. |
+| `generateToken_NullEmail_UsesEmptyString` | Überprüft, dass bei einer null E-Mail ein leerer String im Token verwendet wird. |
+| `generateToken_EmptyRoles_HandlesCorrectly` | Testet das Verhalten bei einem Benutzer mit leerer Rollen-Liste. |
+| `getExpirationMinutes_ReturnsConfiguredValue` | Überprüft, dass die konfigurierte Ablaufzeit korrekt zurückgegeben wird. |
+| `createNewJwtCookie_ValidCookie` | Erstellt erfolgreich ein JWT-Cookie mit korrekten Eigenschaften (HttpOnly, Secure, Path, MaxAge). |
+| `createNewJwtCookie_DifferentExpirationTime` | Überprüft, dass unterschiedliche Ablaufzeiten korrekt im Cookie-MaxAge widergespiegelt werden. |
+| `createNewJwtCookie_EmptyToken` | Testet das Verhalten beim Erstellen eines Cookies mit leerem Token. |
+| `createNewJwtCookie_NullToken` | Testet das Verhalten beim Erstellen eines Cookies mit null Token. |
+| `generateToken_CustomExpirationTime` | Überprüft, dass benutzerdefinierte Ablaufzeiten (z.B. 24 Stunden) korrekt angewendet werden. |
 
 ### AuthResource
 
@@ -436,6 +452,34 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | `deleteSeat_ForbiddenException_NotManager` | Versucht, einen Sitzplatz zu löschen, für den keine Berechtigung besteht. |
 | `findSeatEntityById_Success` | Ruft eine Sitzplatz-Entität erfolgreich ab. |
 | `findSeatEntityById_ForbiddenException` | Versucht, eine Sitzplatz-Entität abzurufen, für die der Benutzer keine Berechtigung hat. |
+
+## GlobalExceptionHandler
+
+### GlobalExceptionHandler
+
+| Testfall | Beschreibung |
+| :--- | :--- |
+| `testUserNotFoundException` | Testet die Behandlung von `UserNotFoundException` und erwartet HTTP-Status 404 (Not Found). |
+| `testEventNotFoundException` | Testet die Behandlung von `EventNotFoundException` und erwartet HTTP-Status 404 (Not Found). |
+| `testSeatNotFoundException` | Testet die Behandlung von `SeatNotFoundException` und erwartet HTTP-Status 404 (Not Found). |
+| `testReservationNotFoundException` | Testet die Behandlung von `ReservationNotFoundException` und erwartet HTTP-Status 404 (Not Found). |
+| `testEventLocationNotFoundException` | Testet die Behandlung von `EventLocationNotFoundException` und erwartet HTTP-Status 404 (Not Found). |
+| `testDuplicateUserException` | Testet die Behandlung von `DuplicateUserException` und erwartet HTTP-Status 409 (Conflict). |
+| `testSeatAlreadyReservedException` | Testet die Behandlung von `SeatAlreadyReservedException` und erwartet HTTP-Status 409 (Conflict). |
+| `testAuthenticationFailedException` | Testet die Behandlung von `AuthenticationFailedException` und erwartet HTTP-Status 401 (Unauthorized). |
+| `testTokenExpiredException` | Testet die Behandlung von `TokenExpiredException` und erwartet HTTP-Status 401 (Unauthorized). |
+| `testInvalidUserException` | Testet die Behandlung von `InvalidUserException` und erwartet HTTP-Status 400 (Bad Request). |
+| `testEventBookingClosedException` | Testet die Behandlung von `EventBookingClosedException` und erwartet HTTP-Status 400 (Bad Request). |
+| `testNoSeatsAvailableException` | Testet die Behandlung von `NoSeatsAvailableException` und erwartet HTTP-Status 400 (Bad Request). |
+| `testGenericException` | Testet die Behandlung von generischen `RuntimeException` und erwartet HTTP-Status 500 (Internal Server Error) mit der ursprünglichen Fehlermeldung. |
+| `testNullPointerException` | Testet die Behandlung von `NullPointerException` und erwartet HTTP-Status 500 (Internal Server Error). |
+| `testExceptionWithNullMessage` | Testet die Behandlung von Exceptions mit null-Nachricht und erwartet HTTP-Status 500 (Internal Server Error). |
+| `testExceptionWithEmptyMessage` | Testet die Behandlung von Exceptions mit leerer Nachricht und erwartet HTTP-Status 500 (Internal Server Error). |
+
+**Wichtige Änderungen:**
+- `EventBookingClosedException` und `NoSeatsAvailableException` geben jetzt HTTP-Status 400 (Bad Request) statt 406 (Not Acceptable) zurück
+- Generische Exceptions geben die ursprüngliche Fehlermeldung ohne zusätzliches "An unexpected error occurred: " Prefix zurück
+- `ErrorResponseDTO` wurde um eine `getMessage()`-Methode erweitert für bessere Kompatibilität
 
 ## HttpForwardFilter
 

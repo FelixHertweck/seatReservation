@@ -130,4 +130,182 @@ public class AuthServiceTest {
 
         assertTrue(thrown.getMessage().contains("Failed to authenticate user: " + username));
     }
+
+    @Test
+    void testAuthenticateFailureEmailNotFound() {
+        String email = "nonexistent@example.com";
+        String password = "anypassword";
+
+        when(userRepository.findByEmail(email)).thenReturn(null);
+
+        AuthenticationFailedException thrown =
+                assertThrows(
+                        AuthenticationFailedException.class,
+                        () -> authService.authenticate(email, password),
+                        "Expected AuthenticationFailedException for email not found");
+
+        assertTrue(thrown.getMessage().contains("Failed to authenticate user: " + email));
+    }
+
+    @Test
+    void testAuthenticateWithEmailWrongPassword() {
+        String email = "test@example.com";
+        String correctPassword = "correctpassword";
+        String wrongPassword = "wrongpassword";
+        String salt = "randomSalt";
+        String passwordHash = BcryptUtil.bcryptHash(correctPassword + salt);
+
+        User user = new User();
+        user.setEmail(email);
+        user.setUsername("testuser");
+        user.setPasswordHash(passwordHash);
+        user.setPasswordSalt(salt);
+
+        when(userRepository.findByEmail(email)).thenReturn(user);
+
+        AuthenticationFailedException thrown =
+                assertThrows(
+                        AuthenticationFailedException.class,
+                        () -> authService.authenticate(email, wrongPassword),
+                        "Expected AuthenticationFailedException for wrong password with email");
+
+        assertTrue(thrown.getMessage().contains("Failed to authenticate user: testuser"));
+    }
+
+    @Test
+    void testAuthenticateWithEmailIdentifier() throws AuthenticationFailedException {
+        // Test that email addresses are correctly identified as emails
+        String email = "user.name+tag@example.com";
+        String password = "password";
+        String salt = "randomSalt";
+        String passwordHash = BcryptUtil.bcryptHash(password + salt);
+
+        User user = new User();
+        user.setEmail(email);
+        user.setUsername("username");
+        user.setPasswordHash(passwordHash);
+        user.setPasswordSalt(salt);
+
+        when(userRepository.findByEmail(email)).thenReturn(user);
+        when(tokenService.generateToken(user)).thenReturn("token");
+
+        String result = authService.authenticate(email, password);
+        assertNotNull(result);
+
+        // Verify email lookup was used, not username lookup
+        Mockito.verify(userRepository).findByEmail(email);
+        Mockito.verify(userRepository, Mockito.never()).findByUsername(email);
+    }
+
+    @Test
+    void testAuthenticateWithEmptyPassword() {
+        String username = "testuser";
+        String password = "";
+        String salt = "randomSalt";
+        String validPasswordHash = BcryptUtil.bcryptHash("validPassword" + salt);
+
+        User user = new User();
+        user.setUsername(username);
+        user.setPasswordHash(validPasswordHash);
+        user.setPasswordSalt(salt);
+
+        when(userRepository.findByUsername(username)).thenReturn(user);
+
+        AuthenticationFailedException thrown =
+                assertThrows(
+                        AuthenticationFailedException.class,
+                        () -> authService.authenticate(username, password),
+                        "Expected AuthenticationFailedException for empty password");
+
+        assertTrue(thrown.getMessage().contains("Failed to authenticate user: " + username));
+    }
+
+    @Test
+    void testAuthenticateIdentifierDetection() throws AuthenticationFailedException {
+        // Test email detection
+        String email = "user@domain.com";
+        String password = "password";
+        String salt = "salt";
+        String passwordHash = BcryptUtil.bcryptHash(password + salt);
+
+        User user = new User();
+        user.setEmail(email);
+        user.setPasswordHash(passwordHash);
+        user.setPasswordSalt(salt);
+
+        when(userRepository.findByEmail(email)).thenReturn(user);
+        when(tokenService.generateToken(user)).thenReturn("token");
+
+        String result = authService.authenticate(email, password);
+        assertNotNull(result);
+
+        // Verify email method was called, not username
+        Mockito.verify(userRepository).findByEmail(email);
+        Mockito.verify(userRepository, Mockito.never()).findByUsername(email);
+    }
+
+    @Test
+    void testAuthenticateUsernameIdentification() throws AuthenticationFailedException {
+        // Test username detection (no @ symbol)
+        String username = "testuser";
+        String password = "password";
+        String salt = "salt";
+        String passwordHash = BcryptUtil.bcryptHash(password + salt);
+
+        User user = new User();
+        user.setUsername(username);
+        user.setPasswordHash(passwordHash);
+        user.setPasswordSalt(salt);
+
+        when(userRepository.findByUsername(username)).thenReturn(user);
+        when(tokenService.generateToken(user)).thenReturn("token");
+
+        String result = authService.authenticate(username, password);
+        assertNotNull(result);
+
+        // Verify username method was called, not email
+        Mockito.verify(userRepository).findByUsername(username);
+        Mockito.verify(userRepository, Mockito.never()).findByEmail(username);
+    }
+
+    @Test
+    void testAuthenticateWithInvalidHash() {
+        String username = "testuser";
+        String password = "password";
+        String salt = "validSalt";
+
+        User user = new User();
+        user.setUsername(username);
+        user.setPasswordHash("invalidHash"); // Invalid bcrypt hash format
+        user.setPasswordSalt(salt);
+
+        when(userRepository.findByUsername(username)).thenReturn(user);
+
+        // Should throw RuntimeException when BcryptUtil fails to parse invalid hash
+        assertThrows(
+                RuntimeException.class,
+                () -> authService.authenticate(username, password),
+                "Expected RuntimeException for invalid hash format");
+    }
+
+    @Test
+    void testAuthenticateSpecialCharactersInPassword() throws AuthenticationFailedException {
+        String username = "testuser";
+        String password = "p@ssw0rd!#$%^&*()";
+        String salt = "randomSalt";
+        String passwordHash = BcryptUtil.bcryptHash(password + salt);
+        String expectedToken = "mockedToken";
+
+        User user = new User();
+        user.setUsername(username);
+        user.setPasswordHash(passwordHash);
+        user.setPasswordSalt(salt);
+
+        when(userRepository.findByUsername(username)).thenReturn(user);
+        when(tokenService.generateToken(user)).thenReturn(expectedToken);
+
+        String actualToken = authService.authenticate(username, password);
+
+        assertEquals(expectedToken, actualToken);
+    }
 }
