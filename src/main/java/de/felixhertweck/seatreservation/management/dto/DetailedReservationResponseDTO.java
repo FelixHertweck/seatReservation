@@ -24,7 +24,9 @@ import java.time.LocalDateTime;
 import de.felixhertweck.seatreservation.common.dto.SeatDTO;
 import de.felixhertweck.seatreservation.common.dto.UserDTO;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
+@RegisterForReflection
 public record DetailedReservationResponseDTO(
         Long id, UserDTO user, Long eventId, SeatDTO seat, LocalDateTime reservationDateTime) {
     public DetailedReservationResponseDTO(Reservation reservation) {

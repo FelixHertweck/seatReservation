@@ -20,7 +20,9 @@
 package de.felixhertweck.seatreservation.management.dto;
 
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
+@RegisterForReflection
 public record EventUserAllowancesDto(
         Long id, Long eventId, Long userId, int reservationsAllowedCount) {
     public EventUserAllowancesDto(EventUserAllowance eventUserAllowance) {

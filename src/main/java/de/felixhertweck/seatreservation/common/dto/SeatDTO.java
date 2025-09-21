@@ -22,8 +22,10 @@ package de.felixhertweck.seatreservation.common.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.Seat;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@RegisterForReflection
 public record SeatDTO(
         Long id,
         String seatNumber,

@@ -23,7 +23,9 @@ package de.felixhertweck.seatreservation.management.dto;
 import java.time.LocalDateTime;
 
 import de.felixhertweck.seatreservation.model.entity.Reservation;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
+@RegisterForReflection
 public class ReservationExportDTO {
     private Long id;
     private String seatNumber;

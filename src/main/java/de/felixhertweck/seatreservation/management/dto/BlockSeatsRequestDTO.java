@@ -21,6 +21,9 @@ package de.felixhertweck.seatreservation.management.dto;
 
 import java.util.List;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
+@RegisterForReflection
 public class BlockSeatsRequestDTO {
 
     private Long eventId;

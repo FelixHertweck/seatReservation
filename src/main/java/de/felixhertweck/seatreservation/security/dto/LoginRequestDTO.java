@@ -22,7 +22,9 @@ package de.felixhertweck.seatreservation.security.dto;
 import jakarta.validation.constraints.NotBlank;
 
 import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
+@RegisterForReflection
 public class LoginRequestDTO {
     @NotBlank(message = "Identifier (username or email) must not be blank")
     @NoHtmlSanitize

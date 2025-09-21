@@ -21,6 +21,9 @@ package de.felixhertweck.seatreservation.management.dto;
 
 import jakarta.validation.constraints.NotNull;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
+@RegisterForReflection
 public record EventUserAllowanceUpdateDto(
         @NotNull(message = "Allowance ID must not be null") Long id,
         @NotNull(message = "Event ID must not be null") Long eventId,

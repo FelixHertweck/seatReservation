@@ -21,6 +21,9 @@ package de.felixhertweck.seatreservation.management.dto;
 
 import jakarta.validation.constraints.NotNull;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
+@RegisterForReflection
 public class EventLocationMakerRequestDTO {
     @NotNull(message = "Label must not be null")
     private String label;

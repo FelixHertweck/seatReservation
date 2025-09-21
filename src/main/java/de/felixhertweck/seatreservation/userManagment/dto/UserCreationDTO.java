@@ -27,7 +27,9 @@ import jakarta.validation.constraints.Size;
 
 import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
 import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
+@RegisterForReflection
 public class UserCreationDTO {
     @NotNull(message = "Username cannot be null")
     @Pattern(

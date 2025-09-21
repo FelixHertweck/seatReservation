@@ -19,7 +19,10 @@
  */
 package de.felixhertweck.seatreservation.userManagment.dto;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
 /** DTO for successful email verification response */
+@RegisterForReflection
 public class VerifyEmailCodeResponseDto {
 
     private String message;
