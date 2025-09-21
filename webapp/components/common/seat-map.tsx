@@ -44,6 +44,8 @@ const SeatComponent = React.memo(
 
     if (!seat) return <div className="w-8 h-8" />;
 
+    const showSeatNumber = zoom > 0.8;
+
     return (
       <div
         className={cn(
@@ -58,13 +60,31 @@ const SeatComponent = React.memo(
       >
         <div
           className={cn(
-            "w-full h-full rounded-full transition-all duration-200 hover:scale-105 flex items-center justify-center text-white text-xs font-medium drop-shadow-xs",
+            "w-full h-full rounded-full flex items-center justify-center text-white text-xs font-medium drop-shadow-xs",
+            // Reduce transitions on mobile for better performance
+            !clickable
+              ? "transition-none"
+              : "transition-all duration-200 hover:scale-105",
             seatColor,
           )}
+          style={{
+            // Use transform3d for GPU acceleration
+            transform: clickable ? "translate3d(0, 0, 0)" : "none",
+          }}
         >
-          {zoom > 0.8 ? seat.seatNumber : ""}
+          {showSeatNumber ? seat.seatNumber : ""}
         </div>
       </div>
+    );
+  },
+  // Custom comparison function to prevent unnecessary re-renders
+  (prevProps, nextProps) => {
+    return (
+      prevProps.seat?.id === nextProps.seat?.id &&
+      prevProps.seatColor === nextProps.seatColor &&
+      prevProps.clickable === nextProps.clickable &&
+      prevProps.zoom > 0.8 === nextProps.zoom > 0.8 && // Only re-render when zoom crosses the threshold
+      prevProps.onSeatSelect === nextProps.onSeatSelect
     );
   },
 );
@@ -114,6 +134,8 @@ export function SeatMap({
   );
 
   const mapRef = useRef<HTMLDivElement>(null);
+  const zoomTimeoutRef = useRef<number | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
 
   const {
     maxX,
@@ -193,42 +215,73 @@ export function SeatMap({
     [readonly, userReservedSeatIds],
   );
 
-  const gridItems = useMemo(() => {
+  // Separate grid structure from zoom-dependent rendering
+  const gridStructure = useMemo(() => {
     return Array.from({ length: maxY }, (_, y) =>
       Array.from({ length: maxX }, (_, x) => {
         const seat = seatPositionMap.get(`${x + 1}-${y + 1}`);
         const seatColor = getSeatColor(seat);
         const clickable = canSelectSeat(seat);
 
-        return (
-          <SeatComponent
-            key={`${x}-${y}`}
-            seat={seat}
-            seatColor={seatColor}
-            clickable={clickable}
-            zoom={zoom}
-            onSeatSelect={onSeatSelect}
-          />
-        );
+        return {
+          key: `${x}-${y}`,
+          seat,
+          seatColor,
+          clickable,
+        };
       }),
     ).flat();
-  }, [
-    maxX,
-    maxY,
-    seatPositionMap,
-    getSeatColor,
-    canSelectSeat,
-    zoom,
-    onSeatSelect,
-  ]);
+  }, [maxX, maxY, seatPositionMap, getSeatColor, canSelectSeat]);
+
+  // Render components only when grid structure or zoom changes significantly
+  const gridItems = useMemo(() => {
+    return gridStructure.map(({ key, seat, seatColor, clickable }) => (
+      <SeatComponent
+        key={key}
+        seat={seat}
+        seatColor={seatColor}
+        clickable={clickable}
+        zoom={zoom}
+        onSeatSelect={onSeatSelect}
+      />
+    ));
+  }, [gridStructure, zoom, onSeatSelect]);
 
   const wheelRef = useRef<HTMLDivElement>(null);
 
-  const handleWheel = useCallback((e: WheelEvent) => {
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? 0.9 : 1.1;
-    setZoom((prev) => Math.max(0.1, Math.min(3, prev * delta)));
+  // Throttled zoom function for better performance
+  const handleZoomChange = useCallback((newZoom: number) => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+
+    animationFrameRef.current = requestAnimationFrame(() => {
+      setZoom(Math.max(0.1, Math.min(3, newZoom)));
+    });
   }, []);
+
+  const handleWheel = useCallback(
+    (e: WheelEvent) => {
+      e.preventDefault();
+
+      // Throttle wheel events for better performance
+      if (zoomTimeoutRef.current) {
+        clearTimeout(zoomTimeoutRef.current);
+      }
+
+      const delta = e.deltaY > 0 ? 0.9 : 1.1;
+      setZoom((prev) => {
+        const newZoom = prev * delta;
+
+        zoomTimeoutRef.current = window.setTimeout(() => {
+          handleZoomChange(newZoom);
+        }, 16); // ~60fps
+
+        return prev; // Return previous value to avoid double update
+      });
+    },
+    [handleZoomChange],
+  );
 
   // Register wheel event listener as non-passive
   useEffect(() => {
@@ -256,9 +309,16 @@ export function SeatMap({
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
       if (isDragging) {
-        setPan({
-          x: e.clientX - dragStart.x,
-          y: e.clientY - dragStart.y,
+        // Use requestAnimationFrame for smooth panning
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
+        }
+
+        animationFrameRef.current = requestAnimationFrame(() => {
+          setPan({
+            x: e.clientX - dragStart.x,
+            y: e.clientY - dragStart.y,
+          });
         });
       }
     },
@@ -270,12 +330,20 @@ export function SeatMap({
   }, []);
 
   const zoomIn = useCallback(() => {
-    setZoom((prev) => Math.min(3, prev * 1.2));
-  }, []);
+    setZoom((prev) => {
+      const newZoom = Math.min(3, prev * 1.2);
+      handleZoomChange(newZoom);
+      return prev;
+    });
+  }, [handleZoomChange]);
 
   const zoomOut = useCallback(() => {
-    setZoom((prev) => Math.max(0.1, prev * 0.8));
-  }, []);
+    setZoom((prev) => {
+      const newZoom = Math.max(0.1, prev * 0.8);
+      handleZoomChange(newZoom);
+      return prev;
+    });
+  }, [handleZoomChange]);
 
   const resetView = useCallback(() => {
     if (wheelRef.current && maxX > 0 && maxY > 0) {
@@ -337,24 +405,43 @@ export function SeatMap({
       e.preventDefault();
 
       if (e.touches.length === 1 && isDragging) {
-        // Single finger - pan
+        // Single finger - pan with requestAnimationFrame for smooth movement
         const touch = e.touches[0];
-        setPan({
-          x: touch.clientX - dragStart.x,
-          y: touch.clientY - dragStart.y,
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
+        }
+
+        animationFrameRef.current = requestAnimationFrame(() => {
+          setPan({
+            x: touch.clientX - dragStart.x,
+            y: touch.clientY - dragStart.y,
+          });
         });
       } else if (e.touches.length === 2 && lastTouchDistance) {
-        // Two fingers - pinch zoom
+        // Two fingers - pinch zoom with throttling
         const currentDistance = getTouchDistance(
           e.touches as unknown as TouchList,
         );
         const scale = currentDistance / lastTouchDistance;
 
-        setZoom((prev) => Math.max(0.1, Math.min(3, prev * scale)));
-        setLastTouchDistance(currentDistance);
+        if (Math.abs(scale - 1.0) > 0.02) {
+          // Only update if significant change
+          setZoom((prev) => {
+            const newZoom = Math.max(0.1, Math.min(3, prev * scale));
+            handleZoomChange(newZoom);
+            return prev;
+          });
+          setLastTouchDistance(currentDistance);
+        }
       }
     },
-    [isDragging, dragStart, lastTouchDistance, getTouchDistance],
+    [
+      isDragging,
+      dragStart,
+      lastTouchDistance,
+      getTouchDistance,
+      handleZoomChange,
+    ],
   );
 
   const handleTouchEnd = useCallback(() => {
@@ -365,6 +452,18 @@ export function SeatMap({
   useEffect(() => {
     resetView();
   }, [resetView]);
+
+  // Cleanup animation frames on unmount
+  useEffect(() => {
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      if (zoomTimeoutRef.current) {
+        clearTimeout(zoomTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div className="relative w-full h-full rounded-lg overflow-hidden">
@@ -399,14 +498,20 @@ export function SeatMap({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        style={{ touchAction: "none" }}
+        style={{
+          touchAction: "none",
+          willChange: isDragging ? "transform" : "auto",
+        }}
       >
         <div
           ref={mapRef}
           style={{
-            transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`,
+            transform: `scale(${zoom}) translate3d(${pan.x / zoom}px, ${pan.y / zoom}px, 0)`,
             transformOrigin: "center center",
             transition: isDragging ? "none" : "transform 0.1s ease-out",
+            willChange: "transform",
+            backfaceVisibility: "hidden",
+            perspective: 1000,
           }}
         >
           <div
