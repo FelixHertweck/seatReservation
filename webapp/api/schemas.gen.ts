@@ -388,6 +388,12 @@ export const ImportEventLocationDtoSchema = {
             items: {
                 '$ref': '#/components/schemas/ImportSeatDto'
             }
+        },
+        markers: {
+            type: 'array',
+            items: {
+                '$ref': '#/components/schemas/EventLocationMakerRequestDTO'
+            }
         }
     }
 } as const;

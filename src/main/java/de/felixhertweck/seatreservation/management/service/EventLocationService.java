@@ -303,6 +303,7 @@ public class EventLocationService {
         location.setAddress(dto.getAddress());
         location.setCapacity(dto.getCapacity());
         location.setManager(manager);
+        location.setMarkers(convertToMarkerEntities(dto.getMarkers(), location));
 
         eventLocationRepository.persist(location);
 

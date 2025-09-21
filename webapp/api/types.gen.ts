@@ -118,6 +118,7 @@ export type ImportEventLocationDto = {
     address: string;
     capacity: number;
     seats?: Array<ImportSeatDto>;
+    markers?: Array<EventLocationMakerRequestDto>;
 };
 
 export type ImportSeatDto = {

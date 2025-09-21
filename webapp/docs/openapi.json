@@ -376,6 +376,12 @@
             "items" : {
               "$ref" : "#/components/schemas/ImportSeatDto"
             }
+          },
+          "markers" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/EventLocationMakerRequestDTO"
+            }
           }
         }
       },
@@ -2452,7 +2458,7 @@
   } ],
   "info" : {
     "title" : "Seat Reservation API",
-    "version" : "0.0.1",
+    "version" : "0.0.2",
     "description" : "The official REST API for Seat Reservation.",
     "contact" : {
       "name" : "FelixHertweck GitHub ",
