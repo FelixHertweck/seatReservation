@@ -412,6 +412,9 @@ export const ImportSeatDtoSchema = {
         yCoordinate: {
             type: 'integer',
             format: 'int32'
+        },
+        seatRow: {
+            type: 'string'
         }
     }
 } as const;

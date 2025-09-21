@@ -210,7 +210,9 @@ public class EventLocationResourceTest {
             roles = {"MANAGER"})
     void testImportSeatsToEventLocation_Success() {
         String requestBody =
-                "[{\"seatNumber\":\"B1\",\"xCoordinate\":2,\"yCoordinate\":1},{\"seatNumber\":\"B2\",\"xCoordinate\":2,\"yCoordinate\":2}]";
+                "[{\"seatNumber\":\"B1\",\"xCoordinate\":2,\"yCoordinate\":1,\"seatRow\":\"Row"
+                    + " B\"},{\"seatNumber\":\"B2\",\"xCoordinate\":2,\"yCoordinate\":2,\"seatRow\":\"Row"
+                    + " B\"}]";
 
         given().contentType("application/json")
                 .body(requestBody)
@@ -227,7 +229,9 @@ public class EventLocationResourceTest {
             user = "manager",
             roles = {"MANAGER"})
     void testImportSeatsToEventLocation_NotFound() {
-        String requestBody = "[{\"seatNumber\":\"B1\",\"xCoordinate\":2,\"yCoordinate\":1}]";
+        String requestBody =
+                "[{\"seatNumber\":\"B1\",\"xCoordinate\":2,\"yCoordinate\":1,\"seatRow\":\"Row"
+                        + " B\"}]";
         given().contentType("application/json")
                 .body(requestBody)
                 .when()
@@ -241,7 +245,9 @@ public class EventLocationResourceTest {
             user = "testUser",
             roles = {"USER"})
     void testImportSeatsToEventLocation_Forbidden() {
-        String requestBody = "[{\"seatNumber\":\"B1\",\"xCoordinate\":2,\"yCoordinate\":1}]";
+        String requestBody =
+                "[{\"seatNumber\":\"B1\",\"xCoordinate\":2,\"yCoordinate\":1,\"seatRow\":\"Row"
+                        + " B\"}]";
         given().contentType("application/json")
                 .body(requestBody)
                 .when()

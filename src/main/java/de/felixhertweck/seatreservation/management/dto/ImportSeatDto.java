@@ -34,14 +34,17 @@ public class ImportSeatDto {
     @NotNull(message = "Y coordinate must not be null")
     private int yCoordinate;
 
+    private String seatRow;
+
     public ImportSeatDto() {
         // Default constructor for serialization/deserialization
     }
 
-    public ImportSeatDto(String seatNumber, int xCoordinate, int yCoordinate) {
+    public ImportSeatDto(String seatNumber, int xCoordinate, int yCoordinate, String seatRow) {
         this.seatNumber = seatNumber;
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
+        this.seatRow = seatRow;
     }
 
     public String getSeatNumber() {
@@ -66,5 +69,13 @@ public class ImportSeatDto {
 
     public void setyCoordinate(int yCoordinate) {
         this.yCoordinate = yCoordinate;
+    }
+
+    public String getSeatRow() {
+        return seatRow;
+    }
+
+    public void setSeatRow(String seatRow) {
+        this.seatRow = seatRow;
     }
 }

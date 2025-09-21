@@ -125,6 +125,7 @@ export type ImportSeatDto = {
     seatNumber: string;
     xCoordinate: number;
     yCoordinate: number;
+    seatRow?: string;
 };
 
 export type LimitedUserInfoDto = {

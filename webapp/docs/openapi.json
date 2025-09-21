@@ -399,6 +399,9 @@
           "yCoordinate" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "seatRow" : {
+            "type" : "string"
           }
         }
       },
@@ -2458,7 +2461,7 @@
   } ],
   "info" : {
     "title" : "Seat Reservation API",
-    "version" : "0.0.2",
+    "version" : "0.0.3",
     "description" : "The official REST API for Seat Reservation.",
     "contact" : {
       "name" : "FelixHertweck GitHub ",

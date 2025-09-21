@@ -336,11 +336,13 @@ public class EventLocationServiceTest {
         seat1.setSeatNumber("A1");
         seat1.setxCoordinate(1);
         seat1.setyCoordinate(1);
+        seat1.setSeatRow("Row A");
 
         ImportSeatDto seat2 = new ImportSeatDto();
         seat2.setSeatNumber("A2");
         seat2.setxCoordinate(1);
         seat2.setyCoordinate(2);
+        seat2.setSeatRow("Row A");
 
         dto.setSeats(List.of(seat1, seat2));
 
@@ -381,8 +383,8 @@ public class EventLocationServiceTest {
     void importSeatsToEventLocation_Success() {
         // Arrange
         Set<ImportSeatDto> seats = new HashSet<>();
-        seats.add(new ImportSeatDto("B1", 2, 1));
-        seats.add(new ImportSeatDto("B2", 2, 2));
+        seats.add(new ImportSeatDto("B1", 2, 1, "Row 1"));
+        seats.add(new ImportSeatDto("B2", 2, 2, "Row 1"));
 
         when(eventLocationRepository.findByIdOptional(existingLocation.id))
                 .thenReturn(Optional.of(existingLocation));
@@ -412,7 +414,7 @@ public class EventLocationServiceTest {
     void importSeatsToEventLocation_EventLocationNotFound() {
         // Arrange
         Set<ImportSeatDto> seats = new HashSet<>();
-        seats.add(new ImportSeatDto("B1", 2, 1));
+        seats.add(new ImportSeatDto("B1", 2, 1, "Row 1"));
         when(eventLocationRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
 
         // Act & Assert
@@ -427,7 +429,7 @@ public class EventLocationServiceTest {
     void importSeatsToEventLocation_Forbidden() {
         // Arrange
         Set<ImportSeatDto> seats = new HashSet<>();
-        seats.add(new ImportSeatDto("B1", 2, 1));
+        seats.add(new ImportSeatDto("B1", 2, 1, "Row 1"));
         when(eventLocationRepository.findByIdOptional(existingLocation.id))
                 .thenReturn(Optional.of(existingLocation));
 

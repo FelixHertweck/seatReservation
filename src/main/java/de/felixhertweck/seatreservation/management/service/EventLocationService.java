@@ -317,6 +317,7 @@ public class EventLocationService {
                                         seat.setSeatNumber(seatDto.getSeatNumber());
                                         seat.setxCoordinate(seatDto.getxCoordinate());
                                         seat.setyCoordinate(seatDto.getyCoordinate());
+                                        seat.setSeatRow(seatDto.getSeatRow());
                                         seat.setLocation(location);
                                         seatRepository.persist(seat);
 
@@ -389,6 +390,7 @@ public class EventLocationService {
                     newSeat.setSeatNumber(seat.getSeatNumber());
                     newSeat.setxCoordinate(seat.getxCoordinate());
                     newSeat.setyCoordinate(seat.getyCoordinate());
+                    newSeat.setSeatRow(seat.getSeatRow());
                     newSeat.setLocation(location);
                     seatRepository.persist(newSeat);
                     newSeats.add(newSeat);
