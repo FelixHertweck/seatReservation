@@ -73,7 +73,7 @@ export default function InitQueryClient({
       },
 
       mutations: {
-        onError: (error: Error, variables, context) => {
+        onError: (error: Error) => {
           // Try to extract message from error response body
           const errorResponse = (error as any)?.response;
           const responseData = errorResponse?.data;
@@ -120,12 +120,6 @@ export default function InitQueryClient({
   return (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
-}
-
-interface ValidationError {
-  title: string;
-  status: number;
-  violations: ViolationError[];
 }
 
 interface ViolationError {

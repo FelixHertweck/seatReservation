@@ -15,7 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Plus, FileText, Download } from "lucide-react";
+import { Plus, FileText } from "lucide-react";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { useT } from "@/lib/i18n/hooks";
 

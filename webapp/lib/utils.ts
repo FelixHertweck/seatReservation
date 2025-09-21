@@ -36,7 +36,7 @@ export function isValidRedirectUrlEncoded(url: string): boolean {
   try {
     const decodedUrl = decodeURIComponent(url);
     return isValidRedirectUrl(decodedUrl);
-  } catch (e) {
+  } catch {
     return false; // Invalid URL encoding
   }
 }
