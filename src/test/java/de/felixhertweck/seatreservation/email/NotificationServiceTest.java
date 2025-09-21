@@ -57,6 +57,10 @@ class NotificationServiceTest {
     private Event testEvent;
     private Reservation testReservation;
 
+    // Fixed dates for deterministic testing
+    private static final LocalDate FIXED_TODAY = LocalDate.of(2025, 9, 21);
+    private static final LocalDate FIXED_TOMORROW = FIXED_TODAY.plusDays(1);
+
     @BeforeEach
     void setUp() {
         testUser = new User();
@@ -76,9 +80,8 @@ class NotificationServiceTest {
     @Test
     void sendEventReminders_WithEventsAndReservations_SendsEmails() {
         // Arrange
-        LocalDate tomorrow = LocalDate.now().plusDays(1);
-        LocalDateTime startOfTomorrow = tomorrow.atStartOfDay();
-        LocalDateTime endOfTomorrow = tomorrow.atTime(LocalTime.MAX);
+        LocalDateTime startOfTomorrow = FIXED_TOMORROW.atStartOfDay();
+        LocalDateTime endOfTomorrow = FIXED_TOMORROW.atTime(LocalTime.MAX);
 
         List<Event> eventsTomorrow = List.of(testEvent);
         List<Reservation> reservations = List.of(testReservation);
@@ -99,9 +102,8 @@ class NotificationServiceTest {
     @Test
     void sendEventReminders_WithNoEvents_DoesNotSendEmails() {
         // Arrange
-        LocalDate tomorrow = LocalDate.now().plusDays(1);
-        LocalDateTime startOfTomorrow = tomorrow.atStartOfDay();
-        LocalDateTime endOfTomorrow = tomorrow.atTime(LocalTime.MAX);
+        LocalDateTime startOfTomorrow = FIXED_TOMORROW.atStartOfDay();
+        LocalDateTime endOfTomorrow = FIXED_TOMORROW.atTime(LocalTime.MAX);
 
         when(eventService.findEventsBetweenDates(startOfTomorrow, endOfTomorrow))
                 .thenReturn(List.of());
@@ -118,9 +120,8 @@ class NotificationServiceTest {
     @Test
     void sendEventReminders_WithEventsButNoReservations_DoesNotSendEmails() {
         // Arrange
-        LocalDate tomorrow = LocalDate.now().plusDays(1);
-        LocalDateTime startOfTomorrow = tomorrow.atStartOfDay();
-        LocalDateTime endOfTomorrow = tomorrow.atTime(LocalTime.MAX);
+        LocalDateTime startOfTomorrow = FIXED_TOMORROW.atStartOfDay();
+        LocalDateTime endOfTomorrow = FIXED_TOMORROW.atTime(LocalTime.MAX);
 
         List<Event> eventsTomorrow = List.of(testEvent);
 
@@ -150,9 +151,8 @@ class NotificationServiceTest {
         secondReservation.setUser(secondUser);
         secondReservation.setEvent(secondEvent);
 
-        LocalDate tomorrow = LocalDate.now().plusDays(1);
-        LocalDateTime startOfTomorrow = tomorrow.atStartOfDay();
-        LocalDateTime endOfTomorrow = tomorrow.atTime(LocalTime.MAX);
+        LocalDateTime startOfTomorrow = FIXED_TOMORROW.atStartOfDay();
+        LocalDateTime endOfTomorrow = FIXED_TOMORROW.atTime(LocalTime.MAX);
 
         List<Event> eventsTomorrow = List.of(testEvent, secondEvent);
 
@@ -179,9 +179,8 @@ class NotificationServiceTest {
         secondReservation.setUser(testUser); // Same user, different reservation
         secondReservation.setEvent(testEvent);
 
-        LocalDate tomorrow = LocalDate.now().plusDays(1);
-        LocalDateTime startOfTomorrow = tomorrow.atStartOfDay();
-        LocalDateTime endOfTomorrow = tomorrow.atTime(LocalTime.MAX);
+        LocalDateTime startOfTomorrow = FIXED_TOMORROW.atStartOfDay();
+        LocalDateTime endOfTomorrow = FIXED_TOMORROW.atTime(LocalTime.MAX);
 
         List<Event> eventsTomorrow = List.of(testEvent);
         List<Reservation> reservations = List.of(testReservation, secondReservation);
@@ -213,9 +212,8 @@ class NotificationServiceTest {
         secondReservation.setUser(secondUser);
         secondReservation.setEvent(testEvent);
 
-        LocalDate tomorrow = LocalDate.now().plusDays(1);
-        LocalDateTime startOfTomorrow = tomorrow.atStartOfDay();
-        LocalDateTime endOfTomorrow = tomorrow.atTime(LocalTime.MAX);
+        LocalDateTime startOfTomorrow = FIXED_TOMORROW.atStartOfDay();
+        LocalDateTime endOfTomorrow = FIXED_TOMORROW.atTime(LocalTime.MAX);
 
         List<Event> eventsTomorrow = List.of(testEvent);
         List<Reservation> reservations = List.of(testReservation, secondReservation);
@@ -243,9 +241,8 @@ class NotificationServiceTest {
         // Arrange
         testUser.setEmail(null);
 
-        LocalDate tomorrow = LocalDate.now().plusDays(1);
-        LocalDateTime startOfTomorrow = tomorrow.atStartOfDay();
-        LocalDateTime endOfTomorrow = tomorrow.atTime(LocalTime.MAX);
+        LocalDateTime startOfTomorrow = FIXED_TOMORROW.atStartOfDay();
+        LocalDateTime endOfTomorrow = FIXED_TOMORROW.atTime(LocalTime.MAX);
 
         List<Event> eventsTomorrow = List.of(testEvent);
         List<Reservation> reservations = List.of(testReservation);
@@ -264,9 +261,8 @@ class NotificationServiceTest {
     @Test
     void sendEventReminders_CalculatesCorrectDateRange() {
         // Arrange
-        LocalDate tomorrow = LocalDate.now().plusDays(1);
-        LocalDateTime expectedStart = tomorrow.atStartOfDay();
-        LocalDateTime expectedEnd = tomorrow.atTime(LocalTime.MAX);
+        LocalDateTime expectedStart = FIXED_TOMORROW.atStartOfDay();
+        LocalDateTime expectedEnd = FIXED_TOMORROW.atTime(LocalTime.MAX);
 
         when(eventService.findEventsBetweenDates(any(), any())).thenReturn(List.of());
 
@@ -280,9 +276,8 @@ class NotificationServiceTest {
     @Test
     void sendEventReminders_WithServiceException_HandlesGracefully() {
         // Arrange
-        LocalDate tomorrow = LocalDate.now().plusDays(1);
-        LocalDateTime startOfTomorrow = tomorrow.atStartOfDay();
-        LocalDateTime endOfTomorrow = tomorrow.atTime(LocalTime.MAX);
+        LocalDateTime startOfTomorrow = FIXED_TOMORROW.atStartOfDay();
+        LocalDateTime endOfTomorrow = FIXED_TOMORROW.atTime(LocalTime.MAX);
 
         when(eventService.findEventsBetweenDates(startOfTomorrow, endOfTomorrow))
                 .thenThrow(new RuntimeException("Database connection failed"));
@@ -293,5 +288,170 @@ class NotificationServiceTest {
         verify(eventService).findEventsBetweenDates(startOfTomorrow, endOfTomorrow);
         verify(reservationService, never()).findByEvent(any());
         verify(emailService, never()).sendEventReminder(any(), any(), any());
+    }
+
+    @Test
+    void sendDailyReservationCsvToManagers_WithEventsAndManagers_SendsCsvEmails() throws Exception {
+        // Arrange
+        User manager = new User();
+        manager.setEmail("manager@example.com");
+        manager.setFirstname("Manager");
+        manager.setLastname("Test");
+
+        testEvent.setManager(manager);
+
+        LocalDateTime startOfToday = FIXED_TODAY.atStartOfDay();
+        LocalDateTime endOfToday = FIXED_TODAY.atTime(LocalTime.MAX);
+
+        List<Event> eventsToday = List.of(testEvent);
+
+        when(eventService.findEventsBetweenDates(startOfToday, endOfToday)).thenReturn(eventsToday);
+
+        // Act
+        notificationService.sendDailyReservationCsvToManagers();
+
+        // Assert
+        verify(eventService).findEventsBetweenDates(startOfToday, endOfToday);
+        verify(emailService).sendEventReservationsCsvToManager(manager, testEvent);
+    }
+
+    @Test
+    void sendDailyReservationCsvToManagers_WithNoEvents_DoesNotSendEmails() throws Exception {
+        // Arrange
+        LocalDateTime startOfToday = FIXED_TODAY.atStartOfDay();
+        LocalDateTime endOfToday = FIXED_TODAY.atTime(LocalTime.MAX);
+
+        when(eventService.findEventsBetweenDates(startOfToday, endOfToday)).thenReturn(List.of());
+
+        // Act
+        notificationService.sendDailyReservationCsvToManagers();
+
+        // Assert
+        verify(eventService).findEventsBetweenDates(startOfToday, endOfToday);
+        verify(emailService, never()).sendEventReservationsCsvToManager(any(), any());
+    }
+
+    @Test
+    void sendDailyReservationCsvToManagers_WithEventButNoManager_DoesNotSendEmail()
+            throws Exception {
+        // Arrange
+        testEvent.setManager(null); // No manager assigned
+
+        LocalDateTime startOfToday = FIXED_TODAY.atStartOfDay();
+        LocalDateTime endOfToday = FIXED_TODAY.atTime(LocalTime.MAX);
+
+        List<Event> eventsToday = List.of(testEvent);
+
+        when(eventService.findEventsBetweenDates(startOfToday, endOfToday)).thenReturn(eventsToday);
+
+        // Act
+        notificationService.sendDailyReservationCsvToManagers();
+
+        // Assert
+        verify(eventService).findEventsBetweenDates(startOfToday, endOfToday);
+        verify(emailService, never()).sendEventReservationsCsvToManager(any(), any());
+    }
+
+    @Test
+    void sendDailyReservationCsvToManagers_WithMultipleEvents_ProcessesAllEvents()
+            throws Exception {
+        // Arrange
+        User manager1 = new User();
+        manager1.setEmail("manager1@example.com");
+
+        User manager2 = new User();
+        manager2.setEmail("manager2@example.com");
+
+        Event secondEvent = new Event();
+        secondEvent.setName("Second Event");
+        secondEvent.setManager(manager2);
+
+        testEvent.setManager(manager1);
+
+        LocalDateTime startOfToday = FIXED_TODAY.atStartOfDay();
+        LocalDateTime endOfToday = FIXED_TODAY.atTime(LocalTime.MAX);
+
+        List<Event> eventsToday = List.of(testEvent, secondEvent);
+
+        when(eventService.findEventsBetweenDates(startOfToday, endOfToday)).thenReturn(eventsToday);
+
+        // Act
+        notificationService.sendDailyReservationCsvToManagers();
+
+        // Assert
+        verify(eventService).findEventsBetweenDates(startOfToday, endOfToday);
+        verify(emailService).sendEventReservationsCsvToManager(manager1, testEvent);
+        verify(emailService).sendEventReservationsCsvToManager(manager2, secondEvent);
+    }
+
+    @Test
+    void sendDailyReservationCsvToManagers_WithEmailException_ContinuesProcessing()
+            throws Exception {
+        // Arrange
+        User manager1 = new User();
+        manager1.setEmail("manager1@example.com");
+
+        User manager2 = new User();
+        manager2.setEmail("manager2@example.com");
+
+        Event secondEvent = new Event();
+        secondEvent.setName("Second Event");
+        secondEvent.setManager(manager2);
+
+        testEvent.setManager(manager1);
+
+        LocalDateTime startOfToday = FIXED_TODAY.atStartOfDay();
+        LocalDateTime endOfToday = FIXED_TODAY.atTime(LocalTime.MAX);
+
+        List<Event> eventsToday = List.of(testEvent, secondEvent);
+
+        when(eventService.findEventsBetweenDates(startOfToday, endOfToday)).thenReturn(eventsToday);
+
+        // First email fails, second should still be attempted
+        doThrow(new RuntimeException("CSV generation failed"))
+                .when(emailService)
+                .sendEventReservationsCsvToManager(manager1, testEvent);
+        doNothing().when(emailService).sendEventReservationsCsvToManager(manager2, secondEvent);
+
+        // Act
+        assertDoesNotThrow(() -> notificationService.sendDailyReservationCsvToManagers());
+
+        // Assert
+        verify(emailService).sendEventReservationsCsvToManager(manager1, testEvent);
+        verify(emailService).sendEventReservationsCsvToManager(manager2, secondEvent);
+    }
+
+    @Test
+    void sendDailyReservationCsvToManagers_CalculatesCorrectDateRange() throws Exception {
+        // Arrange
+        LocalDateTime expectedStart = FIXED_TODAY.atStartOfDay();
+        LocalDateTime expectedEnd = FIXED_TODAY.atTime(LocalTime.MAX);
+
+        when(eventService.findEventsBetweenDates(any(), any())).thenReturn(List.of());
+
+        // Act
+        notificationService.sendDailyReservationCsvToManagers();
+
+        // Assert
+        verify(eventService).findEventsBetweenDates(expectedStart, expectedEnd);
+    }
+
+    @Test
+    void sendDailyReservationCsvToManagers_WithServiceException_HandlesGracefully()
+            throws Exception {
+        // Arrange
+        LocalDateTime startOfToday = FIXED_TODAY.atStartOfDay();
+        LocalDateTime endOfToday = FIXED_TODAY.atTime(LocalTime.MAX);
+
+        when(eventService.findEventsBetweenDates(startOfToday, endOfToday))
+                .thenThrow(new RuntimeException("Database connection failed"));
+
+        // Act & Assert
+        assertThrows(
+                RuntimeException.class,
+                () -> notificationService.sendDailyReservationCsvToManagers());
+
+        verify(eventService).findEventsBetweenDates(startOfToday, endOfToday);
+        verify(emailService, never()).sendEventReservationsCsvToManager(any(), any());
     }
 }

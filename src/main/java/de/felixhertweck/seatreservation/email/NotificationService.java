@@ -48,7 +48,7 @@ public class NotificationService {
 
     @Inject EmailService emailService;
 
-    @Scheduled(cron = "0 0 8 * * ?")
+    @Scheduled(cron = "0 0 9 * * ?")
     @Transactional
     public void sendEventReminders() {
         LOG.info("Starting scheduled event reminder task.");
@@ -87,5 +87,41 @@ public class NotificationService {
                     });
         }
         LOG.info("Finished scheduled event reminder task.");
+    }
+
+    @Scheduled(cron = "0 0 8 * * ?")
+    @Transactional
+    public void sendDailyReservationCsvToManagers() {
+        LOG.info("Starting scheduled CSV export task for event managers.");
+        LocalDate today = LocalDate.now();
+        LocalDateTime startOfToday = today.atStartOfDay();
+        LocalDateTime endOfToday = today.atTime(LocalTime.MAX);
+
+        List<Event> eventsToday = eventService.findEventsBetweenDates(startOfToday, endOfToday);
+        LOG.debugf("Found %d events for today.", eventsToday.size());
+
+        for (Event event : eventsToday) {
+            LOG.debugf("Processing CSV export for event: %s (ID: %d)", event.getName(), event.id);
+
+            try {
+                // Get the event manager/owner
+                User manager = event.getManager();
+                if (manager != null) {
+                    LOG.debugf(
+                            "Sending CSV export to manager: %s for event: %s",
+                            manager.getEmail(), event.getName());
+                    emailService.sendEventReservationsCsvToManager(manager, event);
+                } else {
+                    LOG.warnf("No manager found for event: %s (ID: %d)", event.getName(), event.id);
+                }
+            } catch (Exception e) {
+                LOG.errorf(
+                        e,
+                        "Error sending CSV export email for event %s: %s",
+                        event.getName(),
+                        e.getMessage());
+            }
+        }
+        LOG.info("Finished scheduled CSV export task for event managers.");
     }
 }

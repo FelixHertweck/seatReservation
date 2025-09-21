@@ -23,6 +23,27 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | `performManualCleanup_NoExpiredTokens` | Überprüft, ob keine Datensätze gelöscht werden, wenn keine abgelaufenen Token vorhanden sind. |
 | `scheduledCleanup_Success` | Überprüft, ob der geplante Bereinigungsprozess erfolgreich ausgeführt wird. |
 
+### NotificationService
+
+| Testfall | Beschreibung |
+| :--- | :--- |
+| `sendEventReminders_WithEventsAndReservations_SendsEmails` | Überprüft, dass Event-Erinnerungen erfolgreich an Benutzer mit Reservierungen für morgige Events gesendet werden. |
+| `sendEventReminders_WithNoEvents_DoesNotSendEmails` | Überprüft, dass keine E-Mails gesendet werden, wenn keine Events für morgen vorhanden sind. |
+| `sendEventReminders_WithEventsButNoReservations_DoesNotSendEmails` | Überprüft, dass keine E-Mails gesendet werden, wenn Events existieren, aber keine Reservierungen vorhanden sind. |
+| `sendEventReminders_WithMultipleEvents_ProcessesAllEvents` | Überprüft, dass alle Events für morgen verarbeitet und entsprechende Erinnerungen gesendet werden. |
+| `sendEventReminders_WithMultipleReservationsPerUser_GroupsCorrectly` | Überprüft, dass mehrere Reservierungen desselben Benutzers für ein Event korrekt gruppiert werden. |
+| `sendEventReminders_WithEmailException_ContinuesProcessing` | Überprüft, dass bei E-Mail-Fehlern die Verarbeitung für andere Benutzer fortgesetzt wird. |
+| `sendEventReminders_WithNullUserEmail_SkipsUserGracefully` | Überprüft, dass Benutzer mit null E-Mail-Adressen korrekt übersprungen werden. |
+| `sendEventReminders_CalculatesCorrectDateRange` | Überprüft, dass der korrekte Datumsbereich (morgen) für die Event-Suche verwendet wird. |
+| `sendEventReminders_WithServiceException_HandlesGracefully` | Überprüft das Verhalten bei Service-Exceptions (z.B. Datenbankfehler). |
+| `sendDailyReservationCsvToManagers_WithEventsAndManagers_SendsCsvEmails` | Überprüft, dass CSV-Export-E-Mails erfolgreich an Manager von Events gesendet werden, die heute stattfinden. |
+| `sendDailyReservationCsvToManagers_WithNoEvents_DoesNotSendEmails` | Überprüft, dass keine CSV-Export-E-Mails gesendet werden, wenn keine Events für heute vorhanden sind. |
+| `sendDailyReservationCsvToManagers_WithEventButNoManager_DoesNotSendEmail` | Überprüft, dass keine E-Mail gesendet wird, wenn ein Event keinen zugewiesenen Manager hat. |
+| `sendDailyReservationCsvToManagers_WithMultipleEvents_ProcessesAllEvents` | Überprüft, dass CSV-Exports für alle heutigen Events mit unterschiedlichen Managern gesendet werden. |
+| `sendDailyReservationCsvToManagers_WithEmailException_ContinuesProcessing` | Überprüft, dass bei E-Mail-Fehlern die Verarbeitung für andere Manager fortgesetzt wird. |
+| `sendDailyReservationCsvToManagers_CalculatesCorrectDateRange` | Überprüft, dass der korrekte Datumsbereich (heute) für die Event-Suche verwendet wird. |
+| `sendDailyReservationCsvToManagers_WithServiceException_HandlesGracefully` | Überprüft das Verhalten bei Service-Exceptions während der CSV-Export-Verarbeitung. |
+
 ## Security
 
 ### AuthService
