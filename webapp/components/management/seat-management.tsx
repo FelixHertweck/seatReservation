@@ -18,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { SeatFormModal } from "@/components/management/seat-form-modal";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
@@ -32,6 +33,7 @@ export interface SeatManagementProps {
   deleteSeat: (id: bigint) => Promise<unknown>;
   onNavigateToLocation?: (locationId: bigint) => void;
   initialFilter?: Record<string, string>;
+  isLoading?: boolean;
 }
 
 export function SeatManagement({
@@ -42,6 +44,7 @@ export function SeatManagement({
   deleteSeat,
   onNavigateToLocation,
   initialFilter = {},
+  isLoading = false,
 }: SeatManagementProps) {
   const t = useT();
 
@@ -197,57 +200,81 @@ export function SeatManagement({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedData.map((seat) => {
-                  const location = locations.find(
-                    (loc) => loc.id === seat.locationId,
-                  );
+                {isLoading
+                  ? Array.from({ length: 8 }).map((_, index) => (
+                      <TableRow key={index}>
+                        <TableCell>
+                          <Skeleton className="h-4 w-16" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-4 w-32" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-4 w-12" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-4 w-20" />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Skeleton className="h-8 w-8" />
+                            <Skeleton className="h-8 w-8" />
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  : paginatedData.map((seat) => {
+                      const location = locations.find(
+                        (loc) => loc.id === seat.locationId,
+                      );
 
-                  return (
-                    <TableRow key={seat.id?.toString()}>
-                      <TableCell className="font-medium">
-                        {seat.seatNumber}
-                      </TableCell>
-                      <TableCell>
-                        {location ? (
-                          <Button
-                            variant="link"
-                            className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
-                            onClick={() =>
-                              location.id && handleLocationClick(location.id)
-                            }
-                          >
-                            {location.name}
-                            <ExternalLink className="ml-1 h-3 w-3" />
-                          </Button>
-                        ) : (
-                          t("seatManagement.unknownLocation")
-                        )}
-                      </TableCell>
-                      <TableCell>{seat.seatRow}</TableCell>
-                      <TableCell>
-                        ({seat.xCoordinate}, {seat.yCoordinate})
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEditSeat(seat)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => handleDeleteSeat(seat)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                      return (
+                        <TableRow key={seat.id?.toString()}>
+                          <TableCell className="font-medium">
+                            {seat.seatNumber}
+                          </TableCell>
+                          <TableCell>
+                            {location ? (
+                              <Button
+                                variant="link"
+                                className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                                onClick={() =>
+                                  location.id &&
+                                  handleLocationClick(location.id)
+                                }
+                              >
+                                {location.name}
+                                <ExternalLink className="ml-1 h-3 w-3" />
+                              </Button>
+                            ) : (
+                              t("seatManagement.unknownLocation")
+                            )}
+                          </TableCell>
+                          <TableCell>{seat.seatRow}</TableCell>
+                          <TableCell>
+                            ({seat.xCoordinate}, {seat.yCoordinate})
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEditSeat(seat)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleDeleteSeat(seat)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
               </TableBody>
             </Table>
           )}

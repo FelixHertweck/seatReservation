@@ -25,6 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import { LocationFormModal } from "@/components/management/location-form-modal";
 import { LocationImportModal } from "@/components/management/location-import-modal";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
@@ -57,6 +58,7 @@ export interface LocationManagementProps {
   ) => Promise<EventLocationResponseDto>;
   onNavigateToSeats?: (locationId: bigint) => void;
   initialFilter?: Record<string, string>;
+  isLoading?: boolean;
 }
 
 export function LocationManagement({
@@ -68,6 +70,7 @@ export function LocationManagement({
   importSeats,
   onNavigateToSeats,
   initialFilter = {},
+  isLoading = false,
 }: LocationManagementProps) {
   const t = useT();
 
@@ -257,79 +260,111 @@ export function LocationManagement({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {paginatedData.map((location) => {
-                    const seatCount = location.seats?.length || 0;
-                    const markersDisplay =
-                      location.markers && location.markers.length > 0
-                        ? location.markers
-                            .map(
-                              (marker) =>
-                                `${marker.label} (${marker.xCoordinate}, ${marker.yCoordinate})`,
-                            )
-                            .join(", ")
-                        : "-";
+                  {isLoading
+                    ? Array.from({ length: 8 }).map((_, index) => (
+                        <TableRow key={index}>
+                          <TableCell>
+                            <Skeleton className="h-4 w-32" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="h-4 w-48" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="h-4 w-16" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="h-4 w-24" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="h-4 w-40" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="h-4 w-20" />
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Skeleton className="h-8 w-8" />
+                              <Skeleton className="h-8 w-8" />
+                              <Skeleton className="h-8 w-8" />
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    : paginatedData.map((location) => {
+                        const seatCount = location.seats?.length || 0;
+                        const markersDisplay =
+                          location.markers && location.markers.length > 0
+                            ? location.markers
+                                .map(
+                                  (marker) =>
+                                    `${marker.label} (${marker.xCoordinate}, ${marker.yCoordinate})`,
+                                )
+                                .join(", ")
+                            : "-";
 
-                    return (
-                      <TableRow key={location.id?.toString()}>
-                        <TableCell className="font-medium">
-                          {location.name}
-                        </TableCell>
-                        <TableCell>{location.address}</TableCell>
-                        <TableCell>{location.capacity}</TableCell>
-                        <TableCell>{location.manager?.username}</TableCell>
-                        <TableCell
-                          className="text-sm max-w-48 truncate"
-                          title={markersDisplay}
-                        >
-                          {markersDisplay}
-                        </TableCell>
-                        <TableCell>
-                          {seatCount > 0 ? (
-                            <Button
-                              variant="link"
-                              className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
-                              onClick={() =>
-                                location.id && handleSeatsClick(location.id)
-                              }
+                        return (
+                          <TableRow key={location.id?.toString()}>
+                            <TableCell className="font-medium">
+                              {location.name}
+                            </TableCell>
+                            <TableCell>{location.address}</TableCell>
+                            <TableCell>{location.capacity}</TableCell>
+                            <TableCell>{location.manager?.username}</TableCell>
+                            <TableCell
+                              className="text-sm max-w-48 truncate"
+                              title={markersDisplay}
                             >
-                              {t("locationManagement.seatsCount", {
-                                count: seatCount,
-                              })}
-                              <ExternalLink className="ml-1 h-3 w-3" />
-                            </Button>
-                          ) : (
-                            t("locationManagement.noSeats")
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleExportLocation(location)}
-                              title={t("locationManagement.exportAsJsonTitle")}
-                            >
-                              <Download className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEditLocation(location)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => handleDeleteLocation(location)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
+                              {markersDisplay}
+                            </TableCell>
+                            <TableCell>
+                              {seatCount > 0 ? (
+                                <Button
+                                  variant="link"
+                                  className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                                  onClick={() =>
+                                    location.id && handleSeatsClick(location.id)
+                                  }
+                                >
+                                  {t("locationManagement.seatsCount", {
+                                    count: seatCount,
+                                  })}
+                                  <ExternalLink className="ml-1 h-3 w-3" />
+                                </Button>
+                              ) : (
+                                t("locationManagement.noSeats")
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleExportLocation(location)}
+                                  title={t(
+                                    "locationManagement.exportAsJsonTitle",
+                                  )}
+                                >
+                                  <Download className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleEditLocation(location)}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => handleDeleteLocation(location)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                 </TableBody>
               </Table>
             )}

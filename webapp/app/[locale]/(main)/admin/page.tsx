@@ -2,8 +2,11 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserManagement } from "@/components/admin/user-management";
+import {
+  UserTableSkeleton,
+  UserExportSkeleton,
+} from "@/components/admin/user-table-skeleton";
 import { useAdmin } from "@/hooks/use-admin";
-import Loading from "./loading";
 import { UserExport } from "@/components/admin/user-export";
 import { useT } from "@/lib/i18n/hooks";
 
@@ -11,10 +14,6 @@ export default function AdminPage() {
   const t = useT();
 
   const adminData = useAdmin();
-
-  if (adminData.isLoading) {
-    return <Loading />;
-  }
 
   return (
     <div className="container mx-auto p-6">
@@ -38,11 +37,15 @@ export default function AdminPage() {
         </TabsList>
 
         <TabsContent value="users">
-          <UserManagement {...adminData} />
+          {adminData.isLoading ? (
+            <UserTableSkeleton showImportButton={true} />
+          ) : (
+            <UserManagement {...adminData} />
+          )}
         </TabsContent>
 
         <TabsContent value="export">
-          <UserExport />
+          {adminData.isLoading ? <UserExportSkeleton /> : <UserExport />}
         </TabsContent>
       </Tabs>
     </div>

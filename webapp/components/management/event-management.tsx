@@ -18,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { EventFormModal } from "@/components/management/event-form-modal";
 import type {
@@ -39,6 +40,7 @@ export interface EventManagementProps {
   deleteEvent: (id: bigint) => Promise<void>;
   onNavigateToLocation?: (locationId: bigint) => void;
   initialFilter?: Record<string, string>;
+  isLoading?: boolean;
 }
 
 export function EventManagement({
@@ -48,6 +50,7 @@ export function EventManagement({
   updateEvent,
   deleteEvent,
   onNavigateToLocation,
+  isLoading = false,
   initialFilter = {},
 }: EventManagementProps) {
   const t = useT();
@@ -205,68 +208,98 @@ export function EventManagement({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedData.map((event) => {
-                  const location = event.eventLocation;
-                  return (
-                    <TableRow key={event.id?.toString()}>
-                      <TableCell className="font-medium">
-                        {event.name}
-                      </TableCell>
-                      <TableCell className="max-w-xs truncate">
-                        {event.description}
-                      </TableCell>
-                      <TableCell>
-                        {event.startTime
-                          ? new Date(event.startTime).toLocaleString()
-                          : t("eventManagement.tbd")}
-                      </TableCell>
-                      <TableCell>
-                        {event.endTime
-                          ? new Date(event.endTime).toLocaleString()
-                          : t("eventManagement.tbd")}
-                      </TableCell>
-                      <TableCell>
-                        {event.bookingDeadline
-                          ? new Date(event.bookingDeadline).toLocaleString()
-                          : t("eventManagement.tbd")}
-                      </TableCell>
-                      <TableCell>
-                        {location ? (
-                          <Button
-                            variant="link"
-                            className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
-                            onClick={() =>
-                              location.id && handleLocationClick(location.id)
-                            }
-                          >
-                            {location.name}
-                            <ExternalLink className="ml-1 h-3 w-3" />
-                          </Button>
-                        ) : (
-                          t("eventManagement.noLocation")
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEditEvent(event)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => handleDeleteEvent(event)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                {isLoading
+                  ? Array.from({ length: 8 }).map((_, index) => (
+                      <TableRow key={index}>
+                        <TableCell>
+                          <Skeleton className="h-4 w-32" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-4 w-48" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-4 w-36" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-4 w-36" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-4 w-36" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-4 w-24" />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Skeleton className="h-8 w-8" />
+                            <Skeleton className="h-8 w-8" />
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  : paginatedData.map((event) => {
+                      const location = event.eventLocation;
+                      return (
+                        <TableRow key={event.id?.toString()}>
+                          <TableCell className="font-medium">
+                            {event.name}
+                          </TableCell>
+                          <TableCell className="max-w-xs truncate">
+                            {event.description}
+                          </TableCell>
+                          <TableCell>
+                            {event.startTime
+                              ? new Date(event.startTime).toLocaleString()
+                              : t("eventManagement.tbd")}
+                          </TableCell>
+                          <TableCell>
+                            {event.endTime
+                              ? new Date(event.endTime).toLocaleString()
+                              : t("eventManagement.tbd")}
+                          </TableCell>
+                          <TableCell>
+                            {event.bookingDeadline
+                              ? new Date(event.bookingDeadline).toLocaleString()
+                              : t("eventManagement.tbd")}
+                          </TableCell>
+                          <TableCell>
+                            {location ? (
+                              <Button
+                                variant="link"
+                                className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                                onClick={() =>
+                                  location.id &&
+                                  handleLocationClick(location.id)
+                                }
+                              >
+                                {location.name}
+                                <ExternalLink className="ml-1 h-3 w-3" />
+                              </Button>
+                            ) : (
+                              t("eventManagement.noLocation")
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEditEvent(event)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleDeleteEvent(event)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
               </TableBody>
             </Table>
           )}
