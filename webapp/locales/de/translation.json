@@ -239,9 +239,6 @@
       }
     }
   },
-  "manager.reservationAllowance.create.success.description": "Das Reservierungskontingent wurde erfolgreich erstellt.",
-  "manager.reservationAllowance.update.success.description": "Das Reservierungskontingent wurde erfolgreich aktualisiert.",
-  "manager.reservationAllowance.delete.success.description": "Das Reservierungskontingent wurde erfolgreich gelöscht.",
   "profilePage": {
     "update": {
       "success": {
@@ -278,7 +275,8 @@
     "confirmPasswordLabel": "Passwort bestätigen",
     "confirmPasswordPlaceholder": "Bestätigen Sie Ihr neues Passwort",
     "passwordTooShort": "Passwort muss mindestens 8 Zeichen lang sein",
-    "passwordsDoNotMatch": "Die Passwörter stimmen nicht überein"
+    "passwordsDoNotMatch": "Die Passwörter stimmen nicht überein",
+    "verifyEmailButton": "Verifikationscode eingeben"
   },
   "startPage": {
     "eventManagerTitle": "Sitzplatz Reservierung",
@@ -357,6 +355,27 @@
     "userDataValidationError": "Jeder Benutzer muss username, password, firstname, lastname und roles haben",
     "invalidRoleError": "Ungültige Rolle gefunden. Verfügbare Rollen sind: ADMIN, MANAGER, USER",
     "invalidJsonOrDataStructureError": "Ungültiges JSON-Format oder Datenstruktur"
+  },
+  "emailVerification": {
+    "title": "E-Mail-Verifizierung",
+    "enterCode": "Geben Sie den 6-stelligen Verifizierungscode ein, der an",
+    "codeLabel": "Verifizierungscode",
+    "codeHint": "Geben Sie den 6-stelligen Code aus Ihrer E-Mail ein",
+    "verifying": "Verifiziere...",
+    "verifyButton": "E-Mail verifizieren",
+    "invalidCodeLength": "Der Verifizierungscode muss 6 Stellen haben",
+    "invalidCode": "Ungültiger Verifizierungscode. Bitte versuchen Sie es erneut.",
+    "verificationFailed": "Verifizierung fehlgeschlagen. Bitte versuchen Sie es später erneut.",
+    "resendCode": "Code erneut senden",
+    "backToProfile": "Zurück zum Profil",
+    "alreadyVerified": "E-Mail bereits verifiziert",
+    "continueButton": "Fortfahren",
+    "emailAlreadyVerifiedInfo": "Sie können fortfahren, da Ihre E-Mail bereits verifiziert wurde.",
+    "confirmationEmailResentTitle": "Bestätigungs-E-Mail erneut gesendet",
+    "confirmationEmailResentDescription": "Eine neue Bestätigungs-E-Mail wurde an Ihre Adresse gesendet.",
+    "noEmailTitle": "Keine E-Mail-Adresse",
+    "noEmailDescription": "Sie müssen zuerst eine E-Mail-Adresse in Ihrem Profil hinterlegen, bevor Sie sie verifizieren können.",
+    "goToProfile": "Zum Profil"
   },
   "emailVerificationPrompt": {
     "title": "E-Mail-Verifizierung erforderlich",

@@ -153,18 +153,17 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | `updateUserProfile_Success_WithDuplicateEmail` | Aktualisiert die E-Mail-Adresse eines Benutzerprofils auf eine bereits existierende E-Mail-Adresse. Überprüft, ob die Aktualisierung erfolgreich ist und keine `DuplicateUserException` geworfen wird. |
 | `updateUserProfile_InternalServerErrorException_EmailSendFailure` | Simuliert einen Fehler beim Senden der E-Mail-Bestätigung nach einer E-Mail-Änderung. Erwartet `InternalServerErrorException`. |
 
-### verifyEmail(Long id, String token)
+### verifyEmailWithCode(String verificationCode)
 
 | Testfall | Beschreibung |
 | :--- | :--- |
-| `verifyEmail_Success` | Verifiziert erfolgreich eine E-Mail-Adresse mit einer gültigen ID und einem gültigen Token. Überprüft, ob der E-Mail-Verifizierungsdatensatz gelöscht und der Benutzer als "E-Mail verifiziert" markiert wird. |
-| `verifyEmail_BadRequestException_NullId` | Versucht, die E-Mail mit einer `null` ID zu verifizieren. Erwartet `BadRequestException`. |
-| `verifyEmail_BadRequestException_NullToken` | Versucht, die E-Mail mit einem `null` Token zu verifizieren. Erwartet `BadRequestException`. |
-| `verifyEmail_BadRequestException_EmptyToken` | Versucht, die E-Mail mit einem leeren Token zu verifizieren. Erwartet `BadRequestException`. |
-| `verifyEmail_NotFoundException_TokenNotFound` | Versucht, die E-Mail mit einer ID zu verifizieren, für die kein Verifizierungsdatensatz existiert. Erwartet `NotFoundException`. |
-| `verifyEmail_BadRequestException_InvalidToken` | Versucht, die E-Mail mit einem ungültigen Token zu verifizieren (Token stimmt nicht überein). Erwartet `BadRequestException`. |
-| `verifyEmail_TokenExpiredException` | Versucht, die E-Mail mit einem abgelaufenen Token zu verifizieren. Erwartet `TokenExpiredException`. |
-| `verifyEmail_FailsWithUsedToken` | Stellt sicher, dass ein bereits verwendeter E-Mail-Verifizierungstoken nicht erneut verwendet werden kann. |
+| `verifyEmailWithCode_Success` | Verifiziert erfolgreich eine E-Mail-Adresse mit einem gültigen 6-stelligen Verifizierungscode. Überprüft, ob der E-Mail-Verifizierungsdatensatz gelöscht und der Benutzer als "E-Mail verifiziert" markiert wird. |
+| `verifyEmailWithCode_BadRequestException_NullCode` | Versucht, die E-Mail mit einem `null` Verifizierungscode zu verifizieren. Erwartet `IllegalArgumentException`. |
+| `verifyEmailWithCode_BadRequestException_EmptyCode` | Versucht, die E-Mail mit einem leeren Verifizierungscode zu verifizieren. Erwartet `IllegalArgumentException`. |
+| `verifyEmailWithCode_BadRequestException_InvalidFormat` | Versucht, die E-Mail mit einem Verifizierungscode zu verifizieren, der nicht dem 6-stelligen Zahlenformat entspricht. Erwartet `IllegalArgumentException`. |
+| `verifyEmailWithCode_BadRequestException_CodeNotFound` | Versucht, die E-Mail mit einem Verifizierungscode zu verifizieren, für den kein Verifizierungsdatensatz existiert. Erwartet `IllegalArgumentException`. |
+| `verifyEmailWithCode_TokenExpiredException` | Versucht, die E-Mail mit einem abgelaufenen Verifizierungscode zu verifizieren. Erwartet `TokenExpiredException`. |
+| `verifyEmailWithCode_FailsWithUsedCode` | Stellt sicher, dass ein bereits verwendeter E-Mail-Verifizierungscode nicht erneut verwendet werden kann. |
 
 ## EventService
 

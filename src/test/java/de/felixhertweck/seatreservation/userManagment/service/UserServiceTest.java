@@ -1150,169 +1150,6 @@ public class UserServiceTest {
     }
 
     @Test
-    void verifyEmail_Success() throws TokenExpiredException {
-        User user =
-                new User(
-                        "testuser",
-                        "test@example.com",
-                        false,
-                        "hash",
-                        "salt",
-                        "John",
-                        "Doe",
-                        Collections.singleton(Roles.USER),
-                        Collections.emptySet());
-        user.id = 1L;
-        EmailVerification emailVerification =
-                new EmailVerification(user, "validtoken", LocalDateTime.now().plusMinutes(10));
-        emailVerification.id = 100L;
-
-        when(emailVerificationRepository.findByIdOptional(100L))
-                .thenReturn(Optional.of(emailVerification));
-        when(emailVerificationRepository.findById(100L))
-                .thenReturn(emailVerification); // Mock findById
-        when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(user));
-        when(userRepository.findById(1L)).thenReturn(user); // Mock findById
-
-        userService.verifyEmail(100L, "validtoken");
-
-        assertTrue(user.isEmailVerified());
-        verify(userRepository, times(1)).persist(user);
-        verify(emailVerificationRepository, times(1)).deleteById(100L);
-    }
-
-    @Test
-    void verifyEmail_BadRequestException_NullId() {
-        assertThrows(IllegalArgumentException.class, () -> userService.verifyEmail(null, "token"));
-        verify(userRepository, never()).persist(any(User.class));
-        verify(emailVerificationRepository, never()).delete(any(EmailVerification.class));
-    }
-
-    @Test
-    void verifyEmail_BadRequestException_NullToken() {
-        assertThrows(IllegalArgumentException.class, () -> userService.verifyEmail(1L, null));
-        verify(userRepository, never()).persist(any(User.class));
-        verify(emailVerificationRepository, never()).delete(any(EmailVerification.class));
-    }
-
-    @Test
-    void verifyEmail_BadRequestException_EmptyToken() {
-        assertThrows(IllegalArgumentException.class, () -> userService.verifyEmail(1L, ""));
-        assertThrows(IllegalArgumentException.class, () -> userService.verifyEmail(1L, "   "));
-        verify(userRepository, never()).persist(any(User.class));
-        verify(emailVerificationRepository, never()).delete(any(EmailVerification.class));
-    }
-
-    @Test
-    void verifyEmail_NotFoundException_TokenNotFound() {
-        when(emailVerificationRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
-        when(emailVerificationRepository.findById(anyLong())).thenReturn(null); // Mock findById
-
-        assertThrows(IllegalArgumentException.class, () -> userService.verifyEmail(1L, "token"));
-        verify(userRepository, never()).persist(any(User.class));
-        verify(emailVerificationRepository, never()).delete(any(EmailVerification.class));
-    }
-
-    @Test
-    void verifyEmail_BadRequestException_InvalidToken() {
-        User user =
-                new User(
-                        "testuser",
-                        "test@example.com",
-                        false,
-                        "hash",
-                        "salt",
-                        "John",
-                        "Doe",
-                        Collections.singleton(Roles.USER),
-                        Collections.emptySet());
-        user.id = 1L;
-        EmailVerification emailVerification =
-                new EmailVerification(user, "correcttoken", LocalDateTime.now().plusMinutes(10));
-        emailVerification.id = 100L;
-
-        when(emailVerificationRepository.findByIdOptional(100L))
-                .thenReturn(Optional.of(emailVerification));
-        when(emailVerificationRepository.findById(100L))
-                .thenReturn(emailVerification); // Mock findById
-        when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(user));
-        when(userRepository.findById(1L)).thenReturn(user); // Mock findById
-
-        assertThrows(
-                IllegalArgumentException.class, () -> userService.verifyEmail(100L, "wrongtoken"));
-        assertFalse(user.isEmailVerified());
-        verify(userRepository, never()).persist(any(User.class));
-        verify(emailVerificationRepository, never()).delete(any(EmailVerification.class));
-    }
-
-    @Test
-    void verifyEmail_TokenExpiredException() throws TokenExpiredException {
-        User user =
-                new User(
-                        "testuser",
-                        "test@example.com",
-                        false,
-                        "hash",
-                        "salt",
-                        "John",
-                        "Doe",
-                        Collections.singleton(Roles.USER),
-                        Collections.emptySet());
-        user.id = 1L;
-        EmailVerification emailVerification =
-                new EmailVerification(
-                        user, "validtoken", LocalDateTime.now().minusMinutes(10)); // Expired token
-        emailVerification.id = 100L;
-
-        when(emailVerificationRepository.findByIdOptional(100L))
-                .thenReturn(Optional.of(emailVerification));
-        when(emailVerificationRepository.findById(100L))
-                .thenReturn(emailVerification); // Mock findById
-        when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(user));
-        when(userRepository.findById(1L)).thenReturn(user); // Mock findById
-
-        assertThrows(
-                TokenExpiredException.class, () -> userService.verifyEmail(100L, "validtoken"));
-        assertFalse(user.isEmailVerified());
-        verify(userRepository, never()).persist(any(User.class));
-        verify(emailVerificationRepository, never()).delete(any(EmailVerification.class));
-    }
-
-    @Test
-    void verifyEmail_FailsWithUsedToken() {
-        User user =
-                new User(
-                        "testuser",
-                        "test@example.com",
-                        false,
-                        "hash",
-                        "salt",
-                        "John",
-                        "Doe",
-                        Collections.singleton(Roles.USER),
-                        Collections.emptySet());
-        user.id = 1L;
-        EmailVerification emailVerification =
-                new EmailVerification(user, "validtoken", LocalDateTime.now().plusMinutes(10));
-        emailVerification.id = 100L;
-
-        when(emailVerificationRepository.findByIdOptional(100L))
-                .thenReturn(Optional.of(emailVerification));
-        when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(user));
-
-        // First verification is successful
-        assertDoesNotThrow(() -> userService.verifyEmail(100L, "validtoken"));
-        verify(emailVerificationRepository).deleteById(100L);
-
-        // Now, mock the repository to reflect the deletion
-        when(emailVerificationRepository.findByIdOptional(100L)).thenReturn(Optional.empty());
-
-        // Second attempt should throw an exception because the token is no longer found
-        assertThrows(
-                IllegalArgumentException.class, () -> userService.verifyEmail(100L, "validtoken"));
-    }
-
-    @Test
     void importUsers_Success() throws InvalidUserException, DuplicateUserException, IOException {
         Set<AdminUserCreationDto> dtos = new HashSet<>();
         AdminUserCreationDto dto1 =
@@ -1475,5 +1312,128 @@ public class UserServiceTest {
         // transaction rolls back
         verify(emailService, times(1))
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
+    }
+
+    // Tests for new verification code system
+    @Test
+    void verifyEmailWithCode_Success() throws TokenExpiredException {
+        User user =
+                new User(
+                        "testuser",
+                        "test@example.com",
+                        false,
+                        "hash",
+                        "salt",
+                        "John",
+                        "Doe",
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
+        user.id = 1L;
+        EmailVerification emailVerification =
+                new EmailVerification(user, "123456", LocalDateTime.now().plusMinutes(10));
+        emailVerification.id = 100L;
+
+        when(emailVerificationRepository.findByToken("123456")).thenReturn(emailVerification);
+
+        String result = userService.verifyEmailWithCode("123456");
+
+        assertEquals("test@example.com", result);
+        assertTrue(user.isEmailVerified());
+        verify(emailVerificationRepository, times(1)).findByToken("123456");
+        verify(emailVerificationRepository, times(1)).deleteById(100L);
+        verify(userRepository, times(1)).persist(user);
+    }
+
+    @Test
+    void verifyEmailWithCode_BadRequestException_NullCode() {
+        assertThrows(IllegalArgumentException.class, () -> userService.verifyEmailWithCode(null));
+    }
+
+    @Test
+    void verifyEmailWithCode_BadRequestException_EmptyCode() {
+        assertThrows(IllegalArgumentException.class, () -> userService.verifyEmailWithCode(""));
+    }
+
+    @Test
+    void verifyEmailWithCode_BadRequestException_InvalidFormat() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> userService.verifyEmailWithCode("12345")); // 5 digits instead of 6
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> userService.verifyEmailWithCode("abcdef")); // letters instead of digits
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> userService.verifyEmailWithCode("1234567")); // 7 digits instead of 6
+    }
+
+    @Test
+    void verifyEmailWithCode_BadRequestException_CodeNotFound() {
+        when(emailVerificationRepository.findByToken("123456")).thenReturn(null);
+
+        assertThrows(
+                IllegalArgumentException.class, () -> userService.verifyEmailWithCode("123456"));
+    }
+
+    @Test
+    void verifyEmailWithCode_TokenExpiredException() {
+        User user =
+                new User(
+                        "testuser",
+                        "test@example.com",
+                        false,
+                        "hash",
+                        "salt",
+                        "John",
+                        "Doe",
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
+        user.id = 1L;
+        EmailVerification emailVerification =
+                new EmailVerification(
+                        user, "123456", LocalDateTime.now().minusMinutes(10)); // expired
+        emailVerification.id = 100L;
+
+        when(emailVerificationRepository.findByToken("123456")).thenReturn(emailVerification);
+
+        assertThrows(TokenExpiredException.class, () -> userService.verifyEmailWithCode("123456"));
+
+        // Ensure user is not marked as verified
+        assertFalse(user.isEmailVerified());
+        verify(userRepository, never()).persist(any(User.class));
+        verify(emailVerificationRepository, never()).deleteById(any(Long.class));
+    }
+
+    @Test
+    void verifyEmailWithCode_FailsWithUsedCode() {
+        User user =
+                new User(
+                        "testuser",
+                        "test@example.com",
+                        false,
+                        "hash",
+                        "salt",
+                        "John",
+                        "Doe",
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
+        user.id = 1L;
+        EmailVerification emailVerification =
+                new EmailVerification(user, "123456", LocalDateTime.now().plusMinutes(10));
+        emailVerification.id = 100L;
+
+        when(emailVerificationRepository.findByToken("123456"))
+                .thenReturn(emailVerification)
+                .thenReturn(null); // Second call returns null (code is deleted)
+
+        // First verification is successful
+        assertDoesNotThrow(() -> userService.verifyEmailWithCode("123456"));
+        verify(emailVerificationRepository).deleteById(100L);
+
+        // Second verification should fail (code already used/deleted)
+        assertThrows(
+                IllegalArgumentException.class, () -> userService.verifyEmailWithCode("123456"));
     }
 }

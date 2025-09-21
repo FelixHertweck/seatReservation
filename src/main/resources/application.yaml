@@ -24,13 +24,7 @@ email:
   backend-base-url: http://localhost:8080
   verification:
     expiration:
-      minutes: 120
-    cleanup:
-      # DEPRECATED: Cleanup is now handled automatically at database level using PostgreSQL triggers
-      # Set to false to disable the deprecated scheduled cleanup service
-      enabled: false
-      batch-size: 100
-      interval: 10m
+      minutes: 30
 
 
   header:
@@ -111,16 +105,28 @@ email:
                 </div>
                 <div class="content">
                     <p>Hello {userName},</p>
-                    <p>Thank you for registering with our Seat Reservation System. To complete your registration and verify your email address, please click the button below:</p>
+                    <p>Thank you for registering with our Seat Reservation System. To complete your registration and verify your email address, please enter the following verification code in your browser:</p>
                     
-                    <div style="text-align: center;">
-                        <a href="{confirmationLink}" class="button">Confirm Email Address</a>
+                    <div style="text-align: center; margin: 40px 0;">
+                        <p style="font-size: 18px; font-weight: bold; color: #2c3e50; margin-bottom: 15px;">Your Verification Code:</p>
+                        <div style="font-size: 48px; font-weight: bold; color: #ffffff; background: linear-gradient(135deg, #3498db, #2980b9); padding: 25px 35px; border-radius: 15px; letter-spacing: 12px; display: inline-block; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); border: 3px solid #2c3e50;">
+                            {verificationCode}
+                        </div>
+                        <p style="font-size: 14px; color: #7f8c8d; margin-top: 15px; font-style: italic;">Copy and paste this code into the verification field</p>
                     </div>
                     
-                    <p>If the button doesn't work, you can also copy and paste the following link into your browser:</p>
-                    <p style="word-break: break-all;">{confirmationLink}</p>
+                    <p>Please enter this code on the verification page to confirm your email address.</p>
                     
-                    <p>This link will expire in 24 hours.</p>
+                    <div style="text-align: center; margin: 30px 0;">
+                        <p style="font-size: 16px; color: #2c3e50; margin-bottom: 15px;">Or click the button below to verify automatically:</p>
+                        <a href="{verificationLink}" class="button" style="display: inline-block; background-color: #27ae60; color: white !important; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">✓ Verify Email Address</a>
+                        <p style="font-size: 12px; color: #7f8c8d; margin-top: 10px;">This link will also expire at {expirationTime}.</p>
+                    </div>
+                    
+                    <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 15px; margin: 25px 0; color: #856404;">
+                        <p style="margin: 0; font-weight: bold;">Important:</p>
+                        <p style="margin: 5px 0 0 0;">This verification code will expire at {expirationTime}.</p>
+                    </div>
                     
                     <p>If you did not create an account, you can safely ignore this email.</p>
                 </div>

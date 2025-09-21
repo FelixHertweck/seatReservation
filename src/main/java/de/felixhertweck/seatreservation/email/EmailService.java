@@ -34,8 +34,8 @@ import de.felixhertweck.seatreservation.model.entity.*;
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
-import de.felixhertweck.seatreservation.utils.RandomUUIDString;
 import de.felixhertweck.seatreservation.utils.SvgRenderer;
+import de.felixhertweck.seatreservation.utils.VerificationCodeGenerator;
 import io.quarkus.logging.Log;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
@@ -125,16 +125,22 @@ public class EmailService {
         LOG.infof("Attempting to send email confirmation to user: %s", user.getEmail());
         LOG.debugf("User ID: %d, Username: %s", user.id, user.getUsername());
 
-        String confirmationLink =
-                generateConfirmationLink(emailVerification.id, emailVerification.getToken());
-        LOG.debugf("Confirmation link generated: %s", confirmationLink);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
         String htmlContent = emailContentEmailConfirmation;
 
         // Replace placeholders with actual values
         htmlContent =
                 htmlContent.replace("{userName}", user.getFirstname() + " " + user.getLastname());
-        htmlContent = htmlContent.replace("{confirmationLink}", confirmationLink);
+        htmlContent = htmlContent.replace("{verificationCode}", emailVerification.getToken());
+        htmlContent =
+                htmlContent.replace(
+                        "{verificationLink}",
+                        generateVerificationLink(emailVerification.getToken()));
+        htmlContent =
+                htmlContent.replace(
+                        "{expirationTime}",
+                        emailVerification.getExpirationTime().format(formatter));
         htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
         LOG.debug("Placeholders replaced in email template.");
 
@@ -164,13 +170,14 @@ public class EmailService {
      */
     public EmailVerification createEmailVerification(User user) {
         LOG.debugf("Creating new email verification for user ID: %d", user.id);
-        String token = RandomUUIDString.generate();
+        String verificationCode = VerificationCodeGenerator.generate();
         LocalDateTime expirationTime = LocalDateTime.now().plusMinutes(expirationMinutes);
-        EmailVerification emailVerification = new EmailVerification(user, token, expirationTime);
+        EmailVerification emailVerification =
+                new EmailVerification(user, verificationCode, expirationTime);
         emailVerificationRepository.persist(emailVerification);
         LOG.infof(
-                "Email verification entry persisted for user ID %d with ID: %d",
-                user.id, emailVerification.id);
+                "Email verification entry persisted for user ID %d with verification code",
+                user.id);
         return emailVerification;
     }
 
@@ -190,12 +197,18 @@ public class EmailService {
         return emailVerification;
     }
 
-    private String generateConfirmationLink(Long id, String token) {
-        return backendBaseUrl.trim() + "/api/user/confirm-email" + "?id=" + id + "&token=" + token;
-    }
-
     private String generateEventLink(Long eventId) {
         return frontendBaseUrl.trim() + "/events?id=" + eventId;
+    }
+
+    /**
+     * Generates a verification link for email confirmation.
+     *
+     * @param verificationCode The verification code to include in the link.
+     * @return The complete verification link.
+     */
+    private String generateVerificationLink(String verificationCode) {
+        return frontendBaseUrl.trim() + "/verify?code=" + verificationCode;
     }
 
     /**

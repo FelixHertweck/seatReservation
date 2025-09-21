@@ -20,11 +20,16 @@
 package de.felixhertweck.seatreservation.userManagment.resource;
 
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.*;
 
+import de.felixhertweck.seatreservation.userManagment.dto.ErrorResponseDto;
+import de.felixhertweck.seatreservation.userManagment.dto.VerifyEmailCodeRequestDto;
+import de.felixhertweck.seatreservation.userManagment.dto.VerifyEmailCodeResponseDto;
+import de.felixhertweck.seatreservation.userManagment.exceptions.TokenExpiredException;
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -45,61 +50,6 @@ public class EmailConfirmationResource {
 
     @ConfigProperty(name = "email.frontend-base-url", defaultValue = "")
     String frontendBaseUrl;
-
-    /**
-     * Confirms a user's email address using the provided id and token.
-     *
-     * @param id the confirmation ID
-     * @param token the confirmation token
-     * @return a response indicating success or failure
-     */
-    @GET
-    @Path("/confirm-email")
-    @Produces(MediaType.TEXT_HTML)
-    @Operation(
-            summary = "Confirm email address",
-            description = "Confirms a user's email address using the provided token")
-    @APIResponse(responseCode = "200", description = "Email confirmed successfully")
-    @APIResponse(responseCode = "400", description = "Invalid token")
-    @APIResponse(responseCode = "401", description = "Unauthorized")
-    @APIResponse(responseCode = "404", description = "Token not found")
-    @APIResponse(responseCode = "410", description = "Token expired")
-    public Response confirmEmail(@QueryParam("id") Long id, @QueryParam("token") String token) {
-        String email;
-        try {
-            LOG.debugf("Received GET request to /api/user/confirm-email with ID: %d", id);
-            email = userService.verifyEmail(id, token);
-            LOG.infof("Email for ID %d confirmed successfully: %s", id, email);
-            return Response.ok(getSuccessHtml(email)).build();
-        } catch (IllegalArgumentException e) {
-            LOG.warnf(
-                    e,
-                    "Email confirmation failed for ID %d due to invalid argument: %s",
-                    id,
-                    e.getMessage());
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(getErrorHtml(e.getMessage()))
-                    .build();
-        } catch (NotFoundException e) {
-            LOG.warnf(
-                    e,
-                    "Email confirmation failed for ID %d: Token not found. Message: %s",
-                    id,
-                    e.getMessage());
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity(getErrorHtml(e.getMessage()))
-                    .build();
-        } catch (Exception e) {
-            LOG.errorf(
-                    e,
-                    "Unexpected error during email confirmation for ID %d: %s",
-                    id,
-                    e.getMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(getErrorHtml("Internal server error"))
-                    .build();
-        }
-    }
 
     /**
      * Resends the email confirmation for the authenticated user and extends the token's lifetime.
@@ -133,7 +83,7 @@ public class EmailConfirmationResource {
                     username,
                     e.getMessage());
             return Response.status(Response.Status.NOT_FOUND)
-                    .entity(getErrorHtml(e.getMessage()))
+                    .entity(new ErrorResponseDto(e.getMessage()))
                     .build();
         } catch (Exception e) {
             LOG.errorf(
@@ -142,147 +92,51 @@ public class EmailConfirmationResource {
                     username,
                     e.getMessage());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(getErrorHtml("Internal server error"))
+                    .entity(new ErrorResponseDto("Internal server error"))
                     .build();
         }
     }
 
     /**
-     * Returns an HTML page with a success message.
+     * Verifies a user's email address using a 6-digit verification code.
      *
-     * @param email the confirmed email address
-     * @return an HTML page
+     * @param request the verification code request
+     * @return a response indicating success or failure
      */
-    private String getSuccessHtml(String email) {
-        return "<!DOCTYPE html>\n"
-                + "<html lang=\"en\">\n"
-                + "<head>\n"
-                + "    <meta charset=\"UTF-8\">\n"
-                + "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
-                + "    <title>Email Confirmed</title>\n"
-                + "    <style>\n"
-                + "        body {\n"
-                + "            font-family: Arial, sans-serif;\n"
-                + "            line-height: 1.6;\n"
-                + "            color: #333;\n"
-                + "            max-width: 600px;\n"
-                + "            margin: 0 auto;\n"
-                + "            padding: 20px;\n"
-                + "            text-align: center;\n"
-                + "        }\n"
-                + "        .container {\n"
-                + "            background-color: #f9f9f9;\n"
-                + "            border-radius: 8px;\n"
-                + "            padding: 30px;\n"
-                + "            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);\n"
-                + "        }\n"
-                + "        h1 {\n"
-                + "            color: #2c3e50;\n"
-                + "            margin-bottom: 20px;\n"
-                + "        }\n"
-                + "        .success-icon {\n"
-                + "            color: #2ecc71;\n"
-                + "            font-size: 48px;\n"
-                + "            margin-bottom: 20px;\n"
-                + "        }\n"
-                + "        .button {\n"
-                + "            display: inline-block;\n"
-                + "            background-color: #3498db;\n"
-                + "            color: white;\n"
-                + "            text-decoration: none;\n"
-                + "            padding: 12px 24px;\n"
-                + "            border-radius: 4px;\n"
-                + "            font-weight: bold;\n"
-                + "            margin: 20px 0;\n"
-                + "        }\n"
-                + "        .button:hover {\n"
-                + "            background-color: #2980b9;\n"
-                + "        }\n"
-                + "    </style>\n"
-                + "</head>\n"
-                + "<body>\n"
-                + "    <div class=\"container\">\n"
-                + "        <div class=\"success-icon\">✓</div>\n"
-                + "        <h1>Email Confirmed!</h1>\n"
-                + "        <p>Your email address <strong>"
-                + email
-                + "</strong> has been successfully confirmed.</p>\n"
-                + "        <p>You can now log in to your account and start using all features of"
-                + " the Seat Reservation System.</p>\n"
-                + "        <a href=\""
-                + frontendBaseUrl
-                + "\" class=\"button\">Go to Homepage</a>\n"
-                + "    </div>\n"
-                + "</body>\n"
-                + "</html>";
-    }
-
-    /**
-     * Returns an HTML page with an error message.
-     *
-     * @param errorMessage the error message
-     * @return an HTML page
-     */
-    private String getErrorHtml(String errorMessage) {
-        return "<!DOCTYPE html>\n"
-                + "<html lang=\"en\">\n"
-                + "<head>\n"
-                + "    <meta charset=\"UTF-8\">\n"
-                + "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
-                + "    <title>Email Confirmation Error</title>\n"
-                + "    <style>\n"
-                + "        body {\n"
-                + "            font-family: Arial, sans-serif;\n"
-                + "            line-height: 1.6;\n"
-                + "            color: #333;\n"
-                + "            max-width: 600px;\n"
-                + "            margin: 0 auto;\n"
-                + "            padding: 20px;\n"
-                + "            text-align: center;\n"
-                + "        }\n"
-                + "        .container {\n"
-                + "            background-color: #f9f9f9;\n"
-                + "            border-radius: 8px;\n"
-                + "            padding: 30px;\n"
-                + "            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);\n"
-                + "        }\n"
-                + "        h1 {\n"
-                + "            color: #e74c3c;\n"
-                + "            margin-bottom: 20px;\n"
-                + "        }\n"
-                + "        .error-icon {\n"
-                + "            color: #e74c3c;\n"
-                + "            font-size: 48px;\n"
-                + "            margin-bottom: 20px;\n"
-                + "        }\n"
-                + "        .button {\n"
-                + "            display: inline-block;\n"
-                + "            background-color: #3498db;\n"
-                + "            color: white;\n"
-                + "            text-decoration: none;\n"
-                + "            padding: 12px 24px;\n"
-                + "            border-radius: 4px;\n"
-                + "            font-weight: bold;\n"
-                + "            margin: 20px 0;\n"
-                + "        }\n"
-                + "        .button:hover {\n"
-                + "            background-color: #2980b9;\n"
-                + "        }\n"
-                + "    </style>\n"
-                + "</head>\n"
-                + "<body>\n"
-                + "    <div class=\"container\">\n"
-                + "        <div class=\"error-icon\">✗</div>\n"
-                + "        <h1>Email Confirmation Error</h1>\n"
-                + "        <p>"
-                + errorMessage
-                + "</p>\n"
-                + "        <p>Please try again or contact support if the problem persists.</p>\n"
-                + "        <a href=\""
-                + frontendBaseUrl
-                + "\" class=\"button\">Go to Homepage</a>\n"
-                + "    </div>\n"
-                + "</body>\n"
-                + "</html>";
+    @POST
+    @Path("/verify-email-code")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(
+            summary = "Verify email with 6-digit code",
+            description = "Verifies a user's email address using a 6-digit verification code")
+    @APIResponse(responseCode = "200", description = "Email verified successfully")
+    @APIResponse(responseCode = "400", description = "Invalid verification code")
+    @APIResponse(responseCode = "410", description = "Verification code expired")
+    public Response verifyEmailWithCode(@Valid VerifyEmailCodeRequestDto request) {
+        try {
+            LOG.debugf("Received POST request to /api/user/verify-email-code with code");
+            String email = userService.verifyEmailWithCode(request.getVerificationCode());
+            LOG.infof("Email verified successfully: %s", email);
+            return Response.ok()
+                    .entity(new VerifyEmailCodeResponseDto("Email verified successfully", email))
+                    .build();
+        } catch (IllegalArgumentException e) {
+            LOG.warnf(e, "Email verification failed due to invalid argument: %s", e.getMessage());
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new ErrorResponseDto(e.getMessage()))
+                    .build();
+        } catch (TokenExpiredException e) {
+            LOG.warnf(
+                    e, "Email verification failed: verification code expired: %s", e.getMessage());
+            return Response.status(Response.Status.GONE)
+                    .entity(new ErrorResponseDto(e.getMessage()))
+                    .build();
+        } catch (Exception e) {
+            LOG.errorf(e, "Unexpected error during email verification: %s", e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(new ErrorResponseDto("Internal server error"))
+                    .build();
+        }
     }
 }

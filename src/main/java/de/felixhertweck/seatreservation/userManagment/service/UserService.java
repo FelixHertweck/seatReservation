@@ -425,65 +425,56 @@ public class UserService {
     }
 
     /**
-     * Verifies the email address of a user using the provided token.
+     * Verifies the email address of a user using only the 6-digit verification code.
      *
-     * @param id The ID of the email verification record.
-     * @param token The token to verify.
+     * @param verificationCode The 6-digit verification code to verify.
      * @return The email address of the user if verification is successful.
-     * @throws IllegalArgumentException If the ID or token is invalid.
-     * @throws TokenExpiredException If the token has expired.
+     * @throws IllegalArgumentException If the verification code is invalid.
+     * @throws TokenExpiredException If the verification code has expired.
      */
     @Transactional
-    public String verifyEmail(Long id, String token) throws TokenExpiredException {
-        LOG.infof("Attempting to verify email with ID: %d and token.", id);
-        LOG.debugf("Verification ID: %d, Token: %s", id, token);
+    public String verifyEmailWithCode(String verificationCode) throws TokenExpiredException {
+        LOG.infof("Attempting to verify email with verification code.");
 
-        // Validate id and token
-        if (id == null || token == null || token.trim().isEmpty()) {
-            LOG.warn("Invalid ID or token provided for email verification.");
-            throw new IllegalArgumentException("Invalid id or token");
+        // Validate verification code
+        if (verificationCode == null || verificationCode.trim().isEmpty()) {
+            LOG.warn("Invalid verification code provided for email verification.");
+            throw new IllegalArgumentException("Invalid verification code");
         }
 
-        // Get the email verification record
+        // Validate that it's a 6-digit code
+        if (!verificationCode.matches("\\d{6}")) {
+            LOG.warnf("Invalid verification code format: %s", verificationCode);
+            throw new IllegalArgumentException("Verification code must be 6 digits");
+        }
+
+        // Get the email verification record by token
         EmailVerification emailVerification =
-                emailVerificationRepository
-                        .findByIdOptional(id)
-                        .orElseThrow(
-                                () -> {
-                                    LOG.warnf("Email verification token not found for ID: %d", id);
-                                    return new IllegalArgumentException("Token not found");
-                                });
-        LOG.debugf("Email verification record found for ID: %d", id);
-
-        // Check if the token is correct
-        if (!emailVerification.getToken().equals(token)) {
-            LOG.warnf(
-                    "Invalid token provided for email verification ID %d. Expected: %s, Received:"
-                            + " %s",
-                    id, emailVerification.getToken(), token);
-            throw new IllegalArgumentException("Invalid token");
+                emailVerificationRepository.findByToken(verificationCode);
+        if (emailVerification == null) {
+            LOG.warnf("Email verification record not found for code: %s", verificationCode);
+            throw new IllegalArgumentException("Verification code not found");
         }
-        LOG.debugf("Token for ID %d is correct.", id);
+        LOG.debugf("Email verification record found for code: %s", verificationCode);
 
         // Check if the token has expired
         if (emailVerification.getExpirationTime().isBefore(LocalDateTime.now())) {
             LOG.warnf(
-                    "Email verification token for ID %d has expired. Expiration time: %s, Current"
-                            + " time: %s",
-                    id, emailVerification.getExpirationTime(), LocalDateTime.now());
-            throw new TokenExpiredException("Token expired");
+                    "Email verification code has expired. Expiration time: %s, Current time: %s",
+                    emailVerification.getExpirationTime(), LocalDateTime.now());
+            throw new TokenExpiredException("Verification code expired");
         }
-        LOG.debugf("Token for ID %d is not expired.", id);
+        LOG.debugf("Verification code is not expired.");
 
         // Delete the email verification record
-        emailVerificationRepository.deleteById(id);
-        LOG.infof("Email verification record for ID %d deleted.", id);
+        emailVerificationRepository.deleteById(emailVerification.id);
+        LOG.infof("Email verification record deleted for code: %s", verificationCode);
 
         // Mark the email as verified
         User user = emailVerification.getUser();
         user.setEmailVerified(true);
         userRepository.persist(user);
-        LOG.infof("Email for user ID %d (%s) marked as verified.", user.id, user.getEmail());
+        LOG.debugf("Email for user ID %d (%s) marked as verified.", user.id, user.getEmail());
 
         return user.getEmail();
     }

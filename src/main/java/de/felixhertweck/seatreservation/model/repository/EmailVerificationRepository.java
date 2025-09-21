@@ -54,10 +54,10 @@ public class EmailVerificationRepository implements PanacheRepository<EmailVerif
     }
 
     /**
-     * Finds expired email verification entries with a limit for batch processing.
+     * Finds an EmailVerification by user ID.
      *
-     * @param batchSize maximum number of entries to return
-     * @return List of expired EmailVerification entities (limited by batchSize)
+     * @param userId the user ID to search for
+     * @return Optional EmailVerification entity
      */
     public Optional<EmailVerification> findByUserIdOptional(Long userId) {
         LOG.debugf("Finding EmailVerification by user ID: %d", userId);
@@ -66,6 +66,23 @@ public class EmailVerificationRepository implements PanacheRepository<EmailVerif
             LOG.debugf("EmailVerification found for user ID: %d", userId);
         } else {
             LOG.debugf("No EmailVerification found for user ID: %d", userId);
+        }
+        return result;
+    }
+
+    /**
+     * Finds an EmailVerification by verification token/code.
+     *
+     * @param token the verification token/code to search for
+     * @return EmailVerification entity or null if not found
+     */
+    public EmailVerification findByToken(String token) {
+        LOG.debugf("Finding EmailVerification by token: %s", token);
+        EmailVerification result = find("token", token).firstResult();
+        if (result != null) {
+            LOG.debugf("EmailVerification found for token: %s", token);
+        } else {
+            LOG.debugf("No EmailVerification found for token: %s", token);
         }
         return result;
     }

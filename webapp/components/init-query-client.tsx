@@ -76,28 +76,36 @@ export default function InitQueryClient({
         onError: (error: Error, variables, context) => {
           // Try to extract message from error response body
           const errorResponse = (error as any)?.response;
-          let errorMessage = error.message;
+          const responseData = errorResponse?.data;
 
-          // If there's a response data with a message, use that
-          if (errorResponse?.data?.message) {
-            errorMessage = errorResponse.data.message;
+          // Handle different error formats
+          let errorTitle = "An error occurred";
+          let errorDescription = "Please try again.";
+
+          if (responseData) {
+            // Handle Constraint Violations format
+            if (responseData.violations && responseData.violations.length > 0) {
+              errorTitle = responseData.title || "Constraint Violation";
+              errorDescription = responseData.violations
+                .map((violation: ViolationError) => violation.message)
+                .join(", ");
+            }
+            // Handle simple error format
+            else if (responseData.error) {
+              errorTitle = "Error";
+              errorDescription = responseData.error;
+            }
+            // Handle message format
+            else if (responseData.message) {
+              errorTitle = "Error";
+              errorDescription = responseData.message;
+            }
           }
 
-          const validationError = error as unknown as ValidationError;
-          const hasViolations =
-            validationError.violations && validationError.violations.length > 0;
-
-          const errorTitle =
-            validationError.title ||
-            errorMessage ||
-            "An unexpected error occurred" ||
-            "An error occurred";
-
-          const errorDescription = hasViolations
-            ? validationError.violations
-                .map((violation) => violation.message)
-                .join(", ")
-            : "Please try again.";
+          // Fallback to error message
+          if (errorDescription === "Please try again." && error.message) {
+            errorDescription = error.message;
+          }
 
           toast({
             title: errorTitle,

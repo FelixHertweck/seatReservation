@@ -16,9 +16,13 @@ import LoadingSkeleton from "./loading";
 import { useT } from "@/lib/i18n/hooks";
 import { useAuth } from "@/hooks/use-auth";
 import { useProfileUnsavedChanges } from "@/hooks/use-profile-unsaved-changes";
+import { useRouter, useParams } from "next/navigation";
 
 export default function ProfilePage() {
   const t = useT();
+  const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as string;
 
   const { user, updateProfile, isLoading, resendConfirmation } = useProfile();
   const { isLoggedIn: isAuthenticated } = useAuth();
@@ -160,6 +164,11 @@ export default function ProfilePage() {
         description: t("profilePage.confirmationEmailSentDescription"),
       });
       setOriginalEmail(email);
+
+      setTimeout(() => {
+        router.push(`/${locale}/verify`);
+      }, 700);
+      return;
     }
   };
 
@@ -230,22 +239,35 @@ export default function ProfilePage() {
                     <span className="text-xs text-gray-500">
                       {t("profilePage.confirmationEmailInfo")}
                     </span>
-                    <Button
-                      type="button"
-                      className="text-xs"
-                      size={"sm"}
-                      onClick={async () => {
-                        await resendConfirmation();
-                        toast({
-                          title: t("profilePage.confirmationEmailResentTitle"),
-                          description: t(
-                            "profilePage.confirmationEmailResentDescription",
-                          ),
-                        });
-                      }}
-                    >
-                      {t("profilePage.resendButton")}
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        className="text-xs"
+                        size={"sm"}
+                        onClick={async () => {
+                          await resendConfirmation();
+                          toast({
+                            title: t(
+                              "profilePage.confirmationEmailResentTitle",
+                            ),
+                            description: t(
+                              "profilePage.confirmationEmailResentDescription",
+                            ),
+                          });
+                        }}
+                      >
+                        {t("profilePage.resendButton")}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="text-xs bg-transparent"
+                        size={"sm"}
+                        onClick={() => router.push(`/${locale}/verify`)}
+                      >
+                        {t("profilePage.verifyEmailButton")}
+                      </Button>
+                    </div>
                   </div>
                 )}
             </div>
