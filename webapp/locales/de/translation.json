@@ -41,7 +41,9 @@
     "noAccount": "Sie haben noch kein Konto? ",
     "register": "Registrieren",
     "error": {
-      "invalidCredentials": "Ungültiger Benutzername/E-Mail oder Passwort."
+      "invalidCredentials": "Ungültiger Benutzername/E-Mail oder Passwort.",
+      "title": "Anmeldefehler",
+      "description": "Beim Anmelden ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
     }
   },
   "register": {

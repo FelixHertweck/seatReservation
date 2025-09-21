@@ -41,7 +41,9 @@
     "noAccount": "Don't have an account? ",
     "register": "Register",
     "error": {
-      "invalidCredentials": "Invalid username/email or password."
+      "invalidCredentials": "Invalid username/email or password.",
+      "title": "Login Error",
+      "description": "An error occurred while logging in. Please try again."
     }
   },
   "register": {
