@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.0.3 - 2025-09-21
+
+### Added
+- **Event Location Markers**: Added functionality to support markers at import of event location for better visual orientation
+- **Reflection Configuration**: Registered DTOs for reflection to support native image builds with GraalVM
+- **Error Translations**: Added error title and description for invalid login credentials in German and English translations
+
+### Improved
+- **Native Image Support**: Enhanced system compatibility for native compilation by properly configuring reflection for all DTOs
+- **User Feedback**: Better error handling and localized messages for authentication failures
+- **Import Functionality**: Event location import now supports marker placement for enhanced user experience
+
+### Fixed
+- **Login Error Handling**: Proper error messages are now displayed when invalid credentials are provided
+- **Native Build Compatibility**: Resolved issues with DTO serialization in native image builds
+- **Logging**: Changed log levels from INFO to DEBUG to reduce verbose logging
+
 ## 0.0.2 - 2025-09-21
 
 ### Added

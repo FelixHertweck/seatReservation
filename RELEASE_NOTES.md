@@ -1,3 +1,33 @@
+# Release 0.0.3
+
+This patch release adds important functionality for event location management and improves system compatibility for native image builds.
+
+## New Features
+
+### Event Location Management
+- **Event Location Markers Support**: Enhanced event location import functionality now supports markers that can be placed on location maps to provide visual orientation points for users
+- **Improved User Experience**: Login error handling with proper localized error messages for invalid credentials
+
+### System Improvements
+- **Native Image Compatibility**: Registered all DTOs for reflection to ensure proper functionality when building native images with GraalVM
+- **Error Handling**: Added proper error titles and descriptions for login credential validation failures
+- **Internationalization**: Enhanced translation support for error messages in both German and English
+
+## Technical Enhancements
+
+### Reflection Configuration
+- Comprehensive DTO registration for native image builds ensures all data transfer objects work correctly in compiled native executables
+- Improved build reliability for production deployments using native compilation
+
+### Localization
+- Added missing error message translations for authentication failures
+- Improved user feedback with clear, localized error descriptions
+
+### Logging
+- Enhanced logging to reduce amount of info logs by changing log levels from INFO to DEBUG in various parts of the application
+
+---
+
 # Release 0.0.2
 
 This major release brings significant enhancements to the Seat Reservation application, focusing on mobile user experience, new administrative features, and improved system reliability.
