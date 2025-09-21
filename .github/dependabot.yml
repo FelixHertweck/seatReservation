@@ -31,3 +31,10 @@ updates:
     open-pull-requests-limit: 20
     schedule:
       interval: "weekly"
+
+  # Docker images webapp
+  - package-ecosystem: "docker"
+    directory: "/webapp"
+    open-pull-requests-limit: 20
+    schedule:
+      interval: "weekly"
