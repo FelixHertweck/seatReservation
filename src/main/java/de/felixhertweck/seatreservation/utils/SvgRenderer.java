@@ -152,7 +152,7 @@ public class SvgRenderer {
                     .append(cy + (textHeight / 3))
                     .append("\" font-size=\"")
                     .append(textHeight)
-                    .append("\" text-anchor=\"middle\" fill=\"white\">")
+                    .append("\" text-anchor=\"middle\" fill=\"black\">")
                     .append(seat.getSeatNumber())
                     .append("</text>\n");
         }
