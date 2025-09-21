@@ -107,6 +107,9 @@ public class EventReservationAllowanceService {
                         });
 
         LOG.infof(
+                "Successfully set reservation allowance for user IDs %s and event ID %d",
+                dto.getUserIds(), dto.getEventId());
+        LOG.debugf(
                 "Reservation allowance set to %d for user IDs %s and event ID %d by manager: %s"
                         + " (ID: %d)",
                 dto.getReservationsAllowedCount(),
@@ -162,7 +165,8 @@ public class EventReservationAllowanceService {
         allowance.setReservationsAllowedCount(dto.reservationsAllowedCount());
         eventUserAllowanceRepository.persist(allowance);
 
-        LOG.infof(
+        LOG.infof("Reservation allowance with ID %d updated successfully", dto.id());
+        LOG.debugf(
                 "Reservation allowance with ID %d updated successfully to count %d by manager: %s"
                         + " (ID: %d)",
                 dto.id(), dto.reservationsAllowedCount(), manager.getUsername(), manager.getId());
@@ -234,7 +238,7 @@ public class EventReservationAllowanceService {
                     currentUser.getId());
             allowances = eventUserAllowanceRepository.find("event.manager", currentUser).list();
         }
-        LOG.infof(
+        LOG.debugf(
                 "Retrieved %d reservation allowances for user: %s (ID: %d)",
                 allowances.size(), currentUser.getUsername(), currentUser.getId());
         return allowances.stream().map(EventUserAllowancesDto::new).collect(Collectors.toList());
@@ -269,7 +273,7 @@ public class EventReservationAllowanceService {
                 eventUserAllowanceRepository.findByEventId(eventId).stream()
                         .map(EventUserAllowancesDto::new)
                         .collect(Collectors.toList());
-        LOG.infof(
+        LOG.debugf(
                 "Retrieved %d reservation allowances for event ID %d by user: %s (ID: %d)",
                 result.size(), eventId, currentUser.getUsername(), currentUser.getId());
         return result;
@@ -314,6 +318,9 @@ public class EventReservationAllowanceService {
 
         eventUserAllowanceRepository.delete(allowance);
         LOG.infof(
+                "Reservation allowance with ID %d deleted successfully.",
+                id, currentUser.getUsername());
+        LOG.debugf(
                 "Reservation allowance with ID %d deleted successfully by user: %s (ID: %d)",
                 id, currentUser.getUsername(), currentUser.getId());
     }

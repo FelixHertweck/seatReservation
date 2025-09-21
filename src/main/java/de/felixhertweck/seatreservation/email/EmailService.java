@@ -175,7 +175,7 @@ public class EmailService {
         EmailVerification emailVerification =
                 new EmailVerification(user, verificationCode, expirationTime);
         emailVerificationRepository.persist(emailVerification);
-        LOG.infof(
+        LOG.debugf(
                 "Email verification entry persisted for user ID %d with verification code",
                 user.id);
         return emailVerification;
@@ -191,7 +191,7 @@ public class EmailService {
             EmailVerification emailVerification) {
         emailVerification.setExpirationTime(LocalDateTime.now().plusMinutes(expirationMinutes));
         emailVerificationRepository.persist(emailVerification);
-        LOG.infof(
+        LOG.debugf(
                 "Email verification entry ID %d expiration time updated to: %s",
                 emailVerification.id, emailVerification.getExpirationTime());
         return emailVerification;
@@ -227,7 +227,6 @@ public class EmailService {
             return;
         }
 
-        LOG.infof("Attempting to send reservation confirmation to user: %s", user.getEmail());
         LOG.debug(
                 String.format(
                         "User ID: %d, Number of reservations: %d",
@@ -358,8 +357,6 @@ public class EmailService {
             return;
         }
 
-        LOG.infof(
-                "Attempting to send update reservation confirmation to user: %s", user.getEmail());
         LOG.debug(
                 String.format(
                         "User ID: %d, Number of reservations: %d",
@@ -520,9 +517,6 @@ public class EmailService {
             return;
         }
 
-        LOG.infof(
-                "Attempting to send event reminder to user: %s for event: %s",
-                user.getEmail(), event.getName());
         LOG.debugf(
                 String.format(
                         "User ID: %d, Event ID: %d, Number of reservations: %d",

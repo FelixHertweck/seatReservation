@@ -87,7 +87,8 @@ public class EventService {
                         location,
                         manager);
         eventRepository.persist(event);
-        LOG.infof(
+        LOG.infof("Event '%s' (ID: %d) created successfully.", event.getName(), event.getId());
+        LOG.debugf(
                 "Event '%s' (ID: %d) created successfully by manager: %s (ID: %d)",
                 event.getName(), event.getId(), manager.getUsername(), manager.getId());
         return new DetailedEventResponseDTO(event);
@@ -171,7 +172,8 @@ public class EventService {
         event.setBookingDeadline(dto.getBookingDeadline());
         event.setEventLocation(location);
         eventRepository.persist(event);
-        LOG.infof(
+        LOG.infof("Event '%s' (ID: %d) updated successfully", event.getName(), event.getId());
+        LOG.debugf(
                 "Event '%s' (ID: %d) updated successfully by manager: %s (ID: %d)",
                 event.getName(), event.getId(), manager.getUsername(), manager.getId());
         return new DetailedEventResponseDTO(event);
@@ -209,9 +211,6 @@ public class EventService {
             LOG.debugf("User is MANAGER, listing events for manager ID: %d", manager.getId());
             events = eventRepository.findByManager(manager);
         }
-        LOG.infof(
-                "Retrieved %d events for manager: %s (ID: %d)",
-                events.size(), manager.getUsername(), manager.getId());
         return events.stream().map(DetailedEventResponseDTO::new).collect(Collectors.toList());
     }
 
@@ -254,7 +253,8 @@ public class EventService {
         }
 
         eventRepository.delete(event);
-        LOG.infof(
+        LOG.infof("Event '%s' (ID: %d) deleted successfully", event.getName(), event.getId());
+        LOG.debugf(
                 "Event '%s' (ID: %d) deleted successfully by user: %s (ID: %d)",
                 event.getName(), event.getId(), currentUser.getUsername(), currentUser.getId());
     }

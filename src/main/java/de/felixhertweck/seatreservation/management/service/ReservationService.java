@@ -83,7 +83,7 @@ public class ReservationService {
                 reservationRepository.find("event.manager", currentUser).list().stream()
                         .map(DetailedReservationResponseDTO::new)
                         .toList();
-        LOG.infof(
+        LOG.debugf(
                 "Retrieved %d reservations for manager: %s (ID: %d)",
                 result.size(), currentUser.getUsername(), currentUser.getId());
         return result;
@@ -119,14 +119,14 @@ public class ReservationService {
 
         // Admins können jede Reservierung sehen
         if (currentUser.getRoles().contains(Roles.ADMIN)) {
-            LOG.infof(
+            LOG.debugf(
                     "Successfully retrieved reservation with ID %d for ADMIN user: %s (ID: %d)",
                     id, currentUser.getUsername(), currentUser.getId());
             return new DetailedReservationResponseDTO(reservation);
         }
 
         if (isManagerAllowedToAccessEvent(currentUser, reservation.getEvent())) {
-            LOG.infof(
+            LOG.debugf(
                     "Successfully retrieved reservation with ID %d for manager: %s (ID: %d)",
                     id, currentUser.getUsername(), currentUser.getId());
             return new DetailedReservationResponseDTO(reservation);
@@ -171,7 +171,7 @@ public class ReservationService {
                 reservationRepository.find("event", event).list().stream()
                         .map(DetailedReservationResponseDTO::new)
                         .toList();
-        LOG.infof(
+        LOG.debugf(
                 "Retrieved %d reservations for event ID %d by user: %s (ID: %d)",
                 result.size(), eventId, currentUser.getUsername(), currentUser.getId());
         return result;
@@ -250,7 +250,7 @@ public class ReservationService {
                                     });
 
             if (!dto.isDeductAllowance()) {
-                LOG.infof(
+                LOG.debugf(
                         "Allowance check skipped for user %s (ID: %d).",
                         currentUser.getUsername(), currentUser.getId());
             } else {
@@ -297,9 +297,8 @@ public class ReservationService {
             reservationRepository.persist(reservation);
             existingReservations.add(reservation);
             LOG.infof(
-                    "Reservation created successfully for seat ID %d, user ID %d, event ID %d."
-                            + " Reservation ID: %d",
-                    dtoSeatId, dto.getUserId(), dto.getEventId(), reservation.id);
+                    "Reservation created successfully for seat ID %d, user ID %d, event ID %d.",
+                    dtoSeatId, dto.getUserId(), dto.getEventId());
         }
 
         try {
@@ -375,7 +374,7 @@ public class ReservationService {
             return;
         }
 
-        LOG.infof(
+        LOG.debugf(
                 "Sent reservation update confirmation for user %s (ID: %d) and reservation %d.",
                 currentUser.getUsername(), currentUser.getId(), reservation.id);
     }

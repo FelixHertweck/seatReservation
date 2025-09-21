@@ -46,7 +46,7 @@ public class EmailVerificationRepository implements PanacheRepository<EmailVerif
 
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     public void deleteByUserId(Long userId) {
-        LOG.infof(
+        LOG.debugf(
                 "Attempting to delete EmailVerification for user ID: %d in new transaction.",
                 userId);
         long deletedCount = delete("user.id", userId);

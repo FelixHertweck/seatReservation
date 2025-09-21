@@ -99,7 +99,6 @@ public class UserService {
             throw new InvalidUserException("User creation data cannot be null.");
         }
 
-        LOG.infof("Attempting to create new user with username: %s", userCreationDTO.getUsername());
         LOG.debugf("UserCreationDTO: %s", userCreationDTO.toString());
 
         if (userCreationDTO.getUsername() == null
@@ -158,8 +157,6 @@ public class UserService {
 
                 EmailVerification emailVerification = emailService.createEmailVerification(user);
                 emailService.sendEmailConfirmation(user, emailVerification);
-                LOG.infof(
-                        "Email confirmation sent to %s for user ID: %d", user.getEmail(), user.id);
             } catch (IOException e) {
                 LOG.errorf(
                         e,
@@ -171,7 +168,9 @@ public class UserService {
             }
         }
         userRepository.persist(user);
-        LOG.infof("User %s persisted successfully with ID: %d", user.getUsername(), user.id);
+        LOG.debugf("User %s persisted successfully with ID: %d", user.getUsername(), user.id);
+
+        LOG.infof("User created successfully: %s", user.getUsername());
 
         return new UserDTO(user);
     }
@@ -206,7 +205,7 @@ public class UserService {
                 EmailVerification emailVerification =
                         emailService.createEmailVerification(existingUser);
                 emailService.sendEmailConfirmation(existingUser, emailVerification);
-                LOG.infof(
+                LOG.debugf(
                         "Email confirmation sent to %s for user ID: %d",
                         existingUser.getEmail(), existingUser.id);
             } catch (IOException e) {
@@ -254,7 +253,7 @@ public class UserService {
                         "Sending password changed notification to %s for user ID %d.",
                         existingUser.getEmail(), existingUser.id);
                 emailService.sendPasswordChangedNotification(existingUser);
-                LOG.infof(
+                LOG.debugf(
                         "Password changed notification sent to %s for user ID: %d",
                         existingUser.getEmail(), existingUser.id);
             } catch (IOException e) {
@@ -300,7 +299,6 @@ public class UserService {
             throw new InvalidUserException("User update data cannot be null.");
         }
 
-        LOG.infof("Attempting to update user with ID: %d by admin.", id);
         LOG.debugf("AdminUserUpdateDTO for ID %d: %s", id, user.toString());
 
         User existingUser =
@@ -340,7 +338,7 @@ public class UserService {
      */
     @Transactional
     public void deleteUser(Long id) throws UserNotFoundException {
-        LOG.infof("Attempting to delete user with ID: %d.", id);
+        LOG.debugf("Attempting to delete user with ID: %d.", id);
         boolean deleted = userRepository.deleteById(id);
         if (!deleted) {
             LOG.warnf("User with ID %d not found for deletion.", id);
@@ -350,7 +348,7 @@ public class UserService {
     }
 
     public UserDTO getUserById(Long id) {
-        LOG.infof("Attempting to retrieve user with ID: %d.", id);
+        LOG.debugf("Attempting to retrieve user with ID: %d.", id);
         User user =
                 userRepository
                         .findByIdOptional(id)
@@ -365,7 +363,6 @@ public class UserService {
     }
 
     public List<LimitedUserInfoDTO> getAllUsers() {
-        LOG.infof("Retrieving all users (limited info).");
         List<LimitedUserInfoDTO> users =
                 userRepository.listAll().stream().map(LimitedUserInfoDTO::new).toList();
         LOG.debugf("Returning %d limited user info DTOs.", users.size());
@@ -373,14 +370,12 @@ public class UserService {
     }
 
     public List<UserDTO> getUsersAsAdmin() {
-        LOG.infof("Retrieving all users (admin view).");
         List<UserDTO> users = userRepository.listAll().stream().map(UserDTO::new).toList();
         LOG.debugf("Returning %d user DTOs for admin view.", users.size());
         return users;
     }
 
     public List<String> getAvailableRoles() {
-        LOG.infof("Retrieving available roles.");
         List<String> roles = Arrays.asList(Roles.ALL_ROLES);
         LOG.debugf("Returning %d available roles.", roles.size());
         return roles;
@@ -394,8 +389,7 @@ public class UserService {
             throw new InvalidUserException("User profile update data cannot be null.");
         }
 
-        LOG.infof("Attempting to update user profile for username: %s.", username);
-        LOG.debugf("UserProfileUpdateDTO for %s: %s", username, userProfileUpdateDTO.toString());
+        LOG.debugf("Attempting to update user profile for username: %s.", username);
 
         User existingUser =
                 userRepository
@@ -432,7 +426,7 @@ public class UserService {
      */
     @Transactional
     public String verifyEmailWithCode(String verificationCode) throws TokenExpiredException {
-        LOG.infof("Attempting to verify email with verification code.");
+        LOG.debugf("Attempting to verify email with verification code.");
 
         // Validate verification code
         if (verificationCode == null || verificationCode.trim().isEmpty()) {
@@ -466,13 +460,13 @@ public class UserService {
 
         // Delete the email verification record
         emailVerificationRepository.deleteById(emailVerification.id);
-        LOG.infof("Email verification record deleted for code: %s", verificationCode);
+        LOG.debugf("Email verification record deleted for code: %s", verificationCode);
 
         // Mark the email as verified
         User user = emailVerification.getUser();
         user.setEmailVerified(true);
         userRepository.persist(user);
-        LOG.debugf("Email for user ID %d (%s) marked as verified.", user.id, user.getEmail());
+        LOG.infof("Email for user ID %d (%s) marked as verified.", user.id, user.getEmail());
 
         return user.getEmail();
     }
@@ -486,7 +480,7 @@ public class UserService {
      */
     @Transactional
     public void resendEmailConfirmation(String username) throws UserNotFoundException, IOException {
-        LOG.infof("Attempting to resend email confirmation for username: %s", username);
+        LOG.debugf("Attempting to resend email confirmation for username: %s", username);
 
         User user =
                 userRepository

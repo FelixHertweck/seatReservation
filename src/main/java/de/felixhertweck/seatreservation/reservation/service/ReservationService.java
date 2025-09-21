@@ -56,16 +56,16 @@ public class ReservationService {
     @Inject EmailService emailService;
 
     public List<ReservationResponseDTO> findReservationsByUser(User currentUser) {
-        LOG.infof("Attempting to find reservations for user: %s", currentUser.getUsername());
+        LOG.debugf("Attempting to find reservations for user: %s", currentUser.getUsername());
         List<Reservation> reservations = reservationRepository.findByUser(currentUser);
-        LOG.infof(
+        LOG.debugf(
                 "Found %d reservations for user: %s",
                 reservations.size(), currentUser.getUsername());
         return reservations.stream().map(ReservationResponseDTO::new).toList();
     }
 
     public ReservationResponseDTO findReservationByIdForUser(Long id, User currentUser) {
-        LOG.infof(
+        LOG.debugf(
                 "Attempting to find reservation with ID %d for user: %s",
                 id, currentUser.getUsername());
         Reservation reservation =
@@ -85,7 +85,7 @@ public class ReservationService {
                     currentUser.getUsername(), id, reservation.getUser().getUsername());
             throw new SecurityException("You are not allowed to access this reservation");
         }
-        LOG.infof("Reservation with ID %d found for user %s.", id, currentUser.getUsername());
+        LOG.debugf("Reservation with ID %d found for user %s.", id, currentUser.getUsername());
         return new ReservationResponseDTO(reservation);
     }
 
@@ -93,7 +93,7 @@ public class ReservationService {
     public List<ReservationResponseDTO> createReservationForUser(
             ReservationsRequestCreateDTO dto, User currentUser)
             throws NoSeatsAvailableException, EventBookingClosedException {
-        LOG.infof(
+        LOG.debugf(
                 "Attempting to create reservation for user %s for event ID %d with %d seats.",
                 currentUser.getUsername(), dto.getEventId(), dto.getSeatIds().size());
         LOG.debugf("ReservationsRequestCreateDTO: %s", dto.toString());
@@ -225,7 +225,7 @@ public class ReservationService {
 
         // Persist the new reservations
         reservationRepository.persistAll(newReservations);
-        LOG.infof(
+        LOG.debugf(
                 "Persisted %d new reservations for user %s and event %s (ID: %d).",
                 newReservations.size(), currentUser.getUsername(), event.getName(), event.id);
 
@@ -246,7 +246,7 @@ public class ReservationService {
                     "Attempting to send reservation confirmation email to %s.",
                     currentUser.getEmail());
             emailService.sendReservationConfirmation(currentUser, newReservations);
-            LOG.infof(
+            LOG.debugf(
                     "Reservation confirmation email sent to %s for user %s.",
                     currentUser.getEmail(), currentUser.getUsername());
         } catch (IOException | PersistenceException | IllegalStateException e) {
@@ -261,7 +261,7 @@ public class ReservationService {
 
     @Transactional
     public void deleteReservationForUser(Long id, User currentUser) {
-        LOG.infof(
+        LOG.debugf(
                 "Attempting to delete reservation with ID %d for user: %s",
                 id, currentUser.getUsername());
 
@@ -335,7 +335,7 @@ public class ReservationService {
             return;
         }
 
-        LOG.infof(
+        LOG.debugf(
                 "Sent reservation update confirmation for user %s (ID: %d) and reservation %d.",
                 currentUser.getUsername(), currentUser.getId(), reservation.id);
     }

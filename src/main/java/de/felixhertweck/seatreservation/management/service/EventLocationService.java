@@ -81,7 +81,7 @@ public class EventLocationService {
                     "User is MANAGER, listing event locations for manager ID: %d", manager.getId());
             eventLocations = eventLocationRepository.findByManager(manager);
         }
-        LOG.infof(
+        LOG.debugf(
                 "Retrieved %d event locations for manager: %s (ID: %d)",
                 eventLocations.size(), manager.getUsername(), manager.getId());
         return eventLocations.stream()

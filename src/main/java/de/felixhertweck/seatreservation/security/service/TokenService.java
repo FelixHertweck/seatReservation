@@ -53,7 +53,6 @@ public class TokenService {
      * @return the generated JWT token
      */
     public String generateToken(User user) {
-        LOG.infof("Generating JWT token for user: %s", user.getUsername());
         LOG.debugf(
                 "User ID: %d, Roles: %s, Email: %s, Expiration: %d minutes",
                 user.id, user.getRoles(), user.getEmail(), expirationMinutes);
@@ -64,7 +63,7 @@ public class TokenService {
                         .claim(Claims.email, user.getEmail() != null ? user.getEmail() : "")
                         .expiresIn(Duration.ofMinutes(expirationMinutes))
                         .sign();
-        LOG.infof("JWT token generated successfully for user: %s", user.getUsername());
+        LOG.debugf("JWT token generated successfully for user: %s", user.getUsername());
         return token;
     }
 

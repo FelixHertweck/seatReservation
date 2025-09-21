@@ -117,7 +117,7 @@ public class EmailConfirmationResource {
         try {
             LOG.debugf("Received POST request to /api/user/verify-email-code with code");
             String email = userService.verifyEmailWithCode(request.getVerificationCode());
-            LOG.infof("Email verified successfully: %s", email);
+            LOG.debugf("Email verified successfully: %s", email);
             return Response.ok()
                     .entity(new VerifyEmailCodeResponseDto("Email verified successfully", email))
                     .build();

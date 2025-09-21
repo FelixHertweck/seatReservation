@@ -56,7 +56,7 @@ public class AuthService {
      */
     public String authenticate(String identifier, String password)
             throws AuthenticationFailedException {
-        LOG.infof("Attempting to authenticate user with identifier: %s", identifier);
+        LOG.debugf("Attempting to authenticate user with identifier: %s", identifier);
         User user;
         if (isIdentifierEmail(identifier)) {
             user = userRepository.findByEmail(identifier);
@@ -77,7 +77,7 @@ public class AuthService {
             throw new AuthenticationFailedException(
                     "Failed to authenticate user: " + user.getUsername());
         }
-        LOG.infof("User %s authenticated successfully. Generating token.", user.getUsername());
+        LOG.infof("User %s authenticated successfully.", user.getUsername());
 
         return tokenService.generateToken(user);
     }
@@ -92,7 +92,7 @@ public class AuthService {
      */
     public String register(RegisterRequestDTO registerRequest)
             throws DuplicateUserException, InvalidUserException {
-        LOG.infof("Attempting to register new user: %s", registerRequest.getUsername());
+        LOG.debugf("Attempting to register new user: %s", registerRequest.getUsername());
 
         UserCreationDTO userCreationDTO = new UserCreationDTO(registerRequest);
 
@@ -105,8 +105,7 @@ public class AuthService {
             throw new InvalidUserException("User not found: " + registerRequest.getUsername());
         }
 
-        LOG.infof(
-                "User %s registered successfully via AuthService.", registerRequest.getUsername());
+        LOG.infof("User %s registered successfully", registerRequest.getUsername());
 
         return tokenService.generateToken(user);
     }

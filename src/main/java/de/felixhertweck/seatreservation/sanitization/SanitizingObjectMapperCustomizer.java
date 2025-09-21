@@ -33,7 +33,7 @@ public class SanitizingObjectMapperCustomizer implements ObjectMapperCustomizer 
 
     @Override
     public void customize(ObjectMapper objectMapper) {
-        LOG.infof("Customizing ObjectMapper for XSS sanitization.");
+        LOG.debugf("Customizing ObjectMapper for XSS sanitization.");
         SimpleModule module = new SimpleModule();
         module.addDeserializer(String.class, new XssSanitizingDeserializer());
         objectMapper.registerModule(module);

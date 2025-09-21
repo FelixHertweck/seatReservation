@@ -106,6 +106,9 @@ public class SeatService {
                         dto.getyCoordinate());
         seatRepository.persist(seat);
         LOG.infof(
+                "Seat %s created successfully for event location ID %d",
+                seat.getSeatNumber(), eventLocation.getId());
+        LOG.debugf(
                 "Seat with ID %d created successfully for event location ID %d by manager: %s (ID:"
                         + " %d)",
                 seat.id, eventLocation.getId(), manager.getUsername(), manager.getId());
@@ -131,7 +134,7 @@ public class SeatService {
                         .flatMap(location -> seatRepository.findByEventLocation(location).stream())
                         .map(SeatDTO::new)
                         .collect(Collectors.toList());
-        LOG.infof(
+        LOG.debugf(
                 "Retrieved %d seats for manager: %s (ID: %d)",
                 result.size(), manager.getUsername(), manager.getId());
         return result;
@@ -204,7 +207,8 @@ public class SeatService {
         seat.setxCoordinate(dto.getxCoordinate());
         seat.setyCoordinate(dto.getyCoordinate());
         seatRepository.persist(seat);
-        LOG.infof(
+        LOG.infof("Seat %s updated successfully", seat.getSeatNumber());
+        LOG.debugf(
                 "Seat with ID %d updated successfully by manager: %s (ID: %d)",
                 id, manager.getUsername(), manager.getId());
         return new SeatDTO(seat);
@@ -217,7 +221,8 @@ public class SeatService {
                 id, manager.getUsername(), manager.getId());
         Seat seat = findSeatEntityById(id, manager); // This already checks for ownership
         seatRepository.delete(seat);
-        LOG.infof(
+        LOG.infof("Seat %s deleted successfully", seat.getSeatNumber());
+        LOG.debugf(
                 "Seat with ID %d deleted successfully by manager: %s (ID: %d)",
                 id, manager.getUsername(), manager.getId());
     }
