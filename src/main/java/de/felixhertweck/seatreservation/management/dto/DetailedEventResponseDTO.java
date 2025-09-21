@@ -25,7 +25,9 @@ import java.util.stream.Collectors;
 
 import de.felixhertweck.seatreservation.common.dto.EventLocationResponseDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
+@RegisterForReflection
 public record DetailedEventResponseDTO(
         Long id,
         String name,

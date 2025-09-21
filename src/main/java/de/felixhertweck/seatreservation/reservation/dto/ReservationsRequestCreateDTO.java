@@ -23,6 +23,9 @@ import java.util.Set;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
+@RegisterForReflection
 public class ReservationsRequestCreateDTO {
     @NotNull(message = "Event ID must not be null")
     private Long eventId;

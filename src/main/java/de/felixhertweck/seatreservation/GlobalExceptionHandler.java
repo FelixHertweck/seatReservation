@@ -23,8 +23,8 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 
+import de.felixhertweck.seatreservation.common.dto.ErrorResponseDTO;
 import de.felixhertweck.seatreservation.common.exception.DuplicateUserException;
-import de.felixhertweck.seatreservation.common.exception.ErrorResponseDTO;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.InvalidUserException;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;

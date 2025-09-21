@@ -22,6 +22,9 @@ package de.felixhertweck.seatreservation.management.dto;
 import java.util.List;
 import jakarta.validation.constraints.NotNull;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
+@RegisterForReflection
 public class EventLocationRequestDTO {
     @NotNull(message = "Name must not be null")
     private String name;

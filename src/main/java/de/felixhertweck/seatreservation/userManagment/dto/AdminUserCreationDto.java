@@ -25,7 +25,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
 import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
+@RegisterForReflection
 public class AdminUserCreationDto {
 
     @NotNull(message = "Username cannot be null")

@@ -19,7 +19,10 @@
  */
 package de.felixhertweck.seatreservation.userManagment.dto;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
 /** DTO for error responses */
+@RegisterForReflection
 public class ErrorResponseDto {
 
     private String error;

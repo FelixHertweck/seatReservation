@@ -24,7 +24,9 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 
 import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
+@RegisterForReflection
 public class UserProfileUpdateDTO {
     @NoHtmlSanitize
     @Email(regexp = "^(|.+[@].+[\\\\.].+)$", message = "Invalid email format")

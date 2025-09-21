@@ -22,7 +22,9 @@ package de.felixhertweck.seatreservation.userManagment.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
-/** DTO for email verification code requests */
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
+@RegisterForReflection
 public class VerifyEmailCodeRequestDto {
 
     @NotBlank(message = "Verification code is required")

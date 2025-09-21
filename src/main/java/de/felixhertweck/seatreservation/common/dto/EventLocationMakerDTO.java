@@ -20,7 +20,9 @@
 package de.felixhertweck.seatreservation.common.dto;
 
 import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
+@RegisterForReflection
 public record EventLocationMakerDTO(String label, int xCoordinate, int yCoordinate) {
     public EventLocationMakerDTO(EventLocationMarker maker) {
         this(maker.getLabel(), maker.getxCoordinate(), maker.getyCoordinate());

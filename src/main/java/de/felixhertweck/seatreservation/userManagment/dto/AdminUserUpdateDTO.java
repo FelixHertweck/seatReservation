@@ -23,7 +23,9 @@ import java.util.Set;
 import jakarta.validation.constraints.Email;
 
 import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
+@RegisterForReflection
 public class AdminUserUpdateDTO {
     @NoHtmlSanitize
     @Email(regexp = "^(|.+[@].+[\\\\.].+)$", message = "Invalid email format")

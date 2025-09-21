@@ -17,8 +17,11 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.common.exception;
+package de.felixhertweck.seatreservation.common.dto;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
+@RegisterForReflection
 public record ErrorResponseDTO(String message) {
     public String getMessage() {
         return message;
