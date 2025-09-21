@@ -464,7 +464,8 @@
     "showMoreButton": "Mehr anzeigen",
     "seatSingular": "Platz",
     "seatPlural": "Plätze",
-    "bookingUntil": "Buchung bis"
+    "bookingUntil": "Buchung bis",
+    "unknownEvent": "Unbekannte Veranstaltung"
   },
   "reservationDeleteModal": {
     "title": "Reservierung löschen",

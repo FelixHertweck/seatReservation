@@ -19,9 +19,9 @@
  */
 package de.felixhertweck.seatreservation.email;
 
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -52,9 +52,10 @@ public class NotificationService {
     @Transactional
     public void sendEventReminders() {
         LOG.info("Starting scheduled event reminder task.");
-        LocalDate tomorrow = LocalDate.now().plusDays(1);
-        LocalDateTime startOfTomorrow = tomorrow.atStartOfDay();
-        LocalDateTime endOfTomorrow = tomorrow.atTime(LocalTime.MAX);
+        LocalDate tomorrow = LocalDate.now(ZoneOffset.UTC).plusDays(1);
+        Instant startOfTomorrow = tomorrow.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant endOfTomorrow =
+                tomorrow.atTime(23, 59, 59, 999_999_999).atZone(ZoneOffset.UTC).toInstant();
 
         List<Event> eventsTomorrow =
                 eventService.findEventsBetweenDates(startOfTomorrow, endOfTomorrow);
@@ -93,9 +94,10 @@ public class NotificationService {
     @Transactional
     public void sendDailyReservationCsvToManagers() {
         LOG.info("Starting scheduled CSV export task for event managers.");
-        LocalDate today = LocalDate.now();
-        LocalDateTime startOfToday = today.atStartOfDay();
-        LocalDateTime endOfToday = today.atTime(LocalTime.MAX);
+        LocalDate today = LocalDate.now(ZoneOffset.UTC);
+        Instant startOfToday = today.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant endOfToday =
+                today.atTime(23, 59, 59, 999_999_999).atZone(ZoneOffset.UTC).toInstant();
 
         List<Event> eventsToday = eventService.findEventsBetweenDates(startOfToday, endOfToday);
         LOG.debugf("Found %d events for today.", eventsToday.size());

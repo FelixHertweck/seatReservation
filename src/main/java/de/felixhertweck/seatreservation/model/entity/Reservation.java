@@ -19,7 +19,7 @@
  */
 package de.felixhertweck.seatreservation.model.entity;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Objects;
 import jakarta.persistence.*;
 
@@ -40,7 +40,7 @@ public class Reservation extends PanacheEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private Seat seat;
 
-    private LocalDateTime reservationDate;
+    private Instant reservationDate;
 
     @Enumerated(EnumType.STRING)
     private ReservationStatus status;
@@ -48,11 +48,7 @@ public class Reservation extends PanacheEntity {
     public Reservation() {}
 
     public Reservation(
-            User user,
-            Event event,
-            Seat seat,
-            LocalDateTime reservationDate,
-            ReservationStatus status) {
+            User user, Event event, Seat seat, Instant reservationDate, ReservationStatus status) {
         this.user = user;
         this.event = event;
         this.seat = seat;
@@ -92,7 +88,7 @@ public class Reservation extends PanacheEntity {
         this.seat = seat;
     }
 
-    public LocalDateTime getReservationDate() {
+    public Instant getReservationDate() {
         return reservationDate;
     }
 

@@ -49,13 +49,13 @@ export function EventFormModal({
     name: event?.name || "",
     description: event?.description || "",
     startTime: event?.startTime
-      ? new Date(event.startTime).toISOString().slice(0, 16)
+      ? new Date(event.startTime).toLocaleString("sv-SE").slice(0, 16)
       : "",
     endTime: event?.endTime
-      ? new Date(event.endTime).toISOString().slice(0, 16)
+      ? new Date(event.endTime).toLocaleString("sv-SE").slice(0, 16)
       : "",
     bookingDeadline: event?.bookingDeadline
-      ? new Date(event.bookingDeadline).toISOString().slice(0, 16)
+      ? new Date(event.bookingDeadline).toLocaleString("sv-SE").slice(0, 16)
       : "",
     eventLocationId: event?.eventLocation?.id?.toString() || "",
   });

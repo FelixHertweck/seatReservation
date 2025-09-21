@@ -20,7 +20,7 @@
 package de.felixhertweck.seatreservation.userManagment.service;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashSet;
@@ -450,10 +450,10 @@ public class UserService {
         LOG.debugf("Email verification record found for code: %s", verificationCode);
 
         // Check if the token has expired
-        if (emailVerification.getExpirationTime().isBefore(LocalDateTime.now())) {
+        if (emailVerification.getExpirationTime().isBefore(Instant.now())) {
             LOG.warnf(
                     "Email verification code has expired. Expiration time: %s, Current time: %s",
-                    emailVerification.getExpirationTime(), LocalDateTime.now());
+                    emailVerification.getExpirationTime(), Instant.now());
             throw new TokenExpiredException("Verification code expired");
         }
         LOG.debugf("Verification code is not expired.");

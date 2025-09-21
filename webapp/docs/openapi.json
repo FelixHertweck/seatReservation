@@ -99,13 +99,13 @@
             "type" : "string"
           },
           "startTime" : {
-            "$ref" : "#/components/schemas/LocalDateTime"
+            "$ref" : "#/components/schemas/Instant"
           },
           "endTime" : {
-            "$ref" : "#/components/schemas/LocalDateTime"
+            "$ref" : "#/components/schemas/Instant"
           },
           "bookingDeadline" : {
-            "$ref" : "#/components/schemas/LocalDateTime"
+            "$ref" : "#/components/schemas/Instant"
           },
           "eventLocation" : {
             "$ref" : "#/components/schemas/EventLocationResponseDTO"
@@ -142,7 +142,7 @@
             "$ref" : "#/components/schemas/SeatDTO"
           },
           "reservationDateTime" : {
-            "$ref" : "#/components/schemas/LocalDateTime"
+            "$ref" : "#/components/schemas/Instant"
           }
         }
       },
@@ -246,13 +246,13 @@
             "type" : "string"
           },
           "startTime" : {
-            "$ref" : "#/components/schemas/LocalDateTime"
+            "$ref" : "#/components/schemas/Instant"
           },
           "endTime" : {
-            "$ref" : "#/components/schemas/LocalDateTime"
+            "$ref" : "#/components/schemas/Instant"
           },
           "bookingDeadline" : {
-            "$ref" : "#/components/schemas/LocalDateTime"
+            "$ref" : "#/components/schemas/Instant"
           },
           "eventLocationId" : {
             "type" : "integer",
@@ -274,13 +274,13 @@
             "type" : "string"
           },
           "startTime" : {
-            "$ref" : "#/components/schemas/LocalDateTime"
+            "$ref" : "#/components/schemas/Instant"
           },
           "endTime" : {
-            "$ref" : "#/components/schemas/LocalDateTime"
+            "$ref" : "#/components/schemas/Instant"
           },
           "bookingDeadline" : {
-            "$ref" : "#/components/schemas/LocalDateTime"
+            "$ref" : "#/components/schemas/Instant"
           },
           "location" : {
             "$ref" : "#/components/schemas/EventLocationResponseDTO"
@@ -405,6 +405,11 @@
           }
         }
       },
+      "Instant" : {
+        "type" : "string",
+        "format" : "date-time",
+        "examples" : [ "2022-03-10T16:15:50Z" ]
+      },
       "LimitedUserInfoDTO" : {
         "type" : "object",
         "properties" : {
@@ -423,11 +428,6 @@
             }
           }
         }
-      },
-      "LocalDateTime" : {
-        "type" : "string",
-        "format" : "date-time",
-        "examples" : [ "2022-03-10T12:15:50" ]
       },
       "LoginRequestDTO" : {
         "type" : "object",
@@ -514,7 +514,7 @@
             "$ref" : "#/components/schemas/SeatDTO"
           },
           "reservationDateTime" : {
-            "$ref" : "#/components/schemas/LocalDateTime"
+            "$ref" : "#/components/schemas/Instant"
           }
         }
       },
@@ -2461,7 +2461,7 @@
   } ],
   "info" : {
     "title" : "Seat Reservation API",
-    "version" : "0.0.3",
+    "version" : "0.0.4",
     "description" : "The official REST API for Seat Reservation.",
     "contact" : {
       "name" : "FelixHertweck GitHub ",

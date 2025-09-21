@@ -19,7 +19,7 @@
  */
 package de.felixhertweck.seatreservation.management.service;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -186,7 +186,7 @@ public class EventService {
      * @param end The end time of the period to search for events.
      * @return A list of Events that occur within the specified time range.
      */
-    public List<Event> findEventsBetweenDates(LocalDateTime start, LocalDateTime end) {
+    public List<Event> findEventsBetweenDates(Instant start, Instant end) {
         return eventRepository.find("startTime BETWEEN ?1 AND ?2", start, end).list();
     }
 
@@ -306,13 +306,11 @@ public class EventService {
      * @throws IllegalArgumentException if timing constraints are violated
      */
     private void validateEventTiming(EventRequestDTO dto) {
-        if (dto.getStartTime().isAfter(dto.getEndTime())
-                || dto.getStartTime().isEqual(dto.getEndTime())) {
+        if (!dto.getStartTime().isBefore(dto.getEndTime())) {
             throw new IllegalArgumentException("Start time must be before end time");
         }
 
-        if (dto.getBookingDeadline().isAfter(dto.getEndTime())
-                || dto.getBookingDeadline().isEqual(dto.getEndTime())) {
+        if (!dto.getBookingDeadline().isBefore(dto.getEndTime())) {
             throw new IllegalArgumentException("Booking deadline must be before end time");
         }
     }

@@ -19,7 +19,7 @@
  */
 package de.felixhertweck.seatreservation.management.ressource;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
 import jakarta.inject.Inject;
@@ -66,8 +66,8 @@ public class ReservationResourceTest {
 
         testEvent = new Event();
         testEvent.setName("Test Event");
-        testEvent.setStartTime(LocalDateTime.now().plusDays(2));
-        testEvent.setEndTime(LocalDateTime.now().plusDays(2).plusHours(2));
+        testEvent.setStartTime(Instant.now().plusSeconds(2 * 24 * 60 * 60));
+        testEvent.setEndTime(Instant.now().plusSeconds(2 * 24 * 60 * 60 + 2 * 60 * 60));
         testEvent.setEventLocation(testLocation);
         testEvent.setManager(manager);
         eventRepository.persist(testEvent);

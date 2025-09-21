@@ -19,7 +19,7 @@
  */
 package de.felixhertweck.seatreservation.management.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import de.felixhertweck.seatreservation.common.dto.SeatDTO;
 import de.felixhertweck.seatreservation.common.dto.UserDTO;
@@ -28,7 +28,7 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
 public record DetailedReservationResponseDTO(
-        Long id, UserDTO user, Long eventId, SeatDTO seat, LocalDateTime reservationDateTime) {
+        Long id, UserDTO user, Long eventId, SeatDTO seat, Instant reservationDateTime) {
     public DetailedReservationResponseDTO(Reservation reservation) {
         this(
                 reservation.id,

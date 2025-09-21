@@ -28,9 +28,9 @@ export type DetailedEventResponseDto = {
     id?: bigint;
     name?: string;
     description?: string;
-    startTime?: LocalDateTime;
-    endTime?: LocalDateTime;
-    bookingDeadline?: LocalDateTime;
+    startTime?: Instant;
+    endTime?: Instant;
+    bookingDeadline?: Instant;
     eventLocation?: EventLocationResponseDto;
     managerId?: bigint;
     eventUserAllowancesIds?: Array<bigint>;
@@ -41,7 +41,7 @@ export type DetailedReservationResponseDto = {
     user?: UserDto;
     eventId?: bigint;
     seat?: SeatDto;
-    reservationDateTime?: LocalDateTime;
+    reservationDateTime?: Instant;
 };
 
 export type EventLocationMakerDto = {
@@ -76,9 +76,9 @@ export type EventLocationResponseDto = {
 export type EventRequestDto = {
     name: string;
     description: string;
-    startTime: LocalDateTime;
-    endTime: LocalDateTime;
-    bookingDeadline: LocalDateTime;
+    startTime: Instant;
+    endTime: Instant;
+    bookingDeadline: Instant;
     eventLocationId: bigint;
 };
 
@@ -86,9 +86,9 @@ export type EventResponseDto = {
     id?: bigint;
     name?: string;
     description?: string;
-    startTime?: LocalDateTime;
-    endTime?: LocalDateTime;
-    bookingDeadline?: LocalDateTime;
+    startTime?: Instant;
+    endTime?: Instant;
+    bookingDeadline?: Instant;
     location?: EventLocationResponseDto;
     reservationsAllowed?: number;
 };
@@ -128,13 +128,13 @@ export type ImportSeatDto = {
     seatRow?: string;
 };
 
+export type Instant = Date;
+
 export type LimitedUserInfoDto = {
     id?: bigint;
     username?: string;
     tags?: Array<string>;
 };
-
-export type LocalDateTime = Date;
 
 export type LoginRequestDto = {
     identifier: string;
@@ -161,7 +161,7 @@ export type ReservationResponseDto = {
     userId?: bigint;
     eventId?: bigint;
     seat?: SeatDto;
-    reservationDateTime?: LocalDateTime;
+    reservationDateTime?: Instant;
 };
 
 export const ReservationStatus = {

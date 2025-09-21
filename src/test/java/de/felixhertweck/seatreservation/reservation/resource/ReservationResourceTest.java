@@ -19,7 +19,8 @@
  */
 package de.felixhertweck.seatreservation.reservation.resource;
 
-import java.time.LocalDateTime;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Set;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -68,8 +69,11 @@ public class ReservationResourceTest {
         testEvent = new Event();
         testEvent.setName("Test Event for Reservation");
         testEvent.setEventLocation(location);
-        testEvent.setStartTime(LocalDateTime.now().plusDays(2));
-        testEvent.setEndTime(LocalDateTime.now().plusDays(2).plusHours(2));
+        testEvent.setStartTime(Instant.now().plusSeconds(Duration.ofDays(2).toSeconds()));
+        testEvent.setEndTime(
+                Instant.now()
+                        .plusSeconds(Duration.ofDays(2).toSeconds())
+                        .plusSeconds(Duration.ofHours(2).toSeconds()));
         eventRepository.persist(testEvent);
 
         testSeat1 = new Seat("A1", "Row 1", location);
@@ -84,11 +88,7 @@ public class ReservationResourceTest {
 
         testReservation =
                 new Reservation(
-                        testUser,
-                        testEvent,
-                        testSeat1,
-                        LocalDateTime.now(),
-                        ReservationStatus.RESERVED);
+                        testUser, testEvent, testSeat1, Instant.now(), ReservationStatus.RESERVED);
         reservationRepository.persist(testReservation);
 
         allowance.setReservationsAllowedCount(allowance.getReservationsAllowedCount() - 1);
@@ -220,6 +220,11 @@ public class ReservationResourceTest {
         var otherEvent = new Event();
         otherEvent.setName("Other Event");
         otherEvent.setEventLocation(testEvent.getEventLocation());
+        otherEvent.setStartTime(Instant.now().plusSeconds(Duration.ofDays(2).toSeconds()));
+        otherEvent.setEndTime(
+                Instant.now()
+                        .plusSeconds(Duration.ofDays(2).toSeconds())
+                        .plusSeconds(Duration.ofHours(2).toSeconds()));
         eventRepository.persist(otherEvent);
 
         var request = new ReservationsRequestCreateDTO(otherEvent.id, Set.of(testSeat2.id));

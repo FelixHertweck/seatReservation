@@ -19,7 +19,8 @@
  */
 package de.felixhertweck.seatreservation.management.service;
 
-import java.time.LocalDateTime;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -119,9 +120,12 @@ public class ReservationServiceTest {
         event.id = 1L;
         event.setName("Konzert");
         event.setEventLocation(eventLocation);
-        event.setStartTime(LocalDateTime.now().plusDays(10));
-        event.setEndTime(LocalDateTime.now().plusDays(10).plusHours(2));
-        event.setBookingDeadline(LocalDateTime.now().plusDays(1));
+        event.setStartTime(Instant.now().plusSeconds(Duration.ofDays(10).toSeconds()));
+        event.setEndTime(
+                Instant.now()
+                        .plusSeconds(Duration.ofDays(10).toSeconds())
+                        .plusSeconds(Duration.ofHours(2).toSeconds()));
+        event.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(1).toSeconds()));
         event.setManager(managerUser);
 
         seat = new Seat("A1", eventLocation, "1", 1, 1);
@@ -129,7 +133,7 @@ public class ReservationServiceTest {
 
         reservation =
                 new Reservation(
-                        regularUser, event, seat, LocalDateTime.now(), ReservationStatus.RESERVED);
+                        regularUser, event, seat, Instant.now(), ReservationStatus.RESERVED);
         reservation.id = 1L;
 
         allowance = new EventUserAllowance(regularUser, event, 1);

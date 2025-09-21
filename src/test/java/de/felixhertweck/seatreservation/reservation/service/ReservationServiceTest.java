@@ -19,7 +19,8 @@
  */
 package de.felixhertweck.seatreservation.reservation.service;
 
-import java.time.LocalDateTime;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -86,9 +87,12 @@ class ReservationServiceTest {
         event = new Event();
         event.id = 1L;
         event.setName("Test Event for Reservation");
-        event.setBookingDeadline(LocalDateTime.now().plusDays(1));
-        event.setStartTime(LocalDateTime.now().plusDays(2));
-        event.setEndTime(LocalDateTime.now().plusDays(2).plusHours(2));
+        event.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(1).toSeconds()));
+        event.setStartTime(Instant.now().plusSeconds(Duration.ofDays(2).toSeconds()));
+        event.setEndTime(
+                Instant.now()
+                        .plusSeconds(Duration.ofDays(2).toSeconds())
+                        .plusSeconds(Duration.ofHours(2).toSeconds()));
         event.setEventLocation(location);
 
         seat1 = new Seat();
@@ -101,7 +105,7 @@ class ReservationServiceTest {
 
         reservation =
                 new Reservation(
-                        currentUser, event, seat1, LocalDateTime.now(), ReservationStatus.RESERVED);
+                        currentUser, event, seat1, Instant.now(), ReservationStatus.RESERVED);
         reservation.id = 1L;
 
         allowance = new EventUserAllowance();
@@ -272,7 +276,7 @@ class ReservationServiceTest {
 
     @Test
     void createReservationForUser_EventBookingClosedException() {
-        event.setBookingDeadline(LocalDateTime.now().minusDays(1));
+        event.setBookingDeadline(Instant.now().minusSeconds(Duration.ofDays(1).toSeconds()));
         ReservationsRequestCreateDTO dto = new ReservationsRequestCreateDTO();
         dto.setEventId(event.id);
         dto.setSeatIds(Set.of(seat1.id));
@@ -293,8 +297,7 @@ class ReservationServiceTest {
         dto.setSeatIds(Set.of(seat1.id));
 
         Reservation existingReservation =
-                new Reservation(
-                        otherUser, event, seat1, LocalDateTime.now(), ReservationStatus.RESERVED);
+                new Reservation(otherUser, event, seat1, Instant.now(), ReservationStatus.RESERVED);
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
         when(seatRepository.findByIdOptional(seat1.id)).thenReturn(Optional.of(seat1));
         when(eventUserAllowanceRepository.findByUser(currentUser)).thenReturn(List.of(allowance));

@@ -20,7 +20,9 @@
 package de.felixhertweck.seatreservation.email;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
 import jakarta.inject.Inject;
@@ -70,8 +72,11 @@ class EmailServiceTest {
         Event event = new Event();
         event.id = 10L;
         event.setName("Test Event");
-        event.setStartTime(LocalDateTime.now().plusDays(1));
-        event.setEndTime(LocalDateTime.now().plusDays(1).plusHours(2));
+        event.setStartTime(Instant.now().plusSeconds(Duration.ofDays(1).toSeconds()));
+        event.setEndTime(
+                Instant.now()
+                        .plusSeconds(Duration.ofDays(1).toSeconds())
+                        .plusSeconds(Duration.ofHours(2).toSeconds()));
         event.setEventLocation(location);
         return event;
     }
@@ -105,7 +110,10 @@ class EmailServiceTest {
     void sendEmailConfirmation_Success() throws IOException {
         User user = createTestUser();
         EmailVerification emailVerification =
-                new EmailVerification(user, "testtoken", LocalDateTime.now().plusMinutes(60));
+                new EmailVerification(
+                        user,
+                        "testtoken",
+                        Instant.now().plusSeconds(Duration.ofMinutes(60).toSeconds()));
 
         emailService.sendEmailConfirmation(user, emailVerification);
 
@@ -147,7 +155,10 @@ class EmailServiceTest {
     void updateEmailVerificationExpiration_Success() {
         User user = createTestUser();
         EmailVerification emailVerification =
-                new EmailVerification(user, "oldtoken", LocalDateTime.now().minusMinutes(10));
+                new EmailVerification(
+                        user,
+                        "oldtoken",
+                        Instant.now().minusSeconds(Duration.ofMinutes(10).toSeconds()));
         emailVerification.id = 1L;
 
         doNothing().when(emailVerificationRepository).persist(any(EmailVerification.class));
@@ -159,7 +170,7 @@ class EmailServiceTest {
         assertTrue(
                 updatedVerification
                         .getExpirationTime()
-                        .isAfter(LocalDateTime.now().minusMinutes(1)));
+                        .isAfter(Instant.now().minusSeconds(Duration.ofMinutes(1).toSeconds())));
         verify(emailVerificationRepository, times(1)).persist(updatedVerification);
     }
 
@@ -182,8 +193,20 @@ class EmailServiceTest {
         assertEquals("Reminder: Your event is starting soon!", sentMail.getSubject());
         assertTrue(sentMail.getHtml().contains(user.getFirstname() + " " + user.getLastname()));
         assertTrue(sentMail.getHtml().contains(event.getName()));
-        assertTrue(sentMail.getHtml().contains(event.getStartTime().toLocalDate().toString()));
-        assertTrue(sentMail.getHtml().contains(event.getStartTime().toLocalTime().toString()));
+        assertTrue(
+                sentMail.getHtml()
+                        .contains(
+                                event.getStartTime()
+                                        .atZone(ZoneId.systemDefault())
+                                        .toLocalDate()
+                                        .toString()));
+        assertTrue(
+                sentMail.getHtml()
+                        .contains(
+                                event.getStartTime()
+                                        .atZone(ZoneId.systemDefault())
+                                        .toLocalTime()
+                                        .toString()));
         assertTrue(sentMail.getHtml().contains(event.getEventLocation().getName()));
         assertTrue(sentMail.getHtml().contains("<li>A1</li>"));
     }

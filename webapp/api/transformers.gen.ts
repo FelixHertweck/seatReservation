@@ -61,7 +61,7 @@ export const putApiManagerEventlocationsByIdResponseTransformer = async (data: a
     return data;
 };
 
-const localDateTimeSchemaResponseTransformer = (data: any) => {
+const instantSchemaResponseTransformer = (data: any) => {
     data = new Date(data);
     return data;
 };
@@ -71,13 +71,13 @@ const detailedEventResponseDtoSchemaResponseTransformer = (data: any) => {
         data.id = BigInt(data.id.toString());
     }
     if (data.startTime) {
-        data.startTime = localDateTimeSchemaResponseTransformer(data.startTime);
+        data.startTime = instantSchemaResponseTransformer(data.startTime);
     }
     if (data.endTime) {
-        data.endTime = localDateTimeSchemaResponseTransformer(data.endTime);
+        data.endTime = instantSchemaResponseTransformer(data.endTime);
     }
     if (data.bookingDeadline) {
-        data.bookingDeadline = localDateTimeSchemaResponseTransformer(data.bookingDeadline);
+        data.bookingDeadline = instantSchemaResponseTransformer(data.bookingDeadline);
     }
     if (data.eventLocation) {
         data.eventLocation = eventLocationResponseDtoSchemaResponseTransformer(data.eventLocation);
@@ -181,7 +181,7 @@ const detailedReservationResponseDtoSchemaResponseTransformer = (data: any) => {
         data.seat = seatDtoSchemaResponseTransformer(data.seat);
     }
     if (data.reservationDateTime) {
-        data.reservationDateTime = localDateTimeSchemaResponseTransformer(data.reservationDateTime);
+        data.reservationDateTime = instantSchemaResponseTransformer(data.reservationDateTime);
     }
     return data;
 };
@@ -246,13 +246,13 @@ const eventResponseDtoSchemaResponseTransformer = (data: any) => {
         data.id = BigInt(data.id.toString());
     }
     if (data.startTime) {
-        data.startTime = localDateTimeSchemaResponseTransformer(data.startTime);
+        data.startTime = instantSchemaResponseTransformer(data.startTime);
     }
     if (data.endTime) {
-        data.endTime = localDateTimeSchemaResponseTransformer(data.endTime);
+        data.endTime = instantSchemaResponseTransformer(data.endTime);
     }
     if (data.bookingDeadline) {
-        data.bookingDeadline = localDateTimeSchemaResponseTransformer(data.bookingDeadline);
+        data.bookingDeadline = instantSchemaResponseTransformer(data.bookingDeadline);
     }
     if (data.location) {
         data.location = eventLocationResponseDtoSchemaResponseTransformer(data.location);
@@ -281,7 +281,7 @@ const reservationResponseDtoSchemaResponseTransformer = (data: any) => {
         data.seat = seatDtoSchemaResponseTransformer(data.seat);
     }
     if (data.reservationDateTime) {
-        data.reservationDateTime = localDateTimeSchemaResponseTransformer(data.reservationDateTime);
+        data.reservationDateTime = instantSchemaResponseTransformer(data.reservationDateTime);
     }
     return data;
 };

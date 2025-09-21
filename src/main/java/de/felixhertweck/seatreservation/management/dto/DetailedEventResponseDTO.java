@@ -19,7 +19,7 @@
  */
 package de.felixhertweck.seatreservation.management.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,9 +32,9 @@ public record DetailedEventResponseDTO(
         Long id,
         String name,
         String description,
-        LocalDateTime startTime,
-        LocalDateTime endTime,
-        LocalDateTime bookingDeadline,
+        Instant startTime,
+        Instant endTime,
+        Instant bookingDeadline,
         EventLocationResponseDTO eventLocation,
         Long managerId,
         Set<Long> eventUserAllowancesIds) {

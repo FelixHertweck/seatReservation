@@ -20,7 +20,7 @@
 package de.felixhertweck.seatreservation.reservation.service;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -187,7 +187,7 @@ public class ReservationService {
                     "You have reached your reservation limit for this event");
         }
 
-        LocalDateTime reservationTime = LocalDateTime.now();
+        Instant reservationTime = Instant.now();
 
         // Check if the event is still bookable
         if (event.getBookingDeadline() != null

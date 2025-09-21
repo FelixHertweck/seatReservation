@@ -20,7 +20,8 @@
 package de.felixhertweck.seatreservation.userManagment.service;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -97,7 +98,7 @@ public class UserServiceTest {
                                 Set.of(),
                                 Set.of()),
                         "token",
-                        LocalDateTime.now());
+                        Instant.now());
         when(emailService.createEmailVerification(any(User.class)))
                 .thenReturn(mockEmailVerification);
 
@@ -210,7 +211,7 @@ public class UserServiceTest {
                                         Set.of(),
                                         Set.of()),
                                 "token",
-                                LocalDateTime.now()));
+                                Instant.now()));
 
         // Simulate that another user already has this email, but it should not prevent creation
         // (assuming email uniqueness is not enforced at this layer for creation)
@@ -247,7 +248,7 @@ public class UserServiceTest {
                                         Set.of(),
                                         Set.of()),
                                 "token",
-                                LocalDateTime.now()));
+                                Instant.now()));
         doThrow(new IOException("Email send failed"))
                 .when(emailService)
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
@@ -575,7 +576,7 @@ public class UserServiceTest {
                                         Collections.emptySet(),
                                         Collections.emptySet()),
                                 "token",
-                                LocalDateTime.now()));
+                                Instant.now()));
 
         UserDTO updatedUser = userService.updateUser(1L, dto);
 
@@ -658,7 +659,7 @@ public class UserServiceTest {
                                         Collections.emptySet(),
                                         Collections.emptySet()),
                                 "token",
-                                LocalDateTime.now()));
+                                Instant.now()));
 
         // Simulate another user already has this email, but it should not prevent update
         // (assuming email uniqueness is not enforced at this layer for update)
@@ -713,7 +714,7 @@ public class UserServiceTest {
                                         Collections.emptySet(),
                                         Collections.emptySet()),
                                 "token",
-                                LocalDateTime.now()));
+                                Instant.now()));
         doThrow(new IOException("Email send failed"))
                 .when(emailService)
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
@@ -987,7 +988,7 @@ public class UserServiceTest {
                                         Collections.emptySet(),
                                         Collections.emptySet()),
                                 "token",
-                                LocalDateTime.now()));
+                                Instant.now()));
 
         UserDTO updatedUser = userService.updateUserProfile("testuser", dto);
 
@@ -1063,7 +1064,7 @@ public class UserServiceTest {
                                         Collections.emptySet(),
                                         Collections.emptySet()),
                                 "token",
-                                LocalDateTime.now()));
+                                Instant.now()));
 
         UserDTO updatedUser = userService.updateUserProfile("testuser", dto);
 
@@ -1111,7 +1112,7 @@ public class UserServiceTest {
                                         Collections.emptySet(),
                                         Collections.emptySet()),
                                 "token",
-                                LocalDateTime.now()));
+                                Instant.now()));
         doThrow(new IOException("Email send failed"))
                 .when(emailService)
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
@@ -1190,7 +1191,7 @@ public class UserServiceTest {
                                         Collections.emptySet(),
                                         Collections.emptySet()),
                                 "token",
-                                LocalDateTime.now()));
+                                Instant.now()));
 
         Set<UserDTO> importedUsers = userService.importUsers(dtos);
 
@@ -1264,7 +1265,7 @@ public class UserServiceTest {
                                         Collections.emptySet(),
                                         Collections.emptySet()),
                                 "token",
-                                LocalDateTime.now()));
+                                Instant.now()));
 
         assertThrows(DuplicateUserException.class, () -> userService.importUsers(dtos));
         verify(userRepository, never()).persist(any(User.class));
@@ -1301,7 +1302,7 @@ public class UserServiceTest {
                                         Collections.emptySet(),
                                         Collections.emptySet()),
                                 "token",
-                                LocalDateTime.now()));
+                                Instant.now()));
         doThrow(new IOException("Email send failed"))
                 .when(emailService)
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
@@ -1330,7 +1331,10 @@ public class UserServiceTest {
                         Collections.emptySet());
         user.id = 1L;
         EmailVerification emailVerification =
-                new EmailVerification(user, "123456", LocalDateTime.now().plusMinutes(10));
+                new EmailVerification(
+                        user,
+                        "123456",
+                        Instant.now().plusSeconds(Duration.ofMinutes(10).toSeconds()));
         emailVerification.id = 100L;
 
         when(emailVerificationRepository.findByToken("123456")).thenReturn(emailVerification);
@@ -1393,7 +1397,9 @@ public class UserServiceTest {
         user.id = 1L;
         EmailVerification emailVerification =
                 new EmailVerification(
-                        user, "123456", LocalDateTime.now().minusMinutes(10)); // expired
+                        user,
+                        "123456",
+                        Instant.now().minusSeconds(Duration.ofMinutes(10).toSeconds())); // expired
         emailVerification.id = 100L;
 
         when(emailVerificationRepository.findByToken("123456")).thenReturn(emailVerification);
@@ -1421,7 +1427,10 @@ public class UserServiceTest {
                         Collections.emptySet());
         user.id = 1L;
         EmailVerification emailVerification =
-                new EmailVerification(user, "123456", LocalDateTime.now().plusMinutes(10));
+                new EmailVerification(
+                        user,
+                        "123456",
+                        Instant.now().plusSeconds(Duration.ofMinutes(10).toSeconds()));
         emailVerification.id = 100L;
 
         when(emailVerificationRepository.findByToken("123456"))

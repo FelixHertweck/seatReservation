@@ -19,7 +19,8 @@
  */
 package de.felixhertweck.seatreservation.management.service;
 
-import java.time.LocalDateTime;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -122,9 +123,9 @@ public class EventServiceTest {
                 new Event(
                         "Konzert",
                         "Beschreibung",
-                        LocalDateTime.now().plusDays(1),
-                        LocalDateTime.now().plusDays(2),
-                        LocalDateTime.now().plusHours(12),
+                        Instant.now().plusSeconds(Duration.ofDays(1).toSeconds()),
+                        Instant.now().plusSeconds(Duration.ofDays(2).toSeconds()),
+                        Instant.now().plusSeconds(Duration.ofHours(12).toSeconds()),
                         eventLocation,
                         managerUser);
         existingEvent.id = 1L;
@@ -135,9 +136,9 @@ public class EventServiceTest {
         EventRequestDTO dto = new EventRequestDTO();
         dto.setName("New Event");
         dto.setDescription("New Description");
-        dto.setStartTime(LocalDateTime.now().plusDays(5));
-        dto.setEndTime(LocalDateTime.now().plusDays(6));
-        dto.setBookingDeadline(LocalDateTime.now().plusDays(4));
+        dto.setStartTime(Instant.now().plusSeconds(Duration.ofDays(5).toSeconds()));
+        dto.setEndTime(Instant.now().plusSeconds(Duration.ofDays(6).toSeconds()));
+        dto.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(4).toSeconds()));
         dto.setEventLocationId(eventLocation.id);
 
         when(eventLocationRepository.findByIdOptional(eventLocation.id))
@@ -164,9 +165,9 @@ public class EventServiceTest {
         EventRequestDTO dto = new EventRequestDTO();
         dto.setName("New Event");
         dto.setDescription("New Description");
-        dto.setStartTime(LocalDateTime.now().plusDays(5));
-        dto.setEndTime(LocalDateTime.now().plusDays(6));
-        dto.setBookingDeadline(LocalDateTime.now().plusDays(4));
+        dto.setStartTime(Instant.now().plusSeconds(Duration.ofDays(5).toSeconds()));
+        dto.setEndTime(Instant.now().plusSeconds(Duration.ofDays(6).toSeconds()));
+        dto.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(4).toSeconds()));
         dto.setEventLocationId(99L); // Non-existent location ID
 
         when(eventLocationRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
@@ -181,9 +182,9 @@ public class EventServiceTest {
         EventRequestDTO dto = new EventRequestDTO();
         dto.setName("Updated Event");
         dto.setDescription("Updated Description");
-        dto.setStartTime(LocalDateTime.now().plusDays(10));
-        dto.setEndTime(LocalDateTime.now().plusDays(11));
-        dto.setBookingDeadline(LocalDateTime.now().plusDays(9));
+        dto.setStartTime(Instant.now().plusSeconds(Duration.ofDays(10).toSeconds()));
+        dto.setEndTime(Instant.now().plusSeconds(Duration.ofDays(11).toSeconds()));
+        dto.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(9).toSeconds()));
         dto.setEventLocationId(eventLocation.id);
 
         when(eventRepository.findByIdOptional(existingEvent.id))
@@ -204,9 +205,9 @@ public class EventServiceTest {
         EventRequestDTO dto = new EventRequestDTO();
         dto.setName("Updated Event Admin");
         dto.setDescription("Updated Description Admin");
-        dto.setStartTime(LocalDateTime.now().plusDays(10));
-        dto.setEndTime(LocalDateTime.now().plusDays(11));
-        dto.setBookingDeadline(LocalDateTime.now().plusDays(9));
+        dto.setStartTime(Instant.now().plusSeconds(Duration.ofDays(10).toSeconds()));
+        dto.setEndTime(Instant.now().plusSeconds(Duration.ofDays(11).toSeconds()));
+        dto.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(9).toSeconds()));
         dto.setEventLocationId(eventLocation.id);
 
         when(eventRepository.findByIdOptional(existingEvent.id))
@@ -227,9 +228,9 @@ public class EventServiceTest {
         EventRequestDTO dto = new EventRequestDTO();
         dto.setName("Updated Event");
         dto.setDescription("Updated Description");
-        dto.setStartTime(LocalDateTime.now().plusDays(10));
-        dto.setEndTime(LocalDateTime.now().plusDays(11));
-        dto.setBookingDeadline(LocalDateTime.now().plusDays(9));
+        dto.setStartTime(Instant.now().plusSeconds(Duration.ofDays(10).toSeconds()));
+        dto.setEndTime(Instant.now().plusSeconds(Duration.ofDays(11).toSeconds()));
+        dto.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(9).toSeconds()));
         dto.setEventLocationId(eventLocation.id);
 
         when(eventRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
@@ -245,9 +246,9 @@ public class EventServiceTest {
         EventRequestDTO dto = new EventRequestDTO();
         dto.setName("Updated Event");
         dto.setDescription("Updated Description");
-        dto.setStartTime(LocalDateTime.now().plusDays(10));
-        dto.setEndTime(LocalDateTime.now().plusDays(11));
-        dto.setBookingDeadline(LocalDateTime.now().plusDays(9));
+        dto.setStartTime(Instant.now().plusSeconds(Duration.ofDays(10).toSeconds()));
+        dto.setEndTime(Instant.now().plusSeconds(Duration.ofDays(11).toSeconds()));
+        dto.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(9).toSeconds()));
         dto.setEventLocationId(eventLocation.id);
 
         when(eventRepository.findByIdOptional(existingEvent.id))
@@ -266,9 +267,9 @@ public class EventServiceTest {
         EventRequestDTO dto = new EventRequestDTO();
         dto.setName("Updated Event");
         dto.setDescription("Updated Description");
-        dto.setStartTime(LocalDateTime.now().plusDays(10));
-        dto.setEndTime(LocalDateTime.now().plusDays(11));
-        dto.setBookingDeadline(LocalDateTime.now().plusDays(9));
+        dto.setStartTime(Instant.now().plusSeconds(Duration.ofDays(10).toSeconds()));
+        dto.setEndTime(Instant.now().plusSeconds(Duration.ofDays(11).toSeconds()));
+        dto.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(9).toSeconds()));
         dto.setEventLocationId(99L); // Non-existent location ID
 
         when(eventRepository.findByIdOptional(existingEvent.id))
@@ -289,9 +290,9 @@ public class EventServiceTest {
                         new Event(
                                 "Another Event",
                                 "Desc",
-                                LocalDateTime.now(),
-                                LocalDateTime.now(),
-                                LocalDateTime.now(),
+                                Instant.now(),
+                                Instant.now(),
+                                Instant.now(),
                                 eventLocation,
                                 regularUser));
         when(eventRepository.listAll()).thenReturn(allEvents);

@@ -20,8 +20,9 @@
 package de.felixhertweck.seatreservation.email;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.Year;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Set;
@@ -139,7 +140,10 @@ public class EmailService {
         htmlContent =
                 htmlContent.replace(
                         "{expirationTime}",
-                        emailVerification.getExpirationTime().format(formatter));
+                        emailVerification
+                                .getExpirationTime()
+                                .atZone(ZoneId.systemDefault())
+                                .format(formatter));
         htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
         LOG.debug("Placeholders replaced in email template.");
 
@@ -170,7 +174,7 @@ public class EmailService {
     public EmailVerification createEmailVerification(User user) {
         LOG.debugf("Creating new email verification for user ID: %d", user.id);
         String verificationCode = VerificationCodeGenerator.generate();
-        LocalDateTime expirationTime = LocalDateTime.now().plusMinutes(expirationMinutes);
+        Instant expirationTime = Instant.now().plusSeconds(expirationMinutes * 60);
         EmailVerification emailVerification =
                 new EmailVerification(user, verificationCode, expirationTime);
         emailVerificationRepository.persist(emailVerification);
@@ -188,7 +192,7 @@ public class EmailService {
      */
     public EmailVerification updateEmailVerificationExpiration(
             EmailVerification emailVerification) {
-        emailVerification.setExpirationTime(LocalDateTime.now().plusMinutes(expirationMinutes));
+        emailVerification.setExpirationTime(Instant.now().plusSeconds(expirationMinutes * 60));
         emailVerificationRepository.persist(emailVerification);
         LOG.debugf(
                 "Email verification entry ID %d expiration time updated to: %s",
@@ -293,8 +297,13 @@ public class EmailService {
         htmlContent = htmlContent.replace("{eventName}", eventName != null ? eventName : "");
         htmlContent = htmlContent.replace("{eventLocation}", event.getEventLocation().getName());
         htmlContent =
-                htmlContent.replace("{eventStartTime}", event.getStartTime().format(formatter));
-        htmlContent = htmlContent.replace("{eventEndTime}", event.getEndTime().format(formatter));
+                htmlContent.replace(
+                        "{eventStartTime}",
+                        event.getStartTime().atZone(ZoneId.systemDefault()).format(formatter));
+        htmlContent =
+                htmlContent.replace(
+                        "{eventEndTime}",
+                        event.getEndTime().atZone(ZoneId.systemDefault()).format(formatter));
         htmlContent = htmlContent.replace("{seatList}", seatListHtml.toString());
         htmlContent = htmlContent.replace("{eventLink}", generateEventLink(event.id));
         htmlContent = htmlContent.replace("{seatMap}", svgContent);
@@ -417,8 +426,13 @@ public class EmailService {
         htmlContent = htmlContent.replace("{eventName}", eventName != null ? eventName : "");
         htmlContent = htmlContent.replace("{eventLocation}", event.getEventLocation().getName());
         htmlContent =
-                htmlContent.replace("{eventStartTime}", event.getStartTime().format(formatter));
-        htmlContent = htmlContent.replace("{eventEndTime}", event.getEndTime().format(formatter));
+                htmlContent.replace(
+                        "{eventStartTime}",
+                        event.getStartTime().atZone(ZoneId.systemDefault()).format(formatter));
+        htmlContent =
+                htmlContent.replace(
+                        "{eventEndTime}",
+                        event.getEndTime().atZone(ZoneId.systemDefault()).format(formatter));
 
         htmlContent = htmlContent.replace("{deletedSeatList}", deletedSeatListHtml.toString());
         htmlContent = htmlContent.replace("{eventLink}", generateEventLink(event.id));
@@ -537,9 +551,19 @@ public class EmailService {
                 htmlContent.replace("{userName}", user.getFirstname() + " " + user.getLastname());
         htmlContent = htmlContent.replace("{eventName}", event.getName());
         htmlContent =
-                htmlContent.replace("{eventDate}", event.getStartTime().toLocalDate().toString());
+                htmlContent.replace(
+                        "{eventDate}",
+                        event.getStartTime()
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDate()
+                                .toString());
         htmlContent =
-                htmlContent.replace("{eventTime}", event.getStartTime().toLocalTime().toString());
+                htmlContent.replace(
+                        "{eventTime}",
+                        event.getStartTime()
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalTime()
+                                .toString());
         htmlContent = htmlContent.replace("{eventLocation}", event.getEventLocation().getName());
         htmlContent = htmlContent.replace("{seatList}", seatListHtml.toString());
         htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
@@ -593,9 +617,19 @@ public class EmailService {
                         "{userName}", manager.getFirstname() + " " + manager.getLastname());
         htmlContent = htmlContent.replace("{eventName}", event.getName());
         htmlContent =
-                htmlContent.replace("{eventDate}", event.getStartTime().toLocalDate().toString());
+                htmlContent.replace(
+                        "{eventDate}",
+                        event.getStartTime()
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDate()
+                                .toString());
         htmlContent =
-                htmlContent.replace("{eventTime}", event.getStartTime().toLocalTime().toString());
+                htmlContent.replace(
+                        "{eventTime}",
+                        event.getStartTime()
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalTime()
+                                .toString());
         htmlContent = htmlContent.replace("{eventLocation}", event.getEventLocation().getName());
         htmlContent =
                 htmlContent.replace(

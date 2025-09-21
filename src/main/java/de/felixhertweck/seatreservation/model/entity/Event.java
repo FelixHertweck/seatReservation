@@ -19,7 +19,7 @@
  */
 package de.felixhertweck.seatreservation.model.entity;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.*;
 import jakarta.persistence.*;
 
@@ -31,9 +31,9 @@ public class Event extends PanacheEntity {
 
     private String name;
     private String description;
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
-    private LocalDateTime bookingDeadline;
+    private Instant startTime;
+    private Instant endTime;
+    private Instant bookingDeadline;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private EventLocation event_location;
@@ -56,9 +56,9 @@ public class Event extends PanacheEntity {
     public Event(
             String name,
             String description,
-            LocalDateTime startTime,
-            LocalDateTime endTime,
-            LocalDateTime bookingDeadline,
+            Instant startTime,
+            Instant endTime,
+            Instant bookingDeadline,
             EventLocation location,
             User manager) {
         this.name = name;
@@ -86,27 +86,27 @@ public class Event extends PanacheEntity {
         this.description = description;
     }
 
-    public LocalDateTime getStartTime() {
+    public Instant getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(LocalDateTime startTime) {
+    public void setStartTime(Instant startTime) {
         this.startTime = startTime;
     }
 
-    public LocalDateTime getEndTime() {
+    public Instant getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(LocalDateTime endTime) {
+    public void setEndTime(Instant endTime) {
         this.endTime = endTime;
     }
 
-    public LocalDateTime getBookingDeadline() {
+    public Instant getBookingDeadline() {
         return bookingDeadline;
     }
 
-    public void setBookingDeadline(LocalDateTime bookingDeadline) {
+    public void setBookingDeadline(Instant bookingDeadline) {
         this.bookingDeadline = bookingDeadline;
     }
 

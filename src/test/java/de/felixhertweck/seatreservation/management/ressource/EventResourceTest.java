@@ -168,9 +168,9 @@ public class EventResourceTest {
                         Map.of(
                                 "name", "New Event",
                                 "description", "Description",
-                                "startTime", "2025-01-01T19:00:00",
-                                "endTime", "2025-01-01T21:00:00",
-                                "bookingDeadline", "2024-12-31T12:00:00",
+                                "startTime", "2025-01-01T19:00:00Z",
+                                "endTime", "2025-01-01T21:00:00Z",
+                                "bookingDeadline", "2024-12-31T12:00:00Z",
                                 "eventLocationId", testLocation.getId()))
                 .when()
                 .post("/api/manager/events")
@@ -202,9 +202,9 @@ public class EventResourceTest {
                         Map.of(
                                 "name", "Updated Event",
                                 "description", "Description",
-                                "startTime", "2025-01-01T19:00:00",
-                                "endTime", "2025-01-01T21:00:00",
-                                "bookingDeadline", "2024-12-31T12:00:00",
+                                "startTime", "2025-01-01T19:00:00Z",
+                                "endTime", "2025-01-01T21:00:00Z",
+                                "bookingDeadline", "2024-12-31T12:00:00Z",
                                 "eventLocationId", testLocation.getId()))
                 .when()
                 .put("/api/manager/events/" + testEvent.getId())
@@ -236,9 +236,9 @@ public class EventResourceTest {
                         Map.of(
                                 "name", "Updated Event",
                                 "description", "Description",
-                                "startTime", "2025-01-01T19:00:00",
-                                "endTime", "2025-01-01T21:00:00",
-                                "bookingDeadline", "2024-12-31T12:00:00",
+                                "startTime", "2025-01-01T19:00:00Z",
+                                "endTime", "2025-01-01T21:00:00Z",
+                                "bookingDeadline", "2024-12-31T12:00:00Z",
                                 "eventLocationId", testLocation.getId()))
                 .when()
                 .put("/api/manager/events/999")

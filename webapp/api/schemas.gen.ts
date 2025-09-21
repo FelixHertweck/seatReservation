@@ -100,13 +100,13 @@ export const DetailedEventResponseDTOSchema = {
             type: 'string'
         },
         startTime: {
-            '$ref': '#/components/schemas/LocalDateTime'
+            '$ref': '#/components/schemas/Instant'
         },
         endTime: {
-            '$ref': '#/components/schemas/LocalDateTime'
+            '$ref': '#/components/schemas/Instant'
         },
         bookingDeadline: {
-            '$ref': '#/components/schemas/LocalDateTime'
+            '$ref': '#/components/schemas/Instant'
         },
         eventLocation: {
             '$ref': '#/components/schemas/EventLocationResponseDTO'
@@ -144,7 +144,7 @@ export const DetailedReservationResponseDTOSchema = {
             '$ref': '#/components/schemas/SeatDTO'
         },
         reservationDateTime: {
-            '$ref': '#/components/schemas/LocalDateTime'
+            '$ref': '#/components/schemas/Instant'
         }
     }
 } as const;
@@ -253,13 +253,13 @@ export const EventRequestDTOSchema = {
             type: 'string'
         },
         startTime: {
-            '$ref': '#/components/schemas/LocalDateTime'
+            '$ref': '#/components/schemas/Instant'
         },
         endTime: {
-            '$ref': '#/components/schemas/LocalDateTime'
+            '$ref': '#/components/schemas/Instant'
         },
         bookingDeadline: {
-            '$ref': '#/components/schemas/LocalDateTime'
+            '$ref': '#/components/schemas/Instant'
         },
         eventLocationId: {
             type: 'integer',
@@ -282,13 +282,13 @@ export const EventResponseDTOSchema = {
             type: 'string'
         },
         startTime: {
-            '$ref': '#/components/schemas/LocalDateTime'
+            '$ref': '#/components/schemas/Instant'
         },
         endTime: {
-            '$ref': '#/components/schemas/LocalDateTime'
+            '$ref': '#/components/schemas/Instant'
         },
         bookingDeadline: {
-            '$ref': '#/components/schemas/LocalDateTime'
+            '$ref': '#/components/schemas/Instant'
         },
         location: {
             '$ref': '#/components/schemas/EventLocationResponseDTO'
@@ -419,6 +419,12 @@ export const ImportSeatDtoSchema = {
     }
 } as const;
 
+export const InstantSchema = {
+    type: 'string',
+    format: 'date-time',
+    examples: ['2022-03-10T16:15:50Z']
+} as const;
+
 export const LimitedUserInfoDTOSchema = {
     type: 'object',
     properties: {
@@ -437,12 +443,6 @@ export const LimitedUserInfoDTOSchema = {
             }
         }
     }
-} as const;
-
-export const LocalDateTimeSchema = {
-    type: 'string',
-    format: 'date-time',
-    examples: ['2022-03-10T12:15:50']
 } as const;
 
 export const LoginRequestDTOSchema = {
@@ -533,7 +533,7 @@ export const ReservationResponseDTOSchema = {
             '$ref': '#/components/schemas/SeatDTO'
         },
         reservationDateTime: {
-            '$ref': '#/components/schemas/LocalDateTime'
+            '$ref': '#/components/schemas/Instant'
         }
     }
 } as const;

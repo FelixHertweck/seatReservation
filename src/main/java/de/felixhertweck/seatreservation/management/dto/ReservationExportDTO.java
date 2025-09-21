@@ -20,7 +20,7 @@
 
 package de.felixhertweck.seatreservation.management.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import io.quarkus.runtime.annotations.RegisterForReflection;
@@ -31,7 +31,7 @@ public class ReservationExportDTO {
     private String seatNumber;
     private String firstName;
     private String lastName;
-    private LocalDateTime reservationDate;
+    private Instant reservationDate;
 
     public ReservationExportDTO(Reservation reservation, Long exportId) {
         this.id = exportId;
@@ -73,11 +73,11 @@ public class ReservationExportDTO {
         this.lastName = lastName;
     }
 
-    public LocalDateTime getReservationDate() {
+    public Instant getReservationDate() {
         return reservationDate;
     }
 
-    public void setReservationDate(LocalDateTime reservationDate) {
+    public void setReservationDate(Instant reservationDate) {
         this.reservationDate = reservationDate;
     }
 }

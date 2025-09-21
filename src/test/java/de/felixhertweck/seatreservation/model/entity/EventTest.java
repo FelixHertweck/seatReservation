@@ -19,7 +19,10 @@
  */
 package de.felixhertweck.seatreservation.model.entity;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -65,9 +68,9 @@ class EventTest {
     void testEventParameterizedConstructor() {
         String name = "Test Event";
         String description = "Test Description";
-        LocalDateTime startTime = LocalDateTime.now().plusDays(1);
-        LocalDateTime endTime = startTime.plusHours(2);
-        LocalDateTime bookingDeadline = startTime.minusHours(1);
+        Instant startTime = Instant.now().plusSeconds(Duration.ofDays(1).toSeconds());
+        Instant endTime = startTime.plusSeconds(Duration.ofHours(2).toSeconds());
+        Instant bookingDeadline = startTime.minusSeconds(Duration.ofHours(1).toSeconds());
 
         Event constructedEvent =
                 new Event(
@@ -98,21 +101,24 @@ class EventTest {
 
     @Test
     void testStartTimeSetterGetter() {
-        LocalDateTime startTime = LocalDateTime.of(2025, 12, 25, 10, 0);
+        Instant startTime =
+                LocalDateTime.of(2025, 12, 25, 10, 0).atZone(ZoneId.systemDefault()).toInstant();
         event.setStartTime(startTime);
         assertEquals(startTime, event.getStartTime());
     }
 
     @Test
     void testEndTimeSetterGetter() {
-        LocalDateTime endTime = LocalDateTime.of(2025, 12, 25, 18, 0);
+        Instant endTime =
+                LocalDateTime.of(2025, 12, 25, 18, 0).atZone(ZoneId.systemDefault()).toInstant();
         event.setEndTime(endTime);
         assertEquals(endTime, event.getEndTime());
     }
 
     @Test
     void testBookingDeadlineSetterGetter() {
-        LocalDateTime deadline = LocalDateTime.of(2025, 12, 24, 23, 59);
+        Instant deadline =
+                LocalDateTime.of(2025, 12, 24, 23, 59).atZone(ZoneId.systemDefault()).toInstant();
         event.setBookingDeadline(deadline);
         assertEquals(deadline, event.getBookingDeadline());
     }
@@ -131,10 +137,9 @@ class EventTest {
 
     @Test
     void testEventTimingValidation() {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime startTime = now.plusDays(1);
-        LocalDateTime endTime = startTime.plusHours(3);
-        LocalDateTime bookingDeadline = startTime.minusHours(2);
+        Instant startTime = Instant.now().plusSeconds(Duration.ofDays(1).toSeconds());
+        Instant endTime = startTime.plusSeconds(Duration.ofHours(3).toSeconds());
+        Instant bookingDeadline = startTime.minusSeconds(Duration.ofHours(2).toSeconds());
 
         event.setStartTime(startTime);
         event.setEndTime(endTime);
@@ -148,24 +153,24 @@ class EventTest {
 
     @Test
     void testEventWithPastDates() {
-        LocalDateTime pastDate = LocalDateTime.now().minusDays(1);
+        Instant pastDate = Instant.now().minusSeconds(Duration.ofDays(1).toSeconds());
         event.setStartTime(pastDate);
-        event.setEndTime(pastDate.plusHours(2));
-        event.setBookingDeadline(pastDate.minusHours(1));
+        event.setEndTime(pastDate.plusSeconds(Duration.ofHours(2).toSeconds()));
+        event.setBookingDeadline(pastDate.minusSeconds(Duration.ofHours(1).toSeconds()));
 
         assertEquals(pastDate, event.getStartTime());
-        assertTrue(event.getStartTime().isBefore(LocalDateTime.now()));
+        assertTrue(event.getStartTime().isBefore(Instant.now()));
     }
 
     @Test
     void testEventWithFutureDates() {
-        LocalDateTime futureDate = LocalDateTime.now().plusMonths(1);
+        Instant futureDate = Instant.now().plusSeconds(Duration.ofDays(30).toSeconds());
         event.setStartTime(futureDate);
-        event.setEndTime(futureDate.plusHours(4));
-        event.setBookingDeadline(futureDate.minusDays(1));
+        event.setEndTime(futureDate.plusSeconds(Duration.ofHours(4).toSeconds()));
+        event.setBookingDeadline(futureDate.minusSeconds(Duration.ofDays(1).toSeconds()));
 
         assertEquals(futureDate, event.getStartTime());
-        assertTrue(event.getStartTime().isAfter(LocalDateTime.now()));
+        assertTrue(event.getStartTime().isAfter(Instant.now()));
     }
 
     @Test
@@ -266,30 +271,39 @@ class EventTest {
 
     @Test
     void testSameDayEvent() {
-        LocalDateTime eventDay = LocalDateTime.of(2025, 6, 15, 9, 0);
-        LocalDateTime startTime = eventDay;
-        LocalDateTime endTime = eventDay.withHour(17);
-        LocalDateTime bookingDeadline = eventDay.minusDays(1);
+        Instant eventDay =
+                LocalDateTime.of(2025, 6, 15, 9, 0).atZone(ZoneId.systemDefault()).toInstant();
+        Instant startTime = eventDay;
+        Instant endTime = eventDay.atZone(ZoneId.systemDefault()).withHour(17).toInstant();
+        Instant bookingDeadline = eventDay.minusSeconds(Duration.ofDays(1).toSeconds());
 
         event.setStartTime(startTime);
         event.setEndTime(endTime);
         event.setBookingDeadline(bookingDeadline);
 
-        assertEquals(startTime.toLocalDate(), endTime.toLocalDate());
+        assertEquals(
+                startTime.atZone(ZoneId.systemDefault()).toLocalDate(),
+                endTime.atZone(ZoneId.systemDefault()).toLocalDate());
         assertTrue(event.getEndTime().isAfter(event.getStartTime()));
     }
 
     @Test
     void testMultiDayEvent() {
-        LocalDateTime startTime = LocalDateTime.of(2025, 6, 15, 9, 0);
-        LocalDateTime endTime = LocalDateTime.of(2025, 6, 17, 17, 0); // 3-day event
-        LocalDateTime bookingDeadline = startTime.minusWeeks(1);
+        Instant startTime =
+                LocalDateTime.of(2025, 6, 15, 9, 0).atZone(ZoneId.systemDefault()).toInstant();
+        Instant endTime =
+                LocalDateTime.of(2025, 6, 17, 17, 0)
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant(); // 3-day event
+        Instant bookingDeadline = startTime.minusSeconds(Duration.ofDays(7).toSeconds());
 
         event.setStartTime(startTime);
         event.setEndTime(endTime);
         event.setBookingDeadline(bookingDeadline);
 
-        assertNotEquals(startTime.toLocalDate(), endTime.toLocalDate());
+        assertNotEquals(
+                startTime.atZone(ZoneId.systemDefault()).toLocalDate(),
+                endTime.atZone(ZoneId.systemDefault()).toLocalDate());
         assertTrue(event.getEndTime().isAfter(event.getStartTime()));
         assertTrue(event.getBookingDeadline().isBefore(event.getStartTime()));
     }
@@ -299,9 +313,12 @@ class EventTest {
         // Test a fully configured event
         String eventName = "Annual Conference 2025";
         String eventDescription = "The biggest tech conference of the year";
-        LocalDateTime startTime = LocalDateTime.of(2025, 9, 15, 9, 0);
-        LocalDateTime endTime = LocalDateTime.of(2025, 9, 15, 18, 0);
-        LocalDateTime bookingDeadline = LocalDateTime.of(2025, 9, 1, 23, 59);
+        Instant startTime =
+                LocalDateTime.of(2025, 9, 15, 9, 0).atZone(ZoneId.systemDefault()).toInstant();
+        Instant endTime =
+                LocalDateTime.of(2025, 9, 15, 18, 0).atZone(ZoneId.systemDefault()).toInstant();
+        Instant bookingDeadline =
+                LocalDateTime.of(2025, 9, 1, 23, 59).atZone(ZoneId.systemDefault()).toInstant();
 
         event.setName(eventName);
         event.setDescription(eventDescription);

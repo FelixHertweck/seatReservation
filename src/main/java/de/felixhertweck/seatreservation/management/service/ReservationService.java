@@ -23,7 +23,8 @@ import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -289,11 +290,7 @@ public class ReservationService {
 
             Reservation reservation =
                     new Reservation(
-                            targetUser,
-                            event,
-                            seat,
-                            LocalDateTime.now(),
-                            ReservationStatus.RESERVED);
+                            targetUser, event, seat, Instant.now(), ReservationStatus.RESERVED);
             reservationRepository.persist(reservation);
             existingReservations.add(reservation);
             LOG.infof(
@@ -482,7 +479,7 @@ public class ReservationService {
                                                 currentUser,
                                                 event,
                                                 seat,
-                                                LocalDateTime.now(),
+                                                Instant.now(),
                                                 ReservationStatus.BLOCKED))
                         .toList();
 
@@ -544,7 +541,7 @@ public class ReservationService {
                                 dto.getSeatNumber(),
                                 dto.getFirstName(),
                                 dto.getLastName(),
-                                dto.getReservationDate().format(formatter)));
+                                dto.getReservationDate().atZone(ZoneOffset.UTC).format(formatter)));
             }
             writer.flush();
         }

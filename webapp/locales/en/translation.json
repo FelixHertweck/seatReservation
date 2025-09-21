@@ -463,7 +463,8 @@
     "showMoreButton": "Show More",
     "seatSingular": "Seat",
     "seatPlural": "Seats",
-    "bookingUntil": "Booking until"
+    "bookingUntil": "Booking until",
+    "unknownEvent": "Unknown event"
   },
   "reservationDeleteModal": {
     "title": "Delete Reservation",

@@ -19,7 +19,7 @@
  */
 package de.felixhertweck.seatreservation.management.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import jakarta.validation.constraints.NotNull;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
@@ -33,13 +33,13 @@ public class EventRequestDTO {
     private String description;
 
     @NotNull(message = "Start time must not be null")
-    private LocalDateTime startTime;
+    private Instant startTime;
 
     @NotNull(message = "End time must not be null")
-    private LocalDateTime endTime;
+    private Instant endTime;
 
     @NotNull(message = "Booking deadline time must not be null")
-    private LocalDateTime bookingDeadline;
+    private Instant bookingDeadline;
 
     @NotNull(message = "EventLocation ID must not be null")
     private Long eventLocationId;
@@ -52,15 +52,15 @@ public class EventRequestDTO {
         return description;
     }
 
-    public LocalDateTime getStartTime() {
+    public Instant getStartTime() {
         return startTime;
     }
 
-    public LocalDateTime getEndTime() {
+    public Instant getEndTime() {
         return endTime;
     }
 
-    public LocalDateTime getBookingDeadline() {
+    public Instant getBookingDeadline() {
         return bookingDeadline;
     }
 
@@ -76,15 +76,15 @@ public class EventRequestDTO {
         this.description = description;
     }
 
-    public void setStartTime(LocalDateTime startTime) {
+    public void setStartTime(Instant startTime) {
         this.startTime = startTime;
     }
 
-    public void setEndTime(LocalDateTime endTime) {
+    public void setEndTime(Instant endTime) {
         this.endTime = endTime;
     }
 
-    public void setBookingDeadline(LocalDateTime bookingDeadline) {
+    public void setBookingDeadline(Instant bookingDeadline) {
         this.bookingDeadline = bookingDeadline;
     }
 

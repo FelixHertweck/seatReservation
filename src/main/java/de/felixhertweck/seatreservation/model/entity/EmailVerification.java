@@ -19,7 +19,7 @@
  */
 package de.felixhertweck.seatreservation.model.entity;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Objects;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -47,12 +47,12 @@ public class EmailVerification extends PanacheEntity {
     private String token;
 
     @Column(name = "expiration_time", nullable = false)
-    private LocalDateTime expirationTime;
+    private Instant expirationTime;
 
     /** Constructor for JPA. */
     public EmailVerification() {}
 
-    public EmailVerification(User user, String token, LocalDateTime expirationTime) {
+    public EmailVerification(User user, String token, Instant expirationTime) {
         this.user = user;
         this.token = token;
         this.expirationTime = expirationTime;
@@ -66,11 +66,11 @@ public class EmailVerification extends PanacheEntity {
         return token;
     }
 
-    public LocalDateTime getExpirationTime() {
+    public Instant getExpirationTime() {
         return expirationTime;
     }
 
-    public void setExpirationTime(LocalDateTime expirationTime) {
+    public void setExpirationTime(Instant expirationTime) {
         this.expirationTime = expirationTime;
     }
 
