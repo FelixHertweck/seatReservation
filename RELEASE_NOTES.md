@@ -1,3 +1,59 @@
+# Release 0.0.2
+
+This major release brings significant enhancements to the Seat Reservation application, focusing on mobile user experience, new administrative features, and improved system reliability.
+
+## Major New Features
+
+### Administrative Tools
+- **CSV Export**: Event managers can now export daily reservation data as CSV files for reporting and analysis
+- **Email Verification**: Implemented secure 6-digit code email verification system with automatic cleanup
+- **Enhanced Admin User Management**: Random password generation for security instead of hard-coded passwords
+
+### Event & Location Management
+- **Event Location Markers**: Visual markers can now be placed on event location maps for better orientation
+- **Seat Row Information**: Added seat row attributes throughout the system for better seat identification
+- **Booking Deadlines**: Event managers can set booking deadlines with proper validation and display
+
+## User Experience Improvements
+
+### Mobile Optimization
+- **Fixed Android Auto-Capitalization**: Login and registration forms properly handle username input without unwanted auto-capitalization
+- **Optimized Mobile Layout**: Dramatically improved space utilization with reduced padding, responsive grid layouts, and mobile-first design
+- **Responsive Typography**: Better text sizing and spacing optimized for mobile screens
+- **Performance**: Seat map rendering optimized with throttling and memoization for smoother interactions
+
+### UI/UX Enhancements
+- **Loading Experience**: Enhanced with skeleton loading animations across the application
+- **Legend Accessibility**: Fixed overflow issues in reservation modals - legends now properly wrap on small screens
+- **Enhanced Readability**: Made availability status more prominent in reservation forms
+- **Smart Navigation**: Sidebar now automatically closes when navigating to improve mobile experience
+- **Email Templates**: Improved email formatting with conditional headers and better structure
+
+## Technical Improvements
+
+### System Reliability
+- **Enhanced Test Coverage**: Added comprehensive unit tests for better code quality and reliability
+- **Visual Improvements**: Fixed seat number visibility by changing text color from white to black in SVG seat maps
+- **Logging Optimization**: Reduced verbose logging by changing levels from INFO to DEBUG
+- **Database Efficiency**: Implemented PostgreSQL triggers for automatic cleanup processes
+- **Code Quality**: Cleaned up unused imports, updated ESLint configuration, and improved code organization
+
+### Architecture & Security
+- **Package Restructuring**: Reorganized codebase with cleaner separation of concerns (renamed eventManagement to management)
+- **Email System**: Skip sending emails to localhost/empty addresses, reducing development noise
+- **Docker Optimization**: Updated configuration for consistency with standard deployment practices
+- **API Documentation**: Translated to English for better international accessibility
+
+### Dependencies & Maintenance
+- **Runtime Updates**: Upgraded Node.js base image from 22-alpine to 24-alpine for improved performance and security
+- **Framework Updates**: Updated Quarkus platform to 3.26.4 with latest security patches
+- **Frontend Dependencies**: Updated React Query, react-day-picker, and TypeScript definitions
+- **Testing Framework**: Updated Mockito to 5.20.0 for improved test reliability
+- **CI/CD**: Enhanced GitHub Actions workflows with updated dependencies
+- **Dependabot**: Fixed missing Docker image monitoring for webapp directory
+
+---
+
 # Release 0.0.1
 
 This is the first official release of the Seat Reservation application.
