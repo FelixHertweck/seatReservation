@@ -122,7 +122,6 @@ public class EmailService {
             return;
         }
 
-        LOG.infof("Attempting to send email confirmation to user: %s", user.getEmail());
         LOG.debugf("User ID: %d, Username: %s", user.id, user.getUsername());
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
@@ -474,7 +473,6 @@ public class EmailService {
             return;
         }
 
-        LOG.infof("Attempting to send password changed notification to user: %s", user.getEmail());
         LOG.debugf("User ID: %d, Username: %s", user.id, user.getUsername());
 
         String htmlContent = emailContentPasswordChanged;
@@ -580,9 +578,6 @@ public class EmailService {
         if (skipForLocalhostAddress(manager.getEmail())) {
             return;
         }
-        LOG.infof(
-                "Attempting to send reservation CSV export to manager: %s for event: %s",
-                manager.getEmail(), event.getName());
         LOG.debugf("Manager ID: %d, Event ID: %d", manager.id, event.id);
 
         // Generate CSV data
