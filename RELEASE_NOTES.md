@@ -1,3 +1,20 @@
+# Release 0.0.4
+
+This release extends the seat import functionality with the new `seatRow` attribute and improves test coverage as well as API documentation.
+
+## New Features
+
+- **Seat Row Import**: When importing seats, the seat row (`seatRow`) can now be specified. This makes seat management and assignment easier.
+- **API Extension**: The OpenAPI specification and the generated types in the webapp now include the new `seatRow` field.
+
+## Improvements
+
+- **Test Coverage**: Tests for EventLocationService and EventLocationResource have been updated to cover the new functionality.
+
+## Changes
+
+- **Logging**: Reduced log output by removing info logs for email confirmations and password changes.
+
 # Release 0.0.3
 
 This patch release adds important functionality for event location management and improves system compatibility for native image builds.

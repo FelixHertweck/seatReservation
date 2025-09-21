@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.0.4 - 2025-09-21
+
+### Added
+- **Seat Row Attribute**: The `ImportSeatDto` DTO and related services now support the new `seatRow` attribute for seat row specification during import.
+- **API & Webapp**: The new `seatRow` field is included in the OpenAPI specification and the generated TypeScript types.
+
+### Improved
+- **Tests**: Tests for EventLocationService and EventLocationResource have been updated to cover the new `seatRow` attribute.
+
+### Changed
+- **Logging**: Info logs for email confirmations and password change notifications have been removed to reduce log verbosity.
+
 ## 0.0.3 - 2025-09-21
 
 ### Added
