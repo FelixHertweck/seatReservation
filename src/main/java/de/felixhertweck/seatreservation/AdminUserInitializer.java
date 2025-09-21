@@ -19,7 +19,6 @@
  */
 package de.felixhertweck.seatreservation;
 
-import java.security.SecureRandom;
 import java.util.Set;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
@@ -31,6 +30,7 @@ import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
+import de.felixhertweck.seatreservation.utils.SecurityUtils;
 import io.quarkus.runtime.StartupEvent;
 import org.jboss.logging.Logger;
 
@@ -43,7 +43,6 @@ public class AdminUserInitializer {
 
     @Inject UserService userService;
 
-    private static final SecureRandom secureRandom = new SecureRandom();
     private static final int PASSWORD_LENGTH = 12;
 
     private static String generateRandomPassword() {
@@ -51,7 +50,7 @@ public class AdminUserInitializer {
                 "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+";
         StringBuilder sb = new StringBuilder(PASSWORD_LENGTH);
         for (int i = 0; i < PASSWORD_LENGTH; i++) {
-            sb.append(chars.charAt(secureRandom.nextInt(chars.length())));
+            sb.append(chars.charAt(SecurityUtils.nextInt(chars.length())));
         }
         return sb.toString();
     }

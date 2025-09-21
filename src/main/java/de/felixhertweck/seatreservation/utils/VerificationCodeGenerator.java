@@ -19,11 +19,8 @@
  */
 package de.felixhertweck.seatreservation.utils;
 
-import java.security.SecureRandom;
-
 /** Utility class for generating 6-digit verification codes. */
 public class VerificationCodeGenerator {
-    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private static final int MIN_CODE = 100000; // 6-digit minimum
     private static final int MAX_CODE = 999999; // 6-digit maximum
 
@@ -33,7 +30,7 @@ public class VerificationCodeGenerator {
      * @return A 6-digit verification code as a String
      */
     public static String generate() {
-        int code = SECURE_RANDOM.nextInt(MAX_CODE - MIN_CODE + 1) + MIN_CODE;
+        int code = SecurityUtils.getSecureRandom().nextInt(MAX_CODE - MIN_CODE + 1) + MIN_CODE;
         return String.valueOf(code);
     }
 }

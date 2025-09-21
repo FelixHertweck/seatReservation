@@ -20,7 +20,6 @@
 package de.felixhertweck.seatreservation.userManagment.service;
 
 import java.io.IOException;
-import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Base64;
@@ -47,6 +46,7 @@ import de.felixhertweck.seatreservation.userManagment.dto.AdminUserUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.exceptions.TokenExpiredException;
+import de.felixhertweck.seatreservation.utils.SecurityUtils;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import org.jboss.logging.Logger;
 
@@ -54,8 +54,6 @@ import org.jboss.logging.Logger;
 public class UserService {
 
     private static final Logger LOG = Logger.getLogger(UserService.class);
-
-    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     @Inject UserRepository userRepository;
 
@@ -529,8 +527,7 @@ public class UserService {
     }
 
     private String generateSalt() {
-        byte[] salt = new byte[16];
-        SECURE_RANDOM.nextBytes(salt);
+        byte[] salt = SecurityUtils.generateRandomBytes(16);
         return Base64.getEncoder().encodeToString(salt);
     }
 }
