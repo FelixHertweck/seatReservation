@@ -8,7 +8,6 @@ import { SeatManagement } from "@/components/management/seat-management";
 import { ReservationManagement } from "@/components/management/reservation-management";
 import { ReservationAllowanceManagement } from "@/components/management/reservation-allowance-management";
 import { useManager } from "@/hooks/use-manager";
-import Loading from "./loading";
 import { useT } from "@/lib/i18n/hooks";
 
 export default function ManagerPage() {
@@ -17,10 +16,6 @@ export default function ManagerPage() {
   const managerData = useManager();
   const [activeTab, setActiveTab] = useState("events");
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
-
-  if (managerData.isLoading) {
-    return <Loading />;
-  }
 
   const navigateToTab = (
     tab: string,
@@ -75,6 +70,7 @@ export default function ManagerPage() {
         <TabsContent value="events">
           <EventManagement
             {...managerData.events}
+            isLoading={managerData.isLoading}
             onNavigateToLocation={(locationId) =>
               navigateToTab("locations", locationId, "locationId")
             }
@@ -85,6 +81,7 @@ export default function ManagerPage() {
         <TabsContent value="locations">
           <LocationManagement
             {...managerData.locations}
+            isLoading={managerData.isLoading}
             onNavigateToSeats={(locationId) =>
               navigateToTab("seats", locationId, "locationId")
             }
@@ -95,6 +92,7 @@ export default function ManagerPage() {
         <TabsContent value="seats">
           <SeatManagement
             {...managerData.seats}
+            isLoading={managerData.isLoading}
             onNavigateToLocation={(locationId) =>
               navigateToTab("locations", locationId, "locationId")
             }
@@ -105,6 +103,7 @@ export default function ManagerPage() {
         <TabsContent value="reservations">
           <ReservationManagement
             {...managerData.reservations}
+            isLoading={managerData.isLoading}
             onNavigateToEvent={(eventId) =>
               navigateToTab("events", eventId, "eventId")
             }
@@ -118,6 +117,7 @@ export default function ManagerPage() {
         <TabsContent value="allowances">
           <ReservationAllowanceManagement
             {...managerData.reservationAllowance}
+            isLoading={managerData.isLoading}
             onNavigateToEvent={(eventId) =>
               navigateToTab("events", eventId, "eventId")
             }

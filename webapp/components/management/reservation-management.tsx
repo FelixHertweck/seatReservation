@@ -19,6 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { ReservationFormModal } from "@/components/management/reservation-form-modal";
 import { BlockSeatsModal } from "@/components/management/block-seats-modal";
@@ -62,6 +63,7 @@ export interface ReservationManagementProps {
   onNavigateToEvent?: (eventId: bigint) => void;
   onNavigateToSeat?: (seatId: bigint) => void;
   initialFilter?: Record<string, string>;
+  isLoading?: boolean;
 }
 
 export function ReservationManagement({
@@ -74,6 +76,7 @@ export function ReservationManagement({
   onNavigateToEvent,
   onNavigateToSeat,
   initialFilter = {},
+  isLoading = false,
 }: ReservationManagementProps) {
   const t = useT();
 
@@ -331,78 +334,102 @@ export function ReservationManagement({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedData.map((reservation) => {
-                  const event = events.find(
-                    (event) => event.id === reservation.eventId,
-                  );
+                {isLoading
+                  ? Array.from({ length: 8 }).map((_, index) => (
+                      <TableRow key={index}>
+                        <TableCell>
+                          <Skeleton className="h-4 w-24" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-4 w-32" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-5 w-16" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-4 w-32" />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Skeleton className="h-8 w-8" />
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  : paginatedData.map((reservation) => {
+                      const event = events.find(
+                        (event) => event.id === reservation.eventId,
+                      );
 
-                  return (
-                    <TableRow key={reservation.id?.toString()}>
-                      <TableCell>{reservation.user?.username}</TableCell>
-                      <TableCell>
-                        {event ? (
-                          <Button
-                            variant="link"
-                            className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
-                            onClick={() =>
-                              event.id && handleEventClick(event.id)
-                            }
-                          >
-                            {event.name}
-                            <ExternalLink className="ml-1 h-3 w-3" />
-                          </Button>
-                        ) : (
-                          t("reservationManagement.unknownEvent")
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {reservation.seat ? (
-                          <Button
-                            variant="link"
-                            className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
-                            onClick={() =>
-                              reservation.seat?.id &&
-                              handleSeatClick(reservation.seat.id)
-                            }
-                          >
-                            <Badge variant="outline">
-                              {reservation.seat.seatNumber}
-                            </Badge>
-                            <ExternalLink className="ml-1 h-3 w-3" />
-                          </Button>
-                        ) : (
-                          <Badge variant="outline">
-                            {t("reservationManagement.unknownSeat")}
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {reservation.reservationDateTime
-                          ? new Date(
-                              reservation.reservationDateTime,
-                            ).toLocaleString([], {
-                              year: "numeric",
-                              month: "2-digit",
-                              day: "2-digit",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })
-                          : t("reservationManagement.unknownDate")}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => handleDeleteReservation(reservation)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                      return (
+                        <TableRow key={reservation.id?.toString()}>
+                          <TableCell>{reservation.user?.username}</TableCell>
+                          <TableCell>
+                            {event ? (
+                              <Button
+                                variant="link"
+                                className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                                onClick={() =>
+                                  event.id && handleEventClick(event.id)
+                                }
+                              >
+                                {event.name}
+                                <ExternalLink className="ml-1 h-3 w-3" />
+                              </Button>
+                            ) : (
+                              t("reservationManagement.unknownEvent")
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {reservation.seat ? (
+                              <Button
+                                variant="link"
+                                className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                                onClick={() =>
+                                  reservation.seat?.id &&
+                                  handleSeatClick(reservation.seat.id)
+                                }
+                              >
+                                <Badge variant="outline">
+                                  {reservation.seat.seatNumber}
+                                </Badge>
+                                <ExternalLink className="ml-1 h-3 w-3" />
+                              </Button>
+                            ) : (
+                              <Badge variant="outline">
+                                {t("reservationManagement.unknownSeat")}
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {reservation.reservationDateTime
+                              ? new Date(
+                                  reservation.reservationDateTime,
+                                ).toLocaleString([], {
+                                  year: "numeric",
+                                  month: "2-digit",
+                                  day: "2-digit",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })
+                              : t("reservationManagement.unknownDate")}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() =>
+                                  handleDeleteReservation(reservation)
+                                }
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
               </TableBody>
             </Table>
           )}

@@ -18,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { AllowanceFormModal } from "@/components/management/allowance-form-modal";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
@@ -43,6 +44,7 @@ export interface ReservationAllowanceManagementProps {
   deleteReservationAllowance: (id: bigint) => Promise<void>;
   onNavigateToEvent?: (eventId: bigint) => void;
   initialFilter?: Record<string, string>;
+  isLoading?: boolean;
 }
 
 export function ReservationAllowanceManagement({
@@ -54,6 +56,7 @@ export function ReservationAllowanceManagement({
   deleteReservationAllowance,
   onNavigateToEvent,
   initialFilter = {},
+  isLoading = false,
 }: ReservationAllowanceManagementProps) {
   const t = useT();
 
@@ -218,56 +221,78 @@ export function ReservationAllowanceManagement({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedData.map((allowance) => {
-                  const event = events.find((e) => e.id === allowance.eventId);
-                  const user = users.find((u) => u.id === allowance.userId);
+                {isLoading
+                  ? Array.from({ length: 8 }).map((_, index) => (
+                      <TableRow key={index}>
+                        <TableCell>
+                          <Skeleton className="h-4 w-32" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-4 w-24" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-4 w-12" />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Skeleton className="h-8 w-8" />
+                            <Skeleton className="h-8 w-8" />
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  : paginatedData.map((allowance) => {
+                      const event = events.find(
+                        (e) => e.id === allowance.eventId,
+                      );
+                      const user = users.find((u) => u.id === allowance.userId);
 
-                  return (
-                    <TableRow key={allowance.id?.toString()}>
-                      <TableCell>
-                        {event ? (
-                          <Button
-                            variant="link"
-                            className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
-                            onClick={() =>
-                              event.id && handleEventClick(event.id)
-                            }
-                          >
-                            {event.name}
-                            <ExternalLink className="ml-1 h-3 w-3" />
-                          </Button>
-                        ) : (
-                          t("reservationAllowanceManagement.unknownEvent")
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {user?.username ||
-                          t("reservationAllowanceManagement.unknownUser")}
-                      </TableCell>
-                      <TableCell>
-                        {allowance.reservationsAllowedCount}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openEditModal(allowance)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => handleDeleteAllowance(allowance)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                      return (
+                        <TableRow key={allowance.id?.toString()}>
+                          <TableCell>
+                            {event ? (
+                              <Button
+                                variant="link"
+                                className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                                onClick={() =>
+                                  event.id && handleEventClick(event.id)
+                                }
+                              >
+                                {event.name}
+                                <ExternalLink className="ml-1 h-3 w-3" />
+                              </Button>
+                            ) : (
+                              t("reservationAllowanceManagement.unknownEvent")
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {user?.username ||
+                              t("reservationAllowanceManagement.unknownUser")}
+                          </TableCell>
+                          <TableCell>
+                            {allowance.reservationsAllowedCount}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openEditModal(allowance)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleDeleteAllowance(allowance)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
               </TableBody>
             </Table>
           )}

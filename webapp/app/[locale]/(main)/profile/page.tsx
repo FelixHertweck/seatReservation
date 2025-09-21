@@ -9,10 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import type { UserProfileUpdateDto } from "@/api";
-import LoadingSkeleton from "./loading";
 import { useT } from "@/lib/i18n/hooks";
 import { useAuth } from "@/hooks/use-auth";
 import { useProfileUnsavedChanges } from "@/hooks/use-profile-unsaved-changes";
@@ -172,10 +172,6 @@ export default function ProfilePage() {
     }
   };
 
-  if (isLoading) {
-    return <LoadingSkeleton />;
-  }
-
   return (
     <div className="container mx-auto py-8">
       <Card className="max-w-2xl mx-auto">
@@ -186,30 +182,44 @@ export default function ProfilePage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label htmlFor="username">{t("profilePage.usernameLabel")}</Label>
-              <Input id="username" value={user?.username || ""} disabled />
+              {isLoading ? (
+                <Skeleton className="h-10 w-full mt-2" />
+              ) : (
+                <Input id="username" value={user?.username || ""} disabled />
+              )}
             </div>
             <div>
               <Label htmlFor="firstname">
                 {t("profilePage.firstNameLabel")}
               </Label>
-              <Input
-                id="firstname"
-                value={firstname}
-                onChange={(e) => setFirstname(e.target.value)}
-              />
+              {isLoading ? (
+                <Skeleton className="h-10 w-full mt-2" />
+              ) : (
+                <Input
+                  id="firstname"
+                  value={firstname}
+                  onChange={(e) => setFirstname(e.target.value)}
+                />
+              )}
             </div>
             <div>
               <Label htmlFor="lastname">{t("profilePage.lastNameLabel")}</Label>
-              <Input
-                id="lastname"
-                value={lastname}
-                onChange={(e) => setLastname(e.target.value)}
-              />
+              {isLoading ? (
+                <Skeleton className="h-10 w-full mt-2" />
+              ) : (
+                <Input
+                  id="lastname"
+                  value={lastname}
+                  onChange={(e) => setLastname(e.target.value)}
+                />
+              )}
             </div>
             <div>
               <div className="flex items-center justify-between mb-1">
                 <Label htmlFor="email">{t("profilePage.emailLabel")}</Label>
-                {user?.emailVerified ? (
+                {isLoading ? (
+                  <Skeleton className="h-5 w-16" />
+                ) : user?.emailVerified ? (
                   <Badge
                     variant="default"
                     className="bg-green-500 hover:bg-green-500"
@@ -225,14 +235,19 @@ export default function ProfilePage() {
                   </Badge>
                 )}
               </div>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mb-2"
-              />
-              {!user?.emailVerified &&
+              {isLoading ? (
+                <Skeleton className="h-10 w-full mb-2" />
+              ) : (
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="mb-2"
+                />
+              )}
+              {!isLoading &&
+                !user?.emailVerified &&
                 user?.email &&
                 email === originalEmail && (
                   <div className="flex flex-col items-start gap-2">
@@ -277,26 +292,30 @@ export default function ProfilePage() {
                 <Label className="text-base font-medium">
                   {t("profilePage.passwordSectionTitle")}
                 </Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const newShowPasswordSection = !showPasswordSection;
-                    setShowPasswordSection(newShowPasswordSection);
-                    if (newShowPasswordSection === false) {
-                      setNewPassword("");
-                      setConfirmPassword("");
-                    }
-                  }}
-                >
-                  {showPasswordSection
-                    ? t("profilePage.cancelPasswordUpdate")
-                    : t("profilePage.changePassword")}
-                </Button>
+                {isLoading ? (
+                  <Skeleton className="h-9 w-32" />
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const newShowPasswordSection = !showPasswordSection;
+                      setShowPasswordSection(newShowPasswordSection);
+                      if (newShowPasswordSection === false) {
+                        setNewPassword("");
+                        setConfirmPassword("");
+                      }
+                    }}
+                  >
+                    {showPasswordSection
+                      ? t("profilePage.cancelPasswordUpdate")
+                      : t("profilePage.changePassword")}
+                  </Button>
+                )}
               </div>
 
-              {showPasswordSection && (
+              {showPasswordSection && !isLoading && (
                 <div className="space-y-4 bg-muted/50 p-4 rounded-lg">
                   <div>
                     <Label htmlFor="newPassword" className="pb-2">
@@ -340,54 +359,74 @@ export default function ProfilePage() {
               <Label htmlFor="tags" className="pb-2">
                 {t("profilePage.tagsLabel")}
               </Label>
-              <div className="flex flex-wrap gap-2 mb-2">
-                {tags.map((tag) => (
-                  <Badge
-                    key={tag}
-                    variant="secondary"
-                    className="flex items-center gap-1"
-                  >
-                    {tag}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveTag(tag)}
-                      className="h-auto p-0.5"
-                    >
-                      <X className="h-3 w-3" />
+              {isLoading ? (
+                <>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    <Skeleton className="h-6 w-16" />
+                    <Skeleton className="h-6 w-20" />
+                    <Skeleton className="h-6 w-12" />
+                  </div>
+                  <div className="flex gap-2">
+                    <Skeleton className="h-10 flex-1" />
+                    <Skeleton className="h-10 w-20" />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {tags.map((tag) => (
+                      <Badge
+                        key={tag}
+                        variant="secondary"
+                        className="flex items-center gap-1"
+                      >
+                        {tag}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveTag(tag)}
+                          className="h-auto p-0.5"
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </Badge>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      id="newTag"
+                      value={newTag}
+                      onChange={(e) => setNewTag(e.target.value)}
+                      placeholder={t("profilePage.addTagPlaceholder")}
+                      onKeyPress={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAddTag();
+                        }
+                      }}
+                    />
+                    <Button type="button" onClick={handleAddTag}>
+                      {t("profilePage.addButton")}
                     </Button>
-                  </Badge>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                <Input
-                  id="newTag"
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                  placeholder={t("profilePage.addTagPlaceholder")}
-                  onKeyPress={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleAddTag();
-                    }
-                  }}
-                />
-                <Button type="button" onClick={handleAddTag}>
-                  {t("profilePage.addButton")}
-                </Button>
-              </div>
+                  </div>
+                </>
+              )}
             </div>
-            <Button
-              type="submit"
-              className={`w-full transition-all duration-200 ${
-                hasUnsavedChanges
-                  ? "bg-primary hover:bg-primary/90 text-primary-foreground"
-                  : "bg-muted hover:bg-muted/80 text-muted-foreground"
-              }`}
-            >
-              {t("profilePage.saveChangesButton")}
-            </Button>
+            {isLoading ? (
+              <Skeleton className="h-10 w-full" />
+            ) : (
+              <Button
+                type="submit"
+                className={`w-full transition-all duration-200 ${
+                  hasUnsavedChanges
+                    ? "bg-primary hover:bg-primary/90 text-primary-foreground"
+                    : "bg-muted hover:bg-muted/80 text-muted-foreground"
+                }`}
+              >
+                {t("profilePage.saveChangesButton")}
+              </Button>
+            )}
           </form>
         </CardContent>
       </Card>

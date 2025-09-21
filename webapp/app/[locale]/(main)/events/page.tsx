@@ -3,17 +3,19 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { EventCard } from "@/components/events/event-card";
+import { EventCardSkeleton } from "@/components/events/event-card-skeleton";
 import { EventReservationModal } from "@/components/events/event-reservation-modal";
 import { ReservationCard } from "@/components/reservations/reservation-card";
+import { ReservationCardSkeleton } from "@/components/reservations/reservation-card-skeleton";
 import { SeatMapModal } from "@/components/reservations/seat-map-modal";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useEvents } from "@/hooks/use-events";
 import { useReservations } from "@/hooks/use-reservations";
 import { useAuth } from "@/hooks/use-auth";
 import type { EventResponseDto, ReservationResponseDto } from "@/api";
-import Loading from "./loading";
 import { useT } from "@/lib/i18n/hooks";
 
 export default function EventsPage() {
@@ -137,9 +139,7 @@ export default function EventsPage() {
     );
   };
 
-  if (eventsLoading || reservationsLoading) {
-    return <Loading />;
-  }
+  const isLoading = eventsLoading || reservationsLoading;
 
   return (
     <div className="container mx-auto p-6">
@@ -156,11 +156,13 @@ export default function EventsPage() {
 
           <TabsTrigger value="reservations" className="flex items-center gap-2">
             {t("eventsPage.myReservationsTab")}
-            {reservations.length > 0 && (
+            {isLoading ? (
+              <Skeleton className="h-5 w-6 ml-1" />
+            ) : reservations.length > 0 ? (
               <Badge variant="secondary" className="ml-1">
                 {reservations.length}
               </Badge>
-            )}
+            ) : null}
           </TabsTrigger>
         </TabsList>
 
@@ -172,7 +174,13 @@ export default function EventsPage() {
             initialQuery={reservationSearchQuery}
           />
 
-          {groupedReservations.length === 0 ? (
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <ReservationCardSkeleton key={index} />
+              ))}
+            </div>
+          ) : groupedReservations.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground text-lg">
                 {t("eventsPage.noReservationsYet")}
@@ -212,7 +220,13 @@ export default function EventsPage() {
             initialQuery={eventSearchQuery}
           />
 
-          {filteredEvents.length === 0 ? (
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <EventCardSkeleton key={index} />
+              ))}
+            </div>
+          ) : filteredEvents.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground text-lg">
                 {t("eventsPage.noEventsAvailable")}
