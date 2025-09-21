@@ -239,9 +239,6 @@
       }
     }
   },
-  "manager.reservationAllowance.create.success.description": "The reservation allowance has been successfully created.",
-  "manager.reservationAllowance.update.success.description": "The reservation allowance has been successfully updated.",
-  "manager.reservationAllowance.delete.success.description": "The reservation allowance has been successfully deleted.",
   "profilePage": {
     "update": {
       "success": {
@@ -278,7 +275,8 @@
     "confirmPasswordLabel": "Confirm Password",
     "confirmPasswordPlaceholder": "Confirm your new password",
     "passwordTooShort": "Password must be at least 8 characters long",
-    "passwordsDoNotMatch": "Passwords do not match"
+    "passwordsDoNotMatch": "Passwords do not match",
+    "verifyEmailButton": "Enter verification code"
   },
   "startPage": {
     "eventManagerTitle": "Seat Reservation System",
@@ -356,6 +354,27 @@
     "userDataValidationError": "Each user must have username, password, firstname, lastname, and roles",
     "invalidRoleError": "Invalid role found. Available roles are: ADMIN, MANAGER, USER",
     "invalidJsonOrDataStructureError": "Invalid JSON format or data structure"
+  },
+  "emailVerification": {
+    "title": "Email Verification",
+    "enterCode": "Enter the 6-digit verification code sent to",
+    "codeLabel": "Verification Code",
+    "codeHint": "Enter the 6-digit code from your email",
+    "verifying": "Verifying...",
+    "verifyButton": "Verify Email",
+    "invalidCodeLength": "Verification code must be 6 digits",
+    "invalidCode": "Invalid verification code. Please try again.",
+    "verificationFailed": "Verification failed. Please try again later.",
+    "resendCode": "Resend code",
+    "backToProfile": "Back to profile",
+    "alreadyVerified": "Email Already Verified",
+    "continueButton": "Continue",
+    "emailAlreadyVerifiedInfo": "You can proceed as your email has already been verified.",
+    "confirmationEmailResentTitle": "Confirmation Email Resent",
+    "confirmationEmailResentDescription": "A new confirmation email has been sent to your address.",
+    "noEmailTitle": "No Email Address",
+    "noEmailDescription": "You must first add an email address to your profile before you can verify it.",
+    "goToProfile": "Go to Profile"
   },
   "emailVerificationPrompt": {
     "title": "Email Verification Required",

@@ -15,7 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useT } from "@/lib/i18n/hooks";
 import { isValidRedirectUrlEncoded } from "@/lib/utils";
 
@@ -23,6 +23,7 @@ export default function LoginPage() {
   const params = useParams();
   const locale = params.locale as string;
   const t = useT();
+  const searchParams = useSearchParams();
 
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -38,8 +39,9 @@ export default function LoginPage() {
     setLoginError(null);
     try {
       setCurrentlyLoggingIn(true);
+      const returnToUrl = searchParams.get("returnTo");
 
-      await login(identifier, password);
+      await login(identifier, password, returnToUrl);
       setCurrentlyLoggingIn(false);
     } catch (error: any) {
       if (error?.response?.status === 401) {
@@ -52,8 +54,7 @@ export default function LoginPage() {
   };
 
   const handleContinue = () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const returnToUrl = urlParams.get("returnTo");
+    const returnToUrl = searchParams.get("returnTo");
     router.push(
       returnToUrl && isValidRedirectUrlEncoded(returnToUrl)
         ? decodeURIComponent(returnToUrl)

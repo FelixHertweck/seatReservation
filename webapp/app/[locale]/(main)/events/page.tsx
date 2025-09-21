@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { EventCard } from "@/components/events/event-card";
 import { EventReservationModal } from "@/components/events/event-reservation-modal";
 import { ReservationCard } from "@/components/reservations/reservation-card";
@@ -17,6 +18,7 @@ import { useT } from "@/lib/i18n/hooks";
 
 export default function EventsPage() {
   const t = useT();
+  const searchParams = useSearchParams();
 
   const { events, isLoading: eventsLoading, createReservation } = useEvents();
   const {
@@ -38,8 +40,7 @@ export default function EventsPage() {
   useEffect(() => {
     if (eventsLoading || reservationsLoading || !isLoggedIn) return;
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const eventIdFromUrl = urlParams.get("id");
+    const eventIdFromUrl = searchParams.get("id");
 
     if (eventIdFromUrl) {
       const eventId = BigInt(eventIdFromUrl);
@@ -50,9 +51,9 @@ export default function EventsPage() {
         setReservationSearchQuery(event.name || "");
       }
 
-      // Remove 'id' from URL
-      urlParams.delete("id");
-      const newUrl = `${window.location.pathname}${urlParams.toString() ? `?${urlParams.toString()}` : ""}`;
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("id");
+      const newUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}`;
       window.history.replaceState({}, "", newUrl);
     }
   }, [
@@ -60,6 +61,7 @@ export default function EventsPage() {
     eventsLoading,
     reservationsLoading,
     isLoggedIn,
+    searchParams,
     setActiveTab,
     setReservationSearchQuery,
   ]);

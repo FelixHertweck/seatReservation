@@ -9,9 +9,10 @@ import {
   postApiAuthLoginMutation,
   postApiAuthLogoutMutation,
   postApiAuthRegisterMutation,
+  postApiUserVerifyEmailCodeMutation,
 } from "@/api/@tanstack/react-query.gen";
-import type { RegisterRequestDto } from "@/api";
-import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import type { RegisterRequestDto, VerifyEmailCodeRequestDto } from "@/api";
+import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { isValidRedirectUrlEncoded } from "@/lib/utils";
 
 export function useAuth() {
@@ -33,7 +34,6 @@ export function useAuth() {
     ...postApiAuthLoginMutation(),
     onSuccess: async () => {
       await refetchUser();
-      redirectUser(router, locale);
     },
     onError: (error: any) => {
       // Only show toast for non-401 errors, let 401s be handled by the component
@@ -47,22 +47,30 @@ export function useAuth() {
     },
   });
 
-  const login = async (identifier: string, password: string) => {
+  const login = async (
+    identifier: string,
+    password: string,
+    returnToUrl?: string | null,
+  ) => {
     await loginMutation({ body: { identifier, password } });
     await queryClient.invalidateQueries();
+    redirectUser(router, locale, returnToUrl);
   };
 
   const { mutateAsync: registerMutation } = useMutation({
     ...postApiAuthRegisterMutation(),
     onSuccess: async () => {
       await refetchUser();
-      redirectUser(router, locale);
     },
   });
 
-  const register = async (userData: RegisterRequestDto) => {
+  const register = async (
+    userData: RegisterRequestDto,
+    returnToUrl?: string | null,
+  ) => {
     await registerMutation({ body: userData });
     await queryClient.invalidateQueries();
+    redirectUser(router, locale, returnToUrl);
   };
 
   const { mutateAsync: logoutMutation } = useMutation({
@@ -81,6 +89,22 @@ export function useAuth() {
     router.refresh();
   };
 
+  const { mutateAsync: verifyEmailMutation } = useMutation({
+    ...postApiUserVerifyEmailCodeMutation(),
+    onSuccess: async () => {
+      await refetchUser();
+    },
+  });
+
+  const verifyEmail = async (code: string, returnToUrl?: string | null) => {
+    const verificationDto: VerifyEmailCodeRequestDto = {
+      verificationCode: code,
+    };
+    await verifyEmailMutation({ body: verificationDto });
+    await queryClient.invalidateQueries();
+    redirectUser(router, locale, returnToUrl);
+  };
+
   return {
     user,
     isLoggedIn: isSuccess,
@@ -88,12 +112,15 @@ export function useAuth() {
     login,
     register,
     logout,
+    verifyEmail, // Added verifyEmail to return object
   };
 }
 
-function redirectUser(router: AppRouterInstance, locale: string) {
-  const urlParams = new URLSearchParams(window.location.search);
-  const returnToUrl = urlParams.get("returnTo");
+function redirectUser(
+  router: AppRouterInstance,
+  locale: string,
+  returnToUrl?: string | null,
+) {
   router.push(
     returnToUrl && isValidRedirectUrlEncoded(returnToUrl)
       ? decodeURIComponent(returnToUrl)

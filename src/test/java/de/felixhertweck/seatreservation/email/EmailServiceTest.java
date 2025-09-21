@@ -117,7 +117,12 @@ class EmailServiceTest {
         Mail sentMail = sentMails.get(0);
         assertEquals(user.getEmail(), sentMail.getTo().getFirst());
         assertEquals("Please Confirm Your Email Address", sentMail.getSubject());
-        assertTrue(sentMail.getHtml().contains("api/user/confirm-email"));
+        assertTrue(sentMail.getHtml().contains("testtoken")); // Code should be in email
+        assertTrue(
+                sentMail.getHtml()
+                        .contains("http://localhost:8080/verify?code=testtoken")); // Verification
+        // link should be
+        // in email
     }
 
     @Test
@@ -130,6 +135,10 @@ class EmailServiceTest {
         assertNotNull(createdVerification);
         assertEquals(user, createdVerification.getUser());
         assertNotNull(createdVerification.getToken());
+        // Verify token is 6-digit code
+        assertTrue(
+                createdVerification.getToken().matches("\\d{6}"),
+                "Token should be a 6-digit code, got: " + createdVerification.getToken());
         assertNotNull(createdVerification.getExpirationTime());
         verify(emailVerificationRepository, times(1)).persist(createdVerification);
     }

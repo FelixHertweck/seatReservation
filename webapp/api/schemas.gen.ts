@@ -674,3 +674,14 @@ export const UserProfileUpdateDTOSchema = {
         }
     }
 } as const;
+
+export const VerifyEmailCodeRequestDtoSchema = {
+    type: 'object',
+    required: ['verificationCode'],
+    properties: {
+        verificationCode: {
+            type: 'string',
+            pattern: '\\d{6}'
+        }
+    }
+} as const;

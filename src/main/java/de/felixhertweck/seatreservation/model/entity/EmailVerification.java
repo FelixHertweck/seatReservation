@@ -24,7 +24,6 @@ import java.util.Objects;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.Index;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
@@ -34,14 +33,12 @@ import io.quarkus.hibernate.orm.panache.PanacheEntity;
  * EmailVerification entity with automatic expiration.
  *
  * <p>This entity uses PostgreSQL's automatic cleanup mechanism instead of a scheduled service.
- * Expired entries are automatically removed from the database using a combination of: - Partial
+ * Expired entries are automatically removed from the database using a combination of: - Standard
  * index on expiration_time for efficient lookups - Database trigger that periodically cleans up
  * expired entries - Application-level expiration checking for immediate validation
  */
 @Entity
-@Table(
-        name = "email_verification",
-        indexes = {@Index(name = "idx_expired_entries", columnList = "expiration_time")})
+@Table(name = "email_verification")
 public class EmailVerification extends PanacheEntity {
     @OneToOne(fetch = FetchType.LAZY)
     private User user;
@@ -49,7 +46,7 @@ public class EmailVerification extends PanacheEntity {
     @Column(unique = true, nullable = false)
     private String token;
 
-    @Column(nullable = false)
+    @Column(name = "expiration_time", nullable = false)
     private LocalDateTime expirationTime;
 
     /** Constructor for JPA. */

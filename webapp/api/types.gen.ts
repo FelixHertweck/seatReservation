@@ -211,6 +211,10 @@ export type UserProfileUpdateDto = {
     tags?: Array<string>;
 };
 
+export type VerifyEmailCodeRequestDto = {
+    verificationCode: string;
+};
+
 export type PostApiAuthLoginData = {
     body: LoginRequestDto;
     path?: never;
@@ -1280,42 +1284,6 @@ export type PutApiManagerSeatsByIdResponses = {
 
 export type PutApiManagerSeatsByIdResponse = PutApiManagerSeatsByIdResponses[keyof PutApiManagerSeatsByIdResponses];
 
-export type GetApiUserConfirmEmailData = {
-    body?: never;
-    path?: never;
-    query?: {
-        id?: bigint;
-        token?: string;
-    };
-    url: '/api/user/confirm-email';
-};
-
-export type GetApiUserConfirmEmailErrors = {
-    /**
-     * Invalid token
-     */
-    400: unknown;
-    /**
-     * Unauthorized
-     */
-    401: unknown;
-    /**
-     * Token not found
-     */
-    404: unknown;
-    /**
-     * Token expired
-     */
-    410: unknown;
-};
-
-export type GetApiUserConfirmEmailResponses = {
-    /**
-     * Email confirmed successfully
-     */
-    200: unknown;
-};
-
 export type GetApiUserEventsData = {
     body?: never;
     path?: never;
@@ -1505,6 +1473,31 @@ export type GetApiUserReservationsByIdResponses = {
 };
 
 export type GetApiUserReservationsByIdResponse = GetApiUserReservationsByIdResponses[keyof GetApiUserReservationsByIdResponses];
+
+export type PostApiUserVerifyEmailCodeData = {
+    body: VerifyEmailCodeRequestDto;
+    path?: never;
+    query?: never;
+    url: '/api/user/verify-email-code';
+};
+
+export type PostApiUserVerifyEmailCodeErrors = {
+    /**
+     * Invalid verification code
+     */
+    400: unknown;
+    /**
+     * Verification code expired
+     */
+    410: unknown;
+};
+
+export type PostApiUserVerifyEmailCodeResponses = {
+    /**
+     * Email verified successfully
+     */
+    200: unknown;
+};
 
 export type GetApiUsersAdminData = {
     body?: never;
