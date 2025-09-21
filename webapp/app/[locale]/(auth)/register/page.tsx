@@ -99,6 +99,8 @@ export default function RegisterPage() {
                 placeholder={t("register.usernamePlaceholder")}
                 value={formData.username}
                 onChange={(e) => handleInputChange("username", e.target.value)}
+                autoCapitalize="none"
+                autoComplete="username"
                 required
               />
             </div>

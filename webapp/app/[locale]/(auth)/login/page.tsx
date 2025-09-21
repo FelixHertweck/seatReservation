@@ -112,6 +112,8 @@ export default function LoginPage() {
                 placeholder={t("login.enterIdentifier")}
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
+                autoCapitalize="none"
+                autoComplete="username"
                 required
               />
             </div>
@@ -120,6 +122,8 @@ export default function LoginPage() {
               <Input
                 id="password"
                 type="password"
+                autoCapitalize="none"
+                autoComplete="current-password"
                 placeholder={t("login.enterPassword")}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

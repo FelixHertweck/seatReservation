@@ -129,11 +129,11 @@ export function ReservationFormModal({
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-6xl max-h-[90vh] h-[80vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle>
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-lg">
             {t("reservationFormModal.createReservationTitle")}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-sm">
             {t("reservationFormModal.createReservationDescription")}
           </DialogDescription>
         </DialogHeader>
@@ -141,10 +141,12 @@ export function ReservationFormModal({
         <form onSubmit={handleSubmit} className="flex-1 flex gap-6 min-h-0">
           {/* Left side - Seat Map */}
           <div className="flex-1 flex flex-col min-h-0 max-w-[calc(100%-20rem)]">
-            <div className="flex gap-4 text-sm mb-4">
+            <div className="flex flex-wrap gap-2 md:gap-4 text-sm mb-4">
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-green-500 dark:bg-green-400 rounded"></div>
-                <span>{t("reservationFormModal.availableStatus")}</span>
+                <span className="font-semibold">
+                  {t("reservationFormModal.availableStatus")}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-blue-500 dark:bg-blue-400 rounded"></div>

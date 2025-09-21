@@ -142,10 +142,14 @@ export default function EventsPage() {
   const isLoading = eventsLoading || reservationsLoading;
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">{t("eventsPage.title")}</h1>
-        <p className="text-muted-foreground">{t("eventsPage.description")}</p>
+    <div className="container mx-auto px-2 py-3 md:p-6">
+      <div className="mb-3 md:mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold mb-1 md:mb-2">
+          {t("eventsPage.title")}
+        </h1>
+        <p className="text-muted-foreground text-sm md:text-base">
+          {t("eventsPage.description")}
+        </p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -166,7 +170,7 @@ export default function EventsPage() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="reservations" className="space-y-6">
+        <TabsContent value="reservations" className="space-y-4 md:space-y-6">
           <SearchAndFilter
             onSearch={handleReservationSearch}
             onFilter={() => {}}
@@ -175,7 +179,7 @@ export default function EventsPage() {
           />
 
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
               {Array.from({ length: 3 }).map((_, index) => (
                 <ReservationCardSkeleton key={index} />
               ))}
@@ -190,7 +194,7 @@ export default function EventsPage() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
               {groupedReservations.map((eventReservations) => {
                 const firstReservation = eventReservations[0];
                 const event = events?.find(
@@ -212,7 +216,7 @@ export default function EventsPage() {
           )}
         </TabsContent>
 
-        <TabsContent value="available" className="space-y-6">
+        <TabsContent value="available" className="space-y-4 md:space-y-6">
           <SearchAndFilter
             onSearch={handleEventSearch}
             onFilter={() => {}}
@@ -221,7 +225,7 @@ export default function EventsPage() {
           />
 
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
               {Array.from({ length: 3 }).map((_, index) => (
                 <EventCardSkeleton key={index} />
               ))}
@@ -236,7 +240,7 @@ export default function EventsPage() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
               {filteredEvents.map((event) => (
                 <EventCard
                   key={event.id?.toString()}

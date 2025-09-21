@@ -85,7 +85,7 @@ export function SeatMapModal({
           </div>
         ) : (
           <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-            <div className="flex gap-4 text-sm border-b pb-1">
+            <div className="flex flex-wrap gap-2 md:gap-4 text-sm border-b pb-1">
               <div className="flex items-center gap-2 animate-in slide-in-from-left duration-300">
                 <div className="w-4 h-4 bg-green-500 rounded transition-all duration-300 hover:scale-110"></div>
                 <span>{t("eventReservationModal.available")}</span>

@@ -141,6 +141,8 @@ export function UserFormModal({
               onChange={(e) => setUsername(e.target.value)}
               className="col-span-3"
               disabled={!isCreating} // Username typically not editable after creation
+              autoCapitalize="none"
+              autoComplete="username"
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
@@ -152,6 +154,8 @@ export function UserFormModal({
                 id="password"
                 type="password"
                 value={password}
+                autoCapitalize="none"
+                autoComplete={isCreating ? "new-password" : "current-password"}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder={
                   isCreating
