@@ -73,8 +73,6 @@ SeatComponent.displayName = "SeatComponent";
 
 const MarkerComponent = React.memo(
   ({ marker, zoom }: { marker: EventLocationMakerDto; zoom: number }) => {
-    const t = useT();
-
     return (
       <div
         className="absolute z-0 flex items-center justify-center text-xs font-medium text-gray-700 dark:text-gray-300"

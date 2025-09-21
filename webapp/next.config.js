@@ -1,7 +1,7 @@
 import { PHASE_DEVELOPMENT_SERVER } from "next/constants.js";
 import process from "process";
 
-const nextConfig = (phase, { defaultConfig }) => {
+const nextConfig = (phase) => {
   const isDev = phase === PHASE_DEVELOPMENT_SERVER;
   const buildMode = process.env.BUILD_MODE;
   if (isDev) {

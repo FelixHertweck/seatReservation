@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n/hooks";
 import { useLoginRequiredPopup } from "@/hooks/use-login-popup";
-import { isValidRedirectUrl, isValidRedirectUrlEncoded } from "@/lib/utils";
+import { isValidRedirectUrl } from "@/lib/utils";
 
 export function LoginRequiredPopup() {
   const t = useT();
