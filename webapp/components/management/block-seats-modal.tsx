@@ -24,6 +24,7 @@ import { SeatMap } from "@/components/common/seat-map";
 import type {
   BlockSeatsRequestDto,
   DetailedEventResponseDto,
+  EventLocationResponseDto,
   SeatDto,
   SeatStatusDto,
 } from "@/api";
@@ -31,12 +32,14 @@ import { useT } from "@/lib/i18n/hooks";
 
 interface BlockSeatsModalProps {
   events: DetailedEventResponseDto[];
+  locations: EventLocationResponseDto[];
   onSubmit: (blockData: BlockSeatsRequestDto) => Promise<void>;
   onClose: () => void;
 }
 
 export function BlockSeatsModal({
   events,
+  locations,
   onSubmit,
   onClose,
 }: BlockSeatsModalProps) {
@@ -52,7 +55,10 @@ export function BlockSeatsModal({
   const selectedEvent = events?.find(
     (loc) => loc.id?.toString() === formData.eventId,
   );
-  const availableSeats: SeatDto[] = selectedEvent?.eventLocation?.seats ?? [];
+  const eventLocation = locations.find(
+    (loc) => loc.id === selectedEvent?.eventLocationId,
+  );
+  const availableSeats: SeatDto[] = eventLocation?.seats ?? [];
   const availableSeatStatuses: SeatStatusDto[] =
     selectedEvent?.seatStatuses ?? [];
 
@@ -163,7 +169,7 @@ export function BlockSeatsModal({
               <SeatMap
                 seats={availableSeats}
                 seatStatuses={availableSeatStatuses}
-                markers={selectedEvent?.eventLocation?.markers ?? []}
+                markers={eventLocation?.markers ?? []}
                 selectedSeats={selectedSeats}
                 onSeatSelect={handleSeatSelect}
               />

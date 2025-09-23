@@ -464,6 +464,7 @@ export function useManager(): UseManagerReturn {
     reservations: {
       users: user ?? [],
       events: events ?? [],
+      locations: locations ?? [],
       reservations: reservations ?? [],
       createReservation: (reservation: ReservationRequestDto) =>
         createReservationMutation.mutateAsync({ body: reservation }),

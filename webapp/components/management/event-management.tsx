@@ -90,7 +90,7 @@ export function EventManagement({
       }
       if (filters.locationId) {
         filtered = filtered.filter(
-          (event) => event.eventLocation?.id?.toString() === filters.locationId,
+          (event) => event.eventLocationId?.toString() === filters.locationId,
         );
       }
 
@@ -238,7 +238,9 @@ export function EventManagement({
                       </TableRow>
                     ))
                   : paginatedData.map((event) => {
-                      const location = event.eventLocation;
+                      const location = allLocations.find(
+                        (loc) => loc.id === event.eventLocationId,
+                      );
                       return (
                         <TableRow key={event.id?.toString()}>
                           <TableCell className="font-medium">

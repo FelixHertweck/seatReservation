@@ -30,11 +30,13 @@ import type {
   DetailedReservationResponseDto,
   EventLocationMakerDto,
   SeatStatusDto,
+  EventLocationResponseDto,
 } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 
 interface ReservationFormModalProps {
   users: UserDto[];
+  locations: EventLocationResponseDto[];
   events: DetailedEventResponseDto[];
   reservations?: DetailedReservationResponseDto[];
   onSubmit: (reservationData: ReservationRequestDto) => Promise<void>;
@@ -43,6 +45,7 @@ interface ReservationFormModalProps {
 
 export function ReservationFormModal({
   users,
+  locations,
   events,
   reservations = [],
   onSubmit,
@@ -63,11 +66,14 @@ export function ReservationFormModal({
   const selectedEvent = events?.find(
     (event) => event.id?.toString() === formData.eventId,
   );
-  const availableSeats: SeatDto[] = selectedEvent?.eventLocation?.seats ?? [];
+  const eventLocation = locations.find(
+    (loc) => loc.id === selectedEvent?.eventLocationId,
+  );
+  const availableSeats: SeatDto[] = eventLocation?.seats ?? [];
   const availableSeatStatuses: SeatStatusDto[] =
     selectedEvent?.seatStatuses ?? [];
   const availableMarkers: EventLocationMakerDto[] =
-    selectedEvent?.eventLocation?.markers ?? [];
+    eventLocation?.markers ?? [];
 
   const filteredUsers = users
     .filter((user) => {

@@ -97,8 +97,8 @@ const detailedEventResponseDtoSchemaResponseTransformer = (data: any) => {
             return item;
         });
     }
-    if (data.eventLocation) {
-        data.eventLocation = eventLocationResponseDtoSchemaResponseTransformer(data.eventLocation);
+    if (data.eventLocationId) {
+        data.eventLocationId = BigInt(data.eventLocationId.toString());
     }
     if (data.managerId) {
         data.managerId = BigInt(data.managerId.toString());

@@ -57,7 +57,7 @@ export function EventFormModal({
     bookingDeadline: event?.bookingDeadline
       ? new Date(event.bookingDeadline).toLocaleString("sv-SE").slice(0, 16)
       : "",
-    eventLocationId: event?.eventLocation?.id?.toString() || "",
+    eventLocationId: event?.eventLocationId?.toString() || "",
   });
   const [isLoading, setIsLoading] = useState(false);
 
