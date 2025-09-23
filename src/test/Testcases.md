@@ -1271,3 +1271,42 @@ Dieser Test überprüft den Anmeldevorgang.
     *   Ein Benutzer sendet ungültige Anmeldeinformationen (falscher Benutzername oder falsches Passwort) und erhält einen `401 Unauthorized`-Status.
     *   Ein Benutzer, dessen E-Mail-Adresse noch nicht bestätigt wurde, versucht sich anzumelden und erhält `401 Unauthorized`-Status.
     *   Die Anfrage hat ein ungültiges Format (z. B. fehlendes Passwort) und erhält einen `400 Bad Request`-Status.
+
+## Frontend Internationalisierung (i18n)
+
+Dieser Abschnitt beschreibt Testfälle für die Internationalisierung der Benutzeroberfläche, insbesondere die korrekte Anzeige von Texten basierend auf der ausgewählten Sprache und die Handhabung von Singular/Plural-Formen.
+
+### EventsSubPage (webapp/components/events/events-page.tsx)
+
+| Testfall | Beschreibung |
+| :--- | :--- |
+| `displayNoEventsAvailable` | Überprüft, ob der Text "No events available" (oder die entsprechende Übersetzung) korrekt angezeigt wird, wenn keine Events verfügbar sind. |
+| `displayTryAgainOrCheckSearch` | Überprüft, ob der Text "Try again or check your search" (oder die entsprechende Übersetzung) korrekt angezeigt wird, wenn keine Events gefunden wurden. |
+
+### ReservationFormModal (webapp/components/management/reservation-form-modal.tsx)
+
+| Testfall | Beschreibung |
+| :--- | :--- |
+| `displaySingleSeatSelected` | Überprüft, ob der Text "1 Platz ausgewählt" (oder die entsprechende Übersetzung) korrekt angezeigt wird, wenn genau ein Sitzplatz ausgewählt ist. |
+| `displayMultipleSeatsSelected` | Überprüft, ob der Text "{{count}} Plätze ausgewählt" (oder die entsprechende Übersetzung) korrekt angezeigt wird, wenn mehrere Sitzplätze ausgewählt sind, mit der korrekten Anzahl. |
+
+### ReservationCard (webapp/components/reservations/reservation-card.tsx)
+
+| Testfall | Beschreibung |
+| :--- | :--- |
+| `displayViewSeatButtonSingle` | Überprüft, ob der Text "Platz ansehen" (oder die entsprechende Übersetzung) korrekt auf dem Button angezeigt wird, wenn nur eine Reservierung vorhanden ist. |
+| `displayViewSeatButtonMultiple` | Überprüft, ob der Text "Plätze ansehen" (oder die entsprechende Übersetzung) korrekt auf dem Button angezeigt wird, wenn mehrere Reservierungen vorhanden sind. |
+
+### ReservationsSubPage (webapp/components/reservations/reservation-page.tsx)
+
+| Testfall | Beschreibung |
+| :--- | :--- |
+| `displayNoReservationsYet` | Überprüft, ob der Text "No reservations yet" (oder die entsprechende Übersetzung) korrekt angezeigt wird, wenn keine Reservierungen vorhanden sind. |
+| `displaySwitchToAvailableEvents` | Überprüft, ob der Text "Switch to available events" (oder die entsprechende Übersetzung) korrekt angezeigt wird, wenn keine Reservierungen vorhanden sind. |
+
+### Translation Files (webapp/locales/de/translation.json, webapp/locales/en/translation.json)
+
+| Testfall | Beschreibung |
+| :--- | :--- |
+| `verifyNewTranslationKeysExist` | Überprüft, ob alle neuen Übersetzungs-Keys (`viewSeatMultipleButton`, `seatSelected`, `multipleSeatsSelected`, `eventsPage.noEventsAvailable`, `eventsPage.tryAgainOrCheckSearch`, `eventsPage.noReservationsYet`, `eventsPage.switchToAvailableEvents`) in den deutschen und englischen `translation.json`-Dateien vorhanden sind. |
+| `verifyPluralizationLogic` | Überprüft, ob die Pluralisierungslogik für `seatsSelected` und `viewSeatButton` in den Komponenten korrekt angewendet wird, basierend auf den Übersetzungsdateien. |

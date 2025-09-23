@@ -19,7 +19,9 @@
  */
 package de.felixhertweck.seatreservation.reservation.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -27,6 +29,7 @@ import jakarta.transaction.Transactional;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
+import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.reservation.dto.UserEventResponseDTO;
 import org.jboss.logging.Logger;
@@ -38,6 +41,7 @@ public class EventService {
 
     @Inject UserRepository userRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
+    @Inject ReservationRepository reservationRepository;
 
     @Transactional
     public List<UserEventResponseDTO> getEventsForCurrentUser(String username)
@@ -51,15 +55,29 @@ public class EventService {
         }
         LOG.debugf("User %s found. Retrieving event allowances.", username);
 
-        List<UserEventResponseDTO> events =
-                eventUserAllowanceRepository.findByUser(user).stream()
-                        .map(
-                                allowance ->
+        Map<Long, UserEventResponseDTO> eventMap = new HashMap<>();
+
+        // Add allowances
+        eventUserAllowanceRepository
+                .findByUser(user)
+                .forEach(
+                        allowance ->
+                                eventMap.put(
+                                        allowance.getEvent().getId(),
                                         new UserEventResponseDTO(
                                                 allowance.getEvent(),
-                                                allowance.getReservationsAllowedCount()))
-                        .toList();
-        LOG.debugf("Returning %d events for user: %s", events.size(), username);
-        return events;
+                                                allowance.getReservationsAllowedCount())));
+
+        // Reservations only add if event not already exists
+        reservationRepository
+                .findByUser(user)
+                .forEach(
+                        reservation ->
+                                eventMap.putIfAbsent(
+                                        reservation.getEvent().getId(),
+                                        new UserEventResponseDTO(reservation.getEvent(), 0)));
+
+        LOG.debugf("Returning %d events for user: %s", eventMap.size(), username);
+        return List.copyOf(eventMap.values());
     }
 }

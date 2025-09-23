@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.model.repository;
 
 import java.util.List;
+import java.util.Optional;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import de.felixhertweck.seatreservation.model.entity.Event;
@@ -39,5 +40,14 @@ public class EventUserAllowanceRepository implements PanacheRepository<EventUser
 
     public List<EventUserAllowance> findByEvent(Event event) {
         return find("event", event).list();
+    }
+
+    public Optional<EventUserAllowance> findByUserAndEvent(User user, Event event) {
+        return find("user = ?1 and event = ?2", user, event).firstResultOptional();
+    }
+
+    public EventUserAllowance persistOrUpdate(EventUserAllowance allowance) {
+        persistAndFlush(allowance);
+        return allowance;
     }
 }

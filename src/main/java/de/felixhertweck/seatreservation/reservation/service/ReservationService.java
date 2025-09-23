@@ -288,33 +288,22 @@ public class ReservationService {
                 id, currentUser.getUsername());
 
         // Update the user's allowance
-        List<EventUserAllowance> allowances = eventUserAllowanceRepository.findByUser(currentUser);
-        EventUserAllowance eventUserAllowance =
-                allowances.stream()
-                        .filter(a -> a.getEvent().id.equals(reservation.getEvent().id))
-                        .findFirst()
-                        .orElseThrow(
-                                () -> {
-                                    LOG.errorf(
-                                            "EventUserAllowance not found for user %s and event %s"
-                                                    + " (ID: %d) during reservation deletion.",
-                                            currentUser.getUsername(),
-                                            reservation.getEvent().getName(),
-                                            reservation.getEvent().id);
-                                    return new SecurityException(
-                                            "You are not allowed to delete this reservation");
-                                });
-
-        eventUserAllowance.setReservationsAllowedCount(
-                eventUserAllowance.getReservationsAllowedCount() + 1);
-        eventUserAllowanceRepository.persist(eventUserAllowance);
-        LOG.infof(
-                "Updated reservation allowance for user %s and event %s (ID: %d). New allowance:"
-                        + " %d",
-                currentUser.getUsername(),
-                reservation.getEvent().getName(),
-                reservation.getEvent().id,
-                eventUserAllowance.getReservationsAllowedCount());
+        eventUserAllowanceRepository.findByUser(currentUser).stream()
+                .filter(a -> a.getEvent().id.equals(reservation.getEvent().id))
+                .findFirst()
+                .ifPresent(
+                        eventUserAllowance -> {
+                            eventUserAllowance.setReservationsAllowedCount(
+                                    eventUserAllowance.getReservationsAllowedCount() + 1);
+                            eventUserAllowanceRepository.persist(eventUserAllowance);
+                            LOG.infof(
+                                    "Updated reservation allowance for user %s and event %s (ID:"
+                                            + " %d). New allowance: %d",
+                                    currentUser.getUsername(),
+                                    reservation.getEvent().getName(),
+                                    reservation.getEvent().id,
+                                    eventUserAllowance.getReservationsAllowedCount());
+                        });
 
         reservationRepository.delete(reservation);
         LOG.infof(

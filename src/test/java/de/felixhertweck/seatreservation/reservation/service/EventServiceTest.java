@@ -28,9 +28,12 @@ import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
+import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
+import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.reservation.dto.UserEventResponseDTO;
 import io.quarkus.test.InjectMock;
@@ -44,12 +47,15 @@ class EventServiceTest {
     @Inject EventService eventService;
 
     @InjectMock UserRepository userRepository;
-
     @InjectMock EventUserAllowanceRepository eventUserAllowanceRepository;
+    @InjectMock ReservationRepository reservationRepository;
 
     private User user;
-    private Event event;
-    private EventUserAllowance allowance;
+    private Event event1;
+    private Event event2;
+    private EventUserAllowance allowance1;
+    private Reservation reservation1;
+    private Reservation reservation2;
 
     @BeforeEach
     void setUp() {
@@ -57,30 +63,103 @@ class EventServiceTest {
         user.id = 1L;
         user.setUsername("testuser");
 
-        var location = new de.felixhertweck.seatreservation.model.entity.EventLocation();
+        var location = new EventLocation();
         location.id = 1L;
 
-        event = new Event();
-        event.id = 1L;
-        event.setEventLocation(location);
+        event1 = new Event();
+        event1.id = 1L;
+        event1.setEventLocation(location);
+        event1.setName("Event 1");
 
-        allowance = new EventUserAllowance();
-        allowance.setUser(user);
-        allowance.setEvent(event);
-        allowance.setReservationsAllowedCount(5);
+        event2 = new Event();
+        event2.id = 2L;
+        event2.setEventLocation(location);
+        event2.setName("Event 2");
+
+        allowance1 = new EventUserAllowance();
+        allowance1.setUser(user);
+        allowance1.setEvent(event1);
+        allowance1.setReservationsAllowedCount(5);
+
+        reservation1 = new Reservation();
+        reservation1.setUser(user);
+        reservation1.setEvent(event1);
+
+        reservation2 = new Reservation();
+        reservation2.setUser(user);
+        reservation2.setEvent(event2);
     }
 
     @Test
-    void getEventsForCurrentUser_Success() {
+    void getEventsForCurrentUser_Success_OnlyAllowances() {
         when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(eventUserAllowanceRepository.findByUser(user)).thenReturn(List.of(allowance));
+        when(eventUserAllowanceRepository.findByUser(user)).thenReturn(List.of(allowance1));
+        when(reservationRepository.findByUser(user)).thenReturn(Collections.emptyList());
 
         List<UserEventResponseDTO> result = eventService.getEventsForCurrentUser("testuser");
 
         assertFalse(result.isEmpty());
         assertEquals(1, result.size());
-        assertEquals(event.id, result.getFirst().id());
+        assertEquals(event1.id, result.getFirst().id());
         assertEquals(5, result.getFirst().reservationsAllowed());
+    }
+
+    @Test
+    void getEventsForCurrentUser_Success_OnlyReservations() {
+        when(userRepository.findByUsername("testuser")).thenReturn(user);
+        when(eventUserAllowanceRepository.findByUser(user)).thenReturn(Collections.emptyList());
+        when(reservationRepository.findByUser(user)).thenReturn(List.of(reservation2));
+
+        List<UserEventResponseDTO> result = eventService.getEventsForCurrentUser("testuser");
+
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
+        assertEquals(event2.id, result.getFirst().id());
+        assertEquals(
+                0, result.getFirst().reservationsAllowed()); // Should be 0 for reservations only
+    }
+
+    @Test
+    void getEventsForCurrentUser_Success_AllowancesAndDifferentReservations() {
+        when(userRepository.findByUsername("testuser")).thenReturn(user);
+        when(eventUserAllowanceRepository.findByUser(user)).thenReturn(List.of(allowance1));
+        when(reservationRepository.findByUser(user)).thenReturn(List.of(reservation2));
+
+        List<UserEventResponseDTO> result = eventService.getEventsForCurrentUser("testuser");
+
+        assertFalse(result.isEmpty());
+        assertEquals(2, result.size());
+
+        // Check allowance event
+        assertTrue(
+                result.stream()
+                        .anyMatch(
+                                dto ->
+                                        dto.id().equals(event1.id)
+                                                && dto.reservationsAllowed() == 5));
+        // Check reservation event
+        assertTrue(
+                result.stream()
+                        .anyMatch(
+                                dto ->
+                                        dto.id().equals(event2.id)
+                                                && dto.reservationsAllowed() == 0));
+    }
+
+    @Test
+    void getEventsForCurrentUser_Success_AllowancesAndSameEventReservations() {
+        when(userRepository.findByUsername("testuser")).thenReturn(user);
+        when(eventUserAllowanceRepository.findByUser(user)).thenReturn(List.of(allowance1));
+        when(reservationRepository.findByUser(user))
+                .thenReturn(List.of(reservation1)); // reservation for event1
+
+        List<UserEventResponseDTO> result = eventService.getEventsForCurrentUser("testuser");
+
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
+        assertEquals(event1.id, result.getFirst().id());
+        assertEquals(
+                5, result.getFirst().reservationsAllowed()); // Allowance should take precedence
     }
 
     @Test
@@ -96,6 +175,7 @@ class EventServiceTest {
     void getEventsForCurrentUser_Success_NoEvents() {
         when(userRepository.findByUsername("testuser")).thenReturn(user);
         when(eventUserAllowanceRepository.findByUser(user)).thenReturn(Collections.emptyList());
+        when(reservationRepository.findByUser(user)).thenReturn(Collections.emptyList());
 
         List<UserEventResponseDTO> result = eventService.getEventsForCurrentUser("testuser");
 

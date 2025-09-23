@@ -30,6 +30,9 @@ import jakarta.inject.Inject;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
@@ -315,6 +318,18 @@ class ReservationServiceTest {
         when(eventUserAllowanceRepository.findByUser(currentUser)).thenReturn(List.of(allowance));
 
         assertDoesNotThrow(() -> reservationService.deleteReservationForUser(1L, currentUser));
+        verify(eventUserAllowanceRepository, times(1)).persist(allowance);
+        assertEquals(3, allowance.getReservationsAllowedCount());
+    }
+
+    @Test
+    void deleteReservationForUser_Success_NoAllowanceExists() {
+        when(reservationRepository.findByIdOptional(1L)).thenReturn(Optional.of(reservation));
+        when(eventUserAllowanceRepository.findByUser(currentUser))
+                .thenReturn(Collections.emptyList());
+
+        assertDoesNotThrow(() -> reservationService.deleteReservationForUser(1L, currentUser));
+        verify(eventUserAllowanceRepository, never()).persist(any(EventUserAllowance.class));
     }
 
     @Test
@@ -333,16 +348,5 @@ class ReservationServiceTest {
         assertThrows(
                 SecurityException.class,
                 () -> reservationService.deleteReservationForUser(1L, otherUser));
-    }
-
-    @Test
-    void deleteReservationForUser_ForbiddenException_NoAllowance() {
-        when(reservationRepository.findByIdOptional(1L)).thenReturn(Optional.of(reservation));
-        when(eventUserAllowanceRepository.findByUser(currentUser))
-                .thenReturn(Collections.emptyList());
-
-        assertThrows(
-                SecurityException.class,
-                () -> reservationService.deleteReservationForUser(1L, currentUser));
     }
 }
