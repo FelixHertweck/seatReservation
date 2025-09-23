@@ -42,12 +42,19 @@ public class EventResourceTest {
     @Inject EventRepository eventRepository;
     @Inject EventLocationRepository eventLocationRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
+    @Inject ReservationRepository reservationRepository;
 
     @BeforeEach
     @Transactional
     void setUp() {
         var testUser = userRepository.findByUsernameOptional("user").orElseThrow();
         var managerUser = userRepository.findByUsernameOptional("manager").orElseThrow();
+
+        // Clean user-specific data to avoid pollution from import.sql
+        reservationRepository.findByUser(testUser).forEach(reservationRepository::delete);
+        eventUserAllowanceRepository
+                .findByUser(testUser)
+                .forEach(eventUserAllowanceRepository::delete);
 
         var testLocation = new EventLocation();
         testLocation.setName("Test Location for User Event Test");
@@ -72,9 +79,20 @@ public class EventResourceTest {
     @AfterEach
     @Transactional
     void tearDown() {
-        eventUserAllowanceRepository.deleteAll();
-        eventRepository.deleteAll();
-        eventLocationRepository.deleteAll();
+        // Remove only data created/related to our test to avoid FK issues
+        var testUser = userRepository.findByUsernameOptional("user").orElseThrow();
+        reservationRepository.findByUser(testUser).forEach(reservationRepository::delete);
+        eventUserAllowanceRepository
+                .findByUser(testUser)
+                .forEach(eventUserAllowanceRepository::delete);
+        eventRepository
+                .find("name in ?1", java.util.List.of("Accessible Event", "Inaccessible Event"))
+                .list()
+                .forEach(eventRepository::delete);
+        eventLocationRepository
+                .find("name", "Test Location for User Event Test")
+                .list()
+                .forEach(eventLocationRepository::delete);
     }
 
     @Test

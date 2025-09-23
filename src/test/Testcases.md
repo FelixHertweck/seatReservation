@@ -353,7 +353,7 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 
 ## EventLocation Service
 
-### EventLocationService
+### EventLocationService (Manager/Admin)
 
 | Testfall | Beschreibung |
 | :--- | :--- |
@@ -382,6 +382,30 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | `updateEventLocation_WithMarkers_Success` | Aktualisiert erfolgreich eine bestehende EventLocation mit neuen Markern. |
 | `updateEventLocation_ClearingMarkers_Success` | Aktualisiert erfolgreich eine bestehende EventLocation und löscht alle Marker. |
 | `convertToMarkerEntities_ValidInput` | Testet die Konvertierung von Marker-DTOs zu Entitäten mit verschiedenen Grenzwerten. |
+
+### EventLocationService (User)
+
+| Testfall | Beschreibung |
+| :--- | :--- |
+| `getLocationsForCurrentUser_Success_FromAllowanceAndReservation` | Ruft erfolgreich Event-Locations für den aktuellen Benutzer ab, basierend auf Berechtigungen und Reservierungen. |
+| `getLocationsForCurrentUser_Deduplicates_Locations` | Stellt sicher, dass doppelte Event-Locations aus Berechtigungen und Reservierungen korrekt dedupliziert werden. |
+| `getLocationsForCurrentUser_Empty` | Ruft eine leere Liste ab, wenn der Benutzer keine Event-Locations über Berechtigungen oder Reservierungen hat. |
+| `getLocationsForCurrentUser_UserNotFound` | Versucht, Event-Locations für einen nicht existierenden Benutzer abzurufen. Erwartet `UserNotFoundException`. |
+| `getLocationsForCurrentUser_Success_OnlyFromAllowance` | Ruft erfolgreich Event-Locations für den aktuellen Benutzer ab, wenn nur Berechtigungen vorhanden sind. |
+| `getLocationsForCurrentUser_Success_OnlyFromReservation` | Ruft erfolgreich Event-Locations für den aktuellen Benutzer ab, wenn nur Reservierungen vorhanden sind. |
+| `getLocationsForCurrentUser_NoAllowanceNoReservation` | Ruft eine leere Liste ab, wenn der Benutzer weder Berechtigungen noch Reservierungen hat. |
+| `getLocationsForCurrentUser_OneLocationWithAllowance_OneLocationWithReservation` | Ruft erfolgreich Event-Locations ab, wenn eine Location über Berechtigung und eine andere über Reservierung zugewiesen ist. |
+| `getLocationsForCurrentUser_TwoDifferentLocations_OneAllowanceOneReservation` | Ruft erfolgreich Event-Locations ab, wenn zwei verschiedene Locations über Berechtigung und Reservierung zugewiesen sind. |
+| `getLocationsForCurrentUser_OneLocationTwoEvents_OneAllowanceOneReservation` | Ruft erfolgreich eine einzelne Event-Location ab, wenn diese über zwei verschiedene Events (eines mit Berechtigung, eines mit Reservierung) zugewiesen ist. |
+
+### EventLocationResource (User)
+
+| Testfall | Beschreibung |
+| :--- | :--- |
+| `getLocations_ReturnsLocationsForUser` | Ruft erfolgreich Event-Locations für den authentifizierten Benutzer ab. |
+| `getLocations_NoAuth_ReturnsUnauthorized` | Versucht, Event-Locations ohne Authentifizierung abzurufen. Erwartet `401 Unauthorized`. |
+| `getLocations_UserWithNoLocations_ReturnsEmptyList` | Ruft eine leere Liste ab, wenn der authentifizierte Benutzer keine Event-Locations hat. |
+| `getLocations_DeduplicatesLocations_FromAllowanceAndReservation` | Stellt sicher, dass Event-Locations korrekt dedupliziert werden, wenn sie sowohl über Berechtigungen als auch über Reservierungen zugänglich sind. |
 
 ## EventLocationMarker Tests
 

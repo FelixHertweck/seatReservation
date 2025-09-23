@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.model.repository;
 
 import java.util.List;
+import java.util.Optional;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import de.felixhertweck.seatreservation.model.entity.Event;
@@ -31,5 +32,9 @@ public class EventRepository implements PanacheRepository<Event> {
 
     public List<Event> findByManager(User manager) {
         return find("manager", manager).list();
+    }
+
+    public Optional<Event> findByName(String name) {
+        return find("name", name).firstResultOptional();
     }
 }

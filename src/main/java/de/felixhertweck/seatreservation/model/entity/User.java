@@ -58,6 +58,13 @@ public class User extends PanacheEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<EventUserAllowance> eventAllowances = new HashSet<>();
 
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY)
+    private Set<Reservation> reservations = new HashSet<>();
+
     @OneToOne(
             mappedBy = "user",
             cascade = CascadeType.ALL,
@@ -182,6 +189,14 @@ public class User extends PanacheEntity {
         this.emailVerification = emailVerification;
     }
 
+    public Set<Reservation> getReservations() {
+        return reservations;
+    }
+
+    public void setReservations(Set<Reservation> reservations) {
+        this.reservations = reservations;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -200,6 +215,7 @@ public class User extends PanacheEntity {
                 && Objects.equals(tags, that.tags)
                 && Objects.equals(roles, that.roles)
                 && Objects.equals(eventAllowances, that.eventAllowances)
+                && Objects.equals(reservations, that.reservations)
                 && Objects.equals(emailVerification, that.emailVerification);
     }
 
@@ -219,6 +235,7 @@ public class User extends PanacheEntity {
                 tags,
                 roles,
                 eventAllowances,
+                reservations,
                 emailVerification);
     }
 
@@ -251,6 +268,8 @@ public class User extends PanacheEntity {
                 + roles
                 + ", eventAllowances="
                 + eventAllowances
+                + ", reservations="
+                + reservations
                 + ", emailVerification="
                 + emailVerification
                 + ", id="

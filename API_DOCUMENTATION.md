@@ -12,6 +12,7 @@ This is the API documentation for the seat reservation system.
 - [Events (Manager/Admin)](#events-manageradmin)
 - [Seats (Manager/Admin)](#seats-manageradmin)
 - [Reservations (Manager/Admin)](#reservations-manageradmin)
+- [Event Locations (User)](#event-locations-user)
 - [Events (User)](#events-user)
 - [Reservations (User)](#reservations-user)
 
@@ -755,6 +756,26 @@ Exports all reservations for a specific event as a CSV file.
 
 ---
  
+## Event Locations (User)
+
+### EventLocationResource
+
+Base path: `/api/user/locations`
+
+---
+
+#### GET /
+
+Retrieves all event locations for which the current user has permissions or reservations.
+
+-   **Roles:** `USER`, `MANAGER`, `ADMIN`
+-   **Responses:**
+    -   `200 OK`: Returns a list of `UserEventLocationResponseDTO` objects.
+    -   `401 Unauthorized`: Not authenticated.
+    -   `403 Forbidden`: Access denied.
+
+---
+
 ## Events (User)
  
 ### EventResource

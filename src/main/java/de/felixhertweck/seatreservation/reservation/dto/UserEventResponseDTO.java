@@ -35,7 +35,7 @@ public record UserEventResponseDTO(
         Instant endTime,
         Instant bookingDeadline,
         List<SeatStatusDTO> seatStatuses,
-        UserEventLocationResponseDTO location,
+        Long locationId,
         Integer reservationsAllowed) {
     public UserEventResponseDTO(Event event, Integer reservationsAllowed) {
         this(
@@ -48,7 +48,7 @@ public record UserEventResponseDTO(
                 event.getReservations() == null
                         ? null
                         : event.getReservations().stream().map(SeatStatusDTO::new).toList(),
-                new UserEventLocationResponseDTO(event.getEventLocation()),
+                event.getEventLocation() == null ? null : event.getEventLocation().getId(),
                 reservationsAllowed);
     }
 }
