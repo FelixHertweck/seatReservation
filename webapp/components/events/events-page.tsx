@@ -8,8 +8,10 @@ import { EventReservationModal } from "@/components/events/event-reservation-mod
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { useEvents } from "@/hooks/use-events";
 import type { UserEventResponseDto } from "@/api";
+import { useT } from "@/lib/i18n/hooks";
 
 export default function EventsSubPage() {
+  const t = useT();
   const searchParams = useSearchParams();
 
   const {
@@ -89,9 +91,11 @@ export default function EventsSubPage() {
         </div>
       ) : filteredEvents.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-muted-foreground text-lg">No events available</p>
+          <p className="text-muted-foreground text-lg">
+            {t("eventsPage.noEventsAvailable")}
+          </p>
           <p className="text-muted-foreground">
-            Try again or check your search
+            {t("eventsPage.tryAgainOrCheckSearch")}
           </p>
         </div>
       ) : (

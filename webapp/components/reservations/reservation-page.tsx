@@ -8,8 +8,11 @@ import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { useReservations } from "@/hooks/use-reservations";
 import { useEvents } from "@/hooks/use-events";
 import type { UserReservationResponseDto } from "@/api";
+import { useT } from "@/lib/i18n/hooks";
 
 export default function ReservationsSubPage() {
+  const t = useT();
+
   const {
     reservations,
     isLoading: reservationsLoading,
@@ -96,8 +99,12 @@ export default function ReservationsSubPage() {
         </div>
       ) : groupedReservations.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-muted-foreground text-lg">No reservations yet</p>
-          <p className="text-muted-foreground">Switch to available events</p>
+          <p className="text-muted-foreground text-lg">
+            {t("eventsPage.noReservationsYet")}
+          </p>
+          <p className="text-muted-foreground">
+            {t("eventsPage.switchToAvailableEvents")}
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">

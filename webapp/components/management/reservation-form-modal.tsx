@@ -290,9 +290,11 @@ export function ReservationFormModal({
                     ))}
                   </div>
                   <p className="text-xs text-gray-600 dark:text-gray-400">
-                    {t("reservationFormModal.seatsSelected", {
-                      count: selectedSeats.length,
-                    })}
+                    {selectedSeats.length > 1
+                      ? t("reservationFormModal.multipleSeatsSelected", {
+                          count: selectedSeats.length,
+                        })
+                      : t("reservationFormModal.seatSelected")}
                   </p>
                 </div>
               )}
