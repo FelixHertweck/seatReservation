@@ -22,7 +22,7 @@ package de.felixhertweck.seatreservation.email;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Set;
 
@@ -58,10 +58,6 @@ class NotificationServiceTest {
     private Event testEvent;
     private Reservation testReservation;
 
-    // Fixed dates for deterministic testing
-    private static final LocalDate FIXED_TODAY = LocalDate.of(2025, 9, 21);
-    private static final LocalDate FIXED_TOMORROW = FIXED_TODAY.plusDays(1);
-
     @BeforeEach
     void setUp() {
         testUser = new User();
@@ -81,9 +77,14 @@ class NotificationServiceTest {
     @Test
     void sendEventReminders_WithEventsAndReservations_SendsEmails() {
         // Arrange
-        Instant startOfTomorrow = FIXED_TOMORROW.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant startOfTomorrow =
+                LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
         Instant endOfTomorrow =
-                FIXED_TOMORROW.atTime(23, 59, 59, 999_999_999).atZone(ZoneOffset.UTC).toInstant();
+                LocalDate.now()
+                        .plusDays(1)
+                        .atTime(23, 59, 59, 999_999_999)
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant();
 
         List<Event> eventsTomorrow = List.of(testEvent);
         List<Reservation> reservations = List.of(testReservation);
@@ -104,9 +105,14 @@ class NotificationServiceTest {
     @Test
     void sendEventReminders_WithNoEvents_DoesNotSendEmails() {
         // Arrange
-        Instant startOfTomorrow = FIXED_TOMORROW.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant startOfTomorrow =
+                LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
         Instant endOfTomorrow =
-                FIXED_TOMORROW.atTime(23, 59, 59, 999_999_999).atZone(ZoneOffset.UTC).toInstant();
+                LocalDate.now()
+                        .plusDays(1)
+                        .atTime(23, 59, 59, 999_999_999)
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant();
 
         when(eventService.findEventsBetweenDates(startOfTomorrow, endOfTomorrow))
                 .thenReturn(List.of());
@@ -123,9 +129,14 @@ class NotificationServiceTest {
     @Test
     void sendEventReminders_WithEventsButNoReservations_DoesNotSendEmails() {
         // Arrange
-        Instant startOfTomorrow = FIXED_TOMORROW.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant startOfTomorrow =
+                LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
         Instant endOfTomorrow =
-                FIXED_TOMORROW.atTime(23, 59, 59, 999_999_999).atZone(ZoneOffset.UTC).toInstant();
+                LocalDate.now()
+                        .plusDays(1)
+                        .atTime(23, 59, 59, 999_999_999)
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant();
 
         List<Event> eventsTomorrow = List.of(testEvent);
 
@@ -155,9 +166,14 @@ class NotificationServiceTest {
         secondReservation.setUser(secondUser);
         secondReservation.setEvent(secondEvent);
 
-        Instant startOfTomorrow = FIXED_TOMORROW.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant startOfTomorrow =
+                LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
         Instant endOfTomorrow =
-                FIXED_TOMORROW.atTime(23, 59, 59, 999_999_999).atZone(ZoneOffset.UTC).toInstant();
+                LocalDate.now()
+                        .plusDays(1)
+                        .atTime(23, 59, 59, 999_999_999)
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant();
 
         List<Event> eventsTomorrow = List.of(testEvent, secondEvent);
 
@@ -184,9 +200,14 @@ class NotificationServiceTest {
         secondReservation.setUser(testUser); // Same user, different reservation
         secondReservation.setEvent(testEvent);
 
-        Instant startOfTomorrow = FIXED_TOMORROW.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant startOfTomorrow =
+                LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
         Instant endOfTomorrow =
-                FIXED_TOMORROW.atTime(23, 59, 59, 999_999_999).atZone(ZoneOffset.UTC).toInstant();
+                LocalDate.now()
+                        .plusDays(1)
+                        .atTime(23, 59, 59, 999_999_999)
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant();
 
         List<Event> eventsTomorrow = List.of(testEvent);
         List<Reservation> reservations = List.of(testReservation, secondReservation);
@@ -218,9 +239,14 @@ class NotificationServiceTest {
         secondReservation.setUser(secondUser);
         secondReservation.setEvent(testEvent);
 
-        Instant startOfTomorrow = FIXED_TOMORROW.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant startOfTomorrow =
+                LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
         Instant endOfTomorrow =
-                FIXED_TOMORROW.atTime(23, 59, 59, 999_999_999).atZone(ZoneOffset.UTC).toInstant();
+                LocalDate.now()
+                        .plusDays(1)
+                        .atTime(23, 59, 59, 999_999_999)
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant();
 
         List<Event> eventsTomorrow = List.of(testEvent);
         List<Reservation> reservations = List.of(testReservation, secondReservation);
@@ -248,9 +274,14 @@ class NotificationServiceTest {
         // Arrange
         testUser.setEmail(null);
 
-        Instant startOfTomorrow = FIXED_TOMORROW.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant startOfTomorrow =
+                LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
         Instant endOfTomorrow =
-                FIXED_TOMORROW.atTime(23, 59, 59, 999_999_999).atZone(ZoneOffset.UTC).toInstant();
+                LocalDate.now()
+                        .plusDays(1)
+                        .atTime(23, 59, 59, 999_999_999)
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant();
 
         List<Event> eventsTomorrow = List.of(testEvent);
         List<Reservation> reservations = List.of(testReservation);
@@ -269,9 +300,14 @@ class NotificationServiceTest {
     @Test
     void sendEventReminders_CalculatesCorrectDateRange() {
         // Arrange
-        Instant expectedStart = FIXED_TOMORROW.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant expectedStart =
+                LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
         Instant expectedEnd =
-                FIXED_TOMORROW.atTime(23, 59, 59, 999_999_999).atZone(ZoneOffset.UTC).toInstant();
+                LocalDate.now()
+                        .plusDays(1)
+                        .atTime(23, 59, 59, 999_999_999)
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant();
 
         when(eventService.findEventsBetweenDates(any(), any())).thenReturn(List.of());
 
@@ -285,9 +321,14 @@ class NotificationServiceTest {
     @Test
     void sendEventReminders_WithServiceException_HandlesGracefully() {
         // Arrange
-        Instant startOfTomorrow = FIXED_TOMORROW.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant startOfTomorrow =
+                LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
         Instant endOfTomorrow =
-                FIXED_TOMORROW.atTime(23, 59, 59, 999_999_999).atZone(ZoneOffset.UTC).toInstant();
+                LocalDate.now()
+                        .plusDays(1)
+                        .atTime(23, 59, 59, 999_999_999)
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant();
 
         when(eventService.findEventsBetweenDates(startOfTomorrow, endOfTomorrow))
                 .thenThrow(new RuntimeException("Database connection failed"));
@@ -310,9 +351,12 @@ class NotificationServiceTest {
 
         testEvent.setManager(manager);
 
-        Instant startOfToday = FIXED_TODAY.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant startOfToday = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant();
         Instant endOfToday =
-                FIXED_TODAY.atTime(23, 59, 59, 999_999_999).atZone(ZoneOffset.UTC).toInstant();
+                LocalDate.now()
+                        .atTime(23, 59, 59, 999_999_999)
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant();
 
         List<Event> eventsToday = List.of(testEvent);
 
@@ -329,9 +373,12 @@ class NotificationServiceTest {
     @Test
     void sendDailyReservationCsvToManagers_WithNoEvents_DoesNotSendEmails() throws Exception {
         // Arrange
-        Instant startOfToday = FIXED_TODAY.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant startOfToday = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant();
         Instant endOfToday =
-                FIXED_TODAY.atTime(23, 59, 59, 999_999_999).atZone(ZoneOffset.UTC).toInstant();
+                LocalDate.now()
+                        .atTime(23, 59, 59, 999_999_999)
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant();
 
         when(eventService.findEventsBetweenDates(startOfToday, endOfToday)).thenReturn(List.of());
 
@@ -349,9 +396,12 @@ class NotificationServiceTest {
         // Arrange
         testEvent.setManager(null); // No manager assigned
 
-        Instant startOfToday = FIXED_TODAY.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant startOfToday = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant();
         Instant endOfToday =
-                FIXED_TODAY.atTime(23, 59, 59, 999_999_999).atZone(ZoneOffset.UTC).toInstant();
+                LocalDate.now()
+                        .atTime(23, 59, 59, 999_999_999)
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant();
 
         List<Event> eventsToday = List.of(testEvent);
 
@@ -381,9 +431,12 @@ class NotificationServiceTest {
 
         testEvent.setManager(manager1);
 
-        Instant startOfToday = FIXED_TODAY.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant startOfToday = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant();
         Instant endOfToday =
-                FIXED_TODAY.atTime(23, 59, 59, 999_999_999).atZone(ZoneOffset.UTC).toInstant();
+                LocalDate.now()
+                        .atTime(23, 59, 59, 999_999_999)
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant();
 
         List<Event> eventsToday = List.of(testEvent, secondEvent);
 
@@ -414,9 +467,12 @@ class NotificationServiceTest {
 
         testEvent.setManager(manager1);
 
-        Instant startOfToday = FIXED_TODAY.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant startOfToday = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant();
         Instant endOfToday =
-                FIXED_TODAY.atTime(23, 59, 59, 999_999_999).atZone(ZoneOffset.UTC).toInstant();
+                LocalDate.now()
+                        .atTime(23, 59, 59, 999_999_999)
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant();
 
         List<Event> eventsToday = List.of(testEvent, secondEvent);
 
@@ -439,9 +495,12 @@ class NotificationServiceTest {
     @Test
     void sendDailyReservationCsvToManagers_CalculatesCorrectDateRange() throws Exception {
         // Arrange
-        Instant expectedStart = FIXED_TODAY.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant expectedStart = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant();
         Instant expectedEnd =
-                FIXED_TODAY.atTime(23, 59, 59, 999_999_999).atZone(ZoneOffset.UTC).toInstant();
+                LocalDate.now()
+                        .atTime(23, 59, 59, 999_999_999)
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant();
 
         when(eventService.findEventsBetweenDates(any(), any())).thenReturn(List.of());
 
@@ -456,9 +515,12 @@ class NotificationServiceTest {
     void sendDailyReservationCsvToManagers_WithServiceException_HandlesGracefully()
             throws Exception {
         // Arrange
-        Instant startOfToday = FIXED_TODAY.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant startOfToday = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant();
         Instant endOfToday =
-                FIXED_TODAY.atTime(23, 59, 59, 999_999_999).atZone(ZoneOffset.UTC).toInstant();
+                LocalDate.now()
+                        .atTime(23, 59, 59, 999_999_999)
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant();
 
         when(eventService.findEventsBetweenDates(startOfToday, endOfToday))
                 .thenThrow(new RuntimeException("Database connection failed"));

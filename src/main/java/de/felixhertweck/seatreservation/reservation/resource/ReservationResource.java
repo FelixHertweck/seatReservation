@@ -29,7 +29,7 @@ import jakarta.ws.rs.*;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.reservation.dto.ReservationResponseDTO;
-import de.felixhertweck.seatreservation.reservation.dto.ReservationsRequestCreateDTO;
+import de.felixhertweck.seatreservation.reservation.dto.ReservationsRequestDTO;
 import de.felixhertweck.seatreservation.reservation.service.ReservationService;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -119,7 +119,7 @@ public class ReservationResource {
     @APIResponse(
             responseCode = "409",
             description = "Conflict: Seat already reserved or event booking closed")
-    public List<ReservationResponseDTO> createReservation(@Valid ReservationsRequestCreateDTO dto) {
+    public List<ReservationResponseDTO> createReservation(@Valid ReservationsRequestDTO dto) {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.debugf(
                 "Received POST request to /api/user/reservations for user: %s",

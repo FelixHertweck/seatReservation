@@ -141,6 +141,10 @@ export default function EventsPage() {
 
   const isLoading = eventsLoading || reservationsLoading;
 
+  const selectedEventDto = events.find(
+    (event) => event.id === selectedReservation?.eventId,
+  );
+
   return (
     <div className="container mx-auto px-2 py-3 md:p-6">
       <div className="mb-3 md:mb-6">
@@ -255,14 +259,9 @@ export default function EventsPage() {
 
       {selectedReservation && (
         <SeatMapModal
-          seats={
-            events.find((event) => event.id === selectedReservation?.eventId)
-              ?.location?.seats || []
-          }
-          markers={
-            events.find((event) => event.id === selectedReservation?.eventId)
-              ?.location?.markers || []
-          }
+          seats={selectedEventDto?.location?.seats || []}
+          seatStatuses={selectedEventDto?.seatStatuses || []}
+          markers={selectedEventDto?.location?.markers || []}
           reservation={selectedReservation}
           eventReservations={getEventReservations(selectedReservation.eventId)}
           onClose={() => setSelectedReservation(null)}

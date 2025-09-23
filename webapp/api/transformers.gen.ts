@@ -66,6 +66,13 @@ const instantSchemaResponseTransformer = (data: any) => {
     return data;
 };
 
+const seatStatusDtoSchemaResponseTransformer = (data: any) => {
+    if (data.seatId) {
+        data.seatId = BigInt(data.seatId.toString());
+    }
+    return data;
+};
+
 const detailedEventResponseDtoSchemaResponseTransformer = (data: any) => {
     if (data.id) {
         data.id = BigInt(data.id.toString());
@@ -79,17 +86,22 @@ const detailedEventResponseDtoSchemaResponseTransformer = (data: any) => {
     if (data.bookingDeadline) {
         data.bookingDeadline = instantSchemaResponseTransformer(data.bookingDeadline);
     }
-    if (data.eventLocation) {
-        data.eventLocation = eventLocationResponseDtoSchemaResponseTransformer(data.eventLocation);
-    }
-    if (data.managerId) {
-        data.managerId = BigInt(data.managerId.toString());
+    if (data.seatStatuses) {
+        data.seatStatuses = data.seatStatuses.map((item: any) => {
+            return seatStatusDtoSchemaResponseTransformer(item);
+        });
     }
     if (data.eventUserAllowancesIds) {
         data.eventUserAllowancesIds = data.eventUserAllowancesIds.map((item: any) => {
             BigInt(item.toString());
             return item;
         });
+    }
+    if (data.eventLocation) {
+        data.eventLocation = eventLocationResponseDtoSchemaResponseTransformer(data.eventLocation);
+    }
+    if (data.managerId) {
+        data.managerId = BigInt(data.managerId.toString());
     }
     return data;
 };
@@ -253,6 +265,11 @@ const eventResponseDtoSchemaResponseTransformer = (data: any) => {
     }
     if (data.bookingDeadline) {
         data.bookingDeadline = instantSchemaResponseTransformer(data.bookingDeadline);
+    }
+    if (data.seatStatuses) {
+        data.seatStatuses = data.seatStatuses.map((item: any) => {
+            return seatStatusDtoSchemaResponseTransformer(item);
+        });
     }
     if (data.location) {
         data.location = eventLocationResponseDtoSchemaResponseTransformer(data.location);

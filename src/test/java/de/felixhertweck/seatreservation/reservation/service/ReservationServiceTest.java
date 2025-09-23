@@ -37,7 +37,7 @@ import de.felixhertweck.seatreservation.management.exception.ReservationNotFound
 import de.felixhertweck.seatreservation.model.entity.*;
 import de.felixhertweck.seatreservation.model.repository.*;
 import de.felixhertweck.seatreservation.reservation.dto.ReservationResponseDTO;
-import de.felixhertweck.seatreservation.reservation.dto.ReservationsRequestCreateDTO;
+import de.felixhertweck.seatreservation.reservation.dto.ReservationsRequestDTO;
 import de.felixhertweck.seatreservation.reservation.exception.EventBookingClosedException;
 import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
@@ -167,7 +167,7 @@ class ReservationServiceTest {
 
     @Test
     void createReservationForUser_Success() {
-        ReservationsRequestCreateDTO dto = new ReservationsRequestCreateDTO();
+        ReservationsRequestDTO dto = new ReservationsRequestDTO();
         dto.setEventId(event.id);
         dto.setSeatIds(Set.of(seat1.id));
 
@@ -187,7 +187,7 @@ class ReservationServiceTest {
     @Test
     void createReservationForUser_IllegalStateException_EmailNotVerified() {
         currentUser.setEmailVerified(false);
-        ReservationsRequestCreateDTO dto = new ReservationsRequestCreateDTO();
+        ReservationsRequestDTO dto = new ReservationsRequestDTO();
         dto.setEventId(event.id);
         dto.setSeatIds(Set.of(seat1.id));
 
@@ -203,7 +203,7 @@ class ReservationServiceTest {
 
     @Test
     void createReservationForUser_IllegalArgumentException_NoSeatIds() {
-        ReservationsRequestCreateDTO dto = new ReservationsRequestCreateDTO();
+        ReservationsRequestDTO dto = new ReservationsRequestDTO();
         dto.setEventId(event.id);
         dto.setSeatIds(Collections.emptySet());
 
@@ -214,7 +214,7 @@ class ReservationServiceTest {
 
     @Test
     void createReservationForUser_NotFoundException_EventNotFound() {
-        ReservationsRequestCreateDTO dto = new ReservationsRequestCreateDTO();
+        ReservationsRequestDTO dto = new ReservationsRequestDTO();
         dto.setEventId(99L);
         dto.setSeatIds(Set.of(seat1.id));
 
@@ -227,7 +227,7 @@ class ReservationServiceTest {
 
     @Test
     void createReservationForUser_NotFoundException_SeatNotFound() {
-        ReservationsRequestCreateDTO dto = new ReservationsRequestCreateDTO();
+        ReservationsRequestDTO dto = new ReservationsRequestDTO();
         dto.setEventId(event.id);
         dto.setSeatIds(Set.of(99L));
 
@@ -241,7 +241,7 @@ class ReservationServiceTest {
 
     @Test
     void createReservationForUser_ForbiddenException_NoAllowance() {
-        ReservationsRequestCreateDTO dto = new ReservationsRequestCreateDTO();
+        ReservationsRequestDTO dto = new ReservationsRequestDTO();
         dto.setEventId(event.id);
         dto.setSeatIds(Set.of(seat1.id));
 
@@ -257,7 +257,7 @@ class ReservationServiceTest {
 
     @Test
     void createReservationForUser_NoSeatsAvailableException_LimitReached() {
-        ReservationsRequestCreateDTO dto = new ReservationsRequestCreateDTO();
+        ReservationsRequestDTO dto = new ReservationsRequestDTO();
         dto.setEventId(event.id);
         dto.setSeatIds(Set.of(seat1.id, seat2.id, 3L)); // 3 seats, but only 2 allowed
 
@@ -277,7 +277,7 @@ class ReservationServiceTest {
     @Test
     void createReservationForUser_EventBookingClosedException() {
         event.setBookingDeadline(Instant.now().minusSeconds(Duration.ofDays(1).toSeconds()));
-        ReservationsRequestCreateDTO dto = new ReservationsRequestCreateDTO();
+        ReservationsRequestDTO dto = new ReservationsRequestDTO();
         dto.setEventId(event.id);
         dto.setSeatIds(Set.of(seat1.id));
 
@@ -292,7 +292,7 @@ class ReservationServiceTest {
 
     @Test
     void createReservationForUser_SeatAlreadyReservedException() {
-        ReservationsRequestCreateDTO dto = new ReservationsRequestCreateDTO();
+        ReservationsRequestDTO dto = new ReservationsRequestDTO();
         dto.setEventId(event.id);
         dto.setSeatIds(Set.of(seat1.id));
 

@@ -19,26 +19,11 @@
  */
 package de.felixhertweck.seatreservation.common.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import de.felixhertweck.seatreservation.model.entity.Seat;
-import io.quarkus.runtime.annotations.RegisterForReflection;
+import de.felixhertweck.seatreservation.model.entity.Reservation;
+import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@RegisterForReflection
-public record SeatDTO(
-        Long id,
-        String seatNumber,
-        String seatRow,
-        Long locationId,
-        int xCoordinate,
-        int yCoordinate) {
-    public SeatDTO(Seat seat) {
-        this(
-                seat.getId(),
-                seat.getSeatNumber(),
-                seat.getSeatRow(),
-                seat.getLocation().id,
-                seat.getxCoordinate(),
-                seat.getyCoordinate());
+public record SeatStatusDTO(Long seatId, ReservationStatus status) {
+    public SeatStatusDTO(Reservation reservation) {
+        this(reservation.getSeat().getId(), reservation.getStatus());
     }
 }

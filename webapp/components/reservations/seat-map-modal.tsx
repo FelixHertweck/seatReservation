@@ -13,11 +13,13 @@ import type {
   EventLocationMakerDto,
   ReservationResponseDto,
   SeatDto,
+  SeatStatusDto,
 } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 
 interface SeatMapModalProps {
   seats: SeatDto[];
+  seatStatuses: SeatStatusDto[];
   markers: EventLocationMakerDto[];
   reservation: ReservationResponseDto;
   eventReservations: ReservationResponseDto[];
@@ -27,6 +29,7 @@ interface SeatMapModalProps {
 
 export function SeatMapModal({
   seats,
+  seatStatuses,
   markers,
   reservation,
   eventReservations,
@@ -115,6 +118,7 @@ export function SeatMapModal({
             <div className="flex-1 min-h-0 min-w-0">
               <SeatMap
                 seats={seats}
+                seatStatuses={seatStatuses}
                 markers={markers}
                 selectedSeats={highlightedSeats}
                 onSeatSelect={() => {}} // Read-only
