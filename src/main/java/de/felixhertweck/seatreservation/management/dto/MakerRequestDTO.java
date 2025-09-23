@@ -24,7 +24,7 @@ import jakarta.validation.constraints.NotNull;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
-public class EventLocationMakerRequestDTO {
+public class MakerRequestDTO {
     @NotNull(message = "Label must not be null")
     private String label;
 
@@ -34,9 +34,9 @@ public class EventLocationMakerRequestDTO {
     @NotNull(message = "Y coordinate must not be null")
     private Integer yCoordinate;
 
-    public EventLocationMakerRequestDTO() {}
+    public MakerRequestDTO() {}
 
-    public EventLocationMakerRequestDTO(String label, Integer xCoordinate, Integer yCoordinate) {
+    public MakerRequestDTO(String label, Integer xCoordinate, Integer yCoordinate) {
         this.label = label;
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;

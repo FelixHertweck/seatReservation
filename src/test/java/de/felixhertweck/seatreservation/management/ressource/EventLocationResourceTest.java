@@ -201,7 +201,7 @@ public class EventLocationResourceTest {
                 .then()
                 .statusCode(200)
                 .body("name", is("New Location"))
-                .body("seats.size()", is(2));
+                .body("seatIds.size()", is(2));
     }
 
     @Test
@@ -221,7 +221,7 @@ public class EventLocationResourceTest {
                 .then()
                 .statusCode(200)
                 .body("name", is("Test Location"))
-                .body("seats.size()", is(2)); // Assuming initial seats are 0, and 2 are added
+                .body("seatIds.size()", is(2)); // Assuming initial seats are 0, and 2 are added
     }
 
     @Test

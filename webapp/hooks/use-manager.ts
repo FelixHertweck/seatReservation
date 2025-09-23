@@ -463,6 +463,7 @@ export function useManager(): UseManagerReturn {
     },
     reservations: {
       users: user ?? [],
+      seats: seats ?? [],
       events: events ?? [],
       locations: locations ?? [],
       reservations: reservations ?? [],

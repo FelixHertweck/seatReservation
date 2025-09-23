@@ -101,23 +101,6 @@
           }
         }
       },
-      "EventLocationMakerRequestDTO" : {
-        "type" : "object",
-        "required" : [ "label", "xCoordinate", "yCoordinate" ],
-        "properties" : {
-          "label" : {
-            "type" : "string"
-          },
-          "xCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "yCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        }
-      },
       "EventLocationRequestDTO" : {
         "type" : "object",
         "required" : [ "name", "address", "capacity" ],
@@ -135,7 +118,7 @@
           "markers" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/EventLocationMakerRequestDTO"
+              "$ref" : "#/components/schemas/MakerRequestDTO"
             }
           }
         }
@@ -160,10 +143,11 @@
           "manager" : {
             "$ref" : "#/components/schemas/LimitedUserInfoDTO"
           },
-          "seats" : {
+          "seatIds" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/SeatDTO"
+              "type" : "integer",
+              "format" : "int64"
             }
           },
           "markers" : {
@@ -333,7 +317,7 @@
           "markers" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/EventLocationMakerRequestDTO"
+              "$ref" : "#/components/schemas/MakerRequestDTO"
             }
           }
         }
@@ -393,6 +377,23 @@
           "password" : {
             "type" : "string",
             "pattern" : "\\S"
+          }
+        }
+      },
+      "MakerRequestDTO" : {
+        "type" : "object",
+        "required" : [ "label", "xCoordinate", "yCoordinate" ],
+        "properties" : {
+          "label" : {
+            "type" : "string"
+          },
+          "xCoordinate" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "yCoordinate" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         }
       },
@@ -575,6 +576,40 @@
           }
         }
       },
+      "UserEventLocationResponseDTO" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "address" : {
+            "type" : "string"
+          },
+          "capacity" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "manager" : {
+            "$ref" : "#/components/schemas/LimitedUserInfoDTO"
+          },
+          "seats" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SeatDTO"
+            }
+          },
+          "markers" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/EventLocationMakerDTO"
+            }
+          }
+        }
+      },
       "UserEventResponseDTO" : {
         "type" : "object",
         "properties" : {
@@ -604,7 +639,7 @@
             }
           },
           "location" : {
-            "$ref" : "#/components/schemas/EventLocationResponseDTO"
+            "$ref" : "#/components/schemas/UserEventLocationResponseDTO"
           },
           "reservationsAllowed" : {
             "type" : "integer",

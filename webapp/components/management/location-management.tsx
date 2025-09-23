@@ -291,7 +291,7 @@ export function LocationManagement({
                         </TableRow>
                       ))
                     : paginatedData.map((location) => {
-                        const seatCount = location.seats?.length || 0;
+                        const seatCount = location.seatIds?.length || 0;
                         const markersDisplay =
                           location.markers && location.markers.length > 0
                             ? location.markers

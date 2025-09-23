@@ -27,11 +27,11 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
-import de.felixhertweck.seatreservation.common.dto.EventLocationResponseDTO;
-import de.felixhertweck.seatreservation.management.dto.EventLocationMakerRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationRequestDTO;
+import de.felixhertweck.seatreservation.management.dto.EventLocationResponseDTO;
 import de.felixhertweck.seatreservation.management.dto.ImportEventLocationDto;
 import de.felixhertweck.seatreservation.management.dto.ImportSeatDto;
+import de.felixhertweck.seatreservation.management.dto.MakerRequestDTO;
 import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.*;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
@@ -208,7 +208,7 @@ public class EventLocationService {
     }
 
     private List<EventLocationMarker> convertToMarkerEntities(
-            List<EventLocationMakerRequestDTO> dtoMarkers, EventLocation eventLocation) {
+            List<MakerRequestDTO> dtoMarkers, EventLocation eventLocation) {
         if (dtoMarkers == null) {
             return new ArrayList<>();
         }

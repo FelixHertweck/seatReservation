@@ -32,6 +32,7 @@ import { useT } from "@/lib/i18n/hooks";
 
 interface BlockSeatsModalProps {
   events: EventResponseDto[];
+  seats: SeatDto[];
   locations: EventLocationResponseDto[];
   onSubmit: (blockData: BlockSeatsRequestDto) => Promise<void>;
   onClose: () => void;
@@ -39,6 +40,7 @@ interface BlockSeatsModalProps {
 
 export function BlockSeatsModal({
   events,
+  seats,
   locations,
   onSubmit,
   onClose,
@@ -58,7 +60,9 @@ export function BlockSeatsModal({
   const eventLocation = locations.find(
     (loc) => loc.id === selectedEvent?.eventLocationId,
   );
-  const availableSeats: SeatDto[] = eventLocation?.seats ?? [];
+  const availableSeats: SeatDto[] = seats.filter(
+    (seat) => seat.locationId === eventLocation?.id,
+  );
   const availableSeatStatuses: SeatStatusDto[] =
     selectedEvent?.seatStatuses ?? [];
 

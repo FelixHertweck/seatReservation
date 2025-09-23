@@ -17,15 +17,18 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.common.dto;
+package de.felixhertweck.seatreservation.reservation.dto;
 
 import java.util.List;
 
+import de.felixhertweck.seatreservation.common.dto.EventLocationMakerDTO;
+import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
+import de.felixhertweck.seatreservation.common.dto.SeatDTO;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
-public record EventLocationResponseDTO(
+public record UserEventLocationResponseDTO(
         Long id,
         String name,
         String address,
@@ -33,7 +36,7 @@ public record EventLocationResponseDTO(
         LimitedUserInfoDTO manager,
         List<SeatDTO> seats,
         List<EventLocationMakerDTO> markers) {
-    public EventLocationResponseDTO(EventLocation eventLocation) {
+    public UserEventLocationResponseDTO(EventLocation eventLocation) {
         this(
                 eventLocation.getId(),
                 eventLocation.getName(),

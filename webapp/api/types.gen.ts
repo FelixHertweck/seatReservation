@@ -30,17 +30,11 @@ export type EventLocationMakerDto = {
     yCoordinate?: number;
 };
 
-export type EventLocationMakerRequestDto = {
-    label: string;
-    xCoordinate: number;
-    yCoordinate: number;
-};
-
 export type EventLocationRequestDto = {
     name: string;
     address: string;
     capacity: number;
-    markers?: Array<EventLocationMakerRequestDto>;
+    markers?: Array<MakerRequestDto>;
 };
 
 export type EventLocationResponseDto = {
@@ -49,7 +43,7 @@ export type EventLocationResponseDto = {
     address?: string;
     capacity?: number;
     manager?: LimitedUserInfoDto;
-    seats?: Array<SeatDto>;
+    seatIds?: Array<bigint>;
     markers?: Array<EventLocationMakerDto>;
 };
 
@@ -100,7 +94,7 @@ export type ImportEventLocationDto = {
     address: string;
     capacity: number;
     seats?: Array<ImportSeatDto>;
-    markers?: Array<EventLocationMakerRequestDto>;
+    markers?: Array<MakerRequestDto>;
 };
 
 export type ImportSeatDto = {
@@ -121,6 +115,12 @@ export type LimitedUserInfoDto = {
 export type LoginRequestDto = {
     identifier: string;
     password: string;
+};
+
+export type MakerRequestDto = {
+    label: string;
+    xCoordinate: number;
+    yCoordinate: number;
 };
 
 export type RegisterRequestDto = {
@@ -186,6 +186,16 @@ export type UserDto = {
     tags?: Array<string>;
 };
 
+export type UserEventLocationResponseDto = {
+    id?: bigint;
+    name?: string;
+    address?: string;
+    capacity?: number;
+    manager?: LimitedUserInfoDto;
+    seats?: Array<SeatDto>;
+    markers?: Array<EventLocationMakerDto>;
+};
+
 export type UserEventResponseDto = {
     id?: bigint;
     name?: string;
@@ -194,7 +204,7 @@ export type UserEventResponseDto = {
     endTime?: Instant;
     bookingDeadline?: Instant;
     seatStatuses?: Array<SeatStatusDto>;
-    location?: EventLocationResponseDto;
+    location?: UserEventLocationResponseDto;
     reservationsAllowed?: number;
 };
 

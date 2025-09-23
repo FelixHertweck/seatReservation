@@ -37,7 +37,7 @@ public class ImportEventLocationDto {
 
     private List<ImportSeatDto> seats;
 
-    private List<EventLocationMakerRequestDTO> markers;
+    private List<MakerRequestDTO> markers;
 
     public String getName() {
         return name;
@@ -71,11 +71,11 @@ public class ImportEventLocationDto {
         this.seats = seats;
     }
 
-    public List<EventLocationMakerRequestDTO> getMarkers() {
+    public List<MakerRequestDTO> getMarkers() {
         return markers;
     }
 
-    public void setMarkers(List<EventLocationMakerRequestDTO> markers) {
+    public void setMarkers(List<MakerRequestDTO> markers) {
         this.markers = markers;
     }
 }

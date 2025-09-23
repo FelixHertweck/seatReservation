@@ -35,7 +35,7 @@ public class EventLocationRequestDTO {
     @NotNull(message = "Capacity must not be null")
     private Integer capacity;
 
-    private List<EventLocationMakerRequestDTO> markers;
+    private List<MakerRequestDTO> markers;
 
     public String getName() {
         return name;
@@ -61,11 +61,11 @@ public class EventLocationRequestDTO {
         this.capacity = capacity;
     }
 
-    public List<EventLocationMakerRequestDTO> getmarkers() {
+    public List<MakerRequestDTO> getmarkers() {
         return markers;
     }
 
-    public void setmarkers(List<EventLocationMakerRequestDTO> markers) {
+    public void setmarkers(List<MakerRequestDTO> markers) {
         this.markers = markers;
     }
 
