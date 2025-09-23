@@ -121,8 +121,9 @@ export const DetailedEventResponseDTOSchema = {
                 format: 'int64'
             }
         },
-        eventLocation: {
-            '$ref': '#/components/schemas/EventLocationResponseDTO'
+        eventLocationId: {
+            type: 'integer',
+            format: 'int64'
         },
         managerId: {
             type: 'integer',

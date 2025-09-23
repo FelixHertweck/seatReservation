@@ -33,7 +33,7 @@ export type DetailedEventResponseDto = {
     bookingDeadline?: Instant;
     seatStatuses?: Array<SeatStatusDto>;
     eventUserAllowancesIds?: Array<bigint>;
-    eventLocation?: EventLocationResponseDto;
+    eventLocationId?: bigint;
     managerId?: bigint;
 };
 
