@@ -85,73 +85,6 @@
           }
         }
       },
-      "DetailedEventResponseDTO" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "name" : {
-            "type" : "string"
-          },
-          "description" : {
-            "type" : "string"
-          },
-          "startTime" : {
-            "$ref" : "#/components/schemas/Instant"
-          },
-          "endTime" : {
-            "$ref" : "#/components/schemas/Instant"
-          },
-          "bookingDeadline" : {
-            "$ref" : "#/components/schemas/Instant"
-          },
-          "seatStatuses" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/SeatStatusDTO"
-            }
-          },
-          "eventUserAllowancesIds" : {
-            "type" : "array",
-            "items" : {
-              "type" : "integer",
-              "format" : "int64"
-            }
-          },
-          "eventLocationId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "managerId" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        }
-      },
-      "DetailedReservationResponseDTO" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "user" : {
-            "$ref" : "#/components/schemas/UserDTO"
-          },
-          "eventId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "seat" : {
-            "$ref" : "#/components/schemas/SeatDTO"
-          },
-          "reservationDateTime" : {
-            "$ref" : "#/components/schemas/Instant"
-          }
-        }
-      },
       "EventLocationMakerDTO" : {
         "type" : "object",
         "properties" : {
@@ -261,6 +194,51 @@
             "$ref" : "#/components/schemas/Instant"
           },
           "eventLocationId" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "EventResponseDTO" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "startTime" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "endTime" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "bookingDeadline" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "seatStatuses" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SeatStatusDTO"
+            }
+          },
+          "eventUserAllowancesIds" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          },
+          "eventLocationId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "managerId" : {
             "type" : "integer",
             "format" : "int64"
           }
@@ -467,6 +445,28 @@
           },
           "deductAllowance" : {
             "type" : "boolean"
+          }
+        }
+      },
+      "ReservationResponseDTO" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "user" : {
+            "$ref" : "#/components/schemas/UserDTO"
+          },
+          "eventId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "seat" : {
+            "$ref" : "#/components/schemas/SeatDTO"
+          },
+          "reservationDateTime" : {
+            "$ref" : "#/components/schemas/Instant"
           }
         }
       },
@@ -1033,7 +1033,7 @@
                 "schema" : {
                   "type" : "array",
                   "items" : {
-                    "$ref" : "#/components/schemas/DetailedEventResponseDTO"
+                    "$ref" : "#/components/schemas/EventResponseDTO"
                   }
                 }
               }
@@ -1069,7 +1069,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/DetailedEventResponseDTO"
+                  "$ref" : "#/components/schemas/EventResponseDTO"
                 }
               }
             }
@@ -1124,7 +1124,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/DetailedEventResponseDTO"
+                  "$ref" : "#/components/schemas/EventResponseDTO"
                 }
               }
             }
@@ -1167,7 +1167,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/DetailedEventResponseDTO"
+                  "$ref" : "#/components/schemas/EventResponseDTO"
                 }
               }
             }
@@ -1461,7 +1461,7 @@
                 "schema" : {
                   "type" : "array",
                   "items" : {
-                    "$ref" : "#/components/schemas/DetailedReservationResponseDTO"
+                    "$ref" : "#/components/schemas/ReservationResponseDTO"
                   }
                 }
               }
@@ -1499,7 +1499,7 @@
                 "schema" : {
                   "type" : "array",
                   "items" : {
-                    "$ref" : "#/components/schemas/DetailedReservationResponseDTO"
+                    "$ref" : "#/components/schemas/ReservationResponseDTO"
                   }
                 }
               }
@@ -1548,7 +1548,7 @@
                 "schema" : {
                   "type" : "array",
                   "items" : {
-                    "$ref" : "#/components/schemas/DetailedReservationResponseDTO"
+                    "$ref" : "#/components/schemas/ReservationResponseDTO"
                   }
                 }
               }
@@ -1596,7 +1596,7 @@
                 "schema" : {
                   "type" : "array",
                   "items" : {
-                    "$ref" : "#/components/schemas/DetailedReservationResponseDTO"
+                    "$ref" : "#/components/schemas/ReservationResponseDTO"
                   }
                 }
               }
@@ -1674,7 +1674,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/DetailedReservationResponseDTO"
+                  "$ref" : "#/components/schemas/ReservationResponseDTO"
                 }
               }
             }

@@ -24,27 +24,6 @@ export type BlockSeatsRequestDto = {
     seatIds?: Array<bigint>;
 };
 
-export type DetailedEventResponseDto = {
-    id?: bigint;
-    name?: string;
-    description?: string;
-    startTime?: Instant;
-    endTime?: Instant;
-    bookingDeadline?: Instant;
-    seatStatuses?: Array<SeatStatusDto>;
-    eventUserAllowancesIds?: Array<bigint>;
-    eventLocationId?: bigint;
-    managerId?: bigint;
-};
-
-export type DetailedReservationResponseDto = {
-    id?: bigint;
-    user?: UserDto;
-    eventId?: bigint;
-    seat?: SeatDto;
-    reservationDateTime?: Instant;
-};
-
 export type EventLocationMakerDto = {
     label?: string;
     xCoordinate?: number;
@@ -81,6 +60,19 @@ export type EventRequestDto = {
     endTime: Instant;
     bookingDeadline: Instant;
     eventLocationId: bigint;
+};
+
+export type EventResponseDto = {
+    id?: bigint;
+    name?: string;
+    description?: string;
+    startTime?: Instant;
+    endTime?: Instant;
+    bookingDeadline?: Instant;
+    seatStatuses?: Array<SeatStatusDto>;
+    eventUserAllowancesIds?: Array<bigint>;
+    eventLocationId?: bigint;
+    managerId?: bigint;
 };
 
 export type EventUserAllowanceUpdateDto = {
@@ -144,6 +136,14 @@ export type ReservationRequestDto = {
     userId: bigint;
     seatIds: Array<bigint>;
     deductAllowance?: boolean;
+};
+
+export type ReservationResponseDto = {
+    id?: bigint;
+    user?: UserDto;
+    eventId?: bigint;
+    seat?: SeatDto;
+    reservationDateTime?: Instant;
 };
 
 export const ReservationStatus = {
@@ -521,7 +521,7 @@ export type GetApiManagerEventsResponses = {
     /**
      * OK
      */
-    200: Array<DetailedEventResponseDto>;
+    200: Array<EventResponseDto>;
 };
 
 export type GetApiManagerEventsResponse = GetApiManagerEventsResponses[keyof GetApiManagerEventsResponses];
@@ -560,7 +560,7 @@ export type PostApiManagerEventsResponses = {
     /**
      * OK
      */
-    200: DetailedEventResponseDto;
+    200: EventResponseDto;
 };
 
 export type PostApiManagerEventsResponse = PostApiManagerEventsResponses[keyof PostApiManagerEventsResponses];
@@ -626,7 +626,7 @@ export type GetApiManagerEventsByIdResponses = {
     /**
      * OK
      */
-    200: DetailedEventResponseDto;
+    200: EventResponseDto;
 };
 
 export type GetApiManagerEventsByIdResponse = GetApiManagerEventsByIdResponses[keyof GetApiManagerEventsByIdResponses];
@@ -667,7 +667,7 @@ export type PutApiManagerEventsByIdResponses = {
     /**
      * OK
      */
-    200: DetailedEventResponseDto;
+    200: EventResponseDto;
 };
 
 export type PutApiManagerEventsByIdResponse = PutApiManagerEventsByIdResponses[keyof PutApiManagerEventsByIdResponses];
@@ -898,7 +898,7 @@ export type GetApiManagerReservationsResponses = {
     /**
      * OK
      */
-    200: Array<DetailedReservationResponseDto>;
+    200: Array<ReservationResponseDto>;
 };
 
 export type GetApiManagerReservationsResponse = GetApiManagerReservationsResponses[keyof GetApiManagerReservationsResponses];
@@ -937,7 +937,7 @@ export type PostApiManagerReservationsResponses = {
     /**
      * OK
      */
-    200: Array<DetailedReservationResponseDto>;
+    200: Array<ReservationResponseDto>;
 };
 
 export type PostApiManagerReservationsResponse = PostApiManagerReservationsResponses[keyof PostApiManagerReservationsResponses];
@@ -976,7 +976,7 @@ export type PostApiManagerReservationsBlockResponses = {
     /**
      * Seats blocked successfully
      */
-    200: Array<DetailedReservationResponseDto>;
+    200: Array<ReservationResponseDto>;
 };
 
 export type PostApiManagerReservationsBlockResponse = PostApiManagerReservationsBlockResponses[keyof PostApiManagerReservationsBlockResponses];
@@ -1009,7 +1009,7 @@ export type GetApiManagerReservationsEventByIdResponses = {
     /**
      * OK
      */
-    200: Array<DetailedReservationResponseDto>;
+    200: Array<ReservationResponseDto>;
 };
 
 export type GetApiManagerReservationsEventByIdResponse = GetApiManagerReservationsEventByIdResponses[keyof GetApiManagerReservationsEventByIdResponses];
@@ -1110,7 +1110,7 @@ export type GetApiManagerReservationsByIdResponses = {
     /**
      * OK
      */
-    200: DetailedReservationResponseDto;
+    200: ReservationResponseDto;
 };
 
 export type GetApiManagerReservationsByIdResponse = GetApiManagerReservationsByIdResponses[keyof GetApiManagerReservationsByIdResponses];

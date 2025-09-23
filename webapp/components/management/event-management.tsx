@@ -22,7 +22,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { EventFormModal } from "@/components/management/event-form-modal";
 import type {
-  DetailedEventResponseDto,
+  EventResponseDto,
   EventLocationResponseDto,
   EventRequestDto,
 } from "@/api";
@@ -30,13 +30,13 @@ import { useT } from "@/lib/i18n/hooks";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
 
 export interface EventManagementProps {
-  events: DetailedEventResponseDto[];
+  events: EventResponseDto[];
   allLocations: EventLocationResponseDto[];
-  createEvent: (event: EventRequestDto) => Promise<DetailedEventResponseDto>;
+  createEvent: (event: EventRequestDto) => Promise<EventResponseDto>;
   updateEvent: (
     id: bigint,
     event: EventRequestDto,
-  ) => Promise<DetailedEventResponseDto>;
+  ) => Promise<EventResponseDto>;
   deleteEvent: (id: bigint) => Promise<void>;
   onNavigateToLocation?: (locationId: bigint) => void;
   initialFilter?: Record<string, string>;
@@ -56,8 +56,9 @@ export function EventManagement({
   const t = useT();
 
   const [filteredEvents, setFilteredEvents] = useState(events);
-  const [selectedEvent, setSelectedEvent] =
-    useState<DetailedEventResponseDto | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<EventResponseDto | null>(
+    null,
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [currentFilters, setCurrentFilters] =
@@ -121,13 +122,13 @@ export function EventManagement({
     setIsModalOpen(true);
   };
 
-  const handleEditEvent = (event: DetailedEventResponseDto) => {
+  const handleEditEvent = (event: EventResponseDto) => {
     setSelectedEvent(event);
     setIsCreating(false);
     setIsModalOpen(true);
   };
 
-  const handleDeleteEvent = async (event: DetailedEventResponseDto) => {
+  const handleDeleteEvent = async (event: EventResponseDto) => {
     if (
       event.id &&
       confirm(t("eventManagement.confirmDelete", { eventName: event.name }))

@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type {
-  DetailedEventResponseDto,
+  EventResponseDto,
   EventLocationResponseDto,
   EventRequestDto,
 } from "@/api";
@@ -30,7 +30,7 @@ import { useT } from "@/lib/i18n/hooks";
 
 interface EventFormModalProps {
   allLocations: EventLocationResponseDto[];
-  event: DetailedEventResponseDto | null;
+  event: EventResponseDto | null;
   isCreating: boolean;
   onSubmit: (eventData: EventRequestDto) => Promise<void>;
   onClose: () => void;
