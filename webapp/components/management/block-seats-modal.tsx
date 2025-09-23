@@ -25,6 +25,7 @@ import type {
   BlockSeatsRequestDto,
   DetailedEventResponseDto,
   SeatDto,
+  SeatStatusDto,
 } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 
@@ -52,6 +53,8 @@ export function BlockSeatsModal({
     (loc) => loc.id?.toString() === formData.eventId,
   );
   const availableSeats: SeatDto[] = selectedEvent?.eventLocation?.seats ?? [];
+  const availableSeatStatuses: SeatStatusDto[] =
+    selectedEvent?.seatStatuses ?? [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -159,6 +162,7 @@ export function BlockSeatsModal({
             <div className="flex-1 min-h-0">
               <SeatMap
                 seats={availableSeats}
+                seatStatuses={availableSeatStatuses}
                 markers={selectedEvent?.eventLocation?.markers ?? []}
                 selectedSeats={selectedSeats}
                 onSeatSelect={handleSeatSelect}

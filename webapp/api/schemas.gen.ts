@@ -108,20 +108,25 @@ export const DetailedEventResponseDTOSchema = {
         bookingDeadline: {
             '$ref': '#/components/schemas/Instant'
         },
+        seatStatuses: {
+            type: 'array',
+            items: {
+                '$ref': '#/components/schemas/SeatStatusDTO'
+            }
+        },
+        eventUserAllowancesIds: {
+            type: 'array',
+            items: {
+                type: 'integer',
+                format: 'int64'
+            }
+        },
         eventLocation: {
             '$ref': '#/components/schemas/EventLocationResponseDTO'
         },
         managerId: {
             type: 'integer',
             format: 'int64'
-        },
-        eventUserAllowancesIds: {
-            type: 'array',
-            uniqueItems: true,
-            items: {
-                type: 'integer',
-                format: 'int64'
-            }
         }
     }
 } as const;
@@ -289,6 +294,12 @@ export const EventResponseDTOSchema = {
         },
         bookingDeadline: {
             '$ref': '#/components/schemas/Instant'
+        },
+        seatStatuses: {
+            type: 'array',
+            items: {
+                '$ref': '#/components/schemas/SeatStatusDTO'
+            }
         },
         location: {
             '$ref': '#/components/schemas/EventLocationResponseDTO'
@@ -543,7 +554,7 @@ export const ReservationStatusSchema = {
     enum: ['RESERVED', 'BLOCKED']
 } as const;
 
-export const ReservationsRequestCreateDTOSchema = {
+export const ReservationsRequestDTOSchema = {
     type: 'object',
     required: ['eventId', 'seatIds'],
     properties: {
@@ -587,9 +598,6 @@ export const SeatDTOSchema = {
         yCoordinate: {
             type: 'integer',
             format: 'int32'
-        },
-        status: {
-            '$ref': '#/components/schemas/ReservationStatus'
         }
     }
 } as const;
@@ -615,6 +623,19 @@ export const SeatRequestDTOSchema = {
         },
         seatRow: {
             type: 'string'
+        }
+    }
+} as const;
+
+export const SeatStatusDTOSchema = {
+    type: 'object',
+    properties: {
+        seatId: {
+            type: 'integer',
+            format: 'int64'
+        },
+        status: {
+            '$ref': '#/components/schemas/ReservationStatus'
         }
     }
 } as const;

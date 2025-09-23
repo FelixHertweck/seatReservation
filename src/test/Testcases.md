@@ -328,7 +328,7 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | `findReservationByIdForUser_NotFoundException` | Versucht, eine nicht existierende Reservierung abzurufen. Erwartet `NotFoundException`. |
 | `findReservationByIdForUser_ForbiddenException` | Versucht, eine Reservierung abzurufen, die nicht dem aktuellen Benutzer gehört. Erwartet `ForbiddenException`. |
 
-### createReservationForUser(ReservationsRequestCreateDTO dto, User currentUser)
+### createReservationForUser(ReservationsRequestDTO dto, User currentUser)
 
 | Testfall | Beschreibung |
 | :--- | :--- |

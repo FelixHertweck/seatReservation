@@ -19,15 +19,9 @@
  */
 package de.felixhertweck.seatreservation.common.dto;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
-import de.felixhertweck.seatreservation.model.entity.Reservation;
-import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
-import de.felixhertweck.seatreservation.model.entity.Seat;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
@@ -40,10 +34,6 @@ public record EventLocationResponseDTO(
         List<SeatDTO> seats,
         List<EventLocationMakerDTO> markers) {
     public EventLocationResponseDTO(EventLocation eventLocation) {
-        this(eventLocation, Collections.emptyList());
-    }
-
-    public EventLocationResponseDTO(EventLocation eventLocation, List<Reservation> reservations) {
         this(
                 eventLocation.getId(),
                 eventLocation.getName(),
@@ -52,31 +42,7 @@ public record EventLocationResponseDTO(
                 eventLocation.getManager() != null
                         ? new LimitedUserInfoDTO(eventLocation.getManager())
                         : null,
-                createSeatDTOs(eventLocation.getSeats(), reservations),
+                eventLocation.getSeats().stream().map(SeatDTO::new).toList(),
                 eventLocation.getMarkers().stream().map(EventLocationMakerDTO::new).toList());
-    }
-
-    private static List<SeatDTO> createSeatDTOs(List<Seat> seats, List<Reservation> reservations) {
-        if (seats == null) {
-            return List.of();
-        }
-
-        // If no reservations are provided, return seats with null reservation status
-        if (reservations == null) {
-            return seats.stream().map(seat -> new SeatDTO(seat, null)).toList();
-        }
-
-        Map<Long, ReservationStatus> reservationStatusMap =
-                reservations.stream()
-                        .filter(r -> r.getSeat() != null)
-                        .collect(
-                                Collectors.toMap(
-                                        r -> r.getSeat().getId(),
-                                        Reservation::getStatus,
-                                        (existing, replacement) -> existing));
-
-        return seats.stream()
-                .map(seat -> new SeatDTO(seat, reservationStatusMap.get(seat.getId())))
-                .toList();
     }
 }

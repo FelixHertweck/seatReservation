@@ -107,20 +107,25 @@
           "bookingDeadline" : {
             "$ref" : "#/components/schemas/Instant"
           },
+          "seatStatuses" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SeatStatusDTO"
+            }
+          },
+          "eventUserAllowancesIds" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          },
           "eventLocation" : {
             "$ref" : "#/components/schemas/EventLocationResponseDTO"
           },
           "managerId" : {
             "type" : "integer",
             "format" : "int64"
-          },
-          "eventUserAllowancesIds" : {
-            "type" : "array",
-            "uniqueItems" : true,
-            "items" : {
-              "type" : "integer",
-              "format" : "int64"
-            }
           }
         }
       },
@@ -281,6 +286,12 @@
           },
           "bookingDeadline" : {
             "$ref" : "#/components/schemas/Instant"
+          },
+          "seatStatuses" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SeatStatusDTO"
+            }
           },
           "location" : {
             "$ref" : "#/components/schemas/EventLocationResponseDTO"
@@ -522,7 +533,7 @@
         "type" : "string",
         "enum" : [ "RESERVED", "BLOCKED" ]
       },
-      "ReservationsRequestCreateDTO" : {
+      "ReservationsRequestDTO" : {
         "type" : "object",
         "required" : [ "eventId", "seatIds" ],
         "properties" : {
@@ -565,9 +576,6 @@
           "yCoordinate" : {
             "type" : "integer",
             "format" : "int32"
-          },
-          "status" : {
-            "$ref" : "#/components/schemas/ReservationStatus"
           }
         }
       },
@@ -592,6 +600,18 @@
           },
           "seatRow" : {
             "type" : "string"
+          }
+        }
+      },
+      "SeatStatusDTO" : {
+        "type" : "object",
+        "properties" : {
+          "seatId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "status" : {
+            "$ref" : "#/components/schemas/ReservationStatus"
           }
         }
       },
@@ -1989,7 +2009,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/ReservationsRequestCreateDTO"
+                "$ref" : "#/components/schemas/ReservationsRequestDTO"
               }
             }
           },

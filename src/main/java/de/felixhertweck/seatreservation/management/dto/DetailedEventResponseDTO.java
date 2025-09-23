@@ -20,10 +20,10 @@
 package de.felixhertweck.seatreservation.management.dto;
 
 import java.time.Instant;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.List;
 
 import de.felixhertweck.seatreservation.common.dto.EventLocationResponseDTO;
+import de.felixhertweck.seatreservation.common.dto.SeatStatusDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
@@ -35,9 +35,10 @@ public record DetailedEventResponseDTO(
         Instant startTime,
         Instant endTime,
         Instant bookingDeadline,
+        List<SeatStatusDTO> seatStatuses,
+        List<Long> eventUserAllowancesIds,
         EventLocationResponseDTO eventLocation,
-        Long managerId,
-        Set<Long> eventUserAllowancesIds) {
+        Long managerId) {
     public DetailedEventResponseDTO(Event event) {
         this(
                 event.getId(),
@@ -46,12 +47,13 @@ public record DetailedEventResponseDTO(
                 event.getStartTime(),
                 event.getEndTime(),
                 event.getBookingDeadline(),
-                new EventLocationResponseDTO(event.getEventLocation(), event.getReservations()),
-                event.getManager() != null ? event.getManager().getId() : null,
+                event.getReservations().stream().map(SeatStatusDTO::new).toList(),
                 event.getUserAllowances() != null
                         ? event.getUserAllowances().stream()
                                 .map(userAllowance -> userAllowance.id)
-                                .collect(Collectors.toSet())
-                        : Set.of());
+                                .toList()
+                        : List.of(),
+                new EventLocationResponseDTO(event.getEventLocation()),
+                event.getManager() != null ? event.getManager().getId() : null);
     }
 }

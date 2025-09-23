@@ -13,6 +13,7 @@ import { SeatMap } from "@/components/common/seat-map";
 import { Badge } from "@/components/ui/badge";
 import type { EventResponseDto, ReservationResponseDto, SeatDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
+import { findSeatStatus } from "@/lib/reservationSeat";
 
 interface EventReservationModalProps {
   event: EventResponseDto;
@@ -45,7 +46,8 @@ export function EventReservationModal({
   useEffect(() => {
     if (initialSeatId) {
       const initialSeat = seats.find((seat) => seat.id === initialSeatId);
-      if (initialSeat && !initialSeat.status) {
+      if (initialSeat) {
+        // && !seatStatus
         setSelectedSeats([initialSeat]);
       }
     }
@@ -57,7 +59,9 @@ export function EventReservationModal({
     .filter((seat): seat is SeatDto => seat !== null && seat !== undefined);
 
   const handleSeatSelect = (seat: SeatDto) => {
-    if (seat.status) return; // Can't select reserved or blocked seats
+    const seatStatus = findSeatStatus(seat.id!, event.seatStatuses);
+
+    if (seatStatus) return; // Can't select reserved or blocked seats
 
     setSelectedSeats((prev) => {
       const isSelected = prev.some((s) => s.id === seat.id);
@@ -139,6 +143,7 @@ export function EventReservationModal({
           <div className="flex-1 min-h-0">
             <SeatMap
               seats={seats}
+              seatStatuses={event.seatStatuses ?? []}
               markers={event.location?.markers ?? []}
               selectedSeats={selectedSeats}
               userReservedSeats={userReservedSeats}

@@ -31,9 +31,10 @@ export type DetailedEventResponseDto = {
     startTime?: Instant;
     endTime?: Instant;
     bookingDeadline?: Instant;
+    seatStatuses?: Array<SeatStatusDto>;
+    eventUserAllowancesIds?: Array<bigint>;
     eventLocation?: EventLocationResponseDto;
     managerId?: bigint;
-    eventUserAllowancesIds?: Array<bigint>;
 };
 
 export type DetailedReservationResponseDto = {
@@ -89,6 +90,7 @@ export type EventResponseDto = {
     startTime?: Instant;
     endTime?: Instant;
     bookingDeadline?: Instant;
+    seatStatuses?: Array<SeatStatusDto>;
     location?: EventLocationResponseDto;
     reservationsAllowed?: number;
 };
@@ -171,7 +173,7 @@ export const ReservationStatus = {
 
 export type ReservationStatus = typeof ReservationStatus[keyof typeof ReservationStatus];
 
-export type ReservationsRequestCreateDto = {
+export type ReservationsRequestDto = {
     eventId: bigint;
     seatIds: Array<bigint>;
 };
@@ -183,7 +185,6 @@ export type SeatDto = {
     locationId?: bigint;
     xCoordinate?: number;
     yCoordinate?: number;
-    status?: ReservationStatus;
 };
 
 export type SeatRequestDto = {
@@ -192,6 +193,11 @@ export type SeatRequestDto = {
     xCoordinate: number;
     yCoordinate: number;
     seatRow: string;
+};
+
+export type SeatStatusDto = {
+    seatId?: bigint;
+    status?: ReservationStatus;
 };
 
 export type UserDto = {
@@ -1372,7 +1378,7 @@ export type GetApiUserReservationsResponses = {
 export type GetApiUserReservationsResponse = GetApiUserReservationsResponses[keyof GetApiUserReservationsResponses];
 
 export type PostApiUserReservationsData = {
-    body: ReservationsRequestCreateDto;
+    body: ReservationsRequestDto;
     path?: never;
     query?: never;
     url: '/api/user/reservations';

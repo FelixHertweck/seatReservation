@@ -5,12 +5,14 @@ import React from "react";
 import type { ReactElement } from "react";
 
 import { cn } from "@/lib/utils";
-import type { EventLocationMakerDto, SeatDto } from "@/api";
+import type { EventLocationMakerDto, SeatDto, SeatStatusDto } from "@/api";
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useT } from "@/lib/i18n/hooks";
+import { findSeatStatus } from "@/lib/reservationSeat";
 
 interface SeatMapProps {
   seats: SeatDto[];
+  seatStatuses: SeatStatusDto[];
   markers: EventLocationMakerDto[];
   selectedSeats: SeatDto[];
   userReservedSeats?: SeatDto[];
@@ -117,6 +119,7 @@ MarkerComponent.displayName = "MarkerComponent";
 
 export function SeatMap({
   seats,
+  seatStatuses,
   markers,
   selectedSeats,
   userReservedSeats = [],
@@ -185,6 +188,8 @@ export function SeatMap({
     (seat: SeatDto | undefined) => {
       if (!seat) return "transparent";
 
+      const seatStatus = findSeatStatus(seat.id, seatStatuses);
+
       const isSelected = selectedSeatIds.has(seat.id);
       if (isSelected)
         return "bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700";
@@ -193,7 +198,7 @@ export function SeatMap({
       if (isUserReserved)
         return "bg-yellow-500 hover:bg-yellow-600 dark:bg-yellow-600 dark:hover:bg-yellow-700";
 
-      switch (seat.status) {
+      switch (seatStatus) {
         case "RESERVED":
           return "bg-red-500 dark:bg-red-600";
         case "BLOCKED":
@@ -202,17 +207,19 @@ export function SeatMap({
           return "bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700";
       }
     },
-    [selectedSeatIds, userReservedSeatIds],
+    [selectedSeatIds, userReservedSeatIds, seatStatuses],
   );
 
   const canSelectSeat = useCallback(
     (seat: SeatDto | undefined) => {
       if (!seat || readonly) return false;
+
+      const seatStatus = findSeatStatus(seat.id, seatStatuses);
       const isUserReserved = userReservedSeatIds.has(seat.id);
       if (isUserReserved) return true;
-      return !seat.status; // Can only select seats without status (available)
+      return !seatStatus; // Can only select seats without status (available)
     },
-    [readonly, userReservedSeatIds],
+    [readonly, userReservedSeatIds, seatStatuses],
   );
 
   // Separate grid structure from zoom-dependent rendering
