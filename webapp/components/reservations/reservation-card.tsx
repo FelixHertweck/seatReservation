@@ -18,17 +18,17 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { ReservationResponseDto } from "@/api";
+import type { UserReservationResponseDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { useState } from "react";
 import { DeleteConfirmationModal } from "./delete-confirmation-modal";
 
 interface ReservationCardProps {
-  reservations: ReservationResponseDto[];
+  reservations: UserReservationResponseDto[];
   eventName?: string;
   locationName?: string;
   bookingDeadline?: Date;
-  onViewSeats: (reservation: ReservationResponseDto) => void;
+  onViewSeats: (reservation: UserReservationResponseDto) => void;
   onDelete: (reservationId: bigint) => void;
 }
 
@@ -44,7 +44,7 @@ export function ReservationCard({
   const [isExpanded, setIsExpanded] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [reservationToDelete, setReservationToDelete] =
-    useState<ReservationResponseDto | null>(null);
+    useState<UserReservationResponseDto | null>(null);
 
   const firstReservation = reservations[0];
   if (!firstReservation) return null;
@@ -55,7 +55,7 @@ export function ReservationCard({
     ? reservations
     : reservations.slice(0, maxVisibleSeats);
 
-  const handleDeleteClick = (reservation: ReservationResponseDto) => {
+  const handleDeleteClick = (reservation: UserReservationResponseDto) => {
     setReservationToDelete(reservation);
     setDeleteModalOpen(true);
   };

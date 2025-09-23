@@ -15,7 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useEvents } from "@/hooks/use-events";
 import { useReservations } from "@/hooks/use-reservations";
 import { useAuth } from "@/hooks/use-auth";
-import type { EventResponseDto, ReservationResponseDto } from "@/api";
+import type { UserEventResponseDto, UserReservationResponseDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 
 export default function EventsPage() {
@@ -29,11 +29,10 @@ export default function EventsPage() {
     deleteReservation,
   } = useReservations();
   const { isLoggedIn } = useAuth();
-  const [selectedEvent, setSelectedEvent] = useState<EventResponseDto | null>(
-    null,
-  );
+  const [selectedEvent, setSelectedEvent] =
+    useState<UserEventResponseDto | null>(null);
   const [selectedReservation, setSelectedReservation] =
-    useState<ReservationResponseDto | null>(null);
+    useState<UserReservationResponseDto | null>(null);
   const [activeTab, setActiveTab] = useState("available");
   const [eventSearchQuery, setEventSearchQuery] = useState<string>("");
   const [reservationSearchQuery, setReservationSearchQuery] =
@@ -110,7 +109,7 @@ export default function EventsPage() {
         acc[eventId].push(reservation);
         return acc;
       },
-      {} as Record<string, ReservationResponseDto[]>,
+      {} as Record<string, UserReservationResponseDto[]>,
     );
 
     return Object.values(grouped);
@@ -124,7 +123,9 @@ export default function EventsPage() {
     setReservationSearchQuery(query);
   };
 
-  const handleViewReservationSeats = (reservation: ReservationResponseDto) => {
+  const handleViewReservationSeats = (
+    reservation: UserReservationResponseDto,
+  ) => {
     setSelectedReservation(reservation);
   };
 

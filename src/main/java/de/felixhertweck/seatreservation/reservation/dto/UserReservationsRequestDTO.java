@@ -26,7 +26,7 @@ import jakarta.validation.constraints.NotNull;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
-public class ReservationsRequestDTO {
+public class UserReservationsRequestDTO {
     @NotNull(message = "Event ID must not be null")
     private Long eventId;
 
@@ -34,9 +34,9 @@ public class ReservationsRequestDTO {
     @NotEmpty(message = "Seat IDs must not be empty")
     private Set<Long> seatIds;
 
-    public ReservationsRequestDTO() {}
+    public UserReservationsRequestDTO() {}
 
-    public ReservationsRequestDTO(Long eventId, Set<Long> seatIds) {
+    public UserReservationsRequestDTO(Long eventId, Set<Long> seatIds) {
         this.eventId = eventId;
         this.seatIds = seatIds;
     }

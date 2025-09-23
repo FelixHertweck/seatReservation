@@ -11,19 +11,23 @@ import {
 import { Button } from "@/components/ui/button";
 import { SeatMap } from "@/components/common/seat-map";
 import { Badge } from "@/components/ui/badge";
-import type { EventResponseDto, ReservationResponseDto, SeatDto } from "@/api";
+import type {
+  UserEventResponseDto,
+  UserReservationResponseDto,
+  SeatDto,
+} from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { findSeatStatus } from "@/lib/reservationSeat";
 
 interface EventReservationModalProps {
-  event: EventResponseDto;
-  userReservations: ReservationResponseDto[];
+  event: UserEventResponseDto;
+  userReservations: UserReservationResponseDto[];
   initialSeatId: bigint;
   onClose: () => void;
   onReserve: (
     eventId: bigint,
     seatIds: bigint[],
-  ) => Promise<ReservationResponseDto[]>;
+  ) => Promise<UserReservationResponseDto[]>;
 }
 
 export function EventReservationModal({

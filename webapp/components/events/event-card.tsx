@@ -11,11 +11,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { EventResponseDto } from "@/api";
+import type { UserEventResponseDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 
 interface EventCardProps {
-  event: EventResponseDto;
+  event: UserEventResponseDto;
   onReserve: () => void;
 }
 
