@@ -10,7 +10,7 @@ import {
   getApiUserReservationsQueryKey,
   getApiUserEventsQueryKey,
 } from "@/api/@tanstack/react-query.gen";
-import type { ReservationResponseDto } from "@/api";
+import type { UserReservationResponseDto } from "@/api";
 
 export function useReservations() {
   const { data: reservations, isLoading } = useQuery({
@@ -46,8 +46,8 @@ export function useReservations() {
       queryClient.setQueriesData(
         { queryKey: getApiUserReservationsQueryKey() },
         (
-          oldData: ReservationResponseDto[] | undefined,
-        ): ReservationResponseDto[] => {
+          oldData: UserReservationResponseDto[] | undefined,
+        ): UserReservationResponseDto[] => {
           return (oldData ?? []).filter(
             (reservation) =>
               reservation.id !== deleteMutation.variables?.path.id,

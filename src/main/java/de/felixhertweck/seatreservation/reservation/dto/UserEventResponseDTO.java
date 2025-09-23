@@ -28,7 +28,7 @@ import de.felixhertweck.seatreservation.model.entity.Event;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
-public record EventResponseDTO(
+public record UserEventResponseDTO(
         Long id,
         String name,
         String description,
@@ -38,7 +38,7 @@ public record EventResponseDTO(
         List<SeatStatusDTO> seatStatuses,
         EventLocationResponseDTO location,
         Integer reservationsAllowed) {
-    public EventResponseDTO(Event event, Integer reservationsAllowed) {
+    public UserEventResponseDTO(Event event, Integer reservationsAllowed) {
         this(
                 event.getId(),
                 event.getName(),

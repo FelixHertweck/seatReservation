@@ -11,7 +11,7 @@ import { SeatMap } from "@/components/common/seat-map";
 import { useState } from "react";
 import type {
   EventLocationMakerDto,
-  ReservationResponseDto,
+  UserReservationResponseDto,
   SeatDto,
   SeatStatusDto,
 } from "@/api";
@@ -21,8 +21,8 @@ interface SeatMapModalProps {
   seats: SeatDto[];
   seatStatuses: SeatStatusDto[];
   markers: EventLocationMakerDto[];
-  reservation: ReservationResponseDto;
-  eventReservations: ReservationResponseDto[];
+  reservation: UserReservationResponseDto;
+  eventReservations: UserReservationResponseDto[];
   onClose: () => void;
   isLoading: boolean;
 }

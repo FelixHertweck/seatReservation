@@ -274,44 +274,6 @@ export const EventRequestDTOSchema = {
     }
 } as const;
 
-export const EventResponseDTOSchema = {
-    type: 'object',
-    properties: {
-        id: {
-            type: 'integer',
-            format: 'int64'
-        },
-        name: {
-            type: 'string'
-        },
-        description: {
-            type: 'string'
-        },
-        startTime: {
-            '$ref': '#/components/schemas/Instant'
-        },
-        endTime: {
-            '$ref': '#/components/schemas/Instant'
-        },
-        bookingDeadline: {
-            '$ref': '#/components/schemas/Instant'
-        },
-        seatStatuses: {
-            type: 'array',
-            items: {
-                '$ref': '#/components/schemas/SeatStatusDTO'
-            }
-        },
-        location: {
-            '$ref': '#/components/schemas/EventLocationResponseDTO'
-        },
-        reservationsAllowed: {
-            type: 'integer',
-            format: 'int32'
-        }
-    }
-} as const;
-
 export const EventUserAllowanceUpdateDtoSchema = {
     type: 'object',
     required: ['id', 'eventId', 'userId', 'reservationsAllowedCount'],
@@ -526,53 +488,9 @@ export const ReservationRequestDTOSchema = {
     }
 } as const;
 
-export const ReservationResponseDTOSchema = {
-    type: 'object',
-    properties: {
-        id: {
-            type: 'integer',
-            format: 'int64'
-        },
-        userId: {
-            type: 'integer',
-            format: 'int64'
-        },
-        eventId: {
-            type: 'integer',
-            format: 'int64'
-        },
-        seat: {
-            '$ref': '#/components/schemas/SeatDTO'
-        },
-        reservationDateTime: {
-            '$ref': '#/components/schemas/Instant'
-        }
-    }
-} as const;
-
 export const ReservationStatusSchema = {
     type: 'string',
     enum: ['RESERVED', 'BLOCKED']
-} as const;
-
-export const ReservationsRequestDTOSchema = {
-    type: 'object',
-    required: ['eventId', 'seatIds'],
-    properties: {
-        eventId: {
-            type: 'integer',
-            format: 'int64'
-        },
-        seatIds: {
-            type: 'array',
-            uniqueItems: true,
-            items: {
-                type: 'integer',
-                format: 'int64'
-            },
-            minItems: 1
-        }
-    }
 } as const;
 
 export const SeatDTOSchema = {
@@ -680,6 +598,44 @@ export const UserDTOSchema = {
     }
 } as const;
 
+export const UserEventResponseDTOSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            type: 'integer',
+            format: 'int64'
+        },
+        name: {
+            type: 'string'
+        },
+        description: {
+            type: 'string'
+        },
+        startTime: {
+            '$ref': '#/components/schemas/Instant'
+        },
+        endTime: {
+            '$ref': '#/components/schemas/Instant'
+        },
+        bookingDeadline: {
+            '$ref': '#/components/schemas/Instant'
+        },
+        seatStatuses: {
+            type: 'array',
+            items: {
+                '$ref': '#/components/schemas/SeatStatusDTO'
+            }
+        },
+        location: {
+            '$ref': '#/components/schemas/EventLocationResponseDTO'
+        },
+        reservationsAllowed: {
+            type: 'integer',
+            format: 'int32'
+        }
+    }
+} as const;
+
 export const UserProfileUpdateDTOSchema = {
     type: 'object',
     properties: {
@@ -702,6 +658,50 @@ export const UserProfileUpdateDTOSchema = {
             items: {
                 type: 'string'
             }
+        }
+    }
+} as const;
+
+export const UserReservationResponseDTOSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            type: 'integer',
+            format: 'int64'
+        },
+        userId: {
+            type: 'integer',
+            format: 'int64'
+        },
+        eventId: {
+            type: 'integer',
+            format: 'int64'
+        },
+        seat: {
+            '$ref': '#/components/schemas/SeatDTO'
+        },
+        reservationDateTime: {
+            '$ref': '#/components/schemas/Instant'
+        }
+    }
+} as const;
+
+export const UserReservationsRequestDTOSchema = {
+    type: 'object',
+    required: ['eventId', 'seatIds'],
+    properties: {
+        eventId: {
+            type: 'integer',
+            format: 'int64'
+        },
+        seatIds: {
+            type: 'array',
+            uniqueItems: true,
+            items: {
+                type: 'integer',
+                format: 'int64'
+            },
+            minItems: 1
         }
     }
 } as const;

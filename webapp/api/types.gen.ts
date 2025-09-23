@@ -83,18 +83,6 @@ export type EventRequestDto = {
     eventLocationId: bigint;
 };
 
-export type EventResponseDto = {
-    id?: bigint;
-    name?: string;
-    description?: string;
-    startTime?: Instant;
-    endTime?: Instant;
-    bookingDeadline?: Instant;
-    seatStatuses?: Array<SeatStatusDto>;
-    location?: EventLocationResponseDto;
-    reservationsAllowed?: number;
-};
-
 export type EventUserAllowanceUpdateDto = {
     id: bigint;
     eventId: bigint;
@@ -158,25 +146,12 @@ export type ReservationRequestDto = {
     deductAllowance?: boolean;
 };
 
-export type ReservationResponseDto = {
-    id?: bigint;
-    userId?: bigint;
-    eventId?: bigint;
-    seat?: SeatDto;
-    reservationDateTime?: Instant;
-};
-
 export const ReservationStatus = {
     RESERVED: 'RESERVED',
     BLOCKED: 'BLOCKED'
 } as const;
 
 export type ReservationStatus = typeof ReservationStatus[keyof typeof ReservationStatus];
-
-export type ReservationsRequestDto = {
-    eventId: bigint;
-    seatIds: Array<bigint>;
-};
 
 export type SeatDto = {
     id?: bigint;
@@ -211,12 +186,37 @@ export type UserDto = {
     tags?: Array<string>;
 };
 
+export type UserEventResponseDto = {
+    id?: bigint;
+    name?: string;
+    description?: string;
+    startTime?: Instant;
+    endTime?: Instant;
+    bookingDeadline?: Instant;
+    seatStatuses?: Array<SeatStatusDto>;
+    location?: EventLocationResponseDto;
+    reservationsAllowed?: number;
+};
+
 export type UserProfileUpdateDto = {
     email?: string;
     firstname?: string;
     lastname?: string;
     password?: string;
     tags?: Array<string>;
+};
+
+export type UserReservationResponseDto = {
+    id?: bigint;
+    userId?: bigint;
+    eventId?: bigint;
+    seat?: SeatDto;
+    reservationDateTime?: Instant;
+};
+
+export type UserReservationsRequestDto = {
+    eventId: bigint;
+    seatIds: Array<bigint>;
 };
 
 export type VerifyEmailCodeRequestDto = {
@@ -1314,7 +1314,7 @@ export type GetApiUserEventsResponses = {
     /**
      * OK
      */
-    200: Array<EventResponseDto>;
+    200: Array<UserEventResponseDto>;
 };
 
 export type GetApiUserEventsResponse = GetApiUserEventsResponses[keyof GetApiUserEventsResponses];
@@ -1372,13 +1372,13 @@ export type GetApiUserReservationsResponses = {
     /**
      * OK
      */
-    200: Array<ReservationResponseDto>;
+    200: Array<UserReservationResponseDto>;
 };
 
 export type GetApiUserReservationsResponse = GetApiUserReservationsResponses[keyof GetApiUserReservationsResponses];
 
 export type PostApiUserReservationsData = {
-    body: ReservationsRequestDto;
+    body: UserReservationsRequestDto;
     path?: never;
     query?: never;
     url: '/api/user/reservations';
@@ -1411,7 +1411,7 @@ export type PostApiUserReservationsResponses = {
     /**
      * OK
      */
-    200: Array<ReservationResponseDto>;
+    200: Array<UserReservationResponseDto>;
 };
 
 export type PostApiUserReservationsResponse = PostApiUserReservationsResponses[keyof PostApiUserReservationsResponses];
@@ -1477,7 +1477,7 @@ export type GetApiUserReservationsByIdResponses = {
     /**
      * OK
      */
-    200: ReservationResponseDto;
+    200: UserReservationResponseDto;
 };
 
 export type GetApiUserReservationsByIdResponse = GetApiUserReservationsByIdResponses[keyof GetApiUserReservationsByIdResponses];

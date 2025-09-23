@@ -12,19 +12,19 @@ import {
   getApiUserReservationsQueryKey,
 } from "@/api/@tanstack/react-query.gen";
 import type {
-  EventResponseDto,
-  ReservationResponseDto,
-  ReservationsRequestDto,
+  UserEventResponseDto,
+  UserReservationResponseDto,
+  UserReservationsRequestDto,
 } from "@/api";
 
 interface UseEventsReturn {
-  events: EventResponseDto[];
-  getEventById: (id: bigint) => Promise<EventResponseDto>;
+  events: UserEventResponseDto[];
+  getEventById: (id: bigint) => Promise<UserEventResponseDto>;
   isLoading: boolean;
   createReservation: (
     eventId: bigint,
     seatIds: bigint[],
-  ) => Promise<ReservationResponseDto[]>;
+  ) => Promise<UserReservationResponseDto[]>;
 }
 
 export function useEvents(): UseEventsReturn {
@@ -40,7 +40,7 @@ export function useEvents(): UseEventsReturn {
     onSuccess: (data) => {
       queryClient.setQueriesData(
         { queryKey: getApiUserReservationsQueryKey() },
-        (oldData: ReservationResponseDto[] | undefined) => {
+        (oldData: UserReservationResponseDto[] | undefined) => {
           return oldData ? [...oldData, ...data] : [...data];
         },
       );
@@ -54,8 +54,8 @@ export function useEvents(): UseEventsReturn {
   const createReservation = async (
     eventId: bigint,
     seatIds: bigint[],
-  ): Promise<ReservationResponseDto[]> => {
-    const data: ReservationsRequestDto = {
+  ): Promise<UserReservationResponseDto[]> => {
+    const data: UserReservationsRequestDto = {
       eventId,
       seatIds,
     };

@@ -28,7 +28,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
 import de.felixhertweck.seatreservation.model.entity.Roles;
-import de.felixhertweck.seatreservation.reservation.dto.EventResponseDTO;
+import de.felixhertweck.seatreservation.reservation.dto.UserEventResponseDTO;
 import de.felixhertweck.seatreservation.reservation.service.EventService;
 import io.quarkus.security.identity.SecurityIdentity;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -57,15 +57,15 @@ public class EventResource {
                             schema =
                                     @Schema(
                                             type = SchemaType.ARRAY,
-                                            implementation = EventResponseDTO.class)))
+                                            implementation = UserEventResponseDTO.class)))
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
             description = "Forbidden: Only authenticated users can access this resource")
-    public List<EventResponseDTO> getEvents() {
+    public List<UserEventResponseDTO> getEvents() {
         String username = securityIdentity.getPrincipal().getName();
         LOG.debugf("Received GET request to /api/user/events for user: %s", username);
-        List<EventResponseDTO> events = eventService.getEventsForCurrentUser(username);
+        List<UserEventResponseDTO> events = eventService.getEventsForCurrentUser(username);
         LOG.debugf("Returning %d events for user: %s", events.size(), username);
         return events;
     }

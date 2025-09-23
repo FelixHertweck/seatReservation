@@ -32,7 +32,7 @@ import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
-import de.felixhertweck.seatreservation.reservation.dto.EventResponseDTO;
+import de.felixhertweck.seatreservation.reservation.dto.UserEventResponseDTO;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -75,7 +75,7 @@ class EventServiceTest {
         when(userRepository.findByUsername("testuser")).thenReturn(user);
         when(eventUserAllowanceRepository.findByUser(user)).thenReturn(List.of(allowance));
 
-        List<EventResponseDTO> result = eventService.getEventsForCurrentUser("testuser");
+        List<UserEventResponseDTO> result = eventService.getEventsForCurrentUser("testuser");
 
         assertFalse(result.isEmpty());
         assertEquals(1, result.size());
@@ -97,7 +97,7 @@ class EventServiceTest {
         when(userRepository.findByUsername("testuser")).thenReturn(user);
         when(eventUserAllowanceRepository.findByUser(user)).thenReturn(Collections.emptyList());
 
-        List<EventResponseDTO> result = eventService.getEventsForCurrentUser("testuser");
+        List<UserEventResponseDTO> result = eventService.getEventsForCurrentUser("testuser");
 
         assertTrue(result.isEmpty());
     }

@@ -37,8 +37,8 @@ import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
-import de.felixhertweck.seatreservation.reservation.dto.ReservationResponseDTO;
-import de.felixhertweck.seatreservation.reservation.dto.ReservationsRequestDTO;
+import de.felixhertweck.seatreservation.reservation.dto.UserReservationResponseDTO;
+import de.felixhertweck.seatreservation.reservation.dto.UserReservationsRequestDTO;
 import de.felixhertweck.seatreservation.reservation.exception.EventBookingClosedException;
 import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
@@ -55,16 +55,16 @@ public class ReservationService {
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
     @Inject EmailService emailService;
 
-    public List<ReservationResponseDTO> findReservationsByUser(User currentUser) {
+    public List<UserReservationResponseDTO> findReservationsByUser(User currentUser) {
         LOG.debugf("Attempting to find reservations for user: %s", currentUser.getUsername());
         List<Reservation> reservations = reservationRepository.findByUser(currentUser);
         LOG.debugf(
                 "Found %d reservations for user: %s",
                 reservations.size(), currentUser.getUsername());
-        return reservations.stream().map(ReservationResponseDTO::new).toList();
+        return reservations.stream().map(UserReservationResponseDTO::new).toList();
     }
 
-    public ReservationResponseDTO findReservationByIdForUser(Long id, User currentUser) {
+    public UserReservationResponseDTO findReservationByIdForUser(Long id, User currentUser) {
         LOG.debugf(
                 "Attempting to find reservation with ID %d for user: %s",
                 id, currentUser.getUsername());
@@ -86,12 +86,12 @@ public class ReservationService {
             throw new SecurityException("You are not allowed to access this reservation");
         }
         LOG.debugf("Reservation with ID %d found for user %s.", id, currentUser.getUsername());
-        return new ReservationResponseDTO(reservation);
+        return new UserReservationResponseDTO(reservation);
     }
 
     @Transactional
-    public List<ReservationResponseDTO> createReservationForUser(
-            ReservationsRequestDTO dto, User currentUser)
+    public List<UserReservationResponseDTO> createReservationForUser(
+            UserReservationsRequestDTO dto, User currentUser)
             throws NoSeatsAvailableException, EventBookingClosedException {
         LOG.debugf(
                 "Attempting to create reservation for user %s for event ID %d with %d seats.",
@@ -255,7 +255,7 @@ public class ReservationService {
         }
 
         return newReservations.stream()
-                .map(ReservationResponseDTO::new)
+                .map(UserReservationResponseDTO::new)
                 .collect(Collectors.toList());
     }
 

@@ -28,8 +28,8 @@ import jakarta.ws.rs.*;
 
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
-import de.felixhertweck.seatreservation.reservation.dto.ReservationResponseDTO;
-import de.felixhertweck.seatreservation.reservation.dto.ReservationsRequestDTO;
+import de.felixhertweck.seatreservation.reservation.dto.UserReservationResponseDTO;
+import de.felixhertweck.seatreservation.reservation.dto.UserReservationsRequestDTO;
 import de.felixhertweck.seatreservation.reservation.service.ReservationService;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -59,17 +59,17 @@ public class ReservationResource {
                             schema =
                                     @Schema(
                                             type = SchemaType.ARRAY,
-                                            implementation = ReservationResponseDTO.class)))
+                                            implementation = UserReservationResponseDTO.class)))
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
             description = "Forbidden: Only authenticated users can access this resource")
-    public List<ReservationResponseDTO> getMyReservations() {
+    public List<UserReservationResponseDTO> getMyReservations() {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.debugf(
                 "Received GET request to /api/user/reservations for user: %s",
                 currentUser.getUsername());
-        List<ReservationResponseDTO> reservations =
+        List<UserReservationResponseDTO> reservations =
                 reservationService.findReservationsByUser(currentUser);
         LOG.debugf(
                 "Returning %d reservations for user: %s",
@@ -82,7 +82,7 @@ public class ReservationResource {
     @APIResponse(
             responseCode = "200",
             description = "OK",
-            content = @Content(schema = @Schema(implementation = ReservationResponseDTO.class)))
+            content = @Content(schema = @Schema(implementation = UserReservationResponseDTO.class)))
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
@@ -90,12 +90,12 @@ public class ReservationResource {
     @APIResponse(
             responseCode = "404",
             description = "Not Found: Reservation with specified ID not found for the current user")
-    public ReservationResponseDTO getMyReservationById(@PathParam("id") Long id) {
+    public UserReservationResponseDTO getMyReservationById(@PathParam("id") Long id) {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.debugf(
                 "Received GET request to /api/user/reservations/%d for user: %s",
                 id, currentUser.getUsername());
-        ReservationResponseDTO reservation =
+        UserReservationResponseDTO reservation =
                 reservationService.findReservationByIdForUser(id, currentUser);
         LOG.debugf("Returning reservation with ID %d for user: %s", id, currentUser.getUsername());
         return reservation;
@@ -110,7 +110,7 @@ public class ReservationResource {
                             schema =
                                     @Schema(
                                             type = SchemaType.ARRAY,
-                                            implementation = ReservationResponseDTO.class)))
+                                            implementation = UserReservationResponseDTO.class)))
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
@@ -119,12 +119,13 @@ public class ReservationResource {
     @APIResponse(
             responseCode = "409",
             description = "Conflict: Seat already reserved or event booking closed")
-    public List<ReservationResponseDTO> createReservation(@Valid ReservationsRequestDTO dto) {
+    public List<UserReservationResponseDTO> createReservation(
+            @Valid UserReservationsRequestDTO dto) {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.debugf(
                 "Received POST request to /api/user/reservations for user: %s",
                 currentUser.getUsername());
-        List<ReservationResponseDTO> createdReservations =
+        List<UserReservationResponseDTO> createdReservations =
                 reservationService.createReservationForUser(dto, currentUser);
         LOG.debugf(
                 "Created %d reservations for user: %s",

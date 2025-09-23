@@ -28,7 +28,7 @@ import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
-import de.felixhertweck.seatreservation.reservation.dto.EventResponseDTO;
+import de.felixhertweck.seatreservation.reservation.dto.UserEventResponseDTO;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
@@ -40,7 +40,7 @@ public class EventService {
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
 
     @Transactional
-    public List<EventResponseDTO> getEventsForCurrentUser(String username)
+    public List<UserEventResponseDTO> getEventsForCurrentUser(String username)
             throws UserNotFoundException {
         LOG.debugf("Attempting to retrieve events for current user: %s", username);
         User user = userRepository.findByUsername(username);
@@ -51,11 +51,11 @@ public class EventService {
         }
         LOG.debugf("User %s found. Retrieving event allowances.", username);
 
-        List<EventResponseDTO> events =
+        List<UserEventResponseDTO> events =
                 eventUserAllowanceRepository.findByUser(user).stream()
                         .map(
                                 allowance ->
-                                        new EventResponseDTO(
+                                        new UserEventResponseDTO(
                                                 allowance.getEvent(),
                                                 allowance.getReservationsAllowedCount()))
                         .toList();

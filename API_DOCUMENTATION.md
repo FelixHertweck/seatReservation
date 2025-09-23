@@ -352,7 +352,7 @@ Retrieves all events managed by the current manager.
 
 -   **Roles:** `MANAGER`, `ADMIN`
 -   **Responses:**
-    -   `200 OK`: Returns a list of `DetailedEventResponseDTO` objects.
+    -   `200 OK`: Returns a list of `DetailedUserEventResponseDTO` objects.
 
 ---
  
@@ -362,7 +362,7 @@ Retrieves all events managed by the current manager.
  
 -   **Roles:** `MANAGER`, `ADMIN`
 -   **Responses:**
-    -   `200 OK`: Returns a list of `DetailedEventResponseDTO` objects.
+    -   `200 OK`: Returns a list of `DetailedUserEventResponseDTO` objects.
     -   `401 Unauthorized`: Not authenticated.
     -   `403 Forbidden`: Access denied.
  
@@ -375,7 +375,7 @@ Retrieves a specific event by its ID.
 -   **Roles:** `MANAGER`, `ADMIN`
 -   **Path Parameter:** `id` (Long) - The event ID.
 -   **Responses:**
-    -   `200 OK`: Returns `DetailedEventResponseDTO`.
+    -   `200 OK`: Returns `DetailedUserEventResponseDTO`.
     -   `403 Forbidden`: No permission.
     -   `404 Not Found`: Event not found.
     -   `401 Unauthorized`: Not authenticated.
@@ -389,7 +389,7 @@ Creates a new event.
 -   **Roles:** `MANAGER`, `ADMIN`
 -   **Request Body:** `EventRequestDTO`
 -   **Responses:**
-    -   `200 OK`: Event successfully created. Returns `DetailedEventResponseDTO`.
+    -   `200 OK`: Event successfully created. Returns `DetailedUserEventResponseDTO`.
     -   `400 Bad Request`: Invalid data.
     -   `404 Not Found`: Associated location not found.
     -   `401 Unauthorized`: Not authenticated.
@@ -406,7 +406,7 @@ Updates an existing event.
 -   **Path Parameter:** `id` (Long) - The event ID.
 -   **Request Body:** `EventRequestDTO`
 -   **Responses:**
-    -   `200 OK`: Event successfully updated. Returns `DetailedEventResponseDTO`.
+    -   `200 OK`: Event successfully updated. Returns `DetailedUserEventResponseDTO`.
     -   `404 Not Found`: Event not found or no permission.
     -   `401 Unauthorized`: Not authenticated.
     -   `403 Forbidden`: Access denied.
@@ -637,7 +637,7 @@ Retrieves all reservations for the current manager's events.
 
 -   **Roles:** `MANAGER`, `ADMIN`
 -   **Responses:**
-    -   `200 OK`: Returns a list of `DetailedReservationResponseDTO` objects.
+    -   `200 OK`: Returns a list of `DetailedUserReservationResponseDTO` objects.
 
 ---
  
@@ -647,7 +647,7 @@ Retrieves all reservations for the current manager's events.
  
 -   **Roles:** `MANAGER`, `ADMIN`
 -   **Responses:**
-    -   `200 OK`: Returns a list of `DetailedReservationResponseDTO` objects.
+    -   `200 OK`: Returns a list of `DetailedUserReservationResponseDTO` objects.
     -   `401 Unauthorized`: Not authenticated.
     -   `403 Forbidden`: Access denied.
  
@@ -660,7 +660,7 @@ Retrieves a specific reservation by its ID.
 -   **Roles:** `MANAGER`, `ADMIN`
 -   **Path Parameter:** `id` (Long) - The reservation ID.
 -   **Responses:**
-    -   `200 OK`: Returns `DetailedReservationResponseDTO`.
+    -   `200 OK`: Returns `DetailedUserReservationResponseDTO`.
     -   `404 Not Found`: Reservation not found or no permission.
     -   `401 Unauthorized`: Not authenticated.
     -   `403 Forbidden`: Access denied.
@@ -674,7 +674,7 @@ Retrieves all reservations for a specific event.
 -   **Roles:** `MANAGER`, `ADMIN`
 -   **Path Parameter:** `id` (Long) - The event ID.
 -   **Responses:**
-    -   `200 OK`: Returns a list of `DetailedReservationResponseDTO` objects.
+    -   `200 OK`: Returns a list of `DetailedUserReservationResponseDTO` objects.
     -   `403 Forbidden`: No permission for this event.
     -   `401 Unauthorized`: Not authenticated.
  
@@ -687,7 +687,7 @@ Creates a new reservation.
 -   **Roles:** `MANAGER`, `ADMIN`
 -   **Request Body:** `ReservationRequestDTO`
 -   **Responses:**
-    -   `200 OK`: Reservation successfully created. Returns `Set<DetailedReservationResponseDTO>`.
+    -   `200 OK`: Reservation successfully created. Returns `Set<DetailedUserReservationResponseDTO>`.
     -   `404 Not Found`: User, event, or seat not found.
     -   `409 Conflict`: Seat already reserved or event booking closed.
     -   `401 Unauthorized`: Not authenticated.
@@ -703,7 +703,7 @@ Updates an existing reservation.
 -   **Path Parameter:** `id` (Long) - The reservation ID.
 -   **Request Body:** `ReservationRequestDTO`
 -   **Responses:**
-    -   `200 OK`: Reservation successfully updated. Returns `DetailedReservationResponseDTO`.
+    -   `200 OK`: Reservation successfully updated. Returns `DetailedUserReservationResponseDTO`.
     -   `404 Not Found`: Reservation, event, or user not found or no permission.
     -   `401 Unauthorized`: Not authenticated.
     -   `403 Forbidden`: Access denied.
@@ -731,7 +731,7 @@ Blocks any number of seats for an event.
 -   **Roles:** `MANAGER`, `ADMIN`
 -   **Request Body:** `BlockSeatsRequestDTO`
 -   **Responses:**
-    -   `200 OK`: Seats successfully blocked. Returns `Set<DetailedReservationResponseDTO>`.
+    -   `200 OK`: Seats successfully blocked. Returns `Set<DetailedUserReservationResponseDTO>`.
     -   `204 No Content`: Seats successfully blocked.
     -   `403 Forbidden`: No permission.
     -   `404 Not Found`: Event or seat not found.
@@ -769,7 +769,7 @@ Retrieves all events for which the current user has permission.
  
 -   **Roles:** `USER`, `MANAGER`, `ADMIN`
 -   **Responses:**
-    -   `200 OK`: Returns a list of `EventResponseDTO` objects, including the number of allowed reservations.
+    -   `200 OK`: Returns a list of `UserEventResponseDTO` objects, including the number of allowed reservations.
     -   `401 Unauthorized`: Not authenticated.
     -   `403 Forbidden`: Access denied.
  
@@ -789,7 +789,7 @@ Retrieves all reservations of the current user.
 
 -   **Roles:** `USER`
 -   **Responses:**
-    -   `200 OK`: Returns a list of `ReservationResponseDTO` objects.
+    -   `200 OK`: Returns a list of `UserReservationResponseDTO` objects.
 
 ---
  
@@ -799,7 +799,7 @@ Retrieves all reservations of the current user.
  
 -   **Roles:** `USER`, `MANAGER`, `ADMIN`
 -   **Responses:**
-    -   `200 OK`: Returns a list of `ReservationResponseDTO` objects.
+    -   `200 OK`: Returns a list of `UserReservationResponseDTO` objects.
     -   `401 Unauthorized`: Not authenticated.
     -   `403 Forbidden`: Access denied.
  
@@ -812,7 +812,7 @@ Retrieves a specific reservation of the current user.
 -   **Roles:** `USER`, `MANAGER`, `ADMIN`
 -   **Path Parameter:** `id` (Long) - The reservation ID.
 -   **Responses:**
-    -   `200 OK`: Returns `ReservationResponseDTO`.
+    -   `200 OK`: Returns `UserReservationResponseDTO`.
     -   `404 Not Found`: Reservation does not belong to the user or does not exist.
     -   `401 Unauthorized`: Not authenticated.
     -   `403 Forbidden`: Access denied.
@@ -824,9 +824,9 @@ Retrieves a specific reservation of the current user.
 Creates one or more new reservations for the current user.
  
 -   **Roles:** `USER`, `MANAGER`, `ADMIN`
--   **Request Body:** `ReservationsRequestDTO`
+-   **Request Body:** `UserReservationsRequestDTO`
 -   **Responses:**
-    -   `200 OK`: Reservation(s) successfully created. Returns a list of `ReservationResponseDTO`.
+    -   `200 OK`: Reservation(s) successfully created. Returns a list of `UserReservationResponseDTO`.
     -   `400 Bad Request`: Invalid request (e.g., more seats than allowed).
     -   `403 Forbidden`: No permission for the event.
     -   `404 Not Found`: Event or seat not found.

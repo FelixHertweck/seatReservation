@@ -26,9 +26,9 @@ import de.felixhertweck.seatreservation.model.entity.Reservation;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
-public record ReservationResponseDTO(
+public record UserReservationResponseDTO(
         Long id, Long userId, Long eventId, SeatDTO seat, Instant reservationDateTime) {
-    public ReservationResponseDTO(Reservation reservation) {
+    public UserReservationResponseDTO(Reservation reservation) {
         this(
                 reservation.id,
                 reservation.getUser().id,
