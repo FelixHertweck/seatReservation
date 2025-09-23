@@ -662,8 +662,9 @@ export const UserEventResponseDTOSchema = {
                 '$ref': '#/components/schemas/SeatStatusDTO'
             }
         },
-        location: {
-            '$ref': '#/components/schemas/UserEventLocationResponseDTO'
+        locationId: {
+            type: 'integer',
+            format: 'int64'
         },
         reservationsAllowed: {
             type: 'integer',

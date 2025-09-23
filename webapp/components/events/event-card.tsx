@@ -11,15 +11,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { UserEventResponseDto } from "@/api";
+import type { UserEventLocationResponseDto, UserEventResponseDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 
 interface EventCardProps {
   event: UserEventResponseDto;
+  location: UserEventLocationResponseDto | null;
   onReserve: () => void;
 }
 
-export function EventCard({ event, onReserve }: EventCardProps) {
+export function EventCard({ event, location, onReserve }: EventCardProps) {
   const t = useT();
 
   const hasAvailableSeats = (event.reservationsAllowed ?? 0) > 0;
@@ -67,7 +68,7 @@ export function EventCard({ event, onReserve }: EventCardProps) {
 
         <div className="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors duration-300">
           <MapPin className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
-          {event.location?.name || t("eventCard.locationTbd")}
+          {location?.name || t("eventCard.locationTbd")}
         </div>
 
         <div className="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors duration-300">

@@ -204,7 +204,7 @@ export type UserEventResponseDto = {
     endTime?: Instant;
     bookingDeadline?: Instant;
     seatStatuses?: Array<SeatStatusDto>;
-    location?: UserEventLocationResponseDto;
+    locationId?: bigint;
     reservationsAllowed?: number;
 };
 
@@ -1328,6 +1328,33 @@ export type GetApiUserEventsResponses = {
 };
 
 export type GetApiUserEventsResponse = GetApiUserEventsResponses[keyof GetApiUserEventsResponses];
+
+export type GetApiUserLocationsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/user/locations';
+};
+
+export type GetApiUserLocationsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Forbidden: Only authenticated users can access this resource
+     */
+    403: unknown;
+};
+
+export type GetApiUserLocationsResponses = {
+    /**
+     * OK
+     */
+    200: Array<UserEventLocationResponseDto>;
+};
+
+export type GetApiUserLocationsResponse = GetApiUserLocationsResponses[keyof GetApiUserLocationsResponses];
 
 export type PostApiUserResendEmailConfirmationData = {
     body?: never;

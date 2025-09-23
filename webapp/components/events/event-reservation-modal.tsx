@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -15,14 +15,15 @@ import type {
   UserEventResponseDto,
   UserReservationResponseDto,
   SeatDto,
+  UserEventLocationResponseDto,
 } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { findSeatStatus } from "@/lib/reservationSeat";
 
 interface EventReservationModalProps {
   event: UserEventResponseDto;
+  location: UserEventLocationResponseDto | null;
   userReservations: UserReservationResponseDto[];
-  initialSeatId: bigint;
   onClose: () => void;
   onReserve: (
     eventId: bigint,
@@ -32,8 +33,8 @@ interface EventReservationModalProps {
 
 export function EventReservationModal({
   event,
+  location,
   userReservations,
-  initialSeatId,
   onClose,
   onReserve,
 }: EventReservationModalProps) {
@@ -43,19 +44,9 @@ export function EventReservationModal({
   const [isLoading, setIsLoading] = useState(false);
 
   const seats: SeatDto[] = useMemo(
-    () => event.location?.seats ?? [],
-    [event.location?.seats],
+    () => location?.seats ?? [],
+    [location?.seats],
   );
-
-  useEffect(() => {
-    if (initialSeatId) {
-      const initialSeat = seats.find((seat) => seat.id === initialSeatId);
-      if (initialSeat) {
-        // && !seatStatus
-        setSelectedSeats([initialSeat]);
-      }
-    }
-  }, [initialSeatId, seats]);
 
   const userReservedSeats = userReservations
     .filter((reservation) => reservation.eventId === event.id)
@@ -148,7 +139,7 @@ export function EventReservationModal({
             <SeatMap
               seats={seats}
               seatStatuses={event.seatStatuses ?? []}
-              markers={event.location?.markers ?? []}
+              markers={location?.markers ?? []}
               selectedSeats={selectedSeats}
               userReservedSeats={userReservedSeats}
               onSeatSelect={handleSeatSelect}

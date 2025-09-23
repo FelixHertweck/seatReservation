@@ -10,8 +10,10 @@ import {
   getApiUserEventsQueryKey,
   getApiManagerEventsByIdOptions,
   getApiUserReservationsQueryKey,
+  getApiUserLocationsOptions,
 } from "@/api/@tanstack/react-query.gen";
 import type {
+  UserEventLocationResponseDto,
   UserEventResponseDto,
   UserReservationResponseDto,
   UserReservationsRequestDto,
@@ -19,6 +21,7 @@ import type {
 
 interface UseEventsReturn {
   events: UserEventResponseDto[];
+  locations: UserEventLocationResponseDto[];
   getEventById: (id: bigint) => Promise<UserEventResponseDto>;
   isLoading: boolean;
   createReservation: (
@@ -31,6 +34,10 @@ export function useEvents(): UseEventsReturn {
   const t = useT();
   const { data: events, isLoading: eventsIsLoading } = useQuery({
     ...getApiUserEventsOptions(),
+  });
+
+  const { data: locations, isLoading: locationsIsLoading } = useQuery({
+    ...getApiUserLocationsOptions(),
   });
 
   const queryClient = useQueryClient();
@@ -80,8 +87,9 @@ export function useEvents(): UseEventsReturn {
 
   return {
     events: events ?? [],
+    locations: locations ?? [],
     getEventById: getEventById,
-    isLoading: eventsIsLoading,
+    isLoading: eventsIsLoading || locationsIsLoading,
     createReservation,
   };
 }
