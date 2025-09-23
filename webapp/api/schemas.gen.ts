@@ -103,24 +103,6 @@ export const EventLocationMakerDTOSchema = {
     }
 } as const;
 
-export const EventLocationMakerRequestDTOSchema = {
-    type: 'object',
-    required: ['label', 'xCoordinate', 'yCoordinate'],
-    properties: {
-        label: {
-            type: 'string'
-        },
-        xCoordinate: {
-            type: 'integer',
-            format: 'int32'
-        },
-        yCoordinate: {
-            type: 'integer',
-            format: 'int32'
-        }
-    }
-} as const;
-
 export const EventLocationRequestDTOSchema = {
     type: 'object',
     required: ['name', 'address', 'capacity'],
@@ -138,7 +120,7 @@ export const EventLocationRequestDTOSchema = {
         markers: {
             type: 'array',
             items: {
-                '$ref': '#/components/schemas/EventLocationMakerRequestDTO'
+                '$ref': '#/components/schemas/MakerRequestDTO'
             }
         }
     }
@@ -164,10 +146,11 @@ export const EventLocationResponseDTOSchema = {
         manager: {
             '$ref': '#/components/schemas/LimitedUserInfoDTO'
         },
-        seats: {
+        seatIds: {
             type: 'array',
             items: {
-                '$ref': '#/components/schemas/SeatDTO'
+                type: 'integer',
+                format: 'int64'
             }
         },
         markers: {
@@ -343,7 +326,7 @@ export const ImportEventLocationDtoSchema = {
         markers: {
             type: 'array',
             items: {
-                '$ref': '#/components/schemas/EventLocationMakerRequestDTO'
+                '$ref': '#/components/schemas/MakerRequestDTO'
             }
         }
     }
@@ -407,6 +390,24 @@ export const LoginRequestDTOSchema = {
         password: {
             type: 'string',
             pattern: '\\S'
+        }
+    }
+} as const;
+
+export const MakerRequestDTOSchema = {
+    type: 'object',
+    required: ['label', 'xCoordinate', 'yCoordinate'],
+    properties: {
+        label: {
+            type: 'string'
+        },
+        xCoordinate: {
+            type: 'integer',
+            format: 'int32'
+        },
+        yCoordinate: {
+            type: 'integer',
+            format: 'int32'
         }
     }
 } as const;
@@ -598,6 +599,41 @@ export const UserDTOSchema = {
     }
 } as const;
 
+export const UserEventLocationResponseDTOSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            type: 'integer',
+            format: 'int64'
+        },
+        name: {
+            type: 'string'
+        },
+        address: {
+            type: 'string'
+        },
+        capacity: {
+            type: 'integer',
+            format: 'int32'
+        },
+        manager: {
+            '$ref': '#/components/schemas/LimitedUserInfoDTO'
+        },
+        seats: {
+            type: 'array',
+            items: {
+                '$ref': '#/components/schemas/SeatDTO'
+            }
+        },
+        markers: {
+            type: 'array',
+            items: {
+                '$ref': '#/components/schemas/EventLocationMakerDTO'
+            }
+        }
+    }
+} as const;
+
 export const UserEventResponseDTOSchema = {
     type: 'object',
     properties: {
@@ -627,7 +663,7 @@ export const UserEventResponseDTOSchema = {
             }
         },
         location: {
-            '$ref': '#/components/schemas/EventLocationResponseDTO'
+            '$ref': '#/components/schemas/UserEventLocationResponseDTO'
         },
         reservationsAllowed: {
             type: 'integer',

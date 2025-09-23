@@ -36,6 +36,7 @@ import { useT } from "@/lib/i18n/hooks";
 
 interface ReservationFormModalProps {
   users: UserDto[];
+  seats: SeatDto[];
   locations: EventLocationResponseDto[];
   events: EventResponseDto[];
   reservations?: ReservationResponseDto[];
@@ -46,6 +47,7 @@ interface ReservationFormModalProps {
 export function ReservationFormModal({
   users,
   locations,
+  seats,
   events,
   reservations = [],
   onSubmit,
@@ -69,7 +71,8 @@ export function ReservationFormModal({
   const eventLocation = locations.find(
     (loc) => loc.id === selectedEvent?.eventLocationId,
   );
-  const availableSeats: SeatDto[] = eventLocation?.seats ?? [];
+  const availableSeats: SeatDto[] =
+    seats.filter((seat) => seat.locationId === eventLocation?.id) ?? [];
   const availableSeatStatuses: SeatStatusDto[] =
     selectedEvent?.seatStatuses ?? [];
   const availableMarkers: EventLocationMakerDto[] =

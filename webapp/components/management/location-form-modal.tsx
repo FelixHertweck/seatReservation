@@ -18,7 +18,7 @@ import { Plus, Trash2 } from "lucide-react";
 import type {
   EventLocationResponseDto,
   EventLocationRequestDto,
-  EventLocationMakerRequestDto,
+  MakerRequestDto,
 } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 
@@ -42,7 +42,7 @@ export function LocationFormModal({
     address: location?.address || "",
     capacity: location?.capacity?.toString() || "",
   });
-  const [markers, setMarkers] = useState<EventLocationMakerRequestDto[]>(
+  const [markers, setMarkers] = useState<MakerRequestDto[]>(
     location?.markers?.map((m) => ({
       label: m.label || "",
       xCoordinate: m.xCoordinate || 0,
@@ -61,7 +61,7 @@ export function LocationFormModal({
 
   const updateMarker = (
     index: number,
-    field: keyof EventLocationMakerRequestDto,
+    field: keyof MakerRequestDto,
     value: string | number,
   ) => {
     const updatedMarkers = [...markers];

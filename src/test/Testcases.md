@@ -409,7 +409,7 @@ Dies ist eine Übersicht der Testfälle für die Anwendung.
 | `testCoordinatesBoundaries` | Testet Grenzwerte für Koordinaten (Integer.MAX_VALUE, Integer.MIN_VALUE). |
 | `testEmptyLabel` | Testet Verhalten mit leerem Label. |
 
-### EventLocationMakerRequestDTO
+### MakerRequestDTO
 
 | Testfall | Beschreibung |
 | :--- | :--- |

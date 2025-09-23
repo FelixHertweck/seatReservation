@@ -29,11 +29,11 @@ import jakarta.inject.Inject;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import de.felixhertweck.seatreservation.common.dto.EventLocationResponseDTO;
-import de.felixhertweck.seatreservation.management.dto.EventLocationMakerRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationRequestDTO;
+import de.felixhertweck.seatreservation.management.dto.EventLocationResponseDTO;
 import de.felixhertweck.seatreservation.management.dto.ImportEventLocationDto;
 import de.felixhertweck.seatreservation.management.dto.ImportSeatDto;
+import de.felixhertweck.seatreservation.management.dto.MakerRequestDTO;
 import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
@@ -405,7 +405,7 @@ public class EventLocationServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(existingLocation.getName(), result.name());
-        assertEquals(2, result.seats().size());
+        assertEquals(2, result.seatIds().size());
         verify(eventLocationRepository, times(1)).findByIdOptional(existingLocation.id);
         verify(seatRepository, times(2)).persist(any(Seat.class));
     }
@@ -450,11 +450,11 @@ public class EventLocationServiceTest {
         dto.setAddress("Music Street 1");
         dto.setCapacity(300);
 
-        List<EventLocationMakerRequestDTO> markers =
+        List<MakerRequestDTO> markers =
                 List.of(
-                        new EventLocationMakerRequestDTO("Main Entrance", 100, 200),
-                        new EventLocationMakerRequestDTO("Emergency Exit", 50, 250),
-                        new EventLocationMakerRequestDTO("Stage", 150, 50));
+                        new MakerRequestDTO("Main Entrance", 100, 200),
+                        new MakerRequestDTO("Emergency Exit", 50, 250),
+                        new MakerRequestDTO("Stage", 150, 50));
         dto.setmarkers(markers);
 
         doAnswer(
@@ -561,10 +561,10 @@ public class EventLocationServiceTest {
         updateDto.setAddress("Updated Street 1");
         updateDto.setCapacity(250);
 
-        List<EventLocationMakerRequestDTO> newMarkers =
+        List<MakerRequestDTO> newMarkers =
                 List.of(
-                        new EventLocationMakerRequestDTO("Updated Entrance", 120, 220),
-                        new EventLocationMakerRequestDTO("VIP Area", 200, 100));
+                        new MakerRequestDTO("Updated Entrance", 120, 220),
+                        new MakerRequestDTO("VIP Area", 200, 100));
         updateDto.setmarkers(newMarkers);
 
         EventLocationResponseDTO result =
@@ -633,12 +633,11 @@ public class EventLocationServiceTest {
         dto.setAddress("Test Street");
         dto.setCapacity(100);
 
-        List<EventLocationMakerRequestDTO> markerDtos =
+        List<MakerRequestDTO> markerDtos =
                 List.of(
-                        new EventLocationMakerRequestDTO("Test Marker 1", 0, 0),
-                        new EventLocationMakerRequestDTO("Test Marker 2", -50, -100),
-                        new EventLocationMakerRequestDTO(
-                                "Test Marker 3", Integer.MAX_VALUE, Integer.MIN_VALUE));
+                        new MakerRequestDTO("Test Marker 1", 0, 0),
+                        new MakerRequestDTO("Test Marker 2", -50, -100),
+                        new MakerRequestDTO("Test Marker 3", Integer.MAX_VALUE, Integer.MIN_VALUE));
         dto.setmarkers(markerDtos);
 
         doAnswer(

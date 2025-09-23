@@ -23,11 +23,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
-class EventLocationMakerRequestDTOTest {
+class MakerRequestDTOTest {
 
     @Test
     void testDefaultConstructor() {
-        EventLocationMakerRequestDTO dto = new EventLocationMakerRequestDTO();
+        MakerRequestDTO dto = new MakerRequestDTO();
 
         assertNull(dto.getLabel());
         assertNull(dto.getxCoordinate());
@@ -40,8 +40,7 @@ class EventLocationMakerRequestDTOTest {
         Integer xCoordinate = 150;
         Integer yCoordinate = 250;
 
-        EventLocationMakerRequestDTO dto =
-                new EventLocationMakerRequestDTO(label, xCoordinate, yCoordinate);
+        MakerRequestDTO dto = new MakerRequestDTO(label, xCoordinate, yCoordinate);
 
         assertEquals(label, dto.getLabel());
         assertEquals(xCoordinate, dto.getxCoordinate());
@@ -50,7 +49,7 @@ class EventLocationMakerRequestDTOTest {
 
     @Test
     void testSettersAndGetters() {
-        EventLocationMakerRequestDTO dto = new EventLocationMakerRequestDTO();
+        MakerRequestDTO dto = new MakerRequestDTO();
         String label = "Stage Area";
         Integer xCoordinate = 300;
         Integer yCoordinate = 400;
@@ -66,7 +65,7 @@ class EventLocationMakerRequestDTOTest {
 
     @Test
     void testSettersWithNullValues() {
-        EventLocationMakerRequestDTO dto = new EventLocationMakerRequestDTO("Test", 10, 20);
+        MakerRequestDTO dto = new MakerRequestDTO("Test", 10, 20);
 
         dto.setLabel(null);
         dto.setxCoordinate(null);
@@ -79,7 +78,7 @@ class EventLocationMakerRequestDTOTest {
 
     @Test
     void testWithBoundaryValues() {
-        EventLocationMakerRequestDTO dto = new EventLocationMakerRequestDTO();
+        MakerRequestDTO dto = new MakerRequestDTO();
 
         dto.setLabel("");
         dto.setxCoordinate(Integer.MAX_VALUE);
@@ -92,7 +91,7 @@ class EventLocationMakerRequestDTOTest {
 
     @Test
     void testWithZeroCoordinates() {
-        EventLocationMakerRequestDTO dto = new EventLocationMakerRequestDTO("Origin", 0, 0);
+        MakerRequestDTO dto = new MakerRequestDTO("Origin", 0, 0);
 
         assertEquals("Origin", dto.getLabel());
         assertEquals(Integer.valueOf(0), dto.getxCoordinate());
@@ -101,7 +100,7 @@ class EventLocationMakerRequestDTOTest {
 
     @Test
     void testWithNegativeCoordinates() {
-        EventLocationMakerRequestDTO dto = new EventLocationMakerRequestDTO("Basement", -50, -100);
+        MakerRequestDTO dto = new MakerRequestDTO("Basement", -50, -100);
 
         assertEquals("Basement", dto.getLabel());
         assertEquals(Integer.valueOf(-50), dto.getxCoordinate());
@@ -111,14 +110,14 @@ class EventLocationMakerRequestDTOTest {
     @Test
     void testLongLabel() {
         String longLabel = "A".repeat(1000);
-        EventLocationMakerRequestDTO dto = new EventLocationMakerRequestDTO(longLabel, 1, 2);
+        MakerRequestDTO dto = new MakerRequestDTO(longLabel, 1, 2);
 
         assertEquals(longLabel, dto.getLabel());
     }
 
     @Test
     void testSetterChaining() {
-        EventLocationMakerRequestDTO dto = new EventLocationMakerRequestDTO();
+        MakerRequestDTO dto = new MakerRequestDTO();
 
         // Test that setters work independently
         dto.setLabel("Test1");
@@ -136,7 +135,7 @@ class EventLocationMakerRequestDTOTest {
 
     @Test
     void testOverwriteValues() {
-        EventLocationMakerRequestDTO dto = new EventLocationMakerRequestDTO("Initial", 1, 2);
+        MakerRequestDTO dto = new MakerRequestDTO("Initial", 1, 2);
 
         dto.setLabel("Updated");
         dto.setxCoordinate(10);

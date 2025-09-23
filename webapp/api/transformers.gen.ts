@@ -9,16 +9,6 @@ const limitedUserInfoDtoSchemaResponseTransformer = (data: any) => {
     return data;
 };
 
-const seatDtoSchemaResponseTransformer = (data: any) => {
-    if (data.id) {
-        data.id = BigInt(data.id.toString());
-    }
-    if (data.locationId) {
-        data.locationId = BigInt(data.locationId.toString());
-    }
-    return data;
-};
-
 const eventLocationResponseDtoSchemaResponseTransformer = (data: any) => {
     if (data.id) {
         data.id = BigInt(data.id.toString());
@@ -26,9 +16,10 @@ const eventLocationResponseDtoSchemaResponseTransformer = (data: any) => {
     if (data.manager) {
         data.manager = limitedUserInfoDtoSchemaResponseTransformer(data.manager);
     }
-    if (data.seats) {
-        data.seats = data.seats.map((item: any) => {
-            return seatDtoSchemaResponseTransformer(item);
+    if (data.seatIds) {
+        data.seatIds = data.seatIds.map((item: any) => {
+            BigInt(item.toString());
+            return item;
         });
     }
     return data;
@@ -179,6 +170,16 @@ const userDtoSchemaResponseTransformer = (data: any) => {
     return data;
 };
 
+const seatDtoSchemaResponseTransformer = (data: any) => {
+    if (data.id) {
+        data.id = BigInt(data.id.toString());
+    }
+    if (data.locationId) {
+        data.locationId = BigInt(data.locationId.toString());
+    }
+    return data;
+};
+
 const reservationResponseDtoSchemaResponseTransformer = (data: any) => {
     if (data.id) {
         data.id = BigInt(data.id.toString());
@@ -253,6 +254,21 @@ export const putApiManagerSeatsByIdResponseTransformer = async (data: any): Prom
     return data;
 };
 
+const userEventLocationResponseDtoSchemaResponseTransformer = (data: any) => {
+    if (data.id) {
+        data.id = BigInt(data.id.toString());
+    }
+    if (data.manager) {
+        data.manager = limitedUserInfoDtoSchemaResponseTransformer(data.manager);
+    }
+    if (data.seats) {
+        data.seats = data.seats.map((item: any) => {
+            return seatDtoSchemaResponseTransformer(item);
+        });
+    }
+    return data;
+};
+
 const userEventResponseDtoSchemaResponseTransformer = (data: any) => {
     if (data.id) {
         data.id = BigInt(data.id.toString());
@@ -272,7 +288,7 @@ const userEventResponseDtoSchemaResponseTransformer = (data: any) => {
         });
     }
     if (data.location) {
-        data.location = eventLocationResponseDtoSchemaResponseTransformer(data.location);
+        data.location = userEventLocationResponseDtoSchemaResponseTransformer(data.location);
     }
     return data;
 };

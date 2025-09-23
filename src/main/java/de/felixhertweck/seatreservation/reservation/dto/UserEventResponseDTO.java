@@ -22,7 +22,6 @@ package de.felixhertweck.seatreservation.reservation.dto;
 import java.time.Instant;
 import java.util.List;
 
-import de.felixhertweck.seatreservation.common.dto.EventLocationResponseDTO;
 import de.felixhertweck.seatreservation.common.dto.SeatStatusDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import io.quarkus.runtime.annotations.RegisterForReflection;
@@ -36,7 +35,7 @@ public record UserEventResponseDTO(
         Instant endTime,
         Instant bookingDeadline,
         List<SeatStatusDTO> seatStatuses,
-        EventLocationResponseDTO location,
+        UserEventLocationResponseDTO location,
         Integer reservationsAllowed) {
     public UserEventResponseDTO(Event event, Integer reservationsAllowed) {
         this(
@@ -49,7 +48,7 @@ public record UserEventResponseDTO(
                 event.getReservations() == null
                         ? null
                         : event.getReservations().stream().map(SeatStatusDTO::new).toList(),
-                new EventLocationResponseDTO(event.getEventLocation()),
+                new UserEventLocationResponseDTO(event.getEventLocation()),
                 reservationsAllowed);
     }
 }

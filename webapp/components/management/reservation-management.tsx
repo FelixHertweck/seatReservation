@@ -46,12 +46,14 @@ import type {
   ReservationRequestDto,
   BlockSeatsRequestDto,
   EventLocationResponseDto,
+  SeatDto,
 } from "@/api";
 import { customSerializer } from "@/lib/jsonBodySerializer";
 import { useT } from "@/lib/i18n/hooks";
 
 export interface ReservationManagementProps {
   users: UserDto[];
+  seats: SeatDto[];
   events: EventResponseDto[];
   locations: EventLocationResponseDto[];
   reservations: ReservationResponseDto[];
@@ -70,6 +72,7 @@ export interface ReservationManagementProps {
 
 export function ReservationManagement({
   users,
+  seats,
   events,
   locations,
   reservations,
@@ -442,6 +445,7 @@ export function ReservationManagement({
       {isModalOpen && (
         <ReservationFormModal
           users={users}
+          seats={seats}
           locations={locations}
           events={events}
           reservations={reservations}
@@ -456,6 +460,7 @@ export function ReservationManagement({
       {isBlockModalOpen && (
         <BlockSeatsModal
           events={events}
+          seats={seats}
           locations={locations}
           onSubmit={async (blockData) => {
             await blockSeats(blockData);
