@@ -101,21 +101,21 @@ export function SearchAndFilter({
   return (
     <div className="space-y-4 mb-6">
       {/* Search Bar and Filter Toggle */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 items-center">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
             placeholder={t("searchAndFilter.searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
-            className="pl-10"
+            className="pl-10 h-10"
           />
         </div>
         {filterOptions.length > 0 && (
           <Button
             variant="outline"
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 h-10"
           >
             <Filter className="h-4 w-4" />
             {t("searchAndFilter.filtersButton")}
