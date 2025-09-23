@@ -34,8 +34,8 @@ import static org.mockito.Mockito.*;
 
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
-import de.felixhertweck.seatreservation.management.dto.DetailedEventResponseDTO;
 import de.felixhertweck.seatreservation.management.dto.EventRequestDTO;
+import de.felixhertweck.seatreservation.management.dto.EventResponseDTO;
 import de.felixhertweck.seatreservation.management.dto.EventUserAllowanceUpdateDto;
 import de.felixhertweck.seatreservation.management.dto.EventUserAllowancesCreateDto;
 import de.felixhertweck.seatreservation.management.dto.EventUserAllowancesDto;
@@ -152,7 +152,7 @@ public class EventServiceTest {
                 .when(eventRepository)
                 .persist(any(Event.class));
 
-        DetailedEventResponseDTO createdEvent = eventService.createEvent(dto, managerUser);
+        EventResponseDTO createdEvent = eventService.createEvent(dto, managerUser);
 
         assertNotNull(createdEvent);
         assertEquals("New Event", createdEvent.name());
@@ -192,7 +192,7 @@ public class EventServiceTest {
         when(eventLocationRepository.findByIdOptional(eventLocation.id))
                 .thenReturn(Optional.of(eventLocation));
 
-        DetailedEventResponseDTO updatedEvent =
+        EventResponseDTO updatedEvent =
                 eventService.updateEvent(existingEvent.id, dto, managerUser);
 
         assertNotNull(updatedEvent);
@@ -215,8 +215,7 @@ public class EventServiceTest {
         when(eventLocationRepository.findByIdOptional(eventLocation.id))
                 .thenReturn(Optional.of(eventLocation));
 
-        DetailedEventResponseDTO updatedEvent =
-                eventService.updateEvent(existingEvent.id, dto, adminUser);
+        EventResponseDTO updatedEvent = eventService.updateEvent(existingEvent.id, dto, adminUser);
 
         assertNotNull(updatedEvent);
         assertEquals("Updated Event Admin", updatedEvent.name());
@@ -297,7 +296,7 @@ public class EventServiceTest {
                                 regularUser));
         when(eventRepository.listAll()).thenReturn(allEvents);
 
-        List<DetailedEventResponseDTO> result = eventService.getEventsByCurrentManager(adminUser);
+        List<EventResponseDTO> result = eventService.getEventsByCurrentManager(adminUser);
 
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -310,7 +309,7 @@ public class EventServiceTest {
         List<Event> managerEvents = List.of(existingEvent);
         when(eventRepository.findByManager(managerUser)).thenReturn(managerEvents);
 
-        List<DetailedEventResponseDTO> result = eventService.getEventsByCurrentManager(managerUser);
+        List<EventResponseDTO> result = eventService.getEventsByCurrentManager(managerUser);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -323,7 +322,7 @@ public class EventServiceTest {
     void getEventsByCurrentManager_Success_NoEventsForManager() {
         when(eventRepository.findByManager(managerUser)).thenReturn(Collections.emptyList());
 
-        List<DetailedEventResponseDTO> result = eventService.getEventsByCurrentManager(managerUser);
+        List<EventResponseDTO> result = eventService.getEventsByCurrentManager(managerUser);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());

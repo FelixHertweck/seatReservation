@@ -23,11 +23,11 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { SeatMap } from "@/components/common/seat-map";
 import type {
-  DetailedEventResponseDto,
+  EventResponseDto,
   ReservationRequestDto,
   SeatDto,
   UserDto,
-  DetailedReservationResponseDto,
+  ReservationResponseDto,
   EventLocationMakerDto,
   SeatStatusDto,
   EventLocationResponseDto,
@@ -37,8 +37,8 @@ import { useT } from "@/lib/i18n/hooks";
 interface ReservationFormModalProps {
   users: UserDto[];
   locations: EventLocationResponseDto[];
-  events: DetailedEventResponseDto[];
-  reservations?: DetailedReservationResponseDto[];
+  events: EventResponseDto[];
+  reservations?: ReservationResponseDto[];
   onSubmit: (reservationData: ReservationRequestDto) => Promise<void>;
   onClose: () => void;
 }

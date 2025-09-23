@@ -32,8 +32,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import de.felixhertweck.seatreservation.management.dto.DetailedReservationResponseDTO;
 import de.felixhertweck.seatreservation.management.dto.ReservationRequestDTO;
+import de.felixhertweck.seatreservation.management.dto.ReservationResponseDTO;
 import de.felixhertweck.seatreservation.management.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.*;
@@ -166,8 +166,7 @@ public class ReservationServiceTest {
                 .when(reservationRepository)
                 .persist(any(Reservation.class));
 
-        Set<DetailedReservationResponseDTO> created =
-                reservationService.createReservations(dto, adminUser);
+        Set<ReservationResponseDTO> created = reservationService.createReservations(dto, adminUser);
 
         assertNotNull(created);
         assertEquals(regularUser.id, created.iterator().next().user().id());
@@ -198,8 +197,7 @@ public class ReservationServiceTest {
                 .when(reservationRepository)
                 .persist(any(Reservation.class));
 
-        Set<DetailedReservationResponseDTO> created =
-                reservationService.createReservations(dto, adminUser);
+        Set<ReservationResponseDTO> created = reservationService.createReservations(dto, adminUser);
 
         assertNotNull(created);
         assertEquals(regularUser.id, created.iterator().next().user().id());
@@ -230,7 +228,7 @@ public class ReservationServiceTest {
                 .when(reservationRepository)
                 .persist(any(Reservation.class));
 
-        Set<DetailedReservationResponseDTO> created =
+        Set<ReservationResponseDTO> created =
                 reservationService.createReservations(dto, managerUser);
 
         assertNotNull(created);
@@ -257,7 +255,7 @@ public class ReservationServiceTest {
                 .thenReturn(allowanceQuery);
         doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
 
-        Set<DetailedReservationResponseDTO> created =
+        Set<ReservationResponseDTO> created =
                 reservationService.createReservations(dto, managerUser);
 
         assertNotNull(created);
@@ -331,7 +329,7 @@ public class ReservationServiceTest {
         when(reservationRepository.findByIdOptional(reservation.id))
                 .thenReturn(Optional.of(reservation));
 
-        DetailedReservationResponseDTO found =
+        ReservationResponseDTO found =
                 reservationService.findReservationById(reservation.id, adminUser);
 
         assertNotNull(found);
@@ -343,7 +341,7 @@ public class ReservationServiceTest {
         when(reservationRepository.findByIdOptional(reservation.id))
                 .thenReturn(Optional.of(reservation));
 
-        DetailedReservationResponseDTO found =
+        ReservationResponseDTO found =
                 reservationService.findReservationById(reservation.id, managerUser);
 
         assertNotNull(found);

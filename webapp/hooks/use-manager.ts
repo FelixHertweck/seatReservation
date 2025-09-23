@@ -4,11 +4,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import { useT } from "@/lib/i18n/hooks";
 import type {
-  DetailedEventResponseDto,
+  EventResponseDto,
   EventRequestDto,
   EventLocationResponseDto,
   SeatDto,
-  DetailedReservationResponseDto,
+  ReservationResponseDto,
   EventUserAllowancesDto,
   EventLocationRequestDto,
   SeatRequestDto,
@@ -88,7 +88,7 @@ export function useManager(): UseManagerReturn {
     onSuccess: (data) => {
       queryClient.setQueriesData(
         { queryKey: getApiManagerEventsQueryKey() },
-        (oldData: DetailedEventResponseDto[] | undefined) => {
+        (oldData: EventResponseDto[] | undefined) => {
           return oldData ? [...oldData, data] : [data];
         },
       );
@@ -104,7 +104,7 @@ export function useManager(): UseManagerReturn {
     onSuccess: (data) => {
       queryClient.setQueriesData(
         { queryKey: getApiManagerEventsQueryKey() },
-        (oldData: DetailedEventResponseDto[] | undefined) => {
+        (oldData: EventResponseDto[] | undefined) => {
           return oldData
             ? oldData.map((event) => (event.id === data.id ? data : event))
             : [data];
@@ -122,7 +122,7 @@ export function useManager(): UseManagerReturn {
     onSuccess: (_, variables) => {
       queryClient.setQueriesData(
         { queryKey: getApiManagerEventsQueryKey() },
-        (oldData: DetailedEventResponseDto[] | undefined) => {
+        (oldData: EventResponseDto[] | undefined) => {
           return oldData
             ? oldData.filter((event) => event.id !== variables.path.id)
             : [];
@@ -298,7 +298,7 @@ export function useManager(): UseManagerReturn {
     onSuccess: (data) => {
       queryClient.setQueriesData(
         { queryKey: getApiManagerReservationsQueryKey() },
-        (oldData: DetailedReservationResponseDto[] | undefined) => {
+        (oldData: ReservationResponseDto[] | undefined) => {
           return oldData ? [...oldData, ...data] : [...data];
         },
       );
@@ -315,7 +315,7 @@ export function useManager(): UseManagerReturn {
     onSuccess: (_, variables) => {
       queryClient.setQueriesData(
         { queryKey: getApiManagerReservationsQueryKey() },
-        (oldData: DetailedReservationResponseDto[] | undefined) => {
+        (oldData: ReservationResponseDto[] | undefined) => {
           return oldData
             ? oldData.filter(
                 (reservation) => reservation.id !== variables.path.id,
@@ -335,7 +335,7 @@ export function useManager(): UseManagerReturn {
     onSuccess: (data) => {
       queryClient.setQueriesData(
         { queryKey: getApiManagerReservationsQueryKey() },
-        (oldData: DetailedReservationResponseDto[] | undefined) => {
+        (oldData: ReservationResponseDto[] | undefined) => {
           return oldData ? [...oldData, ...data] : [...data];
         },
       );

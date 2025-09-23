@@ -30,8 +30,8 @@ import jakarta.ws.rs.*;
 
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.management.dto.BlockSeatsRequestDTO;
-import de.felixhertweck.seatreservation.management.dto.DetailedReservationResponseDTO;
 import de.felixhertweck.seatreservation.management.dto.ReservationRequestDTO;
+import de.felixhertweck.seatreservation.management.dto.ReservationResponseDTO;
 import de.felixhertweck.seatreservation.management.service.ReservationService;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
@@ -63,16 +63,15 @@ public class ReservationResource {
                             schema =
                                     @Schema(
                                             type = SchemaType.ARRAY,
-                                            implementation = DetailedReservationResponseDTO.class)))
+                                            implementation = ReservationResponseDTO.class)))
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
             description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
-    public List<DetailedReservationResponseDTO> getAllReservations() {
+    public List<ReservationResponseDTO> getAllReservations() {
         LOG.debugf("Received GET request to /api/manager/reservations to get all reservations.");
         User currentUser = userSecurityContext.getCurrentUser();
-        List<DetailedReservationResponseDTO> result =
-                reservationService.findAllReservations(currentUser);
+        List<ReservationResponseDTO> result = reservationService.findAllReservations(currentUser);
         LOG.debugf(
                 "Successfully responded to GET /api/manager/reservations with %d reservations.",
                 result.size());
@@ -84,10 +83,7 @@ public class ReservationResource {
     @APIResponse(
             responseCode = "200",
             description = "OK",
-            content =
-                    @Content(
-                            schema =
-                                    @Schema(implementation = DetailedReservationResponseDTO.class)))
+            content = @Content(schema = @Schema(implementation = ReservationResponseDTO.class)))
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
@@ -96,11 +92,10 @@ public class ReservationResource {
             responseCode = "404",
             description =
                     "Not Found: Reservation with specified ID not found for the current manager")
-    public DetailedReservationResponseDTO getReservationById(@PathParam("id") Long id) {
+    public ReservationResponseDTO getReservationById(@PathParam("id") Long id) {
         LOG.debugf("Received GET request to /api/manager/reservations/%d.", id);
         User currentUser = userSecurityContext.getCurrentUser();
-        DetailedReservationResponseDTO result =
-                reservationService.findReservationById(id, currentUser);
+        ReservationResponseDTO result = reservationService.findReservationById(id, currentUser);
         if (result != null) {
             LOG.debugf("Successfully retrieved reservation with ID %d.", id);
         } else {
@@ -119,7 +114,7 @@ public class ReservationResource {
                             schema =
                                     @Schema(
                                             type = SchemaType.ARRAY,
-                                            implementation = DetailedReservationResponseDTO.class)))
+                                            implementation = ReservationResponseDTO.class)))
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
@@ -127,11 +122,10 @@ public class ReservationResource {
     @APIResponse(
             responseCode = "404",
             description = "Not Found: Event with specified ID not found for the current manager")
-    public List<DetailedReservationResponseDTO> getReservationsByEventId(
-            @PathParam("id") Long eventId) {
+    public List<ReservationResponseDTO> getReservationsByEventId(@PathParam("id") Long eventId) {
         LOG.debugf("Received GET request to /api/manager/reservations/event/%d.", eventId);
         User currentUser = userSecurityContext.getCurrentUser();
-        List<DetailedReservationResponseDTO> result =
+        List<ReservationResponseDTO> result =
                 reservationService.findReservationsByEventId(eventId, currentUser);
         LOG.debugf(
                 "Successfully retrieved %d reservations for event ID %d.", result.size(), eventId);
@@ -147,7 +141,7 @@ public class ReservationResource {
                             schema =
                                     @Schema(
                                             type = SchemaType.ARRAY,
-                                            implementation = DetailedReservationResponseDTO.class)))
+                                            implementation = ReservationResponseDTO.class)))
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
@@ -156,12 +150,11 @@ public class ReservationResource {
     @APIResponse(
             responseCode = "409",
             description = "Conflict: Seat already reserved or event booking closed")
-    public Set<DetailedReservationResponseDTO> createReservations(
-            @Valid ReservationRequestDTO dto) {
+    public Set<ReservationResponseDTO> createReservations(@Valid ReservationRequestDTO dto) {
         LOG.debugf(
                 "Received POST request to /api/manager/reservations to create new reservations.");
         User currentUser = userSecurityContext.getCurrentUser();
-        Set<DetailedReservationResponseDTO> results =
+        Set<ReservationResponseDTO> results =
                 reservationService.createReservations(dto, currentUser);
         LOG.debugf(
                 "Reservations created successfully for seat IDs %s and user ID %d.",
@@ -199,20 +192,20 @@ public class ReservationResource {
                             schema =
                                     @Schema(
                                             type = SchemaType.ARRAY,
-                                            implementation = DetailedReservationResponseDTO.class)))
+                                            implementation = ReservationResponseDTO.class)))
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
             description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
     @APIResponse(responseCode = "404", description = "Not Found: Event or seat not found")
     @APIResponse(responseCode = "409", description = "Conflict: Seat already blocked")
-    public Set<DetailedReservationResponseDTO> blockSeats(@Valid BlockSeatsRequestDTO dto) {
+    public Set<ReservationResponseDTO> blockSeats(@Valid BlockSeatsRequestDTO dto) {
         LOG.debugf(
                 "Received POST request to /api/manager/reservations/block to block seats for event"
                         + " ID %d.",
                 dto.getEventId());
         User currentUser = userSecurityContext.getCurrentUser();
-        Set<DetailedReservationResponseDTO> results =
+        Set<ReservationResponseDTO> results =
                 reservationService.blockSeats(dto.getEventId(), dto.getSeatIds(), currentUser);
         LOG.debugf("Seats blocked successfully for event ID %d.", dto.getEventId());
         return results;

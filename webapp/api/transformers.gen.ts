@@ -73,7 +73,7 @@ const seatStatusDtoSchemaResponseTransformer = (data: any) => {
     return data;
 };
 
-const detailedEventResponseDtoSchemaResponseTransformer = (data: any) => {
+const eventResponseDtoSchemaResponseTransformer = (data: any) => {
     if (data.id) {
         data.id = BigInt(data.id.toString());
     }
@@ -108,23 +108,23 @@ const detailedEventResponseDtoSchemaResponseTransformer = (data: any) => {
 
 export const getApiManagerEventsResponseTransformer = async (data: any): Promise<GetApiManagerEventsResponse> => {
     data = data.map((item: any) => {
-        return detailedEventResponseDtoSchemaResponseTransformer(item);
+        return eventResponseDtoSchemaResponseTransformer(item);
     });
     return data;
 };
 
 export const postApiManagerEventsResponseTransformer = async (data: any): Promise<PostApiManagerEventsResponse> => {
-    data = detailedEventResponseDtoSchemaResponseTransformer(data);
+    data = eventResponseDtoSchemaResponseTransformer(data);
     return data;
 };
 
 export const getApiManagerEventsByIdResponseTransformer = async (data: any): Promise<GetApiManagerEventsByIdResponse> => {
-    data = detailedEventResponseDtoSchemaResponseTransformer(data);
+    data = eventResponseDtoSchemaResponseTransformer(data);
     return data;
 };
 
 export const putApiManagerEventsByIdResponseTransformer = async (data: any): Promise<PutApiManagerEventsByIdResponse> => {
-    data = detailedEventResponseDtoSchemaResponseTransformer(data);
+    data = eventResponseDtoSchemaResponseTransformer(data);
     return data;
 };
 
@@ -179,7 +179,7 @@ const userDtoSchemaResponseTransformer = (data: any) => {
     return data;
 };
 
-const detailedReservationResponseDtoSchemaResponseTransformer = (data: any) => {
+const reservationResponseDtoSchemaResponseTransformer = (data: any) => {
     if (data.id) {
         data.id = BigInt(data.id.toString());
     }
@@ -200,34 +200,34 @@ const detailedReservationResponseDtoSchemaResponseTransformer = (data: any) => {
 
 export const getApiManagerReservationsResponseTransformer = async (data: any): Promise<GetApiManagerReservationsResponse> => {
     data = data.map((item: any) => {
-        return detailedReservationResponseDtoSchemaResponseTransformer(item);
+        return reservationResponseDtoSchemaResponseTransformer(item);
     });
     return data;
 };
 
 export const postApiManagerReservationsResponseTransformer = async (data: any): Promise<PostApiManagerReservationsResponse> => {
     data = data.map((item: any) => {
-        return detailedReservationResponseDtoSchemaResponseTransformer(item);
+        return reservationResponseDtoSchemaResponseTransformer(item);
     });
     return data;
 };
 
 export const postApiManagerReservationsBlockResponseTransformer = async (data: any): Promise<PostApiManagerReservationsBlockResponse> => {
     data = data.map((item: any) => {
-        return detailedReservationResponseDtoSchemaResponseTransformer(item);
+        return reservationResponseDtoSchemaResponseTransformer(item);
     });
     return data;
 };
 
 export const getApiManagerReservationsEventByIdResponseTransformer = async (data: any): Promise<GetApiManagerReservationsEventByIdResponse> => {
     data = data.map((item: any) => {
-        return detailedReservationResponseDtoSchemaResponseTransformer(item);
+        return reservationResponseDtoSchemaResponseTransformer(item);
     });
     return data;
 };
 
 export const getApiManagerReservationsByIdResponseTransformer = async (data: any): Promise<GetApiManagerReservationsByIdResponse> => {
-    data = detailedReservationResponseDtoSchemaResponseTransformer(data);
+    data = reservationResponseDtoSchemaResponseTransformer(data);
     return data;
 };
 

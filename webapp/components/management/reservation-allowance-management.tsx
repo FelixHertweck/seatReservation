@@ -26,14 +26,14 @@ import type {
   EventUserAllowancesDto,
   EventUserAllowancesCreateDto,
   EventUserAllowanceUpdateDto,
-  DetailedEventResponseDto,
+  EventResponseDto,
   LimitedUserInfoDto,
 } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 
 export interface ReservationAllowanceManagementProps {
   allowances: EventUserAllowancesDto[];
-  events: DetailedEventResponseDto[];
+  events: EventResponseDto[];
   users: LimitedUserInfoDto[];
   createReservationAllowance: (
     allowance: EventUserAllowancesCreateDto,

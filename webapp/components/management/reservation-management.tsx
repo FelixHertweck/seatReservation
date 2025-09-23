@@ -41,8 +41,8 @@ import {
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
 import type {
   UserDto,
-  DetailedEventResponseDto,
-  DetailedReservationResponseDto,
+  EventResponseDto,
+  ReservationResponseDto,
   ReservationRequestDto,
   BlockSeatsRequestDto,
   EventLocationResponseDto,
@@ -52,16 +52,16 @@ import { useT } from "@/lib/i18n/hooks";
 
 export interface ReservationManagementProps {
   users: UserDto[];
-  events: DetailedEventResponseDto[];
+  events: EventResponseDto[];
   locations: EventLocationResponseDto[];
-  reservations: DetailedReservationResponseDto[];
+  reservations: ReservationResponseDto[];
   createReservation: (
     reservation: ReservationRequestDto,
-  ) => Promise<DetailedReservationResponseDto[]>;
+  ) => Promise<ReservationResponseDto[]>;
   deleteReservation: (id: bigint) => Promise<unknown>;
   blockSeats: (
     request: BlockSeatsRequestDto,
-  ) => Promise<DetailedReservationResponseDto[]>;
+  ) => Promise<ReservationResponseDto[]>;
   onNavigateToEvent?: (eventId: bigint) => void;
   onNavigateToSeat?: (seatId: bigint) => void;
   initialFilter?: Record<string, string>;
@@ -159,7 +159,7 @@ export function ReservationManagement({
   };
 
   const handleDeleteReservation = async (
-    reservation: DetailedReservationResponseDto,
+    reservation: ReservationResponseDto,
   ) => {
     if (reservation.id && confirm(t("reservationManagement.confirmDelete"))) {
       await deleteReservation(reservation.id);
