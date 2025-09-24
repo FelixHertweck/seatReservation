@@ -278,7 +278,9 @@
     "confirmPasswordPlaceholder": "Confirm your new password",
     "passwordTooShort": "Password must be at least 8 characters long",
     "passwordsDoNotMatch": "Passwords do not match",
-    "verifyEmailButton": "Enter verification code"
+    "verifyEmailButton": "Enter verification code",
+    "passwordValidationErrorTitle": "Validation Error",
+    "passwordValidationErrorDescription": "Please ensure all password fields are filled out correctly."
   },
   "startPage": {
     "eventManagerTitle": "Seat Reservation System",

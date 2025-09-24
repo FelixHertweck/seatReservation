@@ -9,6 +9,7 @@ import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { useEvents } from "@/hooks/use-events";
 import type { UserEventResponseDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function EventsSubPage() {
   const t = useT();
@@ -20,12 +21,13 @@ export default function EventsSubPage() {
     isLoading: eventsLoading,
     createReservation,
   } = useEvents();
+  const { isLoggedIn } = useAuth();
   const [selectedEvent, setSelectedEvent] =
     useState<UserEventResponseDto | null>(null);
   const [eventSearchQuery, setEventSearchQuery] = useState<string>("");
 
   useEffect(() => {
-    if (eventsLoading) return;
+    if (eventsLoading || !isLoggedIn) return;
 
     const eventIdFromUrl = searchParams.get("id");
 
@@ -42,7 +44,7 @@ export default function EventsSubPage() {
       const newUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}`;
       window.history.replaceState({}, "", newUrl);
     }
-  }, [events, eventsLoading, searchParams]);
+  }, [events, eventsLoading, searchParams, isLoggedIn]);
 
   const filteredEvents = useMemo(() => {
     if (!events) return [];

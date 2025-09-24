@@ -25,13 +25,13 @@ const SeatComponent = React.memo(
     seat,
     seatColor,
     clickable,
-    zoom,
+    showSeatNumber,
     onSeatSelect,
   }: {
     seat: SeatDto | undefined;
     seatColor: string;
     clickable: boolean;
-    zoom: number;
+    showSeatNumber: boolean;
     onSeatSelect: (seat: SeatDto) => void;
   }) => {
     const t = useT();
@@ -46,12 +46,10 @@ const SeatComponent = React.memo(
 
     if (!seat) return <div className="w-8 h-8" />;
 
-    const showSeatNumber = zoom > 0.8;
-
     return (
       <div
         className={cn(
-          "w-8 h-8 flex items-center justify-center text-xs font-medium transition-colors relative z-10",
+          "w-8 h-8 flex items-center justify-center text-xs font-medium relative z-10",
           clickable && "cursor-pointer",
         )}
         onClick={handleClick}
@@ -62,30 +60,21 @@ const SeatComponent = React.memo(
       >
         <div
           className={cn(
-            "w-full h-full rounded-full flex items-center justify-center text-white text-xs font-medium drop-shadow-xs",
-            // Reduce transitions on mobile for better performance
-            !clickable
-              ? "transition-none"
-              : "transition-all duration-200 hover:scale-105",
+            "w-full h-full rounded-full flex items-center justify-center text-white text-xs font-medium",
             seatColor,
           )}
-          style={{
-            // Use transform3d for GPU acceleration
-            transform: clickable ? "translate3d(0, 0, 0)" : "none",
-          }}
         >
           {showSeatNumber ? seat.seatNumber : ""}
         </div>
       </div>
     );
   },
-  // Custom comparison function to prevent unnecessary re-renders
   (prevProps, nextProps) => {
     return (
       prevProps.seat?.id === nextProps.seat?.id &&
       prevProps.seatColor === nextProps.seatColor &&
       prevProps.clickable === nextProps.clickable &&
-      prevProps.zoom > 0.8 === nextProps.zoom > 0.8 && // Only re-render when zoom crosses the threshold
+      prevProps.showSeatNumber === nextProps.showSeatNumber &&
       prevProps.onSeatSelect === nextProps.onSeatSelect
     );
   },
@@ -94,7 +83,13 @@ const SeatComponent = React.memo(
 SeatComponent.displayName = "SeatComponent";
 
 const MarkerComponent = React.memo(
-  ({ marker, zoom }: { marker: EventLocationMakerDto; zoom: number }) => {
+  ({
+    marker,
+    showLabel,
+  }: {
+    marker: EventLocationMakerDto;
+    showLabel: boolean;
+  }) => {
     return (
       <div
         className="absolute z-0 flex items-center justify-center text-xs font-medium text-gray-700 dark:text-gray-300"
@@ -108,7 +103,7 @@ const MarkerComponent = React.memo(
         title={marker.label || ""}
       >
         <div className="w-full h-full flex items-center justify-center font-medium">
-          {zoom > 0.6 ? marker.label : ""}
+          {showLabel ? marker.label : ""}
         </div>
       </div>
     );
@@ -137,7 +132,6 @@ export function SeatMap({
   );
 
   const mapRef = useRef<HTMLDivElement>(null);
-  const zoomTimeoutRef = useRef<number | null>(null);
   const animationFrameRef = useRef<number | null>(null);
 
   const {
@@ -191,12 +185,10 @@ export function SeatMap({
       const seatStatus = findSeatStatus(seat.id, seatStatuses);
 
       const isSelected = selectedSeatIds.has(seat.id);
-      if (isSelected)
-        return "bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700";
+      if (isSelected) return "bg-blue-500 dark:bg-blue-600";
 
       const isUserReserved = userReservedSeatIds.has(seat.id);
-      if (isUserReserved)
-        return "bg-yellow-500 hover:bg-yellow-600 dark:bg-yellow-600 dark:hover:bg-yellow-700";
+      if (isUserReserved) return "bg-yellow-500 dark:bg-yellow-600";
 
       switch (seatStatus) {
         case "RESERVED":
@@ -204,7 +196,7 @@ export function SeatMap({
         case "BLOCKED":
           return "bg-gray-500 dark:bg-gray-600";
         default:
-          return "bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700";
+          return "bg-green-500 dark:bg-green-600";
       }
     },
     [selectedSeatIds, userReservedSeatIds, seatStatuses],
@@ -222,7 +214,6 @@ export function SeatMap({
     [readonly, userReservedSeatIds, seatStatuses],
   );
 
-  // Separate grid structure from zoom-dependent rendering
   const gridStructure = useMemo(() => {
     return Array.from({ length: maxY }, (_, y) =>
       Array.from({ length: maxX }, (_, x) => {
@@ -240,7 +231,14 @@ export function SeatMap({
     ).flat();
   }, [maxX, maxY, seatPositionMap, getSeatColor, canSelectSeat]);
 
-  // Render components only when grid structure or zoom changes significantly
+  const displayFlags = useMemo(
+    () => ({
+      showSeatNumber: zoom > 0.8,
+      showMarkerLabel: zoom > 0.6,
+    }),
+    [zoom],
+  );
+
   const gridItems = useMemo(() => {
     return gridStructure.map(({ key, seat, seatColor, clickable }) => (
       <SeatComponent
@@ -248,47 +246,26 @@ export function SeatMap({
         seat={seat}
         seatColor={seatColor}
         clickable={clickable}
-        zoom={zoom}
+        showSeatNumber={displayFlags.showSeatNumber}
         onSeatSelect={onSeatSelect}
       />
     ));
-  }, [gridStructure, zoom, onSeatSelect]);
+  }, [gridStructure, displayFlags.showSeatNumber, onSeatSelect]);
 
   const wheelRef = useRef<HTMLDivElement>(null);
 
-  // Throttled zoom function for better performance
-  const handleZoomChange = useCallback((newZoom: number) => {
+  const handleWheel = useCallback((e: WheelEvent) => {
+    e.preventDefault();
+
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
     }
 
     animationFrameRef.current = requestAnimationFrame(() => {
-      setZoom(Math.max(0.1, Math.min(3, newZoom)));
+      const delta = e.deltaY > 0 ? 0.9 : 1.1;
+      setZoom((prev) => Math.max(0.1, Math.min(3, prev * delta)));
     });
   }, []);
-
-  const handleWheel = useCallback(
-    (e: WheelEvent) => {
-      e.preventDefault();
-
-      // Throttle wheel events for better performance
-      if (zoomTimeoutRef.current) {
-        clearTimeout(zoomTimeoutRef.current);
-      }
-
-      const delta = e.deltaY > 0 ? 0.9 : 1.1;
-      setZoom((prev) => {
-        const newZoom = prev * delta;
-
-        zoomTimeoutRef.current = window.setTimeout(() => {
-          handleZoomChange(newZoom);
-        }, 16); // ~60fps
-
-        return prev; // Return previous value to avoid double update
-      });
-    },
-    [handleZoomChange],
-  );
 
   // Register wheel event listener as non-passive
   useEffect(() => {
@@ -316,16 +293,9 @@ export function SeatMap({
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
       if (isDragging) {
-        // Use requestAnimationFrame for smooth panning
-        if (animationFrameRef.current) {
-          cancelAnimationFrame(animationFrameRef.current);
-        }
-
-        animationFrameRef.current = requestAnimationFrame(() => {
-          setPan({
-            x: e.clientX - dragStart.x,
-            y: e.clientY - dragStart.y,
-          });
+        setPan({
+          x: e.clientX - dragStart.x,
+          y: e.clientY - dragStart.y,
         });
       }
     },
@@ -337,20 +307,12 @@ export function SeatMap({
   }, []);
 
   const zoomIn = useCallback(() => {
-    setZoom((prev) => {
-      const newZoom = Math.min(3, prev * 1.2);
-      handleZoomChange(newZoom);
-      return prev;
-    });
-  }, [handleZoomChange]);
+    setZoom((prev) => Math.min(3, prev * 1.2));
+  }, []);
 
   const zoomOut = useCallback(() => {
-    setZoom((prev) => {
-      const newZoom = Math.max(0.1, prev * 0.8);
-      handleZoomChange(newZoom);
-      return prev;
-    });
-  }, [handleZoomChange]);
+    setZoom((prev) => Math.max(0.1, prev * 0.8));
+  }, []);
 
   const resetView = useCallback(() => {
     if (wheelRef.current && maxX > 0 && maxY > 0) {
@@ -412,17 +374,10 @@ export function SeatMap({
       e.preventDefault();
 
       if (e.touches.length === 1 && isDragging) {
-        // Single finger - pan with requestAnimationFrame for smooth movement
         const touch = e.touches[0];
-        if (animationFrameRef.current) {
-          cancelAnimationFrame(animationFrameRef.current);
-        }
-
-        animationFrameRef.current = requestAnimationFrame(() => {
-          setPan({
-            x: touch.clientX - dragStart.x,
-            y: touch.clientY - dragStart.y,
-          });
+        setPan({
+          x: touch.clientX - dragStart.x,
+          y: touch.clientY - dragStart.y,
         });
       } else if (e.touches.length === 2 && lastTouchDistance) {
         // Two fingers - pinch zoom with throttling
@@ -433,22 +388,12 @@ export function SeatMap({
 
         if (Math.abs(scale - 1.0) > 0.02) {
           // Only update if significant change
-          setZoom((prev) => {
-            const newZoom = Math.max(0.1, Math.min(3, prev * scale));
-            handleZoomChange(newZoom);
-            return prev;
-          });
+          setZoom((prev) => Math.max(0.1, Math.min(3, prev * scale)));
           setLastTouchDistance(currentDistance);
         }
       }
     },
-    [
-      isDragging,
-      dragStart,
-      lastTouchDistance,
-      getTouchDistance,
-      handleZoomChange,
-    ],
+    [isDragging, dragStart, lastTouchDistance, getTouchDistance],
   );
 
   const handleTouchEnd = useCallback(() => {
@@ -465,9 +410,6 @@ export function SeatMap({
     return () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
-      }
-      if (zoomTimeoutRef.current) {
-        clearTimeout(zoomTimeoutRef.current);
       }
     };
   }, []);
@@ -507,7 +449,7 @@ export function SeatMap({
         onTouchEnd={handleTouchEnd}
         style={{
           touchAction: "none",
-          willChange: isDragging ? "transform" : "auto",
+          willChange: "transform",
         }}
       >
         <div
@@ -515,10 +457,8 @@ export function SeatMap({
           style={{
             transform: `scale(${zoom}) translate3d(${pan.x / zoom}px, ${pan.y / zoom}px, 0)`,
             transformOrigin: "center center",
-            transition: isDragging ? "none" : "transform 0.1s ease-out",
             willChange: "transform",
             backfaceVisibility: "hidden",
-            perspective: 1000,
           }}
         >
           <div
@@ -545,7 +485,7 @@ export function SeatMap({
               <MarkerComponent
                 key={`marker-${index}`}
                 marker={marker}
-                zoom={zoom}
+                showLabel={displayFlags.showMarkerLabel}
               />
             ))}
 

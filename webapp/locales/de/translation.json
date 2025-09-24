@@ -278,7 +278,9 @@
     "confirmPasswordPlaceholder": "Bestätigen Sie Ihr neues Passwort",
     "passwordTooShort": "Passwort muss mindestens 8 Zeichen lang sein",
     "passwordsDoNotMatch": "Die Passwörter stimmen nicht überein",
-    "verifyEmailButton": "Verifikationscode eingeben"
+    "verifyEmailButton": "Verifikationscode eingeben",
+    "passwordValidationErrorTitle": "Validierungsfehler",
+    "passwordValidationErrorDescription": "Bitte stellen Sie sicher, dass alle Passwortfelder korrekt ausgefüllt sind."
   },
   "startPage": {
     "eventManagerTitle": "Sitzplatz Reservierung",

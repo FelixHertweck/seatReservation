@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { SeatMap } from "@/components/common/seat-map";
-import { Badge } from "@/components/ui/badge";
 import type {
   UserEventResponseDto,
   UserReservationResponseDto,
@@ -87,8 +86,8 @@ export function EventReservationModal({
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-none max-h-[90vh] h-[85vh] flex flex-col animate-in fade-in zoom-in duration-300">
-        <DialogHeader className="animate-in slide-in-from-top duration-300">
+      <DialogContent className="w-[95vw] max-w-none max-h-[90vh] h-[85vh] flex flex-col">
+        <DialogHeader>
           <DialogTitle className="text-xl font-bold">
             {t("eventReservationModal.title", { eventName: event.name })}
           </DialogTitle>
@@ -99,38 +98,26 @@ export function EventReservationModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 flex flex-col animate-in slide-in-from-bottom duration-500 min-h-0">
+        <div className="flex-1 flex flex-col min-h-0">
           <div className="flex flex-wrap gap-2 md:gap-4 text-sm border-b pb-1">
-            <div className="flex items-center gap-2 animate-in slide-in-from-left duration-300">
-              <div className="w-4 h-4 bg-green-500 rounded transition-all duration-300 hover:scale-110"></div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-green-500 rounded"></div>
               <span>{t("eventReservationModal.available")}</span>
             </div>
-            <div
-              className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
-              style={{ animationDelay: "100ms" }}
-            >
-              <div className="w-4 h-4 bg-blue-500 rounded transition-all duration-300 hover:scale-110"></div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-blue-500 rounded"></div>
               <span>{t("eventReservationModal.selected")}</span>
             </div>
-            <div
-              className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
-              style={{ animationDelay: "150ms" }}
-            >
-              <div className="w-4 h-4 bg-yellow-500 rounded transition-all duration-300 hover:scale-110"></div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-yellow-500 rounded"></div>
               <span>{t("eventReservationModal.myReserved")}</span>
             </div>
-            <div
-              className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
-              style={{ animationDelay: "200ms" }}
-            >
-              <div className="w-4 h-4 bg-red-500 rounded transition-all duration-300 hover:scale-110"></div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-red-500 rounded"></div>
               <span>{t("eventReservationModal.reserved")}</span>
             </div>
-            <div
-              className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
-              style={{ animationDelay: "300ms" }}
-            >
-              <div className="w-4 h-4 bg-gray-500 rounded transition-all duration-300 hover:scale-110"></div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-gray-500 rounded"></div>
               <span>{t("eventReservationModal.blocked")}</span>
             </div>
           </div>
@@ -147,38 +134,36 @@ export function EventReservationModal({
           </div>
 
           {selectedSeats.length > 0 && (
-            <div className="m-0 animate-in border-t slide-in-from-bottom duration-300 max-h-15 md:max-h-24 overflow-y-auto">
+            <div className="m-0 border-t max-h-15 md:max-h-24 overflow-y-auto">
               <h4 className="font-medium text-sm md:text-base">
                 {t("eventReservationModal.selectedSeatsTitle")}
               </h4>
               <div className="flex flex-wrap gap-1.5 md:gap-2">
-                {selectedSeats.map((seat, index) => (
-                  <Badge
+                {selectedSeats.map((seat) => (
+                  <button
                     key={seat.id?.toString()}
-                    variant="outline"
-                    className="animate-in zoom-in duration-300 hover:scale-105 transition-transform text-xs md:text-sm px-2 py-1"
-                    style={{ animationDelay: `${index * 50}ms` }}
+                    className="px-2 py-1.5 md:px-3 md:py-2 text-sm rounded-md border bg-seatmap border rounded shadow-xs hover:bg-secondary"
                   >
                     {seat.seatNumber +
                       (seat.seatRow ? " (" + seat.seatRow + ")" : "")}
-                  </Badge>
+                  </button>
                 ))}
               </div>
             </div>
           )}
 
-          <div className="flex justify-end gap-2 animate-in slide-in-from-bottom duration-300 pt-2">
+          <div className="flex justify-end gap-2 pt-2">
             <Button
               variant="outline"
               onClick={onClose}
-              className="hover:scale-[1.02] transition-all duration-300 active:scale-[0.98] bg-transparent text-sm md:text-base px-3 py-2"
+              className="bg-transparent text-sm md:text-base px-3 py-2"
             >
               {t("eventReservationModal.cancelButton")}
             </Button>
             <Button
               onClick={handleReserve}
               disabled={selectedSeats.length === 0 || isLoading}
-              className="hover:scale-[1.02] transition-all duration-300 active:scale-[0.98] text-sm md:text-base px-3 py-2"
+              className="text-sm md:text-base px-3 py-2"
             >
               {isLoading
                 ? t("eventReservationModal.reservingButton")

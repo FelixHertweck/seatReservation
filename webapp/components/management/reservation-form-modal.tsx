@@ -101,7 +101,9 @@ export function ReservationFormModal({
         seatIds: selectedSeats.map((seat) => seat.id!),
         deductAllowance: formData.deductAllowance,
       };
-      await onSubmit(reservationData);
+      if (formData.userId !== "") {
+        await onSubmit(reservationData);
+      }
     } finally {
       setIsLoading(false);
     }
