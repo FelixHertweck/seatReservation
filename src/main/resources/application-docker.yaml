@@ -20,6 +20,10 @@ quarkus:
     schema-management:
       strategy: update
 
+jwt:
+  cookie:
+    secure: ${SSL_ENABLED:true} 
+
 email:  
   frontend-base-url: ${APP_URL} # Change in case provide frontend on different URL
   backend-base-url: ${APP_URL}

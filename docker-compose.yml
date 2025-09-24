@@ -63,6 +63,9 @@ services:
       # Application configuration
       - APP_URL=${APP_URL}
 
+      # If you use only HTTP, set this to false
+      # - SSL_ENABLED=false
+
       # Email configuration
       - MAIL_FROM=${MAIL_FROM}
       - MAIL_HOST=${MAIL_HOST}

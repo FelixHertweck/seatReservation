@@ -189,7 +189,7 @@ public class TokenServiceTest {
         assertEquals("/", cookie.getPath());
         assertEquals(3600, cookie.getMaxAge()); // 60 minutes * 60 seconds
         assertTrue(cookie.isHttpOnly());
-        assertTrue(cookie.isSecure());
+        assertFalse(cookie.isSecure());
     }
 
     @Test

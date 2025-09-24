@@ -33,6 +33,7 @@ import de.felixhertweck.seatreservation.security.dto.LoginRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
 import de.felixhertweck.seatreservation.security.service.AuthService;
 import de.felixhertweck.seatreservation.security.service.TokenService;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.jboss.logging.Logger;
 
@@ -45,6 +46,9 @@ public class AuthResource {
 
     @Inject AuthService authService;
     @Inject TokenService tokenService;
+
+    @ConfigProperty(name = "jwt.cookie.secure", defaultValue = "false")
+    boolean cookieSecure;
 
     @POST
     @Path("/login")
@@ -91,7 +95,7 @@ public class AuthResource {
                         .path("/")
                         .maxAge(0)
                         .httpOnly(true)
-                        .secure(true)
+                        .secure(cookieSecure)
                         .build();
         LOG.debugf("User logged out successfully. JWT cookie cleared.");
         return Response.ok().cookie(jwtCookie).build();

@@ -13,6 +13,10 @@ quarkus:
     schema-management:
       strategy: drop-and-create
 
+jwt:
+  cookie:
+    secure: false
+
 email:  
   frontend-base-url: http://localhost:3000
   backend-base-url: http://localhost:8080

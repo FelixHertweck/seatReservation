@@ -37,6 +37,9 @@ public class TokenService {
     @ConfigProperty(name = "smallrye.jwt.token.expiration.minutes", defaultValue = "60")
     long expirationMinutes;
 
+    @ConfigProperty(name = "jwt.cookie.secure", defaultValue = "false")
+    boolean cookieSecure;
+
     /**
      * Gets the expiration time for JWT tokens in minutes.
      *
@@ -79,7 +82,7 @@ public class TokenService {
                 .path("/")
                 .maxAge((int) (expirationMinutes * 60))
                 .httpOnly(true)
-                .secure(true)
+                .secure(cookieSecure)
                 .build();
     }
 }
