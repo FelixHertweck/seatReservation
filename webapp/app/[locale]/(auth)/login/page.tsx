@@ -41,7 +41,7 @@ export default function LoginPage() {
       setCurrentlyLoggingIn(true);
       const returnToUrl = searchParams.get("returnTo");
 
-      await login(identifier, password, returnToUrl);
+      await login(identifier.trim(), password, returnToUrl);
       setCurrentlyLoggingIn(false);
     } catch (error: any) {
       if (error?.response?.status === 401) {

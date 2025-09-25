@@ -1,7 +1,8 @@
 "use client";
 
 import {
-  Calendar,
+  CalendarDays,
+  BookmarkCheck,
   Settings,
   Users,
   LogOut,
@@ -75,7 +76,18 @@ export function AppSidebar() {
 
   const getMenuItems = () => {
     const baseItems = [
-      { title: t("sidebar.events"), url: "/events", icon: Calendar, badge: "" },
+      {
+        title: t("sidebar.events"),
+        url: "/events",
+        icon: CalendarDays,
+        badge: "",
+      },
+      {
+        title: t("sidebar.reservations"),
+        url: "/reservations",
+        icon: BookmarkCheck,
+        badge: "",
+      },
       {
         title: t("sidebar.profile"),
         url: "/profile",

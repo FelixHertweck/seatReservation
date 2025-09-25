@@ -200,8 +200,14 @@ public class EmailService {
         return emailVerification;
     }
 
+    /**
+     * Generates a link to the event reservation page.
+     *
+     * @param eventId The ID of the event.
+     * @return The complete event reservation link.
+     */
     private String generateEventLink(Long eventId) {
-        return frontendBaseUrl.trim() + "/events?id=" + eventId;
+        return frontendBaseUrl.trim() + "/reservations?id=" + eventId;
     }
 
     /**
@@ -283,7 +289,7 @@ public class EmailService {
                     .append(reservation.getSeat().getSeatNumber())
                     .append("(")
                     .append(reservation.getSeat().getSeatRow())
-                    .append(" )")
+                    .append(")")
                     .append("</li>");
         }
         LOG.debugf("HTML list of seats generated: %s", seatListHtml.toString());
@@ -322,7 +328,7 @@ public class EmailService {
                         .append(seat.getSeatNumber())
                         .append("(Reihe: ")
                         .append(seat.getSeatRow())
-                        .append(" )")
+                        .append(")")
                         .append("</li>");
             }
             htmlContent =

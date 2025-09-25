@@ -1,20 +1,85 @@
 "use client";
 
-import { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useReservations } from "@/hooks/use-reservations";
+import { useMemo, useState } from "react";
 import { useT } from "@/lib/i18n/hooks";
-import EventsSubPage from "@/components/events/events-page";
-import ReservationsSubPage from "@/components/reservations/reservation-page";
+import { useEvents } from "@/hooks/use-events";
+import { UserEventResponseDto } from "@/api";
+import { SearchAndFilter } from "@/components/common/search-and-filter";
+import { EventCardSkeleton } from "@/components/events/event-card-skeleton";
+import { EventReservationModal } from "@/components/events/event-reservation-modal";
+import { EventCard } from "@/components/events/event-card";
 
 export default function EventsPage() {
   const t = useT();
-  const { reservations, isLoading: reservationsLoading } = useReservations();
-  const [activeTab, setActiveTab] = useState("available");
 
-  const isLoading = reservationsLoading;
+  const {
+    events,
+    locations,
+    isLoading: eventsLoading,
+    createReservation,
+  } = useEvents();
+  const [selectedEvent, setSelectedEvent] =
+    useState<UserEventResponseDto | null>(null);
+  const [eventSearchQuery, setEventSearchQuery] = useState<string>("");
+
+  const filteredEvents = useMemo(() => {
+    if (!events) return [];
+
+    const filtered = events.filter(
+      (event) =>
+        event.name?.toLowerCase().includes(eventSearchQuery.toLowerCase()) ||
+        event.description
+          ?.toLowerCase()
+          .includes(eventSearchQuery.toLowerCase()),
+    );
+
+    return [...filtered].sort((a, b) => {
+      const aHasSeats = (a.reservationsAllowed ?? 0) > 0;
+      const bHasSeats = (b.reservationsAllowed ?? 0) > 0;
+
+      if (aHasSeats && !bHasSeats) return -1;
+      if (!aHasSeats && bHasSeats) return 1;
+      return 0;
+    });
+  }, [events, eventSearchQuery]);
+
+  const handleEventSearch = (query: string) => {
+    setEventSearchQuery(query);
+  };
+
+  const getLocation = (locationId: bigint | undefined) => {
+    if (!locationId) return null;
+    return locations?.find((l) => l.id === locationId) || null;
+  };
+
+  const LoadingAnimation = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
+      {Array.from({ length: 3 }).map((_, index) => (
+        <EventCardSkeleton key={index} />
+      ))}
+    </div>
+  );
+
+  const NoEventsAvailable = () => {
+    if (events.length === 0) {
+      return (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground text-lg">
+            {t("eventsPage.noEventsAvailable")}
+          </p>
+          <p className="text-muted-foreground">{t("eventsPage.tryAgain")}</p>
+        </div>
+      );
+    }
+    return (
+      <div className="text-center py-12">
+        <p className="text-muted-foreground text-lg">
+          {t("eventsPage.noEventsMatchSearch")}
+        </p>
+        <p className="text-muted-foreground">{t("eventsPage.checkSearch")}</p>
+      </div>
+    );
+  };
 
   return (
     <div className="container mx-auto px-2 py-3 md:p-6">
@@ -27,32 +92,39 @@ export default function EventsPage() {
         </p>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="available">
-            {t("eventsPage.availableEventsTab")}
-          </TabsTrigger>
+      <SearchAndFilter
+        onSearch={handleEventSearch}
+        onFilter={() => {}}
+        filterOptions={[]}
+        initialQuery={eventSearchQuery}
+      />
 
-          <TabsTrigger value="reservations" className="flex items-center gap-2">
-            {t("eventsPage.myReservationsTab")}
-            {isLoading ? (
-              <Skeleton className="h-5 w-6 ml-1" />
-            ) : reservations.length > 0 ? (
-              <Badge variant="secondary" className="ml-1">
-                {reservations.length}
-              </Badge>
-            ) : null}
-          </TabsTrigger>
-        </TabsList>
+      {eventsLoading ? (
+        <LoadingAnimation />
+      ) : filteredEvents.length === 0 ? (
+        <NoEventsAvailable />
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
+          {filteredEvents.map((event) => (
+            <EventCard
+              key={event.id?.toString()}
+              event={event}
+              location={getLocation(event.locationId)}
+              onReserve={() => setSelectedEvent(event)}
+            />
+          ))}
+        </div>
+      )}
 
-        <TabsContent value="reservations" className="space-y-4 md:space-y-6">
-          <ReservationsSubPage />
-        </TabsContent>
-
-        <TabsContent value="available" className="space-y-4 md:space-y-6">
-          <EventsSubPage />
-        </TabsContent>
-      </Tabs>
+      {selectedEvent && (
+        <EventReservationModal
+          event={selectedEvent}
+          location={getLocation(selectedEvent.locationId)}
+          userReservations={[]}
+          onClose={() => setSelectedEvent(null)}
+          onReserve={createReservation}
+        />
+      )}
     </div>
   );
 }

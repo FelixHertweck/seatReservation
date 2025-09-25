@@ -106,17 +106,24 @@
     }
   },
   "eventsPage": {
-    "title": "Veranstaltungen & Reservierungen",
-    "description": "Veranstaltungen durchsuchen und Ihre Reservierungen verwalten",
-    "availableEventsTab": "Veranstaltungen",
-    "myReservationsTab": "Reservierungen",
+    "title": "Veranstaltungen",
+    "description": "Veranstaltungen durchsuchen und Plätze reservieren",
     "filterByEventPlaceholder": "Nach Veranstaltung filtern",
     "allEventsFilter": "Alle Veranstaltungen",
-    "noReservationsYet": "Sie haben noch keine Reservierungen.",
-    "noReservationsForSelectedEvent": "Keine Reservierungen für die ausgewählte Veranstaltung gefunden.",
-    "switchToAvailableEvents": "Wechseln Sie zu \"Veranstaltungen\", um Ihre erste Reservierung vorzunehmen!",
     "noEventsAvailable": "Derzeit sind keine Veranstaltungen verfügbar.",
-    "tryAgainOrCheckSearch": "Bitte versuchen Sie es später erneut oder überprüfen Sie Ihre Suchkriterien."
+    "tryAgain": "Bitte versuchen Sie es später erneut.",
+    "noEventsMatchSearch": "Keine Veranstaltungen entsprechen Ihrer Suche.",
+    "checkSearch": "Bitte überprüfen Sie Ihre Suchkriterien."
+  },
+  "reservationsPage": {
+    "title": "Meine Reservierungen",
+    "description": "Ihre aktuellen und vergangenen Reservierungen anzeigen",
+    "noReservationsYet": "Sie haben noch keine Reservierungen.",
+    "switchToAvailableEvents": "Wechseln Sie zu \"Veranstaltungen\", um Ihre erste Reservierung vorzunehmen!",
+    "noReservationsMatchSearch": "Keine Reservierungen entsprechen Ihrer Suche.",
+    "checkSearch": "Bitte überprüfen Sie Ihre Suchkriterien.",
+    "noReservationsFoundTitle": "Keine Reservierungen gefunden",
+    "noReservationsFoundDescription": "Es wurden keine Reservierungen mit der angefragten URL gefunden."
   },
   "managerPage": {
     "dashboardTitle": "Manager-Dashboard",
@@ -704,6 +711,7 @@
   "sidebar": {
     "navigation": "Navigation",
     "events": "Veranstaltungen",
+    "reservations": "Reservierungen",
     "profile": "Profil",
     "manager": "Manager",
     "userManagement": "Benutzer- verwaltung",

@@ -106,17 +106,24 @@
     }
   },
   "eventsPage": {
-    "title": "Events & Reservations",
-    "description": "Browse events and manage your reservations",
-    "availableEventsTab": "Available Events",
-    "myReservationsTab": "My Reservations",
+    "title": "Events",
+    "description": "Browse events and reserve seats",
     "filterByEventPlaceholder": "Filter by Event",
     "allEventsFilter": "All Events",
-    "noReservationsYet": "You don't have any reservations yet.",
-    "noReservationsForSelectedEvent": "No reservations found for the selected event.",
-    "switchToAvailableEvents": "Switch to \"Available Events\" to make your first reservation!",
     "noEventsAvailable": "No events are currently available.",
-    "tryAgainOrCheckSearch": "Please try again later or check your search criteria."
+    "tryAgain": "Please try again later.",
+    "noEventsMatchSearch": "No events match your search.",
+    "checkSearch": "Please check your search criteria."
+  },
+  "reservationsPage": {
+    "title": "My Reservations",
+    "description": "View your current and past reservations",
+    "noReservationsYet": "You don't have any reservations yet.",
+    "switchToAvailableEvents": "Switch to \"Available Events\" to make your first reservation!",
+    "noReservationsMatchSearch": "No reservations match your search.",
+    "checkSearch": "Please check your search criteria.",
+    "noReservationsFoundTitle": "No Reservations Found",
+    "noReservationsFoundDescription": "No reservations were found for the requested URL."
   },
   "managerPage": {
     "dashboardTitle": "Manager Dashboard",
@@ -702,6 +709,7 @@
   "sidebar": {
     "navigation": "Navigation",
     "events": "Events",
+    "reservations": "Reservations",
     "profile": "Profile",
     "manager": "Manager",
     "userManagement": "User Management",
