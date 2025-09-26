@@ -176,7 +176,7 @@ export function BlockSeatsModal({
               <h4 className="font-medium">
                 {t("blockSeatsModal.seatsToBlockTitle")}
               </h4>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 max-h-10 overflow-y-auto">
                 {selectedSeats.map((seat) => (
                   <Badge
                     key={seat.id?.toString()}

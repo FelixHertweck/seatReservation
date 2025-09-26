@@ -23,13 +23,17 @@ import java.util.List;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import de.felixhertweck.seatreservation.model.entity.Reservation;
+import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.User;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 
 @ApplicationScoped
 public class ReservationRepository implements PanacheRepository<Reservation> {
+    /*
+     * This method returns all reservations for a given user that are not blocked.
+     */
     public List<Reservation> findByUser(User user) {
-        return find("user", user).list();
+        return find("user = ?1 and status != ?2", user, ReservationStatus.BLOCKED).list();
     }
 
     public List<Reservation> findByEventId(Long eventId) {

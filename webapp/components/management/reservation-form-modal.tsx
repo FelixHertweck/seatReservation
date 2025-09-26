@@ -202,7 +202,7 @@ export function ReservationFormModal({
             )}
           </div>
 
-          <div className="w-80 flex flex-col bg-gray-50 dark:bg-gray-900 p-6 rounded-lg">
+          <div className="w-80 flex flex-col border p-6 rounded-lg">
             <div className="space-y-6">
               {/* Event and User Selection in a grid */}
               <div className="grid grid-cols-1 gap-4">
@@ -279,7 +279,7 @@ export function ReservationFormModal({
                   <h4 className="font-medium text-sm">
                     {t("reservationFormModal.selectedSeatsTitle")}
                   </h4>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 max-h-12 overflow-y-auto">
                     {selectedSeats.map((seat) => (
                       <Badge
                         key={seat.id?.toString()}
