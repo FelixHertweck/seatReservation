@@ -8,6 +8,7 @@ import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { EventCardSkeleton } from "@/components/events/event-card-skeleton";
 import { EventReservationModal } from "@/components/events/event-reservation-modal";
 import { EventCard } from "@/components/events/event-card";
+import { useReservations } from "@/hooks/use-reservations";
 
 export default function EventsPage() {
   const t = useT();
@@ -18,6 +19,7 @@ export default function EventsPage() {
     isLoading: eventsLoading,
     createReservation,
   } = useEvents();
+  const { isLoading: reservationsLoading, reservations } = useReservations();
   const [selectedEvent, setSelectedEvent] =
     useState<UserEventResponseDto | null>(null);
   const [eventSearchQuery, setEventSearchQuery] = useState<string>("");
@@ -50,6 +52,11 @@ export default function EventsPage() {
   const getLocation = (locationId: bigint | undefined) => {
     if (!locationId) return null;
     return locations?.find((l) => l.id === locationId) || null;
+  };
+
+  const getReservationsForEvent = (eventId: bigint | undefined) => {
+    if (!eventId) return [];
+    return reservations.filter((r) => r.eventId === eventId);
   };
 
   const LoadingAnimation = () => (
@@ -99,7 +106,7 @@ export default function EventsPage() {
         initialQuery={eventSearchQuery}
       />
 
-      {eventsLoading ? (
+      {eventsLoading || reservationsLoading ? (
         <LoadingAnimation />
       ) : filteredEvents.length === 0 ? (
         <NoEventsAvailable />
@@ -120,7 +127,7 @@ export default function EventsPage() {
         <EventReservationModal
           event={selectedEvent}
           location={getLocation(selectedEvent.locationId)}
-          userReservations={[]}
+          userReservations={getReservationsForEvent(selectedEvent.id)}
           onClose={() => setSelectedEvent(null)}
           onReserve={createReservation}
         />
