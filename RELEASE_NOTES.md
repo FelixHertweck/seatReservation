@@ -1,3 +1,36 @@
+# Release 0.0.5
+
+This release introduces internationalization support for event and reservation messages, enhances event and reservation management, adds secure cookie configuration for JWT, improves seat reservation map performance, and includes various refactorings and updates.
+
+## New Features
+- **Internationalization**: The application now supports internationalization for event and reservation messages, allowing for better adaptation to different languages.
+- **Event and Reservation Management**: General improvements have been made to event and reservation management to enhance usability and functionality.
+- **Secure Cookie Configuration**: Added secure cookie configuration for JWT to support HTTP connections, with updated related tests.
+- **Seat Reservation Map Performance**: Updated seat reservation map performance and added missing translations.
+- **Metrics Monitoring**: Integrated Micrometer with Prometheus and Grafana to provide comprehensive metrics monitoring for application performance and health.
+
+## Changes
+- **UI/UX**: The layout and styling of the `StartPage` and `SearchAndFilter` components have been updated to provide a more modern appearance and improved user experience.
+- **Application Properties**: Removed unused JVM and system metrics binders from application properties.
+- **Login Handling**: Trimmed login identifier for better input handling.
+- **Page Structure**: Split reservations and events pages for improved navigation.
+
+## Technical Improvements
+- **Refactoring**:
+    - Event handling has been refactored, so event reservations now return an ID, and a new endpoint for requesting event locations has been added.
+    - Event Location and Marker DTOs have been revised.
+    - `DetailedEventResponseDTO` and `DetailedReservationResponseDTO` have been renamed to `EventResponseDTO` and `ReservationResponseDTO` to improve consistency.
+    - Event and reservation DTOs have been refactored into `UserEventResponseDTO` and `UserReservationResponseDTO`.
+    - `DetailedEventResponseDTO` now uses `eventLocationId` instead of `EventLocationResponseDTO`, and related components and tests have been updated accordingly.
+    - Event and event location DTOs have been revised to separate status from event location.
+    - Date handling in the backend and frontend has been refactored to ensure more consistent and robust handling of dates.
+- **Build & Dependencies**:
+    - The Maven plugins `maven-compiler-plugin` and `license-maven-plugin` have been updated.
+    - Frontend dependencies such as `@hey-api/openapi-ts` and `@tanstack/react-query` in the `webapp` have been updated.
+- **CI/CD**: The trigger for `backend-native.yml` has been adjusted to reduce build load by running only on tags (later changed back to every push on `main`).
+
+---
+
 # Release 0.0.4
 
 This release extends the seat import functionality with the new `seatRow` attribute and improves test coverage as well as API documentation.

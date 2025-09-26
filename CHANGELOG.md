@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.0.5 - 2025-09-26
+
+### Added
+- **Internationalization**: Added support for event and reservation messages.
+- **Event and Reservation Management**: Enhancements in event and reservation management.
+- **Secure Cookie Configuration**: Added secure cookie configuration for JWT to support HTTP connections, and updated related tests.
+- **Seat Reservation Map Performance**: Updated seat reservation map performance and added missing translations.
+- **Metrics Monitoring**: Integrated Micrometer with Prometheus and Grafana for comprehensive metrics monitoring.
+
+### Changed
+- **Layout & Styling**: Updated layout and styling in `StartPage` and `SearchAndFilter` components.
+- **JVM Metrics**: Removed unused JVM and system metrics binders from application properties.
+- **Login Identifier**: Trimmed login identifier for better input handling.
+- **Pages**: Split reservations and events pages for improved navigation.
+
+### Refactored
+- **Event Handling**: Event reservation now returns ID and an endpoint to request event locations has been added.
+- **DTOs**: Refactored Event Location and Marker DTOs.
+- **DTOs**: Renamed `DetailedEventResponseDTO` and `DetailedReservationResponseDTO` to `EventResponseDTO` and `ReservationResponseDTO`.
+- **DTOs**: Refactored event and reservation DTOs to `UserEventResponseDTO` and `UserReservationResponseDTO`.
+- **DTOs**: `DetailedEventResponseDTO` now uses `eventLocationId` instead of `EventLocationResponseDTO`; related components and tests updated accordingly.
+- **DTOs**: Refactored event and event location DTOs to separate status from event location.
+- **Date Handling**: Refactored date handling in backend and frontend.
+
+### Build
+- **Maven Plugins**: Updated `maven-compiler-plugin` and `license-maven-plugin`.
+- **Frontend Dependencies**: Updated `@hey-api/openapi-ts` and `@tanstack/react-query` in `webapp`.
+
+### Chore
+- **CI/CD Trigger**: Adjusted trigger for `backend-native.yml`, now runs only on tags (later changed back to every push on `main`).
+
 ## 0.0.4 - 2025-09-21
 
 ### Added

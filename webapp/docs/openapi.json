@@ -2548,7 +2548,7 @@
   } ],
   "info" : {
     "title" : "Seat Reservation API",
-    "version" : "0.0.4",
+    "version" : "0.0.5",
     "description" : "The official REST API for Seat Reservation.",
     "contact" : {
       "name" : "FelixHertweck GitHub ",
