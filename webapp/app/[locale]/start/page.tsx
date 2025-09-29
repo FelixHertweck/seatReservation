@@ -15,9 +15,9 @@ export default async function StartPage({
     <div className="min-h-screen bg-linear-to-br from-background via-background to-accent/20 relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
         <svg
-          className="absolute inset-0 h-full w-auto"
+          className="absolute inset-0 h-full w-full"
           viewBox="0 0 1200 800"
-          preserveAspectRatio="xMidYMid slice"
+          preserveAspectRatio="none"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
