@@ -1693,6 +1693,44 @@
         } ]
       }
     },
+    "/api/manager/reservations/export/{eventId}/pdf" : {
+      "get" : {
+        "parameters" : [ {
+          "name" : "eventId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "PDF export of reservations for a specific event",
+            "content" : {
+              "application/pdf" : { }
+            }
+          },
+          "403" : {
+            "description" : "Forbidden - User not authorized"
+          },
+          "404" : {
+            "description" : "Not Found - Event not found"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "500" : {
+            "description" : "Internal Server Error during PDF export"
+          }
+        },
+        "summary" : "Export Reservations To Pdf",
+        "tags" : [ "Reservation Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
+        } ]
+      }
+    },
     "/api/manager/reservations/{id}" : {
       "get" : {
         "parameters" : [ {

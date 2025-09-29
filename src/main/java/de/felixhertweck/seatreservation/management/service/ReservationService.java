@@ -19,12 +19,10 @@
  */
 package de.felixhertweck.seatreservation.management.service;
 
-import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.time.Instant;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -40,18 +38,22 @@ import jakarta.transaction.Transactional;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
 import de.felixhertweck.seatreservation.email.EmailService;
-import de.felixhertweck.seatreservation.management.dto.ReservationExportDTO;
 import de.felixhertweck.seatreservation.management.dto.ReservationRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.ReservationResponseDTO;
 import de.felixhertweck.seatreservation.management.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.*;
 import de.felixhertweck.seatreservation.model.repository.*;
+import de.felixhertweck.seatreservation.utils.ReservationExporter;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class ReservationService {
 
     private static final Logger LOG = Logger.getLogger(ReservationService.class);
+
+    @ConfigProperty(name = "exporter.pdf.minutesBeforeEventStart", defaultValue = "10")
+    Integer EXPORTER_PDF_MINUTES_BEFORE_EVENT_START;
 
     @Inject ReservationRepository reservationRepository;
     @Inject EventRepository eventRepository;
@@ -498,6 +500,43 @@ public class ReservationService {
                 "Attempting to export reservations for event ID %d by user: %s (ID: %d)",
                 eventId, currentUser.getUsername(), currentUser.getId());
 
+        List<Reservation> reservations =
+                findByEventSorted(getSortedReservations(eventId, currentUser));
+        ByteArrayOutputStream baos = ReservationExporter.exportReservationsToCsv(reservations);
+
+        LOG.debugf(
+                "Successfully exported %d reservations for event ID %d to CSV by user: %s (ID: %d)",
+                reservations.size(), eventId, currentUser.getUsername(), currentUser.getId());
+        return baos.toByteArray();
+    }
+
+    public byte[] exportReservationsToPdf(Long eventId, User currentUser)
+            throws EventNotFoundException, SecurityException, IOException {
+        LOG.infof(
+                "Attempting to export reservations for event ID %d by user: %s (ID: %d)",
+                eventId, currentUser.getUsername(), currentUser.getId());
+
+        Event event = getSortedReservations(eventId, currentUser);
+        List<Reservation> reservations = findByEventSorted(event);
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+        String reservedUntilValue =
+                event.getStartTime()
+                        .minusSeconds(EXPORTER_PDF_MINUTES_BEFORE_EVENT_START * 60)
+                        .atZone(ZoneId.systemDefault())
+                        .format(formatter);
+
+        ByteArrayOutputStream baos =
+                ReservationExporter.exportReservationsToPdf(reservations, reservedUntilValue);
+
+        LOG.debugf(
+                "Successfully exported %d reservations for event ID %d to PDF by user: %s (ID: %d)",
+                reservations.size(), eventId, currentUser.getUsername(), currentUser.getId());
+
+        return baos.toByteArray();
+    }
+
+    private Event getSortedReservations(Long eventId, User currentUser) {
         Event event =
                 eventRepository
                         .findByIdOptional(eventId)
@@ -518,37 +557,16 @@ public class ReservationService {
                     "User is not authorized to export this event's reservations");
         }
 
-        List<Reservation> reservations = reservationRepository.findByEventId(eventId);
+        return event;
+    }
+
+    private List<Reservation> findByEventSorted(Event event) {
+        List<Reservation> reservations = findByEvent(event);
 
         // Sort by seat number
         reservations.sort(Comparator.comparing(r -> r.getSeat().getSeatNumber()));
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(baos))) {
-            // CSV Header
-            writer.write("ID,Seat Number,First Name,Last Name,Reservation Date\n");
-
-            long exportIdCounter = 1;
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
-
-            for (Reservation reservation : reservations) {
-                ReservationExportDTO dto = new ReservationExportDTO(reservation, exportIdCounter++);
-                writer.write(
-                        String.format(
-                                "%d,%s,%s,%s,%s\n",
-                                dto.getId(),
-                                dto.getSeatNumber(),
-                                dto.getFirstName(),
-                                dto.getLastName(),
-                                dto.getReservationDate().atZone(ZoneOffset.UTC).format(formatter)));
-            }
-            writer.flush();
-        }
-
-        LOG.debugf(
-                "Successfully exported %d reservations for event ID %d to CSV by user: %s (ID: %d)",
-                reservations.size(), eventId, currentUser.getUsername(), currentUser.getId());
-        return baos.toByteArray();
+        return reservations;
     }
 
     public List<Reservation> findByEvent(Event event) {

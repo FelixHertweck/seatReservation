@@ -3,21 +3,23 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import { useT } from "@/lib/i18n/hooks";
-import type {
-  EventResponseDto,
-  EventRequestDto,
-  EventLocationResponseDto,
-  SeatDto,
-  ReservationResponseDto,
-  EventUserAllowancesDto,
-  EventLocationRequestDto,
-  SeatRequestDto,
-  ReservationRequestDto,
-  BlockSeatsRequestDto,
-  EventUserAllowancesCreateDto,
-  EventUserAllowanceUpdateDto,
-  ImportEventLocationDto,
-  ImportSeatDto,
+import {
+  type EventResponseDto,
+  type EventRequestDto,
+  type EventLocationResponseDto,
+  type SeatDto,
+  type ReservationResponseDto,
+  type EventUserAllowancesDto,
+  type EventLocationRequestDto,
+  type SeatRequestDto,
+  type ReservationRequestDto,
+  type BlockSeatsRequestDto,
+  type EventUserAllowancesCreateDto,
+  type EventUserAllowanceUpdateDto,
+  type ImportEventLocationDto,
+  type ImportSeatDto,
+  getApiManagerReservationsExportByEventIdCsv,
+  getApiManagerReservationsExportByEventIdPdf,
 } from "@/api";
 import {
   getApiManagerEventsOptions,
@@ -415,6 +417,26 @@ export function useManager(): UseManagerReturn {
     },
   });
 
+  const exportReservationsToCsv = async (eventId: bigint): Promise<Blob> => {
+    const response = await getApiManagerReservationsExportByEventIdCsv({
+      path: { eventId: BigInt(eventId) },
+    });
+
+    return new Blob([response.data as string], {
+      type: "text/csv;charset=utf-8;",
+    });
+  };
+
+  const exportReservationsToPDF = async (eventId: bigint): Promise<Blob> => {
+    const response = await getApiManagerReservationsExportByEventIdPdf({
+      path: { eventId: BigInt(eventId) },
+    });
+
+    return new Blob([response.data as File], {
+      type: "application/pdf",
+    });
+  };
+
   const isLoading =
     eventsIsLoading ||
     locationsIsLoading ||
@@ -467,6 +489,8 @@ export function useManager(): UseManagerReturn {
       events: events ?? [],
       locations: locations ?? [],
       reservations: reservations ?? [],
+      exportCSV: exportReservationsToCsv,
+      exportPDF: exportReservationsToPDF,
       createReservation: (reservation: ReservationRequestDto) =>
         createReservationMutation.mutateAsync({ body: reservation }),
       deleteReservation: (id: bigint) =>

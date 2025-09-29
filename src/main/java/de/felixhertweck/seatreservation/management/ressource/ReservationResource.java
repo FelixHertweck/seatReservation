@@ -260,4 +260,54 @@ public class ReservationResource {
                     .build();
         }
     }
+
+    @GET
+    @Path("/export/{eventId}/pdf")
+    @RolesAllowed({Roles.MANAGER, Roles.ADMIN})
+    @Produces("application/pdf")
+    @APIResponse(
+            responseCode = "200",
+            description = "PDF export of reservations for a specific event",
+            content = @Content(mediaType = "application/pdf"))
+    @APIResponse(responseCode = "403", description = "Forbidden - User not authorized")
+    @APIResponse(responseCode = "404", description = "Not Found - Event not found")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(responseCode = "500", description = "Internal Server Error during PDF export")
+    public Response exportReservationsToPdf(@PathParam("eventId") Long eventId) {
+        User currentUser = userSecurityContext.getCurrentUser();
+        LOG.debugf(
+                "Received GET request to /api/manager/reservations/export/%d/pdf for user: %s",
+                eventId, currentUser.getUsername());
+        try {
+            byte[] pdfData = reservationService.exportReservationsToPdf(eventId, currentUser);
+            LOG.debugf(
+                    "Successfully exported PDF for event ID %d for user: %s",
+                    eventId, currentUser.getUsername());
+            return Response.ok(pdfData)
+                    .header(
+                            "Content-Disposition",
+                            "attachment; filename=\"reservations_event_" + eventId + ".pdf\"")
+                    .build();
+        } catch (SecurityException e) {
+            LOG.warnf(
+                    "User %s (ID: %d) attempted unauthorized PDF export for event ID %d: %s",
+                    currentUser.getUsername(), currentUser.getId(), eventId, e.getMessage());
+            return Response.status(Response.Status.FORBIDDEN).entity(e.getMessage()).build();
+        } catch (EventNotFoundException e) {
+            LOG.warnf(
+                    "Event ID %d not found for PDF export requested by user %s (ID: %d): %s",
+                    eventId, currentUser.getUsername(), currentUser.getId(), e.getMessage());
+            return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
+        } catch (Exception e) {
+            LOG.errorf(
+                    e,
+                    "Failed to export CSV for event ID %d for user %s (ID: %d)",
+                    eventId,
+                    currentUser.getUsername(),
+                    currentUser.getId());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Internal server error during CSV export")
+                    .build();
+        }
+    }
 }

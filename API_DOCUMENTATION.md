@@ -755,6 +755,22 @@ Exports all reservations for a specific event as a CSV file.
     -   `500 Internal Server Error`: Internal server error during export.
 
 ---
+
+#### GET /export/{eventId}/pdf
+
+Exports all reservations for a specific event as a PDF file.
+
+-   **Roles:** `MANAGER`, `ADMIN`
+-   **Path Parameter:** `eventId` (Long) - The event ID.
+-   **Produces:** `application/pdf`
+-   **Responses:**
+    -   `200 OK`: PDF file successfully exported.
+    -   `401 Unauthorized`: Not authenticated.
+    -   `403 Forbidden`: No permission (user is not the event manager or not an admin).
+    -   `404 Not Found`: Event not found.
+    -   `500 Internal Server Error`: Internal server error during export.
+
+---
  
 ## Event Locations (User)
 

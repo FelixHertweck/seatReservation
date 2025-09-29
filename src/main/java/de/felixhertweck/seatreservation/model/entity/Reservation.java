@@ -92,6 +92,10 @@ public class Reservation extends PanacheEntity {
         return reservationDate;
     }
 
+    public void setReservationDate(Instant reservationDate) {
+        this.reservationDate = reservationDate;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

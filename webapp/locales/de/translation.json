@@ -676,8 +676,8 @@
     "exportEventReservationsDescription": "Wählen Sie eine Veranstaltung aus, um alle Reservierungen als JSON zu exportieren.",
     "selectEventLabel": "Veranstaltung auswählen",
     "chooseEventToExportPlaceholder": "Veranstaltung zum Exportieren auswählen",
+    "chooseFormatToExportPlaceholder": "Format zum Exportieren auswählen",
     "cancelButton": "Abbrechen",
-    "exportJsonButton": "JSON exportieren",
     "blockSeatsButton": "Plätze blockieren",
     "addReservationButton": "Reservierung hinzufügen",
     "eventFilterLabel": "Veranstaltung",
@@ -690,7 +690,14 @@
     "unknownEvent": "Unbekannte Veranstaltung",
     "unknownSeat": "Unbekannter Platz",
     "unknownDate": "Unbekannt",
-    "paginationLabel": "Reservierungen"
+    "paginationLabel": "Reservierungen",
+    "selectFormatLabel": "Format auswählen",
+    "csvOption": "CSV",
+    "jsonOption": "JSON",
+    "pdfOption": "PDF",
+    "exportCsvButton": "CSV exportieren",
+    "exportJsonButton": "JSON exportieren",
+    "exportPdfButton": "PDF exportieren"
   },
   "seatFormModal": {
     "createSeatTitle": "Platz erstellen",

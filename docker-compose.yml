@@ -59,6 +59,9 @@ services:
     # Override application.yaml
     #  - ./application.yaml:/deployments/config/application.yaml
 
+    # Export templates for PDF generation
+      - ./export-template:/deployments/config/export-template:ro
+
     environment:
       # Application configuration
       - APP_URL=${APP_URL}

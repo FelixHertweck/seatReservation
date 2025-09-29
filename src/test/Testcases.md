@@ -1310,3 +1310,25 @@ Dieser Abschnitt beschreibt Testfälle für die Internationalisierung der Benutz
 | :--- | :--- |
 | `verifyNewTranslationKeysExist` | Überprüft, ob alle neuen Übersetzungs-Keys (`viewSeatMultipleButton`, `seatSelected`, `multipleSeatsSelected`, `eventsPage.noEventsAvailable`, `eventsPage.tryAgainOrCheckSearch`, `eventsPage.noReservationsYet`, `eventsPage.switchToAvailableEvents`) in den deutschen und englischen `translation.json`-Dateien vorhanden sind. |
 | `verifyPluralizationLogic` | Überprüft, ob die Pluralisierungslogik für `seatsSelected` und `viewSeatButton` in den Komponenten korrekt angewendet wird, basierend auf den Übersetzungsdateien. |
+
+## Utils
+
+### ReservationExporter
+
+| Testfall | Beschreibung |
+| :--- | :--- |
+| `exportReservationsToPdf_createsNonEmptyPdf` | Überprüft, ob beim Exportieren einer einzelnen Reservierung eine nicht leere PDF-Datei erstellt wird. |
+| `exportReservationsToPdf_multipleReservations_createsMultiPagePdf` | Überprüft, ob beim Exportieren mehrerer Reservierungen eine PDF-Datei mit mehreren Seiten erstellt wird. |
+| `exportReservationsToPdf_emptyList_createsValidPdf` | Überprüft, ob beim Exportieren einer leeren Liste von Reservierungen eine gültige, leere PDF-Datei erstellt wird. |
+| `exportReservationsToCsv_createsCsvWithHeaderAndRows` | Überprüft, ob beim Exportieren einer einzelnen Reservierung eine CSV-Datei mit Kopfzeile und einer Datenzeile erstellt wird. |
+| `exportReservationsToCsv_emptyList_createsCsvWithHeaderOnly` | Überprüft, ob beim Exportieren einer leeren Liste von Reservierungen eine CSV-Datei nur mit der Kopfzeile erstellt wird. |
+| `exportReservationsToCsv_multipleReservations_createsCsvWithMultipleRows` | Überprüft, ob beim Exportieren mehrerer Reservierungen eine CSV-Datei mit einer Kopfzeile und mehreren Datenzeilen erstellt wird. |
+| `exportReservationsToPdf_withBlockedReservation_createsValidPdf` | Überprüft, ob für eine blockierte Reservierung eine gültige PDF-Datei erstellt wird, die das korrekte Template oder Standard-Layout verwendet. |
+| `exportReservationsToPdf_withMixedStatus_createsValidPdf` | Überprüft, ob für eine Liste von Reservierungen mit gemischtem Status (RESERVED und BLOCKED) eine einzelne, mehrseitige PDF-Datei korrekt erstellt wird. |
+ 
+### exportReservationsToPdf(Long eventId, User currentUser)
+ 
+| Testfall | Beschreibung |
+| :--- | :--- |
+| `exportReservationsToPdf_Forbidden` | Versucht, Reservierungen als nicht autorisierter Benutzer zu exportieren. Erwartet `SecurityException`. |
+| `exportReservationsToPdf_EventNotFound` | Versucht, Reservierungen für ein nicht existierendes Event zu exportieren. Erwartet `EventNotFoundException`. |

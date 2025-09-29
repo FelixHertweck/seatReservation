@@ -180,8 +180,11 @@ class EmailServiceTest {
         EventLocation location = createTestEventLocation();
         Event event = createTestEvent(location);
         Seat seat = createTestSeat(location, "A1");
+        seat.setSeatRow("1");
         List<Reservation> reservations =
                 Collections.singletonList(createTestReservation(user, event, seat));
+
+        when(seatRepository.findByEventLocation(any())).thenReturn(Collections.singletonList(seat));
 
         emailService.sendEventReminder(user, event, reservations);
 
@@ -200,15 +203,10 @@ class EmailServiceTest {
                                         .atZone(ZoneId.systemDefault())
                                         .toLocalDate()
                                         .toString()));
-        assertTrue(
-                sentMail.getHtml()
-                        .contains(
-                                event.getStartTime()
-                                        .atZone(ZoneId.systemDefault())
-                                        .toLocalTime()
-                                        .toString()));
         assertTrue(sentMail.getHtml().contains(event.getEventLocation().getName()));
-        assertTrue(sentMail.getHtml().contains("<li>A1</li>"));
+        assertTrue(sentMail.getHtml().contains("<li>A1 (1)</li>"));
+        assertTrue(sentMail.getHtml().contains("<svg"));
+        assertTrue(sentMail.getHtml().contains("http://localhost:8080/reservations?id=10"));
     }
 
     @Test

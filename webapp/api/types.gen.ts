@@ -1063,6 +1063,43 @@ export type GetApiManagerReservationsExportByEventIdCsvResponses = {
     200: unknown;
 };
 
+export type GetApiManagerReservationsExportByEventIdPdfData = {
+    body?: never;
+    path: {
+        eventId: bigint;
+    };
+    query?: never;
+    url: '/api/manager/reservations/export/{eventId}/pdf';
+};
+
+export type GetApiManagerReservationsExportByEventIdPdfErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Forbidden - User not authorized
+     */
+    403: unknown;
+    /**
+     * Not Found - Event not found
+     */
+    404: unknown;
+    /**
+     * Internal Server Error during PDF export
+     */
+    500: unknown;
+};
+
+export type GetApiManagerReservationsExportByEventIdPdfResponses = {
+    /**
+     * PDF export of reservations for a specific event
+     */
+    200: Blob | File;
+};
+
+export type GetApiManagerReservationsExportByEventIdPdfResponse = GetApiManagerReservationsExportByEventIdPdfResponses[keyof GetApiManagerReservationsExportByEventIdPdfResponses];
+
 export type DeleteApiManagerReservationsByIdData = {
     body?: never;
     path: {

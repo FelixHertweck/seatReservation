@@ -64,6 +64,8 @@ export interface ReservationManagementProps {
   blockSeats: (
     request: BlockSeatsRequestDto,
   ) => Promise<ReservationResponseDto[]>;
+  exportCSV: (eventId: bigint) => Promise<Blob>;
+  exportPDF: (eventId: bigint) => Promise<Blob>;
   onNavigateToEvent?: (eventId: bigint) => void;
   onNavigateToSeat?: (seatId: bigint) => void;
   initialFilter?: Record<string, string>;
@@ -81,6 +83,8 @@ export function ReservationManagement({
   blockSeats,
   onNavigateToEvent,
   onNavigateToSeat,
+  exportCSV,
+  exportPDF,
   initialFilter = {},
   isLoading = false,
 }: ReservationManagementProps) {
@@ -90,9 +94,10 @@ export function ReservationManagement({
     useState(reservations);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
-  const [isExportModalOpen, setIsExportModalOpen] = useState(false); // Added state for export functionality
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [selectedEventForExport, setSelectedEventForExport] =
     useState<string>("");
+  const [selectedFormat, setSelectedFormat] = useState<string>("");
   const [currentFilters, setCurrentFilters] =
     useState<Record<string, string>>(initialFilter);
 
@@ -181,22 +186,36 @@ export function ReservationManagement({
     }
   };
 
-  const handleExportReservations = () => {
+  const handleExportReservations = async () => {
     if (!selectedEventForExport) return;
 
     const eventId = BigInt(selectedEventForExport);
     const event = events.find((e) => e.id === eventId);
-    const eventReservations = reservations.filter((r) => r.eventId === eventId);
 
-    const exportData = customSerializer.json(eventReservations);
+    let blob: Blob;
+    let fileName: string;
 
-    const blob = new Blob([exportData], {
-      type: "application/json",
-    });
+    if (selectedFormat === "csv") {
+      blob = await exportCSV(eventId);
+      fileName = `reservations-${event?.name?.replace(/[^a-z0-9]/gi, "_").toLowerCase() || "event"}-${new Date().toISOString().split("T")[0]}.csv`;
+    } else if (selectedFormat === "pdf") {
+      blob = await exportPDF(eventId);
+      fileName = `reservations-${event?.name?.replace(/[^a-z0-9]/gi, "_").toLowerCase() || "event"}-${new Date().toISOString().split("T")[0]}.pdf`;
+    } else {
+      const eventReservations = reservations.filter(
+        (r) => r.eventId === eventId,
+      );
+      const exportData = customSerializer.json(eventReservations);
+      blob = new Blob([exportData], {
+        type: "application/json",
+      });
+      fileName = `reservations-${event?.name?.replace(/[^a-z0-9]/gi, "_").toLowerCase() || "event"}-${new Date().toISOString().split("T")[0]}.json`;
+    }
+
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `reservations-${event?.name?.replace(/[^a-z0-9]/gi, "_").toLowerCase() || "event"}-${new Date().toISOString().split("T")[0]}.json`;
+    a.download = fileName;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -204,6 +223,7 @@ export function ReservationManagement({
 
     setIsExportModalOpen(false);
     setSelectedEventForExport("");
+    setSelectedFormat("json");
   };
 
   return (
@@ -266,6 +286,34 @@ export function ReservationManagement({
                       </SelectContent>
                     </Select>
                   </div>
+                  <div>
+                    <label className="text-sm font-medium">
+                      {t("reservationManagement.selectFormatLabel")}
+                    </label>
+                    <Select
+                      value={selectedFormat}
+                      onValueChange={setSelectedFormat}
+                    >
+                      <SelectTrigger>
+                        <SelectValue
+                          placeholder={t(
+                            "reservationManagement.chooseFormatToExportPlaceholder",
+                          )}
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="json">
+                          {t("reservationManagement.jsonOption")}
+                        </SelectItem>
+                        <SelectItem value="csv">
+                          {t("reservationManagement.csvOption")}
+                        </SelectItem>
+                        <SelectItem value="pdf">
+                          {t("reservationManagement.pdfOption")}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <div className="flex justify-end gap-2">
                     <Button
                       variant="outline"
@@ -275,9 +323,15 @@ export function ReservationManagement({
                     </Button>
                     <Button
                       onClick={handleExportReservations}
-                      disabled={!selectedEventForExport}
+                      disabled={
+                        !selectedEventForExport || selectedFormat === ""
+                      }
                     >
-                      {t("reservationManagement.exportJsonButton")}
+                      {selectedFormat === "csv"
+                        ? t("reservationManagement.exportCsvButton")
+                        : selectedFormat === "pdf"
+                          ? t("reservationManagement.exportPdfButton")
+                          : t("reservationManagement.exportJsonButton")}
                     </Button>
                   </div>
                 </div>

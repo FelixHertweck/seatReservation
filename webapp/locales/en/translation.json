@@ -672,10 +672,10 @@
     "exportReservationsButton": "Export Reservations",
     "exportEventReservationsTitle": "Export Event Reservations",
     "exportEventReservationsDescription": "Select an event to export all its reservations as JSON.",
+    "chooseFormatToExportPlaceholder": "Choose a format to export",
     "selectEventLabel": "Select Event",
     "chooseEventToExportPlaceholder": "Choose an event to export",
     "cancelButton": "Cancel",
-    "exportJsonButton": "Export JSON",
     "blockSeatsButton": "Block Seats",
     "addReservationButton": "Add Reservation",
     "eventFilterLabel": "Event",
@@ -688,7 +688,14 @@
     "unknownEvent": "Unknown event",
     "unknownSeat": "Unknown seat",
     "unknownDate": "Unknown",
-    "paginationLabel": "Reservations"
+    "paginationLabel": "Reservations",
+    "selectFormatLabel": "Select Format",
+    "csvOption": "CSV",
+    "jsonOption": "JSON",
+    "pdfOption": "PDF",
+    "exportCsvButton": "Export CSV",
+    "exportJsonButton": "Export JSON",
+    "exportPdfButton": "Export PDF"
   },
   "seatFormModal": {
     "createSeatTitle": "Create Seat",

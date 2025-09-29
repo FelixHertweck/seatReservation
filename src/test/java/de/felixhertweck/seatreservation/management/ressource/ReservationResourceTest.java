@@ -252,4 +252,43 @@ public class ReservationResourceTest {
                 .then()
                 .statusCode(200);
     }
+
+    @Test
+    @TestSecurity(
+            user = "testUser",
+            roles = {"USER"})
+    void testExportReservationsToPdfForbidden() {
+        given().when()
+                .get("/api/manager/reservations/export/" + testEvent.id + "/pdf")
+                .then()
+                .statusCode(403);
+    }
+
+    @Test
+    void testExportReservationsToPdfUnauthorized() {
+        given().when()
+                .get("/api/manager/reservations/export/" + testEvent.id + "/pdf")
+                .then()
+                .statusCode(401);
+    }
+
+    @Test
+    @TestSecurity(
+            user = "manager",
+            roles = {"MANAGER"})
+    void testExportReservationsToPdf() {
+        given().when()
+                .get("/api/manager/reservations/export/" + testEvent.id + "/pdf")
+                .then()
+                .statusCode(200)
+                .contentType("application/pdf");
+    }
+
+    @Test
+    @TestSecurity(
+            user = "manager",
+            roles = {"MANAGER"})
+    void testExportReservationsToPdfEventNotFound() {
+        given().when().get("/api/manager/reservations/export/999/pdf").then().statusCode(404);
+    }
 }

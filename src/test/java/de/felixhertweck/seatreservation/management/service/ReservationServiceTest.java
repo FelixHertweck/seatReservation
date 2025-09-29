@@ -496,4 +496,23 @@ public class ReservationServiceTest {
                 IllegalStateException.class,
                 () -> reservationService.blockSeats(event.id, List.of(seat.id), managerUser));
     }
+
+    @Test
+    void exportReservationsToPdf_Forbidden() {
+        when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
+        event.setManager(new User()); // Different manager
+
+        assertThrows(
+                SecurityException.class,
+                () -> reservationService.exportReservationsToPdf(event.id, managerUser));
+    }
+
+    @Test
+    void exportReservationsToPdf_EventNotFound() {
+        when(eventRepository.findByIdOptional(99L)).thenReturn(Optional.empty());
+
+        assertThrows(
+                de.felixhertweck.seatreservation.common.exception.EventNotFoundException.class,
+                () -> reservationService.exportReservationsToPdf(99L, adminUser));
+    }
 }
