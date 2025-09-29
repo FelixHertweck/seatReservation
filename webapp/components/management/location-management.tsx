@@ -35,12 +35,14 @@ import type {
   EventLocationRequestDto,
   ImportEventLocationDto,
   ImportSeatDto,
+  SeatDto,
 } from "@/api";
 import { customSerializer } from "@/lib/jsonBodySerializer";
 import { useT } from "@/lib/i18n/hooks";
 
 export interface LocationManagementProps {
   locations: EventLocationResponseDto[];
+  seats: SeatDto[];
   createLocation: (
     location: EventLocationRequestDto,
   ) => Promise<EventLocationResponseDto>;
@@ -68,6 +70,7 @@ export function LocationManagement({
   deleteLocation,
   importLocationWithSeats,
   importSeats,
+  seats: seatDtos,
   onNavigateToSeats,
   initialFilter = {},
   isLoading = false,
@@ -170,15 +173,33 @@ export function LocationManagement({
     }
   };
 
-  const handleExportLocation = (location: EventLocationResponseDto) => {
-    const dataStr = customSerializer.json(location);
+  const handleExportLocation = async (location: EventLocationResponseDto) => {
+    const { seatIds, ...locationWithoutSeatIds } = location;
 
+    let seats: SeatDto[] = [];
+    if (seatIds && seatIds.length > 0) {
+      seats = seatIds
+        .map((seatId) => {
+          return seatDtos.find((seat) => seat.id === BigInt(seatId));
+        })
+        .filter((seat): seat is SeatDto => seat !== undefined);
+    }
+    console.log("seats to export", seats);
+
+    const exportData = {
+      ...locationWithoutSeatIds,
+      seats: seats.map(({ ...seat }) => seat),
+    };
+
+    const dataStr = customSerializer.json(exportData);
     const dataBlob = new Blob([dataStr], { type: "application/json" });
     const url = URL.createObjectURL(dataBlob);
 
     const link = document.createElement("a");
     link.href = url;
-    link.download = `${location.name?.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_export.json`;
+    link.download = `${location.name
+      ?.replace(/[^a-z0-9]/gi, "_")
+      .toLowerCase()}_export.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

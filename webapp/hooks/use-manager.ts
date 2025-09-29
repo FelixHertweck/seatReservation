@@ -459,6 +459,7 @@ export function useManager(): UseManagerReturn {
     },
     locations: {
       locations: locations ?? [],
+      seats: seats ?? [],
       createLocation: (location: EventLocationRequestDto) =>
         createLocationMutation.mutateAsync({ body: location }),
       updateLocation: (id: bigint, location: EventLocationRequestDto) =>
