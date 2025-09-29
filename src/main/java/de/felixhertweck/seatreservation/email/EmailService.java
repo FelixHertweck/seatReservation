@@ -25,6 +25,7 @@ import java.time.Year;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -94,6 +95,9 @@ public class EmailService {
 
     @ConfigProperty(name = "email.content.email-confirmation")
     String emailContentEmailConfirmation;
+
+    @ConfigProperty(name = "email.bcc-address")
+    Optional<String> bccAddress;
 
     @ConfigProperty(name = "email.content.event-reminder")
     String emailContentEventReminder;
@@ -287,7 +291,7 @@ public class EmailService {
             seatListHtml
                     .append("<li>")
                     .append(reservation.getSeat().getSeatNumber())
-                    .append("(")
+                    .append(" (")
                     .append(reservation.getSeat().getSeatRow())
                     .append(")")
                     .append("</li>");
@@ -326,7 +330,7 @@ public class EmailService {
                 existingSeatListHtml
                         .append("<li>")
                         .append(seat.getSeatNumber())
-                        .append("(Reihe: ")
+                        .append(" (")
                         .append(seat.getSeatRow())
                         .append(")")
                         .append("</li>");
@@ -339,6 +343,7 @@ public class EmailService {
 
         Mail mail =
                 Mail.withHtml(user.getEmail(), EMAIL_HEADER_RESERVATION_CONFIRMATION, htmlContent);
+        addBcc(mail);
         try {
             mailer.send(mail);
             LOG.infof(
@@ -419,6 +424,9 @@ public class EmailService {
             deletedSeatListHtml
                     .append("<li>")
                     .append(reservation.getSeat().getSeatNumber())
+                    .append(" (")
+                    .append(reservation.getSeat().getSeatRow())
+                    .append(")")
                     .append("</li>");
         }
         LOG.debugf("HTML list of seats generated: %s", deletedSeatListHtml.toString());
@@ -465,6 +473,7 @@ public class EmailService {
         LOG.debug("Placeholders replaced in reservation email template.");
 
         Mail mail = Mail.withHtml(user.getEmail(), EMAIL_HEADER_RESERVATION_UPDATE, htmlContent);
+        addBcc(mail);
         try {
             mailer.send(mail);
             LOG.infof(
@@ -540,14 +549,31 @@ public class EmailService {
                         "User ID: %d, Event ID: %d, Number of reservations: %d",
                         user.id, event.id, reservations.size()));
 
+        List<Seat> reservedSeats =
+                reservations.stream().map(Reservation::getSeat).collect(Collectors.toList());
+
+        // Prepare data for SVG rendering
+        List<Seat> allSeats = seatRepository.findByEventLocation(event.getEventLocation());
+
         String htmlContent = emailContentEventReminder;
+
+        String svgContent =
+                SvgRenderer.renderSeats(
+                        allSeats,
+                        reservedSeats.stream().map(Seat::getSeatNumber).collect(Collectors.toSet()),
+                        Set.of(),
+                        event.getEventLocation().getMarkers());
+        LOG.debug("SVG content for seat map generated.");
 
         // Prepare seat list HTML
         StringBuilder seatListHtml = new StringBuilder();
-        for (Reservation reservation : reservations) {
+        for (Seat seat : reservedSeats) {
             seatListHtml
                     .append("<li>")
-                    .append(reservation.getSeat().getSeatNumber())
+                    .append(seat.getSeatNumber())
+                    .append(" (")
+                    .append(seat.getSeatRow())
+                    .append(")")
                     .append("</li>");
         }
         LOG.debugf("HTML list of seats generated: %s", seatListHtml.toString());
@@ -572,12 +598,15 @@ public class EmailService {
                                 .toString());
         htmlContent = htmlContent.replace("{eventLocation}", event.getEventLocation().getName());
         htmlContent = htmlContent.replace("{seatList}", seatListHtml.toString());
+        htmlContent = htmlContent.replace("{seatMap}", svgContent);
+        htmlContent = htmlContent.replace("{eventLink}", generateEventLink(event.id));
         htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
         LOG.debug("Placeholders replaced in event reminder email template.");
 
         // Create and send the email
         LOG.debugf("Event reminder subject: %s", EMAIL_HEADER_REMINDER);
         Mail mail = Mail.withHtml(user.getEmail(), EMAIL_HEADER_REMINDER, htmlContent);
+        addBcc(mail);
 
         try {
             mailer.send(mail);
@@ -684,5 +713,14 @@ public class EmailService {
             return true;
         }
         return false;
+    }
+
+    private void addBcc(Mail mail) {
+        bccAddress.ifPresent(
+                address -> {
+                    if (!address.trim().isEmpty()) {
+                        mail.addBcc(address);
+                    }
+                });
     }
 }
