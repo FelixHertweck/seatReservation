@@ -49,7 +49,7 @@ public class SvgRenderer {
         int radius = 15; // Radius of the circle representing a seat
         int padding = 20; // Padding around the entire seat map
         int textHeight = 12; // Font size for the seat number
-        int markerTextHeight = 10; // Font size for marker labels
+        int markerTextHeight = 14; // Font size for marker labels
 
         // Calculate Bounding Box of logical coordinates for seats
         int minX = Integer.MAX_VALUE;
@@ -103,19 +103,17 @@ public class SvgRenderer {
 
                     int markerX = marker.getxCoordinate() * scale;
                     int markerY = marker.getyCoordinate() * scale;
-
-                    // Render marker label as text only
                     String label = marker.getLabel();
 
                     sb.append("<text x=\"")
                             .append(markerX)
                             .append("\" y=\"")
-                            .append(markerY + (markerTextHeight / 3))
+                            .append(markerY)
                             .append("\" font-size=\"")
                             .append(markerTextHeight)
                             .append(
-                                    "\" text-anchor=\"middle\" fill=\"#666666\""
-                                            + " font-weight=\"bold\">")
+                                    "\" text-anchor=\"middle\" dominant-baseline=\"central\""
+                                            + " fill=\"#333333\" font-weight=\"bold\">")
                             .append(escapeXml(label))
                             .append("</text>\n");
                 }

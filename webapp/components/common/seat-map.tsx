@@ -6,7 +6,15 @@ import type { ReactElement } from "react";
 
 import { cn } from "@/lib/utils";
 import type { EventLocationMakerDto, SeatDto, SeatStatusDto } from "@/api";
-import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+// Wichtig: 'useLayoutEffect' importieren
+import {
+  useState,
+  useRef,
+  useCallback,
+  useEffect,
+  useMemo,
+  useLayoutEffect,
+} from "react";
 import { useT } from "@/lib/i18n/hooks";
 import { findSeatStatus } from "@/lib/reservationSeat";
 
@@ -90,21 +98,71 @@ const MarkerComponent = React.memo(
     marker: EventLocationMakerDto;
     showLabel: boolean;
   }) => {
+    const seatSize = 32;
+    const gap = 4;
+    const padding = 16;
+    const cellTotalSize = seatSize + gap;
+
+    const containerRef = useRef<HTMLDivElement>(null);
+    const textRef = useRef<HTMLSpanElement>(null);
+
+    useLayoutEffect(() => {
+      if (containerRef.current && textRef.current && showLabel) {
+        const textEl = textRef.current;
+        const containerEl = containerRef.current;
+
+        // Reset styles for accurate measurement
+        textEl.style.transform = "scale(1)";
+
+        const textWidth = textEl.scrollWidth;
+        const HORIZONTAL_PADDING = 8; // 4px padding left & right
+
+        let finalWidth = textWidth + HORIZONTAL_PADDING;
+        let textScale = 1;
+
+        // If the marker would become wider than a seat, cap its width and scale the text
+        if (finalWidth > seatSize) {
+          finalWidth = seatSize;
+          textScale = (seatSize - HORIZONTAL_PADDING) / textWidth;
+        }
+
+        // --- Centering Logic ---
+        // Calculate the original starting position of the grid cell
+        const cellLeft =
+          padding + ((marker.xCoordinate || 1) - 1) * cellTotalSize;
+        // Adjust the left position to center the new, smaller width within the cell
+        const newLeft = cellLeft + (seatSize - finalWidth) / 2;
+
+        // Apply all the new styles
+        containerEl.style.width = `${finalWidth}px`;
+        containerEl.style.left = `${newLeft}px`;
+        textEl.style.transform = `scale(${textScale})`;
+      }
+    }, [marker.label, marker.xCoordinate, showLabel, cellTotalSize]);
+
     return (
       <div
-        className="absolute z-0 flex items-center justify-center text-xs font-medium text-gray-700 dark:text-gray-300"
+        ref={containerRef}
+        className="absolute z-0 flex items-center justify-center font-bold text-gray-800 dark:text-gray-200 rounded-md overflow-hidden"
         style={{
-          left: `${((marker.xCoordinate || 1) - 1) * 36 + 11}px`,
-          top: `${((marker.yCoordinate || 1) - 1) * 36 + 14}px`,
-          width: `${40}px`,
-          height: `36px`,
-          fontSize: `10px`,
+          // Initial position and size before dynamic adjustment
+          left: `${padding + ((marker.xCoordinate || 1) - 1) * cellTotalSize}px`,
+          top: `${padding + ((marker.yCoordinate || 1) - 1) * cellTotalSize}px`,
+          width: `${seatSize}px`,
+          height: `${seatSize}px`,
+          fontSize: "14px",
+          transition: "width 0.2s ease, left 0.2s ease", // Optional: smooth transition
         }}
         title={marker.label || ""}
       >
-        <div className="w-full h-full flex items-center justify-center font-medium">
-          {showLabel ? marker.label : ""}
-        </div>
+        {showLabel && (
+          <span
+            ref={textRef}
+            style={{ whiteSpace: "nowrap", display: "inline-block" }}
+          >
+            {marker.label}
+          </span>
+        )}
       </div>
     );
   },
@@ -233,8 +291,7 @@ export function SeatMap({
 
   const displayFlags = useMemo(
     () => ({
-      showSeatNumber: zoom > 0.8,
-      showMarkerLabel: zoom > 0.6,
+      showSeatNumber: zoom > 0.6,
     }),
     [zoom],
   );
@@ -455,7 +512,9 @@ export function SeatMap({
         <div
           ref={mapRef}
           style={{
-            transform: `scale(${zoom}) translate3d(${pan.x / zoom}px, ${pan.y / zoom}px, 0)`,
+            transform: `scale(${zoom}) translate3d(${pan.x / zoom}px, ${
+              pan.y / zoom
+            }px, 0)`,
             transformOrigin: "center center",
             willChange: "transform",
             backfaceVisibility: "hidden",
@@ -485,7 +544,7 @@ export function SeatMap({
               <MarkerComponent
                 key={`marker-${index}`}
                 marker={marker}
-                showLabel={displayFlags.showMarkerLabel}
+                showLabel={true}
               />
             ))}
 
