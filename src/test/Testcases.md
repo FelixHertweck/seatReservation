@@ -1,654 +1,652 @@
-# Testfälle
+# Test Cases
 
-Dies ist eine Übersicht der Testfälle für die Anwendung.
+This is an overview of the test cases for the application.
 
 ## Email Service
 
 ### EmailService
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `sendEmailConfirmation_Success` | Sendet erfolgreich eine E-Mail-Bestätigung an einen Benutzer. |
-| `sendEmailConfirmation_IOException` | Simuliert einen Fehler beim Senden der E-Mail-Bestätigung (z.B. durch eine `IOException`). Erwartet, dass die Ausnahme korrekt behandelt wird. |
-| `sendEventReminder_Success` | Sendet erfolgreich eine Event-Erinnerungs-E-Mail an einen Benutzer. |
-| `sendEventReminder_IOException` | Simuliert einen Fehler beim Senden der Event-Erinnerungs-E-Mail (z.B. durch eine `IOException`). Erwartet, dass die Ausnahme korrekt behandelt wird. |
-| `sendEventReservationsCsvToManager_Success` | Sendet erfolgreich eine E-Mail mit CSV-Export der Reservierungen an den Manager. |
-| `sendEventReservationsCsvToManager_IOException` | Simuliert einen Fehler beim Senden der E-Mail mit CSV-Export an den Manager (z.B. durch eine `IOException`). Erwartet, dass die Ausnahme korrekt behandelt wird. |
+| `sendEmailConfirmation_Success` | Successfully sends an email confirmation to a user. |
+| `sendEmailConfirmation_IOException` | Simulates an error while sending the email confirmation (e.g., via an `IOException`). Expects the exception to be handled correctly. |
+| `sendEventReminder_Success` | Successfully sends an event reminder email to a user. |
+| `sendEventReminder_IOException` | Simulates an error while sending the event reminder email (e.g., via an `IOException`). Expects the exception to be handled correctly. |
+| `sendEventReservationsCsvToManager_Success` | Successfully sends an email with a CSV export of reservations to the manager. |
+| `sendEventReservationsCsvToManager_IOException` | Simulates an error while sending the email with the CSV export to the manager (e.g., via an `IOException`). Expects the exception to be handled correctly. |
 
 ### EmailVerificationCleanupService
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `performManualCleanup_Success` | Führt die manuelle Bereinigung erfolgreich durch und löscht abgelaufene E-Mail-Verifizierungsdatensätze. |
-| `performManualCleanup_NoExpiredTokens` | Überprüft, ob keine Datensätze gelöscht werden, wenn keine abgelaufenen Token vorhanden sind. |
-| `scheduledCleanup_Success` | Überprüft, ob der geplante Bereinigungsprozess erfolgreich ausgeführt wird. |
+| `performManualCleanup_Success` | Successfully performs manual cleanup and deletes expired email verification records. |
+| `performManualCleanup_NoExpiredTokens` | Checks that no records are deleted when no expired tokens are present. |
+| `scheduledCleanup_Success` | Checks if the scheduled cleanup process runs successfully. |
 
 ### NotificationService
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `sendEventReminders_WithEventsAndReservations_SendsEmails` | Überprüft, dass Event-Erinnerungen erfolgreich an Benutzer mit Reservierungen für morgige Events gesendet werden. |
-| `sendEventReminders_WithNoEvents_DoesNotSendEmails` | Überprüft, dass keine E-Mails gesendet werden, wenn keine Events für morgen vorhanden sind. |
-| `sendEventReminders_WithEventsButNoReservations_DoesNotSendEmails` | Überprüft, dass keine E-Mails gesendet werden, wenn Events existieren, aber keine Reservierungen vorhanden sind. |
-| `sendEventReminders_WithMultipleEvents_ProcessesAllEvents` | Überprüft, dass alle Events für morgen verarbeitet und entsprechende Erinnerungen gesendet werden. |
-| `sendEventReminders_WithMultipleReservationsPerUser_GroupsCorrectly` | Überprüft, dass mehrere Reservierungen desselben Benutzers für ein Event korrekt gruppiert werden. |
-| `sendEventReminders_WithEmailException_ContinuesProcessing` | Überprüft, dass bei E-Mail-Fehlern die Verarbeitung für andere Benutzer fortgesetzt wird. |
-| `sendEventReminders_WithNullUserEmail_SkipsUserGracefully` | Überprüft, dass Benutzer mit null E-Mail-Adressen korrekt übersprungen werden. |
-| `sendEventReminders_CalculatesCorrectDateRange` | Überprüft, dass der korrekte Datumsbereich (morgen) für die Event-Suche verwendet wird. |
-| `sendEventReminders_WithServiceException_HandlesGracefully` | Überprüft das Verhalten bei Service-Exceptions (z.B. Datenbankfehler). |
-| `sendDailyReservationCsvToManagers_WithEventsAndManagers_SendsCsvEmails` | Überprüft, dass CSV-Export-E-Mails erfolgreich an Manager von Events gesendet werden, die heute stattfinden. |
-| `sendDailyReservationCsvToManagers_WithNoEvents_DoesNotSendEmails` | Überprüft, dass keine CSV-Export-E-Mails gesendet werden, wenn keine Events für heute vorhanden sind. |
-| `sendDailyReservationCsvToManagers_WithEventButNoManager_DoesNotSendEmail` | Überprüft, dass keine E-Mail gesendet wird, wenn ein Event keinen zugewiesenen Manager hat. |
-| `sendDailyReservationCsvToManagers_WithMultipleEvents_ProcessesAllEvents` | Überprüft, dass CSV-Exports für alle heutigen Events mit unterschiedlichen Managern gesendet werden. |
-| `sendDailyReservationCsvToManagers_WithEmailException_ContinuesProcessing` | Überprüft, dass bei E-Mail-Fehlern die Verarbeitung für andere Manager fortgesetzt wird. |
-| `sendDailyReservationCsvToManagers_CalculatesCorrectDateRange` | Überprüft, dass der korrekte Datumsbereich (heute) für die Event-Suche verwendet wird. |
-| `sendDailyReservationCsvToManagers_WithServiceException_HandlesGracefully` | Überprüft das Verhalten bei Service-Exceptions während der CSV-Export-Verarbeitung. |
+| `sendEventReminders_WithEventsAndReservations_SendsEmails` | Checks that event reminders are successfully sent to users with reservations for tomorrow's events. |
+| `sendEventReminders_WithNoEvents_DoesNotSendEmails` | Checks that no emails are sent when there are no events for tomorrow. |
+| `sendEventReminders_WithEventsButNoReservations_DoesNotSendEmails` | Checks that no emails are sent when events exist but there are no reservations. |
+| `sendEventReminders_WithMultipleEvents_ProcessesAllEvents` | Checks that all events for tomorrow are processed and corresponding reminders are sent. |
+| `sendEventReminders_WithMultipleReservationsPerUser_GroupsCorrectly` | Checks that multiple reservations by the same user for one event are grouped correctly. |
+| `sendEventReminders_WithEmailException_ContinuesProcessing` | Checks that processing continues for other users in case of email errors. |
+| `sendEventReminders_WithNullUserEmail_SkipsUserGracefully` | Checks that users with null email addresses are skipped gracefully. |
+| `sendEventReminders_CalculatesCorrectDateRange` | Checks that the correct date range (tomorrow) is used for the event search. |
+| `sendEventReminders_WithServiceException_HandlesGracefully` | Checks the behavior in case of service exceptions (e.g., database error). |
+| `sendDailyReservationCsvToManagers_WithEventsAndManagers_SendsCsvEmails` | Checks that CSV export emails are successfully sent to managers of events taking place today. |
+| `sendDailyReservationCsvToManagers_WithNoEvents_DoesNotSendEmails` | Checks that no CSV export emails are sent when there are no events for today. |
+| `sendDailyReservationCsvToManagers_WithEventButNoManager_DoesNotSendEmail` | Checks that no email is sent if an event has no assigned manager. |
+| `sendDailyReservationCsvToManagers_WithMultipleEvents_ProcessesAllEvents` | Checks that CSV exports are sent for all of today's events with different managers. |
+| `sendDailyReservationCsvToManagers_WithEmailException_ContinuesProcessing` | Checks that processing continues for other managers in case of email errors. |
+| `sendDailyReservationCsvToManagers_CalculatesCorrectDateRange` | Checks that the correct date range (today) is used for the event search. |
+| `sendDailyReservationCsvToManagers_WithServiceException_HandlesGracefully` | Checks the behavior in case of service exceptions during CSV export processing. |
 
 ## Security
 
 ### AuthService
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `authenticate_Success` | Authentifiziert einen Benutzer erfolgreich mit gültigen Anmeldeinformationen und gibt einen Token zurück. |
-| `authenticate_Success_WithEmail` | Authentifiziert einen Benutzer erfolgreich mit gültigen Anmeldeinformationen (E-Mail) und gibt einen Token zurück. |
-| `authenticate_AuthenticationFailedException_InvalidUsername` | Versucht, sich mit einem nicht existierenden Benutzernamen zu authentifizieren. Erwartet `AuthenticationFailedException`. |
-| `authenticate_AuthenticationFailedException_InvalidPassword` | Versucht, sich mit einem gültigen Benutzernamen, aber einem falschen Passwort zu authentifizieren. Erwartet `AuthenticationFailedException`. |
-| `testAuthenticateFailureEmailNotFound` | Versucht, sich mit einer nicht existierenden E-Mail-Adresse zu authentifizieren. Erwartet `AuthenticationFailedException`. |
-| `testAuthenticateWithEmailWrongPassword` | Versucht, sich mit einer gültigen E-Mail-Adresse, aber einem falschen Passwort zu authentifizieren. Erwartet `AuthenticationFailedException`. |
-| `testAuthenticateWithEmailIdentifier` | Überprüft, dass E-Mail-Adressen korrekt als E-Mails identifiziert werden und die E-Mail-basierte Suche verwendet wird. |
-| `testAuthenticateWithEmptyPassword` | Versucht, sich mit einem leeren Passwort zu authentifizieren. Erwartet `AuthenticationFailedException`. |
-| `testAuthenticateIdentifierDetection` | Testet die korrekte Erkennung von E-Mail vs. Benutzername als Identifier. |
-| `testAuthenticateUsernameIdentification` | Überprüft, dass Benutzernamen ohne @-Symbol korrekt als Benutzernamen erkannt werden. |
-| `testAuthenticateWithInvalidHash` | Testet das Verhalten bei ungültigem Passwort-Hash-Format. Erwartet `RuntimeException`. |
-| `testAuthenticateSpecialCharactersInPassword` | Testet die Authentifizierung mit Sonderzeichen im Passwort. |
+| `authenticate_Success` | Successfully authenticates a user with valid credentials and returns a token. |
+| `authenticate_Success_WithEmail` | Successfully authenticates a user with valid credentials (email) and returns a token. |
+| `authenticate_AuthenticationFailedException_InvalidUsername` | Attempts to authenticate with a non-existent username. Expects `AuthenticationFailedException`. |
+| `authenticate_AuthenticationFailedException_InvalidPassword` | Attempts to authenticate with a valid username but an incorrect password. Expects `AuthenticationFailedException`. |
+| `testAuthenticateFailureEmailNotFound` | Attempts to authenticate with a non-existent email address. Expects `AuthenticationFailedException`. |
+| `testAuthenticateWithEmailWrongPassword` | Attempts to authenticate with a valid email address but an incorrect password. Expects `AuthenticationFailedException`. |
+| `testAuthenticateWithEmailIdentifier` | Checks that email addresses are correctly identified as emails and that email-based search is used. |
+| `testAuthenticateWithEmptyPassword` | Attempts to authenticate with an empty password. Expects `AuthenticationFailedException`. |
+| `testAuthenticateIdentifierDetection` | Tests the correct detection of email vs. username as an identifier. |
+| `testAuthenticateUsernameIdentification` | Checks that usernames without an @ symbol are correctly identified as usernames. |
+| `testAuthenticateWithInvalidHash` | Tests the behavior with an invalid password hash format. Expects `RuntimeException`. |
+| `testAuthenticateSpecialCharactersInPassword` | Tests authentication with special characters in the password. |
 
 ### TokenService
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `generateToken_Success` | Generiert erfolgreich einen JWT-Token für einen gegebenen Benutzer. |
-| `generateToken_ValidTokenContent` | Überprüft, ob der generierte Token die korrekten Benutzerinformationen (z.B. Benutzername, Rollen) enthält. |
-| `generateToken_TokenExpiration` | Überprüft, ob der generierte Token eine korrekte Ablaufzeit hat. |
-| `generateToken_NullEmail_UsesEmptyString` | Überprüft, dass bei einer null E-Mail ein leerer String im Token verwendet wird. |
-| `generateToken_EmptyRoles_HandlesCorrectly` | Testet das Verhalten bei einem Benutzer mit leerer Rollen-Liste. |
-| `getExpirationMinutes_ReturnsConfiguredValue` | Überprüft, dass die konfigurierte Ablaufzeit korrekt zurückgegeben wird. |
-| `createNewJwtCookie_ValidCookie` | Erstellt erfolgreich ein JWT-Cookie mit korrekten Eigenschaften (HttpOnly, Secure, Path, MaxAge). |
-| `createNewJwtCookie_DifferentExpirationTime` | Überprüft, dass unterschiedliche Ablaufzeiten korrekt im Cookie-MaxAge widergespiegelt werden. |
-| `createNewJwtCookie_EmptyToken` | Testet das Verhalten beim Erstellen eines Cookies mit leerem Token. |
-| `createNewJwtCookie_NullToken` | Testet das Verhalten beim Erstellen eines Cookies mit null Token. |
-| `generateToken_CustomExpirationTime` | Überprüft, dass benutzerdefinierte Ablaufzeiten (z.B. 24 Stunden) korrekt angewendet werden. |
+| `generateToken_Success` | Successfully generates a JWT token for a given user. |
+| `generateToken_ValidTokenContent` | Checks if the generated token contains the correct user information (e.g., username, roles). |
+| `generateToken_TokenExpiration` | Checks if the generated token has a correct expiration time. |
+| `generateToken_NullEmail_UsesEmptyString` | Checks that an empty string is used in the token for a null email. |
+| `generateToken_EmptyRoles_HandlesCorrectly` | Tests the behavior for a user with an empty roles list. |
+| `getExpirationMinutes_ReturnsConfiguredValue` | Checks that the configured expiration time is returned correctly. |
+| `createNewJwtCookie_ValidCookie` | Successfully creates a JWT cookie with correct properties (HttpOnly, Secure, Path, MaxAge). |
+| `createNewJwtCookie_DifferentExpirationTime` | Checks that different expiration times are correctly reflected in the cookie's MaxAge. |
+| `createNewJwtCookie_EmptyToken` | Tests the behavior when creating a cookie with an empty token. |
+| `createNewJwtCookie_NullToken` | Tests the behavior when creating a cookie with a null token. |
+| `generateToken_CustomExpirationTime` | Checks that custom expiration times (e.g., 24 hours) are applied correctly. |
 
 ### AuthResource
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `login_Success` | Sendet eine POST-Anfrage an `/api/auth/login` mit gültigen Anmeldeinformationen. Erwartet einen 200 OK Status und einen JWT-Cookie mit korrekter `Max-Age`. |
-| `login_AuthenticationFailedException_InvalidCredentials` | Sendet eine POST-Anfrage an `/api/auth/login` mit ungültigen Anmeldeinformationen. Erwartet einen 401 Unauthorized Status. |
-| `login_BadRequest_MissingCredentials` | Sendet eine POST-Anfrage an `/api/auth/login` ohne Benutzernamen oder Passwort. Erwartet einen 400 Bad Request Status. |
-| `register_Success` | Sendet eine POST-Anfrage an `/api/auth/register` mit gültigen Registrierungsdaten. Erwartet einen 201 Created Status. |
-| `register_Failure_DuplicateUsername` | Sendet eine POST-Anfrage an `/api/auth/register` mit einem bereits existierenden Benutzernamen. Erwartet einen 409 Conflict Status. |
-| `register_Failure_InvalidData` | Sendet eine POST-Anfrage an `/api/auth/register` mit ungültigen Daten (z.B. fehlender Benutzername, zu kurzes Passwort). Erwartet einen 400 Bad Request Status. |
+| `login_Success` | Sends a POST request to `/api/auth/login` with valid credentials. Expects a 200 OK status and a JWT cookie with the correct `Max-Age`. |
+| `login_AuthenticationFailedException_InvalidCredentials` | Sends a POST request to `/api/auth/login` with invalid credentials. Expects a 401 Unauthorized status. |
+| `login_BadRequest_MissingCredentials` | Sends a POST request to `/api/auth/login` without a username or password. Expects a 400 Bad Request status. |
+| `register_Success` | Sends a POST request to `/api/auth/register` with valid registration data. Expects a 201 Created status. |
+| `register_Failure_DuplicateUsername` | Sends a POST request to `/api/auth/register` with an already existing username. Expects a 409 Conflict status. |
+| `register_Failure_InvalidData` | Sends a POST request to `/api/auth/register` with invalid data (e.g., missing username, too short password). Expects a 400 Bad Request status. |
 
 ## UserService
 
 ### createUser(UserCreationDTO userCreationDTO)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `createUser_Success_WithEmail` | Erstellt einen neuen Benutzer mit gültigen Daten (Benutzername, Passwort, E-Mail, Vorname, Nachname). Überprüft, ob der Benutzer erfolgreich in der Datenbank gespeichert wird und eine E-Mail-Bestätigung gesendet wird. |
-| `createUser_Success_WithoutEmail` | Erstellt einen neuen Benutzer mit gültigen Daten (Benutzername, Passwort, Vorname, Nachname), aber ohne E-Mail. Überprüft, ob der Benutzer erfolgreich in der Datenbank gespeichert wird und keine E-Mail-Bestätigung gesendet wird. |
-| `createUser_InvalidUserException_NullDTO` | Versucht, einen Benutzer mit einem `null` `UserCreationDTO` zu erstellen. Erwartet `InvalidUserException`. |
-| `createUser_InvalidUserException_EmptyUsername` | Versucht, einen Benutzer mit einem leeren oder nur aus Leerzeichen bestehenden Benutzernamen zu erstellen. Erwartet `InvalidUserException`. |
-| `createUser_InvalidUserException_EmptyPassword` | Versucht, einen Benutzer mit einem leeren oder nur aus Leerzeichen bestehenden Passwort zu erstellen. Erwartet `InvalidUserException`. |
-| `createUser_DuplicateUserException_ExistingUsername` | Versucht, einen Benutzer mit einem Benutzernamen zu erstellen, der bereits in der Datenbank existiert. Erwartet `DuplicateUserException`. |
-| `createUser_Success_WithDuplicateEmail` | Erstellt einen neuen Benutzer mit einer E-Mail-Adresse, die bereits von einem anderen Benutzer verwendet wird. Überprüft, ob der Benutzer erfolgreich erstellt wird und keine `DuplicateUserException` geworfen wird. |
-| `createUser_InternalServerErrorException_EmailSendFailure` | Simuliert einen Fehler beim Senden der E-Mail-Bestätigung (z.B. durch eine `IOException` im `EmailService`). Erwartet `InternalServerErrorException`. |
-| `createUser_InternalServerErrorException_EmailSendFailure` | Simuliert einen Fehler beim Senden der E-Mail-Bestätigung (z.B. durch eine `IOException` im `EmailService`). Erwartet `InternalServerErrorException`. |
+| `createUser_Success_WithEmail` | Creates a new user with valid data (username, password, email, first name, last name). Checks if the user is successfully saved in the database and an email confirmation is sent. |
+| `createUser_Success_WithoutEmail` | Creates a new user with valid data (username, password, first name, last name), but without an email. Checks if the user is successfully saved in the database and no email confirmation is sent. |
+| `createUser_InvalidUserException_NullDTO` | Attempts to create a user with a `null` `UserCreationDTO`. Expects `InvalidUserException`. |
+| `createUser_InvalidUserException_EmptyUsername` | Attempts to create a user with an empty or whitespace-only username. Expects `InvalidUserException`. |
+| `createUser_InvalidUserException_EmptyPassword` | Attempts to create a user with an empty or whitespace-only password. Expects `InvalidUserException`. |
+| `createUser_DuplicateUserException_ExistingUsername` | Attempts to create a user with a username that already exists in the database. Expects `DuplicateUserException`. |
+| `createUser_Success_WithDuplicateEmail` | Creates a new user with an email address that is already used by another user. Checks if the user is created successfully and no `DuplicateUserException` is thrown. |
+| `createUser_InternalServerErrorException_EmailSendFailure` | Simulates an error while sending the email confirmation (e.g., via an `IOException` in `EmailService`). Expects `InternalServerErrorException`. |
 
 ### importUsers(Set<AdminUserCreationDto> adminUserCreationDtos)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `importUsers_Success` | Importiert erfolgreich mehrere Benutzer. |
-| `importUsers_EmptySet` | Versucht, ein leeres Set von Benutzern zu importieren. Erwartet eine leere Liste importierter Benutzer. |
-| `importUsers_InvalidUserException` | Versucht, Benutzer mit ungültigen Daten zu importieren (z.B. leerer Benutzername). Erwartet `InvalidUserException`. |
-| `importUsers_DuplicateUserException` | Versucht, Benutzer zu importieren, von denen einer bereits existiert. Erwartet `DuplicateUserException`. |
-| `importUsers_EmailSendFailure` | Simuliert einen Fehler beim E-Mail-Versand während des Imports. Erwartet `RuntimeException`. |
+| `importUsers_Success` | Successfully imports multiple users. |
+| `importUsers_EmptySet` | Attempts to import an empty set of users. Expects an empty list of imported users. |
+| `importUsers_InvalidUserException` | Attempts to import users with invalid data (e.g., empty username). Expects `InvalidUserException`. |
+| `importUsers_DuplicateUserException` | Attempts to import users, one of whom already exists. Expects `DuplicateUserException`. |
+| `importUsers_EmailSendFailure` | Simulates an email sending failure during import. Expects `RuntimeException`. |
 
 ### updateUser(Long id, AdminUserUpdateDTO user)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `updateUser_Success_UpdateFirstname` | Aktualisiert erfolgreich den Vornamen eines bestehenden Benutzers (Admin-Funktion). |
-| `updateUser_Success_UpdateLastname` | Aktualisiert erfolgreich den Nachnamen eines bestehenden Benutzers (Admin-Funktion). |
-| `updateUser_Success_UpdatePassword` | Aktualisiert erfolgreich das Passwort eines bestehenden Benutzers (Admin-Funktion). |
-| `updateUser_Success_UpdateRoles` | Aktualisiert erfolgreich die Rollen eines bestehenden Benutzers (Admin-Funktion). |
-| `updateUser_Success_NoEmailChange` | Aktualisiert erfolgreich andere Felder eines bestehenden Benutzers (z.B. Vorname, Nachname, Passwort, Rollen), ohne die E-Mail-Adresse zu ändern (Admin-Funktion). Überprüft, ob keine E-Mail-Bestätigung gesendet wird. |
-| `updateUser_Success_UpdateEmail` | Aktualisiert erfolgreich die E-Mail-Adresse eines bestehenden Benutzers und überprüft, ob die E-Mail-Verifizierung zurückgesetzt und eine neue Bestätigungs-E-Mail gesendet wird (Admin-Funktion). |
-| `updateUser_UserNotFoundException` | Versucht, einen nicht existierenden Benutzer zu aktualisieren (Admin-Funktion). Erwartet `UserNotFoundException`. |
-| `updateUser_InvalidUserException_NullDTO` | Versucht, einen Benutzer mit einem `null` `AdminUserUpdateDTO` zu aktualisieren (Admin-Funktion). Erwartet `InvalidUserException`. |
-| `updateUser_Success_WithDuplicateEmail` | Aktualisiert die E-Mail-Adresse eines Benutzers auf eine bereits existierende E-Mail-Adresse (Admin-Funktion). Überprüft, ob die Aktualisierung erfolgreich ist und keine `DuplicateUserException` geworfen wird. |
-| `updateUser_InternalServerErrorException_EmailSendFailure` | Simuliert einen Fehler beim Senden der E-Mail-Bestätigung nach einer E-Mail-Änderung (Admin-Funktion). Erwartet `InternalServerErrorException`. |
+| `updateUser_Success_UpdateFirstname` | Successfully updates the first name of an existing user (admin function). |
+| `updateUser_Success_UpdateLastname` | Successfully updates the last name of an existing user (admin function). |
+| `updateUser_Success_UpdatePassword` | Successfully updates the password of an existing user (admin function). |
+| `updateUser_Success_UpdateRoles` | Successfully updates the roles of an existing user (admin function). |
+| `updateUser_Success_NoEmailChange` | Successfully updates other fields of an existing user (e.g., first name, last name, password, roles) without changing the email address (admin function). Checks that no email confirmation is sent. |
+| `updateUser_Success_UpdateEmail` | Successfully updates the email address of an existing user and checks if the email verification is reset and a new confirmation email is sent (admin function). |
+| `updateUser_UserNotFoundException` | Attempts to update a non-existent user (admin function). Expects `UserNotFoundException`. |
+| `updateUser_InvalidUserException_NullDTO` | Attempts to update a user with a `null` `AdminUserUpdateDTO` (admin function). Expects `InvalidUserException`. |
+| `updateUser_Success_WithDuplicateEmail` | Updates a user's email address to an already existing email address (admin function). Checks if the update is successful and no `DuplicateUserException` is thrown. |
+| `updateUser_InternalServerErrorException_EmailSendFailure` | Simulates an error while sending the email confirmation after an email change (admin function). Expects `InternalServerErrorException`. |
 
 ### deleteUser(Long id)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `deleteUser_Success` | Löscht erfolgreich einen bestehenden Benutzer anhand seiner ID. |
-| `deleteUser_UserNotFoundException` | Versucht, einen nicht existierenden Benutzer zu löschen. Erwartet `UserNotFoundException`. |
+| `deleteUser_Success` | Successfully deletes an existing user by their ID. |
+| `deleteUser_UserNotFoundException` | Attempts to delete a non-existent user. Expects `UserNotFoundException`. |
 
 ### getUserById(Long id)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `getUserById_Success` | Ruft erfolgreich einen bestehenden Benutzer anhand seiner ID ab. |
-| `getUserById_UserNotFoundException` | Versucht, einen nicht existierenden Benutzer abzurufen. Erwartet `UserNotFoundException`. |
+| `getUserById_Success` | Successfully retrieves an existing user by their ID. |
+| `getUserById_UserNotFoundException` | Attempts to retrieve a non-existent user. Expects `UserNotFoundException`. |
 
 ### getAllUsers()
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `getAllUsers_Success_WithUsers` | Ruft erfolgreich eine Liste aller Benutzer ab, wenn Benutzer vorhanden sind. |
-| `getAllUsers_Success_NoUsers` | Ruft erfolgreich eine leere Liste ab, wenn keine Benutzer vorhanden sind. |
+| `getAllUsers_Success_WithUsers` | Successfully retrieves a list of all users when users are present. |
+| `getAllUsers_Success_NoUsers` | Successfully retrieves an empty list when no users are present. |
 
 ### getAvailableRoles()
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `getAvailableRoles_Success` | Ruft erfolgreich eine Liste aller verfügbaren Rollen ab. |
-
+| `getAvailableRoles_Success` | Successfully retrieves a list of all available roles. |
 
 ### updateUserProfile(String username, UserProfileUpdateDTO userProfileUpdateDTO)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `updateUserProfile_Success_UpdateFirstname` | Aktualisiert erfolgreich den Vornamen eines bestehenden Benutzers über seinen Benutzernamen. |
-| `updateUserProfile_Success_UpdateLastname` | Aktualisiert erfolgreich den Nachnamen eines bestehenden Benutzers über seinen Benutzernamen. |
-| `updateUserProfile_Success_UpdatePassword` | Aktualisiert erfolgreich das Passwort eines bestehenden Benutzers über seinen Benutzernamen. |
-| `updateUserProfile_Success_PasswordSaltChangesOnPasswordUpdate` | Überprüft, ob sich das Salt beim Aktualisieren des Passworts eines bestehenden Benutzers über seinen Benutzernamen ändert. |
-| `updateUserProfile_Success_UpdateEmail` | Aktualisiert erfolgreich die E-Mail-Adresse eines bestehenden Benutzers über seinen Benutzernamen und überprüft, ob die E-Mail-Verifizierung zurückgesetzt und eine neue Bestätigungs-E-Mail gesendet wird. |
-| `updateUserProfile_DoesNotUpdateRoles` | Stellt sicher, dass ein Versuch, die eigenen Rollen über diesen Endpunkt zu aktualisieren, ignoriert wird. |
-| `updateUserProfile_UserNotFoundException` | Versucht, das Profil eines nicht existierenden Benutzers zu aktualisieren. Erwartet `UserNotFoundException`. |
-| `updateUserProfile_InvalidUserException_NullDTO` | Versucht, ein Benutzerprofil mit einem `null` `UserProfileUpdateDTO` zu aktualisieren. Erwartet `InvalidUserException`. |
-| `updateUserProfile_Success_WithDuplicateEmail` | Aktualisiert die E-Mail-Adresse eines Benutzerprofils auf eine bereits existierende E-Mail-Adresse. Überprüft, ob die Aktualisierung erfolgreich ist und keine `DuplicateUserException` geworfen wird. |
-| `updateUserProfile_InternalServerErrorException_EmailSendFailure` | Simuliert einen Fehler beim Senden der E-Mail-Bestätigung nach einer E-Mail-Änderung. Erwartet `InternalServerErrorException`. |
+| `updateUserProfile_Success_UpdateFirstname` | Successfully updates the first name of an existing user via their username. |
+| `updateUserProfile_Success_UpdateLastname` | Successfully updates the last name of an existing user via their username. |
+| `updateUserProfile_Success_UpdatePassword` | Successfully updates the password of an existing user via their username. |
+| `updateUserProfile_Success_PasswordSaltChangesOnPasswordUpdate` | Checks if the salt changes when updating the password of an existing user via their username. |
+| `updateUserProfile_Success_UpdateEmail` | Successfully updates the email address of an existing user via their username and checks if the email verification is reset and a new confirmation email is sent. |
+| `updateUserProfile_DoesNotUpdateRoles` | Ensures that an attempt to update one's own roles via this endpoint is ignored. |
+| `updateUserProfile_UserNotFoundException` | Attempts to update the profile of a non-existent user. Expects `UserNotFoundException`. |
+| `updateUserProfile_InvalidUserException_NullDTO` | Attempts to update a user profile with a `null` `UserProfileUpdateDTO`. Expects `InvalidUserException`. |
+| `updateUserProfile_Success_WithDuplicateEmail` | Updates a user profile's email address to an already existing email address. Checks if the update is successful and no `DuplicateUserException` is thrown. |
+| `updateUserProfile_InternalServerErrorException_EmailSendFailure` | Simulates an error while sending the email confirmation after an email change. Expects `InternalServerErrorException`. |
 
 ### verifyEmailWithCode(String verificationCode)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `verifyEmailWithCode_Success` | Verifiziert erfolgreich eine E-Mail-Adresse mit einem gültigen 6-stelligen Verifizierungscode. Überprüft, ob der E-Mail-Verifizierungsdatensatz gelöscht und der Benutzer als "E-Mail verifiziert" markiert wird. |
-| `verifyEmailWithCode_BadRequestException_NullCode` | Versucht, die E-Mail mit einem `null` Verifizierungscode zu verifizieren. Erwartet `IllegalArgumentException`. |
-| `verifyEmailWithCode_BadRequestException_EmptyCode` | Versucht, die E-Mail mit einem leeren Verifizierungscode zu verifizieren. Erwartet `IllegalArgumentException`. |
-| `verifyEmailWithCode_BadRequestException_InvalidFormat` | Versucht, die E-Mail mit einem Verifizierungscode zu verifizieren, der nicht dem 6-stelligen Zahlenformat entspricht. Erwartet `IllegalArgumentException`. |
-| `verifyEmailWithCode_BadRequestException_CodeNotFound` | Versucht, die E-Mail mit einem Verifizierungscode zu verifizieren, für den kein Verifizierungsdatensatz existiert. Erwartet `IllegalArgumentException`. |
-| `verifyEmailWithCode_TokenExpiredException` | Versucht, die E-Mail mit einem abgelaufenen Verifizierungscode zu verifizieren. Erwartet `TokenExpiredException`. |
-| `verifyEmailWithCode_FailsWithUsedCode` | Stellt sicher, dass ein bereits verwendeter E-Mail-Verifizierungscode nicht erneut verwendet werden kann. |
+| `verifyEmailWithCode_Success` | Successfully verifies an email address with a valid 6-digit verification code. Checks if the email verification record is deleted and the user is marked as "email verified". |
+| `verifyEmailWithCode_BadRequestException_NullCode` | Attempts to verify the email with a `null` verification code. Expects `IllegalArgumentException`. |
+| `verifyEmailWithCode_BadRequestException_EmptyCode` | Attempts to verify the email with an empty verification code. Expects `IllegalArgumentException`. |
+| `verifyEmailWithCode_BadRequestException_InvalidFormat` | Attempts to verify the email with a verification code that does not match the 6-digit number format. Expects `IllegalArgumentException`. |
+| `verifyEmailWithCode_BadRequestException_CodeNotFound` | Attempts to verify the email with a verification code for which no verification record exists. Expects `IllegalArgumentException`. |
+| `verifyEmailWithCode_TokenExpiredException` | Attempts to verify the email with an expired verification code. Expects `TokenExpiredException`. |
+| `verifyEmailWithCode_FailsWithUsedCode` | Ensures that an already used email verification code cannot be used again. |
 
 ## EventService
 
 ### createEvent(EventRequestDTO dto, User manager)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `createEvent_Success` | Erstellt erfolgreich ein neues Event mit gültigen Daten und einem Manager. |
-| `createEvent_IllegalArgumentException_LocationNotFound` | Versucht, ein Event mit einer nicht existierenden EventLocation-ID zu erstellen. Erwartet `IllegalArgumentException`. |
+| `createEvent_Success` | Successfully creates a new event with valid data and a manager. |
+| `createEvent_IllegalArgumentException_LocationNotFound` | Attempts to create an event with a non-existent EventLocation ID. Expects `IllegalArgumentException`. |
 
 ### updateEvent(Long id, EventRequestDTO dto, User manager)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `updateEvent_Success_AsManager` | Aktualisiert erfolgreich ein bestehendes Event als Manager des Events. |
-| `updateEvent_Success_AsAdmin` | Aktualisiert erfolgreich ein bestehendes Event als Administrator. |
-| `updateEvent_EventNotFoundException` | Versucht, ein nicht existierendes Event zu aktualisieren. Erwartet `EventNotFoundException`. |
-| `updateEvent_ForbiddenException_NotManagerOrAdmin` | Versucht, ein Event als Benutzer zu aktualisieren, der weder Manager noch Administrator ist. Erwartet `ForbiddenException`. |
-| `updateEvent_IllegalArgumentException_LocationNotFound` | Versucht, ein Event mit einer nicht existierenden EventLocation-ID zu aktualisieren. Erwartet `IllegalArgumentException`. |
+| `updateEvent_Success_AsManager` | Successfully updates an existing event as the event's manager. |
+| `updateEvent_Success_AsAdmin` | Successfully updates an existing event as an administrator. |
+| `updateEvent_EventNotFoundException` | Attempts to update a non-existent event. Expects `EventNotFoundException`. |
+| `updateEvent_ForbiddenException_NotManagerOrAdmin` | Attempts to update an event as a user who is neither a manager nor an administrator. Expects `ForbiddenException`. |
+| `updateEvent_IllegalArgumentException_LocationNotFound` | Attempts to update an event with a non-existent EventLocation ID. Expects `IllegalArgumentException`. |
 
 ### getEventsByCurrentManager(User manager)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `getEventsByCurrentManager_Success_AsAdmin` | Ruft alle Events als Administrator ab. |
-| `getEventsByCurrentManager_Success_AsManager` | Ruft Events ab, die dem aktuellen Manager gehören. |
-| `getEventsByCurrentManager_Success_NoEventsForManager` | Ruft eine leere Liste ab, wenn der Manager keine Events verwaltet. |
+| `getEventsByCurrentManager_Success_AsAdmin` | Retrieves all events as an administrator. |
+| `getEventsByCurrentManager_Success_AsManager` | Retrieves events belonging to the current manager. |
+| `getEventsByCurrentManager_Success_NoEventsForManager` | Retrieves an empty list if the manager manages no events. |
 
 ### setReservationsAllowedForUser(EventUserAllowancesDto dto, User manager)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `setReservationsAllowedForUser_Success_NewAllowance` | Setzt erfolgreich die erlaubte Anzahl von Reservierungen für einen Benutzer für ein Event (neuer Eintrag). |
-| `setReservationsAllowedForUser_Success_UpdateAllowance` | Aktualisiert erfolgreich die erlaubte Anzahl von Reservierungen für einen Benutzer für ein Event (bestehender Eintrag). |
-| `setReservationsAllowedForUser_EventNotFoundException` | Versucht, die Reservierungserlaubnis für ein nicht existierendes Event zu setzen. Erwartet `EventNotFoundException`. |
-| `setReservationsAllowedForUser_UserNotFoundException` | Versucht, die Reservierungserlaubnis für einen nicht existierenden Benutzer zu setzen. Erwartet `UserNotFoundException`. |
-| `setReservationsAllowedForUser_ForbiddenException_NotManagerOrAdmin` | Versucht, die Reservierungserlaubnis als Benutzer zu setzen, der weder Manager noch Administrator des Events ist. Erwartet `ForbiddenException`. |
-| `setReservationsAllowedForUser_Success_AsAdmin` | Setzt erfolgreich die erlaubte Anzahl von Reservierungen für einen Benutzer für ein Event durch einen Administrator und überprüft die korrekte Persistierung der Daten. |
+| `setReservationsAllowedForUser_Success_NewAllowance` | Successfully sets the allowed number of reservations for a user for an event (new entry). |
+| `setReservationsAllowedForUser_Success_UpdateAllowance` | Successfully updates the allowed number of reservations for a user for an event (existing entry). |
+| `setReservationsAllowedForUser_EventNotFoundException` | Attempts to set reservation allowance for a non-existent event. Expects `EventNotFoundException`. |
+| `setReservationsAllowedForUser_UserNotFoundException` | Attempts to set reservation allowance for a non-existent user. Expects `UserNotFoundException`. |
+| `setReservationsAllowedForUser_ForbiddenException_NotManagerOrAdmin` | Attempts to set reservation allowance as a user who is neither a manager nor an administrator of the event. Expects `ForbiddenException`. |
+| `setReservationsAllowedForUser_Success_AsAdmin` | Successfully sets the allowed number of reservations for a user for an event by an administrator and checks for correct data persistence. |
 
 ### updateReservationAllowance(EventUserAllowanceUpdateDto dto, User manager)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `updateReservationAllowance_Success_AsManager` | Aktualisiert erfolgreich eine bestehende Reservierungsberechtigung als Manager des Events. |
-| `updateReservationAllowance_Success_AsAdmin` | Aktualisiert erfolgreich eine bestehende Reservierungsberechtigung als Administrator. |
-| `updateReservationAllowance_EventNotFoundException_AllowanceNotFound` | Versucht, eine nicht existierende Reservierungsberechtigung zu aktualisieren. Erwartet `EventNotFoundException`. |
-| `updateReservationAllowance_SecurityException_NotManagerOrAdmin` | Versucht, eine Reservierungsberechtigung als Benutzer zu aktualisieren, der weder Manager noch Administrator des Events ist. Erwartet `SecurityException`. |
+| `updateReservationAllowance_Success_AsManager` | Successfully updates an existing reservation allowance as the event's manager. |
+| `updateReservationAllowance_Success_AsAdmin` | Successfully updates an existing reservation allowance as an administrator. |
+| `updateReservationAllowance_EventNotFoundException_AllowanceNotFound` | Attempts to update a non-existent reservation allowance. Expects `EventNotFoundException`. |
+| `updateReservationAllowance_SecurityException_NotManagerOrAdmin` | Attempts to update a reservation allowance as a user who is neither a manager nor an administrator of the event. Expects `SecurityException`. |
 
 ### getReservationAllowanceById(Long id, User manager)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `getReservationAllowanceById_Success_AsManager` | Ruft erfolgreich eine `EventUserAllowance` als der zuständige Manager ab. |
-| `getReservationAllowanceById_Success_AsAdmin` | Ruft erfolgreich eine `EventUserAllowance` als Administrator ab. |
-| `getReservationAllowanceById_ForbiddenException_NotManagerOrAdmin` | Versucht, eine `EventUserAllowance` als nicht autorisierter Benutzer abzurufen. Erwartet `SecurityException`. |
-| `getReservationAllowanceById_EventNotFoundException` | Versucht, eine nicht existierende `EventUserAllowance` abzurufen. Erwartet `EventNotFoundException`. |
+| `getReservationAllowanceById_Success_AsManager` | Successfully retrieves an `EventUserAllowance` as the responsible manager. |
+| `getReservationAllowanceById_Success_AsAdmin` | Successfully retrieves an `EventUserAllowance` as an administrator. |
+| `getReservationAllowanceById_ForbiddenException_NotManagerOrAdmin` | Attempts to retrieve an `EventUserAllowance` as an unauthorized user. Expects `SecurityException`. |
+| `getReservationAllowanceById_EventNotFoundException` | Attempts to retrieve a non-existent `EventUserAllowance`. Expects `EventNotFoundException`. |
 
 ## ReservationService
 
 ### findAllReservations(User currentUser)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `findAllReservations_Success_AsAdmin` | Ruft alle Reservierungen als Administrator ab. |
-| `findAllReservations_Success_AsManager` | Ruft Reservierungen für Events ab, die der Manager verwalten darf. |
-| `findAllReservations_Success_NoAllowedEventsForManager` | Ruft eine leere Liste ab, wenn der Manager keine Events verwalten darf. |
-| `findAllReservations_ForbiddenException_OtherRoles` | Versucht, Reservierungen als Benutzer mit einer anderen Rolle abzurufen. Erwartet `ForbiddenException`. |
+| `findAllReservations_Success_AsAdmin` | Retrieves all reservations as an administrator. |
+| `findAllReservations_Success_AsManager` | Retrieves reservations for events that the manager is allowed to manage. |
+| `findAllReservations_Success_NoAllowedEventsForManager` | Retrieves an empty list if the manager is not allowed to manage any events. |
+| `findAllReservations_ForbiddenException_OtherRoles` | Attempts to retrieve reservations as a user with a different role. Expects `ForbiddenException`. |
 
 ### findReservationById(Long id, User currentUser)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `findReservationById_Success_AsAdmin` | Ruft eine Reservierung als Administrator ab. |
-| `findReservationById_Success_AsManager` | Ruft eine Reservierung ab, die zu einem Event gehört, das der Manager verwalten darf. |
-| `findReservationById_NotFoundException` | Versucht, eine nicht existierende Reservierung abzurufen. Erwartet `NotFoundException`. |
-| `findReservationById_ForbiddenException_NotAllowed` | Versucht, eine Reservierung abzurufen, für die der Benutzer keine Berechtigung hat. Erwartet `ForbiddenException`. |
+| `findReservationById_Success_AsAdmin` | Retrieves a reservation as an administrator. |
+| `findReservationById_Success_AsManager` | Retrieves a reservation belonging to an event that the manager is allowed to manage. |
+| `findReservationById_NotFoundException` | Attempts to retrieve a non-existent reservation. Expects `NotFoundException`. |
+| `findReservationById_ForbiddenException_NotAllowed` | Attempts to retrieve a reservation for which the user has no permission. Expects `ForbiddenException`. |
 
 ### createReservation(ReservationRequestDTO dto, User currentUser)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `createReservation_Success_AsAdmin` | Erstellt erfolgreich eine Reservierung als Administrator. |
-| `createReservation_Success_AsManager` | Erstellt erfolgreich eine Reservierung als Manager für ein Event, das er verwalten darf. |
-| `createReservation_UserNotFoundException_TargetUser` | Versucht, eine Reservierung für einen nicht existierenden Zielbenutzer zu erstellen. Erwartet `UserNotFoundException`. |
-| `createReservation_NotFoundException_EventNotFound` | Versucht, eine Reservierung für ein nicht existierendes Event zu erstellen. Erwartet `NotFoundException`. |
-| `createReservation_ForbiddenException_NotAllowed` | Versucht, eine Reservierung als Benutzer zu erstellen, der keine Berechtigung hat. Erwartet `ForbiddenException`. |
-| `createReservation_NotFoundException_SeatNotFound` | Versucht, eine Reservierung für einen nicht existierenden Sitzplatz zu erstellen. Erwartet `NotFoundException`. |
-| `createReservation_BadRequestException_NoAllowance` | Versucht, eine Reservierung zu erstellen, wenn der Benutzer keine Reservierungserlaubnis für das Event hat. Erwartet `BadRequestException`. |
-| `createReservation_BadRequestException_AllowanceZero` | Versucht, eine Reservierung zu erstellen, wenn die Reservierungserlaubnis des Benutzers 0 ist. Erwartet `BadRequestException`. |
-| `createReservation_Forbidden_AsUser` | Versucht, eine Reservierung als normaler Benutzer zu erstellen, was fehlschlagen sollte. |
+| `createReservation_Success_AsAdmin` | Successfully creates a reservation as an administrator. |
+| `createReservation_Success_AsManager` | Successfully creates a reservation as a manager for an event they are allowed to manage. |
+| `createReservation_UserNotFoundException_TargetUser` | Attempts to create a reservation for a non-existent target user. Expects `UserNotFoundException`. |
+| `createReservation_NotFoundException_EventNotFound` | Attempts to create a reservation for a non-existent event. Expects `NotFoundException`. |
+| `createReservation_ForbiddenException_NotAllowed` | Attempts to create a reservation as a user who has no permission. Expects `ForbiddenException`. |
+| `createReservation_NotFoundException_SeatNotFound` | Attempts to create a reservation for a non-existent seat. Expects `NotFoundException`. |
+| `createReservation_BadRequestException_NoAllowance` | Attempts to create a reservation when the user has no reservation allowance for the event. Expects `BadRequestException`. |
+| `createReservation_BadRequestException_AllowanceZero` | Attempts to create a reservation when the user's reservation allowance is 0. Expects `BadRequestException`. |
+| `createReservation_Forbidden_AsUser` | Attempts to create a reservation as a regular user, which should fail. |
 
 ### updateReservation(Long id, ReservationRequestDTO dto, User currentUser)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `updateReservation_Success_AsAdmin` | Aktualisiert erfolgreich eine Reservierung als Administrator. |
-| `updateReservation_Success_AsManager` | Aktualisiert erfolgreich eine Reservierung als Manager für ein Event, das er verwalten darf. |
-| `updateReservation_NotFoundException_ReservationNotFound` | Versucht, eine nicht existierende Reservierung zu aktualisieren. Erwartet `NotFoundException`. |
-| `updateReservation_ForbiddenException_NotAllowed` | Versucht, eine Reservierung als Benutzer zu aktualisieren, der keine Berechtigung hat. Erwartet `ForbiddenException`. |
-| `updateReservation_NotFoundException_NewEventNotFound` | Versucht, eine Reservierung auf ein nicht existierendes neues Event zu aktualisieren. Erwartet `NotFoundException`. |
-| `updateReservation_ForbiddenException_NewEventNotAllowed` | Versucht, eine Reservierung auf ein neues Event zu aktualisieren, für das der Manager keine Berechtigung hat. Erwartet `ForbiddenException`. |
-| `updateReservation_NotFoundException_UserNotFound` | Versucht, eine Reservierung mit einem nicht existierenden Benutzer zu aktualisieren. Erwartet `NotFoundException`. |
-| `updateReservation_NotFoundException_SeatNotFound` | Versucht, eine Reservierung mit einem nicht existierenden Sitzplatz zu aktualisieren. Erwartet `NotFoundException`. |
+| `updateReservation_Success_AsAdmin` | Successfully updates a reservation as an administrator. |
+| `updateReservation_Success_AsManager` | Successfully updates a reservation as a manager for an event they are allowed to manage. |
+| `updateReservation_NotFoundException_ReservationNotFound` | Attempts to update a non-existent reservation. Expects `NotFoundException`. |
+| `updateReservation_ForbiddenException_NotAllowed` | Attempts to update a reservation as a user who has no permission. Expects `ForbiddenException`. |
+| `updateReservation_NotFoundException_NewEventNotFound` | Attempts to update a reservation to a non-existent new event. Expects `NotFoundException`. |
+| `updateReservation_ForbiddenException_NewEventNotAllowed` | Attempts to update a reservation to a new event for which the manager has no permission. Expects `ForbiddenException`. |
+| `updateReservation_NotFoundException_UserNotFound` | Attempts to update a reservation with a non-existent user. Expects `NotFoundException`. |
+| `updateReservation_NotFoundException_SeatNotFound` | Attempts to update a reservation with a non-existent seat. Expects `NotFoundException`. |
 
 ### deleteReservation(Long id, User currentUser)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `deleteReservation_Success_AsAdmin` | Löscht erfolgreich eine Reservierung als Administrator. |
-| `deleteReservation_Success_AsManager` | Löscht erfolgreich eine Reservierung als Manager für ein Event, das er verwalten darf. |
-| `deleteReservation_NotFoundException` | Versucht, eine nicht existierende Reservierung zu löschen. Erwartet `NotFoundException`. |
-| `deleteReservation_ForbiddenException_NotAllowed` | Versucht, eine Reservierung als Benutzer zu löschen, der keine Berechtigung hat. Erwartet `ForbiddenException`. |
-| `blockSeats_Success` | Blockiert erfolgreich Sitze für ein Event als Manager. |
-| `blockSeats_Forbidden` | Versucht, Sitze als nicht autorisierter Benutzer zu blockieren. Erwartet `SecurityException`. |
-| `blockSeats_SeatAlreadyReserved` | Versucht, bereits reservierte oder blockierte Sitze zu blockieren. Erwartet `IllegalStateException`. |
+| `deleteReservation_Success_AsAdmin` | Successfully deletes a reservation as an administrator. |
+| `deleteReservation_Success_AsManager` | Successfully deletes a reservation as a manager for an event they are allowed to manage. |
+| `deleteReservation_NotFoundException` | Attempts to delete a non-existent reservation. Expects `NotFoundException`. |
+| `deleteReservation_ForbiddenException_NotAllowed` | Attempts to delete a reservation as a user who has no permission. Expects `ForbiddenException`. |
+| `blockSeats_Success` | Successfully blocks seats for an event as a manager. |
+| `blockSeats_Forbidden` | Attempts to block seats as an unauthorized user. Expects `SecurityException`. |
+| `blockSeats_SeatAlreadyReserved` | Attempts to block already reserved or blocked seats. Expects `IllegalStateException`. |
 
 ## EventService (reservation package)
 
 ### getEventsForCurrentUser(String username)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `getEventsForCurrentUser_Success` | Ruft erfolgreich Events für den aktuellen Benutzer ab, basierend auf seinen EventUserAllowances. Die Antwort enthält die Anzahl der erlaubten Reservierungen. |
-| `getEventsForCurrentUser_UserNotFoundException` | Versucht, Events für einen nicht existierenden Benutzer abzurufen. Erwartet `UserNotFoundException`. |
-| `getEventsForCurrentUser_Success_NoEvents` | Ruft eine leere Liste ab, wenn der Benutzer keine EventUserAllowances hat. |
+| `getEventsForCurrentUser_Success` | Successfully retrieves events for the current user based on their EventUserAllowances. The response includes the number of allowed reservations. |
+| `getEventsForCurrentUser_UserNotFoundException` | Attempts to retrieve events for a non-existent user. Expects `UserNotFoundException`. |
+| `getEventsForCurrentUser_Success_NoEvents` | Retrieves an empty list if the user has no EventUserAllowances. |
 
 ## ReservationService (reservation package)
 
 ### findReservationsByUser(User currentUser)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `findReservationsByUser_Success` | Ruft erfolgreich alle Reservierungen für den aktuellen Benutzer ab. |
-| `findReservationsByUser_Success_NoReservations` | Ruft eine leere Liste ab, wenn der Benutzer keine Reservierungen hat. |
+| `findReservationsByUser_Success` | Successfully retrieves all reservations for the current user. |
+| `findReservationsByUser_Success_NoReservations` | Retrieves an empty list if the user has no reservations. |
 
 ### findReservationByIdForUser(Long id, User currentUser)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `findReservationByIdForUser_Success` | Ruft erfolgreich eine Reservierung für den aktuellen Benutzer anhand der ID ab. |
-| `findReservationByIdForUser_NotFoundException` | Versucht, eine nicht existierende Reservierung abzurufen. Erwartet `NotFoundException`. |
-| `findReservationByIdForUser_ForbiddenException` | Versucht, eine Reservierung abzurufen, die nicht dem aktuellen Benutzer gehört. Erwartet `ForbiddenException`. |
+| `findReservationByIdForUser_Success` | Successfully retrieves a reservation for the current user by ID. |
+| `findReservationByIdForUser_NotFoundException` | Attempts to retrieve a non-existent reservation. Expects `NotFoundException`. |
+| `findReservationByIdForUser_ForbiddenException` | Attempts to retrieve a reservation that does not belong to the current user. Expects `ForbiddenException`. |
 
 ### createReservationForUser(UserReservationsRequestDTO dto, User currentUser)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `createReservationForUser_Success` | Erstellt erfolgreich eine oder mehrere Reservierungen für den aktuellen Benutzer. |
-| `createReservationForUser_NotFoundException_EventNotFound` | Versucht, eine Reservierung für ein nicht existierendes Event zu erstellen. Erwartet `NotFoundException`. |
-| `createReservationForUser_NotFoundException_SeatNotFound` | Versucht, eine Reservierung für einen oder mehrere nicht existierende Sitzplätze zu erstellen. Erwartet `NotFoundException`. |
-| `createReservationForUser_ForbiddenException_NoAllowance` | Versucht, eine Reservierung zu erstellen, wenn der Benutzer keine Reservierungserlaubnis für das Event hat. Erwartet `ForbiddenException`. |
-| `createReservationForUser_NoSeatsAvailableException_LimitReached` | Versucht, mehr Reservierungen zu erstellen, als die erlaubte Anzahl für den Benutzer. Erwartet `NoSeatsAvailableException`. |
-| `createReservationForUser_EventBookingClosedException` | Versucht, eine Reservierung für ein Event zu erstellen, dessen Buchungsfrist abgelaufen ist. Erwartet `EventBookingClosedException`. |
-| `createReservationForUser_SeatAlreadyReservedException` | Versucht, eine Reservierung für einen bereits reservierten Sitzplatz zu erstellen. Erwartet `SeatAlreadyReservedException`. |
-| `createReservationForUser_IllegalArgumentException_NoSeatIds` | Versucht, eine Reservierung ohne Angabe von Sitzplatz-IDs zu erstellen. |
-| `createReservationForUser_IllegalStateException_EmailNotVerified` | Versucht, eine Reservierung mit einem Benutzer zu erstellen, dessen E-Mail-Adresse nicht verifiziert ist. Erwartet `IllegalStateException`. |
+| `createReservationForUser_Success` | Successfully creates one or more reservations for the current user. |
+| `createReservationForUser_NotFoundException_EventNotFound` | Attempts to create a reservation for a non-existent event. Expects `NotFoundException`. |
+| `createReservationForUser_NotFoundException_SeatNotFound` | Attempts to create a reservation for one or more non-existent seats. Expects `NotFoundException`. |
+| `createReservationForUser_ForbiddenException_NoAllowance` | Attempts to create a reservation when the user has no reservation allowance for the event. Expects `ForbiddenException`. |
+| `createReservationForUser_NoSeatsAvailableException_LimitReached` | Attempts to create more reservations than the allowed number for the user. Expects `NoSeatsAvailableException`. |
+| `createReservationForUser_EventBookingClosedException` | Attempts to create a reservation for an event whose booking deadline has passed. Expects `EventBookingClosedException`. |
+| `createReservationForUser_SeatAlreadyReservedException` | Attempts to create a reservation for an already reserved seat. Expects `SeatAlreadyReservedException`. |
+| `createReservationForUser_IllegalArgumentException_NoSeatIds` | Attempts to create a reservation without specifying seat IDs. |
+| `createReservationForUser_IllegalStateException_EmailNotVerified` | Attempts to create a reservation with a user whose email address is not verified. Expects `IllegalStateException`. |
 
 ### deleteReservationForUser(Long id, User currentUser)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `deleteReservationForUser_Success` | Löscht erfolgreich eine Reservierung für den aktuellen Benutzer. |
-| `deleteReservationForUser_NotFoundException` | Versucht, eine nicht existierende Reservierung zu löschen. Erwartet `NotFoundException`. |
-| `deleteReservationForUser_ForbiddenException_NotOwner` | Versucht, eine Reservierung zu löschen, die nicht dem aktuellen Benutzer gehört. Erwartet `ForbiddenException`. |
-| `deleteReservationForUser_ForbiddenException_NoAllowance` | Versucht, eine Reservierung zu löschen, wenn der Benutzer keine Reservierungserlaubnis für das Event hat (obwohl er der Besitzer der Reservierung ist). Erwartet `ForbiddenException`. |
+| `deleteReservationForUser_Success` | Successfully deletes a reservation for the current user. |
+| `deleteReservationForUser_NotFoundException` | Attempts to delete a non-existent reservation. Expects `NotFoundException`. |
+| `deleteReservationForUser_ForbiddenException_NotOwner` | Attempts to delete a reservation that does not belong to the current user. Expects `ForbiddenException`. |
+| `deleteReservationForUser_ForbiddenException_NoAllowance` | Attempts to delete a reservation when the user has no reservation allowance for the event (even though they are the owner of the reservation). Expects `ForbiddenException`. |
 
 ## EventLocation Service
 
 ### EventLocationService (Manager/Admin)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `getEventLocationsByCurrentManager_Success_AsAdmin` | Ruft alle EventLocations als Administrator ab. |
-| `getEventLocationsByCurrentManager_Success_AsManager` | Ruft EventLocations ab, die dem aktuellen Manager gehören. |
-| `getEventLocationsByCurrentManager_Success_NoEventLocationsForManager` | Ruft eine leere Liste ab, wenn der Manager keine EventLocations verwaltet. |
-| `createEventLocation_Success` | Erstellt erfolgreich eine neue EventLocation mit gültigen Daten. |
-| `createEventLocation_InvalidInput` | Versucht, eine EventLocation mit ungültigen Daten zu erstellen (z.B. leere Felder). |
-| `createEventLocation_InvalidInput_NegativeCapacity` | Versucht, eine EventLocation mit negativer Kapazität zu erstellen. |
-| `updateEventLocation_Success_AsManager` | Aktualisiert erfolgreich eine bestehende EventLocation als Besitzer. |
-| `updateEventLocation_Success_AsAdmin` | Aktualisiert erfolgreich eine bestehende EventLocation als Administrator. |
-| `updateEventLocation_NotFound` | Versucht, eine nicht existierende EventLocation zu aktualisieren. |
-| `updateEventLocation_ForbiddenException_NotManagerOrAdmin` | Versucht, eine EventLocation zu aktualisieren, ohne die erforderlichen Berechtigungen zu haben. |
-| `deleteEventLocation_Success_AsManager` | Löscht erfolgreich eine bestehende EventLocation als Besitzer. |
-| `deleteEventLocation_Success_AsAdmin` | Löscht erfolgreich eine bestehende EventLocation als Administrator. |
-| `deleteEventLocation_NotFound` | Versucht, eine nicht existierende EventLocation zu löschen. |
-| `deleteEventLocation_ForbiddenException_NotManagerOrAdmin` | Versucht, eine EventLocation zu löschen, ohne die erforderlichen Berechtigungen zu haben. |
-| `importEventLocation_Success` | Erstellt erfolgreich eine neue EventLocation mit einer Liste von Sitzplätzen. |
-| `importSeatsToEventLocation_Success` | Importiert erfolgreich Sitze zu einer bestehenden EventLocation als Manager. |
-| `importSeatsToEventLocation_Success_AsAdmin` | Importiert erfolgreich Sitze zu einer bestehenden EventLocation als Administrator. |
-| `importSeatsToEventLocation_NotFound` | Versucht, Sitze zu einer nicht existierenden EventLocation zu importieren. |
-| `importSeatsToEventLocation_Forbidden` | Versucht, Sitze zu einer EventLocation zu importieren, für die keine Berechtigung besteht. |
-| `createEventLocation_WithMarkers_Success` | Erstellt erfolgreich eine neue EventLocation mit Markern. |
-| `createEventLocation_WithNullMarkers_Success` | Erstellt erfolgreich eine neue EventLocation mit null-Marker-Liste. |
-| `createEventLocation_WithEmptyMarkers_Success` | Erstellt erfolgreich eine neue EventLocation mit leerer Marker-Liste. |
-| `updateEventLocation_WithMarkers_Success` | Aktualisiert erfolgreich eine bestehende EventLocation mit neuen Markern. |
-| `updateEventLocation_ClearingMarkers_Success` | Aktualisiert erfolgreich eine bestehende EventLocation und löscht alle Marker. |
-| `convertToMarkerEntities_ValidInput` | Testet die Konvertierung von Marker-DTOs zu Entitäten mit verschiedenen Grenzwerten. |
+| `getEventLocationsByCurrentManager_Success_AsAdmin` | Retrieves all EventLocations as an administrator. |
+| `getEventLocationsByCurrentManager_Success_AsManager` | Retrieves EventLocations belonging to the current manager. |
+| `getEventLocationsByCurrentManager_Success_NoEventLocationsForManager` | Retrieves an empty list if the manager manages no EventLocations. |
+| `createEventLocation_Success` | Successfully creates a new EventLocation with valid data. |
+| `createEventLocation_InvalidInput` | Attempts to create an EventLocation with invalid data (e.g., empty fields). |
+| `createEventLocation_InvalidInput_NegativeCapacity` | Attempts to create an EventLocation with negative capacity. |
+| `updateEventLocation_Success_AsManager` | Successfully updates an existing EventLocation as the owner. |
+| `updateEventLocation_Success_AsAdmin` | Successfully updates an existing EventLocation as an administrator. |
+| `updateEventLocation_NotFound` | Attempts to update a non-existent EventLocation. |
+| `updateEventLocation_ForbiddenException_NotManagerOrAdmin` | Attempts to update an EventLocation without the required permissions. |
+| `deleteEventLocation_Success_AsManager` | Successfully deletes an existing EventLocation as the owner. |
+| `deleteEventLocation_Success_AsAdmin` | Successfully deletes an existing EventLocation as an administrator. |
+| `deleteEventLocation_NotFound` | Attempts to delete a non-existent EventLocation. |
+| `deleteEventLocation_ForbiddenException_NotManagerOrAdmin` | Attempts to delete an EventLocation without the required permissions. |
+| `importEventLocation_Success` | Successfully creates a new EventLocation with a list of seats. |
+| `importSeatsToEventLocation_Success` | Successfully imports seats to an existing EventLocation as a manager. |
+| `importSeatsToEventLocation_Success_AsAdmin` | Successfully imports seats to an existing EventLocation as an administrator. |
+| `importSeatsToEventLocation_NotFound` | Attempts to import seats to a non-existent EventLocation. |
+| `importSeatsToEventLocation_Forbidden` | Attempts to import seats to an EventLocation for which there is no permission. |
+| `createEventLocation_WithMarkers_Success` | Successfully creates a new EventLocation with markers. |
+| `createEventLocation_WithNullMarkers_Success` | Successfully creates a new EventLocation with a null marker list. |
+| `createEventLocation_WithEmptyMarkers_Success` | Successfully creates a new EventLocation with an empty marker list. |
+| `updateEventLocation_WithMarkers_Success` | Successfully updates an existing EventLocation with new markers. |
+| `updateEventLocation_ClearingMarkers_Success` | Successfully updates an existing EventLocation and deletes all markers. |
+| `convertToMarkerEntities_ValidInput` | Tests the conversion of marker DTOs to entities with various limits. |
 
 ### EventLocationService (User)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `getLocationsForCurrentUser_Success_FromAllowanceAndReservation` | Ruft erfolgreich Event-Locations für den aktuellen Benutzer ab, basierend auf Berechtigungen und Reservierungen. |
-| `getLocationsForCurrentUser_Deduplicates_Locations` | Stellt sicher, dass doppelte Event-Locations aus Berechtigungen und Reservierungen korrekt dedupliziert werden. |
-| `getLocationsForCurrentUser_Empty` | Ruft eine leere Liste ab, wenn der Benutzer keine Event-Locations über Berechtigungen oder Reservierungen hat. |
-| `getLocationsForCurrentUser_UserNotFound` | Versucht, Event-Locations für einen nicht existierenden Benutzer abzurufen. Erwartet `UserNotFoundException`. |
-| `getLocationsForCurrentUser_Success_OnlyFromAllowance` | Ruft erfolgreich Event-Locations für den aktuellen Benutzer ab, wenn nur Berechtigungen vorhanden sind. |
-| `getLocationsForCurrentUser_Success_OnlyFromReservation` | Ruft erfolgreich Event-Locations für den aktuellen Benutzer ab, wenn nur Reservierungen vorhanden sind. |
-| `getLocationsForCurrentUser_NoAllowanceNoReservation` | Ruft eine leere Liste ab, wenn der Benutzer weder Berechtigungen noch Reservierungen hat. |
-| `getLocationsForCurrentUser_OneLocationWithAllowance_OneLocationWithReservation` | Ruft erfolgreich Event-Locations ab, wenn eine Location über Berechtigung und eine andere über Reservierung zugewiesen ist. |
-| `getLocationsForCurrentUser_TwoDifferentLocations_OneAllowanceOneReservation` | Ruft erfolgreich Event-Locations ab, wenn zwei verschiedene Locations über Berechtigung und Reservierung zugewiesen sind. |
-| `getLocationsForCurrentUser_OneLocationTwoEvents_OneAllowanceOneReservation` | Ruft erfolgreich eine einzelne Event-Location ab, wenn diese über zwei verschiedene Events (eines mit Berechtigung, eines mit Reservierung) zugewiesen ist. |
+| `getLocationsForCurrentUser_Success_FromAllowanceAndReservation` | Successfully retrieves event locations for the current user based on permissions and reservations. |
+| `getLocationsForCurrentUser_Deduplicates_Locations` | Ensures that duplicate event locations from permissions and reservations are correctly deduplicated. |
+| `getLocationsForCurrentUser_Empty` | Retrieves an empty list if the user has no event locations via permissions or reservations. |
+| `getLocationsForCurrentUser_UserNotFound` | Attempts to retrieve event locations for a non-existent user. Expects `UserNotFoundException`. |
+| `getLocationsForCurrentUser_Success_OnlyFromAllowance` | Successfully retrieves event locations for the current user when only permissions are present. |
+| `getLocationsForCurrentUser_Success_OnlyFromReservation` | Successfully retrieves event locations for the current user when only reservations are present. |
+| `getLocationsForCurrentUser_NoAllowanceNoReservation` | Retrieves an empty list if the user has neither permissions nor reservations. |
+| `getLocationsForCurrentUser_OneLocationWithAllowance_OneLocationWithReservation` | Successfully retrieves event locations when one location is assigned via permission and another via reservation. |
+| `getLocationsForCurrentUser_TwoDifferentLocations_OneAllowanceOneReservation` | Successfully retrieves event locations when two different locations are assigned via permission and reservation. |
+| `getLocationsForCurrentUser_OneLocationTwoEvents_OneAllowanceOneReservation` | Successfully retrieves a single event location when it is assigned via two different events (one with permission, one with reservation). |
 
 ### EventLocationResource (User)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `getLocations_ReturnsLocationsForUser` | Ruft erfolgreich Event-Locations für den authentifizierten Benutzer ab. |
-| `getLocations_NoAuth_ReturnsUnauthorized` | Versucht, Event-Locations ohne Authentifizierung abzurufen. Erwartet `401 Unauthorized`. |
-| `getLocations_UserWithNoLocations_ReturnsEmptyList` | Ruft eine leere Liste ab, wenn der authentifizierte Benutzer keine Event-Locations hat. |
-| `getLocations_DeduplicatesLocations_FromAllowanceAndReservation` | Stellt sicher, dass Event-Locations korrekt dedupliziert werden, wenn sie sowohl über Berechtigungen als auch über Reservierungen zugänglich sind. |
+| `getLocations_ReturnsLocationsForUser` | Successfully retrieves event locations for the authenticated user. |
+| `getLocations_NoAuth_ReturnsUnauthorized` | Attempts to retrieve event locations without authentication. Expects `401 Unauthorized`. |
+| `getLocations_UserWithNoLocations_ReturnsEmptyList` | Retrieves an empty list if the authenticated user has no event locations. |
+| `getLocations_DeduplicatesLocations_FromAllowanceAndReservation` | Ensures that event locations are correctly deduplicated when they are accessible via both permissions and reservations. |
 
 ## EventLocationMarker Tests
 
 ### EventLocationMarker
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `testDefaultConstructor` | Überprüft die korrekte Initialisierung mit dem Default-Konstruktor. |
-| `testParameterizedConstructor` | Überprüft die korrekte Initialisierung mit dem parametrisierten Konstruktor. |
-| `testSettersAndGetters` | Testet alle Setter und Getter Methoden. |
-| `testEquals_SameObject` | Überprüft equals() mit demselben Objekt. |
-| `testEquals_EqualObjects` | Überprüft equals() mit identischen Objekten. |
-| `testEquals_DifferentLabel` | Überprüft equals() mit unterschiedlichen Labels. |
-| `testEquals_DifferentXCoordinate` | Überprüft equals() mit unterschiedlichen X-Koordinaten. |
-| `testEquals_DifferentYCoordinate` | Überprüft equals() mit unterschiedlichen Y-Koordinaten. |
-| `testEquals_NullObject` | Überprüft equals() mit null-Objekt. |
-| `testEquals_DifferentClass` | Überprüft equals() mit anderem Klassentyp. |
-| `testEquals_NullValues` | Überprüft equals() mit null-Werten in beiden Objekten. |
-| `testEquals_MixedNullValues` | Überprüft equals() mit gemischten null-Werten. |
-| `testHashCode_EqualObjects` | Überprüft konsistente hashCode() Werte für gleiche Objekte. |
-| `testHashCode_DifferentObjects` | Überprüft unterschiedliche hashCode() Werte für unterschiedliche Objekte. |
-| `testHashCode_NullValues` | Überprüft hashCode() mit null-Werten. |
-| `testToString` | Überprüft die toString() Ausgabe mit normalen Werten. |
-| `testToString_NullValues` | Überprüft die toString() Ausgabe mit null-Werten. |
-| `testCoordinatesBoundaries` | Testet Grenzwerte für Koordinaten (Integer.MAX_VALUE, Integer.MIN_VALUE). |
-| `testEmptyLabel` | Testet Verhalten mit leerem Label. |
+| `testDefaultConstructor` | Checks for correct initialization with the default constructor. |
+| `testParameterizedConstructor` | Checks for correct initialization with the parameterized constructor. |
+| `testSettersAndGetters` | Tests all setter and getter methods. |
+| `testEquals_SameObject` | Checks equals() with the same object. |
+| `testEquals_EqualObjects` | Checks equals() with identical objects. |
+| `testEquals_DifferentLabel` | Checks equals() with different labels. |
+| `testEquals_DifferentXCoordinate` | Checks equals() with different X coordinates. |
+| `testEquals_DifferentYCoordinate` | Checks equals() with different Y coordinates. |
+| `testEquals_NullObject` | Checks equals() with a null object. |
+| `testEquals_DifferentClass` | Checks equals() with a different class type. |
+| `testEquals_NullValues` | Checks equals() with null values in both objects. |
+| `testEquals_MixedNullValues` | Checks equals() with mixed null values. |
+| `testHashCode_EqualObjects` | Checks for consistent hashCode() values for equal objects. |
+| `testHashCode_DifferentObjects` | Checks for different hashCode() values for different objects. |
+| `testHashCode_NullValues` | Checks hashCode() with null values. |
+| `testToString` | Checks the toString() output with normal values. |
+| `testToString_NullValues` | Checks the toString() output with null values. |
+| `testCoordinatesBoundaries` | Tests boundary values for coordinates (Integer.MAX_VALUE, Integer.MIN_VALUE). |
+| `testEmptyLabel` | Tests behavior with an empty label. |
 
 ### MakerRequestDTO
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `testDefaultConstructor` | Überprüft die korrekte Initialisierung mit dem Default-Konstruktor. |
-| `testParameterizedConstructor` | Überprüft die korrekte Initialisierung mit dem parametrisierten Konstruktor. |
-| `testSettersAndGetters` | Testet alle Setter und Getter Methoden. |
-| `testSettersWithNullValues` | Testet Setter mit null-Werten. |
-| `testWithBoundaryValues` | Testet Grenzwerte für Koordinaten. |
-| `testWithZeroCoordinates` | Testet Verhalten mit Null-Koordinaten. |
-| `testWithNegativeCoordinates` | Testet Verhalten mit negativen Koordinaten. |
-| `testLongLabel` | Testet Verhalten mit sehr langem Label. |
-| `testSetterChaining` | Testet unabhängiges Funktionieren der Setter. |
-| `testOverwriteValues` | Testet das Überschreiben von Werten. |
+| `testDefaultConstructor` | Checks for correct initialization with the default constructor. |
+| `testParameterizedConstructor` | Checks for correct initialization with the parameterized constructor. |
+| `testSettersAndGetters` | Tests all setter and getter methods. |
+| `testSettersWithNullValues` | Tests setters with null values. |
+| `testWithBoundaryValues` | Tests boundary values for coordinates. |
+| `testWithZeroCoordinates` | Tests behavior with zero coordinates. |
+| `testWithNegativeCoordinates` | Tests behavior with negative coordinates. |
+| `testLongLabel` | Tests behavior with a very long label. |
+| `testSetterChaining` | Tests that setters function independently. |
+| `testOverwriteValues` | Tests overwriting values. |
 
 ### EventLocationMakerDTO
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `testConstructorWithMarkerEntity` | Überprüft Konstruktor mit EventLocationMarker-Entität. |
-| `testDirectConstructor` | Überprüft direkten Konstruktor mit Parametern. |
-| `testWithZeroCoordinates` | Testet Verhalten mit Null-Koordinaten. |
-| `testWithNegativeCoordinates` | Testet Verhalten mit negativen Koordinaten. |
-| `testWithBoundaryValues` | Testet Grenzwerte für Koordinaten. |
-| `testWithNullLabel` | Testet Verhalten mit null-Label. |
-| `testWithEmptyLabel` | Testet Verhalten mit leerem Label. |
-| `testWithLongLabel` | Testet Verhalten mit sehr langem Label. |
-| `testRecordEquality` | Testet Record-Gleichheit und Unterschiede. |
-| `testRecordHashCode` | Testet Record-HashCode-Konsistenz. |
-| `testRecordToString` | Testet Record-toString-Methode. |
-| `testConversionConsistency` | Testet Konsistenz bei Konvertierung von Entity zu DTO. |
-| `testNullCoordinatesInEntity` | Testet Verhalten bei null-Koordinaten in Entity (NullPointerException erwartet). |
+| `testConstructorWithMarkerEntity` | Checks constructor with EventLocationMarker entity. |
+| `testDirectConstructor` | Checks direct constructor with parameters. |
+| `testWithZeroCoordinates` | Tests behavior with zero coordinates. |
+| `testWithNegativeCoordinates` | Tests behavior with negative coordinates. |
+| `testWithBoundaryValues` | Tests boundary values for coordinates. |
+| `testWithNullLabel` | Tests behavior with a null label. |
+| `testWithEmptyLabel` | Tests behavior with an empty label. |
+| `testWithLongLabel` | Tests behavior with a very long label. |
+| `testRecordEquality` | Tests record equality and differences. |
+| `testRecordHashCode` | Tests record hashCode consistency. |
+| `testRecordToString` | Tests record toString method. |
+| `testConversionConsistency` | Tests consistency in conversion from Entity to DTO. |
+| `testNullCoordinatesInEntity` | Tests behavior with null coordinates in Entity (NullPointerException expected). |
 
 ## Seat Service
 
 ### SeatService
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `createSeat_Success` | Erstellt erfolgreich einen neuen Sitzplatz mit gültigen Daten. |
-| `createSeat_Success_AsManager` | Erstellt erfolgreich einen neuen Sitzplatz als Manager. |
-| `createSeat_Success_AsAdmin` | Erstellt erfolgreich einen neuen Sitzplatz als Admin. |
-| `createSeat_ForbiddenException_NotManagerOfLocation` | Versucht, einen Sitzplatz für eine Location zu erstellen, die einem nicht gehört. |
-| `createSeat_InvalidInput` | Versucht, einen Sitzplatz mit ungültigen Daten zu erstellen. |
-| `findAllSeatsForManager_Success_AsAdmin` | Ruft alle Sitzplätze als Administrator ab. |
-| `findAllSeatsForManager_Success_AsManager` | Ruft Sitzplätze ab, die dem aktuellen Manager gehören. |
-| `findAllSeatsForManager_Success_NoSeatsForManager` | Ruft eine leere Liste ab, wenn der Manager keine Sitzplätze verwaltet. |
-| `findSeatByIdForManager_Success_AsAdmin` | Ruft einen Sitzplatz als Administrator ab. |
-| `findSeatByIdForManager_Success_AsManager` | Ruft einen Sitzplatz ab, der dem aktuellen Manager gehört. |
-| `findSeatByIdForManager_NotFound` | Versucht, einen nicht existierenden Sitzplatz abzurufen. |
-| `findSeatByIdForManager_ForbiddenException` | Versucht, einen Sitzplatz abzurufen, für den keine Berechtigung besteht. |
-| `updateSeat_Success_AsManager` | Aktualisiert erfolgreich einen bestehenden Sitzplatz als Manager. |
-| `updateSeat_Success_AsAdmin` | Aktualisiert erfolgreich einen bestehenden Sitzplatz als Admin. |
-| `updateSeat_NotFound` | Versucht, einen nicht existierenden Sitzplatz zu aktualisieren. |
-| `updateSeat_InvalidInput` | Versucht, einen Sitzplatz mit ungültigen Daten zu aktualisieren. |
-| `updateSeat_ForbiddenException_NotManagerOfSeatLocation` | Versucht, einen Sitzplatz zu aktualisieren, der zu einer fremden Location gehört. |
-| `updateSeat_ForbiddenException_NotManagerOfNewLocation` | Versucht, einen Sitzplatz zu einer fremden Location zu verschieben. |
-| `deleteSeat_Success_AsManager` | Löscht erfolgreich einen bestehenden Sitzplatz als Manager. |
-| `deleteSeat_Success_AsAdmin` | Löscht erfolgreich einen bestehenden Sitzplatz als Admin. |
-| `deleteSeat_NotFound` | Versucht, einen nicht existierenden Sitzplatz zu löschen. |
-| `deleteSeat_ForbiddenException_NotManager` | Versucht, einen Sitzplatz zu löschen, für den keine Berechtigung besteht. |
-| `findSeatEntityById_Success` | Ruft eine Sitzplatz-Entität erfolgreich ab. |
-| `findSeatEntityById_ForbiddenException` | Versucht, eine Sitzplatz-Entität abzurufen, für die der Benutzer keine Berechtigung hat. |
+| `createSeat_Success` | Successfully creates a new seat with valid data. |
+| `createSeat_Success_AsManager` | Successfully creates a new seat as a manager. |
+| `createSeat_Success_AsAdmin` | Successfully creates a new seat as an admin. |
+| `createSeat_ForbiddenException_NotManagerOfLocation` | Attempts to create a seat for a location that one does not own. |
+| `createSeat_InvalidInput` | Attempts to create a seat with invalid data. |
+| `findAllSeatsForManager_Success_AsAdmin` | Retrieves all seats as an administrator. |
+| `findAllSeatsForManager_Success_AsManager` | Retrieves seats belonging to the current manager. |
+| `findAllSeatsForManager_Success_NoSeatsForManager` | Retrieves an empty list if the manager manages no seats. |
+| `findSeatByIdForManager_Success_AsAdmin` | Retrieves a seat as an administrator. |
+| `findSeatByIdForManager_Success_AsManager` | Retrieves a seat belonging to the current manager. |
+| `findSeatByIdForManager_NotFound` | Attempts to retrieve a non-existent seat. |
+| `findSeatByIdForManager_ForbiddenException` | Attempts to retrieve a seat for which there is no permission. |
+| `updateSeat_Success_AsManager` | Successfully updates an existing seat as a manager. |
+| `updateSeat_Success_AsAdmin` | Successfully updates an existing seat as an admin. |
+| `updateSeat_NotFound` | Attempts to update a non-existent seat. |
+| `updateSeat_InvalidInput` | Attempts to update a seat with invalid data. |
+| `updateSeat_ForbiddenException_NotManagerOfSeatLocation` | Attempts to update a seat belonging to a foreign location. |
+| `updateSeat_ForbiddenException_NotManagerOfNewLocation` | Attempts to move a seat to a foreign location. |
+| `deleteSeat_Success_AsManager` | Successfully deletes an existing seat as a manager. |
+| `deleteSeat_Success_AsAdmin` | Successfully deletes an existing seat as an admin. |
+| `deleteSeat_NotFound` | Attempts to delete a non-existent seat. |
+| `deleteSeat_ForbiddenException_NotManager` | Attempts to delete a seat for which there is no permission. |
+| `findSeatEntityById_Success` | Successfully retrieves a seat entity. |
+| `findSeatEntityById_ForbiddenException` | Attempts to retrieve a seat entity for which the user has no permission. |
 
 ## GlobalExceptionHandler
 
 ### GlobalExceptionHandler
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `testUserNotFoundException` | Testet die Behandlung von `UserNotFoundException` und erwartet HTTP-Status 404 (Not Found). |
-| `testEventNotFoundException` | Testet die Behandlung von `EventNotFoundException` und erwartet HTTP-Status 404 (Not Found). |
-| `testSeatNotFoundException` | Testet die Behandlung von `SeatNotFoundException` und erwartet HTTP-Status 404 (Not Found). |
-| `testReservationNotFoundException` | Testet die Behandlung von `ReservationNotFoundException` und erwartet HTTP-Status 404 (Not Found). |
-| `testEventLocationNotFoundException` | Testet die Behandlung von `EventLocationNotFoundException` und erwartet HTTP-Status 404 (Not Found). |
-| `testDuplicateUserException` | Testet die Behandlung von `DuplicateUserException` und erwartet HTTP-Status 409 (Conflict). |
-| `testSeatAlreadyReservedException` | Testet die Behandlung von `SeatAlreadyReservedException` und erwartet HTTP-Status 409 (Conflict). |
-| `testAuthenticationFailedException` | Testet die Behandlung von `AuthenticationFailedException` und erwartet HTTP-Status 401 (Unauthorized). |
-| `testTokenExpiredException` | Testet die Behandlung von `TokenExpiredException` und erwartet HTTP-Status 401 (Unauthorized). |
-| `testInvalidUserException` | Testet die Behandlung von `InvalidUserException` und erwartet HTTP-Status 400 (Bad Request). |
-| `testEventBookingClosedException` | Testet die Behandlung von `EventBookingClosedException` und erwartet HTTP-Status 400 (Bad Request). |
-| `testNoSeatsAvailableException` | Testet die Behandlung von `NoSeatsAvailableException` und erwartet HTTP-Status 400 (Bad Request). |
-| `testGenericException` | Testet die Behandlung von generischen `RuntimeException` und erwartet HTTP-Status 500 (Internal Server Error) mit der ursprünglichen Fehlermeldung. |
-| `testNullPointerException` | Testet die Behandlung von `NullPointerException` und erwartet HTTP-Status 500 (Internal Server Error). |
-| `testExceptionWithNullMessage` | Testet die Behandlung von Exceptions mit null-Nachricht und erwartet HTTP-Status 500 (Internal Server Error). |
-| `testExceptionWithEmptyMessage` | Testet die Behandlung von Exceptions mit leerer Nachricht und erwartet HTTP-Status 500 (Internal Server Error). |
+| `testUserNotFoundException` | Tests the handling of `UserNotFoundException` and expects HTTP status 404 (Not Found). |
+| `testEventNotFoundException` | Tests the handling of `EventNotFoundException` and expects HTTP status 404 (Not Found). |
+| `testSeatNotFoundException` | Tests the handling of `SeatNotFoundException` and expects HTTP status 404 (Not Found). |
+| `testReservationNotFoundException` | Tests the handling of `ReservationNotFoundException` and expects HTTP status 404 (Not Found). |
+| `testEventLocationNotFoundException` | Tests the handling of `EventLocationNotFoundException` and expects HTTP status 404 (Not Found). |
+| `testDuplicateUserException` | Tests the handling of `DuplicateUserException` and expects HTTP status 409 (Conflict). |
+| `testSeatAlreadyReservedException` | Tests the handling of `SeatAlreadyReservedException` and expects HTTP status 409 (Conflict). |
+| `testAuthenticationFailedException` | Tests the handling of `AuthenticationFailedException` and expects HTTP status 401 (Unauthorized). |
+| `testTokenExpiredException` | Tests the handling of `TokenExpiredException` and expects HTTP status 401 (Unauthorized). |
+| `testInvalidUserException` | Tests the handling of `InvalidUserException` and expects HTTP status 400 (Bad Request). |
+| `testEventBookingClosedException` | Tests the handling of `EventBookingClosedException` and expects HTTP status 400 (Bad Request). |
+| `testNoSeatsAvailableException` | Tests the handling of `NoSeatsAvailableException` and expects HTTP status 400 (Bad Request). |
+| `testGenericException` | Tests the handling of generic `RuntimeException` and expects HTTP status 500 (Internal Server Error) with the original error message. |
+| `testNullPointerException` | Tests the handling of `NullPointerException` and expects HTTP status 500 (Internal Server Error). |
+| `testExceptionWithNullMessage` | Tests the handling of exceptions with a null message and expects HTTP status 500 (Internal Server Error). |
+| `testExceptionWithEmptyMessage` | Tests the handling of exceptions with an empty message and expects HTTP status 500 (Internal Server Error). |
 
-**Wichtige Änderungen:**
-- `EventBookingClosedException` und `NoSeatsAvailableException` geben jetzt HTTP-Status 400 (Bad Request) statt 406 (Not Acceptable) zurück
-- Generische Exceptions geben die ursprüngliche Fehlermeldung ohne zusätzliches "An unexpected error occurred: " Prefix zurück
-- `ErrorResponseDTO` wurde um eine `getMessage()`-Methode erweitert für bessere Kompatibilität
+**Important Changes:**
+- `EventBookingClosedException` and `NoSeatsAvailableException` now return HTTP status 400 (Bad Request) instead of 406 (Not Acceptable)
+- Generic exceptions return the original error message without the additional "An unexpected error occurred: " prefix
+- `ErrorResponseDTO` has been extended with a `getMessage()` method for better compatibility
 
 ## HttpForwardFilter
 
 ### HttpForwardFilter
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `doFilter_ForwardToRootPath` | Überprüft, ob der Filter Anfragen, die nicht mit `/api` oder `/q` beginnen und einen 404-Status haben, an den Root-Pfad `/` weiterleitet. |
-| `doFilter_NoForwardForApiOrQuarkusPath` | Überprüft, ob der Filter Anfragen, die mit `/api` oder `/q` beginnen, nicht weiterleitet. |
-| `doFilter_NoForwardForNon404Status` | Überprüft, ob der Filter Anfragen mit einem Status ungleich 404 nicht weiterleitet. |
+| `doFilter_ForwardToRootPath` | Checks if the filter forwards requests that do not start with `/api` or `/q` and have a 404 status to the root path `/`. |
+| `doFilter_NoForwardForApiOrQuarkusPath` | Checks if the filter does not forward requests that start with `/api` or `/q`. |
+| `doFilter_NoForwardForNon404Status` | Checks if the filter does not forward requests with a status other than 404. |
 
 # Resource Tests
 
-Dieses Dokument beschreibt die Tests für die REST-Ressourcen.
+This document describes the tests for the REST resources.
 
 ## Event Management
 
 ### EventLocationResource
 
-Basispfad: `/api/manager/eventlocations`
+Base Path: `/api/manager/eventlocations`
 
-Rollen: `MANAGER`, `ADMIN`
+Roles: `MANAGER`, `ADMIN`
 
 ---
 
 #### GET /
 
-Ruft alle Event-Locations für den aktuellen Manager ab.
+Retrieves all event locations for the current manager.
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test überprüft, ob ein Manager oder Administrator eine Liste seiner Event-Locations abrufen kann.
+This test checks if a manager or administrator can retrieve a list of their event locations.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Manager mit zugeordneten Event-Locations ruft die Liste ab und erhält einen `200 OK`-Status mit den korrekten Daten.
-    *   Ein Manager ohne Event-Locations ruft die Liste ab und erhält einen `200 OK`-Status mit einer leeren Liste.
-*   **Fehler:**
-    *   Ein nicht authentifizierter Benutzer versucht, auf den Endpunkt zuzugreifen, und erhält einen `401 Unauthorized`-Status.
-    *   Ein Benutzer mit einer anderen Rolle (z. B. `USER`) versucht, auf den Endpunkt zuzugreifen, und erhält einen `403 Forbidden`-Status.
+*   **Success:**
+    *   A manager with associated event locations retrieves the list and receives a `200 OK` status with the correct data.
+    *   A manager without event locations retrieves the list and receives a `200 OK` status with an empty list.
+*   **Failure:**
+    *   An unauthenticated user attempts to access the endpoint and receives a `401 Unauthorized` status.
+    *   A user with a different role (e.g., `USER`) attempts to access the endpoint and receives a `403 Forbidden` status.
 
 ---
 
 #### POST /
 
-Erstellt eine neue Event-Location.
+Creates a new event location.
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test stellt sicher, dass ein Manager oder Administrator eine neue Event-Location erstellen kann.
+This test ensures that a manager or administrator can create a new event location.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Manager sendet gültige Daten und erstellt erfolgreich eine neue Event-Location. Der Status `200 OK` wird mit den Daten der erstellten Location zurückgegeben.
-*   **Fehler:**
-    *   Ein Manager sendet ungültige Daten (z. B. fehlender Name) und erhält einen `400 Bad Request`-Status.
-    *   Ein nicht authentifizierter Benutzer versucht, eine Location zu erstellen, und erhält `401 Unauthorized`.
-    *   Ein Benutzer mit der Rolle `USER` versucht, eine Location zu erstellen, und erhält `403 Forbidden`.
+*   **Success:**
+    *   A manager sends valid data and successfully creates a new event location. A `200 OK` status is returned with the data of the created location.
+*   **Failure:**
+    *   A manager sends invalid data (e.g., missing name) and receives a `400 Bad Request` status.
+    *   An unauthenticated user attempts to create a location and receives `401 Unauthorized`.
+    *   A user with the `USER` role attempts to create a location and receives `403 Forbidden`.
 ---
 
 #### POST /import
 
-Erstellt eine neue Event-Location mit Sitzplätzen.
+Creates a new event location with seats.
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test stellt sicher, dass ein Manager oder Administrator eine neue Event-Location zusammen mit einer Liste von Sitzplätzen importieren kann.
+This test ensures that a manager or administrator can import a new event location along with a list of seats.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Manager sendet gültige Daten und importiert erfolgreich eine neue Event-Location und die zugehörigen Sitzplätze. Der Status `200 OK` wird mit den Daten der importierten Location zurückgegeben.
-*   **Fehler:**
-    *   Ein Manager sendet ungültige Daten (z. B. fehlender Name in der Location oder fehlende Sitzplatznummer) und erhält einen `400 Bad Request`-Status.
-    *   Ein nicht authentifizierter Benutzer versucht, eine Location zu erstellen, und erhält `401 Unauthorized`.
-    *   Ein Benutzer mit der Rolle `USER` versucht, eine Location zu erstellen, und erhält `403 Forbidden`.
+*   **Success:**
+    *   A manager sends valid data and successfully imports a new event location and its associated seats. A `200 OK` status is returned with the data of the imported location.
+*   **Failure:**
+    *   A manager sends invalid data (e.g., missing name in the location or missing seat number) and receives a `400 Bad Request` status.
+    *   An unauthenticated user attempts to create a location and receives `401 Unauthorized`.
+    *   A user with the `USER` role attempts to create a location and receives `403 Forbidden`.
 
 ---
 
 #### PUT /{id}
 
-Aktualisiert eine bestehende Event-Location.
+Updates an existing event location.
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test überprüft die Aktualisierungsfunktion für eine Event-Location.
+This test checks the update functionality for an event location.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Manager aktualisiert eine seiner Event-Locations mit gültigen Daten und erhält `200 OK` mit den aktualisierten Daten.
-*   **Fehler:**
-    *   Ein Manager versucht, eine Location mit ungültigen Daten zu aktualisieren, und erhält `400 Bad Request`.
-    *   Ein Manager versucht, eine Location zu aktualisieren, die ihm nicht gehört, und erhält einen `404 Not Found`- oder `403 Forbidden`-Status.
-    *   Ein Manager versucht, eine nicht existierende Location zu aktualisieren, und erhält `404 Not Found`.
-    *   Ein nicht authentifizierter Benutzer versucht, eine Location zu aktualisieren, und erhält `401 Unauthorized`.
+*   **Success:**
+    *   A manager updates one of their event locations with valid data and receives `200 OK` with the updated data.
+*   **Failure:**
+    *   A manager attempts to update a location with invalid data and receives `400 Bad Request`.
+    *   A manager attempts to update a location that does not belong to them and receives a `404 Not Found` or `403 Forbidden` status.
+    *   A manager attempts to update a non-existent location and receives `404 Not Found`.
+    *   An unauthenticated user attempts to update a location and receives `401 Unauthorized`.
 
 ---
 
 #### DELETE /{id}
 
-Löscht eine Event-Location.
+Deletes an event location.
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test stellt sicher, dass ein Manager oder Administrator eine seiner Event-Locations löschen kann.
+This test ensures that a manager or administrator can delete one of their event locations.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Manager löscht erfolgreich eine seiner Event-Locations und erhält den Status `200 OK`.
-*   **Fehler:**
-    *   Ein Manager versucht, eine Location zu löschen, die ihm nicht gehört, und erhält `404 Not Found` oder `403 Forbidden`.
-    *   Ein Manager versucht, eine nicht existierende Location zu löschen, und erhält `404 Not Found`.
-    *   Ein nicht authentifizierter Benutzer versucht, eine Location zu löschen, und erhält `401 Unauthorized`.
+*   **Success:**
+    *   A manager successfully deletes one of their event locations and receives a `200 OK` status.
+*   **Failure:**
+    *   A manager attempts to delete a location that does not belong to them and receives `404 Not Found` or `403 Forbidden`.
+    *   A manager attempts to delete a non-existent location and receives `404 Not Found`.
+    *   An unauthenticated user attempts to delete a location and receives `401 Unauthorized`.
 
 ## Reservation
 
 ### EventResource
 
-Basispfad: `/api/user/events`
+Base Path: `/api/user/events`
 
-Rolle: `USER`
+Role: `USER`
 
 ---
 
@@ -659,676 +657,676 @@ Rolle: `USER`
 
 ### EventResource (Manager)
 
-Basispfad: `/api/manager/events`
+Base Path: `/api/manager/events`
 
-Rollen: `MANAGER`, `ADMIN`
+Roles: `MANAGER`, `ADMIN`
 
 ---
 
 #### POST /
 
-Erstellt ein neues Event.
+Creates a new event.
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test stellt sicher, dass ein Manager oder Admin ein neues Event für eine seiner Event-Locations erstellen kann.
+This test ensures that a manager or admin can create a new event for one of their event locations.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Manager sendet gültige Event-Daten und erstellt erfolgreich ein neues Event. Er erhält `200 OK` mit den detaillierten Daten des Events.
-*   **Fehler:**
-    *   Ein Manager versucht, ein Event für eine Location zu erstellen, die ihm nicht gehört, und erhält `404 Not Found`.
-    *   Ungültige Daten (z. B. Startdatum nach Enddatum) führen zu `400 Bad Request`.
-    *   Ein nicht autorisierter Benutzer (z. B. `USER`) erhält `403 Forbidden`.
+*   **Success:**
+    *   A manager sends valid event data and successfully creates a new event. They receive `200 OK` with the detailed data of the event.
+*   **Failure:**
+    *   A manager attempts to create an event for a location that does not belong to them and receives `404 Not Found`.
+    *   Invalid data (e.g., start date after end date) results in `400 Bad Request`.
+    *   An unauthorized user (e.g., `USER`) receives `403 Forbidden`.
 
 ---
 
 #### PUT /{id}
 
-Aktualisiert ein bestehendes Event.
+Updates an existing event.
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test überprüft die Aktualisierung eines Events durch einen Manager oder Admin.
+This test checks the update of an event by a manager or admin.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Manager aktualisiert ein Event, das er verwaltet, mit gültigen Daten und erhält `200 OK`.
-*   **Fehler:**
-    *   Der Versuch, ein Event zu aktualisieren, das nicht existiert, führt zu `404 Not Found`.
-    *   Der Versuch, ein Event zu aktualisieren, das einem anderen Manager gehört, führt zu `404 Not Found`.
-    *   Ungültige Daten führen zu `400 Bad Request`.
+*   **Success:**
+    *   A manager updates an event they manage with valid data and receives `200 OK`.
+*   **Failure:**
+    *   Attempting to update an event that does not exist results in `404 Not Found`.
+    *   Attempting to update an event belonging to another manager results in `404 Not Found`.
+    *   Invalid data results in `400 Bad Request`.
 
 ---
 
 #### GET /
 
-Ruft alle Events ab, die vom aktuellen Manager verwaltet werden.
+Retrieves all events managed by the current manager.
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test stellt sicher, dass ein Manager oder Admin eine Liste seiner eigenen Events abrufen kann.
+This test ensures that a manager or admin can retrieve a list of their own events.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Manager ruft seine Event-Liste ab und erhält `200 OK` mit den Daten.
-*   **Fehler:**
-    *   Ein nicht autorisierter Benutzer erhält `403 Forbidden`.
+*   **Success:**
+    *   A manager retrieves their event list and receives `200 OK` with the data.
+*   **Failure:**
+    *   An unauthorized user receives `403 Forbidden`.
 
 ---
 
 #### GET /{id}
 
-Ruft ein bestimmtes Event anhand seiner ID ab.
+Retrieves a specific event by its ID.
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test stellt sicher, dass ein Manager oder Administrator ein bestimmtes Event anhand seiner ID abrufen kann, sofern er dazu berechtigt ist.
+This test ensures that a manager or administrator can retrieve a specific event by its ID, provided they are authorized.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Manager ruft ein Event ab, das er verwaltet, und erhält `200 OK` mit den Event-Daten.
-    *   Ein Administrator ruft ein Event ab, das er nicht verwaltet, und erhält `200 OK` mit den Event-Daten.
-*   **Fehler:**
-    *   Ein Manager versucht, ein Event abzurufen, das einem anderen Manager gehört, und erhält `403 Forbidden`.
-    *   Ein nicht existierendes Event wird angefragt, und es wird `404 Not Found` zurückgegeben.
-    *   Ein nicht authentifizierter Benutzer versucht, auf den Endpunkt zuzugreifen, und erhält `401 Unauthorized`.
+*   **Success:**
+    *   A manager retrieves an event they manage and receives `200 OK` with the event data.
+    *   An administrator retrieves an event they do not manage and receives `200 OK` with the event data.
+*   **Failure:**
+    *   A manager attempts to retrieve an event belonging to another manager and receives `403 Forbidden`.
+    *   A non-existent event is requested, and `404 Not Found` is returned.
+    *   An unauthenticated user attempts to access the endpoint and receives `401 Unauthorized`.
 
 ---
 
 #### DELETE /{id}
 
-Löscht ein Event und alle zugehörigen Daten.
+Deletes an event and all associated data.
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test stellt sicher, dass ein Manager oder Administrator ein Event löschen kann. Das Löschen eines Events sollte auch alle zugehörigen `EventUserAllowance`-Einträge und Reservierungen entfernen (Cascade-Delete).
+This test ensures that a manager or administrator can delete an event. Deleting an event should also remove all associated `EventUserAllowance` entries and reservations (cascade delete).
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Manager löscht erfolgreich ein Event, das er verwaltet, und erhält den Status `204 No Content`.
-    *   Ein Administrator löscht erfolgreich ein Event, das er nicht verwaltet, und erhält den Status `204 No Content`.
-    *   Nach dem Löschen des Events wird überprüft, ob auch die zugehörigen `EventUserAllowance`-Einträge gelöscht wurden.
-*   **Fehler:**
-    *   Ein Manager versucht, ein Event zu löschen, das ihm nicht gehört, und erhält einen `403 Forbidden`-Status.
-    *   Ein Manager versucht, ein nicht existierendes Event zu löschen, und erhält einen `404 Not Found`-Status.
-    *   Ein nicht authentifizierter Benutzer versucht, ein Event zu löschen, und erhält einen `401 Unauthorized`-Status.
-    *   Ein Benutzer mit der Rolle `USER` versucht, ein Event zu löschen, und erhält einen `403 Forbidden`-Status.
+*   **Success:**
+    *   A manager successfully deletes an event they manage and receives a `204 No Content` status.
+    *   An administrator successfully deletes an event they do not manage and receives a `204 No Content` status.
+    *   After deleting the event, it is verified that the associated `EventUserAllowance` entries have also been deleted.
+*   **Failure:**
+    *   A manager attempts to delete an event that does not belong to them and receives a `403 Forbidden` status.
+    *   A manager attempts to delete a non-existent event and receives a `404 Not Found` status.
+    *   An unauthenticated user attempts to delete an event and receives a `401 Unauthorized` status.
+    *   A user with the `USER` role attempts to delete an event and receives a `403 Forbidden` status.
 
 ---
 
 ### ReservationResource (Manager)
 
-Basispfad: `/api/manager/reservations`
+Base Path: `/api/manager/reservations`
 
-Rollen: `MANAGER`, `ADMIN`
+Roles: `MANAGER`, `ADMIN`
 
 ---
 
 #### GET /
 
-Ruft alle Reservierungen für die Events des aktuellen Managers ab.
+Retrieves all reservations for the current manager's events.
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test stellt sicher, dass ein Manager alle Reservierungen für seine Events einsehen kann.
+This test ensures that a manager can view all reservations for their events.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Manager ruft die Liste ab und erhält `200 OK` mit allen relevanten Reservierungen.
-*   **Fehler:**
-    *   Ein nicht autorisierter Benutzer erhält `403 Forbidden`.
+*   **Success:**
+    *   A manager retrieves the list and receives `200 OK` with all relevant reservations.
+*   **Failure:**
+    *   An unauthorized user receives `403 Forbidden`.
 
 ---
 
 #### GET /{id}
 
-Ruft eine bestimmte Reservierung anhand ihrer ID ab.
+Retrieves a specific reservation by its ID.
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test überprüft, ob ein Manager eine bestimmte Reservierung einsehen kann, sofern sie zu einem seiner Events gehört.
+This test checks if a manager can view a specific reservation, provided it belongs to one of their events.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Manager ruft eine Reservierung ab, die zu einem seiner Events gehört, und erhält `200 OK`.
-*   **Fehler:**
-    *   Der Versuch, eine nicht existierende Reservierung abzurufen, führt zu `404 Not Found`.
-    *   Der Versuch, eine Reservierung abzurufen, die zu einem Event eines anderen Managers gehört, führt zu `404 Not Found`.
+*   **Success:**
+    *   A manager retrieves a reservation belonging to one of their events and receives `200 OK`.
+*   **Failure:**
+    *   Attempting to retrieve a non-existent reservation results in `404 Not Found`.
+    *   Attempting to retrieve a reservation belonging to another manager's event results in `404 Not Found`.
 
 ---
 
 #### POST /
 
-Erstellt eine neue Reservierung (als Manager).
+Creates a new reservation (as a manager).
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test ermöglicht es einem Manager, manuell eine Reservierung für einen Benutzer zu erstellen.
+This test allows a manager to manually create a reservation for a user.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Manager erstellt eine gültige Reservierung für einen Benutzer und erhält `200 OK`.
-*   **Fehler:**
-    *   Ungültige Daten (z. B. nicht existierender Benutzer oder Platz) führen zu `404 Not Found`.
-    *   Der Versuch, einen bereits reservierten Platz zu buchen, führt zu `409 Conflict`.
+*   **Success:**
+    *   A manager creates a valid reservation for a user and receives `200 OK`.
+*   **Failure:**
+    *   Invalid data (e.g., non-existent user or seat) results in `404 Not Found`.
+    *   Attempting to book an already reserved seat results in `409 Conflict`.
 
 ---
 
 #### PUT /{id}
 
-Aktualisiert eine bestehende Reservierung (als Manager).
+Updates an existing reservation (as a manager).
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test überprüft die Aktualisierung einer Reservierung durch einen Manager.
+This test checks the update of a reservation by a manager.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Manager aktualisiert eine Reservierung mit gültigen Daten und erhält `200 OK`.
-*   **Fehler:**
-    *   Der Versuch, eine Reservierung zu aktualisieren, die nicht zu einem seiner Events gehört, führt zu `404 Not Found`.
+*   **Success:**
+    *   A manager updates a reservation with valid data and receives `200 OK`.
+*   **Failure:**
+    *   Attempting to update a reservation that does not belong to one of their events results in `404 Not Found`.
 
 ---
 
 #### DELETE /{id}
 
-Löscht eine Reservierung (als Manager).
+Deletes a reservation (as a manager).
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test stellt sicher, dass ein Manager eine Reservierung für eines seiner Events löschen kann.
+This test ensures that a manager can delete a reservation for one of their events.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Manager löscht eine Reservierung und erhält `200 OK`.
-*   **Fehler:**
-    *   Der Versuch, eine Reservierung zu löschen, die nicht zu einem seiner Events gehört, führt zu `404 Not Found`.
+*   **Success:**
+    *   A manager deletes a reservation and receives `200 OK`.
+*   **Failure:**
+    *   Attempting to delete a reservation that does not belong to one of their events results in `404 Not Found`.
 
 ---
 
 #### GET /event/{id}
 
-Ruft alle Reservierungen für ein bestimmtes Event ab.
+Retrieves all reservations for a specific event.
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test stellt sicher, dass ein Manager alle Reservierungen für ein bestimmtes Event einsehen kann, das er verwaltet.
+This test ensures that a manager can view all reservations for a specific event they manage.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Manager ruft die Liste der Reservierungen für ein von ihm verwaltetes Event ab und erhält `200 OK` mit den korrekten Daten.
-*   **Fehler:**
-    *   Ein Manager versucht, Reservierungen für ein Event abzurufen, das er nicht verwaltet, und erhält einen `403 Forbidden`-Status.
-    *   Ein Manager versucht, Reservierungen für ein nicht existierendes Event abzurufen, und erhält einen `400 Bad Request`-Status.
-    *   Ein nicht authentifizierter Benutzer versucht, auf den Endpunkt zuzugreifen, und erhält einen `401 Unauthorized`-Status.
-    *   Ein Benutzer mit einer anderen Rolle (z. B. `USER`) versucht, auf den Endpunkt zuzugreifen, und erhält einen `403 Forbidden`-Status.
+*   **Success:**
+    *   A manager retrieves the list of reservations for an event they manage and receives `200 OK` with the correct data.
+*   **Failure:**
+    *   A manager attempts to retrieve reservations for an event they do not manage and receives a `403 Forbidden` status.
+    *   A manager attempts to retrieve reservations for a non-existent event and receives a `400 Bad Request` status.
+    *   An unauthenticated user attempts to access the endpoint and receives a `401 Unauthorized` status.
+    *   A user with a different role (e.g., `USER`) attempts to access the endpoint and receives a `403 Forbidden` status.
 
 ---
 
 ### SeatResource (Manager)
 
-Basispfad: `/api/manager/seats`
+Base Path: `/api/manager/seats`
 
-Rollen: `MANAGER`, `ADMIN`
+Roles: `MANAGER`, `ADMIN`
 
 ---
 
 #### POST /
 
-Erstellt einen neuen Sitzplatz für eine Event-Location.
+Creates a new seat for an event location.
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test stellt sicher, dass ein Manager neue Sitzplätze zu einer seiner Locations hinzufügen kann.
+This test ensures that a manager can add new seats to one of their locations.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Manager fügt einen neuen Sitzplatz zu einer seiner Locations hinzu und erhält `200 OK`.
-*   **Fehler:**
-    *   Der Versuch, einen Sitzplatz zu einer Location hinzuzufügen, die einem anderen Manager gehört, führt zu `404 Not Found`.
+*   **Success:**
+    *   A manager adds a new seat to one of their locations and receives `200 OK`.
+*   **Failure:**
+    *   Attempting to add a seat to a location belonging to another manager results in `404 Not Found`.
 
 ---
 
 #### GET /
 
-Ruft alle Sitzplätze ab, die zu den Locations des aktuellen Managers gehören.
+Retrieves all seats belonging to the current manager's locations.
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test stellt sicher, dass ein Manager eine Liste aller seiner Sitzplätze abrufen kann.
+This test ensures that a manager can retrieve a list of all their seats.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Manager ruft die Liste seiner Sitzplätze ab und erhält `200 OK`.
-*   **Fehler:**
-    *   Ein nicht autorisierter Benutzer erhält `403 Forbidden`.
+*   **Success:**
+    *   A manager retrieves the list of their seats and receives `200 OK`.
+*   **Failure:**
+    *   An unauthorized user receives `403 Forbidden`.
 
 ---
 
 #### GET /{id}
 
-Ruft einen bestimmten Sitzplatz anhand seiner ID ab.
+Retrieves a specific seat by its ID.
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test überprüft, ob ein Manager einen bestimmten Sitzplatz einsehen kann, sofern er zu einer seiner Locations gehört.
+This test checks if a manager can view a specific seat, provided it belongs to one of their locations.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Manager ruft einen seiner Sitzplätze ab und erhält `200 OK`.
-*   **Fehler:**
-    *   Der Versuch, einen Sitzplatz abzurufen, der zu einer Location eines anderen Managers gehört, führt zu `404 Not Found`.
+*   **Success:**
+    *   A manager retrieves one of their seats and receives `200 OK`.
+*   **Failure:**
+    *   Attempting to retrieve a seat belonging to another manager's location results in `404 Not Found`.
 
 ---
 
 #### PUT /{id}
 
-Aktualisiert einen Sitzplatz.
+Updates a seat.
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test überprüft die Aktualisierung eines Sitzplatzes durch einen Manager.
+This test checks the update of a seat by a manager.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Manager aktualisiert einen seiner Sitzplätze und erhält `200 OK`.
-*   **Fehler:**
-    *   Der Versuch, einen Sitzplatz zu aktualisieren, der nicht zu seinen Locations gehört, führt zu `404 Not Found`.
+*   **Success:**
+    *   A manager updates one of their seats and receives `200 OK`.
+*   **Failure:**
+    *   Attempting to update a seat that does not belong to their locations results in `404 Not Found`.
 
 ---
 
 #### DELETE /{id}
 
-Löscht einen Sitzplatz.
+Deletes a seat.
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test stellt sicher, dass ein Manager einen Sitzplatz aus einer seiner Locations entfernen kann.
+This test ensures that a manager can remove a seat from one of their locations.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Manager löscht einen seiner Sitzplätze und erhält `200 OK`.
-*   **Fehler:**
-    *   Der Versuch, einen Sitzplatz zu löschen, der nicht zu seinen Locations gehört, führt zu `404 Not Found`.
-    *   Der Versuch, einen Sitzplatz zu löschen, für den bereits eine Reservierung besteht, führt zu `409 Conflict`.
-Ruft alle Events ab, für die der aktuelle Benutzer eine Berechtigung hat. Die Antwort enthält auch die Anzahl der erlaubten Reservierungen für jedes Event.
+*   **Success:**
+    *   A manager deletes one of their seats and receives `200 OK`.
+*   **Failure:**
+    *   Attempting to delete a seat that does not belong to their locations results in `404 Not Found`.
+    *   Attempting to delete a seat for which a reservation already exists results in `409 Conflict`.
+Retrieves all events for which the current user has permission. The response also includes the number of allowed reservations for each event.
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test stellt sicher, dass ein Benutzer eine Liste der für ihn verfügbaren Events abrufen kann.
+This test ensures that a user can retrieve a list of available events for them.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein authentifizierter Benutzer mit Berechtigungen für Events ruft die Liste ab und erhält `200 OK` mit den Event-Daten, einschließlich der erlaubten Reservierungen.
-    *   Ein authentifizierter Benutzer ohne Berechtigungen für Events ruft die Liste ab und erhält `200 OK` mit einer leeren Liste.
-*   **Fehler:**
-    *   Ein nicht authentifizierter Benutzer versucht, auf den Endpunkt zuzugreifen, und erhält `401 Unauthorized`.
+*   **Success:**
+    *   An authenticated user with permissions for events retrieves the list and receives `200 OK` with the event data, including the allowed reservations.
+    *   An authenticated user without permissions for events retrieves the list and receives `200 OK` with an empty list.
+*   **Failure:**
+    *   An unauthenticated user attempts to access the endpoint and receives `401 Unauthorized`.
 
 ---
 
 ### ReservationResource
 
-Basispfad: `/api/user/reservations`
+Base Path: `/api/user/reservations`
 
-Rolle: `USER`
+Role: `USER`
 
 ---
 
 #### GET /
 
-Ruft alle Reservierungen des aktuellen Benutzers ab.
+Retrieves all reservations of the current user.
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test stellt sicher, dass ein Benutzer seine eigenen Reservierungen abrufen kann.
+This test ensures that a user can retrieve their own reservations.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Benutzer mit Reservierungen ruft die Liste ab und erhält `200 OK` mit seinen Reservierungsdaten.
-    *   Ein Benutzer ohne Reservierungen ruft die Liste ab und erhält `200 OK` mit einer leeren Liste.
-*   **Fehler:**
-    *   Ein nicht authentifizierter Benutzer versucht, auf den Endpunkt zuzugreifen, und erhält `401 Unauthorized`.
+*   **Success:**
+    *   A user with reservations retrieves the list and receives `200 OK` with their reservation data.
+    *   A user without reservations retrieves the list and receives `200 OK` with an empty list.
+*   **Failure:**
+    *   An unauthenticated user attempts to access the endpoint and receives `401 Unauthorized`.
 
 ---
 
 #### GET /{id}
 
-Ruft eine bestimmte Reservierung des aktuellen Benutzers ab.
+Retrieves a specific reservation of the current user.
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test überprüft, ob ein Benutzer eine einzelne seiner Reservierungen anhand der ID abrufen kann.
+This test checks if a user can retrieve one of their single reservations by ID.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Benutzer ruft eine seiner eigenen Reservierungen ab und erhält `200 OK` mit den Reservierungsdaten.
-*   **Fehler:**
-    *   Ein Benutzer versucht, eine Reservierung abzurufen, die ihm nicht gehört, und erhält `404 Not Found`.
-    *   Ein Benutzer versucht, eine nicht existierende Reservierung abzurufen, und erhält `404 Not Found`.
-    *   Ein nicht authentifizierter Benutzer versucht, auf den Endpunkt zuzugreifen, und erhält `401 Unauthorized`.
+*   **Success:**
+    *   A user retrieves one of their own reservations and receives `200 OK` with the reservation data.
+*   **Failure:**
+    *   A user attempts to retrieve a reservation that does not belong to them and receives `404 Not Found`.
+    *   A user attempts to retrieve a non-existent reservation and receives `404 Not Found`.
+    *   An unauthenticated user attempts to access the endpoint and receives `401 Unauthorized`.
 
 ---
 
 #### POST /
 
-Erstellt eine oder mehrere neue Reservierungen für den aktuellen Benutzer.
+Creates one or more new reservations for the current user.
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test stellt sicher, dass ein Benutzer neue Reservierungen für ein Event erstellen kann, für das er berechtigt ist.
+This test ensures that a user can create new reservations for an event for which they are authorized.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Benutzer sendet eine gültige Anfrage zur Erstellung von Reservierungen und erhält `200 OK` mit einer Liste der erstellten Reservierungen.
-*   **Fehler:**
-    *   Ein Benutzer sendet eine ungültige Anfrage (z. B. für ein Event, für das er keine Berechtigung hat, oder für bereits reservierte Plätze) und erhält einen entsprechenden Fehlerstatus (`400 Bad Request`, `404 Not Found`, `409 Conflict`).
-    *   Ein Benutzer versucht, mehr Plätze zu reservieren, als ihm erlaubt sind, und erhält `400 Bad Request`.
-    *   Ein nicht authentifizierter Benutzer versucht, eine Reservierung zu erstellen, und erhält `401 Unauthorized`.
+*   **Success:**
+    *   A user sends a valid request to create reservations and receives `200 OK` with a list of the created reservations.
+*   **Failure:**
+    *   A user sends an invalid request (e.g., for an event for which they have no permission, or for already reserved seats) and receives an appropriate error status (`400 Bad Request`, `404 Not Found`, `409 Conflict`).
+    *   A user attempts to reserve more seats than they are allowed and receives `400 Bad Request`.
+    *   An unauthenticated user attempts to create a reservation and receives `401 Unauthorized`.
 
 ---
 
 #### DELETE /{id}
 
-Löscht eine Reservierung des aktuellen Benutzers.
+Deletes a reservation of the current user.
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test überprüft, ob ein Benutzer eine seiner eigenen Reservierungen löschen kann.
+This test checks if a user can delete one of their own reservations.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Benutzer löscht eine seiner Reservierungen und erhält `200 OK`.
-*   **Fehler:**
-    *   Ein Benutzer versucht, eine Reservierung zu löschen, die ihm nicht gehört, und erhält `404 Not Found`.
-    *   Ein Benutzer versucht, eine nicht existierende Reservierung zu löschen, und erhält `404 Not Found`.
-    *   Ein nicht authentifizierter Benutzer versucht, eine Reservierung zu löschen, und erhält `401 Unauthorized`.
+*   **Success:**
+    *   A user deletes one of their reservations and receives `200 OK`.
+*   **Failure:**
+    *   A user attempts to delete a reservation that does not belong to them and receives `404 Not Found`.
+    *   A user attempts to delete a non-existent reservation and receives `404 Not Found`.
+    *   An unauthenticated user attempts to delete a reservation and receives `401 Unauthorized`.
 
 ## User Management
 
 ### EmailConfirmationResource
 
-Basispfad: `/api/user`
+Base Path: `/api/user`
 
-Rolle: Öffentlich (keine Authentifizierung erforderlich)
+Role: Public (no authentication required)
 
 ---
 
 #### GET /confirm-email
 
-Bestätigt die E-Mail-Adresse eines Benutzers.
+Confirms a user's email address.
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test überprüft den E-Mail-Bestätigungsprozess über einen Token. Der Endpunkt gibt eine HTML-Seite zurück.
+This test checks the email confirmation process via a token. The endpoint returns an HTML page.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein gültiger Bestätigungslink (mit ID und Token) wird verwendet und die E-Mail-Adresse wird erfolgreich bestätigt. Der Benutzer sieht eine Erfolgsseite.
-*   **Fehler:**
-    *   Es wird ein ungültiger Token verwendet, und der Benutzer sieht eine Fehlerseite mit dem Status `400 Bad Request`.
-    *   Es wird ein Link mit einer nicht existierenden ID verwendet, und der Benutzer sieht eine Fehlerseite mit dem Status `404 Not Found`.
-    *   Es wird ein abgelaufener Token verwendet, und der Benutzer sieht eine Fehlerseite mit dem Status `410 Gone`.
+*   **Success:**
+    *   A valid confirmation link (with ID and token) is used and the email address is successfully confirmed. The user sees a success page.
+*   **Failure:**
+    *   An invalid token is used, and the user sees an error page with a `400 Bad Request` status.
+    *   A link with a non-existent ID is used, and the user sees an error page with a `404 Not Found` status.
+    *   An expired token is used, and the user sees an error page with a `410 Gone` status.
 
 ---
 
 ### UserResource
 
-Basispfad: `/api/users`
+Base Path: `/api/users`
 
-Rollen: `ADMIN`, `MANAGER`, `USER`
+Roles: `ADMIN`, `MANAGER`, `USER`
 
 ---
 
 #### POST /admin/import
 
-Importiert eine Menge von Benutzern (nur für Admins).
+Imports a set of users (for admins only).
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test stellt sicher, dass nur Administratoren Benutzer in großen Mengen importieren können.
+This test ensures that only administrators can import users in bulk.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Admin sendet ein gültiges Set von Benutzerdaten und importiert erfolgreich die Benutzer. Er erhält `200 OK` mit den Daten der importierten Benutzer.
-*   **Fehler:**
-    *   Ein Admin sendet ungültige Daten (z.B. leere Benutzernamen oder doppelte Benutzer) und erhält `400 Bad Request` oder `409 Conflict`.
-    *   Ein Benutzer mit der Rolle `MANAGER` oder `USER` versucht, Benutzer zu importieren, und erhält `403 Forbidden`.
-    *   Ein nicht authentifizierter Benutzer versucht, auf den Endpunkt zuzugreifen, und erhält `401 Unauthorized`.
+*   **Success:**
+    *   An admin sends a valid set of user data and successfully imports the users. They receive `200 OK` with the data of the imported users.
+*   **Failure:**
+    *   An admin sends invalid data (e.g., empty usernames or duplicate users) and receives `400 Bad Request` or `409 Conflict`.
+    *   A user with the `MANAGER` or `USER` role attempts to import users and receives `403 Forbidden`.
+    *   An unauthenticated user attempts to access the endpoint and receives `401 Unauthorized`.
 
 ---
 
 #### POST /admin
 
-Erstellt einen neuen Benutzer (nur für Admins).
+Creates a new user (for admins only).
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test stellt sicher, dass nur Administratoren neue Benutzer anlegen können.
+This test ensures that only administrators can create new users.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Admin sendet gültige Benutzerdaten und erstellt erfolgreich einen neuen Benutzer. Er erhält `200 OK` mit den Daten des neuen Benutzers.
-*   **Fehler:**
-    *   Ein Admin sendet ungültige Daten (z. B. doppelte E-Mail) und erhält `400 Bad Request`.
-    *   Ein Benutzer mit der Rolle `MANAGER` oder `USER` versucht, einen Benutzer zu erstellen, und erhält `403 Forbidden`.
-    *   Ein nicht authentifizierter Benutzer versucht, auf den Endpunkt zuzugreifen, und erhält `401 Unauthorized`.
+*   **Success:**
+    *   An admin sends valid user data and successfully creates a new user. They receive `200 OK` with the data of the new user.
+*   **Failure:**
+    *   An admin sends invalid data (e.g., duplicate email) and receives `400 Bad Request`.
+    *   A user with the `MANAGER` or `USER` role attempts to create a user and receives `403 Forbidden`.
+    *   An unauthenticated user attempts to access the endpoint and receives `401 Unauthorized`.
 
 ---
 
 #### PUT /admin/{id}
 
-Aktualisiert einen Benutzer (nur für Admins).
+Updates a user (for admins only).
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test überprüft, ob ein Admin die Daten eines beliebigen Benutzers aktualisieren kann.
+This test checks if an admin can update the data of any user.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Admin aktualisiert die Daten eines bestehenden Benutzers und erhält `200 OK` mit den aktualisierten Daten.
-*   **Fehler:**
-    *   Ein Admin versucht, einen nicht existierenden Benutzer zu aktualisieren, und erhält `404 Not Found`.
-    *   Ein Benutzer mit der Rolle `MANAGER` oder `USER` versucht, einen anderen Benutzer zu aktualisieren, und erhält `403 Forbidden`.
+*   **Success:**
+    *   An admin updates the data of an existing user and receives `200 OK` with the updated data.
+*   **Failure:**
+    *   An admin attempts to update a non-existent user and receives `404 Not Found`.
+    *   A user with the `MANAGER` or `USER` role attempts to update another user and receives `403 Forbidden`.
 
 ---
 
 #### DELETE /admin/{id}
 
-Löscht einen Benutzer (nur für Admins).
+Deletes a user (for admins only).
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test stellt sicher, dass nur Administratoren Benutzer löschen können.
+This test ensures that only administrators can delete users.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Admin löscht einen bestehenden Benutzer und erhält `200 OK`.
-*   **Fehler:**
-    *   Ein Admin versucht, einen nicht existierenden Benutzer zu löschen, und erhält `404 Not Found`.
-    *   Ein Benutzer mit der Rolle `MANAGER` oder `USER` versucht, einen Benutzer zu löschen, und erhält `403 Forbidden`.
+*   **Success:**
+    *   An admin deletes an existing user and receives `200 OK`.
+*   **Failure:**
+    *   An admin attempts to delete a non-existent user and receives `404 Not Found`.
+    *   A user with the `MANAGER` or `USER` role attempts to delete a user and receives `403 Forbidden`.
 
 ---
 
 #### GET /manager
 
-Ruft eine Liste aller Benutzer mit eingeschränkten Informationen ab (für Admins und Manager).
+Retrieves a list of all users with limited information (for admins and managers).
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test überprüft, ob Admins und Manager eine Liste aller Benutzer erhalten.
+This test checks if admins and managers receive a list of all users.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Admin oder Manager ruft die Benutzerliste ab und erhält `200 OK` mit einer Liste von `LimitedUserInfoDTO`-Objekten.
-*   **Fehler:**
-    *   Ein Benutzer mit der Rolle `USER` versucht, auf den Endpunkt zuzugreifen, und erhält `403 Forbidden`.
-    *   Ein nicht authentifizierter Benutzer versucht, auf den Endpunkt zuzugreifen, und erhält `401 Unauthorized`.
+*   **Success:**
+    *   An admin or manager retrieves the user list and receives `200 OK` with a list of `LimitedUserInfoDTO` objects.
+*   **Failure:**
+    *   A user with the `USER` role attempts to access the endpoint and receives `403 Forbidden`.
+    *   An unauthenticated user attempts to access the endpoint and receives `401 Unauthorized`.
 
 ---
 
 #### GET /admin/roles
 
-Ruft alle verfügbaren Benutzerrollen ab (nur für Admins).
+Retrieves all available user roles (for admins only).
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test stellt sicher, dass nur Admins die Liste der verfügbaren Rollen abrufen können.
+This test ensures that only admins can retrieve the list of available roles.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Admin ruft die Liste der Rollen ab und erhält `200 OK` mit einer Liste von Strings.
-*   **Fehler:**
-    *   Ein Benutzer mit einer anderen Rolle versucht, auf den Endpunkt zuzugreifen, und erhält `403 Forbidden`.
+*   **Success:**
+    *   An admin retrieves the list of roles and receives `200 OK` with a list of strings.
+*   **Failure:**
+    *   A user with a different role attempts to access the endpoint and receives `403 Forbidden`.
 
 ---
 
 #### GET /admin/{id}
 
-Ruft die vollständigen Daten eines bestimmten Benutzers ab (nur für Admins).
+Retrieves the full data of a specific user (for admins only).
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test überprüft, ob ein Admin die vollständigen Details eines Benutzers anhand seiner ID abrufen kann.
+This test checks if an admin can retrieve the full details of a user by their ID.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein Admin ruft die Daten eines bestehenden Benutzers ab und erhält `200 OK` mit dem `UserDTO`-Objekt.
-*   **Fehler:**
-    *   Ein Admin versucht, einen nicht existierenden Benutzer abzurufen, und erhält `404 Not Found`.
-    *   Ein Benutzer mit einer anderen Rolle versucht, auf den Endpunkt zuzugreifen, und erhält `403 Forbidden`.
+*   **Success:**
+    *   An admin retrieves the data of an existing user and receives `200 OK` with the `UserDTO` object.
+*   **Failure:**
+    *   An admin attempts to retrieve a non-existent user and receives `404 Not Found`.
+    *   A user with a different role attempts to access the endpoint and receives `403 Forbidden`.
 
 ---
 
 #### PUT /me
 
-Aktualisiert das Profil des aktuell angemeldeten Benutzers.
+Updates the profile of the currently logged-in user.
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test stellt sicher, dass ein authentifizierter Benutzer sein eigenes Profil aktualisieren kann.
+This test ensures that an authenticated user can update their own profile.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein authentifizierter Benutzer aktualisiert sein eigenes Profil mit gültigen Daten und erhält `200 OK` mit den aktualisierten Daten.
-*   **Fehler:**
-    *   Ein Benutzer sendet ungültige Daten und erhält `400 Bad Request`.
-    *   Ein nicht authentifizierter Benutzer versucht, auf den Endpunkt zuzugreifen, und erhält `401 Unauthorized`.
+*   **Success:**
+    *   An authenticated user updates their own profile with valid data and receives `200 OK` with the updated data.
+*   **Failure:**
+    *   A user sends invalid data and receives `400 Bad Request`.
+    *   An unauthenticated user attempts to access the endpoint and receives `401 Unauthorized`.
 
 ## Security
 
 ### AuthResource
 
-Basispfad: `/api/auth`
+Base Path: `/api/auth`
 
-Rolle: Öffentlich
+Role: Public
 
 ---
 
 #### POST /login
 
-Authentifiziert einen Benutzer und gibt einen JWT-Token zurück.
+Authenticates a user and returns a JWT token.
 
-**Beschreibung:**
+**Description:**
 
-Dieser Test überprüft den Anmeldevorgang.
+This test checks the login process.
 
-**Testfälle:**
+**Test Cases:**
 
-*   **Erfolg:**
-    *   Ein registrierter und bestätigter Benutzer sendet gültige Anmeldeinformationen (Benutzername/E-Mail und Passwort) und erhält einen `200 OK`-Status mit einem JWT-Cookie.
-*   **Fehler:**
-    *   Ein Benutzer sendet ungültige Anmeldeinformationen (falscher Benutzername oder falsches Passwort) und erhält einen `401 Unauthorized`-Status.
-    *   Ein Benutzer, dessen E-Mail-Adresse noch nicht bestätigt wurde, versucht sich anzumelden und erhält `401 Unauthorized`-Status.
-    *   Die Anfrage hat ein ungültiges Format (z. B. fehlendes Passwort) und erhält einen `400 Bad Request`-Status.
+*   **Success:**
+    *   A registered and confirmed user sends valid credentials (username/email and password) and receives a `200 OK` status with a JWT cookie.
+*   **Failure:**
+    *   A user sends invalid credentials (wrong username or password) and receives a `401 Unauthorized` status.
+    *   A user whose email address has not yet been confirmed attempts to log in and receives a `401 Unauthorized` status.
+    *   The request has an invalid format (e.g., missing password) and receives a `400 Bad Request` status.
 
-## Frontend Internationalisierung (i18n)
+## Frontend Internationalization (i18n)
 
-Dieser Abschnitt beschreibt Testfälle für die Internationalisierung der Benutzeroberfläche, insbesondere die korrekte Anzeige von Texten basierend auf der ausgewählten Sprache und die Handhabung von Singular/Plural-Formen.
+This section describes test cases for the internationalization of the user interface, particularly the correct display of texts based on the selected language and the handling of singular/plural forms.
 
 ### EventsSubPage (webapp/components/events/events-page.tsx)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `displayNoEventsAvailable` | Überprüft, ob der Text "No events available" (oder die entsprechende Übersetzung) korrekt angezeigt wird, wenn keine Events verfügbar sind. |
-| `displayTryAgainOrCheckSearch` | Überprüft, ob der Text "Try again or check your search" (oder die entsprechende Übersetzung) korrekt angezeigt wird, wenn keine Events gefunden wurden. |
+| `displayNoEventsAvailable` | Checks if the text "No events available" (or the corresponding translation) is displayed correctly when no events are available. |
+| `displayTryAgainOrCheckSearch` | Checks if the text "Try again or check your search" (or the corresponding translation) is displayed correctly when no events were found. |
 
 ### ReservationFormModal (webapp/components/management/reservation-form-modal.tsx)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `displaySingleSeatSelected` | Überprüft, ob der Text "1 Platz ausgewählt" (oder die entsprechende Übersetzung) korrekt angezeigt wird, wenn genau ein Sitzplatz ausgewählt ist. |
-| `displayMultipleSeatsSelected` | Überprüft, ob der Text "{{count}} Plätze ausgewählt" (oder die entsprechende Übersetzung) korrekt angezeigt wird, wenn mehrere Sitzplätze ausgewählt sind, mit der korrekten Anzahl. |
+| `displaySingleSeatSelected` | Checks if the text "1 seat selected" (or the corresponding translation) is displayed correctly when exactly one seat is selected. |
+| `displayMultipleSeatsSelected` | Checks if the text "{{count}} seats selected" (or the corresponding translation) is displayed correctly when multiple seats are selected, with the correct count. |
 
 ### ReservationCard (webapp/components/reservations/reservation-card.tsx)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `displayViewSeatButtonSingle` | Überprüft, ob der Text "Platz ansehen" (oder die entsprechende Übersetzung) korrekt auf dem Button angezeigt wird, wenn nur eine Reservierung vorhanden ist. |
-| `displayViewSeatButtonMultiple` | Überprüft, ob der Text "Plätze ansehen" (oder die entsprechende Übersetzung) korrekt auf dem Button angezeigt wird, wenn mehrere Reservierungen vorhanden sind. |
+| `displayViewSeatButtonSingle` | Checks if the text "View seat" (or the corresponding translation) is displayed correctly on the button when only one reservation is present. |
+| `displayViewSeatButtonMultiple` | Checks if the text "View seats" (or the corresponding translation) is displayed correctly on the button when multiple reservations are present. |
 
 ### ReservationsSubPage (webapp/components/reservations/reservation-page.tsx)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `displayNoReservationsYet` | Überprüft, ob der Text "No reservations yet" (oder die entsprechende Übersetzung) korrekt angezeigt wird, wenn keine Reservierungen vorhanden sind. |
-| `displaySwitchToAvailableEvents` | Überprüft, ob der Text "Switch to available events" (oder die entsprechende Übersetzung) korrekt angezeigt wird, wenn keine Reservierungen vorhanden sind. |
+| `displayNoReservationsYet` | Checks if the text "No reservations yet" (or the corresponding translation) is displayed correctly when no reservations are present. |
+| `displaySwitchToAvailableEvents` | Checks if the text "Switch to available events" (or the corresponding translation) is displayed correctly when no reservations are present. |
 
 ### Translation Files (webapp/locales/de/translation.json, webapp/locales/en/translation.json)
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `verifyNewTranslationKeysExist` | Überprüft, ob alle neuen Übersetzungs-Keys (`viewSeatMultipleButton`, `seatSelected`, `multipleSeatsSelected`, `eventsPage.noEventsAvailable`, `eventsPage.tryAgainOrCheckSearch`, `eventsPage.noReservationsYet`, `eventsPage.switchToAvailableEvents`) in den deutschen und englischen `translation.json`-Dateien vorhanden sind. |
-| `verifyPluralizationLogic` | Überprüft, ob die Pluralisierungslogik für `seatsSelected` und `viewSeatButton` in den Komponenten korrekt angewendet wird, basierend auf den Übersetzungsdateien. |
+| `verifyNewTranslationKeysExist` | Checks if all new translation keys (`viewSeatMultipleButton`, `seatSelected`, `multipleSeatsSelected`, `eventsPage.noEventsAvailable`, `eventsPage.tryAgainOrCheckSearch`, `eventsPage.noReservationsYet`, `eventsPage.switchToAvailableEvents`) are present in the German and English `translation.json` files. |
+| `verifyPluralizationLogic` | Checks if the pluralization logic for `seatsSelected` and `viewSeatButton` is applied correctly in the components, based on the translation files. |
 
 ## Utils
 
 ### ReservationExporter
 
-| Testfall | Beschreibung |
+| Test Case | Description |
 | :--- | :--- |
-| `exportReservationsToPdf_createsNonEmptyPdf` | Überprüft, ob beim Exportieren einer einzelnen Reservierung eine nicht leere PDF-Datei erstellt wird. |
-| `exportReservationsToPdf_multipleReservations_createsMultiPagePdf` | Überprüft, ob beim Exportieren mehrerer Reservierungen eine PDF-Datei mit mehreren Seiten erstellt wird. |
-| `exportReservationsToPdf_emptyList_createsValidPdf` | Überprüft, ob beim Exportieren einer leeren Liste von Reservierungen eine gültige, leere PDF-Datei erstellt wird. |
-| `exportReservationsToCsv_createsCsvWithHeaderAndRows` | Überprüft, ob beim Exportieren einer einzelnen Reservierung eine CSV-Datei mit Kopfzeile und einer Datenzeile erstellt wird. |
-| `exportReservationsToCsv_emptyList_createsCsvWithHeaderOnly` | Überprüft, ob beim Exportieren einer leeren Liste von Reservierungen eine CSV-Datei nur mit der Kopfzeile erstellt wird. |
-| `exportReservationsToCsv_multipleReservations_createsCsvWithMultipleRows` | Überprüft, ob beim Exportieren mehrerer Reservierungen eine CSV-Datei mit einer Kopfzeile und mehreren Datenzeilen erstellt wird. |
-| `exportReservationsToPdf_withBlockedReservation_createsValidPdf` | Überprüft, ob für eine blockierte Reservierung eine gültige PDF-Datei erstellt wird, die das korrekte Template oder Standard-Layout verwendet. |
-| `exportReservationsToPdf_withMixedStatus_createsValidPdf` | Überprüft, ob für eine Liste von Reservierungen mit gemischtem Status (RESERVED und BLOCKED) eine einzelne, mehrseitige PDF-Datei korrekt erstellt wird. |
- 
+| `exportReservationsToPdf_createsNonEmptyPdf` | Checks if exporting a single reservation creates a non-empty PDF file. |
+| `exportReservationsToPdf_multipleReservations_createsMultiPagePdf` | Checks if exporting multiple reservations creates a multi-page PDF file. |
+| `exportReservationsToPdf_emptyList_createsValidPdf` | Checks if exporting an empty list of reservations creates a valid, empty PDF file. |
+| `exportReservationsToCsv_createsCsvWithHeaderAndRows` | Checks if exporting a single reservation creates a CSV file with a header and one data row. |
+| `exportReservationsToCsv_emptyList_createsCsvWithHeaderOnly` | Checks if exporting an empty list of reservations creates a CSV file with only the header. |
+| `exportReservationsToCsv_multipleReservations_createsCsvWithMultipleRows` | Checks if exporting multiple reservations creates a CSV file with a header and multiple data rows. |
+| `exportReservationsToPdf_withBlockedReservation_createsValidPdf` | Checks if a valid PDF file is created for a blocked reservation, using the correct template or default layout. |
+| `exportReservationsToPdf_withMixedStatus_createsValidPdf` | Checks if a single, multi-page PDF file is correctly created for a list of reservations with mixed statuses (RESERVED and BLOCKED). |
+
 ### exportReservationsToPdf(Long eventId, User currentUser)
- 
-| Testfall | Beschreibung |
+
+| Test Case | Description |
 | :--- | :--- |
-| `exportReservationsToPdf_Forbidden` | Versucht, Reservierungen als nicht autorisierter Benutzer zu exportieren. Erwartet `SecurityException`. |
-| `exportReservationsToPdf_EventNotFound` | Versucht, Reservierungen für ein nicht existierendes Event zu exportieren. Erwartet `EventNotFoundException`. |
+| `exportReservationsToPdf_Forbidden` | Attempts to export reservations as an unauthorized user. Expects `SecurityException`. |
+| `exportReservationsToPdf_EventNotFound` | Attempts to export reservations for a non-existent event. Expects `EventNotFoundException`. |
