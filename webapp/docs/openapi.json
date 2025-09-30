@@ -4,7 +4,7 @@
     "schemas" : {
       "AdminUserCreationDto" : {
         "type" : "object",
-        "required" : [ "username", "password", "firstname", "lastname" ],
+        "required" : [ "username", "password", "firstname", "lastname", "sendEmailVerification" ],
         "properties" : {
           "username" : {
             "type" : "string",
@@ -21,6 +21,9 @@
           },
           "lastname" : {
             "type" : "string"
+          },
+          "sendEmailVerification" : {
+            "type" : "boolean"
           },
           "roles" : {
             "type" : "array",
@@ -43,6 +46,9 @@
         "properties" : {
           "email" : {
             "type" : "string"
+          },
+          "sendEmailVerification" : {
+            "type" : "boolean"
           },
           "firstname" : {
             "type" : "string"
@@ -558,6 +564,9 @@
             "type" : "string"
           },
           "emailVerified" : {
+            "type" : "boolean"
+          },
+          "emailVerificationSent" : {
             "type" : "boolean"
           },
           "roles" : {

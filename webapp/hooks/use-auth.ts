@@ -9,6 +9,7 @@ import {
   postApiAuthLoginMutation,
   postApiAuthLogoutMutation,
   postApiAuthRegisterMutation,
+  postApiUserResendEmailConfirmationMutation,
   postApiUserVerifyEmailCodeMutation,
 } from "@/api/@tanstack/react-query.gen";
 import type { RegisterRequestDto, VerifyEmailCodeRequestDto } from "@/api";
@@ -105,6 +106,18 @@ export function useAuth() {
     redirectUser(router, locale, returnToUrl);
   };
 
+  const resendConfirmationMutation = useMutation({
+    ...postApiUserResendEmailConfirmationMutation(),
+  });
+
+  const resendConfirmation = async (): Promise<void> => {
+    await resendConfirmationMutation.mutateAsync({});
+    toast({
+      title: t("email.confirmationEmailSentTitle"),
+      description: t("email.confirmationEmailSentDescription"),
+    });
+  };
+
   return {
     user,
     isLoggedIn: isSuccess,
@@ -112,7 +125,8 @@ export function useAuth() {
     login,
     register,
     logout,
-    verifyEmail, // Added verifyEmail to return object
+    verifyEmail,
+    resendConfirmation,
   };
 }
 

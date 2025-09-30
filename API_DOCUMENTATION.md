@@ -45,8 +45,8 @@ Registers a new user and sets a JWT cookie.
 -   **Roles:** Public
 -   **Request Body:** `RegisterRequestDTO`
 -   **Responses:**
-    -   `200 OK`: Successful registration. Sets a `jwt` cookie.
-    -   `409 Conflict`: User with this username already exists.
+-       `200 OK`: Successful registration. Sets a `jwt` cookie and triggers an email verification flow.
+-       `409 Conflict`: User with this username already exists.
 
 ---
 
@@ -87,12 +87,12 @@ Imports a set of users.
 Creates a new user.
 
 -   **Roles:** `ADMIN`
--   **Request Body:** `AdminUserCreationDto`
+-   **Request Body:** `AdminUserCreationDto` (now includes `sendEmailVerification` field)
 -   **Responses:**
-    -   `201 Created`: User successfully created. Returns `UserDTO`.
-    -   `400 Bad Request`: Invalid data (e.g., duplicate username).
-    -   `403 Forbidden`: Access denied (role is not `ADMIN`).
-    -   `409 Conflict`: User with this username already exists.
+-       `201 Created`: User successfully created. Returns `UserDTO`.
+-       `400 Bad Request`: Invalid data (e.g., duplicate username).
+-       `403 Forbidden`: Access denied (role is not `ADMIN`).
+-       `409 Conflict`: User with this username already exists.
     -   `401 Unauthorized`: Not authenticated.
 
 ---

@@ -89,7 +89,9 @@ public class UserResource {
                 userCreationDTO.getUsername());
         UserDTO createdUser =
                 userService.createUser(
-                        new UserCreationDTO(userCreationDTO), userCreationDTO.getRoles());
+                        new UserCreationDTO(userCreationDTO),
+                        userCreationDTO.getRoles(),
+                        userCreationDTO.getSendEmailVerification());
         LOG.debugf("User %s created successfully by admin.", createdUser.username());
         return createdUser;
     }

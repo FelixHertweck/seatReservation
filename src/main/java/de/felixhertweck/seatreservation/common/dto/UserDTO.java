@@ -31,7 +31,8 @@ public record UserDTO(
         String firstname,
         String lastname,
         String email,
-        boolean emailVerified,
+        Boolean emailVerified,
+        Boolean emailVerificationSent,
         Set<String> roles,
         Set<String> tags) {
 
@@ -43,6 +44,7 @@ public record UserDTO(
                 user.getLastname(),
                 user.getEmail(),
                 user.isEmailVerified(),
+                user.isEmailVerificationSent(),
                 user.getRoles(),
                 user.getTags());
     }

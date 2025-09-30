@@ -45,6 +45,7 @@ import de.felixhertweck.seatreservation.userManagment.dto.AdminUserCreationDto;
 import de.felixhertweck.seatreservation.userManagment.dto.AdminUserUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
+import de.felixhertweck.seatreservation.userManagment.exceptions.SendEmailException;
 import de.felixhertweck.seatreservation.userManagment.exceptions.TokenExpiredException;
 import de.felixhertweck.seatreservation.utils.SecurityUtils;
 import io.quarkus.elytron.security.common.BcryptUtil;
@@ -75,7 +76,7 @@ public class UserService {
 
         Set<UserDTO> importedUsers = new HashSet<>();
         for (AdminUserCreationDto adminUser : adminUserCreationDtos) {
-            UserDTO user = createUser(new UserCreationDTO(adminUser), adminUser.getRoles());
+            UserDTO user = createUser(new UserCreationDTO(adminUser), adminUser.getRoles(), false);
             importedUsers.add(user);
         }
         return importedUsers;
@@ -86,13 +87,15 @@ public class UserService {
      *
      * @param userCreationDTO The DTO containing user creation dto.
      * @param roles The roles to assign to the user.
+     * @param sendEmailVerification Whether to send an email verification if email is set.
      * @return The created UserDTO.
      * @throws InvalidUserException If the provided data is invalid.
      * @throws DuplicateUserException If a user with the same username or email already exists.
-     * @throws RuntimeException If an error occurs while sending email confirmation.
+     * @throws SendEmailException If an error occurs while sending email confirmation.
      */
     @Transactional
-    public UserDTO createUser(UserCreationDTO userCreationDTO, Set<String> roles)
+    public UserDTO createUser(
+            UserCreationDTO userCreationDTO, Set<String> roles, boolean sendEmailVerification)
             throws InvalidUserException, DuplicateUserException {
         if (userCreationDTO == null) {
             LOG.warn("UserCreationDTO is null during user creation.");
@@ -134,6 +137,7 @@ public class UserService {
                         userCreationDTO.getUsername(),
                         email,
                         false,
+                        false,
                         passwordHash,
                         salt,
                         userCreationDTO.getFirstname(),
@@ -149,7 +153,14 @@ public class UserService {
                 user.getRoles(),
                 user.getTags());
 
-        if (user.getEmail() != null && !user.getEmail().trim().isEmpty()) {
+        if (sendEmailVerification) {
+            if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
+                LOG.errorf(
+                        "Email verification requested for user %s, but no email address is set.",
+                        user.getUsername());
+                throw new SendEmailException(
+                        "Email verification requested, but user has no email address.");
+            }
             try {
                 LOG.debugf("Attempting to send email confirmation to %s", user.getEmail());
 
@@ -157,6 +168,7 @@ public class UserService {
 
                 EmailVerification emailVerification = emailService.createEmailVerification(user);
                 emailService.sendEmailConfirmation(user, emailVerification);
+                user.setEmailVerificationSent(true);
             } catch (IOException e) {
                 LOG.errorf(
                         e,
@@ -164,8 +176,11 @@ public class UserService {
                         user.getEmail(),
                         user.id,
                         e.getMessage());
-                throw new RuntimeException("Failed to send email confirmation: " + e.getMessage());
+                throw new SendEmailException(
+                        "Failed to send email confirmation: " + e.getMessage());
             }
+        } else {
+            LOG.debug("Skipping email verification as per the flag.");
         }
         userRepository.persist(user);
         LOG.debugf("User %s persisted successfully with ID: %d", user.getUsername(), user.id);
@@ -181,7 +196,8 @@ public class UserService {
             String firstname,
             String lastname,
             String password,
-            Set<String> tags) {
+            Set<String> tags,
+            boolean sendEmailVerification) {
         LOG.debugf("Entering updateUserCore for user ID: %d", existingUser.id);
 
         // Update email if provided and different
@@ -193,29 +209,35 @@ public class UserService {
             // Reset email verification status
             existingUser.setEmailVerified(false);
 
-            // Delete existing email verification entry in a new transaction to avoid constraint
-            // violation
-            emailVerificationRepository.deleteByUserId(existingUser.id);
+            if (sendEmailVerification) {
+                // Delete existing email verification entry in a new transaction to avoid constraint
+                // violation
+                emailVerificationRepository.deleteByUserId(existingUser.id);
 
-            // Send new email confirmation
-            try {
-                LOG.debugf(
-                        "Sending email confirmation to %s for user ID %d due to email change.",
-                        existingUser.getEmail(), existingUser.id);
-                EmailVerification emailVerification =
-                        emailService.createEmailVerification(existingUser);
-                emailService.sendEmailConfirmation(existingUser, emailVerification);
-                LOG.debugf(
-                        "Email confirmation sent to %s for user ID: %d",
-                        existingUser.getEmail(), existingUser.id);
-            } catch (IOException e) {
-                LOG.errorf(
-                        e,
-                        "Failed to send email confirmation to %s for user ID %d: %s",
-                        existingUser.getEmail(),
-                        existingUser.id,
-                        e.getMessage());
-                throw new RuntimeException("Failed to send email confirmation: " + e.getMessage());
+                // Send new email confirmation
+                try {
+                    LOG.debugf(
+                            "Sending email confirmation to %s for user ID %d due to email change.",
+                            existingUser.getEmail(), existingUser.id);
+                    EmailVerification emailVerification =
+                            emailService.createEmailVerification(existingUser);
+                    emailService.sendEmailConfirmation(existingUser, emailVerification);
+                    existingUser.setEmailVerificationSent(true);
+                    LOG.debugf(
+                            "Email confirmation sent to %s for user ID: %d",
+                            existingUser.getEmail(), existingUser.id);
+                } catch (IOException e) {
+                    LOG.errorf(
+                            e,
+                            "Failed to send email confirmation to %s for user ID %d: %s",
+                            existingUser.getEmail(),
+                            existingUser.id,
+                            e.getMessage());
+                    throw new SendEmailException(
+                            "Failed to send email confirmation: " + e.getMessage());
+                }
+            } else {
+                LOG.debug("Skipping email verification as per the flag.");
             }
         }
 
@@ -264,7 +286,7 @@ public class UserService {
                         existingUser.getEmail(),
                         existingUser.id,
                         e.getMessage());
-                throw new RuntimeException(
+                throw new SendEmailException(
                         "Failed to send password changed notification email: " + e.getMessage());
             }
         }
@@ -290,7 +312,7 @@ public class UserService {
      * @throws UserNotFoundException If the user with the given ID does not exist.
      * @throws InvalidUserException If the provided data is invalid.
      * @throws DuplicateUserException If a user with the same username or email already exists.
-     * @throws RuntimeException If an error occurs while sending email confirmation.
+     * @throws SendEmailException If an error occurs while sending email confirmation.
      */
     @Transactional
     public UserDTO updateUser(Long id, AdminUserUpdateDTO user) throws UserNotFoundException {
@@ -317,7 +339,8 @@ public class UserService {
                 user.getFirstname(),
                 user.getLastname(),
                 user.getPassword(),
-                user.getTags());
+                user.getTags(),
+                user.getSendEmailVerification());
 
         if (user.getRoles() != null) {
             LOG.debugf(
@@ -409,7 +432,8 @@ public class UserService {
                 userProfileUpdateDTO.getFirstname(),
                 userProfileUpdateDTO.getLastname(),
                 userProfileUpdateDTO.getPassword(),
-                userProfileUpdateDTO.getTags());
+                userProfileUpdateDTO.getTags(),
+                true);
 
         userRepository.persist(existingUser);
         LOG.infof("User profile for username %s updated successfully.", username);
@@ -517,6 +541,7 @@ public class UserService {
 
         // Send email confirmation with the (updated or new) email verification
         emailService.sendEmailConfirmation(user, emailVerification);
+        user.setEmailVerificationSent(true);
         LOG.infof("Email confirmation resent to %s for user ID: %d", user.getEmail(), user.id);
     }
 

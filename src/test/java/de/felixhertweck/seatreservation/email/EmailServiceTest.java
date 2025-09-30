@@ -65,6 +65,8 @@ class EmailServiceTest {
         user.setFirstname("Test");
         user.setLastname("User");
         user.id = 1L;
+        user.setEmailVerified(false);
+        user.setEmailVerificationSent(false);
         return user;
     }
 
@@ -149,6 +151,30 @@ class EmailServiceTest {
                 "Token should be a 6-digit code, got: " + createdVerification.getToken());
         assertNotNull(createdVerification.getExpirationTime());
         verify(emailVerificationRepository, times(1)).persist(createdVerification);
+    }
+
+    @Test
+    void createEmailVerification_SetsEmailVerificationSentToTrue() {
+        User user = createTestUser();
+        // Ensure emailVerificationSent is false initially
+        assertFalse(user.isEmailVerificationSent());
+
+        doAnswer(
+                        invocation -> {
+                            EmailVerification ev = invocation.getArgument(0);
+                            ev.getUser()
+                                    .setEmailVerificationSent(
+                                            true); // Simulate update in repository
+                            return null;
+                        })
+                .when(emailVerificationRepository)
+                .persist(any(EmailVerification.class));
+
+        emailService.createEmailVerification(user);
+
+        // Verify that emailVerificationSent is true after creating verification
+        assertTrue(user.isEmailVerificationSent());
+        verify(emailVerificationRepository, times(1)).persist(any(EmailVerification.class));
     }
 
     @Test

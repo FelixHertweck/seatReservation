@@ -42,6 +42,7 @@ export function UserFormModal({
   const [emailVerified, setEmailVerified] = useState(
     user?.emailVerified || false,
   );
+  const [sendEmailVerification, setSendEmailVerification] = useState(false);
   const [selectedRoles, setSelectedRoles] = useState<string[]>(
     user?.roles || [],
   );
@@ -70,6 +71,7 @@ export function UserFormModal({
       setEmailVerified(false);
       setSelectedRoles([]);
       setTags([]);
+      setSendEmailVerification(false);
     }
   }, [user, isCreating]);
 
@@ -102,6 +104,7 @@ export function UserFormModal({
         password,
         roles: selectedRoles,
         tags,
+        sendEmailVerification,
       };
     } else {
       userData = {
@@ -110,6 +113,7 @@ export function UserFormModal({
         email,
         roles: selectedRoles,
         tags,
+        sendEmailVerification,
       };
 
       if (password !== "••••••••") {
@@ -122,7 +126,10 @@ export function UserFormModal({
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent
+        className="sm:max-w-[425px]"
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>
             {isCreating
@@ -228,6 +235,17 @@ export function UserFormModal({
               />
             </div>
           )}
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="sendEmailVerification" className="text-right">
+              {t("userFormModal.sendEmailVerificationLabel")}
+            </Label>
+            <Checkbox
+              id="sendEmailVerification"
+              checked={sendEmailVerification}
+              onCheckedChange={(checked) => setSendEmailVerification(!!checked)}
+              className="col-span-3"
+            />
+          </div>
           <div className="grid grid-cols-4 items-start gap-4">
             <Label className="text-right pt-2">
               {t("userFormModal.rolesLabel")}
