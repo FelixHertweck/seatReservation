@@ -27,7 +27,7 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -45,7 +45,6 @@ import com.lowagie.text.pdf.PdfImportedPage;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfStamper;
 import com.lowagie.text.pdf.PdfWriter;
-import de.felixhertweck.seatreservation.management.dto.ReservationExportDTO;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.User;
@@ -70,19 +69,22 @@ public class ReservationExporter {
             // CSV Header
             writer.write("ID,Seat Number,First Name,Last Name,Reservation Date\n");
 
-            long exportIdCounter = 1;
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
             for (Reservation reservation : reservations) {
-                ReservationExportDTO dto = new ReservationExportDTO(reservation, exportIdCounter++);
                 writer.write(
                         String.format(
-                                "%d,%s,%s,%s,%s\n",
-                                dto.getId(),
-                                dto.getSeatNumber(),
-                                dto.getFirstName(),
-                                dto.getLastName(),
-                                dto.getReservationDate().atZone(ZoneOffset.UTC).format(formatter)));
+                                "%d,%s,%s,%s,%s,%s\n",
+                                reservation.id,
+                                reservation.getStatus(),
+                                reservation.getSeat().getSeatNumber(),
+                                reservation.getSeat().getSeatRow(),
+                                reservation.getUser().getFirstname(),
+                                reservation.getUser().getLastname(),
+                                reservation
+                                        .getReservationDate()
+                                        .atZone(ZoneId.systemDefault())
+                                        .format(formatter)));
             }
             writer.flush();
         }
