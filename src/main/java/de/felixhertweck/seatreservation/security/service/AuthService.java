@@ -96,7 +96,7 @@ public class AuthService {
 
         UserCreationDTO userCreationDTO = new UserCreationDTO(registerRequest);
 
-        userService.createUser(userCreationDTO, Set.of(Roles.USER));
+        userService.createUser(userCreationDTO, Set.of(Roles.USER), true);
 
         User user = userRepository.findByUsername(registerRequest.getUsername());
 

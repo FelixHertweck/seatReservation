@@ -9,6 +9,10 @@
     "description": "Die angeforderte Seite konnte nicht gefunden werden.",
     "backToHome": "Zur Startseite"
   },
+  "email": {
+    "confirmationEmailSentTitle": "Bestätigungs-E-Mail gesendet",
+    "confirmationEmailSentDescription": "Eine Bestätigungs-E-Mail wurde an Ihre Adresse gesendet. Bitte bestätigen Sie diese!"
+  },
   "logout": {
     "success": {
       "title": "Logout erfolgreich",
@@ -259,8 +263,6 @@
     "authRequiredDescription": "Bitte melden Sie sich an, um Ihr Profil zu aktualisieren.",
     "profileUpdatedTitle": "Profil aktualisiert",
     "profileUpdatedDescription": "Ihr Profil wurde erfolgreich aktualisiert.",
-    "confirmationEmailSentTitle": "Bestätigungs-E-Mail gesendet",
-    "confirmationEmailSentDescription": "Eine Bestätigungs-E-Mail wurde an Ihre Adresse gesendet. Bitte bestätigen Sie diese!",
     "profileSettingsTitle": "Profileinstellungen",
     "usernameLabel": "Benutzername",
     "firstNameLabel": "Vorname",
@@ -324,6 +326,7 @@
     "lastNameLabel": "Nachname",
     "emailLabel": "E-Mail",
     "verifiedLabel": "Verifiziert",
+    "sendEmailVerificationLabel": "E-Mail-Verifizierung senden",
     "rolesLabel": "Rollen",
     "tagsLabel": "Tags",
     "addTagPlaceholder": "Neuen Tag hinzufügen",
@@ -393,13 +396,18 @@
     "emailSentTo": "Eine Bestätigungs-E-Mail wurde an ",
     "clickLinkToConfirm": " gesendet. Bitte klicken Sie auf den Link in der E-Mail, um Ihre Adresse zu bestätigen und fortzufahren.",
     "reloadInfo": "Falls Sie die Email bereits bestätigt haben, laden Sie die Seite neu.",
-    "ifEmailIncorrect": "Wenn diese E-Mail-Adresse falsch ist, können Sie sie auf Ihrer ",
+    "ifEmailIncorrect": "Wenn diese E-Mail-Adresse falsch oder noch nicht angekommen ist, können Sie sie auf Ihrer ",
     "profilePageLink": "Profilseite",
     "changeIt": " ändern.",
     "noEmailRegistered": "Für Ihr Konto ist keine E-Mail-Adresse registriert. Bitte fügen Sie eine E-Mail-Adresse hinzu und bestätigen Sie diese, um fortzufahren.",
     "goToProfileButton": "Zum Profil",
+    "goToVerifyButton": "Zur Verifizierung",
     "emailAlreadyVerifiedInfo": "Ihre E-Mail wurde bereits bestätigt. Bitte laden Sie die Seite neu, um die Änderungen zu sehen.",
-    "reloadPageButton": "Seite neu laden"
+    "reloadPageButton": "Seite neu laden",
+    "emailRegistered1": "Für ihr Benutzeraccount wurde ",
+    "emailRegistered2": " als Email-Adresse registiert.",
+    "clickToSendConfirmation": "Klicken Sie auf Email-Verification senden um eine Bestätigungsemail zu erhalten und ihre Email zu bestätigen",
+    "sendVerificationMail": "Bestätigungs-E-Mail senden"
   },
   "loginRequiredPopup": {
     "title": "Anmeldung erforderlich",

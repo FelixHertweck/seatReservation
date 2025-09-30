@@ -65,6 +65,7 @@ public class UserResourceTest {
                 new AdminUserCreationDto(
                         "testuser1",
                         "test1@example.com",
+                        false,
                         "password",
                         "John",
                         "Doe",
@@ -74,6 +75,7 @@ public class UserResourceTest {
                 new AdminUserCreationDto(
                         "testuser2",
                         "test2@example.com",
+                        false,
                         "password",
                         "Jane",
                         "Doe",
@@ -97,6 +99,7 @@ public class UserResourceTest {
                 new AdminUserCreationDto(
                         "testuser1",
                         "test1@example.com",
+                        false,
                         "password",
                         "John",
                         "Doe",
@@ -118,6 +121,7 @@ public class UserResourceTest {
                 new AdminUserCreationDto(
                         "testuser1",
                         "test1@example.com",
+                        false,
                         "password",
                         "John",
                         "Doe",
@@ -139,7 +143,14 @@ public class UserResourceTest {
         // Invalid DTO: empty username
         dtos.add(
                 new AdminUserCreationDto(
-                        "", "test1@example.com", "password", "John", "Doe", Set.of("USER"), null));
+                        "",
+                        "test1@example.com",
+                        false,
+                        "password",
+                        "John",
+                        "Doe",
+                        Set.of("USER"),
+                        null));
 
         given().contentType("application/json")
                 .body(dtos)
@@ -157,6 +168,7 @@ public class UserResourceTest {
                 new AdminUserCreationDto(
                         "existinguser",
                         "existing@example.com",
+                        false,
                         "password",
                         "John",
                         "Doe",
@@ -166,6 +178,7 @@ public class UserResourceTest {
                 new AdminUserCreationDto(
                         "existinguser",
                         "existing2@example.com",
+                        false,
                         "password",
                         "Jane",
                         "Doe",
@@ -177,6 +190,7 @@ public class UserResourceTest {
                         new AdminUserCreationDto(
                                 "existinguser",
                                 "existing@example.com",
+                                false,
                                 "password",
                                 "John",
                                 "Doe",

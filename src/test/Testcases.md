@@ -96,8 +96,9 @@ This is an overview of the test cases for the application.
 
 | Test Case | Description |
 | :--- | :--- |
-| `createUser_Success_WithEmail` | Creates a new user with valid data (username, password, email, first name, last name). Checks if the user is successfully saved in the database and an email confirmation is sent. |
+| `createUser_Success_WithEmail` | Creates a new user with valid data (username, password, email, first name, last name) and `sendEmailVerification` set to `true`. Checks if the user is successfully saved in the database and an email confirmation is sent. |
 | `createUser_Success_WithoutEmail` | Creates a new user with valid data (username, password, first name, last name), but without an email. Checks if the user is successfully saved in the database and no email confirmation is sent. |
+| `createUser_Success_WithEmail_NoVerificationSent` | Creates a new user with valid data (username, password, email, first name, last name) and `sendEmailVerification` set to `false`. Checks if the user is successfully saved in the database and no email confirmation is sent. |
 | `createUser_InvalidUserException_NullDTO` | Attempts to create a user with a `null` `UserCreationDTO`. Expects `InvalidUserException`. |
 | `createUser_InvalidUserException_EmptyUsername` | Attempts to create a user with an empty or whitespace-only username. Expects `InvalidUserException`. |
 | `createUser_InvalidUserException_EmptyPassword` | Attempts to create a user with an empty or whitespace-only password. Expects `InvalidUserException`. |
@@ -113,7 +114,7 @@ This is an overview of the test cases for the application.
 | `importUsers_EmptySet` | Attempts to import an empty set of users. Expects an empty list of imported users. |
 | `importUsers_InvalidUserException` | Attempts to import users with invalid data (e.g., empty username). Expects `InvalidUserException`. |
 | `importUsers_DuplicateUserException` | Attempts to import users, one of whom already exists. Expects `DuplicateUserException`. |
-| `importUsers_EmailSendFailure` | Simulates an email sending failure during import. Expects `RuntimeException`. |
+| `importUsers_EmailSendFailure` | Simulates an email sending failure during import. Checks that the import still proceeds and does not throw a `RuntimeException`. |
 
 ### updateUser(Long id, AdminUserUpdateDTO user)
 
@@ -125,6 +126,8 @@ This is an overview of the test cases for the application.
 | `updateUser_Success_UpdateRoles` | Successfully updates the roles of an existing user (admin function). |
 | `updateUser_Success_NoEmailChange` | Successfully updates other fields of an existing user (e.g., first name, last name, password, roles) without changing the email address (admin function). Checks that no email confirmation is sent. |
 | `updateUser_Success_UpdateEmail` | Successfully updates the email address of an existing user and checks if the email verification is reset and a new confirmation email is sent (admin function). |
+| `updateUser_Success_UpdateEmail_NoVerificationSent` | Successfully updates the email address of an existing user without sending a verification email (admin function). |
+| `updateUser_Success_NoEmailChange_VerificationSentTrue` | Successfully updates other fields of an existing user without changing the email address, even if `sendEmailVerification` is true (admin function). Checks that no email confirmation is sent. |
 | `updateUser_UserNotFoundException` | Attempts to update a non-existent user (admin function). Expects `UserNotFoundException`. |
 | `updateUser_InvalidUserException_NullDTO` | Attempts to update a user with a `null` `AdminUserUpdateDTO` (admin function). Expects `InvalidUserException`. |
 | `updateUser_Success_WithDuplicateEmail` | Updates a user's email address to an already existing email address (admin function). Checks if the update is successful and no `DuplicateUserException` is thrown. |

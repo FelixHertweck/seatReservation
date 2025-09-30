@@ -10,12 +10,14 @@ export type AdminUserCreationDto = {
     password: string;
     firstname: string;
     lastname: string;
+    sendEmailVerification: boolean;
     roles?: Array<string>;
     tags?: Array<string>;
 };
 
 export type AdminUserUpdateDto = {
     email?: string;
+    sendEmailVerification?: boolean;
     firstname?: string;
     lastname?: string;
     password?: string;
@@ -186,6 +188,7 @@ export type UserDto = {
     lastname?: string;
     email?: string;
     emailVerified?: boolean;
+    emailVerificationSent?: boolean;
     roles?: Array<string>;
     tags?: Array<string>;
 };

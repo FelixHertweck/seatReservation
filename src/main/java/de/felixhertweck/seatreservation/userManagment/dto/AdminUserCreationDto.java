@@ -52,6 +52,9 @@ public class AdminUserCreationDto {
     @NotNull(message = "Lastname cannot be null")
     private final String lastname;
 
+    @NotNull(message = "sendEmailVerification cannot be null")
+    private final Boolean sendEmailVerification;
+
     private Set<String> roles;
 
     private final Set<String> tags;
@@ -62,6 +65,10 @@ public class AdminUserCreationDto {
 
     public String getEmail() {
         return email;
+    }
+
+    public Boolean getSendEmailVerification() {
+        return sendEmailVerification;
     }
 
     public String getPassword() {
@@ -87,6 +94,7 @@ public class AdminUserCreationDto {
     public AdminUserCreationDto(
             String username,
             String email,
+            Boolean sendEmailVerification,
             String password,
             String firstname,
             String lastname,
@@ -94,6 +102,7 @@ public class AdminUserCreationDto {
             Set<String> tags) {
         this.username = username;
         this.email = email;
+        this.sendEmailVerification = sendEmailVerification;
         this.password = password;
         this.firstname = firstname;
         this.lastname = lastname;

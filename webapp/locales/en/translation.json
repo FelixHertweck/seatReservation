@@ -9,6 +9,10 @@
     "description": "The requested page could not be found.",
     "backToHome": "Back to home"
   },
+  "email": {
+    "confirmationEmailSentTitle": "Confirmation Email Sent",
+    "confirmationEmailSentDescription": "A confirmation email has been sent to your address. Please confirm it!"
+  },
   "logout": {
     "success": {
       "title": "Logout successful",
@@ -259,8 +263,6 @@
     "authRequiredDescription": "Please log in to update your profile.",
     "profileUpdatedTitle": "Profile Updated",
     "profileUpdatedDescription": "Your profile has been successfully updated.",
-    "confirmationEmailSentTitle": "Confirmation Email Sent",
-    "confirmationEmailSentDescription": "A confirmation email has been sent to your address. Please confirm it!",
     "profileSettingsTitle": "Profile Settings",
     "usernameLabel": "Username",
     "firstNameLabel": "First Name",
@@ -324,6 +326,7 @@
     "lastNameLabel": "Last Name",
     "emailLabel": "Email",
     "verifiedLabel": "Verified",
+    "sendEmailVerificationLabel": "Send email verification",
     "rolesLabel": "Roles",
     "tagsLabel": "Tags",
     "addTagPlaceholder": "Add new tag",
@@ -392,13 +395,18 @@
     "emailSentTo": "A confirmation email has been sent to ",
     "clickLinkToConfirm": ". Please click the link in the email to confirm your address and continue.",
     "reloadInfo": "If you have already confirmed the email, please reload the page.",
-    "ifEmailIncorrect": "If this email address is incorrect, you can change it on your ",
+    "ifEmailIncorrect": "If this email address is incorrect or has not arrived yet, you can change it on your ",
     "profilePageLink": "Profile Page",
     "changeIt": ".",
     "noEmailRegistered": "No email address is registered for your account. Please add an email address and confirm it to continue.",
     "goToProfileButton": "Go to Profile",
+    "goToVerifyButton": "Go to Verification",
     "emailAlreadyVerifiedInfo": "Your email has already been verified. Please reload the page to see the changes.",
-    "reloadPageButton": "Reload Page"
+    "reloadPageButton": "Reload Page",
+    "emailRegistered1": "The email address ",
+    "emailRegistered2": " has been registered for your account.",
+    "clickToSendConfirmation": "Click \"Send verification email\" to receive a confirmation email and verify your email address.",
+    "sendVerificationMail": "Send verification email"
   },
   "loginRequiredPopup": {
     "title": "Login Required",
