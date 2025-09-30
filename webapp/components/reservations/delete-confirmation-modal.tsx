@@ -28,7 +28,7 @@ export function DeleteConfirmationModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>{t("reservationDeleteModal.title")}</DialogTitle>
           <DialogDescription>

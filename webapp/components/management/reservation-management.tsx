@@ -247,7 +247,7 @@ export function ReservationManagement({
                   {t("reservationManagement.exportReservationsButton")}
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent onInteractOutside={(e) => e.preventDefault()}>
                 <DialogHeader>
                   <DialogTitle>
                     {t("reservationManagement.exportEventReservationsTitle")}

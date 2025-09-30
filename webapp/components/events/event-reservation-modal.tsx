@@ -86,7 +86,10 @@ export function EventReservationModal({
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-none max-h-[90vh] h-[85vh] flex flex-col">
+      <DialogContent
+        className="w-[95vw] max-w-none max-h-[90vh] h-[85vh] flex flex-col"
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
             {t("eventReservationModal.title", { eventName: event.name })}
