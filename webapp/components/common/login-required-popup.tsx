@@ -37,7 +37,11 @@ export function LoginRequiredPopup() {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-[425px]" noX={true}>
+      <DialogContent
+        className="sm:max-w-[425px]"
+        noX={true}
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>{t("loginRequiredPopup.title")}</DialogTitle>
           <DialogDescription>

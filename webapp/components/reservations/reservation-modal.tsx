@@ -60,7 +60,10 @@ export function SeatMapModal({
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-[95vw] w-[1200px] max-h-[90vh] h-[85vh] flex flex-col">
+      <DialogContent
+        className="max-w-[95vw] w-[1200px] max-h-[90vh] h-[85vh] flex flex-col"
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>
             {eventReservations.length > 1
