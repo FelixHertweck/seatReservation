@@ -223,7 +223,7 @@ export function ReservationManagement({
 
     setIsExportModalOpen(false);
     setSelectedEventForExport("");
-    setSelectedFormat("json");
+    setSelectedFormat("");
   };
 
   return (
