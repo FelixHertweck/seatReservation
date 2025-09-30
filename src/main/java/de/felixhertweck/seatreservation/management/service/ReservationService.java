@@ -496,7 +496,7 @@ public class ReservationService {
 
     public byte[] exportReservationsToCsv(Long eventId, User currentUser)
             throws EventNotFoundException, SecurityException, IOException {
-        LOG.infof(
+        LOG.debugf(
                 "Attempting to export reservations for event ID %d by user: %s (ID: %d)",
                 eventId, currentUser.getUsername(), currentUser.getId());
 
@@ -512,7 +512,7 @@ public class ReservationService {
 
     public byte[] exportReservationsToPdf(Long eventId, User currentUser)
             throws EventNotFoundException, SecurityException, IOException {
-        LOG.infof(
+        LOG.debugf(
                 "Attempting to export reservations for event ID %d by user: %s (ID: %d)",
                 eventId, currentUser.getUsername(), currentUser.getId());
 
