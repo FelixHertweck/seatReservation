@@ -715,10 +715,16 @@ public class EmailService {
         return false;
     }
 
+    /**
+     * Adds a Bcc (blind carbon copy) address to the specified mail if the address is present,
+     * non-empty, and not already included in the email recipients.
+     *
+     * @param mail the Mail object to which the Bcc address will be added
+     */
     private void addBcc(Mail mail) {
         bccAddress.ifPresent(
                 address -> {
-                    if (!address.trim().isEmpty()) {
+                    if (!address.trim().isEmpty() && !mail.getTo().contains(address)) {
                         mail.addBcc(address);
                     }
                 });
