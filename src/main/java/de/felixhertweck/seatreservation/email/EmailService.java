@@ -24,6 +24,7 @@ import java.time.Instant;
 import java.time.Year;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -229,14 +230,23 @@ public class EmailService {
      *
      * @param user The user to whom the email will be sent.
      * @param reservations The list of reservations to include in the email.
+     * @param additionalMailAddress An optional email address to override the user's email.
      * @throws IOException If an error occurs while sending the email.
      */
-    public void sendReservationConfirmation(User user, List<Reservation> reservations)
+    public void sendReservationConfirmation(
+            User user, List<Reservation> reservations, String additionalMailAddress)
             throws IOException {
-        if (skipForNullOrEmptyAddress(user.getEmail())) {
-            return;
+        List<String> emailAddresses = new ArrayList<>();
+        if (!skipForNullOrEmptyAddress(user.getEmail())
+                && !skipForLocalhostAddress(user.getEmail())) {
+            emailAddresses.add(user.getEmail());
         }
-        if (skipForLocalhostAddress(user.getEmail())) {
+        if (!skipForNullOrEmptyAddress(additionalMailAddress)
+                && !skipForLocalhostAddress(additionalMailAddress)) {
+            emailAddresses.add(additionalMailAddress);
+        }
+        if (emailAddresses.isEmpty()) {
+            LOG.warn("No valid email addresses provided for reservation confirmation.");
             return;
         }
 
@@ -356,6 +366,18 @@ public class EmailService {
                     user.getEmail(),
                     user.id);
         }
+    }
+
+    /**
+     * Sends a reservation confirmation email to the user.
+     *
+     * @param user The user to whom the email will be sent.
+     * @param reservations The list of reservations to include in the email.
+     * @throws IOException If an error occurs while sending the email.
+     */
+    public void sendReservationConfirmation(User user, List<Reservation> reservations)
+            throws IOException {
+        sendReservationConfirmation(user, reservations, null);
     }
 
     /**
@@ -701,7 +723,7 @@ public class EmailService {
 
     private boolean skipForNullOrEmptyAddress(String address) {
         if (address == null || address.isEmpty()) {
-            Log.warn("Skipping email sending for null or empty address.");
+            LOG.warn("Skipping email sending for null or empty address.");
             return true;
         }
         return false;

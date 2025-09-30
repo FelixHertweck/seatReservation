@@ -192,7 +192,7 @@ public class ReservationService {
      */
     @Transactional
     public Set<ReservationResponseDTO> createReservations(
-            ReservationRequestDTO dto, User currentUser)
+            ReservationRequestDTO dto, User managerUser)
             throws SecurityException, UserNotFoundException, IllegalArgumentException {
         LOG.debugf(
                 "Attempting to create reservation for seat ID: %d, user ID: %d, event ID: %d by"
@@ -200,8 +200,8 @@ public class ReservationService {
                 dto.getSeatIds(),
                 dto.getUserId(),
                 dto.getEventId(),
-                currentUser.getUsername(),
-                currentUser.getId());
+                managerUser.getUsername(),
+                managerUser.getId());
         User targetUser =
                 userRepository
                         .findByIdOptional(dto.getUserId())
@@ -227,11 +227,11 @@ public class ReservationService {
                                             "Event with id " + dto.getEventId() + " not found");
                                 });
 
-        if (!isManagerAllowedToAccessEvent(currentUser, event)
-                && !currentUser.getRoles().contains(Roles.ADMIN)) {
+        if (!isManagerAllowedToAccessEvent(managerUser, event)
+                && !managerUser.getRoles().contains(Roles.ADMIN)) {
             LOG.warnf(
                     "User %s (ID: %d) is not allowed to access this reservation for creation.",
-                    currentUser.getUsername(), currentUser.getId());
+                    targetUser.getUsername(), targetUser.getId());
             throw new SecurityException("You are not allowed to access this reservation.");
         }
 
@@ -254,7 +254,7 @@ public class ReservationService {
             if (!dto.isDeductAllowance()) {
                 LOG.debugf(
                         "Allowance check skipped for user %s (ID: %d).",
-                        currentUser.getUsername(), currentUser.getId());
+                        targetUser.getUsername(), targetUser.getId());
             } else {
                 try {
                     EventUserAllowance allowance =
@@ -300,7 +300,8 @@ public class ReservationService {
         }
 
         try {
-            emailService.sendReservationConfirmation(targetUser, existingReservations);
+            emailService.sendReservationConfirmation(
+                    targetUser, existingReservations, managerUser.getEmail());
             LOG.debugf(
                     "Reservation confirmation email sent to user ID %d for reservation ID %d.",
                     targetUser.getId(), existingReservations.getFirst().getEvent().id);
