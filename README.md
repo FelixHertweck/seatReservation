@@ -97,6 +97,39 @@ The application requires certain environment variables to be set for proper func
     mail-from=your-mail-from-address # The "from" address for sent emails
     ```
 
+## User Import
+
+### CSV → AdminUserCreationDto Importer
+
+This small Java program reads an `input.csv` and writes the data as JSON to `output.json`.  
+Each line of the CSV is translated into an `AdminUserCreationDto` object.
+
+#### Running the Importer
+
+To run the importer, execute the following command from the project root:
+
+```shell script
+mvn exec:java@import
+```
+
+The `input.csv` file must be placed in the project root directory. The generated `output.json` can then be imported via the admin interface.
+
+#### Structure of `input.csv`
+
+The file **must** be in the project root directory.  
+Columns are separated by `,` (comma).
+
+| First Name | Last Name | Password |
+|------------|-----------|----------|
+| Max        | Mustermann | secret123 |
+| Anna       | Müller     | password |
+
+**Example `input.csv`:**
+```
+Max,Mustermann,secret123
+Anna,Müller,password
+```
+
 ## Backend (Quarkus)
 
 ### Running the application in dev mode

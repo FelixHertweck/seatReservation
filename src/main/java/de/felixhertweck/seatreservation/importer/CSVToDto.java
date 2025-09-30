@@ -1,16 +1,37 @@
-package importer;
+/*
+ * #%L
+ * seat-reservation
+ * %%
+ * Copyright (C) 2025 Felix Hertweck
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+package de.felixhertweck.seatreservation.importer;
 
 import java.io.*;
 import java.util.*;
 
-public class CsvToAdminUserDto {
+import de.felixhertweck.seatreservation.userManagment.dto.AdminUserCreationDto;
+
+public class CSVToDto {
 
     private static final Set<String> DEFAULT_ROLES = Set.of("USER");
     private static final Set<String> DEFAULT_TAGS = Set.of("imported");
 
     private static final String CSV_SEPARATOR = ";";
-    private static final String JSON_OUTPUT_FILE = "output.json";
-    private static final String CSV_INPUT_FILE = "input.csv";
+    private static final String JSON_OUTPUT_FILE = "importer/output.json";
+    private static final String CSV_INPUT_FILE = "importer/input.csv";
 
     public static void main(String[] args) {
         List<AdminUserCreationDto> users = new ArrayList<>();
@@ -26,22 +47,33 @@ public class CsvToAdminUserDto {
                 String firstname = parts[0].trim();
                 String lastname = parts[1].trim();
                 String password = parts[2].trim();
+                String email = null;
+                if (parts.length >= 4) {
+                    email = parts[3].trim();
+                }
                 String username = (firstname + "." + lastname).toLowerCase().replaceAll("\\s+", "");
-                
-                username = username.replace("ä", "ae")
-                                    .replace("ö", "oe")
-                                    .replace("ü", "ue")
-                                    .replace("ß", "ss");
 
-                if(firstname.isEmpty() || lastname.isEmpty() || password.isEmpty()) {
+                username =
+                        username.replace("ä", "ae")
+                                .replace("ö", "oe")
+                                .replace("ü", "ue")
+                                .replace("ß", "ss");
+
+                if (firstname.isEmpty() || lastname.isEmpty() || password.isEmpty()) {
                     System.err.println("Skipping line due to empty fields: " + line);
                     continue;
                 }
 
-                AdminUserCreationDto dto = new AdminUserCreationDto(
-                        username, null, password, firstname, lastname,
-                        DEFAULT_ROLES, DEFAULT_TAGS
-                );
+                AdminUserCreationDto dto =
+                        new AdminUserCreationDto(
+                                username,
+                                email,
+                                false,
+                                password,
+                                firstname,
+                                lastname,
+                                DEFAULT_ROLES,
+                                DEFAULT_TAGS);
                 users.add(dto);
             }
         } catch (IOException e) {
@@ -49,7 +81,6 @@ public class CsvToAdminUserDto {
             return;
         }
 
-        
         try (PrintWriter pw = new PrintWriter(new FileWriter(JSON_OUTPUT_FILE))) {
             pw.println("[");
             for (int i = 0; i < users.size(); i++) {
@@ -80,7 +111,8 @@ public class CsvToAdminUserDto {
 
                 pw.print("}");
 
-                if (i < users.size() - 1) pw.println(","); else pw.println();
+                if (i < users.size() - 1) pw.println(",");
+                else pw.println();
             }
             pw.println("]");
         } catch (IOException e) {
@@ -92,35 +124,4 @@ public class CsvToAdminUserDto {
         if (s == null) return null;
         return s.replace("\\", "\\\\").replace("\"", "\\\"");
     }
-}
-
-
-class AdminUserCreationDto {
-    private final String username;
-    private final String email;
-    private final String password;
-    private final String firstname;
-    private final String lastname;
-
-    private final Set<String> roles;
-    private final Set<String> tags;
-
-    public AdminUserCreationDto(String username, String email, String password,
-                                String firstname, String lastname, Set<String> roles, Set<String> tags) {
-        this.username = Objects.requireNonNull(username);
-        this.email = email;
-        this.password = Objects.requireNonNull(password);
-        this.firstname = Objects.requireNonNull(firstname);
-        this.lastname = Objects.requireNonNull(lastname);
-        this.roles = Objects.requireNonNull(roles);
-        this.tags = Objects.requireNonNull(tags);
-    }
-
-    public String getUsername() { return username; }
-    public String getEmail() { return email; }
-    public String getPassword() { return password; }
-    public String getFirstname() { return firstname; }
-    public String getLastname() { return lastname; }
-    public Set<String> getRoles() { return roles; }
-    public Set<String> getTags() { return tags; }
 }
