@@ -352,7 +352,13 @@ public class EmailService {
         LOG.debug("Placeholders replaced in reservation email template.");
 
         Mail mail =
-                Mail.withHtml(user.getEmail(), EMAIL_HEADER_RESERVATION_CONFIRMATION, htmlContent);
+                Mail.withHtml(
+                        emailAddresses.getFirst(),
+                        EMAIL_HEADER_RESERVATION_CONFIRMATION,
+                        htmlContent);
+        if (emailAddresses.size() > 1) {
+            emailAddresses.subList(1, emailAddresses.size()).forEach(mail::addCc);
+        }
         addBcc(mail);
         try {
             mailer.send(mail);
