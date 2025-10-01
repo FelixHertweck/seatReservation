@@ -142,6 +142,7 @@ public class EventServiceTest {
         dto.setDescription("New Description");
         dto.setStartTime(Instant.now().plusSeconds(Duration.ofDays(5).toSeconds()));
         dto.setEndTime(Instant.now().plusSeconds(Duration.ofDays(6).toSeconds()));
+        dto.setBookingStartTime(Instant.now().plusSeconds(Duration.ofDays(3).toSeconds()));
         dto.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(4).toSeconds()));
         dto.setEventLocationId(eventLocation.id);
 
@@ -188,6 +189,7 @@ public class EventServiceTest {
         dto.setDescription("Updated Description");
         dto.setStartTime(Instant.now().plusSeconds(Duration.ofDays(10).toSeconds()));
         dto.setEndTime(Instant.now().plusSeconds(Duration.ofDays(11).toSeconds()));
+        dto.setBookingStartTime(Instant.now().plusSeconds(Duration.ofDays(8).toSeconds()));
         dto.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(9).toSeconds()));
         dto.setEventLocationId(eventLocation.id);
 
@@ -211,6 +213,7 @@ public class EventServiceTest {
         dto.setDescription("Updated Description Admin");
         dto.setStartTime(Instant.now().plusSeconds(Duration.ofDays(10).toSeconds()));
         dto.setEndTime(Instant.now().plusSeconds(Duration.ofDays(11).toSeconds()));
+        dto.setBookingStartTime(Instant.now().plusSeconds(Duration.ofDays(8).toSeconds()));
         dto.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(9).toSeconds()));
         dto.setEventLocationId(eventLocation.id);
 

@@ -314,5 +314,10 @@ public class EventService {
         if (!dto.getBookingDeadline().isBefore(dto.getEndTime())) {
             throw new IllegalArgumentException("Booking deadline must be before end time");
         }
+
+        if (!dto.getBookingStartTime().isBefore(dto.getBookingDeadline())) {
+            throw new IllegalArgumentException(
+                    "Booking start time must be before booking deadline");
+        }
     }
 }
