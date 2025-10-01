@@ -1,5 +1,5 @@
--- This file allow to write SQL commands that will be emitted in test and dev.
--- The commands are commented as their support depends of the database
+-- This file allows to write SQL commands that will be emitted in test and dev.
+-- The commands are commented as their support depends on the database
 
 -- Insert admin user
 INSERT INTO users (id, username, email, passwordHash, passwordSalt, firstname, lastname, emailVerified) VALUES (1, 'admin', 'admin@localhost', '$2a$12$G0LZJi5jGdl5wqspjaVYN.eXdZcZ3X9cMny/3m8mRM3vK/5Yf6TE6', 'Salt', 'Admin', 'User', true);
@@ -14,7 +14,7 @@ INSERT INTO user_roles (user_id, role) VALUES (1, 'ADMIN');
 -- Insert manager user
 INSERT INTO users (id, username, email, passwordHash, passwordSalt, firstname, lastname, emailVerified) VALUES (2, 'manager', 'manager@localhost', '$2a$12$R.1dngJ7Ma4DEVU8L7Tjlek2AnE4.SPIK/BHynpwoatUim9qeOoP2', 'Salt', 'Event', 'Manager', true);
 
--- Assign ADMIN tags to manager user
+-- Assign manager tags to manager user
 INSERT INTO user_tags (user_id, tags) VALUES (2, 'manageruser');
 INSERT INTO user_tags (user_id, tags) VALUES (2, 'demouser');
 
@@ -24,18 +24,18 @@ INSERT INTO user_roles (user_id, role) VALUES (2, 'MANAGER');
 -- Insert regular user
 INSERT INTO users (id, username, email, passwordHash, passwordSalt, firstname, lastname, emailVerified) VALUES (3, 'user', 'user@localhost', '$2a$12$arzn9PpRswUrgIw0xaXoM.Y2PeX8m9OKKEGggA07bUXm/O./85WPa', 'Salt', 'Regular', 'User', true);
 
--- Assign ADMIN tags to regular user
+-- Assign regular user tags
 INSERT INTO user_tags (user_id, tags) VALUES (3, 'normaluser');
 INSERT INTO user_tags (user_id, tags) VALUES (3, 'demouser');
 
 -- Assign USER role to regular user
 INSERT INTO user_roles (user_id, role) VALUES (3, 'USER');
 
--- Insert event_location
-INSERT INTO eventlocations (id, name, address, manager_id) VALUES (1, 'Stadthalle', 'Hauptstraße 1, 12345 Musterstadt', 2);
+-- Insert event location
+INSERT INTO eventlocations (id, name, address, manager_id) VALUES (1, 'City Hall', 'Hauptstraße 1, 12345 Musterstadt', 2);
 
 -- Insert event
-INSERT INTO events (id, name, startTime, endTime, bookingStartTime, bookingDeadline, event_location_id, manager_id) VALUES (1, 'Konzert der Stadtkapelle', '2024-12-31 19:00:00', '2024-12-31 21:00:00', '2024-12-12 17:00:00', '2026-12-12 17:00:00', 1, 2);
+INSERT INTO events (id, name, startTime, endTime, bookingStartTime, bookingDeadline, event_location_id, manager_id) VALUES (1, 'City Band Concert', '2024-12-31 19:00:00', '2024-12-31 21:00:00', '2024-12-12 17:00:00', '2026-12-12 17:00:00', 1, 2);
 
 
 INSERT INTO eventlocationsMarkers (id, event_location_id, label, xCoordinate, yCoordinate) VALUES

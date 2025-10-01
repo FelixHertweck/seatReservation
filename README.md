@@ -6,7 +6,6 @@ A comprehensive system for managing seat reservations for events. The system con
 
 There is a [DeepWiki](https://deepwiki.com/FelixHertweck/seatReservation), check it out for documentation.
 
-After initial start there is a user account with username admin and password admin. Make sure to change the default credentials before deploying the application!
 
 This application provides a robust solution for managing event seat reservations. It allows users to browse events, reserve seats, and receive email notifications. The system supports different user roles with varying levels of access and capabilities, ensuring secure and efficient management of events and reservations.
 
@@ -68,11 +67,11 @@ mkdir -p keys && openssl genpkey -algorithm RSA -out keys/privateKey.pem -pkeyop
 
 ### Automatic Admin User Creation
 
-Upon initial startup, the application automatically checks for the existence of an 'admin' user. If no user with the username 'admin' is found, a new admin account will be created with the following default credentials:
+Upon initial startup, the application automatically checks for the existence of an 'admin' user. If no user with the username 'admin' is found, a new admin account will be created during the application's startup phase. The credentials for this automatically created user are:
 
 -   **Username:** `admin`
--   **Email:** `admin@example.com`
--   **Password:** `admin` 
+-   **Email:** `admin@localhost`
+-   **Password:** A randomly generated password. This password will be logged to the console (STDOUT) during the application's startup.
 -   **Roles:** `ADMIN`
 
 **Make sure to change the default credentials before deploying the application**
@@ -129,6 +128,22 @@ Columns are separated by `,` (comma).
 Max,Mustermann,secret123
 Anna,Müller,password
 ```
+
+## PDF Export Templates
+
+The application supports exporting reservations as PDF documents, utilizing predefined PDF templates with AcroForm fields. There are two distinct templates used based on the reservation status:
+
+-   **`/export-template/reserved.pdf`**: Used for reservations with the status `RESERVED`.
+    -   **Required Form Fields:**
+        -   `reservedUntil`: The date until which the seat is reserved.
+        -   `userName`: The full name of the user who made the reservation.
+        -   `seatInfo`: Information about the seat (e.g., "A1 (Row 1)").
+
+-   **`/export-template/blocked.pdf`**: Used for reservations with the status `BLOCKED`.
+    -   **Required Form Fields:**
+        -   `seatInfo`: Information about the seat (e.g., "A1 (Row 1)").
+
+If these template files are not found at the specified paths, the system will generate a standard PDF layout with basic reservation information.
 
 ## Backend (Quarkus)
 
