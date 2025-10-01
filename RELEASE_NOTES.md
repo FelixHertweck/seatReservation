@@ -1,3 +1,53 @@
+# Release 0.0.6
+
+This release introduces several new features, fixes, and improvements across the application, focusing on enhanced event and user management, improved export functionalities, and better UI/UX.
+
+## New Features
+- **Event Management**: Added booking start time to event management and reservation system, allowing for more precise event scheduling.
+- **UI/UX**: Implemented a feature to prevent modals from closing when interacting outside, improving user experience during data entry.
+- **User Management**: Added the ability to add users with an email address and send verification at user login time, streamlining the onboarding process.
+- **Email System**: Enhanced reservation confirmation emails to support additional email addresses and included the option to send confirmation mails to manager users.
+- **Export Functionality**: Updated the CSV export format to include seat row and status, providing more comprehensive data for analysis.
+- **Export Functionality**: Added seat data to the location export functionality, offering a complete overview of event location layouts.
+- **UI/UX**: Enhanced the marker component with dynamic sizing and centering, improving visual clarity on seat maps.
+- **Email System**: Implemented BCC support and improved email content formatting in the EmailService for better communication.
+- **Export Functionality**: Introduced PDF export functionality for reservations, providing a professional and printable format for records.
+
+## Fixes
+- **Dependencies**: Replaced the openpdf dependency with quarkus-openpdf and updated the dockerfile to resolve native image file errors, ensuring smoother deployments.
+- **Event Management**: Validated booking start time before the booking deadline, preventing invalid event configurations.
+- **UI/UX**: Updated the event card status badge for accurate and timely display of event statuses.
+- **User Management**: Ensured users are persisted before sending confirmation emails to guarantee a valid user ID is available.
+- **Email System**: The mailer now uses an email address list instead of a single user email, enhancing flexibility in recipient management.
+- **Email System**: Prevented duplicate Bcc addresses in email recipients, ensuring clean and efficient email delivery.
+- **Export Functionality**: Reset the selected format in the export modal to default, improving consistency.
+- **Configuration**: Corrected the export template path in the docker-compose configuration, resolving export issues.
+- **Logging**: Changed the log level from info to debug for reservation export methods, reducing log verbosity in production.
+- **Internationalization**: Translated into English.
+- **UI/UX**: Adjusted SVG styling for full width and height rendering.
+- **UI/UX**: Prevented blocked seats from being returned as user reservations and updated the height of reservation modals.
+- **UI/UX**: Integrated reservations into the events page to show existing reservations.
+
+## Changes
+- **Documentation**: Updated README and SQL import file for clarity and consistency.
+- **Email System**: Mailer uses an email address list instead of a user email.
+
+## Refactored
+- **Import Process**: Improved the CSV to JSON import process with enhanced error handling and user feedback.
+- **File Structure**: Moved the CSV importer to the Maven project root and updated the readme for better organization.
+
+## Build
+- **Dependencies**: Bumped `com.github.librepdf:openpdf` from 1.3.30 to 3.0.0.
+- **Dependencies**: Bumped `org.codehaus.mojo:license-maven-plugin`.
+- **Dependencies**: Bumped `quarkus.platform.version` from 3.26.4 to 3.28.1.
+- **Dependencies**: Bumped `com.diffplug.spotless:spotless-maven-plugin`.
+- **Dependencies**: Bumped `react-i18next` from 15.7.3 to 16.0.0 in `/webapp`.
+- **Dependencies**: Bumped `@types/node` from 24.5.2 to 24.6.1 in `/webapp`.
+- **Dependencies**: Bumped `org.apache.commons:commons-csv` from 1.10.0 to 1.14.1.
+- **Dependencies**: Bumped `quarkus.platform.version` from 3.28.1 to 3.28.2.
+- **Dependencies**: Bumped `org.codehaus.mojo:exec-maven-plugin`.
+
+---
 # Release 0.0.5
 
 This release introduces internationalization support for event and reservation messages, enhances event and reservation management, adds secure cookie configuration for JWT, improves seat reservation map performance, and includes various refactorings and updates.

@@ -1,5 +1,52 @@
 # Changelog
 
+## 0.0.6 - 2025-10-01
+
+### Added
+- **Event Management**: Added booking start time to event management and reservation system.
+- **UI/UX**: Prevented closing modals when interacting outside.
+- **User Management**: Added ability to add user with email and send verification at user login time.
+- **Email System**: Enhanced reservation confirmation email to support additional email addresses and added send confirmation mail also to manager user.
+- **Export Functionality**: Updated CSV export format to include seat row and status.
+- **Export Functionality**: Added seat data to location export functionality.
+- **UI/UX**: Enhanced marker component with dynamic sizing and centering.
+- **Email System**: Added BCC support and improved email content formatting in EmailService.
+- **Export Functionality**: Implemented PDF export functionality for reservations.
+
+### Fixed
+- **Dependencies**: Replaced openpdf dependency with quarkus-openpdf and updated dockerfile to fix native image file error.
+- **Event Management**: Validated booking start time before booking deadline.
+- **UI/UX**: Updated event card status badge.
+- **User Management**: Persisted user before sending confirmation mail to ensure user has ID.
+- **Email System**: Mailer now uses email address list instead of single user email.
+- **Email System**: Prevented duplicate Bcc addresses in email recipients.
+- **Export Functionality**: Reset selected format in export modal to default.
+- **Configuration**: Corrected export template path in docker-compose configuration.
+- **Logging**: Changed log level from info to debug for reservation export methods.
+- **Internationalization**: Translated into English.
+- **UI/UX**: Adjusted SVG styling for full width and height rendering.
+- **UI/UX**: Don't return blocked seats as reservation of user and updated height of reservation modals.
+- **UI/UX**: Integrated reservations into events page to show existing reservations.
+
+### Changed
+- **Documentation**: Updated README and SQL import file for clarity and consistency.
+- **Email System**: Mailer uses email address list instead of user email.
+
+### Refactored
+- **Import Process**: Improved CSV to JSON import process with enhanced error handling and user feedback.
+- **File Structure**: Moved CSV importer to maven project root and updated readme.
+
+### Build
+- **Dependencies**: Bumped com.github.librepdf:openpdf from 1.3.30 to 3.0.0.
+- **Dependencies**: Bumped org.codehaus.mojo:license-maven-plugin.
+- **Dependencies**: Bumped quarkus.platform.version from 3.26.4 to 3.28.1.
+- **Dependencies**: Bumped com.diffplug.spotless:spotless-maven-plugin.
+- **Dependencies**: Bumped react-i18next from 15.7.3 to 16.0.0 in /webapp.
+- **Dependencies**: Bumped @types/node from 24.5.2 to 24.6.1 in /webapp.
+- **Dependencies**: Bumped org.apache.commons:commons-csv from 1.10.0 to 1.14.1.
+- **Dependencies**: Bumped quarkus.platform.version from 3.28.1 to 3.28.2.
+- **Dependencies**: Bumped org.codehaus.mojo:exec-maven-plugin.
+
 ## 0.0.5 - 2025-09-26
 
 ### Added
