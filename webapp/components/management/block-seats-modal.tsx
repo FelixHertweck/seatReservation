@@ -101,7 +101,10 @@ export function BlockSeatsModal({
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] h-[85vh] flex flex-col">
+      <DialogContent
+        className="max-w-6xl max-h-[90vh] h-[85vh] flex flex-col"
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
             {t("blockSeatsModal.title")}

@@ -91,6 +91,7 @@ public class UserServiceTest {
                                 "mock",
                                 "mock@example.com",
                                 true,
+                                false,
                                 "hash",
                                 "salt",
                                 "Mock",
@@ -102,7 +103,7 @@ public class UserServiceTest {
         when(emailService.createEmailVerification(any(User.class)))
                 .thenReturn(mockEmailVerification);
 
-        UserDTO createdUser = userService.createUser(dto, Set.of(Roles.USER));
+        UserDTO createdUser = userService.createUser(dto, Set.of(Roles.USER), true);
 
         assertNotNull(createdUser);
         assertEquals("testuser", createdUser.username());
@@ -119,7 +120,7 @@ public class UserServiceTest {
         when(userRepository.findByUsernameOptional(anyString())).thenReturn(Optional.empty());
         when(userRepository.isPersistent(any(User.class))).thenReturn(true);
 
-        UserDTO createdUser = userService.createUser(dto, Set.of(Roles.USER));
+        UserDTO createdUser = userService.createUser(dto, Set.of(Roles.USER), false);
 
         assertNotNull(createdUser);
         assertEquals("testuser", createdUser.username());
@@ -131,9 +132,29 @@ public class UserServiceTest {
     }
 
     @Test
+    void createUser_Success_WithEmail_NoVerificationSent() throws IOException {
+        UserCreationDTO dto =
+                new UserCreationDTO(
+                        "testuser", "test@example.com", "password", "John", "Doe", null);
+        when(userRepository.findByUsernameOptional(anyString())).thenReturn(Optional.empty());
+        when(userRepository.isPersistent(any(User.class))).thenReturn(true);
+
+        UserDTO createdUser = userService.createUser(dto, Set.of(Roles.USER), false);
+
+        assertNotNull(createdUser);
+        assertEquals("testuser", createdUser.username());
+        assertEquals("test@example.com", createdUser.email());
+        verify(userRepository, times(1)).persist(any(User.class));
+        verify(emailService, never()).createEmailVerification(any(User.class));
+        verify(emailService, never())
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
+    }
+
+    @Test
     void createUser_InvalidUserException_NullDTO() throws IOException {
         assertThrows(
-                InvalidUserException.class, () -> userService.createUser(null, Set.of(Roles.USER)));
+                InvalidUserException.class,
+                () -> userService.createUser(null, Set.of(Roles.USER), false));
         verify(userRepository, never()).persist(any(User.class));
         verify(emailService, never()).createEmailVerification(any(User.class));
         verify(emailService, never())
@@ -145,12 +166,14 @@ public class UserServiceTest {
         final UserCreationDTO dto =
                 new UserCreationDTO("", "test@example.com", "password", "John", "Doe", null);
         assertThrows(
-                InvalidUserException.class, () -> userService.createUser(dto, Set.of(Roles.USER)));
+                InvalidUserException.class,
+                () -> userService.createUser(dto, Set.of(Roles.USER), false));
 
         final UserCreationDTO dto2 =
                 new UserCreationDTO("   ", "test@example.com", "password", "John", "Doe", null);
         assertThrows(
-                InvalidUserException.class, () -> userService.createUser(dto2, Set.of(Roles.USER)));
+                InvalidUserException.class,
+                () -> userService.createUser(dto2, Set.of(Roles.USER), false));
 
         verify(userRepository, never()).persist(any(User.class));
         verify(emailService, never()).createEmailVerification(any(User.class));
@@ -163,12 +186,14 @@ public class UserServiceTest {
         final UserCreationDTO dto =
                 new UserCreationDTO("testuser", "test@example.com", "", "John", "Doe", null);
         assertThrows(
-                InvalidUserException.class, () -> userService.createUser(dto, Set.of(Roles.USER)));
+                InvalidUserException.class,
+                () -> userService.createUser(dto, Set.of(Roles.USER), false));
 
         final UserCreationDTO dto2 =
                 new UserCreationDTO("testuser", "test@example.com", "   ", "John", "Doe", null);
         assertThrows(
-                InvalidUserException.class, () -> userService.createUser(dto2, Set.of(Roles.USER)));
+                InvalidUserException.class,
+                () -> userService.createUser(dto2, Set.of(Roles.USER), false));
 
         verify(userRepository, never()).persist(any(User.class));
     }
@@ -183,7 +208,7 @@ public class UserServiceTest {
 
         assertThrows(
                 DuplicateUserException.class,
-                () -> userService.createUser(dto, Set.of(Roles.USER)));
+                () -> userService.createUser(dto, Set.of(Roles.USER), false));
         verify(userRepository, never()).persist(any(User.class));
         verify(emailService, never()).createEmailVerification(any(User.class));
         verify(emailService, never())
@@ -204,6 +229,7 @@ public class UserServiceTest {
                                         "mock",
                                         "mock@example.com",
                                         true,
+                                        false,
                                         "hash",
                                         "salt",
                                         "Mock",
@@ -216,7 +242,7 @@ public class UserServiceTest {
         // Simulate that another user already has this email, but it should not prevent creation
         // (assuming email uniqueness is not enforced at this layer for creation)
 
-        UserDTO createdUser = userService.createUser(dto, Set.of(Roles.USER));
+        UserDTO createdUser = userService.createUser(dto, Set.of(Roles.USER), true);
 
         assertNotNull(createdUser);
         assertEquals("newuser", createdUser.username());
@@ -241,6 +267,7 @@ public class UserServiceTest {
                                         "mock",
                                         "mock@example.com",
                                         true,
+                                        false,
                                         "hash",
                                         "salt",
                                         "Mock",
@@ -253,10 +280,29 @@ public class UserServiceTest {
                 .when(emailService)
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
 
-        assertThrows(RuntimeException.class, () -> userService.createUser(dto, Set.of(Roles.USER)));
+        assertThrows(
+                RuntimeException.class,
+                () -> userService.createUser(dto, Set.of(Roles.USER), true));
         verify(userRepository, never()).persist(any(User.class));
         verify(emailService, times(1)).createEmailVerification(any(User.class));
         verify(emailService, times(1))
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
+    }
+
+    @Test
+    void createUser_RuntimeException_EmailVerificationTrue_NoEmail() throws IOException {
+        UserCreationDTO dto =
+                new UserCreationDTO("testuser", null, "password", "John", "Doe", null);
+        when(userRepository.findByUsernameOptional(anyString())).thenReturn(Optional.empty());
+        when(userRepository.isPersistent(any(User.class))).thenReturn(true);
+
+        assertThrows(
+                RuntimeException.class,
+                () -> userService.createUser(dto, Set.of(Roles.USER), true));
+
+        verify(userRepository, never()).persist(any(User.class));
+        verify(emailService, never()).createEmailVerification(any(User.class));
+        verify(emailService, never())
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
@@ -271,6 +317,7 @@ public class UserServiceTest {
                         "testuser",
                         "old@example.com",
                         true,
+                        false,
                         "oldhash",
                         "salt",
                         "Old",
@@ -284,6 +331,7 @@ public class UserServiceTest {
                         null,
                         null,
                         null,
+                        false,
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
 
@@ -311,6 +359,7 @@ public class UserServiceTest {
                         "testuser",
                         "old@example.com",
                         true,
+                        false,
                         "oldhash",
                         "salt",
                         "John",
@@ -324,6 +373,7 @@ public class UserServiceTest {
                         "New",
                         null,
                         null,
+                        false,
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
 
@@ -351,6 +401,7 @@ public class UserServiceTest {
                         "testuser",
                         "old@example.com",
                         true,
+                        false,
                         "oldhash",
                         "salt",
                         "John",
@@ -364,6 +415,7 @@ public class UserServiceTest {
                         null,
                         "newpassword",
                         null,
+                        false,
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
 
@@ -393,6 +445,7 @@ public class UserServiceTest {
                         "testuser",
                         "old@example.com",
                         true,
+                        false,
                         "oldhash",
                         "salt",
                         "John",
@@ -406,6 +459,7 @@ public class UserServiceTest {
                         null,
                         "newpassword",
                         null,
+                        false,
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
 
@@ -428,6 +482,7 @@ public class UserServiceTest {
                         "testuser",
                         "old@example.com",
                         true,
+                        false,
                         BcryptUtil.bcryptHash("oldpassword" + initialSalt),
                         initialSalt,
                         "John",
@@ -441,6 +496,7 @@ public class UserServiceTest {
                         null,
                         "newpassword",
                         null,
+                        false,
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
 
@@ -466,6 +522,7 @@ public class UserServiceTest {
                         "testuser",
                         "old@example.com",
                         true,
+                        false,
                         "oldhash",
                         "salt",
                         "John",
@@ -475,7 +532,8 @@ public class UserServiceTest {
         existingUser.id = 1L;
         Set<String> newRoles = new HashSet<>(Arrays.asList(Roles.USER, Roles.ADMIN));
         final AdminUserUpdateDTO dto =
-                new AdminUserUpdateDTO(null, null, null, null, newRoles, Collections.emptySet());
+                new AdminUserUpdateDTO(
+                        null, null, null, null, false, newRoles, Collections.emptySet());
 
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
 
@@ -499,6 +557,7 @@ public class UserServiceTest {
                         "testuser",
                         "old@example.com",
                         true,
+                        false,
                         "oldhash",
                         "salt",
                         "John",
@@ -512,6 +571,7 @@ public class UserServiceTest {
                         "Name",
                         "newpass",
                         null,
+                        false,
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
 
@@ -543,6 +603,7 @@ public class UserServiceTest {
                         "testuser",
                         "old@example.com",
                         true,
+                        false,
                         "oldhash",
                         "salt",
                         "John",
@@ -556,6 +617,7 @@ public class UserServiceTest {
                         null,
                         null,
                         "new@example.com",
+                        true,
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
 
@@ -569,6 +631,7 @@ public class UserServiceTest {
                                         "mock",
                                         "mock@example.com",
                                         true,
+                                        false,
                                         "hash",
                                         "salt",
                                         "Mock",
@@ -597,6 +660,7 @@ public class UserServiceTest {
                         null,
                         null,
                         null,
+                        false,
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
         when(userRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
@@ -626,6 +690,7 @@ public class UserServiceTest {
                         "testuser",
                         "old@example.com",
                         true,
+                        false,
                         "oldhash",
                         "salt",
                         "John",
@@ -639,6 +704,7 @@ public class UserServiceTest {
                         null,
                         null,
                         "duplicate@example.com",
+                        true,
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
 
@@ -652,6 +718,7 @@ public class UserServiceTest {
                                         "mock",
                                         "mock@example.com",
                                         true,
+                                        false,
                                         "hash",
                                         "salt",
                                         "Mock",
@@ -681,6 +748,7 @@ public class UserServiceTest {
                         "testuser",
                         "old@example.com",
                         true,
+                        false,
                         "oldhash",
                         "salt",
                         "John",
@@ -694,6 +762,7 @@ public class UserServiceTest {
                         null,
                         null,
                         "new@example.com",
+                        true,
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
 
@@ -707,6 +776,7 @@ public class UserServiceTest {
                                         "mock",
                                         "mock@example.com",
                                         true,
+                                        false,
                                         "hash",
                                         "salt",
                                         "Mock",
@@ -726,12 +796,91 @@ public class UserServiceTest {
     }
 
     @Test
+    void updateUser_Success_UpdateEmail_NoVerificationSent()
+            throws IOException, UserNotFoundException {
+        User existingUser =
+                new User(
+                        "testuser",
+                        "old@example.com",
+                        true,
+                        false,
+                        "oldhash",
+                        "salt",
+                        "John",
+                        "Doe",
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
+        existingUser.id = 1L;
+        final AdminUserUpdateDTO dto =
+                new AdminUserUpdateDTO(
+                        null,
+                        null,
+                        null,
+                        "new@example.com",
+                        false, // sendEmailVerification ist false
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
+
+        when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
+
+        UserDTO updatedUser = userService.updateUser(1L, dto);
+
+        assertNotNull(updatedUser);
+        assertEquals("new@example.com", updatedUser.email());
+        assertFalse(existingUser.isEmailVerified()); // Sollte immer noch false sein
+        verify(userRepository, times(1)).persist(existingUser);
+        verify(emailService, never()).createEmailVerification(any(User.class));
+        verify(emailService, never())
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
+    }
+
+    @Test
+    void updateUser_Success_NoEmailChange_VerificationSentTrue()
+            throws IOException, UserNotFoundException {
+        User existingUser =
+                new User(
+                        "testuser",
+                        "old@example.com",
+                        true,
+                        false,
+                        "oldhash",
+                        "salt",
+                        "John",
+                        "Doe",
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
+        existingUser.id = 1L;
+        final AdminUserUpdateDTO dto =
+                new AdminUserUpdateDTO(
+                        null,
+                        null,
+                        null,
+                        "old@example.com", // E-Mail ist gleich
+                        true, // sendEmailVerification ist true
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
+
+        when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
+
+        UserDTO updatedUser = userService.updateUser(1L, dto);
+
+        assertNotNull(updatedUser);
+        assertEquals("old@example.com", updatedUser.email());
+        assertTrue(existingUser.isEmailVerified()); // Sollte immer noch true sein
+        verify(userRepository, times(1)).persist(existingUser);
+        verify(emailService, never()).createEmailVerification(any(User.class));
+        verify(emailService, never())
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
+    }
+
+    @Test
     void deleteUser_Success() throws UserNotFoundException {
         User existingUser =
                 new User(
                         "testuser",
                         "test@example.com",
                         true,
+                        false,
                         "hash",
                         "salt",
                         "John",
@@ -764,6 +913,7 @@ public class UserServiceTest {
                         "testuser",
                         "test@example.com",
                         true,
+                        false,
                         "hash",
                         "salt",
                         "John",
@@ -795,6 +945,7 @@ public class UserServiceTest {
                         "user1",
                         "a@a.com",
                         true,
+                        false,
                         "h1",
                         "salt1",
                         "F1",
@@ -806,6 +957,7 @@ public class UserServiceTest {
                         "user2",
                         "b@b.com",
                         true,
+                        false,
                         "h2",
                         "salt2",
                         "F2",
@@ -857,6 +1009,7 @@ public class UserServiceTest {
                         "testuser",
                         "old@example.com",
                         true,
+                        false,
                         "oldhash",
                         "salt",
                         "Old",
@@ -892,6 +1045,7 @@ public class UserServiceTest {
                         "testuser",
                         "old@example.com",
                         true,
+                        false,
                         "oldhash",
                         "salt",
                         "John",
@@ -927,6 +1081,7 @@ public class UserServiceTest {
                         "testuser",
                         "old@example.com",
                         true,
+                        false,
                         "oldhash",
                         "salt",
                         "John",
@@ -961,6 +1116,7 @@ public class UserServiceTest {
                         "testuser",
                         "old@example.com",
                         true,
+                        false,
                         "oldhash",
                         "salt",
                         "John",
@@ -981,6 +1137,7 @@ public class UserServiceTest {
                                         "mock",
                                         "mock@example.com",
                                         true,
+                                        false,
                                         "hash",
                                         "salt",
                                         "Mock",
@@ -1035,6 +1192,7 @@ public class UserServiceTest {
                         "testuser",
                         "old@example.com",
                         true,
+                        false,
                         "oldhash",
                         "salt",
                         "John",
@@ -1057,6 +1215,7 @@ public class UserServiceTest {
                                         "mock",
                                         "mock@example.com",
                                         true,
+                                        false,
                                         "hash",
                                         "salt",
                                         "Mock",
@@ -1083,6 +1242,7 @@ public class UserServiceTest {
                         "testuser",
                         "old@example.com",
                         true,
+                        false,
                         "oldhash",
                         "salt",
                         "John",
@@ -1105,6 +1265,7 @@ public class UserServiceTest {
                                         "mock",
                                         "mock@example.com",
                                         true,
+                                        false,
                                         "hash",
                                         "salt",
                                         "Mock",
@@ -1131,6 +1292,7 @@ public class UserServiceTest {
                         "testuser",
                         "old@example.com",
                         true,
+                        false,
                         "oldhash",
                         "salt",
                         "John",
@@ -1157,6 +1319,7 @@ public class UserServiceTest {
                 new AdminUserCreationDto(
                         "user1",
                         "user1@example.com",
+                        false,
                         "pass1",
                         "First1",
                         "Last1",
@@ -1166,6 +1329,7 @@ public class UserServiceTest {
                 new AdminUserCreationDto(
                         "user2",
                         "user2@example.com",
+                        false,
                         "pass2",
                         "First2",
                         "Last2",
@@ -1184,6 +1348,7 @@ public class UserServiceTest {
                                         "mock",
                                         "mock@example.com",
                                         true,
+                                        false,
                                         "hash",
                                         "salt",
                                         "Mock",
@@ -1198,7 +1363,7 @@ public class UserServiceTest {
         assertNotNull(importedUsers);
         assertEquals(2, importedUsers.size());
         verify(userRepository, times(2)).persist(any(User.class));
-        verify(emailService, times(2))
+        verify(emailService, never())
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
@@ -1222,6 +1387,7 @@ public class UserServiceTest {
                 new AdminUserCreationDto(
                         "",
                         "invalid@example.com",
+                        false,
                         "pass",
                         "Invalid",
                         "User",
@@ -1242,6 +1408,7 @@ public class UserServiceTest {
                 new AdminUserCreationDto(
                         "existinguser",
                         "existing@example.com",
+                        false,
                         "pass",
                         "Existing",
                         "User",
@@ -1258,6 +1425,7 @@ public class UserServiceTest {
                                         "mock",
                                         "mock@example.com",
                                         true,
+                                        false,
                                         "hash",
                                         "salt",
                                         "Mock",
@@ -1280,6 +1448,7 @@ public class UserServiceTest {
                 new AdminUserCreationDto(
                         "user1",
                         "user1@example.com",
+                        false,
                         "pass1",
                         "First1",
                         "Last1",
@@ -1295,6 +1464,7 @@ public class UserServiceTest {
                                         "mock",
                                         "mock@example.com",
                                         true,
+                                        false,
                                         "hash",
                                         "salt",
                                         "Mock",
@@ -1307,11 +1477,9 @@ public class UserServiceTest {
                 .when(emailService)
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
 
-        assertThrows(RuntimeException.class, () -> userService.importUsers(dtos));
-        verify(userRepository, never())
-                .persist(any(User.class)); // Should not persist if email send fails and
-        // transaction rolls back
-        verify(emailService, times(1))
+        assertDoesNotThrow(() -> userService.importUsers(dtos));
+        verify(userRepository, times(1)).persist(any(User.class));
+        verify(emailService, never())
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
@@ -1322,6 +1490,7 @@ public class UserServiceTest {
                 new User(
                         "testuser",
                         "test@example.com",
+                        false,
                         false,
                         "hash",
                         "salt",
@@ -1388,6 +1557,7 @@ public class UserServiceTest {
                         "testuser",
                         "test@example.com",
                         false,
+                        false,
                         "hash",
                         "salt",
                         "John",
@@ -1418,6 +1588,7 @@ public class UserServiceTest {
                 new User(
                         "testuser",
                         "test@example.com",
+                        false,
                         false,
                         "hash",
                         "salt",

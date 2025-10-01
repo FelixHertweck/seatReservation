@@ -60,7 +60,7 @@ services:
     #  - ./application.yaml:/deployments/config/application.yaml
 
     # Export templates for PDF generation
-      - ./export-template:/deployments/config/export-template:ro
+      - ./export-template:/export-template:ro
 
     environment:
       # Application configuration

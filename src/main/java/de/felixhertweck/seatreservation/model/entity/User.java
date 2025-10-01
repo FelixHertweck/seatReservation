@@ -43,7 +43,10 @@ public class User extends PanacheEntity {
 
     @Column private String email;
 
-    @Column private boolean emailVerified = false;
+    @Column private Boolean emailVerified = false;
+
+    // Indicates whether a verification email has been sent at least one time
+    @Column private Boolean emailVerificationSent = false;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_tags", joinColumns = @JoinColumn(name = "user_id"))
@@ -65,11 +68,7 @@ public class User extends PanacheEntity {
             fetch = FetchType.LAZY)
     private Set<Reservation> reservations = new HashSet<>();
 
-    @OneToOne(
-            mappedBy = "user",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private EmailVerification emailVerification;
 
     /** Constructor for JPA. */
@@ -79,7 +78,8 @@ public class User extends PanacheEntity {
     public User(
             String username,
             String email,
-            boolean emailVerified,
+            Boolean emailVerified,
+            Boolean emailVerificationSent,
             String passwordHash,
             String passwordSalt,
             String firstname,
@@ -89,6 +89,7 @@ public class User extends PanacheEntity {
         this.username = username;
         this.email = email;
         this.emailVerified = emailVerified;
+        this.emailVerificationSent = emailVerificationSent;
         this.passwordHash = passwordHash;
         this.passwordSalt = passwordSalt;
         this.firstname = firstname;
@@ -149,12 +150,20 @@ public class User extends PanacheEntity {
         this.email = email;
     }
 
-    public boolean isEmailVerified() {
+    public Boolean isEmailVerified() {
         return emailVerified;
     }
 
-    public void setEmailVerified(boolean emailVerified) {
+    public void setEmailVerified(Boolean emailVerified) {
         this.emailVerified = emailVerified;
+    }
+
+    public Boolean isEmailVerificationSent() {
+        return emailVerificationSent;
+    }
+
+    public void setEmailVerificationSent(Boolean emailVerificationSent) {
+        this.emailVerificationSent = emailVerificationSent;
     }
 
     public String getFirstname() {
@@ -212,11 +221,11 @@ public class User extends PanacheEntity {
                 && Objects.equals(passwordHash, that.passwordHash)
                 && Objects.equals(passwordSalt, that.passwordSalt)
                 && Objects.equals(email, that.email)
+                && Objects.equals(emailVerification, that.emailVerification)
+                && Objects.equals(emailVerificationSent, that.emailVerificationSent)
                 && Objects.equals(tags, that.tags)
                 && Objects.equals(roles, that.roles)
-                && Objects.equals(eventAllowances, that.eventAllowances)
-                && Objects.equals(reservations, that.reservations)
-                && Objects.equals(emailVerification, that.emailVerification);
+                && Objects.equals(eventAllowances, that.eventAllowances);
     }
 
     @Override
@@ -232,6 +241,7 @@ public class User extends PanacheEntity {
                 passwordSalt,
                 email,
                 emailVerified,
+                emailVerificationSent,
                 tags,
                 roles,
                 eventAllowances,
@@ -262,16 +272,25 @@ public class User extends PanacheEntity {
                 + '\''
                 + ", emailVerified="
                 + emailVerified
+                + '\''
+                + ", emailVerificationSent="
+                + emailVerificationSent
+                + '\''
                 + ", tags="
                 + tags
+                + '\''
                 + ", roles="
                 + roles
+                + '\''
                 + ", eventAllowances="
                 + eventAllowances
+                + '\''
                 + ", reservations="
                 + reservations
+                + '\''
                 + ", emailVerification="
                 + emailVerification
+                + '\''
                 + ", id="
                 + id
                 + '}';

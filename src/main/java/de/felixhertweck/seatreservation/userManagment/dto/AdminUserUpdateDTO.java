@@ -31,6 +31,8 @@ public class AdminUserUpdateDTO {
     @Email(regexp = "^(|.+[@].+[\\\\.].+)$", message = "Invalid email format")
     private final String email;
 
+    private final Boolean sendEmailVerification;
+
     private final String firstname;
 
     private final String lastname;
@@ -65,17 +67,23 @@ public class AdminUserUpdateDTO {
         return tags;
     }
 
+    public Boolean getSendEmailVerification() {
+        return sendEmailVerification;
+    }
+
     public AdminUserUpdateDTO(
             String firstname,
             String lastname,
             String password,
             String email,
+            Boolean sendEmailVerification,
             Set<String> roles,
             Set<String> tags) {
         this.firstname = firstname;
         this.lastname = lastname;
         this.password = password;
         this.email = email;
+        this.sendEmailVerification = sendEmailVerification;
         this.roles = roles;
         this.tags = tags;
     }

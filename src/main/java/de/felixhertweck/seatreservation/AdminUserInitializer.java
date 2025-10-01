@@ -78,7 +78,7 @@ public class AdminUserInitializer {
                             "Admin",
                             Set.of("system"));
             try {
-                userService.createUser(userCreationDTO, Set.of(Roles.ADMIN));
+                userService.createUser(userCreationDTO, Set.of(Roles.ADMIN), true);
                 LOG.info("Admin user created successfully.");
             } catch (DuplicateUserException e) {
                 LOG.warnf("Admin user already exists, skipping creation: %s", e.getMessage());

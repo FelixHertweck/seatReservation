@@ -2,7 +2,7 @@
 
 export const AdminUserCreationDtoSchema = {
     type: 'object',
-    required: ['username', 'password', 'firstname', 'lastname'],
+    required: ['username', 'password', 'firstname', 'lastname', 'sendEmailVerification'],
     properties: {
         username: {
             type: 'string',
@@ -19,6 +19,9 @@ export const AdminUserCreationDtoSchema = {
         },
         lastname: {
             type: 'string'
+        },
+        sendEmailVerification: {
+            type: 'boolean'
         },
         roles: {
             type: 'array',
@@ -42,6 +45,9 @@ export const AdminUserUpdateDTOSchema = {
     properties: {
         email: {
             type: 'string'
+        },
+        sendEmailVerification: {
+            type: 'boolean'
         },
         firstname: {
             type: 'string'
@@ -580,6 +586,9 @@ export const UserDTOSchema = {
             type: 'string'
         },
         emailVerified: {
+            type: 'boolean'
+        },
+        emailVerificationSent: {
             type: 'boolean'
         },
         roles: {

@@ -142,7 +142,10 @@ export function ReservationFormModal({
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] h-[80vh] flex flex-col">
+      <DialogContent
+        className="max-w-6xl max-h-[90vh] h-[80vh] flex flex-col"
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader className="pb-2">
           <DialogTitle className="text-lg">
             {t("reservationFormModal.createReservationTitle")}

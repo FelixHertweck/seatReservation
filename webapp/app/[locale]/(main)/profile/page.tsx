@@ -160,8 +160,8 @@ export default function ProfilePage() {
 
     if (email !== originalEmail) {
       toast({
-        title: t("profilePage.confirmationEmailSentTitle"),
-        description: t("profilePage.confirmationEmailSentDescription"),
+        title: t("email.confirmationEmailSentTitle"),
+        description: t("email.confirmationEmailSentDescription"),
       });
       setOriginalEmail(email);
 

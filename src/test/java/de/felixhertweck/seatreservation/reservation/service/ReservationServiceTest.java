@@ -77,6 +77,7 @@ class ReservationServiceTest {
         currentUser.setUsername("testuser");
         currentUser.setEmail("user@example.com");
         currentUser.setEmailVerified(true);
+        currentUser.setEmailVerificationSent(false);
 
         otherUser = new User();
         otherUser.id = 2L;

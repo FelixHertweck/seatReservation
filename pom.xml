@@ -14,10 +14,10 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-    <quarkus.platform.version>3.26.4</quarkus.platform.version>
+    <quarkus.platform.version>3.28.1</quarkus.platform.version>
     <surefire-plugin.version>3.5.4</surefire-plugin.version>
-    <spotless.version>2.46.1</spotless.version>
-    <license-plugin.version>2.6.0</license-plugin.version>
+    <spotless.version>3.0.0</spotless.version>
+    <license-plugin.version>2.7.0</license-plugin.version>
     <skipITs>true</skipITs>
     <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/jacoco-report/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     <mockito.version>5.20.0</mockito.version>
@@ -150,9 +150,34 @@
       <artifactId>openpdf</artifactId>
       <version>3.0.0</version>
     </dependency>
+    <!-- CSV parsing for the importer tool -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-csv</artifactId>
+      <version>1.10.0</version>
+    </dependency>
   </dependencies>
 
   <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>3.3.0</version>
+          <configuration>
+            <mainClass>de.felixhertweck.seatreservation.importer.CSVToDto</mainClass>
+          </configuration>
+          <executions>
+            <execution>
+              <goals>
+                <goal>java</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
     <plugins>
       <plugin>
         <groupId>${quarkus.platform.group-id}</groupId>
