@@ -23,10 +23,34 @@ interface EventCardProps {
 export function EventCard({ event, location, onReserve }: EventCardProps) {
   const t = useT();
 
+  const bookingAlreadyStarted = event.bookingStartTime
+    ? new Date(event.bookingStartTime) < new Date()
+    : false;
   const hasAvailableSeats = (event.reservationsAllowed ?? 0) > 0;
   const isBookingOpen = event.bookingDeadline
     ? new Date(event.bookingDeadline) > new Date()
     : true;
+
+  const buttonLabel = () => {
+    if (!bookingAlreadyStarted) {
+      // Booking start date and replace with formatted date
+      if (event.bookingStartTime) {
+        return t("eventCard.bookingOpenOnButtonWithDate", {
+          date: new Date(event.bookingStartTime).toLocaleDateString(),
+          time: new Date(event.bookingStartTime).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        });
+      }
+    }
+
+    if (hasAvailableSeats && isBookingOpen) {
+      return t("eventCard.reserveSeatsButton");
+    } else {
+      return t("eventCard.notAvailableButton");
+    }
+  };
 
   return (
     <Card className="h-full flex flex-col hover:shadow-lg transition-all duration-300 hover:scale-[1.02] group animate-in fade-in slide-in-from-bottom duration-500">
@@ -92,11 +116,11 @@ export function EventCard({ event, location, onReserve }: EventCardProps) {
         <Button
           onClick={onReserve}
           className="w-full hover:scale-[1.02] transition-all duration-300 active:scale-[0.98]"
-          disabled={!hasAvailableSeats || !isBookingOpen}
+          disabled={
+            !hasAvailableSeats || !isBookingOpen || !bookingAlreadyStarted
+          }
         >
-          {hasAvailableSeats && isBookingOpen
-            ? t("eventCard.reserveSeatsButton")
-            : t("eventCard.notAvailableButton")}
+          {buttonLabel()}
         </Button>
       </CardFooter>
     </Card>

@@ -34,6 +34,7 @@ public class Event extends PanacheEntity {
     private Instant startTime;
     private Instant endTime;
     private Instant bookingDeadline;
+    private Instant bookingStartTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private EventLocation event_location;
@@ -59,6 +60,7 @@ public class Event extends PanacheEntity {
             Instant startTime,
             Instant endTime,
             Instant bookingDeadline,
+            Instant bookingStartTime,
             EventLocation location,
             User manager) {
         this.name = name;
@@ -66,6 +68,7 @@ public class Event extends PanacheEntity {
         this.startTime = startTime;
         this.endTime = endTime;
         this.bookingDeadline = bookingDeadline;
+        this.bookingStartTime = bookingStartTime;
         this.event_location = location;
         this.manager = manager;
     }
@@ -110,6 +113,14 @@ public class Event extends PanacheEntity {
         this.bookingDeadline = bookingDeadline;
     }
 
+    public Instant getBookingStartTime() {
+        return bookingStartTime;
+    }
+
+    public void setBookingStartTime(Instant bookingStartTime) {
+        this.bookingStartTime = bookingStartTime;
+    }
+
     public EventLocation getEventLocation() {
         return event_location;
     }
@@ -151,6 +162,7 @@ public class Event extends PanacheEntity {
                 && Objects.equals(startTime, event.startTime)
                 && Objects.equals(endTime, event.endTime)
                 && Objects.equals(bookingDeadline, event.bookingDeadline)
+                && Objects.equals(bookingStartTime, event.bookingStartTime)
                 && Objects.equals(event_location, event.event_location)
                 && Objects.equals(userAllowances, event.userAllowances)
                 && Objects.equals(manager, event.manager)
@@ -168,6 +180,7 @@ public class Event extends PanacheEntity {
                 startTime,
                 endTime,
                 bookingDeadline,
+                bookingStartTime,
                 event_location,
                 userAllowances,
                 manager,
@@ -189,6 +202,8 @@ public class Event extends PanacheEntity {
                 + endTime
                 + ", bookingDeadline="
                 + bookingDeadline
+                + ", bookingStartTime="
+                + bookingStartTime
                 + ", event_location="
                 + event_location
                 + ", userAllowances="

@@ -248,7 +248,9 @@ export function ReservationAllowanceManagement({
                       const user = users.find((u) => u.id === allowance.userId);
 
                       return (
-                        <TableRow key={allowance.id?.toString()}>
+                        <TableRow
+                          key={`${allowance.id?.toString()}${allowance.eventId?.toString()}`}
+                        >
                           <TableCell>
                             {event ? (
                               <Button

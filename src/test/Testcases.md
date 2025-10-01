@@ -338,7 +338,8 @@ This is an overview of the test cases for the application.
 | `createReservationForUser_NotFoundException_SeatNotFound` | Attempts to create a reservation for one or more non-existent seats. Expects `NotFoundException`. |
 | `createReservationForUser_ForbiddenException_NoAllowance` | Attempts to create a reservation when the user has no reservation allowance for the event. Expects `ForbiddenException`. |
 | `createReservationForUser_NoSeatsAvailableException_LimitReached` | Attempts to create more reservations than the allowed number for the user. Expects `NoSeatsAvailableException`. |
-| `createReservationForUser_EventBookingClosedException` | Attempts to create a reservation for an event whose booking deadline has passed. Expects `EventBookingClosedException`. |
+| `createReservationForUser_EventBookingClosedException_BookingDeadlinePassed` | Attempts to create a reservation for an event whose booking deadline has passed. Expects `EventBookingClosedException`. |
+| `createReservationForUser_EventBookingClosedException_BookingNotStarted` | Attempts to create a reservation for an event whose booking start time has not yet been reached. Expects `EventBookingClosedException`. |
 | `createReservationForUser_SeatAlreadyReservedException` | Attempts to create a reservation for an already reserved seat. Expects `SeatAlreadyReservedException`. |
 | `createReservationForUser_IllegalArgumentException_NoSeatIds` | Attempts to create a reservation without specifying seat IDs. |
 | `createReservationForUser_IllegalStateException_EmailNotVerified` | Attempts to create a reservation with a user whose email address is not verified. Expects `IllegalStateException`. |

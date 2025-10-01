@@ -166,7 +166,7 @@
       },
       "EventRequestDTO" : {
         "type" : "object",
-        "required" : [ "name", "description", "startTime", "endTime", "bookingDeadline", "eventLocationId" ],
+        "required" : [ "name", "description", "startTime", "endTime", "bookingDeadline", "bookingStartTime", "eventLocationId" ],
         "properties" : {
           "name" : {
             "type" : "string"
@@ -181,6 +181,9 @@
             "$ref" : "#/components/schemas/Instant"
           },
           "bookingDeadline" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "bookingStartTime" : {
             "$ref" : "#/components/schemas/Instant"
           },
           "eventLocationId" : {
@@ -209,6 +212,9 @@
             "$ref" : "#/components/schemas/Instant"
           },
           "bookingDeadline" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "bookingStartTime" : {
             "$ref" : "#/components/schemas/Instant"
           },
           "seatStatuses" : {
@@ -639,6 +645,9 @@
             "$ref" : "#/components/schemas/Instant"
           },
           "bookingDeadline" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "bookingStartTime" : {
             "$ref" : "#/components/schemas/Instant"
           },
           "seatStatuses" : {

@@ -171,6 +171,7 @@ public class EventResourceTest {
                                 "startTime", "2025-01-01T19:00:00Z",
                                 "endTime", "2025-01-01T21:00:00Z",
                                 "bookingDeadline", "2024-12-31T12:00:00Z",
+                                "bookingStartTime", "2024-12-30T12:00:00Z",
                                 "eventLocationId", testLocation.getId()))
                 .when()
                 .post("/api/manager/events")
@@ -205,6 +206,7 @@ public class EventResourceTest {
                                 "startTime", "2025-01-01T19:00:00Z",
                                 "endTime", "2025-01-01T21:00:00Z",
                                 "bookingDeadline", "2024-12-31T12:00:00Z",
+                                "bookingStartTime", "2024-12-30T12:00:00Z",
                                 "eventLocationId", testLocation.getId()))
                 .when()
                 .put("/api/manager/events/" + testEvent.getId())
@@ -239,6 +241,7 @@ public class EventResourceTest {
                                 "startTime", "2025-01-01T19:00:00Z",
                                 "endTime", "2025-01-01T21:00:00Z",
                                 "bookingDeadline", "2024-12-31T12:00:00Z",
+                                "bookingStartTime", "2024-12-30T12:00:00Z",
                                 "eventLocationId", testLocation.getId()))
                 .when()
                 .put("/api/manager/events/999")

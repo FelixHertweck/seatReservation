@@ -189,6 +189,17 @@ public class ReservationService {
 
         Instant reservationTime = Instant.now();
 
+        // Check if the event is already available for booking
+        if (event.getBookingStartTime() != null
+                && reservationTime.isBefore(event.getBookingStartTime())) {
+            LOG.warnf(
+                    "Event %s (ID: %d) booking not started. Booking starts at: %s, Current time:"
+                            + " %s",
+                    event.getName(), event.id, event.getBookingStartTime(), reservationTime);
+            throw new EventBookingClosedException("Event is not yet bookable");
+        }
+        LOG.debugf("Event %s (ID: %d) booking has started.", event.getName(), event.id);
+
         // Check if the event is still bookable
         if (event.getBookingDeadline() != null
                 && reservationTime.isAfter(event.getBookingDeadline())) {

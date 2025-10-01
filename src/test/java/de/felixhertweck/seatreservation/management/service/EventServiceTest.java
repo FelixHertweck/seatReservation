@@ -129,6 +129,7 @@ public class EventServiceTest {
                         Instant.now().plusSeconds(Duration.ofDays(1).toSeconds()),
                         Instant.now().plusSeconds(Duration.ofDays(2).toSeconds()),
                         Instant.now().plusSeconds(Duration.ofHours(12).toSeconds()),
+                        Instant.now().plusSeconds(Duration.ofHours(1).toSeconds()),
                         eventLocation,
                         managerUser);
         existingEvent.id = 1L;
@@ -292,6 +293,7 @@ public class EventServiceTest {
                         new Event(
                                 "Another Event",
                                 "Desc",
+                                Instant.now(),
                                 Instant.now(),
                                 Instant.now(),
                                 Instant.now(),

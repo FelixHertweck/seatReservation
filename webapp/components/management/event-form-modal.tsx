@@ -57,6 +57,9 @@ export function EventFormModal({
     bookingDeadline: event?.bookingDeadline
       ? new Date(event.bookingDeadline).toLocaleString("sv-SE").slice(0, 16)
       : "",
+    bookingStartTime: event?.bookingStartTime
+      ? new Date(event.bookingStartTime).toLocaleString("sv-SE").slice(0, 16)
+      : "",
     eventLocationId: event?.eventLocationId?.toString() || "",
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -72,6 +75,7 @@ export function EventFormModal({
         startTime: new Date(formData.startTime),
         endTime: new Date(formData.endTime),
         bookingDeadline: new Date(formData.bookingDeadline),
+        bookingStartTime: new Date(formData.bookingStartTime),
         eventLocationId: BigInt(formData.eventLocationId),
       };
       await onSubmit(eventData);
@@ -190,25 +194,43 @@ export function EventFormModal({
               />
             </div>
           </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="bookingStartTime">
+                {t("eventFormModal.bookingStartTimeLabel")}
+              </Label>
+              <Input
+                id="bookingStartTime"
+                type="datetime-local"
+                value={formData.bookingStartTime}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    bookingStartTime: e.target.value,
+                  }))
+                }
+                required
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="bookingDeadline">
-              {t("eventFormModal.bookingDeadlineLabel")}
-            </Label>
-            <Input
-              id="bookingDeadline"
-              type="datetime-local"
-              value={formData.bookingDeadline}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  bookingDeadline: e.target.value,
-                }))
-              }
-              required
-            />
+            <div className="space-y-2">
+              <Label htmlFor="bookingDeadline">
+                {t("eventFormModal.bookingDeadlineLabel")}
+              </Label>
+              <Input
+                id="bookingDeadline"
+                type="datetime-local"
+                value={formData.bookingDeadline}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    bookingDeadline: e.target.value,
+                  }))
+                }
+                required
+              />
+            </div>
           </div>
-
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onClose}>
               {t("eventFormModal.cancelButton")}

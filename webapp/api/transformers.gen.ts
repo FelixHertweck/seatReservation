@@ -72,6 +72,9 @@ const eventResponseDtoSchemaResponseTransformer = (data: any) => {
     if (data.bookingDeadline) {
         data.bookingDeadline = instantSchemaResponseTransformer(data.bookingDeadline);
     }
+    if (data.bookingStartTime) {
+        data.bookingStartTime = instantSchemaResponseTransformer(data.bookingStartTime);
+    }
     if (data.seatStatuses) {
         data.seatStatuses = data.seatStatuses.map((item: any) => {
             return seatStatusDtoSchemaResponseTransformer(item);
@@ -273,6 +276,9 @@ const userEventResponseDtoSchemaResponseTransformer = (data: any) => {
     }
     if (data.bookingDeadline) {
         data.bookingDeadline = instantSchemaResponseTransformer(data.bookingDeadline);
+    }
+    if (data.bookingStartTime) {
+        data.bookingStartTime = instantSchemaResponseTransformer(data.bookingStartTime);
     }
     if (data.seatStatuses) {
         data.seatStatuses = data.seatStatuses.map((item: any) => {

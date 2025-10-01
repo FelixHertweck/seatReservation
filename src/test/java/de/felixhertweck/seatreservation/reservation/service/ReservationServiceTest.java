@@ -279,8 +279,28 @@ class ReservationServiceTest {
     }
 
     @Test
-    void createReservationForUser_EventBookingClosedException() {
+    void createReservationForUser_EventBookingClosedException_BookingDeadlinePassed() {
         event.setBookingDeadline(Instant.now().minusSeconds(Duration.ofDays(1).toSeconds()));
+        UserReservationsRequestDTO dto = new UserReservationsRequestDTO();
+        dto.setEventId(event.id);
+        dto.setSeatIds(Set.of(seat1.id));
+
+        when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
+        when(seatRepository.findByIdOptional(seat1.id)).thenReturn(Optional.of(seat1));
+        when(eventUserAllowanceRepository.findByUser(currentUser)).thenReturn(List.of(allowance));
+
+        assertThrows(
+                EventBookingClosedException.class,
+                () -> reservationService.createReservationForUser(dto, currentUser));
+    }
+
+    @Test
+    void createReservationForUser_EventBookingClosedException_BookingNotStarted() {
+        event.setBookingStartTime(Instant.now().plusSeconds(Duration.ofDays(1).toSeconds()));
+        event.setBookingDeadline(
+                Instant.now()
+                        .plusSeconds(
+                                Duration.ofDays(2).toSeconds())); // Ensure deadline is in future
         UserReservationsRequestDTO dto = new UserReservationsRequestDTO();
         dto.setEventId(event.id);
         dto.setSeatIds(Set.of(seat1.id));

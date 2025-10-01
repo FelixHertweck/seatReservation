@@ -59,6 +59,7 @@ export type EventRequestDto = {
     startTime: Instant;
     endTime: Instant;
     bookingDeadline: Instant;
+    bookingStartTime: Instant;
     eventLocationId: bigint;
 };
 
@@ -69,6 +70,7 @@ export type EventResponseDto = {
     startTime?: Instant;
     endTime?: Instant;
     bookingDeadline?: Instant;
+    bookingStartTime?: Instant;
     seatStatuses?: Array<SeatStatusDto>;
     eventUserAllowancesIds?: Array<bigint>;
     eventLocationId?: bigint;
@@ -210,6 +212,7 @@ export type UserEventResponseDto = {
     startTime?: Instant;
     endTime?: Instant;
     bookingDeadline?: Instant;
+    bookingStartTime?: Instant;
     seatStatuses?: Array<SeatStatusDto>;
     locationId?: bigint;
     reservationsAllowed?: number;

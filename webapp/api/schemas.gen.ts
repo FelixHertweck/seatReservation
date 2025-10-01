@@ -170,7 +170,7 @@ export const EventLocationResponseDTOSchema = {
 
 export const EventRequestDTOSchema = {
     type: 'object',
-    required: ['name', 'description', 'startTime', 'endTime', 'bookingDeadline', 'eventLocationId'],
+    required: ['name', 'description', 'startTime', 'endTime', 'bookingDeadline', 'bookingStartTime', 'eventLocationId'],
     properties: {
         name: {
             type: 'string'
@@ -185,6 +185,9 @@ export const EventRequestDTOSchema = {
             '$ref': '#/components/schemas/Instant'
         },
         bookingDeadline: {
+            '$ref': '#/components/schemas/Instant'
+        },
+        bookingStartTime: {
             '$ref': '#/components/schemas/Instant'
         },
         eventLocationId: {
@@ -214,6 +217,9 @@ export const EventResponseDTOSchema = {
             '$ref': '#/components/schemas/Instant'
         },
         bookingDeadline: {
+            '$ref': '#/components/schemas/Instant'
+        },
+        bookingStartTime: {
             '$ref': '#/components/schemas/Instant'
         },
         seatStatuses: {
@@ -663,6 +669,9 @@ export const UserEventResponseDTOSchema = {
             '$ref': '#/components/schemas/Instant'
         },
         bookingDeadline: {
+            '$ref': '#/components/schemas/Instant'
+        },
+        bookingStartTime: {
             '$ref': '#/components/schemas/Instant'
         },
         seatStatuses: {

@@ -41,6 +41,9 @@ public class EventRequestDTO {
     @NotNull(message = "Booking deadline time must not be null")
     private Instant bookingDeadline;
 
+    @NotNull(message = "Booking start time must not be null")
+    private Instant bookingStartTime;
+
     @NotNull(message = "EventLocation ID must not be null")
     private Long eventLocationId;
 
@@ -62,6 +65,10 @@ public class EventRequestDTO {
 
     public Instant getBookingDeadline() {
         return bookingDeadline;
+    }
+
+    public Instant getBookingStartTime() {
+        return bookingStartTime;
     }
 
     public Long getEventLocationId() {
@@ -86,6 +93,10 @@ public class EventRequestDTO {
 
     public void setBookingDeadline(Instant bookingDeadline) {
         this.bookingDeadline = bookingDeadline;
+    }
+
+    public void setBookingStartTime(Instant bookingStartTime) {
+        this.bookingStartTime = bookingStartTime;
     }
 
     public void setEventLocationId(Long eventLocationId) {

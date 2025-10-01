@@ -71,10 +71,18 @@ class EventTest {
         Instant startTime = Instant.now().plusSeconds(Duration.ofDays(1).toSeconds());
         Instant endTime = startTime.plusSeconds(Duration.ofHours(2).toSeconds());
         Instant bookingDeadline = startTime.minusSeconds(Duration.ofHours(1).toSeconds());
+        Instant bookingStartTime = startTime.minusSeconds(Duration.ofDays(1).toSeconds());
 
         Event constructedEvent =
                 new Event(
-                        name, description, startTime, endTime, bookingDeadline, location, manager);
+                        name,
+                        description,
+                        startTime,
+                        endTime,
+                        bookingDeadline,
+                        bookingStartTime,
+                        location,
+                        manager);
 
         assertEquals(name, constructedEvent.getName());
         assertEquals(description, constructedEvent.getDescription());

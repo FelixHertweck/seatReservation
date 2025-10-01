@@ -84,6 +84,7 @@ public class EventService {
                         dto.getStartTime(),
                         dto.getEndTime(),
                         dto.getBookingDeadline(),
+                        dto.getBookingStartTime(),
                         location,
                         manager);
         eventRepository.persist(event);

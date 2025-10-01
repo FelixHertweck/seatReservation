@@ -436,7 +436,8 @@
     "seatsAvailable": "{{count}} Plätze verfügbar",
     "bookingUntil": "Buchung bis",
     "reserveSeatsButton": "Plätze reservieren",
-    "notAvailableButton": "Nicht verfügbar"
+    "notAvailableButton": "Nicht verfügbar",
+    "bookingOpenOnButtonWithDate": "Buchung öffnet am {{date}} um {{time}}"
   },
   "eventReservationModal": {
     "title": "Plätze reservieren - {{eventName}}",
@@ -558,6 +559,7 @@
     "startTimeLabel": "Startzeit",
     "endTimeLabel": "Endzeit",
     "bookingDeadlineLabel": "Buchungsfrist",
+    "bookingStartTimeLabel": "Buchungs-Startzeit",
     "cancelButton": "Abbrechen",
     "savingButton": "Speichern...",
     "createButton": "Erstellen",
@@ -574,6 +576,7 @@
     "tableHeaderStartTime": "Startzeit",
     "tableHeaderEndTime": "Endzeit",
     "tableHeaderBookingDeadline": "Buchungsfrist",
+    "tableHeaderBookingStartTime": "Buchungs-Startzeit",
     "tableHeaderLocation": "Ort",
     "tableHeaderActions": "Aktionen",
     "tbd": "TBD",
