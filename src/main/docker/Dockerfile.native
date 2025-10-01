@@ -21,6 +21,7 @@ WORKDIR /deployments/
 RUN chown 1001 /deployments \
     && chmod "g+rwX" /deployments \
     && chown 1001:root /deployments
+COPY --chown=1001:root target/*.properties target/*.so /deployments/
 COPY --chown=1001:root --chmod=0755 target/*-runner /deployments/application
 
 EXPOSE 8080

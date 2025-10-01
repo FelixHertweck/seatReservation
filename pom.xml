@@ -102,6 +102,11 @@
       <artifactId>quarkus-micrometer-registry-prometheus</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.quarkiverse.openpdf</groupId>
+      <artifactId>quarkus-openpdf</artifactId>
+      <version>3.3.0</version>
+    </dependency>
+    <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit5</artifactId>
       <scope>test</scope>
@@ -145,12 +150,6 @@
       <artifactId>owasp-java-html-sanitizer</artifactId>
       <version>${owasp-java-html-sanitizer.version}</version>
     </dependency>
-    <dependency>
-      <groupId>com.github.librepdf</groupId>
-      <artifactId>openpdf</artifactId>
-      <version>3.0.0</version>
-    </dependency>
-    <!-- CSV parsing for the importer tool -->
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-csv</artifactId>

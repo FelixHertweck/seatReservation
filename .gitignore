@@ -39,3 +39,6 @@ keys
 
 # environment variables
 .env
+
+# pdf templates
+/export-template/
