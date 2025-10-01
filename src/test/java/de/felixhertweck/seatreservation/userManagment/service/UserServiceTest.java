@@ -283,7 +283,7 @@ public class UserServiceTest {
         assertThrows(
                 RuntimeException.class,
                 () -> userService.createUser(dto, Set.of(Roles.USER), true));
-        verify(userRepository, never()).persist(any(User.class));
+        verify(userRepository, times(1)).persist(any(User.class));
         verify(emailService, times(1)).createEmailVerification(any(User.class));
         verify(emailService, times(1))
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
@@ -300,7 +300,7 @@ public class UserServiceTest {
                 RuntimeException.class,
                 () -> userService.createUser(dto, Set.of(Roles.USER), true));
 
-        verify(userRepository, never()).persist(any(User.class));
+        verify(userRepository, times(1)).persist(any(User.class));
         verify(emailService, never()).createEmailVerification(any(User.class));
         verify(emailService, never())
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));

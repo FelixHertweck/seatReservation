@@ -153,6 +153,9 @@ public class UserService {
                 user.getRoles(),
                 user.getTags());
 
+        userRepository.persist(user);
+        LOG.debugf("User %s persisted successfully with ID: %d", user.getUsername(), user.id);
+
         if (sendEmailVerification) {
             if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
                 LOG.errorf(
@@ -182,8 +185,6 @@ public class UserService {
         } else {
             LOG.debug("Skipping email verification as per the flag.");
         }
-        userRepository.persist(user);
-        LOG.debugf("User %s persisted successfully with ID: %d", user.getUsername(), user.id);
 
         LOG.infof("User created successfully: %s", user.getUsername());
 
