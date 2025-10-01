@@ -429,7 +429,7 @@
   },
   "eventCard": {
     "statusAvailable": "Verfügbar",
-    "statusFull": "Nicht verfügbar",
+    "statusNotAvailable": "Nicht verfügbar",
     "tbd": "TBD",
     "timeTbd": "Uhrzeit TBD",
     "locationTbd": "Ort TBD",

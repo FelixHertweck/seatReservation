@@ -61,13 +61,15 @@ export function EventCard({ event, location, onReserve }: EventCardProps) {
           </CardTitle>
           <Badge
             variant={
-              hasAvailableSeats && isBookingOpen ? "default" : "secondary"
+              hasAvailableSeats && isBookingOpen && bookingAlreadyStarted
+                ? "default"
+                : "secondary"
             }
             className="animate-in zoom-in duration-300 group-hover:scale-105 transition-transform"
           >
-            {hasAvailableSeats && isBookingOpen
+            {hasAvailableSeats && isBookingOpen && bookingAlreadyStarted
               ? t("eventCard.statusAvailable")
-              : t("eventCard.statusFull")}
+              : t("eventCard.statusNotAvailable")}
           </Badge>
         </div>
         <CardDescription className="line-clamp-3">

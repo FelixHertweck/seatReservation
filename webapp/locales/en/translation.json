@@ -428,7 +428,7 @@
   },
   "eventCard": {
     "statusAvailable": "Available",
-    "statusFull": "Not Available",
+    "statusNotAvailable": "Not Available",
     "tbd": "TBD",
     "timeTbd": "Time TBD",
     "locationTbd": "Location TBD",
