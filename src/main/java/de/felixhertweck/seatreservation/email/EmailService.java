@@ -242,7 +242,8 @@ public class EmailService {
             emailAddresses.add(user.getEmail());
         }
         if (!skipForNullOrEmptyAddress(additionalMailAddress)
-                && !skipForLocalhostAddress(additionalMailAddress)) {
+                && !skipForLocalhostAddress(additionalMailAddress)
+                && !emailAddresses.contains(additionalMailAddress)) {
             emailAddresses.add(additionalMailAddress);
         }
         if (emailAddresses.isEmpty()) {
@@ -752,7 +753,9 @@ public class EmailService {
     private void addBcc(Mail mail) {
         bccAddress.ifPresent(
                 address -> {
-                    if (!address.trim().isEmpty() && !mail.getTo().contains(address)) {
+                    if (!address.trim().isEmpty()
+                            && !mail.getTo().contains(address)
+                            && !mail.getCc().contains(address)) {
                         mail.addBcc(address);
                     }
                 });
