@@ -20,15 +20,6 @@ quarkus:
     schema-management:
       strategy: update
 
-  http:  
-    # Enforce CORS settings to only allow requests from the frontend
-    cors:
-      enabled: true
-      origins: ${CORS_ORIGINS:http://frontend:3000}
-      access-control-max-age: 24H
-      access-control-allow-credentials: true
-
-
 jwt:
   cookie:
     secure: ${SSL_ENABLED:true} 
