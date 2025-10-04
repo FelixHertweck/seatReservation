@@ -57,29 +57,35 @@ public class AuthService {
     public String authenticate(String identifier, String password)
             throws AuthenticationFailedException {
         LOG.debugf("Attempting to authenticate user with identifier: %s", identifier);
-        User user;
         if (isIdentifierEmail(identifier)) {
-            user = userRepository.findByEmail(identifier);
+            for (User user : userRepository.findAllByEmail(identifier)) {
+                if (passwordMatches(password, user.getPasswordSalt(), user.getPasswordHash())) {
+                    LOG.infof("User %s authenticated successfully.", user.getUsername());
+                    return tokenService.generateToken(user);
+                }
+                LOG.debugf("Password mismatch for user %s.", user.getUsername());
+            }
+
         } else {
-            user = userRepository.findByUsername(identifier);
+            User user = userRepository.findByUsername(identifier);
+            if (user == null) {
+                LOG.warnf("Authentication failed for identifier %s: User not found.", identifier);
+                throw new AuthenticationFailedException(
+                        "Failed to authenticate user: " + identifier);
+            }
+            if (passwordMatches(password, user.getPasswordSalt(), user.getPasswordHash())) {
+                LOG.infof("User %s authenticated successfully.", user.getUsername());
+                return tokenService.generateToken(user);
+            }
         }
 
-        if (user == null) {
-            LOG.warnf("Authentication failed for identifier %s: User not found.", identifier);
-            throw new AuthenticationFailedException("Failed to authenticate user: " + identifier);
-        }
+        LOG.warnf("Authentication failed for identifier %s: No matching users found.", identifier);
+        throw new AuthenticationFailedException("Failed to authenticate user: " + identifier);
+    }
 
+    public boolean passwordMatches(String password, String passwordSalt, String storedHash) {
         // Combine the provided password with the stored salt before hashing for comparison
-        String saltedPassword = password + user.getPasswordSalt();
-        if (!BcryptUtil.matches(saltedPassword, user.getPasswordHash())) {
-            LOG.warnf(
-                    "Authentication failed for user %s: Invalid credentials.", user.getUsername());
-            throw new AuthenticationFailedException(
-                    "Failed to authenticate user: " + user.getUsername());
-        }
-        LOG.infof("User %s authenticated successfully.", user.getUsername());
-
-        return tokenService.generateToken(user);
+        return BcryptUtil.matches(password + passwordSalt, storedHash);
     }
 
     /**

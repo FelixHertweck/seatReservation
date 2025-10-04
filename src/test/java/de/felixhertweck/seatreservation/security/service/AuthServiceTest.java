@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.security.service;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
@@ -83,7 +85,7 @@ public class AuthServiceTest {
         user.setPasswordHash(passwordHash);
         user.setPasswordSalt(salt);
 
-        when(userRepository.findByEmail(email)).thenReturn(user);
+        when(userRepository.findAllByEmail(email)).thenReturn(List.of(user));
         when(tokenService.generateToken(user)).thenReturn(expectedToken);
 
         String actualToken = authService.authenticate(email, password);
@@ -161,7 +163,7 @@ public class AuthServiceTest {
         user.setPasswordHash(passwordHash);
         user.setPasswordSalt(salt);
 
-        when(userRepository.findByEmail(email)).thenReturn(user);
+        when(userRepository.findAllByEmail(email)).thenReturn(List.of(user));
 
         AuthenticationFailedException thrown =
                 assertThrows(
@@ -169,7 +171,7 @@ public class AuthServiceTest {
                         () -> authService.authenticate(email, wrongPassword),
                         "Expected AuthenticationFailedException for wrong password with email");
 
-        assertTrue(thrown.getMessage().contains("Failed to authenticate user: testuser"));
+        assertTrue(thrown.getMessage().contains("Failed to authenticate user: " + email));
     }
 
     @Test
@@ -186,14 +188,14 @@ public class AuthServiceTest {
         user.setPasswordHash(passwordHash);
         user.setPasswordSalt(salt);
 
-        when(userRepository.findByEmail(email)).thenReturn(user);
+        when(userRepository.findAllByEmail(email)).thenReturn(List.of(user));
         when(tokenService.generateToken(user)).thenReturn("token");
 
         String result = authService.authenticate(email, password);
         assertNotNull(result);
 
         // Verify email lookup was used, not username lookup
-        Mockito.verify(userRepository).findByEmail(email);
+        Mockito.verify(userRepository).findAllByEmail(email);
         Mockito.verify(userRepository, Mockito.never()).findByUsername(email);
     }
 
@@ -233,14 +235,14 @@ public class AuthServiceTest {
         user.setPasswordHash(passwordHash);
         user.setPasswordSalt(salt);
 
-        when(userRepository.findByEmail(email)).thenReturn(user);
+        when(userRepository.findAllByEmail(email)).thenReturn(List.of(user));
         when(tokenService.generateToken(user)).thenReturn("token");
 
         String result = authService.authenticate(email, password);
         assertNotNull(result);
 
         // Verify email method was called, not username
-        Mockito.verify(userRepository).findByEmail(email);
+        Mockito.verify(userRepository).findAllByEmail(email);
         Mockito.verify(userRepository, Mockito.never()).findByUsername(email);
     }
 

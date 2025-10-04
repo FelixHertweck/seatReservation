@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.model.repository;
 
+import java.util.List;
 import java.util.Optional;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -62,5 +63,12 @@ public class UserRepository implements PanacheRepository<User> {
             LOG.debugf("User %s not found.", email);
         }
         return user;
+    }
+
+    public List<User> findAllByEmail(String email) {
+        LOG.debugf("Finding all users by email: %s", email);
+        List<User> users = list("email", email);
+        LOG.debugf("Found %d users with email %s.", users.size(), email);
+        return users;
     }
 }
