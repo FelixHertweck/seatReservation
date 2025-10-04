@@ -68,8 +68,10 @@ export default async function RootLayout({
 }) {
   const lng = fallbackLng;
 
+  // suppressHydrationWarning is used here to prevent hydration mismatch warnings
+  // that may occur due to language or theme differences between server and client rendering.
   return (
-    <html lang={lng}>
+    <html lang={lng} suppressHydrationWarning>
       <body>{children}</body>
     </html>
   );

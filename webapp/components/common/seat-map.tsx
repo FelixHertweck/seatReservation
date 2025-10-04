@@ -406,9 +406,7 @@ export function SeatMap({
   }, []);
 
   const handleTouchStart = useCallback(
-    (e: React.TouchEvent) => {
-      e.preventDefault();
-
+    (e: TouchEvent) => {
       if (e.touches.length === 1) {
         // Single finger - start panning
         const touch = e.touches[0];
@@ -418,18 +416,14 @@ export function SeatMap({
       } else if (e.touches.length === 2) {
         // Two fingers - start pinch zoom
         setIsDragging(false);
-        setLastTouchDistance(
-          getTouchDistance(e.touches as unknown as TouchList),
-        );
+        setLastTouchDistance(getTouchDistance(e.touches));
       }
     },
     [pan, getTouchDistance],
   );
 
   const handleTouchMove = useCallback(
-    (e: React.TouchEvent) => {
-      e.preventDefault();
-
+    (e: TouchEvent) => {
       if (e.touches.length === 1 && isDragging) {
         const touch = e.touches[0];
         setPan({
@@ -438,9 +432,7 @@ export function SeatMap({
         });
       } else if (e.touches.length === 2 && lastTouchDistance) {
         // Two fingers - pinch zoom with throttling
-        const currentDistance = getTouchDistance(
-          e.touches as unknown as TouchList,
-        );
+        const currentDistance = getTouchDistance(e.touches);
         const scale = currentDistance / lastTouchDistance;
 
         if (Math.abs(scale - 1.0) > 0.02) {
@@ -457,6 +449,22 @@ export function SeatMap({
     setIsDragging(false);
     setLastTouchDistance(null);
   }, []);
+
+  // Register touch event listeners as non-passive
+  useEffect(() => {
+    const element = wheelRef.current;
+    if (!element) return;
+
+    element.addEventListener("touchstart", handleTouchStart);
+    element.addEventListener("touchmove", handleTouchMove);
+    element.addEventListener("touchend", handleTouchEnd);
+
+    return () => {
+      element.removeEventListener("touchstart", handleTouchStart);
+      element.removeEventListener("touchmove", handleTouchMove);
+      element.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [handleTouchStart, handleTouchMove, handleTouchEnd]);
 
   useEffect(() => {
     resetView();
@@ -501,9 +509,6 @@ export function SeatMap({
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
         style={{
           touchAction: "none",
           willChange: "transform",

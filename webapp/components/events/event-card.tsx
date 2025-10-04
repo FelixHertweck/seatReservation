@@ -55,26 +55,28 @@ export function EventCard({ event, location, onReserve }: EventCardProps) {
   return (
     <Card className="h-full flex flex-col hover:shadow-lg transition-all duration-300 hover:scale-[1.02] group animate-in fade-in slide-in-from-bottom duration-500">
       <CardHeader className="group-hover:bg-accent/5 transition-colors duration-300">
-        <div className="flex items-start justify-between">
-          <CardTitle className="line-clamp-2 group-hover:text-primary transition-colors duration-300">
-            {event.name}
-          </CardTitle>
+        <div className="flex items-start justify-between gap-2 mb-3">
           <Badge
             variant={
               hasAvailableSeats && isBookingOpen && bookingAlreadyStarted
                 ? "default"
                 : "secondary"
             }
-            className="animate-in zoom-in duration-300 group-hover:scale-105 transition-transform"
+            className="animate-in zoom-in duration-300 group-hover:scale-105 transition-transform shrink-0 whitespace-nowrap"
           >
             {hasAvailableSeats && isBookingOpen && bookingAlreadyStarted
               ? t("eventCard.statusAvailable")
               : t("eventCard.statusNotAvailable")}
           </Badge>
         </div>
-        <CardDescription className="line-clamp-3">
-          {event.description}
-        </CardDescription>
+        <div className="h-[6rem] flex flex-col">
+          <CardTitle className="line-clamp-2 group-hover:text-primary transition-colors duration-300 leading-tight mb-2">
+            {event.name}
+          </CardTitle>
+          <CardDescription className="line-clamp-2 text-sm leading-relaxed flex-1">
+            {event.description}
+          </CardDescription>
+        </div>
       </CardHeader>
 
       <CardContent className="flex-1 space-y-3">
