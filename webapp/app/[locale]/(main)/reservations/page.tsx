@@ -3,7 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useReservations } from "@/hooks/use-reservations";
 import { useT } from "@/lib/i18n/hooks";
-import { UserReservationResponseDto } from "@/api";
+import {
+  UserEventLocationResponseDto,
+  UserEventResponseDto,
+  UserReservationResponseDto,
+} from "@/api";
 import { useEvents } from "@/hooks/use-events";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { ReservationCardSkeleton } from "@/components/reservations/reservation-card-skeleton";
@@ -12,6 +16,13 @@ import { ReservationCard } from "@/components/reservations/reservation-card";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "@/hooks/use-toast";
+
+interface SelectedReservation {
+  reservation: UserReservationResponseDto;
+  event: UserEventResponseDto | null;
+  location: UserEventLocationResponseDto | null;
+  eventReservations?: UserReservationResponseDto[] | null;
+}
 
 export default function EventsPage() {
   const t = useT();
@@ -26,7 +37,7 @@ export default function EventsPage() {
   const [reservationSearchQuery, setReservationSearchQuery] =
     useState<string>("");
   const [selectedReservation, setSelectedReservation] =
-    useState<UserReservationResponseDto | null>(null);
+    useState<SelectedReservation | null>(null);
 
   const groupedReservations = useMemo(() => {
     if (!reservations || !events) return [];
@@ -94,31 +105,25 @@ export default function EventsPage() {
     setReservationSearchQuery(query);
   };
 
-  const handleViewReservationSeats = (
-    reservation: UserReservationResponseDto,
-  ) => {
-    setSelectedReservation(reservation);
-  };
-
   const handleDeleteReservation = async (reservationId: bigint) => {
     await deleteReservation(reservationId);
   };
 
-  const getEventReservations = (eventId: bigint | undefined) => {
-    if (!eventId) return [];
-    return reservations.filter(
-      (reservation) => reservation.eventId === eventId,
+  const handleViewReservationSeats = (
+    reservation: UserReservationResponseDto,
+  ) => {
+    const event = events?.find((e) => e.id === reservation.eventId) ?? null;
+    const location = locations?.find((l) => l.id === event?.locationId) ?? null;
+    const eventReservations = reservations.filter(
+      (reservation) => reservation.eventId === event?.id,
     );
-  };
 
-  const getEvent = (eventId: bigint | undefined) => {
-    if (!eventId) return null;
-    return events?.find((e) => e.id === eventId) || null;
-  };
-
-  const getLocation = (locationId: bigint | undefined) => {
-    if (!locationId) return null;
-    return locations?.find((l) => l.id === locationId) || null;
+    setSelectedReservation({
+      reservation,
+      event,
+      location,
+      eventReservations,
+    });
   };
 
   const LoadingAnimation = () => (
@@ -200,13 +205,11 @@ export default function EventsPage() {
 
       {selectedReservation && (
         <SeatMapModal
-          seats={getLocation(selectedReservation.eventId)?.seats || []}
-          seatStatuses={
-            getEvent(selectedReservation.eventId)?.seatStatuses || []
-          }
-          markers={getLocation(selectedReservation.eventId)?.markers || []}
-          reservation={selectedReservation}
-          eventReservations={getEventReservations(selectedReservation.eventId)}
+          seats={selectedReservation.location?.seats || []}
+          seatStatuses={selectedReservation.event?.seatStatuses || []}
+          markers={selectedReservation.location?.markers || []}
+          reservation={selectedReservation.reservation}
+          eventReservations={selectedReservation.eventReservations || []}
           onClose={() => setSelectedReservation(null)}
           isLoading={false}
         />
