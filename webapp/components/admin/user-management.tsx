@@ -322,7 +322,7 @@ export function UserManagement({
                           onClick={() => handleEditUser(user)}
                         >
                           <Edit className="mr-2 h-4 w-4" />
-                          Bearbeiten
+                          {t("userManagement.editButtonLabel")}
                         </Button>
                         <Button
                           variant="destructive"
@@ -331,7 +331,7 @@ export function UserManagement({
                           onClick={() => handleDeleteUser(user)}
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
-                          Löschen
+                          {t("userManagement.deleteButtonLabel")}
                         </Button>
                       </div>
                     </CardContent>

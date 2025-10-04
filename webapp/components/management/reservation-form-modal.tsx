@@ -143,10 +143,10 @@ export function ReservationFormModal({
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent
-        className="max-w-6xl max-h-[90vh] h-[80vh] flex flex-col"
+        className="max-w-6xl max-h-[90vh] h-[80vh] flex flex-col p-0 sm:p-6"
         onInteractOutside={(e) => e.preventDefault()}
       >
-        <DialogHeader className="pb-2">
+        <DialogHeader className="pb-2 px-4 pt-4 sm:px-0 sm:pt-0">
           <DialogTitle className="text-lg">
             {t("reservationFormModal.createReservationTitle")}
           </DialogTitle>
@@ -155,9 +155,12 @@ export function ReservationFormModal({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="flex-1 flex gap-6 min-h-0">
+        <form
+          onSubmit={handleSubmit}
+          className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0 overflow-y-auto lg:overflow-y-visible px-4 sm:px-0"
+        >
           {/* Left side - Seat Map */}
-          <div className="flex-1 flex flex-col min-h-0 max-w-[calc(100%-20rem)]">
+          <div className="flex-1 flex flex-col min-h-0 lg:max-w-[calc(100%-20rem)] order-2 lg:order-1">
             <div className="flex flex-wrap gap-2 md:gap-4 text-sm mb-4">
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-green-500 dark:bg-green-400 rounded"></div>
@@ -205,8 +208,8 @@ export function ReservationFormModal({
             )}
           </div>
 
-          <div className="w-80 flex flex-col border p-6 rounded-lg">
-            <div className="space-y-6">
+          <div className="w-full lg:w-80 flex flex-col border p-4 sm:p-6 rounded-lg order-1 lg:order-2">
+            <div className="space-y-4 sm:space-y-6">
               {/* Event and User Selection in a grid */}
               <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-2">
@@ -278,11 +281,11 @@ export function ReservationFormModal({
 
               {/* Selected Seats Section */}
               {selectedSeats.length > 0 && (
-                <div className="space-y-3 border-t pt-4">
+                <div className="space-y-2 sm:space-y-3 border-t pt-4">
                   <h4 className="font-medium text-sm">
                     {t("reservationFormModal.selectedSeatsTitle")}
                   </h4>
-                  <div className="flex flex-wrap gap-2 max-h-12 overflow-y-auto">
+                  <div className="flex flex-wrap gap-2 max-h-20 sm:max-h-12 overflow-y-auto">
                     {selectedSeats.map((seat) => (
                       <Badge
                         key={seat.id?.toString()}
@@ -325,7 +328,7 @@ export function ReservationFormModal({
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col gap-3 mt-auto pt-6 border-t">
+            <div className="flex flex-col gap-3 lg:mt-auto pt-4 sm:pt-6 border-t">
               {!isFormValid && (
                 <p className="text-xs text-red-500 text-center">
                   {t("reservationFormModal.validationError")}

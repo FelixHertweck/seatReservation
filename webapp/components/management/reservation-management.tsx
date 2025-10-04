@@ -229,22 +229,29 @@ export function ReservationManagement({
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <CardTitle>{t("reservationManagement.title")}</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-xl sm:text-2xl">
+              {t("reservationManagement.title")}
+            </CardTitle>
+            <CardDescription className="text-sm">
               {t("reservationManagement.description")}
             </CardDescription>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <Dialog
               open={isExportModalOpen}
               onOpenChange={setIsExportModalOpen}
             >
               <DialogTrigger asChild>
-                <Button variant="outline">
+                <Button
+                  variant="outline"
+                  className="w-full sm:w-auto bg-transparent"
+                >
                   <Download className="mr-2 h-4 w-4" />
-                  {t("reservationManagement.exportReservationsButton")}
+                  <span className="sm:inline">
+                    {t("reservationManagement.exportReservationsButton")}
+                  </span>
                 </Button>
               </DialogTrigger>
               <DialogContent onInteractOutside={(e) => e.preventDefault()}>
@@ -337,11 +344,20 @@ export function ReservationManagement({
                 </div>
               </DialogContent>
             </Dialog>
-            <Button variant="outline" onClick={() => setIsBlockModalOpen(true)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsBlockModalOpen(true)}
+              className="w-full sm:w-auto"
+            >
               <Ban className="mr-2 h-4 w-4" />
-              {t("reservationManagement.blockSeatsButton")}
+              <span className="sm:inline">
+                {t("reservationManagement.blockSeatsButton")}
+              </span>
             </Button>
-            <Button onClick={handleCreateReservation}>
+            <Button
+              onClick={handleCreateReservation}
+              className="w-full sm:w-auto"
+            >
               <Plus className="mr-2 h-4 w-4" />
               {t("reservationManagement.addReservationButton")}
             </Button>
@@ -373,48 +389,143 @@ export function ReservationManagement({
           paginationLabel={t("reservationManagement.paginationLabel")}
         >
           {(paginatedData) => (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>
-                    {t("reservationManagement.tableHeaderUser")}
-                  </TableHead>
-                  <TableHead>
-                    {t("reservationManagement.tableHeaderEvent")}
-                  </TableHead>
-                  <TableHead>
-                    {t("reservationManagement.tableHeaderSeat")}
-                  </TableHead>
-                  <TableHead>
-                    {t("reservationManagement.tableHeaderReservedDate")}
-                  </TableHead>
-                  <TableHead>
-                    {t("reservationManagement.tableHeaderActions")}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>
+                        {t("reservationManagement.tableHeaderUser")}
+                      </TableHead>
+                      <TableHead>
+                        {t("reservationManagement.tableHeaderEvent")}
+                      </TableHead>
+                      <TableHead>
+                        {t("reservationManagement.tableHeaderSeat")}
+                      </TableHead>
+                      <TableHead>
+                        {t("reservationManagement.tableHeaderReservedDate")}
+                      </TableHead>
+                      <TableHead>
+                        {t("reservationManagement.tableHeaderActions")}
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {isLoading
+                      ? Array.from({ length: 8 }).map((_, index) => (
+                          <TableRow key={index}>
+                            <TableCell>
+                              <Skeleton className="h-4 w-24" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-4 w-32" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-5 w-16" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-4 w-32" />
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Skeleton className="h-8 w-8" />
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      : paginatedData.map((reservation) => {
+                          const event = events.find(
+                            (event) => event.id === reservation.eventId,
+                          );
+
+                          return (
+                            <TableRow key={reservation.id?.toString()}>
+                              <TableCell>
+                                {reservation.user?.username}
+                              </TableCell>
+                              <TableCell>
+                                {event ? (
+                                  <Button
+                                    variant="link"
+                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                                    onClick={() =>
+                                      event.id && handleEventClick(event.id)
+                                    }
+                                  >
+                                    {event.name}
+                                    <ExternalLink className="ml-1 h-3 w-3" />
+                                  </Button>
+                                ) : (
+                                  t("reservationManagement.unknownEvent")
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                {reservation.seat ? (
+                                  <Button
+                                    variant="link"
+                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                                    onClick={() =>
+                                      reservation.seat?.id &&
+                                      handleSeatClick(reservation.seat.id)
+                                    }
+                                  >
+                                    <Badge variant="outline">
+                                      {reservation.seat.seatNumber}
+                                    </Badge>
+                                    <ExternalLink className="ml-1 h-3 w-3" />
+                                  </Button>
+                                ) : (
+                                  <Badge variant="outline">
+                                    {t("reservationManagement.unknownSeat")}
+                                  </Badge>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                {reservation.reservationDateTime
+                                  ? new Date(
+                                      reservation.reservationDateTime,
+                                    ).toLocaleString([], {
+                                      year: "numeric",
+                                      month: "2-digit",
+                                      day: "2-digit",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })
+                                  : t("reservationManagement.unknownDate")}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex gap-2">
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() =>
+                                      handleDeleteReservation(reservation)
+                                    }
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="md:hidden space-y-4">
                 {isLoading
-                  ? Array.from({ length: 8 }).map((_, index) => (
-                      <TableRow key={index}>
-                        <TableCell>
-                          <Skeleton className="h-4 w-24" />
-                        </TableCell>
-                        <TableCell>
-                          <Skeleton className="h-4 w-32" />
-                        </TableCell>
-                        <TableCell>
-                          <Skeleton className="h-5 w-16" />
-                        </TableCell>
-                        <TableCell>
-                          <Skeleton className="h-4 w-32" />
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Skeleton className="h-8 w-8" />
-                          </div>
-                        </TableCell>
-                      </TableRow>
+                  ? Array.from({ length: 3 }).map((_, index) => (
+                      <Card key={index}>
+                        <CardHeader className="pb-3">
+                          <Skeleton className="h-5 w-1/2" />
+                          <Skeleton className="h-4 w-3/4 mt-2" />
+                        </CardHeader>
+                        <CardContent>
+                          <Skeleton className="h-4 w-full" />
+                        </CardContent>
+                      </Card>
                     ))
                   : paginatedData.map((reservation) => {
                       const event = events.find(
@@ -422,76 +533,99 @@ export function ReservationManagement({
                       );
 
                       return (
-                        <TableRow key={reservation.id?.toString()}>
-                          <TableCell>{reservation.user?.username}</TableCell>
-                          <TableCell>
-                            {event ? (
-                              <Button
-                                variant="link"
-                                className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
-                                onClick={() =>
-                                  event.id && handleEventClick(event.id)
-                                }
-                              >
-                                {event.name}
-                                <ExternalLink className="ml-1 h-3 w-3" />
-                              </Button>
-                            ) : (
-                              t("reservationManagement.unknownEvent")
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            {reservation.seat ? (
-                              <Button
-                                variant="link"
-                                className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
-                                onClick={() =>
-                                  reservation.seat?.id &&
-                                  handleSeatClick(reservation.seat.id)
-                                }
-                              >
-                                <Badge variant="outline">
+                        <Card key={reservation.id?.toString()}>
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-base">
+                              {reservation.user?.username}
+                            </CardTitle>
+                            {reservation.seat && (
+                              <CardDescription className="text-sm mt-1">
+                                <Badge variant="outline" className="text-xs">
                                   {reservation.seat.seatNumber}
                                 </Badge>
-                                <ExternalLink className="ml-1 h-3 w-3" />
-                              </Button>
-                            ) : (
-                              <Badge variant="outline">
-                                {t("reservationManagement.unknownSeat")}
-                              </Badge>
+                              </CardDescription>
                             )}
-                          </TableCell>
-                          <TableCell>
-                            {reservation.reservationDateTime
-                              ? new Date(
-                                  reservation.reservationDateTime,
-                                ).toLocaleString([], {
-                                  year: "numeric",
-                                  month: "2-digit",
-                                  day: "2-digit",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })
-                              : t("reservationManagement.unknownDate")}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            {event && (
+                              <div>
+                                <p className="text-xs text-muted-foreground mb-1">
+                                  {t("reservationManagement.tableHeaderEvent")}
+                                </p>
+                                <Button
+                                  variant="link"
+                                  className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800 text-sm"
+                                  onClick={() =>
+                                    event.id && handleEventClick(event.id)
+                                  }
+                                >
+                                  {event.name}
+                                  <ExternalLink className="ml-1 h-3 w-3" />
+                                </Button>
+                              </div>
+                            )}
+
+                            {reservation.seat && (
+                              <div>
+                                <p className="text-xs text-muted-foreground mb-1">
+                                  {t("reservationManagement.tableHeaderSeat")}
+                                </p>
+                                <Button
+                                  variant="link"
+                                  className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800 text-sm"
+                                  onClick={() =>
+                                    reservation.seat?.id &&
+                                    handleSeatClick(reservation.seat.id)
+                                  }
+                                >
+                                  <Badge variant="outline" className="text-xs">
+                                    {reservation.seat.seatNumber}
+                                  </Badge>
+                                  <ExternalLink className="ml-1 h-3 w-3" />
+                                </Button>
+                              </div>
+                            )}
+
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1">
+                                {t(
+                                  "reservationManagement.tableHeaderReservedDate",
+                                )}
+                              </p>
+                              <p className="text-sm">
+                                {reservation.reservationDateTime
+                                  ? new Date(
+                                      reservation.reservationDateTime,
+                                    ).toLocaleString([], {
+                                      year: "numeric",
+                                      month: "2-digit",
+                                      day: "2-digit",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })
+                                  : t("reservationManagement.unknownDate")}
+                              </p>
+                            </div>
+
+                            <div className="flex gap-2 pt-2">
                               <Button
                                 variant="destructive"
                                 size="sm"
+                                className="flex-1"
                                 onClick={() =>
                                   handleDeleteReservation(reservation)
                                 }
                               >
-                                <Trash2 className="h-4 w-4" />
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                {t("reservationManagement.deleteButtonLabel")}
                               </Button>
                             </div>
-                          </TableCell>
-                        </TableRow>
+                          </CardContent>
+                        </Card>
                       );
                     })}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           )}
         </PaginationWrapper>
       </CardContent>

@@ -141,14 +141,21 @@ export function SeatManagement({
   };
 
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>{t("seatManagement.title")}</CardTitle>
-            <CardDescription>{t("seatManagement.description")}</CardDescription>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0 flex-1">
+            <CardTitle className="text-xl sm:text-2xl">
+              {t("seatManagement.title")}
+            </CardTitle>
+            <CardDescription className="text-sm">
+              {t("seatManagement.description")}
+            </CardDescription>
           </div>
-          <Button onClick={handleCreateSeat}>
+          <Button
+            onClick={handleCreateSeat}
+            className="w-full sm:w-auto shrink-0"
+          >
             <Plus className="mr-2 h-4 w-4" />
             {t("seatManagement.addSeatButton")}
           </Button>
@@ -156,22 +163,24 @@ export function SeatManagement({
       </CardHeader>
 
       <CardContent>
-        <SearchAndFilter
-          onSearch={handleSearch}
-          onFilter={handleFilter}
-          filterOptions={[
-            {
-              key: "locationId",
-              label: t("seatManagement.filter.locationLabel"),
-              type: "select",
-              options: locations.map((loc) => ({
-                value: loc.id?.toString() || "",
-                label: loc.name || "",
-              })),
-            },
-          ]}
-          initialFilters={currentFilters}
-        />
+        <div>
+          <SearchAndFilter
+            onSearch={handleSearch}
+            onFilter={handleFilter}
+            filterOptions={[
+              {
+                key: "locationId",
+                label: t("seatManagement.filter.locationLabel"),
+                type: "select",
+                options: locations.map((loc) => ({
+                  value: loc.id?.toString() || "",
+                  label: loc.name || "",
+                })),
+              },
+            ]}
+            initialFilters={currentFilters}
+          />
+        </div>
 
         <PaginationWrapper
           data={filteredSeats}
@@ -179,49 +188,120 @@ export function SeatManagement({
           paginationLabel={t("seatManagement.paginationLabel")}
         >
           {(paginatedData) => (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>
-                    {t("seatManagement.table.seatNumberHeader")}
-                  </TableHead>
-                  <TableHead>
-                    {t("seatManagement.table.locationHeader")}
-                  </TableHead>
-                  <TableHead>
-                    {t("seatManagement.table.seatRowHeader")}
-                  </TableHead>
-                  <TableHead>
-                    {t("seatManagement.table.positionHeader")}
-                  </TableHead>
-                  <TableHead>
-                    {t("seatManagement.table.actionsHeader")}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>
+                        {t("seatManagement.table.seatNumberHeader")}
+                      </TableHead>
+                      <TableHead>
+                        {t("seatManagement.table.locationHeader")}
+                      </TableHead>
+                      <TableHead>
+                        {t("seatManagement.table.seatRowHeader")}
+                      </TableHead>
+                      <TableHead>
+                        {t("seatManagement.table.positionHeader")}
+                      </TableHead>
+                      <TableHead>
+                        {t("seatManagement.table.actionsHeader")}
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {isLoading
+                      ? Array.from({ length: 8 }).map((_, index) => (
+                          <TableRow key={index}>
+                            <TableCell>
+                              <Skeleton className="h-4 w-16" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-4 w-32" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-4 w-12" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-4 w-20" />
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Skeleton className="h-8 w-8" />
+                                <Skeleton className="h-8 w-8" />
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      : paginatedData.map((seat) => {
+                          const location = locations.find(
+                            (loc) => loc.id === seat.locationId,
+                          );
+
+                          return (
+                            <TableRow key={seat.id?.toString()}>
+                              <TableCell className="font-medium">
+                                {seat.seatNumber}
+                              </TableCell>
+                              <TableCell>
+                                {location ? (
+                                  <Button
+                                    variant="link"
+                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                                    onClick={() =>
+                                      location.id &&
+                                      handleLocationClick(location.id)
+                                    }
+                                  >
+                                    {location.name}
+                                    <ExternalLink className="ml-1 h-3 w-3" />
+                                  </Button>
+                                ) : (
+                                  t("seatManagement.unknownLocation")
+                                )}
+                              </TableCell>
+                              <TableCell>{seat.seatRow}</TableCell>
+                              <TableCell>
+                                ({seat.xCoordinate}, {seat.yCoordinate})
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex gap-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleEditSeat(seat)}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => handleDeleteSeat(seat)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="md:hidden space-y-4">
                 {isLoading
-                  ? Array.from({ length: 8 }).map((_, index) => (
-                      <TableRow key={index}>
-                        <TableCell>
-                          <Skeleton className="h-4 w-16" />
-                        </TableCell>
-                        <TableCell>
-                          <Skeleton className="h-4 w-32" />
-                        </TableCell>
-                        <TableCell>
-                          <Skeleton className="h-4 w-12" />
-                        </TableCell>
-                        <TableCell>
-                          <Skeleton className="h-4 w-20" />
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Skeleton className="h-8 w-8" />
-                            <Skeleton className="h-8 w-8" />
-                          </div>
-                        </TableCell>
-                      </TableRow>
+                  ? Array.from({ length: 3 }).map((_, index) => (
+                      <Card key={index}>
+                        <CardHeader className="pb-3">
+                          <Skeleton className="h-5 w-1/2" />
+                          <Skeleton className="h-4 w-3/4 mt-2" />
+                        </CardHeader>
+                        <CardContent>
+                          <Skeleton className="h-4 w-full" />
+                        </CardContent>
+                      </Card>
                     ))
                   : paginatedData.map((seat) => {
                       const location = locations.find(
@@ -229,54 +309,81 @@ export function SeatManagement({
                       );
 
                       return (
-                        <TableRow key={seat.id?.toString()}>
-                          <TableCell className="font-medium">
-                            {seat.seatNumber}
-                          </TableCell>
-                          <TableCell>
-                            {location ? (
-                              <Button
-                                variant="link"
-                                className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
-                                onClick={() =>
-                                  location.id &&
-                                  handleLocationClick(location.id)
-                                }
-                              >
-                                {location.name}
-                                <ExternalLink className="ml-1 h-3 w-3" />
-                              </Button>
-                            ) : (
-                              t("seatManagement.unknownLocation")
+                        <Card key={seat.id?.toString()} className="w-full">
+                          <CardHeader className="pb-3">
+                            <div className="min-w-0">
+                              <CardTitle className="text-base break-words">
+                                {seat.seatNumber}
+                              </CardTitle>
+                              {seat.seatRow && (
+                                <CardDescription className="text-sm mt-1 break-words">
+                                  {t("seatManagement.table.seatRowHeader")}:{" "}
+                                  {seat.seatRow}
+                                </CardDescription>
+                              )}
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            {location && (
+                              <div className="min-w-0">
+                                <p className="text-xs text-muted-foreground mb-1">
+                                  {t("seatManagement.table.locationHeader")}
+                                </p>
+                                <Button
+                                  variant="link"
+                                  className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800 text-sm break-words text-left max-w-full"
+                                  onClick={() =>
+                                    location.id &&
+                                    handleLocationClick(location.id)
+                                  }
+                                >
+                                  <span className="break-words max-w-full">
+                                    {location.name}
+                                  </span>
+                                  <ExternalLink className="ml-1 h-3 w-3 shrink-0" />
+                                </Button>
+                              </div>
                             )}
-                          </TableCell>
-                          <TableCell>{seat.seatRow}</TableCell>
-                          <TableCell>
-                            ({seat.xCoordinate}, {seat.yCoordinate})
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
+
+                            <div className="min-w-0">
+                              <p className="text-xs text-muted-foreground mb-1">
+                                {t("seatManagement.table.positionHeader")}
+                              </p>
+                              <p className="text-sm break-words">
+                                ({seat.xCoordinate}, {seat.yCoordinate})
+                              </p>
+                            </div>
+
+                            <div className="flex gap-2 pt-2">
                               <Button
                                 variant="outline"
                                 size="sm"
+                                className="flex-1 bg-transparent min-w-0"
                                 onClick={() => handleEditSeat(seat)}
                               >
-                                <Edit className="h-4 w-4" />
+                                <Edit className="mr-2 h-4 w-4 shrink-0" />
+                                <span className="truncate">
+                                  {t("seatManagement.editButtonLabel")}
+                                </span>
                               </Button>
                               <Button
                                 variant="destructive"
                                 size="sm"
+                                className="flex-1 min-w-0"
                                 onClick={() => handleDeleteSeat(seat)}
                               >
-                                <Trash2 className="h-4 w-4" />
+                                <Trash2 className="mr-2 h-4 w-4 shrink-0" />
+                                <span className="truncate">
+                                  {t("seatManagement.deleteButtonLabel")}
+                                </span>
                               </Button>
                             </div>
-                          </TableCell>
-                        </TableRow>
+                          </CardContent>
+                        </Card>
                       );
                     })}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           )}
         </PaginationWrapper>
       </CardContent>

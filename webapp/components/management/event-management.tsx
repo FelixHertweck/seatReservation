@@ -146,14 +146,16 @@ export function EventManagement({
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <CardTitle>{t("eventManagement.title")}</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-xl sm:text-2xl">
+              {t("eventManagement.title")}
+            </CardTitle>
+            <CardDescription className="text-sm">
               {t("eventManagement.description")}
             </CardDescription>
           </div>
-          <Button onClick={handleCreateEvent}>
+          <Button onClick={handleCreateEvent} className="w-full sm:w-auto">
             <Plus className="mr-2 h-4 w-4" />
             {t("eventManagement.addEventButton")}
           </Button>
@@ -184,140 +186,274 @@ export function EventManagement({
           paginationLabel={t("eventManagement.paginationLabel")}
         >
           {(paginatedData) => (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("eventManagement.tableHeaderName")}</TableHead>
-                  <TableHead>
-                    {t("eventManagement.tableHeaderDescription")}
-                  </TableHead>
-                  <TableHead>
-                    {t("eventManagement.tableHeaderStartTime")}
-                  </TableHead>
-                  <TableHead>
-                    {t("eventManagement.tableHeaderEndTime")}
-                  </TableHead>
-                  <TableHead>
-                    {t("eventManagement.tableHeaderBookingStartTime")}
-                  </TableHead>
-                  <TableHead>
-                    {t("eventManagement.tableHeaderBookingDeadline")}
-                  </TableHead>
-                  <TableHead>
-                    {t("eventManagement.tableHeaderLocation")}
-                  </TableHead>
-                  <TableHead>
-                    {t("eventManagement.tableHeaderActions")}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>
+                        {t("eventManagement.tableHeaderName")}
+                      </TableHead>
+                      <TableHead>
+                        {t("eventManagement.tableHeaderDescription")}
+                      </TableHead>
+                      <TableHead>
+                        {t("eventManagement.tableHeaderStartTime")}
+                      </TableHead>
+                      <TableHead>
+                        {t("eventManagement.tableHeaderEndTime")}
+                      </TableHead>
+                      <TableHead>
+                        {t("eventManagement.tableHeaderBookingStartTime")}
+                      </TableHead>
+                      <TableHead>
+                        {t("eventManagement.tableHeaderBookingDeadline")}
+                      </TableHead>
+                      <TableHead>
+                        {t("eventManagement.tableHeaderLocation")}
+                      </TableHead>
+                      <TableHead>
+                        {t("eventManagement.tableHeaderActions")}
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {isLoading
+                      ? Array.from({ length: 8 }).map((_, index) => (
+                          <TableRow key={index}>
+                            <TableCell>
+                              <Skeleton className="h-4 w-32" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-4 w-48" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-4 w-36" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-4 w-36" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-4 w-36" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-4 w-36" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-4 w-24" />
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Skeleton className="h-8 w-8" />
+                                <Skeleton className="h-8 w-8" />
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      : paginatedData.map((event) => {
+                          const location = allLocations.find(
+                            (loc) => loc.id === event.eventLocationId,
+                          );
+                          return (
+                            <TableRow key={event.id?.toString()}>
+                              <TableCell className="font-medium">
+                                {event.name}
+                              </TableCell>
+                              <TableCell className="max-w-xs truncate">
+                                {event.description}
+                              </TableCell>
+                              <TableCell>
+                                {event.startTime
+                                  ? new Date(event.startTime).toLocaleString()
+                                  : t("eventManagement.tbd")}
+                              </TableCell>
+                              <TableCell>
+                                {event.endTime
+                                  ? new Date(event.endTime).toLocaleString()
+                                  : t("eventManagement.tbd")}
+                              </TableCell>
+                              <TableCell>
+                                {event.bookingStartTime
+                                  ? new Date(
+                                      event.bookingStartTime,
+                                    ).toLocaleString()
+                                  : t("eventManagement.tbd")}
+                              </TableCell>
+                              <TableCell>
+                                {event.bookingDeadline
+                                  ? new Date(
+                                      event.bookingDeadline,
+                                    ).toLocaleString()
+                                  : t("eventManagement.tbd")}
+                              </TableCell>
+                              <TableCell>
+                                {location ? (
+                                  <Button
+                                    variant="link"
+                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                                    onClick={() =>
+                                      location.id &&
+                                      handleLocationClick(location.id)
+                                    }
+                                  >
+                                    {location.name}
+                                    <ExternalLink className="ml-1 h-3 w-3" />
+                                  </Button>
+                                ) : (
+                                  t("eventManagement.noLocation")
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex gap-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleEditEvent(event)}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => handleDeleteEvent(event)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="md:hidden space-y-4">
                 {isLoading
-                  ? Array.from({ length: 8 }).map((_, index) => (
-                      <TableRow key={index}>
-                        <TableCell>
-                          <Skeleton className="h-4 w-32" />
-                        </TableCell>
-                        <TableCell>
-                          <Skeleton className="h-4 w-48" />
-                        </TableCell>
-                        <TableCell>
-                          <Skeleton className="h-4 w-36" />
-                        </TableCell>
-                        <TableCell>
-                          <Skeleton className="h-4 w-36" />
-                        </TableCell>
-                        <TableCell>
-                          <Skeleton className="h-4 w-36" />
-                        </TableCell>
-                        <TableCell>
-                          <Skeleton className="h-4 w-36" />
-                        </TableCell>
-                        <TableCell>
-                          <Skeleton className="h-4 w-24" />
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Skeleton className="h-8 w-8" />
-                            <Skeleton className="h-8 w-8" />
-                          </div>
-                        </TableCell>
-                      </TableRow>
+                  ? Array.from({ length: 3 }).map((_, index) => (
+                      <Card key={index}>
+                        <CardHeader className="pb-3">
+                          <Skeleton className="h-5 w-3/4" />
+                          <Skeleton className="h-4 w-full mt-2" />
+                        </CardHeader>
+                        <CardContent>
+                          <Skeleton className="h-4 w-full" />
+                        </CardContent>
+                      </Card>
                     ))
                   : paginatedData.map((event) => {
                       const location = allLocations.find(
                         (loc) => loc.id === event.eventLocationId,
                       );
                       return (
-                        <TableRow key={event.id?.toString()}>
-                          <TableCell className="font-medium">
-                            {event.name}
-                          </TableCell>
-                          <TableCell className="max-w-xs truncate">
-                            {event.description}
-                          </TableCell>
-                          <TableCell>
-                            {event.startTime
-                              ? new Date(event.startTime).toLocaleString()
-                              : t("eventManagement.tbd")}
-                          </TableCell>
-                          <TableCell>
-                            {event.endTime
-                              ? new Date(event.endTime).toLocaleString()
-                              : t("eventManagement.tbd")}
-                          </TableCell>
-                          <TableCell>
-                            {event.bookingStartTime
-                              ? new Date(
-                                  event.bookingStartTime,
-                                ).toLocaleString()
-                              : t("eventManagement.tbd")}
-                          </TableCell>
-                          <TableCell>
-                            {event.bookingDeadline
-                              ? new Date(event.bookingDeadline).toLocaleString()
-                              : t("eventManagement.tbd")}
-                          </TableCell>
-                          <TableCell>
-                            {location ? (
-                              <Button
-                                variant="link"
-                                className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
-                                onClick={() =>
-                                  location.id &&
-                                  handleLocationClick(location.id)
-                                }
-                              >
-                                {location.name}
-                                <ExternalLink className="ml-1 h-3 w-3" />
-                              </Button>
-                            ) : (
-                              t("eventManagement.noLocation")
+                        <Card key={event.id?.toString()}>
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-base">
+                              {event.name}
+                            </CardTitle>
+                            {event.description && (
+                              <CardDescription className="text-sm mt-1 line-clamp-2">
+                                {event.description}
+                              </CardDescription>
                             )}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            <div className="grid grid-cols-1 gap-2 text-sm">
+                              <div>
+                                <p className="text-xs text-muted-foreground mb-1">
+                                  {t("eventManagement.tableHeaderStartTime")}
+                                </p>
+                                <p className="text-sm">
+                                  {event.startTime
+                                    ? new Date(event.startTime).toLocaleString()
+                                    : t("eventManagement.tbd")}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-muted-foreground mb-1">
+                                  {t("eventManagement.tableHeaderEndTime")}
+                                </p>
+                                <p className="text-sm">
+                                  {event.endTime
+                                    ? new Date(event.endTime).toLocaleString()
+                                    : t("eventManagement.tbd")}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-muted-foreground mb-1">
+                                  {t(
+                                    "eventManagement.tableHeaderBookingStartTime",
+                                  )}
+                                </p>
+                                <p className="text-sm">
+                                  {event.bookingStartTime
+                                    ? new Date(
+                                        event.bookingStartTime,
+                                      ).toLocaleString()
+                                    : t("eventManagement.tbd")}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-muted-foreground mb-1">
+                                  {t(
+                                    "eventManagement.tableHeaderBookingDeadline",
+                                  )}
+                                </p>
+                                <p className="text-sm">
+                                  {event.bookingDeadline
+                                    ? new Date(
+                                        event.bookingDeadline,
+                                      ).toLocaleString()
+                                    : t("eventManagement.tbd")}
+                                </p>
+                              </div>
+                            </div>
+
+                            {location && (
+                              <div>
+                                <p className="text-xs text-muted-foreground mb-1">
+                                  {t("eventManagement.tableHeaderLocation")}
+                                </p>
+                                <Button
+                                  variant="link"
+                                  className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800 text-sm"
+                                  onClick={() =>
+                                    location.id &&
+                                    handleLocationClick(location.id)
+                                  }
+                                >
+                                  {location.name}
+                                  <ExternalLink className="ml-1 h-3 w-3" />
+                                </Button>
+                              </div>
+                            )}
+
+                            <div className="flex gap-2 pt-2">
                               <Button
                                 variant="outline"
                                 size="sm"
+                                className="flex-1 bg-transparent"
                                 onClick={() => handleEditEvent(event)}
                               >
-                                <Edit className="h-4 w-4" />
+                                <Edit className="mr-2 h-4 w-4" />
+                                {t("eventManagement.editButtonLabel")}
                               </Button>
                               <Button
                                 variant="destructive"
                                 size="sm"
+                                className="flex-1"
                                 onClick={() => handleDeleteEvent(event)}
                               >
-                                <Trash2 className="h-4 w-4" />
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                {t("eventManagement.deleteButtonLabel")}
                               </Button>
                             </div>
-                          </TableCell>
-                        </TableRow>
+                          </CardContent>
+                        </Card>
                       );
                     })}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           )}
         </PaginationWrapper>
       </CardContent>

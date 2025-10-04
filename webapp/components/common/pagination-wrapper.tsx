@@ -6,12 +6,17 @@ import { useState, useMemo, useEffect } from "react";
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
-  PaginationLink,
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useT } from "@/lib/i18n/hooks";
 
 interface PaginationWrapperProps<T> {
@@ -49,92 +54,35 @@ export function PaginationWrapper<T>({
     setCurrentPage(1);
   }, [data.length]);
 
-  const renderPaginationItems = () => {
-    const items = [];
-    const maxVisiblePages = 5;
-
-    if (totalPages <= maxVisiblePages) {
-      for (let i = 1; i <= totalPages; i++) {
-        items.push(
-          <PaginationItem key={i}>
-            <PaginationLink
-              onClick={() => setCurrentPage(i)}
-              isActive={currentPage === i}
-              className="cursor-pointer"
-            >
-              {i}
-            </PaginationLink>
-          </PaginationItem>,
-        );
-      }
-    } else {
-      // Always show first page
-      items.push(
-        <PaginationItem key={1}>
-          <PaginationLink
-            onClick={() => setCurrentPage(1)}
-            isActive={currentPage === 1}
-            className="cursor-pointer"
-          >
-            1
-          </PaginationLink>
-        </PaginationItem>,
-      );
-
-      // Show ellipsis if current page is far from start
-      if (currentPage > 3) {
-        items.push(<PaginationEllipsis key="start-ellipsis" />);
-      }
-
-      // Show pages around current page
-      const start = Math.max(2, currentPage - 1);
-      const end = Math.min(totalPages - 1, currentPage + 1);
-
-      for (let i = start; i <= end; i++) {
-        items.push(
-          <PaginationItem key={i}>
-            <PaginationLink
-              onClick={() => setCurrentPage(i)}
-              isActive={currentPage === i}
-              className="cursor-pointer"
-            >
-              {i}
-            </PaginationLink>
-          </PaginationItem>,
-        );
-      }
-
-      // Show ellipsis if current page is far from end
-      if (currentPage < totalPages - 2) {
-        items.push(<PaginationEllipsis key="end-ellipsis" />);
-      }
-
-      // Always show last page
-      if (totalPages > 1) {
-        items.push(
-          <PaginationItem key={totalPages}>
-            <PaginationLink
-              onClick={() => setCurrentPage(totalPages)}
-              isActive={currentPage === totalPages}
-              className="cursor-pointer"
-            >
-              {totalPages}
-            </PaginationLink>
-          </PaginationItem>,
-        );
-      }
-    }
-
-    return items;
-  };
+  // Dropdown-based page selector to avoid horizontal overflow on mobile
+  const pageSelector = (
+    <Select
+      value={String(currentPage)}
+      onValueChange={(val) => setCurrentPage(Number(val))}
+    >
+      <SelectTrigger
+        className="w-24 sm:w-28"
+        aria-label={t("pagination-wrapper.pageSelectorAriaLabel")}
+      >
+        <SelectValue placeholder={`${currentPage} / ${totalPages}`} />
+      </SelectTrigger>
+      <SelectContent className="max-h-60">
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+          <SelectItem key={p} value={String(p)}>
+            {p}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
 
   return (
     <div className="space-y-4">
       {children(paginatedData, currentPage, totalPages)}
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-sm text-muted-foreground text-center sm:text-left whitespace-nowrap">
             {t("pagination-wrapper.label", {
               fromCount: startIndex + 1,
               toCount: endIndex,
@@ -142,7 +90,7 @@ export function PaginationWrapper<T>({
             })}{" "}
             {" " + paginationLabel}
           </div>
-          <Pagination>
+          <Pagination className="justify-center sm:justify-end">
             <PaginationContent>
               <PaginationItem>
                 <PaginationPrevious
@@ -155,7 +103,7 @@ export function PaginationWrapper<T>({
                 />
               </PaginationItem>
 
-              {renderPaginationItems()}
+              <PaginationItem className="mx-1">{pageSelector}</PaginationItem>
 
               <PaginationItem>
                 <PaginationNext

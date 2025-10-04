@@ -353,7 +353,9 @@
     "tableHeaderActions": "Aktionen",
     "verifiedStatus": "Verifiziert",
     "pendingStatus": "Ausstehend",
-    "paginationLabel": "Benutzer"
+    "paginationLabel": "Benutzer",
+    "deleteButtonLabel": "Löschen",
+    "editButtonLabel": "Bearbeiten"
   },
   "userImportModal": {
     "importUserDataTitle": "Benutzerdaten importieren",
@@ -581,7 +583,9 @@
     "tableHeaderActions": "Aktionen",
     "tbd": "TBD",
     "noLocation": "Kein Ort",
-    "paginationLabel": "Events"
+    "paginationLabel": "Events",
+    "deleteButtonLabel": "Löschen",
+    "editButtonLabel": "Bearbeiten"
   },
   "locationFormModal": {
     "createLocationTitle": "Standort erstellen",
@@ -639,7 +643,9 @@
     "seatsCount": "{{count}} Plätze",
     "noSeats": "0 Plätze",
     "exportAsJsonTitle": "Als JSON exportieren",
-    "paginationLabel": "Standorte"
+    "paginationLabel": "Standorte",
+    "deleteButtonLabel": "Löschen",
+    "editButtonLabel": "Bearbeiten"
   },
   "reservationAllowanceManagement": {
     "confirmDelete": "Sind Sie sicher, dass Sie dieses Kontingent löschen möchten?",
@@ -653,7 +659,9 @@
     "tableHeaderActions": "Aktionen",
     "unknownEvent": "Unbekannte Veranstaltung",
     "unknownUser": "Unbekannter Benutzer",
-    "paginationLabel": "Kontingente"
+    "paginationLabel": "Kontingente",
+    "deleteButtonLabel": "Löschen",
+    "editButtonLabel": "Bearbeiten"
   },
   "reservationFormModal": {
     "createReservationTitle": "Reservierung erstellen",
@@ -708,7 +716,8 @@
     "pdfOption": "PDF",
     "exportCsvButton": "CSV exportieren",
     "exportJsonButton": "JSON exportieren",
-    "exportPdfButton": "PDF exportieren"
+    "exportPdfButton": "PDF exportieren",
+    "deleteButtonLabel": "Löschen"
   },
   "seatFormModal": {
     "createSeatTitle": "Platz erstellen",
@@ -766,7 +775,9 @@
     "unknownLocation": "Unbekannter Standort",
     "statusAvailable": "Verfügbar",
     "confirmDelete": "Sind Sie sicher, dass Sie Sitzplatz {{seatNumber}} löschen möchten?",
-    "paginationLabel": "Sitzplätze"
+    "paginationLabel": "Sitzplätze",
+    "deleteButtonLabel": "Löschen",
+    "editButtonLabel": "Bearbeiten"
   },
   "userMultiSelect": {
     "tagsHint": "Tags (klicken um alle Benutzer mit diesem Tag auszuwählen)",

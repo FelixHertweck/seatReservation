@@ -161,16 +161,21 @@ export function ReservationAllowanceManagement({
   };
 
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>{t("reservationAllowanceManagement.title")}</CardTitle>
-            <CardDescription>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0 flex-1">
+            <CardTitle className="text-xl sm:text-2xl">
+              {t("reservationAllowanceManagement.title")}
+            </CardTitle>
+            <CardDescription className="text-sm">
               {t("reservationAllowanceManagement.description")}
             </CardDescription>
           </div>
-          <Button onClick={openCreateModal}>
+          <Button
+            onClick={openCreateModal}
+            className="w-full sm:w-auto shrink-0"
+          >
             <Plus className="mr-2 h-4 w-4" />
             {t("reservationAllowanceManagement.addAllowanceButton")}
           </Button>
@@ -178,22 +183,24 @@ export function ReservationAllowanceManagement({
       </CardHeader>
 
       <CardContent>
-        <SearchAndFilter
-          onSearch={handleSearch}
-          onFilter={handleFilter}
-          filterOptions={[
-            {
-              key: "eventId",
-              label: t("reservationAllowanceManagement.eventFilterLabel"),
-              type: "select",
-              options: events.map((event) => ({
-                value: event.id?.toString() || "",
-                label: event.name || "",
-              })),
-            },
-          ]}
-          initialFilters={currentFilters}
-        />
+        <div>
+          <SearchAndFilter
+            onSearch={handleSearch}
+            onFilter={handleFilter}
+            filterOptions={[
+              {
+                key: "eventId",
+                label: t("reservationAllowanceManagement.eventFilterLabel"),
+                type: "select",
+                options: events.map((event) => ({
+                  value: event.id?.toString() || "",
+                  label: event.name || "",
+                })),
+              },
+            ]}
+            initialFilters={currentFilters}
+          />
+        </div>
 
         <PaginationWrapper
           data={filteredAllowances}
@@ -201,45 +208,126 @@ export function ReservationAllowanceManagement({
           paginationLabel={t("reservationAllowanceManagement.paginationLabel")}
         >
           {(paginatedData) => (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>
-                    {t("reservationAllowanceManagement.tableHeaderEvent")}
-                  </TableHead>
-                  <TableHead>
-                    {t("reservationAllowanceManagement.tableHeaderUser")}
-                  </TableHead>
-                  <TableHead>
-                    {t(
-                      "reservationAllowanceManagement.tableHeaderAllowedReservations",
-                    )}
-                  </TableHead>
-                  <TableHead>
-                    {t("reservationAllowanceManagement.tableHeaderActions")}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>
+                        {t("reservationAllowanceManagement.tableHeaderEvent")}
+                      </TableHead>
+                      <TableHead>
+                        {t("reservationAllowanceManagement.tableHeaderUser")}
+                      </TableHead>
+                      <TableHead>
+                        {t(
+                          "reservationAllowanceManagement.tableHeaderAllowedReservations",
+                        )}
+                      </TableHead>
+                      <TableHead>
+                        {t("reservationAllowanceManagement.tableHeaderActions")}
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {isLoading
+                      ? Array.from({ length: 8 }).map((_, index) => (
+                          <TableRow key={index}>
+                            <TableCell>
+                              <Skeleton className="h-4 w-32" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-4 w-24" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-4 w-12" />
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Skeleton className="h-8 w-8" />
+                                <Skeleton className="h-8 w-8" />
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      : paginatedData.map((allowance) => {
+                          const event = events.find(
+                            (e) => e.id === allowance.eventId,
+                          );
+                          const user = users.find(
+                            (u) => u.id === allowance.userId,
+                          );
+
+                          return (
+                            <TableRow
+                              key={`${allowance.id?.toString()}${allowance.eventId?.toString()}`}
+                            >
+                              <TableCell>
+                                {event ? (
+                                  <Button
+                                    variant="link"
+                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                                    onClick={() =>
+                                      event.id && handleEventClick(event.id)
+                                    }
+                                  >
+                                    {event.name}
+                                    <ExternalLink className="ml-1 h-3 w-3" />
+                                  </Button>
+                                ) : (
+                                  t(
+                                    "reservationAllowanceManagement.unknownEvent",
+                                  )
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                {user?.username ||
+                                  t(
+                                    "reservationAllowanceManagement.unknownUser",
+                                  )}
+                              </TableCell>
+                              <TableCell>
+                                {allowance.reservationsAllowedCount}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex gap-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => openEditModal(allowance)}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() =>
+                                      handleDeleteAllowance(allowance)
+                                    }
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="md:hidden space-y-4">
                 {isLoading
-                  ? Array.from({ length: 8 }).map((_, index) => (
-                      <TableRow key={index}>
-                        <TableCell>
-                          <Skeleton className="h-4 w-32" />
-                        </TableCell>
-                        <TableCell>
-                          <Skeleton className="h-4 w-24" />
-                        </TableCell>
-                        <TableCell>
-                          <Skeleton className="h-4 w-12" />
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Skeleton className="h-8 w-8" />
-                            <Skeleton className="h-8 w-8" />
-                          </div>
-                        </TableCell>
-                      </TableRow>
+                  ? Array.from({ length: 3 }).map((_, index) => (
+                      <Card key={index}>
+                        <CardHeader className="pb-3">
+                          <Skeleton className="h-5 w-3/4" />
+                          <Skeleton className="h-4 w-1/2 mt-2" />
+                        </CardHeader>
+                        <CardContent>
+                          <Skeleton className="h-4 w-full" />
+                        </CardContent>
+                      </Card>
                     ))
                   : paginatedData.map((allowance) => {
                       const event = events.find(
@@ -248,55 +336,83 @@ export function ReservationAllowanceManagement({
                       const user = users.find((u) => u.id === allowance.userId);
 
                       return (
-                        <TableRow
+                        <Card
                           key={`${allowance.id?.toString()}${allowance.eventId?.toString()}`}
+                          className="w-full"
                         >
-                          <TableCell>
-                            {event ? (
-                              <Button
-                                variant="link"
-                                className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
-                                onClick={() =>
-                                  event.id && handleEventClick(event.id)
-                                }
-                              >
-                                {event.name}
-                                <ExternalLink className="ml-1 h-3 w-3" />
-                              </Button>
-                            ) : (
-                              t("reservationAllowanceManagement.unknownEvent")
+                          <CardHeader className="pb-3">
+                            <div className="min-w-0">
+                              <CardTitle className="text-base break-words">
+                                {user?.username ||
+                                  t(
+                                    "reservationAllowanceManagement.unknownUser",
+                                  )}
+                              </CardTitle>
+                              <CardDescription className="text-sm mt-1 break-words">
+                                {allowance.reservationsAllowedCount}{" "}
+                                {t(
+                                  "reservationAllowanceManagement.tableHeaderAllowedReservations",
+                                )}
+                              </CardDescription>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            {event && (
+                              <div className="min-w-0">
+                                <p className="text-xs text-muted-foreground mb-1">
+                                  {t(
+                                    "reservationAllowanceManagement.tableHeaderEvent",
+                                  )}
+                                </p>
+                                <Button
+                                  variant="link"
+                                  className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800 text-sm break-words text-left max-w-full"
+                                  onClick={() =>
+                                    event.id && handleEventClick(event.id)
+                                  }
+                                >
+                                  <span className="break-words max-w-full">
+                                    {event.name}
+                                  </span>
+                                  <ExternalLink className="ml-1 h-3 w-3 shrink-0" />
+                                </Button>
+                              </div>
                             )}
-                          </TableCell>
-                          <TableCell>
-                            {user?.username ||
-                              t("reservationAllowanceManagement.unknownUser")}
-                          </TableCell>
-                          <TableCell>
-                            {allowance.reservationsAllowedCount}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
+
+                            <div className="flex gap-2 pt-2">
                               <Button
                                 variant="outline"
                                 size="sm"
+                                className="flex-1 bg-transparent min-w-0"
                                 onClick={() => openEditModal(allowance)}
                               >
-                                <Edit className="h-4 w-4" />
+                                <Edit className="mr-2 h-4 w-4 shrink-0" />
+                                <span className="truncate">
+                                  {t(
+                                    "reservationAllowanceManagement.editButtonLabel",
+                                  )}
+                                </span>
                               </Button>
                               <Button
                                 variant="destructive"
                                 size="sm"
+                                className="flex-1 min-w-0"
                                 onClick={() => handleDeleteAllowance(allowance)}
                               >
-                                <Trash2 className="h-4 w-4" />
+                                <Trash2 className="mr-2 h-4 w-4 shrink-0" />
+                                <span className="truncate">
+                                  {t(
+                                    "reservationAllowanceManagement.deleteButtonLabel",
+                                  )}
+                                </span>
                               </Button>
                             </div>
-                          </TableCell>
-                        </TableRow>
+                          </CardContent>
+                        </Card>
                       );
                     })}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           )}
         </PaginationWrapper>
       </CardContent>

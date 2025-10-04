@@ -352,7 +352,9 @@
     "tableHeaderVerified": "Verified",
     "tableHeaderActions": "Actions",
     "verifiedStatus": "Verified",
-    "pendingStatus": "Pending"
+    "pendingStatus": "Pending",
+    "deleteButtonLabel": "Delete",
+    "editButtonLabel": "Edit"
   },
   "userImportModal": {
     "importUserDataTitle": "Import User Data",
@@ -579,7 +581,9 @@
     "tableHeaderActions": "Actions",
     "tbd": "TBD",
     "noLocation": "No location",
-    "paginationLabel": "Events"
+    "paginationLabel": "Events",
+    "deleteButtonLabel": "Delete",
+    "editButtonLabel": "Edit"
   },
   "locationFormModal": {
     "createLocationTitle": "Create Location",
@@ -637,7 +641,9 @@
     "seatsCount": "{{count}} seats",
     "noSeats": "0 seats",
     "exportAsJsonTitle": "Export as JSON",
-    "paginationLabel": "Locations"
+    "paginationLabel": "Locations",
+    "deleteButtonLabel": "Delete",
+    "editButtonLabel": "Edit"
   },
   "reservationAllowanceManagement": {
     "confirmDelete": "Are you sure you want to delete this allowance?",
@@ -651,7 +657,9 @@
     "tableHeaderActions": "Actions",
     "unknownEvent": "Unknown event",
     "unknownUser": "Unknown user",
-    "paginationLabel": "Allowances"
+    "paginationLabel": "Allowances",
+    "deleteButtonLabel": "Delete",
+    "editButtonLabel": "Edit"
   },
   "reservationFormModal": {
     "createReservationTitle": "Create Reservation",
@@ -706,7 +714,8 @@
     "pdfOption": "PDF",
     "exportCsvButton": "Export CSV",
     "exportJsonButton": "Export JSON",
-    "exportPdfButton": "Export PDF"
+    "exportPdfButton": "Export PDF",
+    "deleteButtonLabel": "Delete"
   },
   "seatFormModal": {
     "createSeatTitle": "Create Seat",
@@ -764,7 +773,9 @@
     "unknownLocation": "Unknown location",
     "statusAvailable": "Available",
     "confirmDelete": "Are you sure you want to delete seat {{seatNumber}}?",
-    "paginationLabel": "Seats"
+    "paginationLabel": "Seats",
+    "deleteButtonLabel": "Delete",
+    "editButtonLabel": "Edit"
   },
   "userMultiSelect": {
     "tagsHint": "Tags (click to select all users with this tag)",
