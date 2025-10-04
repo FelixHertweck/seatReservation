@@ -16,22 +16,22 @@ export default function AdminPage() {
   const adminData = useAdmin();
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">
+    <div className="container mx-auto p-4 sm:p-6">
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">
           {t("adminPage.dashboardTitle")}
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-sm sm:text-base text-muted-foreground">
           {t("adminPage.dashboardDescription")}
         </p>
       </div>
 
       <Tabs defaultValue="users" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="users">
+        <TabsList className="w-full grid grid-cols-2 gap-2 h-auto">
+          <TabsTrigger value="users" className="text-sm sm:text-base">
             {t("adminPage.userManagementTab")}
           </TabsTrigger>
-          <TabsTrigger value="export">
+          <TabsTrigger value="export" className="text-sm sm:text-base">
             {t("adminPage.exportDataTab")}
           </TabsTrigger>
         </TabsList>

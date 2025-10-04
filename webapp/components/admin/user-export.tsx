@@ -59,8 +59,10 @@ export function UserExport() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t("userExport.exportDataTitle")}</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-xl sm:text-2xl">
+          {t("userExport.exportDataTitle")}
+        </CardTitle>
+        <CardDescription className="text-sm">
           {t("userExport.exportDataDescription")}
         </CardDescription>
       </CardHeader>
@@ -68,6 +70,7 @@ export function UserExport() {
         <Button
           onClick={handleExport}
           disabled={isLoading || users.length === 0}
+          className="w-full sm:w-auto"
         >
           <Download className="mr-2 h-4 w-4" />
           {isLoading
