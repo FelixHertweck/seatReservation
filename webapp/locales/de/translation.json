@@ -289,7 +289,11 @@
     "passwordsDoNotMatch": "Die Passwörter stimmen nicht überein",
     "verifyEmailButton": "Verifikationscode eingeben",
     "passwordValidationErrorTitle": "Validierungsfehler",
-    "passwordValidationErrorDescription": "Bitte stellen Sie sicher, dass alle Passwortfelder korrekt ausgefüllt sind."
+    "passwordValidationErrorDescription": "Bitte stellen Sie sicher, dass alle Passwortfelder korrekt ausgefüllt sind.",
+    "noConfirmationEmailSentInfo": "Es wurde noch keine Bestätigungs-E-Mail gesendet. Klicken Sie auf \"Bestätigungs-E-Mail senden\", um eine zu erhalten.",
+    "confirmationEmailTitle": "Bestätigungs-E-Mail gesendet",
+    "confirmationEmailDescription": "Bitte überprüfen Sie Ihren Posteingang und klicken Sie auf den Bestätigungslink.",
+    "sendConfirmationEmailButton": "Bestätigungs-E-Mail senden"
   },
   "startPage": {
     "eventManagerTitle": "Sitzplatz Reservierung",

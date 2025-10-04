@@ -203,7 +203,7 @@ export function EmailVerificationPrompt() {
             <DynamicDialogContent />
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="flex flex-row sm:justify-end sm:space-x-2 sm:space-y-0">
+        <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:justify-end sm:space-x-2">
           <DynamicDialogFooter />
         </DialogFooter>
       </DialogContent>

@@ -289,7 +289,11 @@
     "passwordsDoNotMatch": "Passwords do not match",
     "verifyEmailButton": "Enter verification code",
     "passwordValidationErrorTitle": "Validation Error",
-    "passwordValidationErrorDescription": "Please ensure all password fields are filled out correctly."
+    "passwordValidationErrorDescription": "Please ensure all password fields are filled out correctly.",
+    "noConfirmationEmailSentInfo": "No confirmation email has been sent yet. Click \"Send verification email\" to receive a confirmation email and verify your email address.",
+    "confirmationEmailTitle": "Confirmation Email Sent",
+    "confirmationEmailDescription": "Please check your inbox and click the confirmation link.",
+    "sendConfirmationEmailButton": "Send Confirmation Email"
   },
   "startPage": {
     "eventManagerTitle": "Seat Reservation System",

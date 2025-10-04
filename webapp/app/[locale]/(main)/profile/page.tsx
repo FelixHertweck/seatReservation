@@ -172,6 +172,74 @@ export default function ProfilePage() {
     }
   };
 
+  const EmailSubButtons = () => {
+    if (isLoading) return;
+    if (!user?.email) return;
+    if (user?.emailVerified) return;
+    if (email !== originalEmail) return;
+
+    if (user?.emailVerificationSent) {
+      return (
+        <div className="flex flex-col items-start gap-2">
+          <span className="text-xs text-gray-500">
+            {t("profilePage.confirmationEmailInfo")}
+          </span>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              className="text-xs"
+              size={"sm"}
+              onClick={async () => {
+                await resendConfirmation();
+                toast({
+                  title: t("profilePage.confirmationEmailResentTitle"),
+                  description: t(
+                    "profilePage.confirmationEmailResentDescription",
+                  ),
+                });
+              }}
+            >
+              {t("profilePage.resendButton")}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="text-xs bg-transparent"
+              size={"sm"}
+              onClick={() => router.push(`/${locale}/verify`)}
+            >
+              {t("profilePage.verifyEmailButton")}
+            </Button>
+          </div>
+        </div>
+      );
+    } else {
+      return (
+        <div className="flex flex-col items-start gap-2">
+          <span className="text-xs text-gray-500">
+            {t("profilePage.noConfirmationEmailSentInfo")}
+          </span>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              className="text-xs"
+              size={"sm"}
+              onClick={async () => {
+                await resendConfirmation();
+                toast({
+                  title: t("profilePage.confirmationEmailTitle"),
+                  description: t("profilePage.confirmationEmailDescription"),
+                });
+              }}
+            >
+              {t("profilePage.sendConfirmationEmailButton")}
+            </Button>
+          </div>
+        </div>
+      );
+    }
+  };
+
   return (
     <div className="container mx-auto py-8">
       <Card className="max-w-2xl mx-auto">
@@ -246,45 +314,7 @@ export default function ProfilePage() {
                   className="mb-2"
                 />
               )}
-              {!isLoading &&
-                !user?.emailVerified &&
-                user?.email &&
-                email === originalEmail && (
-                  <div className="flex flex-col items-start gap-2">
-                    <span className="text-xs text-gray-500">
-                      {t("profilePage.confirmationEmailInfo")}
-                    </span>
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        className="text-xs"
-                        size={"sm"}
-                        onClick={async () => {
-                          await resendConfirmation();
-                          toast({
-                            title: t(
-                              "profilePage.confirmationEmailResentTitle",
-                            ),
-                            description: t(
-                              "profilePage.confirmationEmailResentDescription",
-                            ),
-                          });
-                        }}
-                      >
-                        {t("profilePage.resendButton")}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="text-xs bg-transparent"
-                        size={"sm"}
-                        onClick={() => router.push(`/${locale}/verify`)}
-                      >
-                        {t("profilePage.verifyEmailButton")}
-                      </Button>
-                    </div>
-                  </div>
-                )}
+              <EmailSubButtons />
             </div>
 
             <div className="border-t pt-4">
