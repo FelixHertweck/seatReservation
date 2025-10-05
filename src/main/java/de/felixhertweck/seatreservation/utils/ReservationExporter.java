@@ -67,7 +67,8 @@ public class ReservationExporter {
         try (BufferedWriter writer =
                 new BufferedWriter(new OutputStreamWriter(baos, StandardCharsets.UTF_8))) {
             // CSV Header
-            writer.write("ID,Seat Number,First Name,Last Name,Reservation Date\n");
+            writer.write(
+                    "ID,Reservation Status,Seat Number,First Name,Last Name,Reservation Date\n");
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 

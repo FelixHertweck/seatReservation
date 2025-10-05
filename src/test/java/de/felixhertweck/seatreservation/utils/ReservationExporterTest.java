@@ -103,7 +103,9 @@ class ReservationExporterTest {
         byte[] csvBytes =
                 ReservationExporter.exportReservationsToCsv(List.of(reservation)).toByteArray();
         String csv = new String(csvBytes);
-        assertTrue(csv.startsWith("ID,Seat Number,First Name,Last Name,Reservation Date"));
+        assertTrue(
+                csv.startsWith(
+                        "ID,Reservation Status,Seat Number,First Name,Last Name,Reservation Date"));
         assertTrue(csv.contains("A1"));
         assertTrue(csv.contains("Max"));
     }
@@ -113,7 +115,8 @@ class ReservationExporterTest {
         byte[] csvBytes =
                 ReservationExporter.exportReservationsToCsv(Collections.emptyList()).toByteArray();
         String csv = new String(csvBytes);
-        assertEquals("ID,Seat Number,First Name,Last Name,Reservation Date\n", csv);
+        assertEquals(
+                "ID,Reservation Status,Seat Number,First Name,Last Name,Reservation Date\n", csv);
     }
 
     @Test
@@ -126,7 +129,9 @@ class ReservationExporterTest {
         byte[] csvBytes =
                 ReservationExporter.exportReservationsToCsv(List.of(r1, r2)).toByteArray();
         String csv = new String(csvBytes);
-        assertTrue(csv.startsWith("ID,Seat Number,First Name,Last Name,Reservation Date"));
+        assertTrue(
+                csv.startsWith(
+                        "ID,Reservation Status,Seat Number,First Name,Last Name,Reservation Date"));
         assertTrue(csv.contains("Max"));
         assertTrue(csv.contains("Erika"));
         long linebreaks = csv.chars().filter(ch -> ch == '\n').count();
