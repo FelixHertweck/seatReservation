@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Edit, Trash2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -37,7 +38,7 @@ export interface EventManagementProps {
     id: bigint,
     event: EventRequestDto,
   ) => Promise<EventResponseDto>;
-  deleteEvent: (id: bigint) => Promise<void>;
+  deleteEvent: (ids: bigint[]) => Promise<void>;
   onNavigateToLocation?: (locationId: bigint) => void;
   initialFilter?: Record<string, string>;
   isLoading?: boolean;
@@ -63,6 +64,7 @@ export function EventManagement({
   const [isCreating, setIsCreating] = useState(false);
   const [currentFilters, setCurrentFilters] =
     useState<Record<string, string>>(initialFilter);
+  const [selectedIds, setSelectedIds] = useState<Set<bigint>>(new Set());
 
   useEffect(() => {
     setCurrentFilters(initialFilter);
@@ -126,6 +128,7 @@ export function EventManagement({
     setSelectedEvent(event);
     setIsCreating(false);
     setIsModalOpen(true);
+    setSelectedIds(new Set());
   };
 
   const handleDeleteEvent = async (event: EventResponseDto) => {
@@ -133,13 +136,54 @@ export function EventManagement({
       event.id &&
       confirm(t("eventManagement.confirmDelete", { eventName: event.name }))
     ) {
-      await deleteEvent(event.id);
+      await deleteEvent([event.id]);
+      setSelectedIds(new Set());
     }
   };
 
   const handleLocationClick = (locationId: bigint) => {
     if (onNavigateToLocation) {
       onNavigateToLocation(locationId);
+    }
+  };
+
+  const handleSelectAll = (paginatedData: EventResponseDto[]) => {
+    const newSelectedIds = new Set(selectedIds);
+    const allCurrentSelected = paginatedData.every((event) =>
+      event.id ? selectedIds.has(event.id) : false,
+    );
+
+    if (allCurrentSelected) {
+      setSelectedIds(new Set());
+    } else {
+      paginatedData.forEach((event) => {
+        if (event.id) newSelectedIds.add(event.id);
+      });
+      setSelectedIds(newSelectedIds);
+    }
+  };
+
+  const handleToggleSelect = (id: bigint) => {
+    const newSelectedIds = new Set(selectedIds);
+    if (newSelectedIds.has(id)) {
+      newSelectedIds.delete(id);
+    } else {
+      newSelectedIds.add(id);
+    }
+    setSelectedIds(newSelectedIds);
+  };
+
+  const handleDeleteSelected = async () => {
+    if (
+      selectedIds.size > 0 &&
+      confirm(
+        t("eventManagement.confirmDeleteMultiple", {
+          count: selectedIds.size,
+        }),
+      )
+    ) {
+      await deleteEvent(Array.from(selectedIds));
+      setSelectedIds(new Set());
     }
   };
 
@@ -155,10 +199,22 @@ export function EventManagement({
               {t("eventManagement.description")}
             </CardDescription>
           </div>
-          <Button onClick={handleCreateEvent} className="w-full sm:w-auto">
-            <Plus className="mr-2 h-4 w-4" />
-            {t("eventManagement.addEventButton")}
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            {selectedIds.size > 0 && (
+              <Button
+                variant="destructive"
+                onClick={handleDeleteSelected}
+                className="w-full sm:w-auto"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                {selectedIds.size}
+              </Button>
+            )}
+            <Button onClick={handleCreateEvent} className="w-full sm:w-auto">
+              <Plus className="mr-2 h-4 w-4" />
+              {t("eventManagement.addEventButton")}
+            </Button>
+          </div>
         </div>
       </CardHeader>
 
@@ -188,9 +244,25 @@ export function EventManagement({
           {(paginatedData) => (
             <>
               <div className="hidden md:block overflow-x-auto">
+                <div className="mb-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleSelectAll(paginatedData)}
+                  >
+                    {paginatedData.every((event) =>
+                      event.id ? selectedIds.has(event.id) : false,
+                    )
+                      ? t("eventManagement.deselectAll")
+                      : t("eventManagement.selectAll")}
+                  </Button>
+                </div>
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-12">
+                        {t("eventManagement.tableHeaderSelect")}
+                      </TableHead>
                       <TableHead>
                         {t("eventManagement.tableHeaderName")}
                       </TableHead>
@@ -221,6 +293,9 @@ export function EventManagement({
                     {isLoading
                       ? Array.from({ length: 8 }).map((_, index) => (
                           <TableRow key={index}>
+                            <TableCell>
+                              <Skeleton className="h-4 w-4" />
+                            </TableCell>
                             <TableCell>
                               <Skeleton className="h-4 w-32" />
                             </TableCell>
@@ -256,6 +331,16 @@ export function EventManagement({
                           );
                           return (
                             <TableRow key={event.id?.toString()}>
+                              <TableCell>
+                                <Checkbox
+                                  checked={
+                                    event.id ? selectedIds.has(event.id) : false
+                                  }
+                                  onCheckedChange={() =>
+                                    event.id && handleToggleSelect(event.id)
+                                  }
+                                />
+                              </TableCell>
                               <TableCell className="font-medium">
                                 {event.name}
                               </TableCell>
@@ -329,6 +414,19 @@ export function EventManagement({
               </div>
 
               <div className="md:hidden space-y-4">
+                <div className="mb-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleSelectAll(paginatedData)}
+                  >
+                    {paginatedData.every((event) =>
+                      event.id ? selectedIds.has(event.id) : false,
+                    )
+                      ? t("eventManagement.deselectAll")
+                      : t("eventManagement.selectAll")}
+                  </Button>
+                </div>
                 {isLoading
                   ? Array.from({ length: 3 }).map((_, index) => (
                       <Card key={index}>
@@ -347,15 +445,26 @@ export function EventManagement({
                       );
                       return (
                         <Card key={event.id?.toString()}>
-                          <CardHeader className="pb-3">
-                            <CardTitle className="text-base">
-                              {event.name}
-                            </CardTitle>
-                            {event.description && (
-                              <CardDescription className="text-sm mt-1 line-clamp-2">
-                                {event.description}
-                              </CardDescription>
-                            )}
+                          <CardHeader className="pb-3 flex flex-row items-start space-x-3 space-y-0">
+                            <Checkbox
+                              checked={
+                                event.id ? selectedIds.has(event.id) : false
+                              }
+                              onCheckedChange={() =>
+                                event.id && handleToggleSelect(event.id)
+                              }
+                              className="mt-1"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <CardTitle className="text-base">
+                                {event.name}
+                              </CardTitle>
+                              {event.description && (
+                                <CardDescription className="text-sm mt-1 line-clamp-2">
+                                  {event.description}
+                                </CardDescription>
+                              )}
+                            </div>
                           </CardHeader>
                           <CardContent className="space-y-3">
                             <div className="grid grid-cols-1 gap-2 text-sm">

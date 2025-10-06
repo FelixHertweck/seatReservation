@@ -27,6 +27,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -324,58 +325,99 @@ public class ReservationService {
      * deletion of any reservation. - MANAGER: Allows deletion only if the reservation belongs to an
      * event the manager is allowed to manage. - Other roles: Throws ForbiddenException.
      *
-     * @param id The ID of the reservation to delete.
+     * @param ids The IDs of the reservation to delete.
      * @throws SecurityException If the current user does not have the necessary permissions.
      * @throws UserNotFoundException If the current user cannot be found.
+     * @throws IllegalArgumentException If no IDs are provided.
      */
     @Transactional
-    public void deleteReservation(Long id, User currentUser)
-            throws SecurityException, UserNotFoundException {
-        LOG.debugf(
-                "Attempting to delete reservation with ID: %d for user: %s (ID: %d)",
-                id, currentUser.getUsername(), currentUser.getId());
-
-        Reservation reservation =
-                reservationRepository
-                        .findByIdOptional(id)
-                        .orElseThrow(
-                                () -> {
-                                    LOG.warnf(
-                                            "Reservation with ID %d not found for deletion by user:"
-                                                    + " %s (ID: %d)",
-                                            id, currentUser.getUsername(), currentUser.getId());
-                                    return new ReservationNotFoundException(
-                                            "Reservation with id " + id + " not found");
-                                });
-
-        if (!currentUser.getRoles().contains(Roles.ADMIN)
-                && !isManagerAllowedToAccessEvent(currentUser, reservation.getEvent())) {
+    public void deleteReservation(List<Long> ids, User managerUser)
+            throws SecurityException, UserNotFoundException, IllegalArgumentException {
+        if (ids == null || ids.isEmpty()) {
             LOG.warnf(
-                    "User %s (ID: %d) is not allowed to delete reservation with ID %d.",
-                    currentUser.getUsername(), currentUser.getId(), id);
-            throw new SecurityException("You are not allowed to delete this reservation.");
-        }
-
-        reservationRepository.delete(reservation);
-        LOG.infof("Reservation with ID %d deleted successfully.", id);
-
-        List<Reservation> activeReservations =
-                reservationRepository.findByUserAndEvent(currentUser, reservation.getEvent());
-
-        try {
-            emailService.sendUpdateReservationConfirmation(
-                    currentUser, List.of(reservation), activeReservations);
-        } catch (IOException e) {
-            LOG.errorf(
-                    "Failed to send reservation update confirmation for user %s (ID: %d) and"
-                            + " reservation %d.",
-                    currentUser.getUsername(), currentUser.getId(), reservation.id);
-            return;
+                    "No reservation IDs provided for deletion by user: %s (ID: %d)",
+                    managerUser.getUsername(), managerUser.getId());
+            throw new IllegalArgumentException("No reservation IDs provided for deletion.");
         }
 
         LOG.debugf(
-                "Sent reservation update confirmation for user %s (ID: %d) and reservation %d.",
-                currentUser.getUsername(), currentUser.getId(), reservation.id);
+                "Attempting to delete reservations with IDs: %s for user: %s (ID: %d)",
+                ids, managerUser.getUsername(), managerUser.getId());
+
+        List<Reservation> deletedReservations = new ArrayList<>();
+
+        for (Long id : ids) {
+
+            Reservation reservation =
+                    reservationRepository
+                            .findByIdOptional(id)
+                            .orElseThrow(
+                                    () -> {
+                                        LOG.warnf(
+                                                "Reservation with ID %d not found for deletion by"
+                                                        + " user: %s (ID: %d)",
+                                                id, managerUser.getUsername(), managerUser.getId());
+                                        return new ReservationNotFoundException(
+                                                "Reservation with id " + id + " not found");
+                                    });
+
+            if (!managerUser.getRoles().contains(Roles.ADMIN)
+                    && !isManagerAllowedToAccessEvent(managerUser, reservation.getEvent())) {
+                LOG.warnf(
+                        "User %s (ID: %d) is not allowed to delete reservation with ID %d.",
+                        managerUser.getUsername(), managerUser.getId(), id);
+                throw new SecurityException("You are not allowed to delete this reservation.");
+            }
+
+            deletedReservations.add(reservation);
+            reservationRepository.delete(reservation);
+        }
+
+        // Group by user and event
+        Map<User, Map<Event, List<Reservation>>> groupedReservations =
+                deletedReservations.stream()
+                        .collect(
+                                Collectors.groupingBy(
+                                        Reservation::getUser,
+                                        Collectors.groupingBy(Reservation::getEvent)));
+
+        // Send an email for each user and event
+        for (Map.Entry<User, Map<Event, List<Reservation>>> userEntry :
+                groupedReservations.entrySet()) {
+            User user = userEntry.getKey();
+            Map<Event, List<Reservation>> eventReservations = userEntry.getValue();
+            for (Map.Entry<Event, List<Reservation>> eventEntry : eventReservations.entrySet()) {
+                Event event = eventEntry.getKey();
+                List<Reservation> reservations = eventEntry.getValue();
+                List<Reservation> activeReservations =
+                        reservationRepository.findByUserAndEvent(user, event);
+
+                try {
+                    emailService.sendUpdateReservationConfirmation(
+                            user, reservations, activeReservations, managerUser.getEmail());
+                    LOG.debugf(
+                            "Sent reservation deletion confirmation for user %s"
+                                    + " (ID: %d) and event %s (ID: %d) with %d"
+                                    + " deleted reservations.",
+                            user.getUsername(),
+                            user.getId(),
+                            event.getName(),
+                            event.getId(),
+                            reservations.size());
+                } catch (IOException e) {
+                    LOG.errorf(
+                            e,
+                            "Failed to send reservation deletion confirmation for"
+                                    + " user %s (ID: %d) and event %s (ID: %d).",
+                            user.getUsername(),
+                            user.getId(),
+                            event.getName(),
+                            event.getId());
+                }
+            }
+        }
+
+        LOG.infof("Reservations with IDs %s deleted successfully.", ids);
     }
 
     /**

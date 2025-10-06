@@ -189,7 +189,11 @@ public class SeatResourceTest {
             user = "manager",
             roles = {"MANAGER"})
     void testDeleteManagerSeat() {
-        given().when().delete("/api/manager/seats/" + testSeat.id).then().statusCode(204);
+        given().when()
+                .queryParam("ids", testSeat.id)
+                .delete("/api/manager/seats")
+                .then()
+                .statusCode(204);
     }
 
     @Test
@@ -197,6 +201,77 @@ public class SeatResourceTest {
             user = "manager",
             roles = {"MANAGER"})
     void testDeleteManagerSeatNotFound() {
-        given().when().delete("/api/manager/seats/999").then().statusCode(404);
+        given().when().queryParam("ids", 999L).delete("/api/manager/seats").then().statusCode(404);
+    }
+
+    @Test
+    @TestSecurity(
+            user = "manager",
+            roles = {"MANAGER"})
+    void testDeleteMultipleSeats() {
+        // Create additional seats for bulk delete test
+        var seat2 = new Seat();
+        seat2.setSeatNumber("A2");
+        seat2.setSeatRow("R: 1");
+        seat2.setLocation(testLocation);
+
+        var seat3 = new Seat();
+        seat3.setSeatNumber("A3");
+        seat3.setSeatRow("R: 1");
+        seat3.setLocation(testLocation);
+
+        seedAdditionalSeats(seat2, seat3);
+
+        // Delete multiple seats
+        given().when()
+                .queryParam("ids", testSeat.id)
+                .queryParam("ids", seat2.id)
+                .queryParam("ids", seat3.id)
+                .delete("/api/manager/seats")
+                .then()
+                .statusCode(204);
+
+        // Verify all were deleted
+        given().when().get("/api/manager/seats").then().statusCode(200).body("size()", is(0));
+    }
+
+    @Test
+    @TestSecurity(
+            user = "manager",
+            roles = {"MANAGER"})
+    void testDeleteMultipleSeats_PartialNotFound() {
+        given().when()
+                .queryParam("ids", testSeat.id)
+                .queryParam("ids", 999L)
+                .delete("/api/manager/seats")
+                .then()
+                .statusCode(404);
+    }
+
+    @Test
+    @TestSecurity(
+            user = "user",
+            roles = {"USER"})
+    void testDeleteSeat_Forbidden() {
+        given().when()
+                .queryParam("ids", testSeat.id)
+                .delete("/api/manager/seats")
+                .then()
+                .statusCode(403);
+    }
+
+    @Test
+    void testDeleteSeat_Unauthorized() {
+        given().when()
+                .queryParam("ids", testSeat.id)
+                .delete("/api/manager/seats")
+                .then()
+                .statusCode(401);
+    }
+
+    @Transactional
+    void seedAdditionalSeats(Seat seat2, Seat seat3) {
+        seatRepository.persist(seat2);
+        seatRepository.persist(seat3);
     }
 }

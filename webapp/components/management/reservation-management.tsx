@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Trash2, Ban, ExternalLink, Download } from "lucide-react"; // Added Download icon
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -60,7 +61,7 @@ export interface ReservationManagementProps {
   createReservation: (
     reservation: ReservationRequestDto,
   ) => Promise<ReservationResponseDto[]>;
-  deleteReservation: (id: bigint) => Promise<unknown>;
+  deleteReservation: (ids: bigint[]) => Promise<unknown>;
   blockSeats: (
     request: BlockSeatsRequestDto,
   ) => Promise<ReservationResponseDto[]>;
@@ -100,6 +101,7 @@ export function ReservationManagement({
   const [selectedFormat, setSelectedFormat] = useState<string>("");
   const [currentFilters, setCurrentFilters] =
     useState<Record<string, string>>(initialFilter);
+  const [selectedIds, setSelectedIds] = useState<Set<bigint>>(new Set());
 
   useEffect(() => {
     setCurrentFilters(initialFilter);
@@ -140,6 +142,11 @@ export function ReservationManagement({
           (reservation) => reservation.seat?.id?.toString() === filters.seatId,
         );
       }
+      if (filters.status) {
+        filtered = filtered.filter(
+          (reservation) => reservation.status === filters.status,
+        );
+      }
 
       setFilteredReservations(filtered);
     },
@@ -170,7 +177,8 @@ export function ReservationManagement({
     reservation: ReservationResponseDto,
   ) => {
     if (reservation.id && confirm(t("reservationManagement.confirmDelete"))) {
-      await deleteReservation(reservation.id);
+      await deleteReservation([reservation.id]);
+      setSelectedIds(new Set());
     }
   };
 
@@ -226,6 +234,48 @@ export function ReservationManagement({
     setSelectedFormat("");
   };
 
+  const handleSelectAll = (paginatedData: ReservationResponseDto[]) => {
+    const allCurrentSelected = paginatedData.every((reservation) =>
+      reservation.id ? selectedIds.has(reservation.id) : false,
+    );
+
+    if (allCurrentSelected) {
+      // Clear ALL selections when deselecting
+      setSelectedIds(new Set());
+    } else {
+      // Add current page items to selection
+      const newSelectedIds = new Set(selectedIds);
+      paginatedData.forEach((reservation) => {
+        if (reservation.id) newSelectedIds.add(reservation.id);
+      });
+      setSelectedIds(newSelectedIds);
+    }
+  };
+
+  const handleToggleSelect = (id: bigint) => {
+    const newSelectedIds = new Set(selectedIds);
+    if (newSelectedIds.has(id)) {
+      newSelectedIds.delete(id);
+    } else {
+      newSelectedIds.add(id);
+    }
+    setSelectedIds(newSelectedIds);
+  };
+
+  const handleDeleteSelected = async () => {
+    if (
+      selectedIds.size > 0 &&
+      confirm(
+        t("reservationManagement.confirmDeleteMultiple", {
+          count: selectedIds.size,
+        }),
+      )
+    ) {
+      await deleteReservation(Array.from(selectedIds));
+      setSelectedIds(new Set());
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -239,6 +289,16 @@ export function ReservationManagement({
             </CardDescription>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            {selectedIds.size > 0 && (
+              <Button
+                variant="destructive"
+                onClick={handleDeleteSelected}
+                className="w-full sm:w-auto"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                {selectedIds.size}
+              </Button>
+            )}
             <Dialog
               open={isExportModalOpen}
               onOpenChange={setIsExportModalOpen}
@@ -379,6 +439,21 @@ export function ReservationManagement({
                 label: event.name || "",
               })),
             },
+            {
+              key: "status",
+              label: t("reservationManagement.statusFilterLabel"),
+              type: "select",
+              options: [
+                {
+                  value: "RESERVED",
+                  label: t("reservationManagement.statusReserved"),
+                },
+                {
+                  value: "BLOCKED",
+                  label: t("reservationManagement.statusBlocked"),
+                },
+              ],
+            },
           ]}
           initialFilters={currentFilters}
         />
@@ -391,9 +466,25 @@ export function ReservationManagement({
           {(paginatedData) => (
             <>
               <div className="hidden md:block overflow-x-auto">
+                <div className="mb-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleSelectAll(paginatedData)}
+                  >
+                    {paginatedData.every((reservation) =>
+                      reservation.id ? selectedIds.has(reservation.id) : false,
+                    )
+                      ? t("reservationManagement.deselectAll")
+                      : t("reservationManagement.selectAll")}
+                  </Button>
+                </div>
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-12">
+                        {t("reservationManagement.tableHeaderSelect")}
+                      </TableHead>
                       <TableHead>
                         {t("reservationManagement.tableHeaderUser")}
                       </TableHead>
@@ -402,6 +493,9 @@ export function ReservationManagement({
                       </TableHead>
                       <TableHead>
                         {t("reservationManagement.tableHeaderSeat")}
+                      </TableHead>
+                      <TableHead>
+                        {t("reservationManagement.tableHeaderStatus")}
                       </TableHead>
                       <TableHead>
                         {t("reservationManagement.tableHeaderReservedDate")}
@@ -416,6 +510,9 @@ export function ReservationManagement({
                       ? Array.from({ length: 8 }).map((_, index) => (
                           <TableRow key={index}>
                             <TableCell>
+                              <Skeleton className="h-4 w-4" />
+                            </TableCell>
+                            <TableCell>
                               <Skeleton className="h-4 w-24" />
                             </TableCell>
                             <TableCell>
@@ -423,6 +520,9 @@ export function ReservationManagement({
                             </TableCell>
                             <TableCell>
                               <Skeleton className="h-5 w-16" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-5 w-20" />
                             </TableCell>
                             <TableCell>
                               <Skeleton className="h-4 w-32" />
@@ -441,6 +541,19 @@ export function ReservationManagement({
 
                           return (
                             <TableRow key={reservation.id?.toString()}>
+                              <TableCell>
+                                <Checkbox
+                                  checked={
+                                    reservation.id
+                                      ? selectedIds.has(reservation.id)
+                                      : false
+                                  }
+                                  onCheckedChange={() =>
+                                    reservation.id &&
+                                    handleToggleSelect(reservation.id)
+                                  }
+                                />
+                              </TableCell>
                               <TableCell>
                                 {reservation.user?.username}
                               </TableCell>
@@ -480,6 +593,19 @@ export function ReservationManagement({
                                     {t("reservationManagement.unknownSeat")}
                                   </Badge>
                                 )}
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant={
+                                    reservation.status === "BLOCKED"
+                                      ? "secondary"
+                                      : "default"
+                                  }
+                                >
+                                  {reservation.status === "BLOCKED"
+                                    ? t("reservationManagement.statusBlocked")
+                                    : t("reservationManagement.statusReserved")}
+                                </Badge>
                               </TableCell>
                               <TableCell>
                                 {reservation.reservationDateTime
@@ -534,17 +660,38 @@ export function ReservationManagement({
 
                       return (
                         <Card key={reservation.id?.toString()}>
-                          <CardHeader className="pb-3">
-                            <CardTitle className="text-base">
-                              {reservation.user?.username}
-                            </CardTitle>
-                            {reservation.seat && (
+                          <CardHeader className="pb-3 flex flex-row items-start space-x-3 space-y-0">
+                            <Checkbox
+                              checked={
+                                reservation.id
+                                  ? selectedIds.has(reservation.id)
+                                  : false
+                              }
+                              onCheckedChange={() =>
+                                reservation.id &&
+                                handleToggleSelect(reservation.id)
+                              }
+                              className="mt-1"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <CardTitle className="text-base">
+                                {reservation.user?.username}
+                              </CardTitle>
                               <CardDescription className="text-sm mt-1">
-                                <Badge variant="outline" className="text-xs">
-                                  {reservation.seat.seatNumber}
+                                <Badge
+                                  variant={
+                                    reservation.status === "BLOCKED"
+                                      ? "secondary"
+                                      : "default"
+                                  }
+                                  className="text-xs"
+                                >
+                                  {reservation.status === "BLOCKED"
+                                    ? t("reservationManagement.statusBlocked")
+                                    : t("reservationManagement.statusReserved")}
                                 </Badge>
                               </CardDescription>
-                            )}
+                            </div>
                           </CardHeader>
                           <CardContent className="space-y-3">
                             {event && (

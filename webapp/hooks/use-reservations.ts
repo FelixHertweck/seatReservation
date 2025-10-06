@@ -6,11 +6,11 @@ import { useTranslation } from "react-i18next";
 import { toast } from "@/hooks/use-toast";
 import {
   getApiUserReservationsOptions,
-  deleteApiUserReservationsByIdMutation,
   getApiUserReservationsQueryKey,
   getApiUserEventsQueryKey,
+  deleteApiUserReservationsMutation,
 } from "@/api/@tanstack/react-query.gen";
-import type { UserReservationResponseDto } from "@/api";
+import { type UserReservationResponseDto } from "@/api";
 
 export function useReservations() {
   const { data: reservations, isLoading } = useQuery({
@@ -21,7 +21,7 @@ export function useReservations() {
   const { t } = useTranslation();
 
   const deleteMutation = useMutation({
-    ...deleteApiUserReservationsByIdMutation(),
+    ...deleteApiUserReservationsMutation(),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: getApiUserEventsQueryKey(),
@@ -33,10 +33,10 @@ export function useReservations() {
     },
   });
 
-  const deleteReservation = async (id: bigint) => {
+  const deleteReservation = async (ids: bigint[]) => {
     await deleteMutation.mutateAsync({
-      path: {
-        id,
+      query: {
+        ids,
       },
     });
   };
@@ -48,16 +48,16 @@ export function useReservations() {
         (
           oldData: UserReservationResponseDto[] | undefined,
         ): UserReservationResponseDto[] => {
+          const idsSet = new Set(deleteMutation.variables?.query?.ids ?? []);
           return (oldData ?? []).filter(
-            (reservation) =>
-              reservation.id !== deleteMutation.variables?.path.id,
+            (reservation) => !idsSet.has(reservation.id ?? BigInt(-1)),
           );
         },
       );
     }
   }, [
     deleteMutation.isSuccess,
-    deleteMutation.variables?.path.id,
+    deleteMutation.variables?.query?.ids,
     queryClient,
   ]);
 

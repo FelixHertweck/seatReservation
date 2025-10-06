@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import type { UserReservationResponseDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { useState } from "react";
@@ -22,7 +23,7 @@ interface ReservationCardProps {
   locationName?: string;
   bookingDeadline?: Date;
   onViewSeats: (reservation: UserReservationResponseDto) => void;
-  onDelete: (reservationId: bigint) => void;
+  onDelete: (reservationIds: bigint[]) => void;
 }
 
 export function ReservationCard({
@@ -35,34 +36,58 @@ export function ReservationCard({
 }: ReservationCardProps) {
   const t = useT();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [reservationToDelete, setReservationToDelete] =
-    useState<UserReservationResponseDto | null>(null);
+  const [selectedReservations, setSelectedReservations] = useState<Set<bigint>>(
+    new Set(),
+  );
 
   const firstReservation = reservations[0];
   if (!firstReservation) return null;
 
-  const handleDeleteClick = (reservation: UserReservationResponseDto) => {
-    setReservationToDelete(reservation);
-    setDeleteModalOpen(true);
+  const allSelected = reservations.every((r) =>
+    selectedReservations.has(r.id!),
+  );
+
+  const toggleReservationSelection = (reservationId: bigint) => {
+    setSelectedReservations((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(reservationId)) {
+        newSet.delete(reservationId);
+      } else {
+        newSet.add(reservationId);
+      }
+      return newSet;
+    });
   };
 
-  const handleConfirmDelete = () => {
-    if (reservationToDelete?.id) {
-      onDelete(reservationToDelete.id);
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedReservations(new Set());
+    } else {
+      setSelectedReservations(new Set(reservations.map((r) => r.id!)));
     }
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedReservations.size > 0) {
+      setDeleteModalOpen(true);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    const toDelete = Array.from(selectedReservations);
+    await onDelete(toDelete);
     setDeleteModalOpen(false);
-    setReservationToDelete(null);
+    setSelectedReservations(new Set());
   };
 
   const handleCancelDelete = () => {
     setDeleteModalOpen(false);
-    setReservationToDelete(null);
   };
 
   return (
     <>
       <Card className="h-full flex flex-col hover:shadow-lg transition-all duration-300 hover:scale-[1.02] group animate-in fade-in slide-in-from-bottom duration-500">
-        <CardHeader className="group-hover:bg-accent/5 transition-colors duration-300">
+        <CardHeader>
           <div className="flex items-start justify-between gap-2 mb-3">
             <Badge
               variant="outline"
@@ -75,7 +100,7 @@ export function ReservationCard({
             </Badge>
           </div>
           <div className="flex flex-col">
-            <CardTitle className="line-clamp-2 group-hover:text-primary transition-colors duration-300 leading-tight mb-2">
+            <CardTitle className="line-clamp-2 leading-tight mb-2">
               {eventName || t("reservationCard.unknownEvent")}
             </CardTitle>
             <CardDescription className="line-clamp-2 text-sm leading-relaxed flex-1">
@@ -90,14 +115,14 @@ export function ReservationCard({
         </CardHeader>
 
         <CardContent className="flex-1 space-y-2">
-          <div className="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors duration-300">
-            <MapPin className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
+          <div className="flex items-center text-sm text-muted-foreground">
+            <MapPin className="mr-2 h-4 w-4" />
             {t("reservationCard.locationLabel")}:{" "}
             {locationName || t("reservationCard.unknownLocation")}
           </div>
 
-          <div className="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors duration-300">
-            <Calendar className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
+          <div className="flex items-center text-sm text-muted-foreground">
+            <Calendar className="mr-2 h-4 w-4" />
             {t("reservationCard.bookingUntil")}:{" "}
             {bookingDeadline
               ? bookingDeadline.toLocaleDateString() +
@@ -110,38 +135,64 @@ export function ReservationCard({
           </div>
 
           <div className="space-y-2 mt-4">
+            <div className="flex items-center justify-between mb-2 min-h-[32px]">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id={`select-all-${firstReservation.eventId}`}
+                  checked={allSelected}
+                  onCheckedChange={toggleSelectAll}
+                />
+                <label
+                  htmlFor={`select-all-${firstReservation.eventId}`}
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                >
+                  {t("reservationCard.selectAll")}
+                </label>
+              </div>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleDeleteSelected}
+                disabled={selectedReservations.size === 0}
+                className="h-8 text-xs px-2"
+              >
+                <Trash2 className="mr-1 h-3 w-3" />
+                {selectedReservations.size > 0
+                  ? selectedReservations.size
+                  : "0"}
+              </Button>
+            </div>
             <div className="flex flex-wrap gap-2 h-16 overflow-y-auto content-start">
               {reservations.map((reservation) => (
                 <div
                   key={reservation.id?.toString()}
-                  className="flex items-center gap-1 bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-sm h-fit"
+                  className={`flex items-center gap-1 px-2 py-1 rounded-md text-sm h-fit transition-colors bg-secondary text-secondary-foreground `}
                 >
+                  <Checkbox
+                    checked={selectedReservations.has(reservation.id!)}
+                    onCheckedChange={() =>
+                      toggleReservationSelection(reservation.id!)
+                    }
+                    className="mr-1"
+                  />
                   <span>
                     {reservation.seat?.seatNumber +
                       (reservation.seat?.seatRow
                         ? " (" + reservation.seat.seatRow + ")"
                         : "")}
                   </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDeleteClick(reservation)}
-                    className="h-4 w-4 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 ml-1"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
                 </div>
               ))}
             </div>
           </div>
         </CardContent>
 
-        <CardFooter>
+        <CardFooter className="flex gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={() => onViewSeats(firstReservation)}
-            className="w-full hover:scale-[1.02] transition-all duration-300 active:scale-[0.98]"
+            className="flex-1 hover:scale-[1.02] transition-all duration-300 active:scale-[0.98]"
           >
             <Eye className="mr-2 h-4 w-4" />
             {reservations.length > 1
@@ -155,12 +206,14 @@ export function ReservationCard({
         isOpen={deleteModalOpen}
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
-        seatNumber={
-          reservationToDelete?.seat?.seatNumber +
-          (reservationToDelete?.seat?.seatRow
-            ? " (" + reservationToDelete.seat.seatRow + ")"
-            : "")
-        }
+        selectedCount={selectedReservations.size}
+        seats={reservations
+          .filter((r) => selectedReservations.has(r.id!))
+          .map(
+            (r) =>
+              r.seat?.seatNumber +
+              (r.seat?.seatRow ? " (" + r.seat.seatRow + ")" : ""),
+          )}
       />
     </>
   );

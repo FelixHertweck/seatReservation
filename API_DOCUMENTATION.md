@@ -294,15 +294,16 @@ Updates an existing event location.
  
 ---
  
-#### DELETE /{id}
+#### DELETE /
  
-Deletes an event location.
+Deletes one or more event locations.
  
 -   **Roles:** `MANAGER`, `ADMIN`
--   **Path Parameter:** `id` (Long) - The event location ID.
+-   **Query Parameter:** `ids` (List<Long>) - The event location IDs to delete.
 -   **Responses:**
-    -   `200 OK`: Location successfully deleted.
-    -   `404 Not Found`: Location not found or no permission.
+    -   `200 OK`: Location(s) successfully deleted.
+    -   `204 No Content`: Location(s) successfully deleted.
+    -   `404 Not Found`: One or more locations not found or no permission.
     -   `401 Unauthorized`: Not authenticated.
     -   `403 Forbidden`: Access denied.
  
@@ -415,16 +416,16 @@ Updates an existing event.
  
 ---
  
-#### DELETE /{id}
+#### DELETE /
  
-Deletes an event.
+Deletes one or more events.
  
 -   **Roles:** `MANAGER`, `ADMIN`
--   **Path Parameter:** `id` (Long) - The event ID.
+-   **Query Parameter:** `ids` (List<Long>) - The event IDs to delete.
 -   **Responses:**
-    -   `204 No Content`: Event successfully deleted.
+    -   `204 No Content`: Event(s) successfully deleted.
     -   `403 Forbidden`: No permission to delete.
-    -   `404 Not Found`: Event not found.
+    -   `404 Not Found`: One or more events not found.
     -   `401 Unauthorized`: Not authenticated.
  
 ---
@@ -504,18 +505,18 @@ Updates a seat.
  
 ---
  
-#### DELETE /{id}
+#### DELETE /
  
-Deletes a seat.
+Deletes one or more seats.
  
 -   **Roles:** `MANAGER`, `ADMIN`
--   **Path Parameter:** `id` (Long) - The seat ID.
+-   **Query Parameter:** `ids` (List<Long>) - The seat IDs to delete.
 -   **Responses:**
-    -   `200 OK`: Seat successfully deleted.
-    -   `204 No Content`: Seat deleted successfully.
+    -   `200 OK`: Seat(s) successfully deleted.
+    -   `204 No Content`: Seat(s) deleted successfully.
     -   `401 Unauthorized`: Not authenticated.
     -   `403 Forbidden`: Access denied.
-    -   `404 Not Found`: Seat with specified ID not found for the current manager.
+    -   `404 Not Found`: One or more seats not found for the current manager.
  
 ---
 
@@ -610,16 +611,16 @@ Retrieves all reservation permissions for a specific event.
  
 ---
  
-#### DELETE /{id}
+#### DELETE /
  
-Deletes a reservation permission.
+Deletes one or more reservation permissions.
  
 -   **Roles:** `MANAGER`, `ADMIN`
--   **Path Parameter:** `id` (Long) - The permission ID.
+-   **Query Parameter:** `ids` (List<Long>) - The permission IDs to delete.
 -   **Responses:**
-    -   `204 No Content`: Permission successfully deleted.
+    -   `204 No Content`: Permission(s) successfully deleted.
     -   `403 Forbidden`: No permission.
-    -   `404 Not Found`: Permission not found.
+    -   `404 Not Found`: One or more permissions not found.
     -   `401 Unauthorized`: Not authenticated.
  
 ---
@@ -711,15 +712,15 @@ Updates an existing reservation.
  
 ---
  
-#### DELETE /{id}
+#### DELETE /
  
-Deletes a reservation.
+Deletes one or more reservations.
  
 -   **Roles:** `MANAGER`, `ADMIN`
--   **Path Parameter:** `id` (Long) - The reservation ID.
+-   **Query Parameter:** `ids` (List<Long>) - The reservation IDs to delete.
 -   **Responses:**
-    -   `204 No Content`: Reservation successfully deleted.
-    -   `404 Not Found`: Reservation not found or no permission.
+    -   `204 No Content`: Reservation(s) successfully deleted.
+    -   `404 Not Found`: One or more reservations not found or no permission.
     -   `401 Unauthorized`: Not authenticated.
     -   `403 Forbidden`: Access denied.
  
@@ -872,14 +873,14 @@ Creates one or more new reservations for the current user.
  
 ---
  
-#### DELETE /{id}
+#### DELETE /
  
-Deletes a reservation of the current user.
+Deletes one or more reservations of the current user.
  
 -   **Roles:** `USER`, `MANAGER`, `ADMIN`
--   **Path Parameter:** `id` (Long) - The reservation ID.
+-   **Query Parameter:** `ids` (List<Long>) - The reservation IDs to delete.
 -   **Responses:**
-    -   `204 No Content`: Reservation successfully deleted.
-    -   `404 Not Found`: Reservation does not belong to the user or does not exist.
+    -   `204 No Content`: Reservation(s) successfully deleted.
+    -   `404 Not Found`: One or more reservations do not belong to the user or do not exist.
     -   `401 Unauthorized`: Not authenticated.
     -   `403 Forbidden`: Access denied.

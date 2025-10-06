@@ -497,6 +497,9 @@ export const ReservationResponseDTOSchema = {
         },
         reservationDateTime: {
             '$ref': '#/components/schemas/Instant'
+        },
+        status: {
+            '$ref': '#/components/schemas/ReservationStatus'
         }
     }
 } as const;

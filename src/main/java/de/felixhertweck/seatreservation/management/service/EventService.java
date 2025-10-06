@@ -221,43 +221,55 @@ public class EventService {
      * all associated user allowances and reservations due to cascading settings in the Event
      * entity.
      *
-     * @param id The ID of the Event to be deleted.
+     * @param ids The IDs of the Events to be deleted.
      * @param currentUser The currently authenticated user.
      * @throws EventNotFoundException If the Event with the specified ID is not found.
      * @throws SecurityException If the user is not authorized to delete the Event.
+     * @throws IllegalArgumentException If no IDs are provided.
      */
     @Transactional
-    public void deleteEvent(Long id, User currentUser)
-            throws EventNotFoundException, SecurityException {
-        LOG.debugf(
-                "Attempting to delete event with ID: %d for user: %s (ID: %d)",
-                id, currentUser.getUsername(), currentUser.getId());
-        Event event =
-                eventRepository
-                        .findByIdOptional(id)
-                        .orElseThrow(
-                                () -> {
-                                    LOG.warnf(
-                                            "Event with ID %d not found for deletion by user: %s"
-                                                    + " (ID: %d)",
-                                            id, currentUser.getUsername(), currentUser.getId());
-                                    return new EventNotFoundException(
-                                            "Event with id " + id + " not found");
-                                });
-
-        if (!event.getManager().equals(currentUser)
-                && !currentUser.getRoles().contains(Roles.ADMIN)) {
+    public void deleteEvent(List<Long> ids, User currentUser)
+            throws EventNotFoundException, SecurityException, IllegalArgumentException {
+        if (ids == null || ids.isEmpty()) {
             LOG.warnf(
-                    "User %s (ID: %d) is not authorized to delete event with ID %d.",
-                    currentUser.getUsername(), currentUser.getId(), id);
-            throw new SecurityException("User is not authorized to delete this event");
+                    "No events to delete for user: %s (ID: %d)",
+                    currentUser.getUsername(), currentUser.getId());
+            throw new IllegalArgumentException("No event IDs provided for deletion.");
         }
 
-        eventRepository.delete(event);
-        LOG.infof("Event '%s' (ID: %d) deleted successfully", event.getName(), event.getId());
         LOG.debugf(
-                "Event '%s' (ID: %d) deleted successfully by user: %s (ID: %d)",
-                event.getName(), event.getId(), currentUser.getUsername(), currentUser.getId());
+                "Attempting to delete events with IDs: %s for user: %s (ID: %d)",
+                ids, currentUser.getUsername(), currentUser.getId());
+
+        for (Long id : ids) {
+
+            Event event =
+                    eventRepository
+                            .findByIdOptional(id)
+                            .orElseThrow(
+                                    () -> {
+                                        LOG.warnf(
+                                                "Event with ID %d not found for deletion by user:"
+                                                        + " %s (ID: %d)",
+                                                id, currentUser.getUsername(), currentUser.getId());
+                                        return new EventNotFoundException(
+                                                "Event with id " + id + " not found");
+                                    });
+
+            if (!event.getManager().equals(currentUser)
+                    && !currentUser.getRoles().contains(Roles.ADMIN)) {
+                LOG.warnf(
+                        "User %s (ID: %d) is not authorized to delete event with ID %d.",
+                        currentUser.getUsername(), currentUser.getId(), id);
+                throw new SecurityException("User is not authorized to delete this event");
+            }
+
+            eventRepository.delete(event);
+            LOG.debugf(
+                    "Event '%s' (ID: %d) deleted successfully by user: %s (ID: %d)",
+                    event.getName(), event.getId(), currentUser.getUsername(), currentUser.getId());
+        }
+        LOG.infof("Events '%s' deleted successfully", ids);
     }
 
     private Event getEventById(Long id) throws EventNotFoundException {

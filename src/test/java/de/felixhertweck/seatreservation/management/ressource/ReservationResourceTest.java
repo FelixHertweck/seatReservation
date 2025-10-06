@@ -188,7 +188,8 @@ public class ReservationResourceTest {
             roles = {"MANAGER"})
     void testDeleteReservation() {
         given().when()
-                .delete("/api/manager/reservations/" + testReservation.id)
+                .queryParam("ids", testReservation.id)
+                .delete("/api/manager/reservations")
                 .then()
                 .statusCode(204);
     }
@@ -198,7 +199,93 @@ public class ReservationResourceTest {
             user = "manager",
             roles = {"MANAGER"})
     void testDeleteReservationNotFound() {
-        given().when().delete("/api/manager/reservations/999").then().statusCode(404);
+        given().when()
+                .queryParam("ids", 999L)
+                .delete("/api/manager/reservations")
+                .then()
+                .statusCode(404);
+    }
+
+    @Test
+    @TestSecurity(
+            user = "manager",
+            roles = {"MANAGER"})
+    void testDeleteMultipleReservations() {
+        // Create additional reservations for bulk delete test
+        var reservation2 = new Reservation();
+        reservation2.setEvent(testEvent);
+        reservation2.setSeat(anotherSeat);
+        reservation2.setUser(testUser);
+
+        var user2 = userRepository.findByUsernameOptional("user").orElseThrow();
+        var seat3 = new Seat();
+        seat3.setSeatNumber("A3");
+        seat3.setLocation(testSeat.getLocation());
+
+        var reservation3 = new Reservation();
+        reservation3.setEvent(testEvent);
+        reservation3.setSeat(seat3);
+        reservation3.setUser(user2);
+
+        seedAdditionalReservations(seat3, reservation2, reservation3);
+
+        // Delete multiple reservations
+        given().when()
+                .queryParam("ids", testReservation.id)
+                .queryParam("ids", reservation2.id)
+                .queryParam("ids", reservation3.id)
+                .delete("/api/manager/reservations")
+                .then()
+                .statusCode(204);
+
+        // Verify all were deleted
+        given().when()
+                .get("/api/manager/reservations")
+                .then()
+                .statusCode(200)
+                .body("size()", is(0));
+    }
+
+    @Test
+    @TestSecurity(
+            user = "manager",
+            roles = {"MANAGER"})
+    void testDeleteMultipleReservations_PartialNotFound() {
+        given().when()
+                .queryParam("ids", testReservation.id)
+                .queryParam("ids", 999L)
+                .delete("/api/manager/reservations")
+                .then()
+                .statusCode(404);
+    }
+
+    @Test
+    @TestSecurity(
+            user = "user",
+            roles = {"USER"})
+    void testDeleteReservation_Forbidden() {
+        given().when()
+                .queryParam("ids", testReservation.id)
+                .delete("/api/manager/reservations")
+                .then()
+                .statusCode(403);
+    }
+
+    @Test
+    void testDeleteReservation_Unauthorized() {
+        given().when()
+                .queryParam("ids", testReservation.id)
+                .delete("/api/manager/reservations")
+                .then()
+                .statusCode(401);
+    }
+
+    @Transactional
+    void seedAdditionalReservations(
+            Seat seat3, Reservation reservation2, Reservation reservation3) {
+        seatRepository.persist(seat3);
+        reservationRepository.persist(reservation2);
+        reservationRepository.persist(reservation3);
     }
 
     @Test

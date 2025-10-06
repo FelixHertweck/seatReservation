@@ -45,6 +45,10 @@ public class ReservationRepository implements PanacheRepository<Reservation> {
         return find("user = ?1 and event = ?2", user, event).list();
     }
 
+    public List<Reservation> findByUserAndEventId(User user, Long eventId) {
+        return find("user = ?1 and event.id = ?2", user, eventId).list();
+    }
+
     public void persistAll(List<Reservation> newReservations) {
         newReservations.forEach(this::persist);
     }

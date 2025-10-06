@@ -370,7 +370,7 @@ public class ReservationServiceTest {
         when(reservationRepository.findByIdOptional(reservation.id))
                 .thenReturn(Optional.of(reservation));
 
-        reservationService.deleteReservation(reservation.id, adminUser);
+        reservationService.deleteReservation(List.of(reservation.id), adminUser);
 
         verify(reservationRepository, times(1)).delete(reservation);
     }
@@ -380,7 +380,7 @@ public class ReservationServiceTest {
         when(reservationRepository.findByIdOptional(reservation.id))
                 .thenReturn(Optional.of(reservation));
 
-        reservationService.deleteReservation(reservation.id, managerUser);
+        reservationService.deleteReservation(List.of(reservation.id), managerUser);
 
         verify(reservationRepository, times(1)).delete(reservation);
     }
@@ -392,7 +392,7 @@ public class ReservationServiceTest {
 
         assertThrows(
                 SecurityException.class,
-                () -> reservationService.deleteReservation(reservation.id, regularUser));
+                () -> reservationService.deleteReservation(List.of(reservation.id), regularUser));
         verify(reservationRepository, never()).delete(any(Reservation.class));
     }
 
@@ -466,7 +466,7 @@ public class ReservationServiceTest {
 
         assertThrows(
                 SecurityException.class,
-                () -> reservationService.deleteReservation(reservation.id, managerUser));
+                () -> reservationService.deleteReservation(List.of(reservation.id), managerUser));
     }
 
     @Test

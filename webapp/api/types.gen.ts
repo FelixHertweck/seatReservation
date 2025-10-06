@@ -152,6 +152,7 @@ export type ReservationResponseDto = {
     eventId?: bigint;
     seat?: SeatDto;
     reservationDateTime?: Instant;
+    status?: ReservationStatus;
 };
 
 export const ReservationStatus = {
@@ -307,6 +308,43 @@ export type PostApiAuthRegisterResponses = {
     200: unknown;
 };
 
+export type DeleteApiManagerEventlocationsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        ids?: Array<bigint>;
+    };
+    url: '/api/manager/eventlocations';
+};
+
+export type DeleteApiManagerEventlocationsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
+     */
+    403: unknown;
+    /**
+     * Not Found: Event location with specified ID not found
+     */
+    404: unknown;
+};
+
+export type DeleteApiManagerEventlocationsResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+    /**
+     * Event location deleted successfully
+     */
+    204: void;
+};
+
+export type DeleteApiManagerEventlocationsResponse = DeleteApiManagerEventlocationsResponses[keyof DeleteApiManagerEventlocationsResponses];
+
 export type GetApiManagerEventlocationsData = {
     body?: never;
     path?: never;
@@ -441,43 +479,6 @@ export type PostApiManagerEventlocationsImportByIdResponses = {
 
 export type PostApiManagerEventlocationsImportByIdResponse = PostApiManagerEventlocationsImportByIdResponses[keyof PostApiManagerEventlocationsImportByIdResponses];
 
-export type DeleteApiManagerEventlocationsByIdData = {
-    body?: never;
-    path: {
-        id: bigint;
-    };
-    query?: never;
-    url: '/api/manager/eventlocations/{id}';
-};
-
-export type DeleteApiManagerEventlocationsByIdErrors = {
-    /**
-     * Unauthorized
-     */
-    401: unknown;
-    /**
-     * Forbidden: Only MANAGER or ADMIN roles can access this resource
-     */
-    403: unknown;
-    /**
-     * Not Found: Event location with specified ID not found
-     */
-    404: unknown;
-};
-
-export type DeleteApiManagerEventlocationsByIdResponses = {
-    /**
-     * OK
-     */
-    200: unknown;
-    /**
-     * Event location deleted successfully
-     */
-    204: void;
-};
-
-export type DeleteApiManagerEventlocationsByIdResponse = DeleteApiManagerEventlocationsByIdResponses[keyof DeleteApiManagerEventlocationsByIdResponses];
-
 export type PutApiManagerEventlocationsByIdData = {
     body: EventLocationRequestDto;
     path: {
@@ -518,6 +519,39 @@ export type PutApiManagerEventlocationsByIdResponses = {
 };
 
 export type PutApiManagerEventlocationsByIdResponse = PutApiManagerEventlocationsByIdResponses[keyof PutApiManagerEventlocationsByIdResponses];
+
+export type DeleteApiManagerEventsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        ids?: Array<bigint>;
+    };
+    url: '/api/manager/events';
+};
+
+export type DeleteApiManagerEventsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
+     */
+    403: unknown;
+    /**
+     * Not Found: Event with specified ID not found for the current manager
+     */
+    404: unknown;
+};
+
+export type DeleteApiManagerEventsResponses = {
+    /**
+     * Event deleted
+     */
+    204: void;
+};
+
+export type DeleteApiManagerEventsResponse = DeleteApiManagerEventsResponses[keyof DeleteApiManagerEventsResponses];
 
 export type GetApiManagerEventsData = {
     body?: never;
@@ -584,39 +618,6 @@ export type PostApiManagerEventsResponses = {
 };
 
 export type PostApiManagerEventsResponse = PostApiManagerEventsResponses[keyof PostApiManagerEventsResponses];
-
-export type DeleteApiManagerEventsByIdData = {
-    body?: never;
-    path: {
-        id: bigint;
-    };
-    query?: never;
-    url: '/api/manager/events/{id}';
-};
-
-export type DeleteApiManagerEventsByIdErrors = {
-    /**
-     * Unauthorized
-     */
-    401: unknown;
-    /**
-     * Forbidden: Only MANAGER or ADMIN roles can access this resource
-     */
-    403: unknown;
-    /**
-     * Not Found: Event with specified ID not found for the current manager
-     */
-    404: unknown;
-};
-
-export type DeleteApiManagerEventsByIdResponses = {
-    /**
-     * Event deleted
-     */
-    204: void;
-};
-
-export type DeleteApiManagerEventsByIdResponse = DeleteApiManagerEventsByIdResponses[keyof DeleteApiManagerEventsByIdResponses];
 
 export type GetApiManagerEventsByIdData = {
     body?: never;
@@ -691,6 +692,39 @@ export type PutApiManagerEventsByIdResponses = {
 };
 
 export type PutApiManagerEventsByIdResponse = PutApiManagerEventsByIdResponses[keyof PutApiManagerEventsByIdResponses];
+
+export type DeleteApiManagerReservationAllowanceData = {
+    body?: never;
+    path?: never;
+    query?: {
+        ids?: Array<bigint>;
+    };
+    url: '/api/manager/reservationAllowance';
+};
+
+export type DeleteApiManagerReservationAllowanceErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
+     */
+    403: unknown;
+    /**
+     * Not Found: Allowance with specified ID not found
+     */
+    404: unknown;
+};
+
+export type DeleteApiManagerReservationAllowanceResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type DeleteApiManagerReservationAllowanceResponse = DeleteApiManagerReservationAllowanceResponses[keyof DeleteApiManagerReservationAllowanceResponses];
 
 export type GetApiManagerReservationAllowanceData = {
     body?: never;
@@ -830,39 +864,6 @@ export type GetApiManagerReservationAllowanceEventByEventIdResponses = {
 
 export type GetApiManagerReservationAllowanceEventByEventIdResponse = GetApiManagerReservationAllowanceEventByEventIdResponses[keyof GetApiManagerReservationAllowanceEventByEventIdResponses];
 
-export type DeleteApiManagerReservationAllowanceByIdData = {
-    body?: never;
-    path: {
-        id: bigint;
-    };
-    query?: never;
-    url: '/api/manager/reservationAllowance/{id}';
-};
-
-export type DeleteApiManagerReservationAllowanceByIdErrors = {
-    /**
-     * Unauthorized
-     */
-    401: unknown;
-    /**
-     * Forbidden: Only MANAGER or ADMIN roles can access this resource
-     */
-    403: unknown;
-    /**
-     * Not Found: Allowance with specified ID not found
-     */
-    404: unknown;
-};
-
-export type DeleteApiManagerReservationAllowanceByIdResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type DeleteApiManagerReservationAllowanceByIdResponse = DeleteApiManagerReservationAllowanceByIdResponses[keyof DeleteApiManagerReservationAllowanceByIdResponses];
-
 export type GetApiManagerReservationAllowanceByIdData = {
     body?: never;
     path: {
@@ -895,6 +896,39 @@ export type GetApiManagerReservationAllowanceByIdResponses = {
 };
 
 export type GetApiManagerReservationAllowanceByIdResponse = GetApiManagerReservationAllowanceByIdResponses[keyof GetApiManagerReservationAllowanceByIdResponses];
+
+export type DeleteApiManagerReservationsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        ids?: Array<bigint>;
+    };
+    url: '/api/manager/reservations';
+};
+
+export type DeleteApiManagerReservationsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
+     */
+    403: unknown;
+    /**
+     * Not Found: Reservation with specified ID not found for the current manager
+     */
+    404: unknown;
+};
+
+export type DeleteApiManagerReservationsResponses = {
+    /**
+     * Reservation deleted successfully
+     */
+    204: void;
+};
+
+export type DeleteApiManagerReservationsResponse = DeleteApiManagerReservationsResponses[keyof DeleteApiManagerReservationsResponses];
 
 export type GetApiManagerReservationsData = {
     body?: never;
@@ -1106,39 +1140,6 @@ export type GetApiManagerReservationsExportByEventIdPdfResponses = {
 
 export type GetApiManagerReservationsExportByEventIdPdfResponse = GetApiManagerReservationsExportByEventIdPdfResponses[keyof GetApiManagerReservationsExportByEventIdPdfResponses];
 
-export type DeleteApiManagerReservationsByIdData = {
-    body?: never;
-    path: {
-        id: bigint;
-    };
-    query?: never;
-    url: '/api/manager/reservations/{id}';
-};
-
-export type DeleteApiManagerReservationsByIdErrors = {
-    /**
-     * Unauthorized
-     */
-    401: unknown;
-    /**
-     * Forbidden: Only MANAGER or ADMIN roles can access this resource
-     */
-    403: unknown;
-    /**
-     * Not Found: Reservation with specified ID not found for the current manager
-     */
-    404: unknown;
-};
-
-export type DeleteApiManagerReservationsByIdResponses = {
-    /**
-     * Reservation deleted successfully
-     */
-    204: void;
-};
-
-export type DeleteApiManagerReservationsByIdResponse = DeleteApiManagerReservationsByIdResponses[keyof DeleteApiManagerReservationsByIdResponses];
-
 export type GetApiManagerReservationsByIdData = {
     body?: never;
     path: {
@@ -1171,6 +1172,43 @@ export type GetApiManagerReservationsByIdResponses = {
 };
 
 export type GetApiManagerReservationsByIdResponse = GetApiManagerReservationsByIdResponses[keyof GetApiManagerReservationsByIdResponses];
+
+export type DeleteApiManagerSeatsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        ids?: Array<bigint>;
+    };
+    url: '/api/manager/seats';
+};
+
+export type DeleteApiManagerSeatsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
+     */
+    403: unknown;
+    /**
+     * Not Found: Seat with specified ID not found for the current manager
+     */
+    404: unknown;
+};
+
+export type DeleteApiManagerSeatsResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+    /**
+     * Seat deleted successfully
+     */
+    204: void;
+};
+
+export type DeleteApiManagerSeatsResponse = DeleteApiManagerSeatsResponses[keyof DeleteApiManagerSeatsResponses];
 
 export type GetApiManagerSeatsData = {
     body?: never;
@@ -1237,43 +1275,6 @@ export type PostApiManagerSeatsResponses = {
 };
 
 export type PostApiManagerSeatsResponse = PostApiManagerSeatsResponses[keyof PostApiManagerSeatsResponses];
-
-export type DeleteApiManagerSeatsByIdData = {
-    body?: never;
-    path: {
-        id: bigint;
-    };
-    query?: never;
-    url: '/api/manager/seats/{id}';
-};
-
-export type DeleteApiManagerSeatsByIdErrors = {
-    /**
-     * Unauthorized
-     */
-    401: unknown;
-    /**
-     * Forbidden: Only MANAGER or ADMIN roles can access this resource
-     */
-    403: unknown;
-    /**
-     * Not Found: Seat with specified ID not found for the current manager
-     */
-    404: unknown;
-};
-
-export type DeleteApiManagerSeatsByIdResponses = {
-    /**
-     * OK
-     */
-    200: unknown;
-    /**
-     * Seat deleted successfully
-     */
-    204: void;
-};
-
-export type DeleteApiManagerSeatsByIdResponse = DeleteApiManagerSeatsByIdResponses[keyof DeleteApiManagerSeatsByIdResponses];
 
 export type GetApiManagerSeatsByIdData = {
     body?: never;
@@ -1434,6 +1435,39 @@ export type PostApiUserResendEmailConfirmationResponses = {
 
 export type PostApiUserResendEmailConfirmationResponse = PostApiUserResendEmailConfirmationResponses[keyof PostApiUserResendEmailConfirmationResponses];
 
+export type DeleteApiUserReservationsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        ids?: Array<bigint>;
+    };
+    url: '/api/user/reservations';
+};
+
+export type DeleteApiUserReservationsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Forbidden: Only authenticated users can access this resource
+     */
+    403: unknown;
+    /**
+     * Not Found: Reservation with specified ID not found for the current user
+     */
+    404: unknown;
+};
+
+export type DeleteApiUserReservationsResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type DeleteApiUserReservationsResponse = DeleteApiUserReservationsResponses[keyof DeleteApiUserReservationsResponses];
+
 export type GetApiUserReservationsData = {
     body?: never;
     path?: never;
@@ -1499,39 +1533,6 @@ export type PostApiUserReservationsResponses = {
 };
 
 export type PostApiUserReservationsResponse = PostApiUserReservationsResponses[keyof PostApiUserReservationsResponses];
-
-export type DeleteApiUserReservationsByIdData = {
-    body?: never;
-    path: {
-        id: bigint;
-    };
-    query?: never;
-    url: '/api/user/reservations/{id}';
-};
-
-export type DeleteApiUserReservationsByIdErrors = {
-    /**
-     * Unauthorized
-     */
-    401: unknown;
-    /**
-     * Forbidden: Only authenticated users can access this resource
-     */
-    403: unknown;
-    /**
-     * Not Found: Reservation with specified ID not found for the current user
-     */
-    404: unknown;
-};
-
-export type DeleteApiUserReservationsByIdResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type DeleteApiUserReservationsByIdResponse = DeleteApiUserReservationsByIdResponses[keyof DeleteApiUserReservationsByIdResponses];
 
 export type GetApiUserReservationsByIdData = {
     body?: never;

@@ -344,14 +344,14 @@ This is an overview of the test cases for the application.
 | `createReservationForUser_IllegalArgumentException_NoSeatIds` | Attempts to create a reservation without specifying seat IDs. |
 | `createReservationForUser_IllegalStateException_EmailNotVerified` | Attempts to create a reservation with a user whose email address is not verified. Expects `IllegalStateException`. |
 
-### deleteReservationForUser(Long id, User currentUser)
+### deleteReservationForUser(List<Long> ids, User currentUser)
 
 | Test Case | Description |
 | :--- | :--- |
-| `deleteReservationForUser_Success` | Successfully deletes a reservation for the current user. |
-| `deleteReservationForUser_NotFoundException` | Attempts to delete a non-existent reservation. Expects `NotFoundException`. |
-| `deleteReservationForUser_ForbiddenException_NotOwner` | Attempts to delete a reservation that does not belong to the current user. Expects `ForbiddenException`. |
-| `deleteReservationForUser_ForbiddenException_NoAllowance` | Attempts to delete a reservation when the user has no reservation allowance for the event (even though they are the owner of the reservation). Expects `ForbiddenException`. |
+| `deleteReservationForUser_Success` | Successfully deletes multiple reservations for the current user. |
+| `deleteReservationForUser_NotFoundException` | Attempts to delete non-existent reservations. Expects `NotFoundException`. |
+| `deleteReservationForUser_ForbiddenException_NotOwner` | Attempts to delete reservations that do not belong to the current user. Expects `ForbiddenException`. |
+| `deleteReservationForUser_ForbiddenException_NoAllowance` | Attempts to delete reservations when the user has no reservation allowance for the event. Expects `ForbiddenException`. |
 
 ## EventLocation Service
 

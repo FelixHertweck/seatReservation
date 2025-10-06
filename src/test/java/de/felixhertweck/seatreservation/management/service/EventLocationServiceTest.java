@@ -290,7 +290,7 @@ public class EventLocationServiceTest {
                 .thenReturn(Optional.of(existingLocation));
         doNothing().when(eventLocationRepository).delete(any(EventLocation.class));
 
-        eventLocationService.deleteEventLocation(1L, managerUser);
+        eventLocationService.deleteEventLocation(List.of(1L), managerUser);
 
         verify(eventLocationRepository, times(1)).delete(existingLocation);
     }
@@ -301,7 +301,7 @@ public class EventLocationServiceTest {
 
         assertThrows(
                 EventLocationNotFoundException.class,
-                () -> eventLocationService.deleteEventLocation(99L, managerUser));
+                () -> eventLocationService.deleteEventLocation(List.of(99L), managerUser));
         verify(eventLocationRepository, never()).delete(any(EventLocation.class));
     }
 
@@ -311,7 +311,7 @@ public class EventLocationServiceTest {
                 .thenReturn(Optional.of(existingLocation));
         doNothing().when(eventLocationRepository).delete(any(EventLocation.class));
 
-        eventLocationService.deleteEventLocation(1L, adminUser);
+        eventLocationService.deleteEventLocation(List.of(1L), adminUser);
 
         verify(eventLocationRepository, times(1)).delete(existingLocation);
     }
@@ -323,7 +323,7 @@ public class EventLocationServiceTest {
 
         assertThrows(
                 SecurityException.class,
-                () -> eventLocationService.deleteEventLocation(1L, regularUser));
+                () -> eventLocationService.deleteEventLocation(List.of(1L), regularUser));
         verify(eventLocationRepository, never()).delete(any(EventLocation.class));
     }
 

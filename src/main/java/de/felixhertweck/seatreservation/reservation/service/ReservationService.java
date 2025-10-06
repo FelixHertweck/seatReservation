@@ -22,7 +22,9 @@ package de.felixhertweck.seatreservation.reservation.service;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -270,73 +272,127 @@ public class ReservationService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Deletes reservations with the given IDs for the specified user. Ensures that the user is
+     * authorized to delete each reservation and updates the user's allowance accordingly. Sends a
+     * confirmation email after successful deletion.
+     *
+     * @param ids List of reservation IDs to delete.
+     * @param currentUser The user attempting to delete the reservations.
+     * @throws ReservationNotFoundException if any reservation is not found.
+     * @throws SecurityException if the user is not authorized to delete any reservation.
+     * @throws IOException if sending the confirmation email fails.
+     * @throws PersistenceException if the reservation cannot be deleted from the database.
+     * @throws IllegalArgumentException if the list of IDs is null or empty.
+     */
     @Transactional
-    public void deleteReservationForUser(Long id, User currentUser) {
+    public void deleteReservationForUser(List<Long> ids, User currentUser)
+            throws IOException,
+                    PersistenceException,
+                    ReservationNotFoundException,
+                    SecurityException,
+                    IllegalArgumentException {
         LOG.debugf(
-                "Attempting to delete reservation with ID %d for user: %s",
-                id, currentUser.getUsername());
-
-        Reservation reservation =
-                reservationRepository
-                        .findByIdOptional(id)
-                        .orElseThrow(
-                                () -> {
-                                    LOG.warnf(
-                                            "Reservation with ID %d not found for deletion by user"
-                                                    + " %s.",
-                                            id, currentUser.getUsername());
-                                    return new ReservationNotFoundException(
-                                            "Reservation not found");
-                                });
-        if (!reservation.getUser().equals(currentUser)) {
+                "Attempting to delete reservations with IDs %s for user: %s",
+                ids != null ? ids : Collections.emptyList(), currentUser.getUsername());
+        if (ids == null || ids.isEmpty()) {
             LOG.warnf(
-                    "User %s attempted to delete reservation %d which belongs to user %s.",
-                    currentUser.getUsername(), id, reservation.getUser().getUsername());
-            throw new SecurityException("You are not allowed to delete this reservation");
-        }
-        LOG.debugf(
-                "Reservation with ID %d found for user %s. Proceeding with deletion.",
-                id, currentUser.getUsername());
-
-        // Update the user's allowance
-        eventUserAllowanceRepository.findByUser(currentUser).stream()
-                .filter(a -> a.getEvent().id.equals(reservation.getEvent().id))
-                .findFirst()
-                .ifPresent(
-                        eventUserAllowance -> {
-                            eventUserAllowance.setReservationsAllowedCount(
-                                    eventUserAllowance.getReservationsAllowedCount() + 1);
-                            eventUserAllowanceRepository.persist(eventUserAllowance);
-                            LOG.infof(
-                                    "Updated reservation allowance for user %s and event %s (ID:"
-                                            + " %d). New allowance: %d",
-                                    currentUser.getUsername(),
-                                    reservation.getEvent().getName(),
-                                    reservation.getEvent().id,
-                                    eventUserAllowance.getReservationsAllowedCount());
-                        });
-
-        reservationRepository.delete(reservation);
-        LOG.infof(
-                "Reservation with ID %d deleted successfully for user %s.",
-                id, currentUser.getUsername());
-
-        List<Reservation> activeReservations =
-                reservationRepository.findByUserAndEvent(currentUser, reservation.getEvent());
-
-        try {
-            emailService.sendUpdateReservationConfirmation(
-                    currentUser, List.of(reservation), activeReservations);
-        } catch (IOException e) {
-            LOG.errorf(
-                    "Failed to send reservation update confirmation for user %s (ID: %d) and"
-                            + " reservation %d.",
-                    currentUser.getUsername(), currentUser.getId(), reservation.id);
-            return;
+                    "No reservation IDs provided for deletion by user: %s",
+                    currentUser.getUsername());
+            throw new IllegalArgumentException(
+                    "At least one reservation ID must be provided for deletion");
         }
 
-        LOG.debugf(
-                "Sent reservation update confirmation for user %s (ID: %d) and reservation %d.",
-                currentUser.getUsername(), currentUser.getId(), reservation.id);
+        List<Reservation> reservations = new ArrayList<>();
+        for (Long id : ids) {
+            Reservation uncheckedReservation =
+                    reservationRepository
+                            .findByIdOptional(id)
+                            .orElseThrow(
+                                    () -> {
+                                        LOG.warnf(
+                                                "Reservation with ID %d not found for deletion by"
+                                                        + " user %s.",
+                                                id, currentUser.getUsername());
+                                        return new ReservationNotFoundException(
+                                                "Reservation not found");
+                                    });
+            if (!uncheckedReservation.getUser().equals(currentUser)) {
+                LOG.warnf(
+                        "User %s attempted to delete reservation %d which belongs to user %s.",
+                        currentUser.getUsername(),
+                        id,
+                        uncheckedReservation.getUser().getUsername());
+                throw new SecurityException("You are not allowed to delete this reservation");
+            }
+            reservations.add(uncheckedReservation);
+        }
+
+        if (reservations.isEmpty()) {
+            LOG.warnf(
+                    "No valid reservations found for deletion by user: %s",
+                    currentUser.getUsername());
+            throw new IllegalArgumentException("No valid reservations found for deletion");
+        }
+
+        // Group reservations by event to handle allowance updates and email confirmations correctly
+        Map<Long, List<Reservation>> reservationMap =
+                reservations.stream().collect(Collectors.groupingBy(r -> r.getEvent().id));
+
+        for (Map.Entry<Long, List<Reservation>> entry : reservationMap.entrySet()) {
+            if (entry.getValue().isEmpty()) {
+                LOG.warnf(
+                        "No reservations found for event ID %d during deletion process for user"
+                                + " %s.",
+                        entry.getKey(), currentUser.getUsername());
+                continue;
+            }
+            // Update allowance count for each event
+            eventUserAllowanceRepository
+                    .findByUserAndEventId(currentUser, entry.getKey())
+                    .ifPresent(
+                            eventUserAllowance -> {
+                                eventUserAllowance.setReservationsAllowedCount(
+                                        eventUserAllowance.getReservationsAllowedCount()
+                                                + entry.getValue().size());
+                                eventUserAllowanceRepository.persist(eventUserAllowance);
+                                LOG.infof(
+                                        "Updated reservation allowance for user %s and event ID %d."
+                                                + " New allowance: %d",
+                                        currentUser.getUsername(),
+                                        entry.getKey(),
+                                        eventUserAllowance.getReservationsAllowedCount());
+                            });
+
+            // Delete reservations for the current event
+            entry.getValue()
+                    .forEach(
+                            reservation -> {
+                                reservationRepository.delete(reservation);
+                                LOG.debugf(
+                                        "Deleted reservation with ID %d for user %s.",
+                                        reservation.id, currentUser.getUsername());
+                            });
+
+            // Send email update confirmation for each event
+            List<Reservation> activeReservations =
+                    reservationRepository.findByUserAndEventId(currentUser, entry.getKey());
+
+            try {
+                emailService.sendUpdateReservationConfirmation(
+                        currentUser, entry.getValue(), activeReservations);
+            } catch (IOException e) {
+                LOG.errorf(
+                        "Failed to send reservation update confirmation for user %s (ID: %d) and"
+                                + " reservations %s.",
+                        currentUser.getUsername(), currentUser.getId(), entry.getValue());
+                return;
+            }
+
+            LOG.debugf(
+                    "Sent reservation update confirmation for user %s (ID: %d) and reservations"
+                            + " %s.",
+                    currentUser.getUsername(), currentUser.getId(), entry.getValue());
+        }
     }
 }

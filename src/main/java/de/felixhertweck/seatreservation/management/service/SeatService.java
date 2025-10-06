@@ -214,17 +214,36 @@ public class SeatService {
         return new SeatDTO(seat);
     }
 
+    /**
+     * Delete seats by their IDs for a given manager. This method checks if the manager has the
+     * right to delete each seat.
+     *
+     * @param ids list of seat IDs to delete
+     * @param manager the manager attempting to delete the seats
+     * @throws SecurityException if the manager does not own any of the seats
+     * @throws IllegalArgumentException if the ids list is null or empty
+     */
     @Transactional
-    public void deleteSeatForManager(Long id, User manager) {
+    public void deleteSeatForManager(List<Long> ids, User manager)
+            throws SecurityException, IllegalArgumentException {
+        if (ids == null || ids.isEmpty()) {
+            LOG.warnf(
+                    "No seat IDs provided for deletion by manager: %s (ID: %d)",
+                    manager.getUsername(), manager.getId());
+            throw new IllegalArgumentException("No seat IDs provided for deletion");
+        }
+
         LOG.debugf(
-                "Attempting to delete seat with ID: %d for manager: %s (ID: %d)",
-                id, manager.getUsername(), manager.getId());
-        Seat seat = findSeatEntityById(id, manager); // This already checks for ownership
-        seatRepository.delete(seat);
-        LOG.infof("Seat %s deleted successfully", seat.getSeatNumber());
+                "Attempting to delete seats with IDs: %s for manager: %s (ID: %d)",
+                ids, manager.getUsername(), manager.getId());
+        for (Long id : ids) {
+            Seat seat = findSeatEntityById(id, manager); // This already checks for ownership
+            seatRepository.delete(seat);
+            LOG.infof("Seat %s deleted successfully", seat.getSeatNumber());
+        }
         LOG.debugf(
-                "Seat with ID %d deleted successfully by manager: %s (ID: %d)",
-                id, manager.getUsername(), manager.getId());
+                "Seats with IDs %s deleted successfully by manager: %s (ID: %d)",
+                ids, manager.getUsername(), manager.getId());
     }
 
     public Seat findSeatEntityById(Long id, User currentUser) {

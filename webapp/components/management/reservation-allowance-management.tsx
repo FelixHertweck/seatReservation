@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Edit, Trash2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -41,7 +42,7 @@ export interface ReservationAllowanceManagementProps {
   updateReservationAllowance: (
     allowance: EventUserAllowanceUpdateDto,
   ) => Promise<EventUserAllowancesDto>;
-  deleteReservationAllowance: (id: bigint) => Promise<void>;
+  deleteReservationAllowance: (ids: bigint[]) => Promise<void>;
   onNavigateToEvent?: (eventId: bigint) => void;
   initialFilter?: Record<string, string>;
   isLoading?: boolean;
@@ -67,6 +68,7 @@ export function ReservationAllowanceManagement({
     useState<EventUserAllowancesDto | null>(null);
   const [currentFilters, setCurrentFilters] =
     useState<Record<string, string>>(initialFilter);
+  const [selectedIds, setSelectedIds] = useState<Set<bigint>>(new Set());
 
   useEffect(() => {
     setCurrentFilters(initialFilter);
@@ -143,6 +145,7 @@ export function ReservationAllowanceManagement({
   const openEditModal = (allowance: EventUserAllowancesDto) => {
     setSelectedAllowance(allowance);
     setIsEditModalOpen(true);
+    setSelectedIds(new Set());
   };
 
   const handleDeleteAllowance = async (allowance: EventUserAllowancesDto) => {
@@ -150,13 +153,54 @@ export function ReservationAllowanceManagement({
       allowance.id &&
       confirm(t("reservationAllowanceManagement.confirmDelete"))
     ) {
-      await deleteReservationAllowance(allowance.id);
+      await deleteReservationAllowance([allowance.id]);
+      setSelectedIds(new Set());
     }
   };
 
   const handleEventClick = (eventId: bigint) => {
     if (onNavigateToEvent) {
       onNavigateToEvent(eventId);
+    }
+  };
+
+  const handleSelectAll = (paginatedData: EventUserAllowancesDto[]) => {
+    const newSelectedIds = new Set(selectedIds);
+    const allCurrentSelected = paginatedData.every((allowance) =>
+      allowance.id ? selectedIds.has(allowance.id) : false,
+    );
+
+    if (allCurrentSelected) {
+      setSelectedIds(new Set());
+    } else {
+      paginatedData.forEach((allowance) => {
+        if (allowance.id) newSelectedIds.add(allowance.id);
+      });
+      setSelectedIds(newSelectedIds);
+    }
+  };
+
+  const handleToggleSelect = (id: bigint) => {
+    const newSelectedIds = new Set(selectedIds);
+    if (newSelectedIds.has(id)) {
+      newSelectedIds.delete(id);
+    } else {
+      newSelectedIds.add(id);
+    }
+    setSelectedIds(newSelectedIds);
+  };
+
+  const handleDeleteSelected = async () => {
+    if (
+      selectedIds.size > 0 &&
+      confirm(
+        t("reservationAllowanceManagement.confirmDeleteMultiple", {
+          count: selectedIds.size,
+        }),
+      )
+    ) {
+      await deleteReservationAllowance(Array.from(selectedIds));
+      setSelectedIds(new Set());
     }
   };
 
@@ -172,13 +216,25 @@ export function ReservationAllowanceManagement({
               {t("reservationAllowanceManagement.description")}
             </CardDescription>
           </div>
-          <Button
-            onClick={openCreateModal}
-            className="w-full sm:w-auto shrink-0"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            {t("reservationAllowanceManagement.addAllowanceButton")}
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto shrink-0">
+            {selectedIds.size > 0 && (
+              <Button
+                variant="destructive"
+                onClick={handleDeleteSelected}
+                className="w-full sm:w-auto"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                {selectedIds.size}
+              </Button>
+            )}
+            <Button
+              onClick={openCreateModal}
+              className="w-full sm:w-auto shrink-0"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              {t("reservationAllowanceManagement.addAllowanceButton")}
+            </Button>
+          </div>
         </div>
       </CardHeader>
 
@@ -210,9 +266,25 @@ export function ReservationAllowanceManagement({
           {(paginatedData) => (
             <>
               <div className="hidden md:block overflow-x-auto">
+                <div className="mb-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleSelectAll(paginatedData)}
+                  >
+                    {paginatedData.every((allowance) =>
+                      allowance.id ? selectedIds.has(allowance.id) : false,
+                    )
+                      ? t("reservationAllowanceManagement.deselectAll")
+                      : t("reservationAllowanceManagement.selectAll")}
+                  </Button>
+                </div>
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-12">
+                        {t("reservationAllowanceManagement.tableHeaderSelect")}
+                      </TableHead>
                       <TableHead>
                         {t("reservationAllowanceManagement.tableHeaderEvent")}
                       </TableHead>
@@ -233,6 +305,9 @@ export function ReservationAllowanceManagement({
                     {isLoading
                       ? Array.from({ length: 8 }).map((_, index) => (
                           <TableRow key={index}>
+                            <TableCell>
+                              <Skeleton className="h-4 w-4" />
+                            </TableCell>
                             <TableCell>
                               <Skeleton className="h-4 w-32" />
                             </TableCell>
@@ -262,6 +337,19 @@ export function ReservationAllowanceManagement({
                             <TableRow
                               key={`${allowance.id?.toString()}${allowance.eventId?.toString()}`}
                             >
+                              <TableCell>
+                                <Checkbox
+                                  checked={
+                                    allowance.id
+                                      ? selectedIds.has(allowance.id)
+                                      : false
+                                  }
+                                  onCheckedChange={() =>
+                                    allowance.id &&
+                                    handleToggleSelect(allowance.id)
+                                  }
+                                />
+                              </TableCell>
                               <TableCell>
                                 {event ? (
                                   <Button
@@ -340,8 +428,19 @@ export function ReservationAllowanceManagement({
                           key={`${allowance.id?.toString()}${allowance.eventId?.toString()}`}
                           className="w-full"
                         >
-                          <CardHeader className="pb-3">
-                            <div className="min-w-0">
+                          <CardHeader className="pb-3 flex flex-row items-start space-x-3 space-y-0">
+                            <Checkbox
+                              checked={
+                                allowance.id
+                                  ? selectedIds.has(allowance.id)
+                                  : false
+                              }
+                              onCheckedChange={() =>
+                                allowance.id && handleToggleSelect(allowance.id)
+                              }
+                              className="mt-1"
+                            />
+                            <div className="flex-1 min-w-0">
                               <CardTitle className="text-base break-words">
                                 {user?.username ||
                                   t(

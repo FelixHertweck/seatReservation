@@ -230,6 +230,9 @@ export default function ProfilePage() {
                   title: t("profilePage.confirmationEmailTitle"),
                   description: t("profilePage.confirmationEmailDescription"),
                 });
+                setTimeout(() => {
+                  router.push(`/${locale}/verify`);
+                }, 700);
               }}
             >
               {t("profilePage.sendConfirmationEmailButton")}

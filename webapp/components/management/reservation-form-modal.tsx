@@ -134,7 +134,8 @@ export function ReservationFormModal({
           .filter(
             (reservation) =>
               reservation.user?.id?.toString() === formData.userId &&
-              reservation.eventId?.toString() === formData.eventId,
+              reservation.eventId?.toString() === formData.eventId &&
+              reservation.status === "RESERVED",
           )
           .map((reservation) => reservation.seat)
           .filter((seat): seat is SeatDto => seat !== undefined)

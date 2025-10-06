@@ -105,8 +105,8 @@ export default function EventsPage() {
     setReservationSearchQuery(query);
   };
 
-  const handleDeleteReservation = async (reservationId: bigint) => {
-    await deleteReservation(reservationId);
+  const handleDeleteReservation = async (reservationIds: bigint[]) => {
+    await deleteReservation(reservationIds);
   };
 
   const handleViewReservationSeats = (
