@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.management.ressource;
 
+import java.util.Collections;
 import java.util.List;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
@@ -149,7 +150,6 @@ public class SeatResource {
     }
 
     @DELETE
-    @Path("/{id}")
     @APIResponse(responseCode = "200", description = "OK")
     @APIResponse(responseCode = "204", description = "Seat deleted successfully")
     @APIResponse(responseCode = "401", description = "Unauthorized")
@@ -159,10 +159,14 @@ public class SeatResource {
     @APIResponse(
             responseCode = "404",
             description = "Not Found: Seat with specified ID not found for the current manager")
-    public void deleteManagerSeat(@PathParam("id") Long id) {
-        LOG.debugf("Received DELETE request to /api/manager/seats/%d to delete seat.", id);
+    public void deleteManagerSeat(@QueryParam("ids") List<Long> ids) {
+        LOG.debugf(
+                "Received DELETE request to /api/manager/seats with IDs: %s",
+                ids != null ? ids : Collections.emptyList());
         User currentUser = userSecurityContext.getCurrentUser();
-        seatService.deleteSeatForManager(id, currentUser);
-        LOG.debugf("Seat with ID %d deleted successfully.", id);
+        seatService.deleteSeatForManager(ids, currentUser);
+        LOG.debugf(
+                "Seats with IDs %s deleted successfully.",
+                ids != null ? ids : Collections.emptyList());
     }
 }

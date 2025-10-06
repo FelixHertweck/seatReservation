@@ -480,6 +480,9 @@
           },
           "reservationDateTime" : {
             "$ref" : "#/components/schemas/Instant"
+          },
+          "status" : {
+            "$ref" : "#/components/schemas/ReservationStatus"
           }
         }
       },
@@ -848,6 +851,41 @@
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
         } ]
       },
+      "delete" : {
+        "parameters" : [ {
+          "name" : "ids",
+          "in" : "query",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          },
+          "204" : {
+            "description" : "Event location deleted successfully"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Event location with specified ID not found"
+          }
+        },
+        "summary" : "Delete Event Location",
+        "tags" : [ "Event Location Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
+        } ]
+      },
       "post" : {
         "requestBody" : {
           "content" : {
@@ -1042,39 +1080,6 @@
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
         } ]
-      },
-      "delete" : {
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK"
-          },
-          "204" : {
-            "description" : "Event location deleted successfully"
-          },
-          "401" : {
-            "description" : "Unauthorized"
-          },
-          "403" : {
-            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
-          },
-          "404" : {
-            "description" : "Not Found: Event location with specified ID not found"
-          }
-        },
-        "summary" : "Delete Event Location",
-        "tags" : [ "Event Location Resource" ],
-        "security" : [ {
-          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
-        } ]
       }
     },
     "/api/manager/events" : {
@@ -1101,6 +1106,38 @@
           }
         },
         "summary" : "Get Events By Current Manager",
+        "tags" : [ "Event Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
+        } ]
+      },
+      "delete" : {
+        "parameters" : [ {
+          "name" : "ids",
+          "in" : "query",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Event deleted"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Event with specified ID not found for the current manager"
+          }
+        },
+        "summary" : "Delete Event",
         "tags" : [ "Event Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
@@ -1241,36 +1278,6 @@
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
         } ]
-      },
-      "delete" : {
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        } ],
-        "responses" : {
-          "204" : {
-            "description" : "Event deleted"
-          },
-          "401" : {
-            "description" : "Unauthorized"
-          },
-          "403" : {
-            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
-          },
-          "404" : {
-            "description" : "Not Found: Event with specified ID not found for the current manager"
-          }
-        },
-        "summary" : "Delete Event",
-        "tags" : [ "Event Resource" ],
-        "security" : [ {
-          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
-        } ]
       }
     },
     "/api/manager/reservationAllowance" : {
@@ -1392,6 +1399,38 @@
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
         } ]
+      },
+      "delete" : {
+        "parameters" : [ {
+          "name" : "ids",
+          "in" : "query",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Allowance with specified ID not found"
+          }
+        },
+        "summary" : "Delete Reservation Allowance",
+        "tags" : [ "Event Reservation Allowance Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
+        } ]
       }
     },
     "/api/manager/reservationAllowance/event/{eventId}" : {
@@ -1473,36 +1512,6 @@
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
         } ]
-      },
-      "delete" : {
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        } ],
-        "responses" : {
-          "204" : {
-            "description" : "No Content"
-          },
-          "401" : {
-            "description" : "Unauthorized"
-          },
-          "403" : {
-            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
-          },
-          "404" : {
-            "description" : "Not Found: Allowance with specified ID not found"
-          }
-        },
-        "summary" : "Delete Reservation Allowance",
-        "tags" : [ "Event Reservation Allowance Resource" ],
-        "security" : [ {
-          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
-        } ]
       }
     },
     "/api/manager/reservations" : {
@@ -1529,6 +1538,38 @@
           }
         },
         "summary" : "Get All Reservations",
+        "tags" : [ "Reservation Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
+        } ]
+      },
+      "delete" : {
+        "parameters" : [ {
+          "name" : "ids",
+          "in" : "query",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Reservation deleted successfully"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Reservation with specified ID not found for the current manager"
+          }
+        },
+        "summary" : "Delete Reservation",
         "tags" : [ "Reservation Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
@@ -1786,36 +1827,6 @@
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
         } ]
-      },
-      "delete" : {
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        } ],
-        "responses" : {
-          "204" : {
-            "description" : "Reservation deleted successfully"
-          },
-          "401" : {
-            "description" : "Unauthorized"
-          },
-          "403" : {
-            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
-          },
-          "404" : {
-            "description" : "Not Found: Reservation with specified ID not found for the current manager"
-          }
-        },
-        "summary" : "Delete Reservation",
-        "tags" : [ "Reservation Resource" ],
-        "security" : [ {
-          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
-        } ]
       }
     },
     "/api/manager/seats" : {
@@ -1842,6 +1853,41 @@
           }
         },
         "summary" : "Get All Manager Seats",
+        "tags" : [ "Seat Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
+        } ]
+      },
+      "delete" : {
+        "parameters" : [ {
+          "name" : "ids",
+          "in" : "query",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          },
+          "204" : {
+            "description" : "Seat deleted successfully"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Seat with specified ID not found for the current manager"
+          }
+        },
+        "summary" : "Delete Manager Seat",
         "tags" : [ "Seat Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
@@ -1982,39 +2028,6 @@
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
         } ]
-      },
-      "delete" : {
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK"
-          },
-          "204" : {
-            "description" : "Seat deleted successfully"
-          },
-          "401" : {
-            "description" : "Unauthorized"
-          },
-          "403" : {
-            "description" : "Forbidden: Only MANAGER or ADMIN roles can access this resource"
-          },
-          "404" : {
-            "description" : "Not Found: Seat with specified ID not found for the current manager"
-          }
-        },
-        "summary" : "Delete Manager Seat",
-        "tags" : [ "Seat Resource" ],
-        "security" : [ {
-          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
-        } ]
       }
     },
     "/api/user/events" : {
@@ -2127,6 +2140,38 @@
           "SecurityScheme" : [ "USER", "MANAGER", "ADMIN" ]
         } ]
       },
+      "delete" : {
+        "parameters" : [ {
+          "name" : "ids",
+          "in" : "query",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Forbidden: Only authenticated users can access this resource"
+          },
+          "404" : {
+            "description" : "Not Found: Reservation with specified ID not found for the current user"
+          }
+        },
+        "summary" : "Delete Reservation",
+        "tags" : [ "Reservation Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "USER", "MANAGER", "ADMIN" ]
+        } ]
+      },
       "post" : {
         "requestBody" : {
           "content" : {
@@ -2208,36 +2253,6 @@
           }
         },
         "summary" : "Get My Reservation By Id",
-        "tags" : [ "Reservation Resource" ],
-        "security" : [ {
-          "SecurityScheme" : [ "USER", "MANAGER", "ADMIN" ]
-        } ]
-      },
-      "delete" : {
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        } ],
-        "responses" : {
-          "204" : {
-            "description" : "No Content"
-          },
-          "401" : {
-            "description" : "Unauthorized"
-          },
-          "403" : {
-            "description" : "Forbidden: Only authenticated users can access this resource"
-          },
-          "404" : {
-            "description" : "Not Found: Reservation with specified ID not found for the current user"
-          }
-        },
-        "summary" : "Delete Reservation",
         "tags" : [ "Reservation Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "USER", "MANAGER", "ADMIN" ]

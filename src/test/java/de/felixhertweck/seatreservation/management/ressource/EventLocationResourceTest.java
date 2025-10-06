@@ -172,7 +172,8 @@ public class EventLocationResourceTest {
             roles = {"MANAGER"})
     void testDeleteEventLocation() {
         given().when()
-                .delete("/api/manager/eventlocations/" + testLocation.getId())
+                .queryParam("ids", testLocation.getId())
+                .delete("/api/manager/eventlocations")
                 .then()
                 .statusCode(204);
     }
@@ -182,7 +183,89 @@ public class EventLocationResourceTest {
             user = "manager",
             roles = {"MANAGER"})
     void testDeleteEventLocationNotFound() {
-        given().when().delete("/api/manager/eventlocations/999").then().statusCode(404);
+        given().when()
+                .queryParam("ids", 999L)
+                .delete("/api/manager/eventlocations")
+                .then()
+                .statusCode(404);
+    }
+
+    @Test
+    @TestSecurity(
+            user = "manager",
+            roles = {"MANAGER"})
+    void testDeleteMultipleEventLocations() {
+        // Create additional locations for bulk delete test
+        var user = userRepository.findByUsernameOptional("manager").orElseThrow();
+        var location2 = new EventLocation();
+        location2.setName("Test Location 2");
+        location2.setAddress("Test Address 2");
+        location2.setManager(user);
+        location2.setSeats(new ArrayList<>());
+
+        var location3 = new EventLocation();
+        location3.setName("Test Location 3");
+        location3.setAddress("Test Address 3");
+        location3.setManager(user);
+        location3.setSeats(new ArrayList<>());
+
+        seedAdditionalLocations(location2, location3);
+
+        // Delete multiple locations
+        given().when()
+                .queryParam("ids", testLocation.getId())
+                .queryParam("ids", location2.getId())
+                .queryParam("ids", location3.getId())
+                .delete("/api/manager/eventlocations")
+                .then()
+                .statusCode(204);
+
+        // Verify all were deleted
+        given().when()
+                .get("/api/manager/eventlocations")
+                .then()
+                .statusCode(200)
+                .body("size()", is(0));
+    }
+
+    @Test
+    @TestSecurity(
+            user = "manager",
+            roles = {"MANAGER"})
+    void testDeleteMultipleEventLocations_PartialNotFound() {
+        given().when()
+                .queryParam("ids", testLocation.getId())
+                .queryParam("ids", 999L) // Non-existent ID
+                .delete("/api/manager/eventlocations")
+                .then()
+                .statusCode(404); // Should fail if any ID is not found
+    }
+
+    @Test
+    @TestSecurity(
+            user = "testUser",
+            roles = {"USER"})
+    void testDeleteEventLocation_Forbidden() {
+        given().when()
+                .queryParam("ids", testLocation.getId())
+                .delete("/api/manager/eventlocations")
+                .then()
+                .statusCode(403);
+    }
+
+    @Test
+    void testDeleteEventLocation_Unauthorized() {
+        given().when()
+                .queryParam("ids", testLocation.getId())
+                .delete("/api/manager/eventlocations")
+                .then()
+                .statusCode(401);
+    }
+
+    @Transactional
+    void seedAdditionalLocations(EventLocation location2, EventLocation location3) {
+        eventLocationRepository.persist(location2);
+        eventLocationRepository.persist(location3);
     }
 
     @Test

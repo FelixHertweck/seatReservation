@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Edit, Trash2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -30,7 +31,7 @@ export interface SeatManagementProps {
   locations: EventLocationResponseDto[];
   createSeat: (seat: SeatRequestDto) => Promise<SeatDto>;
   updateSeat: (id: bigint, seat: SeatRequestDto) => Promise<SeatDto>;
-  deleteSeat: (id: bigint) => Promise<unknown>;
+  deleteSeat: (ids: bigint[]) => Promise<unknown>;
   onNavigateToLocation?: (locationId: bigint) => void;
   initialFilter?: Record<string, string>;
   isLoading?: boolean;
@@ -54,6 +55,7 @@ export function SeatManagement({
   const [isCreating, setIsCreating] = useState(false);
   const [currentFilters, setCurrentFilters] =
     useState<Record<string, string>>(initialFilter);
+  const [selectedIds, setSelectedIds] = useState<Set<bigint>>(new Set());
 
   useEffect(() => {
     setCurrentFilters(initialFilter);
@@ -121,6 +123,7 @@ export function SeatManagement({
     setSelectedSeat(seat);
     setIsCreating(false);
     setIsModalOpen(true);
+    setSelectedIds(new Set());
   };
 
   const handleDeleteSeat = async (seat: SeatDto) => {
@@ -130,13 +133,54 @@ export function SeatManagement({
         t("seatManagement.confirmDelete", { seatNumber: seat.seatNumber }),
       )
     ) {
-      await deleteSeat(seat.id);
+      await deleteSeat([seat.id]);
+      setSelectedIds(new Set());
     }
   };
 
   const handleLocationClick = (locationId: bigint) => {
     if (onNavigateToLocation) {
       onNavigateToLocation(locationId);
+    }
+  };
+
+  const handleSelectAll = (paginatedData: SeatDto[]) => {
+    const newSelectedIds = new Set(selectedIds);
+    const allCurrentSelected = paginatedData.every((seat) =>
+      seat.id ? selectedIds.has(seat.id) : false,
+    );
+
+    if (allCurrentSelected) {
+      setSelectedIds(new Set());
+    } else {
+      paginatedData.forEach((seat) => {
+        if (seat.id) newSelectedIds.add(seat.id);
+      });
+      setSelectedIds(newSelectedIds);
+    }
+  };
+
+  const handleToggleSelect = (id: bigint) => {
+    const newSelectedIds = new Set(selectedIds);
+    if (newSelectedIds.has(id)) {
+      newSelectedIds.delete(id);
+    } else {
+      newSelectedIds.add(id);
+    }
+    setSelectedIds(newSelectedIds);
+  };
+
+  const handleDeleteSelected = async () => {
+    if (
+      selectedIds.size > 0 &&
+      confirm(
+        t("seatManagement.confirmDeleteMultiple", {
+          count: selectedIds.size,
+        }),
+      )
+    ) {
+      await deleteSeat(Array.from(selectedIds));
+      setSelectedIds(new Set());
     }
   };
 
@@ -152,13 +196,25 @@ export function SeatManagement({
               {t("seatManagement.description")}
             </CardDescription>
           </div>
-          <Button
-            onClick={handleCreateSeat}
-            className="w-full sm:w-auto shrink-0"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            {t("seatManagement.addSeatButton")}
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto shrink-0">
+            {selectedIds.size > 0 && (
+              <Button
+                variant="destructive"
+                onClick={handleDeleteSelected}
+                className="w-full sm:w-auto"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                {selectedIds.size}
+              </Button>
+            )}
+            <Button
+              onClick={handleCreateSeat}
+              className="w-full sm:w-auto shrink-0"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              {t("seatManagement.addSeatButton")}
+            </Button>
+          </div>
         </div>
       </CardHeader>
 
@@ -190,9 +246,25 @@ export function SeatManagement({
           {(paginatedData) => (
             <>
               <div className="hidden md:block overflow-x-auto">
+                <div className="mb-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleSelectAll(paginatedData)}
+                  >
+                    {paginatedData.every((seat) =>
+                      seat.id ? selectedIds.has(seat.id) : false,
+                    )
+                      ? t("seatManagement.deselectAll")
+                      : t("seatManagement.selectAll")}
+                  </Button>
+                </div>
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-12">
+                        {t("seatManagement.table.selectHeader")}
+                      </TableHead>
                       <TableHead>
                         {t("seatManagement.table.seatNumberHeader")}
                       </TableHead>
@@ -214,6 +286,9 @@ export function SeatManagement({
                     {isLoading
                       ? Array.from({ length: 8 }).map((_, index) => (
                           <TableRow key={index}>
+                            <TableCell>
+                              <Skeleton className="h-4 w-4" />
+                            </TableCell>
                             <TableCell>
                               <Skeleton className="h-4 w-16" />
                             </TableCell>
@@ -241,6 +316,16 @@ export function SeatManagement({
 
                           return (
                             <TableRow key={seat.id?.toString()}>
+                              <TableCell>
+                                <Checkbox
+                                  checked={
+                                    seat.id ? selectedIds.has(seat.id) : false
+                                  }
+                                  onCheckedChange={() =>
+                                    seat.id && handleToggleSelect(seat.id)
+                                  }
+                                />
+                              </TableCell>
                               <TableCell className="font-medium">
                                 {seat.seatNumber}
                               </TableCell>
@@ -310,8 +395,17 @@ export function SeatManagement({
 
                       return (
                         <Card key={seat.id?.toString()} className="w-full">
-                          <CardHeader className="pb-3">
-                            <div className="min-w-0">
+                          <CardHeader className="pb-3 flex flex-row items-start space-x-3 space-y-0">
+                            <Checkbox
+                              checked={
+                                seat.id ? selectedIds.has(seat.id) : false
+                              }
+                              onCheckedChange={() =>
+                                seat.id && handleToggleSelect(seat.id)
+                              }
+                              className="mt-1"
+                            />
+                            <div className="flex-1 min-w-0">
                               <CardTitle className="text-base break-words">
                                 {seat.seatNumber}
                               </CardTitle>

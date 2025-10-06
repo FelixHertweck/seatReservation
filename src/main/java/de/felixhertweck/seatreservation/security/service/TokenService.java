@@ -37,6 +37,9 @@ public class TokenService {
     @ConfigProperty(name = "smallrye.jwt.token.expiration.minutes", defaultValue = "60")
     long expirationMinutes;
 
+    @ConfigProperty(name = "smallrye.jwt.token.refresh.expiration.days", defaultValue = "7")
+    long refreshExpirationDays;
+
     @ConfigProperty(name = "jwt.cookie.secure", defaultValue = "false")
     boolean cookieSecure;
 
@@ -71,6 +74,26 @@ public class TokenService {
     }
 
     /**
+     * Generates a refresh token for the given user.
+     *
+     * @param user the user for whom the refresh token is generated
+     * @return the generated refresh token
+     */
+    public String generateRefreshToken(User user) {
+        LOG.debugf("Generating refresh token for user: %s", user.getUsername());
+
+        String refreshToken =
+                Jwt.upn(user.getUsername())
+                        .groups(user.getRoles())
+                        .claim(Claims.email, user.getEmail() != null ? user.getEmail() : "")
+                        .claim("token_type", "refresh")
+                        .expiresIn(Duration.ofDays(refreshExpirationDays))
+                        .sign();
+        LOG.debugf("Refresh token generated successfully for user: %s", user.getUsername());
+        return refreshToken;
+    }
+
+    /**
      * Creates a new HTTP cookie containing the JWT token.
      *
      * @param token the JWT token to include in the cookie
@@ -81,6 +104,22 @@ public class TokenService {
                 .value(token)
                 .path("/")
                 .maxAge((int) (expirationMinutes * 60))
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .build();
+    }
+
+    /**
+     * Creates a new HTTP cookie containing the refresh token.
+     *
+     * @param refreshToken the refresh token to include in the cookie
+     * @return the created NewCookie
+     */
+    public NewCookie createNewRefreshTokenCookie(String refreshToken) {
+        return new NewCookie.Builder("refresh_token")
+                .value(refreshToken)
+                .path("/")
+                .maxAge((int) (refreshExpirationDays * 24 * 60 * 60))
                 .httpOnly(true)
                 .secure(cookieSecure)
                 .build();

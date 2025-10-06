@@ -283,46 +283,56 @@ public class EventReservationAllowanceService {
      * Deletes a reservation allowance. Access control: The user must be the manager of the event
      * associated with the allowance or have the ADMIN role to delete it.
      *
-     * @param id The ID of the reservation allowance to be deleted.
+     * @param ids The IDs of the reservation allowances to be deleted.
      * @param currentUser The currently authenticated user.
      * @throws EventNotFoundException If the reservation allowance with the specified ID is not
      *     found.
      * @throws SecurityException If the user is not authorized to delete this allowance.
+     * @throws IllegalArgumentException If no IDs are provided.
      */
     @Transactional
-    public void deleteReservationAllowance(Long id, User currentUser)
-            throws EventNotFoundException, SecurityException {
-        LOG.debugf(
-                "Attempting to delete reservation allowance with ID: %d for user: %s (ID: %d)",
-                id, currentUser.getUsername(), currentUser.getId());
-        EventUserAllowance allowance =
-                eventUserAllowanceRepository
-                        .findByIdOptional(id)
-                        .orElseThrow(
-                                () -> {
-                                    LOG.warnf(
-                                            "Reservation allowance with ID %d not found for"
-                                                    + " deletion by user: %s (ID: %d)",
-                                            id, currentUser.getUsername(), currentUser.getId());
-                                    return new EventNotFoundException("Allowance not found");
-                                });
-
-        if (!allowance.getEvent().getManager().equals(currentUser)
-                && !currentUser.getRoles().contains(Roles.ADMIN)) {
+    public void deleteReservationAllowance(List<Long> ids, User currentUser)
+            throws EventNotFoundException, SecurityException, IllegalArgumentException {
+        if (ids == null || ids.isEmpty()) {
             LOG.warnf(
-                    "User %s (ID: %d) is not authorized to delete reservation allowance with ID"
-                            + " %d.",
-                    currentUser.getUsername(), currentUser.getId(), id);
-            throw new SecurityException("User is not authorized to delete this allowance");
+                    "No reservation allowances to delete for user: %s (ID: %d)",
+                    currentUser.getUsername(), currentUser.getId());
+            throw new IllegalArgumentException(
+                    "No reservation allowance IDs provided for deletion.");
         }
 
-        eventUserAllowanceRepository.delete(allowance);
-        LOG.infof(
-                "Reservation allowance with ID %d deleted successfully.",
-                id, currentUser.getUsername());
-        LOG.debugf(
-                "Reservation allowance with ID %d deleted successfully by user: %s (ID: %d)",
-                id, currentUser.getUsername(), currentUser.getId());
+        for (Long id : ids) {
+            LOG.debugf(
+                    "Attempting to delete reservation allowance with ID: %d for user: %s (ID: %d)",
+                    id, currentUser.getUsername(), currentUser.getId());
+            EventUserAllowance allowance =
+                    eventUserAllowanceRepository
+                            .findByIdOptional(id)
+                            .orElseThrow(
+                                    () -> {
+                                        LOG.warnf(
+                                                "Reservation allowance with ID %d not found for"
+                                                        + " deletion by user: %s (ID: %d)",
+                                                id, currentUser.getUsername(), currentUser.getId());
+                                        return new EventNotFoundException("Allowance not found");
+                                    });
+
+            if (!allowance.getEvent().getManager().equals(currentUser)
+                    && !currentUser.getRoles().contains(Roles.ADMIN)) {
+                LOG.warnf(
+                        "User %s (ID: %d) is not authorized to delete reservation allowance with ID"
+                                + " %d.",
+                        currentUser.getUsername(), currentUser.getId(), id);
+                throw new SecurityException("User is not authorized to delete this allowance");
+            }
+
+            eventUserAllowanceRepository.delete(allowance);
+
+            LOG.debugf(
+                    "Reservation allowance with ID %d deleted successfully by user: %s (ID: %d)",
+                    id, currentUser.getUsername(), currentUser.getId());
+        }
+        LOG.infof("Reservation allowances with IDs %s deleted successfully.", ids);
     }
 
     private Event getEventById(Long id) throws EventNotFoundException {

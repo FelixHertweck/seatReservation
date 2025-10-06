@@ -19,13 +19,17 @@
  */
 package de.felixhertweck.seatreservation.reservation.resource;
 
+import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
+import jakarta.persistence.PersistenceException;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.*;
 
+import de.felixhertweck.seatreservation.management.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.reservation.dto.UserReservationResponseDTO;
@@ -134,7 +138,6 @@ public class ReservationResource {
     }
 
     @DELETE
-    @Path("/{id}")
     @APIResponse(responseCode = "204", description = "No Content")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
@@ -143,14 +146,18 @@ public class ReservationResource {
     @APIResponse(
             responseCode = "404",
             description = "Not Found: Reservation with specified ID not found for the current user")
-    public void deleteReservation(@PathParam("id") Long id) {
+    public void deleteReservation(@QueryParam("ids") List<Long> ids)
+            throws PersistenceException,
+                    ReservationNotFoundException,
+                    SecurityException,
+                    IOException {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.debugf(
-                "Received DELETE request to /api/user/reservations/%d for user: %s",
-                id, currentUser.getUsername());
-        reservationService.deleteReservationForUser(id, currentUser);
+                "Received DELETE request to /api/user/reservations with IDs: %s for user: %s",
+                ids != null ? ids : Collections.emptyList(), currentUser.getUsername());
+        reservationService.deleteReservationForUser(ids, currentUser);
         LOG.debugf(
-                "Reservation with ID %d deleted successfully for user: %s",
-                id, currentUser.getUsername());
+                "Reservations with IDs %s deleted successfully for user: %s",
+                ids != null ? ids : Collections.emptyList(), currentUser.getUsername());
     }
 }

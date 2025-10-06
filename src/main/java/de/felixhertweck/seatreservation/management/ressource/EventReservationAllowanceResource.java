@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.management.ressource;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import jakarta.annotation.security.RolesAllowed;
@@ -182,7 +183,6 @@ public class EventReservationAllowanceResource {
     }
 
     @DELETE
-    @Path("/{id}")
     @APIResponse(responseCode = "204", description = "No Content")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
@@ -191,13 +191,14 @@ public class EventReservationAllowanceResource {
     @APIResponse(
             responseCode = "404",
             description = "Not Found: Allowance with specified ID not found")
-    public void deleteReservationAllowance(@PathParam("id") Long id) {
+    public void deleteReservationAllowance(@QueryParam("ids") List<Long> ids) {
         LOG.debugf(
-                "Received DELETE request to /api/manager/reservationAllowance/%d to delete"
-                        + " allowance.",
-                id);
+                "Received DELETE request to /api/manager/reservationAllowance with IDs: %s",
+                ids != null ? ids : Collections.emptyList());
         User currentUser = userSecurityContext.getCurrentUser();
-        eventReservationAllowanceService.deleteReservationAllowance(id, currentUser);
-        LOG.debugf("Reservation allowance with ID %d deleted successfully.", id);
+        eventReservationAllowanceService.deleteReservationAllowance(ids, currentUser);
+        LOG.debugf(
+                "Reservation allowance with IDs %s deleted successfully.",
+                ids != null ? ids : Collections.emptyList());
     }
 }

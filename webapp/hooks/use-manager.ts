@@ -25,23 +25,23 @@ import {
   getApiManagerEventsOptions,
   postApiManagerEventsMutation,
   putApiManagerEventsByIdMutation,
-  deleteApiManagerEventsByIdMutation,
+  deleteApiManagerEventsMutation,
   getApiManagerEventlocationsOptions,
   postApiManagerEventlocationsMutation,
   putApiManagerEventlocationsByIdMutation,
-  deleteApiManagerEventlocationsByIdMutation,
+  deleteApiManagerEventlocationsMutation,
   getApiManagerSeatsOptions,
   postApiManagerSeatsMutation,
   putApiManagerSeatsByIdMutation,
-  deleteApiManagerSeatsByIdMutation,
+  deleteApiManagerSeatsMutation,
   getApiManagerReservationsOptions,
   postApiManagerReservationsMutation,
-  deleteApiManagerReservationsByIdMutation,
+  deleteApiManagerReservationsMutation,
   postApiManagerReservationsBlockMutation,
   getApiManagerReservationAllowanceOptions,
   postApiManagerReservationAllowanceMutation,
-  putApiManagerReservationAllowanceMutation, // Import new update mutation
-  deleteApiManagerReservationAllowanceByIdMutation,
+  putApiManagerReservationAllowanceMutation,
+  deleteApiManagerReservationAllowanceMutation,
   getApiManagerEventsQueryKey,
   getApiManagerEventlocationsQueryKey,
   getApiManagerSeatsQueryKey,
@@ -64,6 +64,10 @@ interface UseManagerReturn {
   seats: SeatManagementProps;
   reservations: ReservationManagementProps;
   reservationAllowance: ReservationAllowanceManagementProps;
+}
+
+function createIdsSet(query: { ids?: bigint[] } | undefined): Set<bigint> {
+  return new Set(query?.ids ?? []);
 }
 
 export function useManager(): UseManagerReturn {
@@ -120,13 +124,14 @@ export function useManager(): UseManagerReturn {
   });
 
   const deleteEventMutation = useMutation({
-    ...deleteApiManagerEventsByIdMutation(),
+    ...deleteApiManagerEventsMutation(),
     onSuccess: (_, variables) => {
       queryClient.setQueriesData(
         { queryKey: getApiManagerEventsQueryKey() },
         (oldData: EventResponseDto[] | undefined) => {
+          const idsSet = createIdsSet(variables.query);
           return oldData
-            ? oldData.filter((event) => event.id !== variables.path.id)
+            ? oldData.filter((event) => !idsSet.has(event.id ?? BigInt(-1)))
             : [];
         },
       );
@@ -179,13 +184,16 @@ export function useManager(): UseManagerReturn {
   });
 
   const deleteLocationMutation = useMutation({
-    ...deleteApiManagerEventlocationsByIdMutation(),
+    ...deleteApiManagerEventlocationsMutation(),
     onSuccess: (_, variables) => {
       queryClient.setQueriesData(
         { queryKey: getApiManagerEventlocationsQueryKey() },
         (oldData: EventLocationResponseDto[] | undefined) => {
+          const idsSet = createIdsSet(variables.query);
           return oldData
-            ? oldData.filter((location) => location.id !== variables.path.id)
+            ? oldData.filter(
+                (location) => !idsSet.has(location.id ?? BigInt(-1)),
+              )
             : [];
         },
       );
@@ -273,13 +281,14 @@ export function useManager(): UseManagerReturn {
   });
 
   const deleteSeatMutation = useMutation({
-    ...deleteApiManagerSeatsByIdMutation(),
+    ...deleteApiManagerSeatsMutation(),
     onSuccess: (_, variables) => {
       queryClient.setQueriesData(
         { queryKey: getApiManagerSeatsQueryKey() },
         (oldData: SeatDto[] | undefined) => {
+          const idsSet = createIdsSet(variables.query);
           return oldData
-            ? oldData.filter((seat) => seat.id !== variables.path.id)
+            ? oldData.filter((seat) => !idsSet.has(seat.id ?? BigInt(-1)))
             : [];
         },
       );
@@ -313,14 +322,15 @@ export function useManager(): UseManagerReturn {
   });
 
   const deleteReservationMutation = useMutation({
-    ...deleteApiManagerReservationsByIdMutation(),
+    ...deleteApiManagerReservationsMutation(),
     onSuccess: (_, variables) => {
       queryClient.setQueriesData(
         { queryKey: getApiManagerReservationsQueryKey() },
         (oldData: ReservationResponseDto[] | undefined) => {
+          const idsSet = createIdsSet(variables.query);
           return oldData
             ? oldData.filter(
-                (reservation) => reservation.id !== variables.path.id,
+                (reservation) => !idsSet.has(reservation.id ?? BigInt(-1)),
               )
             : [];
         },
@@ -398,13 +408,16 @@ export function useManager(): UseManagerReturn {
   });
 
   const deleteReservationAllowanceMutation = useMutation({
-    ...deleteApiManagerReservationAllowanceByIdMutation(),
+    ...deleteApiManagerReservationAllowanceMutation(),
     onSuccess: (_, variables) => {
       queryClient.setQueriesData(
         { queryKey: getApiManagerReservationAllowanceQueryKey() },
         (oldData: EventUserAllowancesDto[] | undefined) => {
+          const idsSet = createIdsSet(variables.query);
           return oldData
-            ? oldData.filter((allowance) => allowance.id !== variables.path.id)
+            ? oldData.filter(
+                (allowance) => !idsSet.has(allowance.id ?? BigInt(-1)),
+              )
             : [];
         },
       );
@@ -454,8 +467,8 @@ export function useManager(): UseManagerReturn {
         createEventMutation.mutateAsync({ body: event }),
       updateEvent: (id: bigint, event: EventRequestDto) =>
         updateEventMutation.mutateAsync({ path: { id }, body: event }),
-      deleteEvent: (id: bigint) =>
-        deleteEventMutation.mutateAsync({ path: { id } }),
+      deleteEvent: (ids: bigint[]) =>
+        deleteEventMutation.mutateAsync({ query: { ids } }),
     },
     locations: {
       locations: locations ?? [],
@@ -464,8 +477,8 @@ export function useManager(): UseManagerReturn {
         createLocationMutation.mutateAsync({ body: location }),
       updateLocation: (id: bigint, location: EventLocationRequestDto) =>
         updateLocationMutation.mutateAsync({ path: { id }, body: location }),
-      deleteLocation: (id: bigint) =>
-        deleteLocationMutation.mutateAsync({ path: { id } }),
+      deleteLocation: (ids: bigint[]) =>
+        deleteLocationMutation.mutateAsync({ query: { ids } }),
       importLocationWithSeats: (location: ImportEventLocationDto) =>
         importLocationWithSeatsMutation.mutateAsync({ body: location }),
       importSeats: (seats: ImportSeatDto[], locationId: string) =>
@@ -481,8 +494,8 @@ export function useManager(): UseManagerReturn {
         createSeatMutation.mutateAsync({ body: seat }),
       updateSeat: (id: bigint, seat: SeatRequestDto) =>
         updateSeatMutation.mutateAsync({ path: { id }, body: seat }),
-      deleteSeat: (id: bigint) =>
-        deleteSeatMutation.mutateAsync({ path: { id } }),
+      deleteSeat: (ids: bigint[]) =>
+        deleteSeatMutation.mutateAsync({ query: { ids } }),
     },
     reservations: {
       users: user ?? [],
@@ -494,8 +507,8 @@ export function useManager(): UseManagerReturn {
       exportPDF: exportReservationsToPDF,
       createReservation: (reservation: ReservationRequestDto) =>
         createReservationMutation.mutateAsync({ body: reservation }),
-      deleteReservation: (id: bigint) =>
-        deleteReservationMutation.mutateAsync({ path: { id } }),
+      deleteReservation: (ids: bigint[]) =>
+        deleteReservationMutation.mutateAsync({ query: { ids } }),
       blockSeats: (seats: BlockSeatsRequestDto) =>
         blockSeatsMutation.mutateAsync({ body: seats }),
     },
@@ -507,8 +520,8 @@ export function useManager(): UseManagerReturn {
         createReservationAllowanceMutation.mutateAsync({ body: allowance }),
       updateReservationAllowance: (allowance: EventUserAllowanceUpdateDto) =>
         updateReservationAllowanceMutation.mutateAsync({ body: allowance }),
-      deleteReservationAllowance: (id: bigint) =>
-        deleteReservationAllowanceMutation.mutateAsync({ path: { id } }),
+      deleteReservationAllowance: (ids: bigint[]) =>
+        deleteReservationAllowanceMutation.mutateAsync({ query: { ids } }),
     },
   };
 }

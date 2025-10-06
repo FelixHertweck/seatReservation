@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.management.ressource;
 
+import java.util.Collections;
 import java.util.List;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
@@ -142,7 +143,6 @@ public class EventResource {
     }
 
     @DELETE
-    @Path("/{id}")
     @APIResponse(responseCode = "204", description = "Event deleted")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
@@ -151,10 +151,14 @@ public class EventResource {
     @APIResponse(
             responseCode = "404",
             description = "Not Found: Event with specified ID not found for the current manager")
-    public void deleteEvent(@PathParam("id") Long id) {
-        LOG.debugf("Received DELETE request to /api/manager/events/%d to delete event.", id);
+    public void deleteEvent(@QueryParam("ids") List<Long> ids) {
+        LOG.debugf(
+                "Received DELETE request to /api/manager/events with IDs: %s",
+                ids != null ? ids : Collections.emptyList());
         User currentUser = userSecurityContext.getCurrentUser();
-        eventService.deleteEvent(id, currentUser);
-        LOG.debugf("Event with ID %d deleted successfully.", id);
+        eventService.deleteEvent(ids, currentUser);
+        LOG.debugf(
+                "Events with IDs %s deleted successfully.",
+                ids != null ? ids : Collections.emptyList());
     }
 }

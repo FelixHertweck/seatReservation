@@ -459,7 +459,7 @@ public class SeatServiceTest {
                 .thenReturn(Optional.of(existingSeat));
         doNothing().when(seatRepository).delete(any(Seat.class));
 
-        seatService.deleteSeatForManager(existingSeat.id, managerUser);
+        seatService.deleteSeatForManager(List.of(existingSeat.id), managerUser);
 
         verify(seatRepository, times(1)).delete(existingSeat);
     }
@@ -470,7 +470,7 @@ public class SeatServiceTest {
                 .thenReturn(Optional.of(existingSeat));
         doNothing().when(seatRepository).delete(any(Seat.class));
 
-        seatService.deleteSeatForManager(existingSeat.id, adminUser);
+        seatService.deleteSeatForManager(List.of(existingSeat.id), adminUser);
 
         verify(seatRepository, times(1)).delete(existingSeat);
     }
@@ -481,7 +481,7 @@ public class SeatServiceTest {
 
         assertThrows(
                 SeatNotFoundException.class,
-                () -> seatService.deleteSeatForManager(99L, managerUser));
+                () -> seatService.deleteSeatForManager(List.of(99L), managerUser));
         verify(seatRepository, never()).delete(any(Seat.class));
     }
 
@@ -500,7 +500,9 @@ public class SeatServiceTest {
 
         assertThrows(
                 SecurityException.class,
-                () -> seatService.deleteSeatForManager(seatInOtherLocation.id, managerUser));
+                () ->
+                        seatService.deleteSeatForManager(
+                                List.of(seatInOtherLocation.id), managerUser));
         verify(seatRepository, never()).delete(any(Seat.class));
     }
 

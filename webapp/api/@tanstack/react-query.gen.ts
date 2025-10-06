@@ -3,8 +3,8 @@
 import { type DefaultError, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { deleteApiManagerEventlocationsById, deleteApiManagerEventsById, deleteApiManagerReservationAllowanceById, deleteApiManagerReservationsById, deleteApiManagerSeatsById, deleteApiUserReservationsById, deleteApiUsersAdminById, getApiManagerEventlocations, getApiManagerEvents, getApiManagerEventsById, getApiManagerReservationAllowance, getApiManagerReservationAllowanceById, getApiManagerReservationAllowanceEventByEventId, getApiManagerReservations, getApiManagerReservationsById, getApiManagerReservationsEventById, getApiManagerReservationsExportByEventIdCsv, getApiManagerReservationsExportByEventIdPdf, getApiManagerSeats, getApiManagerSeatsById, getApiUserEvents, getApiUserLocations, getApiUserReservations, getApiUserReservationsById, getApiUsersAdmin, getApiUsersManager, getApiUsersMe, getApiUsersRoles, type Options, postApiAuthLogin, postApiAuthLogout, postApiAuthRegister, postApiManagerEventlocations, postApiManagerEventlocationsImport, postApiManagerEventlocationsImportById, postApiManagerEvents, postApiManagerReservationAllowance, postApiManagerReservations, postApiManagerReservationsBlock, postApiManagerSeats, postApiUserResendEmailConfirmation, postApiUserReservations, postApiUsersAdmin, postApiUsersAdminImport, postApiUserVerifyEmailCode, putApiManagerEventlocationsById, putApiManagerEventsById, putApiManagerReservationAllowance, putApiManagerSeatsById, putApiUsersAdminById, putApiUsersMe } from '../sdk.gen';
-import type { DeleteApiManagerEventlocationsByIdData, DeleteApiManagerEventlocationsByIdResponse, DeleteApiManagerEventsByIdData, DeleteApiManagerEventsByIdResponse, DeleteApiManagerReservationAllowanceByIdData, DeleteApiManagerReservationAllowanceByIdResponse, DeleteApiManagerReservationsByIdData, DeleteApiManagerReservationsByIdResponse, DeleteApiManagerSeatsByIdData, DeleteApiManagerSeatsByIdResponse, DeleteApiUserReservationsByIdData, DeleteApiUserReservationsByIdResponse, DeleteApiUsersAdminByIdData, DeleteApiUsersAdminByIdResponse, GetApiManagerEventlocationsData, GetApiManagerEventsByIdData, GetApiManagerEventsData, GetApiManagerReservationAllowanceByIdData, GetApiManagerReservationAllowanceData, GetApiManagerReservationAllowanceEventByEventIdData, GetApiManagerReservationsByIdData, GetApiManagerReservationsData, GetApiManagerReservationsEventByIdData, GetApiManagerReservationsExportByEventIdCsvData, GetApiManagerReservationsExportByEventIdPdfData, GetApiManagerSeatsByIdData, GetApiManagerSeatsData, GetApiUserEventsData, GetApiUserLocationsData, GetApiUserReservationsByIdData, GetApiUserReservationsData, GetApiUsersAdminData, GetApiUsersManagerData, GetApiUsersMeData, GetApiUsersRolesData, PostApiAuthLoginData, PostApiAuthLogoutData, PostApiAuthRegisterData, PostApiManagerEventlocationsData, PostApiManagerEventlocationsImportByIdData, PostApiManagerEventlocationsImportByIdResponse, PostApiManagerEventlocationsImportData, PostApiManagerEventlocationsImportResponse, PostApiManagerEventlocationsResponse, PostApiManagerEventsData, PostApiManagerEventsResponse, PostApiManagerReservationAllowanceData, PostApiManagerReservationAllowanceResponse, PostApiManagerReservationsBlockData, PostApiManagerReservationsBlockResponse, PostApiManagerReservationsData, PostApiManagerReservationsResponse, PostApiManagerSeatsData, PostApiManagerSeatsResponse, PostApiUserResendEmailConfirmationData, PostApiUserResendEmailConfirmationResponse, PostApiUserReservationsData, PostApiUserReservationsResponse, PostApiUsersAdminData, PostApiUsersAdminImportData, PostApiUsersAdminImportResponse, PostApiUserVerifyEmailCodeData, PutApiManagerEventlocationsByIdData, PutApiManagerEventlocationsByIdResponse, PutApiManagerEventsByIdData, PutApiManagerEventsByIdResponse, PutApiManagerReservationAllowanceData, PutApiManagerReservationAllowanceResponse, PutApiManagerSeatsByIdData, PutApiManagerSeatsByIdResponse, PutApiUsersAdminByIdData, PutApiUsersAdminByIdResponse, PutApiUsersMeData, PutApiUsersMeResponse } from '../types.gen';
+import { deleteApiManagerEventlocations, deleteApiManagerEvents, deleteApiManagerReservationAllowance, deleteApiManagerReservations, deleteApiManagerSeats, deleteApiUserReservations, deleteApiUsersAdminById, getApiManagerEventlocations, getApiManagerEvents, getApiManagerEventsById, getApiManagerReservationAllowance, getApiManagerReservationAllowanceById, getApiManagerReservationAllowanceEventByEventId, getApiManagerReservations, getApiManagerReservationsById, getApiManagerReservationsEventById, getApiManagerReservationsExportByEventIdCsv, getApiManagerReservationsExportByEventIdPdf, getApiManagerSeats, getApiManagerSeatsById, getApiUserEvents, getApiUserLocations, getApiUserReservations, getApiUserReservationsById, getApiUsersAdmin, getApiUsersManager, getApiUsersMe, getApiUsersRoles, type Options, postApiAuthLogin, postApiAuthLogout, postApiAuthRegister, postApiManagerEventlocations, postApiManagerEventlocationsImport, postApiManagerEventlocationsImportById, postApiManagerEvents, postApiManagerReservationAllowance, postApiManagerReservations, postApiManagerReservationsBlock, postApiManagerSeats, postApiUserResendEmailConfirmation, postApiUserReservations, postApiUsersAdmin, postApiUsersAdminImport, postApiUserVerifyEmailCode, putApiManagerEventlocationsById, putApiManagerEventsById, putApiManagerReservationAllowance, putApiManagerSeatsById, putApiUsersAdminById, putApiUsersMe } from '../sdk.gen';
+import type { DeleteApiManagerEventlocationsData, DeleteApiManagerEventlocationsResponse, DeleteApiManagerEventsData, DeleteApiManagerEventsResponse, DeleteApiManagerReservationAllowanceData, DeleteApiManagerReservationAllowanceResponse, DeleteApiManagerReservationsData, DeleteApiManagerReservationsResponse, DeleteApiManagerSeatsData, DeleteApiManagerSeatsResponse, DeleteApiUserReservationsData, DeleteApiUserReservationsResponse, DeleteApiUsersAdminByIdData, DeleteApiUsersAdminByIdResponse, GetApiManagerEventlocationsData, GetApiManagerEventsByIdData, GetApiManagerEventsData, GetApiManagerReservationAllowanceByIdData, GetApiManagerReservationAllowanceData, GetApiManagerReservationAllowanceEventByEventIdData, GetApiManagerReservationsByIdData, GetApiManagerReservationsData, GetApiManagerReservationsEventByIdData, GetApiManagerReservationsExportByEventIdCsvData, GetApiManagerReservationsExportByEventIdPdfData, GetApiManagerSeatsByIdData, GetApiManagerSeatsData, GetApiUserEventsData, GetApiUserLocationsData, GetApiUserReservationsByIdData, GetApiUserReservationsData, GetApiUsersAdminData, GetApiUsersManagerData, GetApiUsersMeData, GetApiUsersRolesData, PostApiAuthLoginData, PostApiAuthLogoutData, PostApiAuthRegisterData, PostApiManagerEventlocationsData, PostApiManagerEventlocationsImportByIdData, PostApiManagerEventlocationsImportByIdResponse, PostApiManagerEventlocationsImportData, PostApiManagerEventlocationsImportResponse, PostApiManagerEventlocationsResponse, PostApiManagerEventsData, PostApiManagerEventsResponse, PostApiManagerReservationAllowanceData, PostApiManagerReservationAllowanceResponse, PostApiManagerReservationsBlockData, PostApiManagerReservationsBlockResponse, PostApiManagerReservationsData, PostApiManagerReservationsResponse, PostApiManagerSeatsData, PostApiManagerSeatsResponse, PostApiUserResendEmailConfirmationData, PostApiUserResendEmailConfirmationResponse, PostApiUserReservationsData, PostApiUserReservationsResponse, PostApiUsersAdminData, PostApiUsersAdminImportData, PostApiUsersAdminImportResponse, PostApiUserVerifyEmailCodeData, PutApiManagerEventlocationsByIdData, PutApiManagerEventlocationsByIdResponse, PutApiManagerEventsByIdData, PutApiManagerEventsByIdResponse, PutApiManagerReservationAllowanceData, PutApiManagerReservationAllowanceResponse, PutApiManagerSeatsByIdData, PutApiManagerSeatsByIdResponse, PutApiUsersAdminByIdData, PutApiUsersAdminByIdResponse, PutApiUsersMeData, PutApiUsersMeResponse } from '../types.gen';
 
 /**
  * Login
@@ -47,6 +47,23 @@ export const postApiAuthRegisterMutation = (options?: Partial<Options<PostApiAut
     const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<PostApiAuthRegisterData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await postApiAuthRegister({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Delete Event Location
+ */
+export const deleteApiManagerEventlocationsMutation = (options?: Partial<Options<DeleteApiManagerEventlocationsData>>): UseMutationOptions<DeleteApiManagerEventlocationsResponse, DefaultError, Options<DeleteApiManagerEventlocationsData>> => {
+    const mutationOptions: UseMutationOptions<DeleteApiManagerEventlocationsResponse, DefaultError, Options<DeleteApiManagerEventlocationsData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await deleteApiManagerEventlocations({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -164,12 +181,12 @@ export const postApiManagerEventlocationsImportByIdMutation = (options?: Partial
 };
 
 /**
- * Delete Event Location
+ * Update Event Location
  */
-export const deleteApiManagerEventlocationsByIdMutation = (options?: Partial<Options<DeleteApiManagerEventlocationsByIdData>>): UseMutationOptions<DeleteApiManagerEventlocationsByIdResponse, DefaultError, Options<DeleteApiManagerEventlocationsByIdData>> => {
-    const mutationOptions: UseMutationOptions<DeleteApiManagerEventlocationsByIdResponse, DefaultError, Options<DeleteApiManagerEventlocationsByIdData>> = {
+export const putApiManagerEventlocationsByIdMutation = (options?: Partial<Options<PutApiManagerEventlocationsByIdData>>): UseMutationOptions<PutApiManagerEventlocationsByIdResponse, DefaultError, Options<PutApiManagerEventlocationsByIdData>> => {
+    const mutationOptions: UseMutationOptions<PutApiManagerEventlocationsByIdResponse, DefaultError, Options<PutApiManagerEventlocationsByIdData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await deleteApiManagerEventlocationsById({
+            const { data } = await putApiManagerEventlocationsById({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -181,12 +198,12 @@ export const deleteApiManagerEventlocationsByIdMutation = (options?: Partial<Opt
 };
 
 /**
- * Update Event Location
+ * Delete Event
  */
-export const putApiManagerEventlocationsByIdMutation = (options?: Partial<Options<PutApiManagerEventlocationsByIdData>>): UseMutationOptions<PutApiManagerEventlocationsByIdResponse, DefaultError, Options<PutApiManagerEventlocationsByIdData>> => {
-    const mutationOptions: UseMutationOptions<PutApiManagerEventlocationsByIdResponse, DefaultError, Options<PutApiManagerEventlocationsByIdData>> = {
+export const deleteApiManagerEventsMutation = (options?: Partial<Options<DeleteApiManagerEventsData>>): UseMutationOptions<DeleteApiManagerEventsResponse, DefaultError, Options<DeleteApiManagerEventsData>> => {
+    const mutationOptions: UseMutationOptions<DeleteApiManagerEventsResponse, DefaultError, Options<DeleteApiManagerEventsData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await putApiManagerEventlocationsById({
+            const { data } = await deleteApiManagerEvents({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -234,23 +251,6 @@ export const postApiManagerEventsMutation = (options?: Partial<Options<PostApiMa
     return mutationOptions;
 };
 
-/**
- * Delete Event
- */
-export const deleteApiManagerEventsByIdMutation = (options?: Partial<Options<DeleteApiManagerEventsByIdData>>): UseMutationOptions<DeleteApiManagerEventsByIdResponse, DefaultError, Options<DeleteApiManagerEventsByIdData>> => {
-    const mutationOptions: UseMutationOptions<DeleteApiManagerEventsByIdResponse, DefaultError, Options<DeleteApiManagerEventsByIdData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await deleteApiManagerEventsById({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
 export const getApiManagerEventsByIdQueryKey = (options: Options<GetApiManagerEventsByIdData>) => createQueryKey('getApiManagerEventsById', options);
 
 /**
@@ -278,6 +278,23 @@ export const putApiManagerEventsByIdMutation = (options?: Partial<Options<PutApi
     const mutationOptions: UseMutationOptions<PutApiManagerEventsByIdResponse, DefaultError, Options<PutApiManagerEventsByIdData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await putApiManagerEventsById({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Delete Reservation Allowance
+ */
+export const deleteApiManagerReservationAllowanceMutation = (options?: Partial<Options<DeleteApiManagerReservationAllowanceData>>): UseMutationOptions<DeleteApiManagerReservationAllowanceResponse, DefaultError, Options<DeleteApiManagerReservationAllowanceData>> => {
+    const mutationOptions: UseMutationOptions<DeleteApiManagerReservationAllowanceResponse, DefaultError, Options<DeleteApiManagerReservationAllowanceData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await deleteApiManagerReservationAllowance({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -362,23 +379,6 @@ export const getApiManagerReservationAllowanceEventByEventIdOptions = (options: 
     });
 };
 
-/**
- * Delete Reservation Allowance
- */
-export const deleteApiManagerReservationAllowanceByIdMutation = (options?: Partial<Options<DeleteApiManagerReservationAllowanceByIdData>>): UseMutationOptions<DeleteApiManagerReservationAllowanceByIdResponse, DefaultError, Options<DeleteApiManagerReservationAllowanceByIdData>> => {
-    const mutationOptions: UseMutationOptions<DeleteApiManagerReservationAllowanceByIdResponse, DefaultError, Options<DeleteApiManagerReservationAllowanceByIdData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await deleteApiManagerReservationAllowanceById({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
 export const getApiManagerReservationAllowanceByIdQueryKey = (options: Options<GetApiManagerReservationAllowanceByIdData>) => createQueryKey('getApiManagerReservationAllowanceById', options);
 
 /**
@@ -397,6 +397,23 @@ export const getApiManagerReservationAllowanceByIdOptions = (options: Options<Ge
         },
         queryKey: getApiManagerReservationAllowanceByIdQueryKey(options)
     });
+};
+
+/**
+ * Delete Reservation
+ */
+export const deleteApiManagerReservationsMutation = (options?: Partial<Options<DeleteApiManagerReservationsData>>): UseMutationOptions<DeleteApiManagerReservationsResponse, DefaultError, Options<DeleteApiManagerReservationsData>> => {
+    const mutationOptions: UseMutationOptions<DeleteApiManagerReservationsResponse, DefaultError, Options<DeleteApiManagerReservationsData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await deleteApiManagerReservations({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
 };
 
 export const getApiManagerReservationsQueryKey = (options?: Options<GetApiManagerReservationsData>) => createQueryKey('getApiManagerReservations', options);
@@ -513,23 +530,6 @@ export const getApiManagerReservationsExportByEventIdPdfOptions = (options: Opti
     });
 };
 
-/**
- * Delete Reservation
- */
-export const deleteApiManagerReservationsByIdMutation = (options?: Partial<Options<DeleteApiManagerReservationsByIdData>>): UseMutationOptions<DeleteApiManagerReservationsByIdResponse, DefaultError, Options<DeleteApiManagerReservationsByIdData>> => {
-    const mutationOptions: UseMutationOptions<DeleteApiManagerReservationsByIdResponse, DefaultError, Options<DeleteApiManagerReservationsByIdData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await deleteApiManagerReservationsById({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
 export const getApiManagerReservationsByIdQueryKey = (options: Options<GetApiManagerReservationsByIdData>) => createQueryKey('getApiManagerReservationsById', options);
 
 /**
@@ -548,6 +548,23 @@ export const getApiManagerReservationsByIdOptions = (options: Options<GetApiMana
         },
         queryKey: getApiManagerReservationsByIdQueryKey(options)
     });
+};
+
+/**
+ * Delete Manager Seat
+ */
+export const deleteApiManagerSeatsMutation = (options?: Partial<Options<DeleteApiManagerSeatsData>>): UseMutationOptions<DeleteApiManagerSeatsResponse, DefaultError, Options<DeleteApiManagerSeatsData>> => {
+    const mutationOptions: UseMutationOptions<DeleteApiManagerSeatsResponse, DefaultError, Options<DeleteApiManagerSeatsData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await deleteApiManagerSeats({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
 };
 
 export const getApiManagerSeatsQueryKey = (options?: Options<GetApiManagerSeatsData>) => createQueryKey('getApiManagerSeats', options);
@@ -577,23 +594,6 @@ export const postApiManagerSeatsMutation = (options?: Partial<Options<PostApiMan
     const mutationOptions: UseMutationOptions<PostApiManagerSeatsResponse, DefaultError, Options<PostApiManagerSeatsData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await postApiManagerSeats({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-/**
- * Delete Manager Seat
- */
-export const deleteApiManagerSeatsByIdMutation = (options?: Partial<Options<DeleteApiManagerSeatsByIdData>>): UseMutationOptions<DeleteApiManagerSeatsByIdResponse, DefaultError, Options<DeleteApiManagerSeatsByIdData>> => {
-    const mutationOptions: UseMutationOptions<DeleteApiManagerSeatsByIdResponse, DefaultError, Options<DeleteApiManagerSeatsByIdData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await deleteApiManagerSeatsById({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -699,6 +699,23 @@ export const postApiUserResendEmailConfirmationMutation = (options?: Partial<Opt
     return mutationOptions;
 };
 
+/**
+ * Delete Reservation
+ */
+export const deleteApiUserReservationsMutation = (options?: Partial<Options<DeleteApiUserReservationsData>>): UseMutationOptions<DeleteApiUserReservationsResponse, DefaultError, Options<DeleteApiUserReservationsData>> => {
+    const mutationOptions: UseMutationOptions<DeleteApiUserReservationsResponse, DefaultError, Options<DeleteApiUserReservationsData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await deleteApiUserReservations({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
 export const getApiUserReservationsQueryKey = (options?: Options<GetApiUserReservationsData>) => createQueryKey('getApiUserReservations', options);
 
 /**
@@ -726,23 +743,6 @@ export const postApiUserReservationsMutation = (options?: Partial<Options<PostAp
     const mutationOptions: UseMutationOptions<PostApiUserReservationsResponse, DefaultError, Options<PostApiUserReservationsData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await postApiUserReservations({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-/**
- * Delete Reservation
- */
-export const deleteApiUserReservationsByIdMutation = (options?: Partial<Options<DeleteApiUserReservationsByIdData>>): UseMutationOptions<DeleteApiUserReservationsByIdResponse, DefaultError, Options<DeleteApiUserReservationsByIdData>> => {
-    const mutationOptions: UseMutationOptions<DeleteApiUserReservationsByIdResponse, DefaultError, Options<DeleteApiUserReservationsByIdData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await deleteApiUserReservationsById({
                 ...options,
                 ...fnOptions,
                 throwOnError: true

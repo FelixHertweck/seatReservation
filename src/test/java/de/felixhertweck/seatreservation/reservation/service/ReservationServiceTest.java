@@ -337,8 +337,11 @@ class ReservationServiceTest {
     void deleteReservationForUser_Success() {
         when(reservationRepository.findByIdOptional(1L)).thenReturn(Optional.of(reservation));
         when(eventUserAllowanceRepository.findByUser(currentUser)).thenReturn(List.of(allowance));
+        when(eventUserAllowanceRepository.findByUserAndEventId(currentUser, event.id))
+                .thenReturn(Optional.of(allowance));
 
-        assertDoesNotThrow(() -> reservationService.deleteReservationForUser(1L, currentUser));
+        assertDoesNotThrow(
+                () -> reservationService.deleteReservationForUser(List.of(1L), currentUser));
         verify(eventUserAllowanceRepository, times(1)).persist(allowance);
         assertEquals(3, allowance.getReservationsAllowedCount());
     }
@@ -349,7 +352,8 @@ class ReservationServiceTest {
         when(eventUserAllowanceRepository.findByUser(currentUser))
                 .thenReturn(Collections.emptyList());
 
-        assertDoesNotThrow(() -> reservationService.deleteReservationForUser(1L, currentUser));
+        assertDoesNotThrow(
+                () -> reservationService.deleteReservationForUser(List.of(1L), currentUser));
         verify(eventUserAllowanceRepository, never()).persist(any(EventUserAllowance.class));
     }
 
@@ -359,7 +363,7 @@ class ReservationServiceTest {
 
         assertThrows(
                 ReservationNotFoundException.class,
-                () -> reservationService.deleteReservationForUser(1L, currentUser));
+                () -> reservationService.deleteReservationForUser(List.of(1L), currentUser));
     }
 
     @Test
@@ -368,6 +372,6 @@ class ReservationServiceTest {
 
         assertThrows(
                 SecurityException.class,
-                () -> reservationService.deleteReservationForUser(1L, otherUser));
+                () -> reservationService.deleteReservationForUser(List.of(1L), otherUser));
     }
 }

@@ -3,7 +3,7 @@
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
 import { getApiManagerEventlocationsResponseTransformer, getApiManagerEventsByIdResponseTransformer, getApiManagerEventsResponseTransformer, getApiManagerReservationAllowanceByIdResponseTransformer, getApiManagerReservationAllowanceEventByEventIdResponseTransformer, getApiManagerReservationAllowanceResponseTransformer, getApiManagerReservationsByIdResponseTransformer, getApiManagerReservationsEventByIdResponseTransformer, getApiManagerReservationsResponseTransformer, getApiManagerSeatsByIdResponseTransformer, getApiManagerSeatsResponseTransformer, getApiUserEventsResponseTransformer, getApiUserLocationsResponseTransformer, getApiUserReservationsByIdResponseTransformer, getApiUserReservationsResponseTransformer, getApiUsersAdminResponseTransformer, getApiUsersManagerResponseTransformer, getApiUsersMeResponseTransformer, postApiManagerEventlocationsImportByIdResponseTransformer, postApiManagerEventlocationsImportResponseTransformer, postApiManagerEventlocationsResponseTransformer, postApiManagerEventsResponseTransformer, postApiManagerReservationAllowanceResponseTransformer, postApiManagerReservationsBlockResponseTransformer, postApiManagerReservationsResponseTransformer, postApiManagerSeatsResponseTransformer, postApiUserReservationsResponseTransformer, postApiUsersAdminImportResponseTransformer, putApiManagerEventlocationsByIdResponseTransformer, putApiManagerEventsByIdResponseTransformer, putApiManagerReservationAllowanceResponseTransformer, putApiManagerSeatsByIdResponseTransformer, putApiUsersAdminByIdResponseTransformer, putApiUsersMeResponseTransformer } from './transformers.gen';
-import type { DeleteApiManagerEventlocationsByIdData, DeleteApiManagerEventlocationsByIdErrors, DeleteApiManagerEventlocationsByIdResponses, DeleteApiManagerEventsByIdData, DeleteApiManagerEventsByIdErrors, DeleteApiManagerEventsByIdResponses, DeleteApiManagerReservationAllowanceByIdData, DeleteApiManagerReservationAllowanceByIdErrors, DeleteApiManagerReservationAllowanceByIdResponses, DeleteApiManagerReservationsByIdData, DeleteApiManagerReservationsByIdErrors, DeleteApiManagerReservationsByIdResponses, DeleteApiManagerSeatsByIdData, DeleteApiManagerSeatsByIdErrors, DeleteApiManagerSeatsByIdResponses, DeleteApiUserReservationsByIdData, DeleteApiUserReservationsByIdErrors, DeleteApiUserReservationsByIdResponses, DeleteApiUsersAdminByIdData, DeleteApiUsersAdminByIdErrors, DeleteApiUsersAdminByIdResponses, GetApiManagerEventlocationsData, GetApiManagerEventlocationsErrors, GetApiManagerEventlocationsResponses, GetApiManagerEventsByIdData, GetApiManagerEventsByIdErrors, GetApiManagerEventsByIdResponses, GetApiManagerEventsData, GetApiManagerEventsErrors, GetApiManagerEventsResponses, GetApiManagerReservationAllowanceByIdData, GetApiManagerReservationAllowanceByIdErrors, GetApiManagerReservationAllowanceByIdResponses, GetApiManagerReservationAllowanceData, GetApiManagerReservationAllowanceErrors, GetApiManagerReservationAllowanceEventByEventIdData, GetApiManagerReservationAllowanceEventByEventIdErrors, GetApiManagerReservationAllowanceEventByEventIdResponses, GetApiManagerReservationAllowanceResponses, GetApiManagerReservationsByIdData, GetApiManagerReservationsByIdErrors, GetApiManagerReservationsByIdResponses, GetApiManagerReservationsData, GetApiManagerReservationsErrors, GetApiManagerReservationsEventByIdData, GetApiManagerReservationsEventByIdErrors, GetApiManagerReservationsEventByIdResponses, GetApiManagerReservationsExportByEventIdCsvData, GetApiManagerReservationsExportByEventIdCsvErrors, GetApiManagerReservationsExportByEventIdCsvResponses, GetApiManagerReservationsExportByEventIdPdfData, GetApiManagerReservationsExportByEventIdPdfErrors, GetApiManagerReservationsExportByEventIdPdfResponses, GetApiManagerReservationsResponses, GetApiManagerSeatsByIdData, GetApiManagerSeatsByIdErrors, GetApiManagerSeatsByIdResponses, GetApiManagerSeatsData, GetApiManagerSeatsErrors, GetApiManagerSeatsResponses, GetApiUserEventsData, GetApiUserEventsErrors, GetApiUserEventsResponses, GetApiUserLocationsData, GetApiUserLocationsErrors, GetApiUserLocationsResponses, GetApiUserReservationsByIdData, GetApiUserReservationsByIdErrors, GetApiUserReservationsByIdResponses, GetApiUserReservationsData, GetApiUserReservationsErrors, GetApiUserReservationsResponses, GetApiUsersAdminData, GetApiUsersAdminErrors, GetApiUsersAdminResponses, GetApiUsersManagerData, GetApiUsersManagerErrors, GetApiUsersManagerResponses, GetApiUsersMeData, GetApiUsersMeErrors, GetApiUsersMeResponses, GetApiUsersRolesData, GetApiUsersRolesErrors, GetApiUsersRolesResponses, PostApiAuthLoginData, PostApiAuthLoginErrors, PostApiAuthLoginResponses, PostApiAuthLogoutData, PostApiAuthLogoutResponses, PostApiAuthRegisterData, PostApiAuthRegisterErrors, PostApiAuthRegisterResponses, PostApiManagerEventlocationsData, PostApiManagerEventlocationsErrors, PostApiManagerEventlocationsImportByIdData, PostApiManagerEventlocationsImportByIdErrors, PostApiManagerEventlocationsImportByIdResponses, PostApiManagerEventlocationsImportData, PostApiManagerEventlocationsImportErrors, PostApiManagerEventlocationsImportResponses, PostApiManagerEventlocationsResponses, PostApiManagerEventsData, PostApiManagerEventsErrors, PostApiManagerEventsResponses, PostApiManagerReservationAllowanceData, PostApiManagerReservationAllowanceErrors, PostApiManagerReservationAllowanceResponses, PostApiManagerReservationsBlockData, PostApiManagerReservationsBlockErrors, PostApiManagerReservationsBlockResponses, PostApiManagerReservationsData, PostApiManagerReservationsErrors, PostApiManagerReservationsResponses, PostApiManagerSeatsData, PostApiManagerSeatsErrors, PostApiManagerSeatsResponses, PostApiUserResendEmailConfirmationData, PostApiUserResendEmailConfirmationErrors, PostApiUserResendEmailConfirmationResponses, PostApiUserReservationsData, PostApiUserReservationsErrors, PostApiUserReservationsResponses, PostApiUsersAdminData, PostApiUsersAdminErrors, PostApiUsersAdminImportData, PostApiUsersAdminImportErrors, PostApiUsersAdminImportResponses, PostApiUsersAdminResponses, PostApiUserVerifyEmailCodeData, PostApiUserVerifyEmailCodeErrors, PostApiUserVerifyEmailCodeResponses, PutApiManagerEventlocationsByIdData, PutApiManagerEventlocationsByIdErrors, PutApiManagerEventlocationsByIdResponses, PutApiManagerEventsByIdData, PutApiManagerEventsByIdErrors, PutApiManagerEventsByIdResponses, PutApiManagerReservationAllowanceData, PutApiManagerReservationAllowanceErrors, PutApiManagerReservationAllowanceResponses, PutApiManagerSeatsByIdData, PutApiManagerSeatsByIdErrors, PutApiManagerSeatsByIdResponses, PutApiUsersAdminByIdData, PutApiUsersAdminByIdErrors, PutApiUsersAdminByIdResponses, PutApiUsersMeData, PutApiUsersMeErrors, PutApiUsersMeResponses } from './types.gen';
+import type { DeleteApiManagerEventlocationsData, DeleteApiManagerEventlocationsErrors, DeleteApiManagerEventlocationsResponses, DeleteApiManagerEventsData, DeleteApiManagerEventsErrors, DeleteApiManagerEventsResponses, DeleteApiManagerReservationAllowanceData, DeleteApiManagerReservationAllowanceErrors, DeleteApiManagerReservationAllowanceResponses, DeleteApiManagerReservationsData, DeleteApiManagerReservationsErrors, DeleteApiManagerReservationsResponses, DeleteApiManagerSeatsData, DeleteApiManagerSeatsErrors, DeleteApiManagerSeatsResponses, DeleteApiUserReservationsData, DeleteApiUserReservationsErrors, DeleteApiUserReservationsResponses, DeleteApiUsersAdminByIdData, DeleteApiUsersAdminByIdErrors, DeleteApiUsersAdminByIdResponses, GetApiManagerEventlocationsData, GetApiManagerEventlocationsErrors, GetApiManagerEventlocationsResponses, GetApiManagerEventsByIdData, GetApiManagerEventsByIdErrors, GetApiManagerEventsByIdResponses, GetApiManagerEventsData, GetApiManagerEventsErrors, GetApiManagerEventsResponses, GetApiManagerReservationAllowanceByIdData, GetApiManagerReservationAllowanceByIdErrors, GetApiManagerReservationAllowanceByIdResponses, GetApiManagerReservationAllowanceData, GetApiManagerReservationAllowanceErrors, GetApiManagerReservationAllowanceEventByEventIdData, GetApiManagerReservationAllowanceEventByEventIdErrors, GetApiManagerReservationAllowanceEventByEventIdResponses, GetApiManagerReservationAllowanceResponses, GetApiManagerReservationsByIdData, GetApiManagerReservationsByIdErrors, GetApiManagerReservationsByIdResponses, GetApiManagerReservationsData, GetApiManagerReservationsErrors, GetApiManagerReservationsEventByIdData, GetApiManagerReservationsEventByIdErrors, GetApiManagerReservationsEventByIdResponses, GetApiManagerReservationsExportByEventIdCsvData, GetApiManagerReservationsExportByEventIdCsvErrors, GetApiManagerReservationsExportByEventIdCsvResponses, GetApiManagerReservationsExportByEventIdPdfData, GetApiManagerReservationsExportByEventIdPdfErrors, GetApiManagerReservationsExportByEventIdPdfResponses, GetApiManagerReservationsResponses, GetApiManagerSeatsByIdData, GetApiManagerSeatsByIdErrors, GetApiManagerSeatsByIdResponses, GetApiManagerSeatsData, GetApiManagerSeatsErrors, GetApiManagerSeatsResponses, GetApiUserEventsData, GetApiUserEventsErrors, GetApiUserEventsResponses, GetApiUserLocationsData, GetApiUserLocationsErrors, GetApiUserLocationsResponses, GetApiUserReservationsByIdData, GetApiUserReservationsByIdErrors, GetApiUserReservationsByIdResponses, GetApiUserReservationsData, GetApiUserReservationsErrors, GetApiUserReservationsResponses, GetApiUsersAdminData, GetApiUsersAdminErrors, GetApiUsersAdminResponses, GetApiUsersManagerData, GetApiUsersManagerErrors, GetApiUsersManagerResponses, GetApiUsersMeData, GetApiUsersMeErrors, GetApiUsersMeResponses, GetApiUsersRolesData, GetApiUsersRolesErrors, GetApiUsersRolesResponses, PostApiAuthLoginData, PostApiAuthLoginErrors, PostApiAuthLoginResponses, PostApiAuthLogoutData, PostApiAuthLogoutResponses, PostApiAuthRegisterData, PostApiAuthRegisterErrors, PostApiAuthRegisterResponses, PostApiManagerEventlocationsData, PostApiManagerEventlocationsErrors, PostApiManagerEventlocationsImportByIdData, PostApiManagerEventlocationsImportByIdErrors, PostApiManagerEventlocationsImportByIdResponses, PostApiManagerEventlocationsImportData, PostApiManagerEventlocationsImportErrors, PostApiManagerEventlocationsImportResponses, PostApiManagerEventlocationsResponses, PostApiManagerEventsData, PostApiManagerEventsErrors, PostApiManagerEventsResponses, PostApiManagerReservationAllowanceData, PostApiManagerReservationAllowanceErrors, PostApiManagerReservationAllowanceResponses, PostApiManagerReservationsBlockData, PostApiManagerReservationsBlockErrors, PostApiManagerReservationsBlockResponses, PostApiManagerReservationsData, PostApiManagerReservationsErrors, PostApiManagerReservationsResponses, PostApiManagerSeatsData, PostApiManagerSeatsErrors, PostApiManagerSeatsResponses, PostApiUserResendEmailConfirmationData, PostApiUserResendEmailConfirmationErrors, PostApiUserResendEmailConfirmationResponses, PostApiUserReservationsData, PostApiUserReservationsErrors, PostApiUserReservationsResponses, PostApiUsersAdminData, PostApiUsersAdminErrors, PostApiUsersAdminImportData, PostApiUsersAdminImportErrors, PostApiUsersAdminImportResponses, PostApiUsersAdminResponses, PostApiUserVerifyEmailCodeData, PostApiUserVerifyEmailCodeErrors, PostApiUserVerifyEmailCodeResponses, PutApiManagerEventlocationsByIdData, PutApiManagerEventlocationsByIdErrors, PutApiManagerEventlocationsByIdResponses, PutApiManagerEventsByIdData, PutApiManagerEventsByIdErrors, PutApiManagerEventsByIdResponses, PutApiManagerReservationAllowanceData, PutApiManagerReservationAllowanceErrors, PutApiManagerReservationAllowanceResponses, PutApiManagerSeatsByIdData, PutApiManagerSeatsByIdErrors, PutApiManagerSeatsByIdResponses, PutApiUsersAdminByIdData, PutApiUsersAdminByIdErrors, PutApiUsersAdminByIdResponses, PutApiUsersMeData, PutApiUsersMeErrors, PutApiUsersMeResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -54,6 +54,22 @@ export const postApiAuthRegister = <ThrowOnError extends boolean = false>(option
             'Content-Type': 'application/json',
             ...options.headers
         }
+    });
+};
+
+/**
+ * Delete Event Location
+ */
+export const deleteApiManagerEventlocations = <ThrowOnError extends boolean = false>(options?: Options<DeleteApiManagerEventlocationsData, ThrowOnError>) => {
+    return (options?.client ?? client).delete<DeleteApiManagerEventlocationsResponses, DeleteApiManagerEventlocationsErrors, ThrowOnError>({
+        security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ],
+        url: '/api/manager/eventlocations',
+        ...options
     });
 };
 
@@ -138,22 +154,6 @@ export const postApiManagerEventlocationsImportById = <ThrowOnError extends bool
 };
 
 /**
- * Delete Event Location
- */
-export const deleteApiManagerEventlocationsById = <ThrowOnError extends boolean = false>(options: Options<DeleteApiManagerEventlocationsByIdData, ThrowOnError>) => {
-    return (options.client ?? client).delete<DeleteApiManagerEventlocationsByIdResponses, DeleteApiManagerEventlocationsByIdErrors, ThrowOnError>({
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/eventlocations/{id}',
-        ...options
-    });
-};
-
-/**
  * Update Event Location
  */
 export const putApiManagerEventlocationsById = <ThrowOnError extends boolean = false>(options: Options<PutApiManagerEventlocationsByIdData, ThrowOnError>) => {
@@ -171,6 +171,22 @@ export const putApiManagerEventlocationsById = <ThrowOnError extends boolean = f
             'Content-Type': 'application/json',
             ...options.headers
         }
+    });
+};
+
+/**
+ * Delete Event
+ */
+export const deleteApiManagerEvents = <ThrowOnError extends boolean = false>(options?: Options<DeleteApiManagerEventsData, ThrowOnError>) => {
+    return (options?.client ?? client).delete<DeleteApiManagerEventsResponses, DeleteApiManagerEventsErrors, ThrowOnError>({
+        security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ],
+        url: '/api/manager/events',
+        ...options
     });
 };
 
@@ -213,22 +229,6 @@ export const postApiManagerEvents = <ThrowOnError extends boolean = false>(optio
 };
 
 /**
- * Delete Event
- */
-export const deleteApiManagerEventsById = <ThrowOnError extends boolean = false>(options: Options<DeleteApiManagerEventsByIdData, ThrowOnError>) => {
-    return (options.client ?? client).delete<DeleteApiManagerEventsByIdResponses, DeleteApiManagerEventsByIdErrors, ThrowOnError>({
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/events/{id}',
-        ...options
-    });
-};
-
-/**
  * Get Event By Id
  */
 export const getApiManagerEventsById = <ThrowOnError extends boolean = false>(options: Options<GetApiManagerEventsByIdData, ThrowOnError>) => {
@@ -263,6 +263,22 @@ export const putApiManagerEventsById = <ThrowOnError extends boolean = false>(op
             'Content-Type': 'application/json',
             ...options.headers
         }
+    });
+};
+
+/**
+ * Delete Reservation Allowance
+ */
+export const deleteApiManagerReservationAllowance = <ThrowOnError extends boolean = false>(options?: Options<DeleteApiManagerReservationAllowanceData, ThrowOnError>) => {
+    return (options?.client ?? client).delete<DeleteApiManagerReservationAllowanceResponses, DeleteApiManagerReservationAllowanceErrors, ThrowOnError>({
+        security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ],
+        url: '/api/manager/reservationAllowance',
+        ...options
     });
 };
 
@@ -343,22 +359,6 @@ export const getApiManagerReservationAllowanceEventByEventId = <ThrowOnError ext
 };
 
 /**
- * Delete Reservation Allowance
- */
-export const deleteApiManagerReservationAllowanceById = <ThrowOnError extends boolean = false>(options: Options<DeleteApiManagerReservationAllowanceByIdData, ThrowOnError>) => {
-    return (options.client ?? client).delete<DeleteApiManagerReservationAllowanceByIdResponses, DeleteApiManagerReservationAllowanceByIdErrors, ThrowOnError>({
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/reservationAllowance/{id}',
-        ...options
-    });
-};
-
-/**
  * Get Reservation Allowance By Id
  */
 export const getApiManagerReservationAllowanceById = <ThrowOnError extends boolean = false>(options: Options<GetApiManagerReservationAllowanceByIdData, ThrowOnError>) => {
@@ -371,6 +371,22 @@ export const getApiManagerReservationAllowanceById = <ThrowOnError extends boole
             }
         ],
         url: '/api/manager/reservationAllowance/{id}',
+        ...options
+    });
+};
+
+/**
+ * Delete Reservation
+ */
+export const deleteApiManagerReservations = <ThrowOnError extends boolean = false>(options?: Options<DeleteApiManagerReservationsData, ThrowOnError>) => {
+    return (options?.client ?? client).delete<DeleteApiManagerReservationsResponses, DeleteApiManagerReservationsErrors, ThrowOnError>({
+        security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ],
+        url: '/api/manager/reservations',
         ...options
     });
 };
@@ -484,22 +500,6 @@ export const getApiManagerReservationsExportByEventIdPdf = <ThrowOnError extends
 };
 
 /**
- * Delete Reservation
- */
-export const deleteApiManagerReservationsById = <ThrowOnError extends boolean = false>(options: Options<DeleteApiManagerReservationsByIdData, ThrowOnError>) => {
-    return (options.client ?? client).delete<DeleteApiManagerReservationsByIdResponses, DeleteApiManagerReservationsByIdErrors, ThrowOnError>({
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/reservations/{id}',
-        ...options
-    });
-};
-
-/**
  * Get Reservation By Id
  */
 export const getApiManagerReservationsById = <ThrowOnError extends boolean = false>(options: Options<GetApiManagerReservationsByIdData, ThrowOnError>) => {
@@ -512,6 +512,22 @@ export const getApiManagerReservationsById = <ThrowOnError extends boolean = fal
             }
         ],
         url: '/api/manager/reservations/{id}',
+        ...options
+    });
+};
+
+/**
+ * Delete Manager Seat
+ */
+export const deleteApiManagerSeats = <ThrowOnError extends boolean = false>(options?: Options<DeleteApiManagerSeatsData, ThrowOnError>) => {
+    return (options?.client ?? client).delete<DeleteApiManagerSeatsResponses, DeleteApiManagerSeatsErrors, ThrowOnError>({
+        security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ],
+        url: '/api/manager/seats',
         ...options
     });
 };
@@ -551,22 +567,6 @@ export const postApiManagerSeats = <ThrowOnError extends boolean = false>(option
             'Content-Type': 'application/json',
             ...options.headers
         }
-    });
-};
-
-/**
- * Delete Manager Seat
- */
-export const deleteApiManagerSeatsById = <ThrowOnError extends boolean = false>(options: Options<DeleteApiManagerSeatsByIdData, ThrowOnError>) => {
-    return (options.client ?? client).delete<DeleteApiManagerSeatsByIdResponses, DeleteApiManagerSeatsByIdErrors, ThrowOnError>({
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/seats/{id}',
-        ...options
     });
 };
 
@@ -654,6 +654,22 @@ export const postApiUserResendEmailConfirmation = <ThrowOnError extends boolean 
 };
 
 /**
+ * Delete Reservation
+ */
+export const deleteApiUserReservations = <ThrowOnError extends boolean = false>(options?: Options<DeleteApiUserReservationsData, ThrowOnError>) => {
+    return (options?.client ?? client).delete<DeleteApiUserReservationsResponses, DeleteApiUserReservationsErrors, ThrowOnError>({
+        security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ],
+        url: '/api/user/reservations',
+        ...options
+    });
+};
+
+/**
  * Get My Reservations
  */
 export const getApiUserReservations = <ThrowOnError extends boolean = false>(options?: Options<GetApiUserReservationsData, ThrowOnError>) => {
@@ -688,22 +704,6 @@ export const postApiUserReservations = <ThrowOnError extends boolean = false>(op
             'Content-Type': 'application/json',
             ...options.headers
         }
-    });
-};
-
-/**
- * Delete Reservation
- */
-export const deleteApiUserReservationsById = <ThrowOnError extends boolean = false>(options: Options<DeleteApiUserReservationsByIdData, ThrowOnError>) => {
-    return (options.client ?? client).delete<DeleteApiUserReservationsByIdResponses, DeleteApiUserReservationsByIdErrors, ThrowOnError>({
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/user/reservations/{id}',
-        ...options
     });
 };
 

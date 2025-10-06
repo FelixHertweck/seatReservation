@@ -93,7 +93,11 @@ class EventReservationAllowanceResourceTest {
             roles = {"MANAGER"})
     void deleteReservationAllowance_Success() {
         when(userSecurityContext.getCurrentUser()).thenReturn(new User());
-        given().when().delete("/api/manager/reservationAllowance/1").then().statusCode(204);
+        given().when()
+                .queryParam("ids", 1L)
+                .delete("/api/manager/reservationAllowance")
+                .then()
+                .statusCode(204);
     }
 
     @Test
@@ -101,7 +105,48 @@ class EventReservationAllowanceResourceTest {
             user = "testUser",
             roles = {"USER"})
     void deleteReservationAllowance_Forbidden() {
-        given().when().delete("/api/manager/reservationAllowance/1").then().statusCode(403);
+        given().when()
+                .queryParam("ids", 1L)
+                .delete("/api/manager/reservationAllowance")
+                .then()
+                .statusCode(403);
+    }
+
+    @Test
+    @TestSecurity(
+            user = "testUser",
+            roles = {"MANAGER"})
+    void deleteMultipleReservationAllowances_Success() {
+        when(userSecurityContext.getCurrentUser()).thenReturn(new User());
+        given().when()
+                .queryParam("ids", 1L)
+                .queryParam("ids", 2L)
+                .queryParam("ids", 3L)
+                .delete("/api/manager/reservationAllowance")
+                .then()
+                .statusCode(204);
+    }
+
+    @Test
+    @TestSecurity(
+            user = "testUser",
+            roles = {"MANAGER"})
+    void deleteReservationAllowance_NotFound() {
+        when(userSecurityContext.getCurrentUser()).thenReturn(new User());
+        given().when()
+                .queryParam("ids", 999L)
+                .delete("/api/manager/reservationAllowance")
+                .then()
+                .statusCode(204); // Allowance service may not throw if ID doesn't exist
+    }
+
+    @Test
+    void deleteReservationAllowance_Unauthorized() {
+        given().when()
+                .queryParam("ids", 1L)
+                .delete("/api/manager/reservationAllowance")
+                .then()
+                .statusCode(401);
     }
 
     @Test

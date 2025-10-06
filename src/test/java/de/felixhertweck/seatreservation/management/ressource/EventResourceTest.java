@@ -254,7 +254,11 @@ public class EventResourceTest {
             user = "manager",
             roles = {"MANAGER"})
     void testDeleteEventAsManager() {
-        given().when().delete("/api/manager/events/" + testEvent.getId()).then().statusCode(204);
+        given().when()
+                .queryParam("ids", testEvent.getId())
+                .delete("/api/manager/events")
+                .then()
+                .statusCode(204);
     }
 
     @Test
@@ -262,7 +266,11 @@ public class EventResourceTest {
             user = "admin",
             roles = {"ADMIN"})
     void testDeleteEventAsAdmin() {
-        given().when().delete("/api/manager/events/" + testEvent.getId()).then().statusCode(204);
+        given().when()
+                .queryParam("ids", testEvent.getId())
+                .delete("/api/manager/events")
+                .then()
+                .statusCode(204);
     }
 
     @Test
@@ -270,12 +278,90 @@ public class EventResourceTest {
             user = "manager2",
             roles = {"MANAGER"})
     void testDeleteEventAsOtherManagerForbidden() {
-        given().when().delete("/api/manager/events/" + testEvent.getId()).then().statusCode(403);
+        given().when()
+                .queryParam("ids", testEvent.getId())
+                .delete("/api/manager/events")
+                .then()
+                .statusCode(403);
     }
 
     @Test
     void testDeleteEventUnauthorized() {
-        given().when().delete("/api/manager/events/" + testEvent.getId()).then().statusCode(401);
+        given().when()
+                .queryParam("ids", testEvent.getId())
+                .delete("/api/manager/events")
+                .then()
+                .statusCode(401);
+    }
+
+    @Test
+    @TestSecurity(
+            user = "manager",
+            roles = {"MANAGER"})
+    void testDeleteMultipleEvents() {
+        // Create additional events for bulk delete test
+        var manager = userRepository.findByUsernameOptional("manager").orElseThrow();
+
+        var event2 = new Event();
+        event2.setName("Test Event 2");
+        event2.setDescription("Description 2");
+        event2.setStartTime(java.time.Instant.now().plus(java.time.Duration.ofDays(2)));
+        event2.setEndTime(java.time.Instant.now().plus(java.time.Duration.ofDays(2).plusHours(2)));
+        event2.setBookingStartTime(java.time.Instant.now().minus(java.time.Duration.ofDays(7)));
+        event2.setBookingDeadline(java.time.Instant.now().plus(java.time.Duration.ofDays(1)));
+        event2.setEventLocation(testLocation);
+        event2.setManager(manager);
+
+        var event3 = new Event();
+        event3.setName("Test Event 3");
+        event3.setDescription("Description 3");
+        event3.setStartTime(java.time.Instant.now().plus(java.time.Duration.ofDays(3)));
+        event3.setEndTime(java.time.Instant.now().plus(java.time.Duration.ofDays(3).plusHours(2)));
+        event3.setBookingStartTime(java.time.Instant.now().minus(java.time.Duration.ofDays(7)));
+        event3.setBookingDeadline(java.time.Instant.now().plus(java.time.Duration.ofDays(2)));
+        event3.setEventLocation(testLocation);
+        event3.setManager(manager);
+
+        seedAdditionalEvents(event2, event3);
+
+        // Delete multiple events
+        given().when()
+                .queryParam("ids", testEvent.getId())
+                .queryParam("ids", event2.getId())
+                .queryParam("ids", event3.getId())
+                .delete("/api/manager/events")
+                .then()
+                .statusCode(204);
+
+        // Verify all were deleted
+        given().when().get("/api/manager/events").then().statusCode(200).body("size()", is(0));
+    }
+
+    @Test
+    @TestSecurity(
+            user = "manager",
+            roles = {"MANAGER"})
+    void testDeleteMultipleEvents_PartialNotFound() {
+        given().when()
+                .queryParam("ids", testEvent.getId())
+                .queryParam("ids", 999L)
+                .delete("/api/manager/events")
+                .then()
+                .statusCode(404);
+    }
+
+    @Test
+    @TestSecurity(
+            user = "manager",
+            roles = {"MANAGER"})
+    void testDeleteEvent_NotFound() {
+        given().when().queryParam("ids", 999L).delete("/api/manager/events").then().statusCode(404);
+    }
+
+    @Transactional
+    void seedAdditionalEvents(Event event2, Event event3) {
+        eventRepository.persist(event2);
+        eventRepository.persist(event3);
     }
 
     @Test
@@ -286,7 +372,11 @@ public class EventResourceTest {
     void testDeleteEventDeletesAllowances() {
         assertEquals(1, eventUserAllowanceRepository.count());
 
-        given().when().delete("/api/manager/events/" + testEvent.getId()).then().statusCode(204);
+        given().when()
+                .queryParam("ids", testEvent.getId())
+                .delete("/api/manager/events")
+                .then()
+                .statusCode(204);
 
         assertEquals(0, eventRepository.count());
         assertEquals(0, eventUserAllowanceRepository.count());

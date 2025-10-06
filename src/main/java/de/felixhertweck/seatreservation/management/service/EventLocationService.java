@@ -231,42 +231,52 @@ public class EventLocationService {
      * Deletes an EventLocation. The deletion is only allowed if the currently authenticated user is
      * the manager of the EventLocation or has the ADMIN role.
      *
-     * @param id The ID of the EventLocation to be deleted.
+     * @param ids The IDs of the EventLocations to be deleted.
      * @throws IllegalArgumentException If the EventLocation with the specified ID is not found.
      * @throws SecurityException If the user is not authorized to delete the EventLocation.
      */
     @Transactional
-    public void deleteEventLocation(Long id, User manager)
+    public void deleteEventLocation(List<Long> ids, User manager)
             throws IllegalArgumentException, SecurityException {
-        LOG.debugf(
-                "Attempting to delete event location with ID: %d for manager: %s (ID: %d)",
-                id, manager.getUsername(), manager.getId());
-        EventLocation location =
-                eventLocationRepository
-                        .findByIdOptional(id)
-                        .orElseThrow(
-                                () -> {
-                                    LOG.warnf(
-                                            "EventLocation with ID %d not found for deletion by"
-                                                    + " manager: %s (ID: %d)",
-                                            id, manager.getUsername(), manager.getId());
-                                    return new EventLocationNotFoundException(
-                                            "EventLocation with id " + id + " not found");
-                                });
-
-        try {
-            validateManagerPermission(location, manager);
-        } catch (SecurityException e) {
+        if (ids == null || ids.isEmpty()) {
             LOG.warnf(
-                    "User %s (ID: %d) is not authorized to delete event location with ID %d.",
-                    manager.getUsername(), manager.getId(), id);
-            throw e;
+                    "No event locations to delete for manager: %s (ID: %d)",
+                    manager.getUsername(), manager.getId());
+            throw new IllegalArgumentException("No event location IDs provided for deletion.");
         }
 
-        eventLocationRepository.delete(location);
+        LOG.debugf(
+                "Attempting to delete event locations with IDs: %s for manager: %s (ID: %d)",
+                ids, manager.getUsername(), manager.getId());
+
+        for (Long id : ids) {
+            EventLocation location =
+                    eventLocationRepository
+                            .findByIdOptional(id)
+                            .orElseThrow(
+                                    () -> {
+                                        LOG.warnf(
+                                                "EventLocation with ID %d not found for deletion by"
+                                                        + " manager: %s (ID: %d)",
+                                                id, manager.getUsername(), manager.getId());
+                                        return new EventLocationNotFoundException(
+                                                "EventLocation with id " + id + " not found");
+                                    });
+
+            try {
+                validateManagerPermission(location, manager);
+            } catch (SecurityException e) {
+                LOG.warnf(
+                        "User %s (ID: %d) is not authorized to delete event location with ID %d.",
+                        manager.getUsername(), manager.getId(), id);
+                throw e;
+            }
+
+            eventLocationRepository.delete(location);
+        }
         LOG.infof(
-                "Event location '%s' (ID: %d) deleted successfully by manager: %s (ID: %d)",
-                location.getName(), location.getId(), manager.getUsername(), manager.getId());
+                "Event locations %s deleted successfully by manager: %s",
+                ids, manager.getUsername());
     }
 
     /**

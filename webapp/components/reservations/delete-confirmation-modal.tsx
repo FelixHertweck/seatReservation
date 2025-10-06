@@ -15,14 +15,16 @@ interface DeleteConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  seatNumber?: string;
+  selectedCount: number;
+  seats: string[];
 }
 
 export function DeleteConfirmationModal({
   isOpen,
   onClose,
   onConfirm,
-  seatNumber,
+  selectedCount,
+  seats,
 }: DeleteConfirmationModalProps) {
   const t = useT();
 
@@ -30,12 +32,41 @@ export function DeleteConfirmationModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle>{t("reservationDeleteModal.title")}</DialogTitle>
+          <DialogTitle>
+            {selectedCount === 1
+              ? t("reservationDeleteModal.title")
+              : t("reservationDeleteModal.titleMultiple", {
+                  count: selectedCount,
+                })}
+          </DialogTitle>
           <DialogDescription>
-            {t("reservationDeleteModal.description", { seatNumber })}
+            {selectedCount === 1
+              ? t("reservationDeleteModal.description", {
+                  seatNumber: seats[0],
+                })
+              : t("reservationDeleteModal.descriptionMultiple", {
+                  count: selectedCount,
+                })}
           </DialogDescription>
+          {selectedCount > 1 && seats.length <= 10 && (
+            <div className="mt-2 text-sm">
+              <p className="font-medium mb-1">
+                {t("reservationDeleteModal.seatsToDelete")}:
+              </p>
+              <div className="flex flex-wrap gap-1">
+                {seats.map((seat, index) => (
+                  <span
+                    key={index}
+                    className="bg-secondary text-secondary-foreground px-2 py-0.5 rounded text-xs"
+                  >
+                    {seat}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </DialogHeader>
-        <DialogFooter>
+        <DialogFooter className="gap-2">
           <Button variant="outline" onClick={onClose}>
             {t("reservationDeleteModal.cancelButton")}
           </Button>

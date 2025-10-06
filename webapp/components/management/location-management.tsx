@@ -10,6 +10,7 @@ import {
   Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -50,7 +51,7 @@ export interface LocationManagementProps {
     id: bigint,
     location: EventLocationRequestDto,
   ) => Promise<EventLocationResponseDto>;
-  deleteLocation: (id: bigint) => Promise<unknown>;
+  deleteLocation: (ids: bigint[]) => Promise<unknown>;
   importLocationWithSeats: (
     data: ImportEventLocationDto,
   ) => Promise<EventLocationResponseDto>;
@@ -85,6 +86,7 @@ export function LocationManagement({
   const [isCreating, setIsCreating] = useState(false);
   const [currentFilters, setCurrentFilters] =
     useState<Record<string, string>>(initialFilter);
+  const [selectedIds, setSelectedIds] = useState<Set<bigint>>(new Set());
 
   useEffect(() => {
     setCurrentFilters(initialFilter);
@@ -145,6 +147,7 @@ export function LocationManagement({
     setSelectedLocation(location);
     setIsCreating(false);
     setIsModalOpen(true);
+    setSelectedIds(new Set());
   };
 
   const handleDeleteLocation = async (location: EventLocationResponseDto) => {
@@ -154,7 +157,8 @@ export function LocationManagement({
         t("locationManagement.confirmDelete", { locationName: location.name }),
       )
     ) {
-      await deleteLocation(BigInt(location.id));
+      await deleteLocation([location.id]);
+      setSelectedIds(new Set());
     }
   };
 
@@ -204,6 +208,49 @@ export function LocationManagement({
     URL.revokeObjectURL(url);
   };
 
+  const handleSelectAll = (paginatedData: EventLocationResponseDto[]) => {
+    const newSelectedIds = new Set(selectedIds);
+    const allSelected = paginatedData.every((location) =>
+      location.id ? selectedIds.has(location.id) : false,
+    );
+
+    if (allSelected) {
+      paginatedData.forEach((location) => {
+        if (location.id) newSelectedIds.delete(location.id);
+      });
+    } else {
+      paginatedData.forEach((location) => {
+        if (location.id) newSelectedIds.add(location.id);
+      });
+    }
+
+    setSelectedIds(newSelectedIds);
+  };
+
+  const handleToggleSelect = (id: bigint) => {
+    const newSelectedIds = new Set(selectedIds);
+    if (newSelectedIds.has(id)) {
+      newSelectedIds.delete(id);
+    } else {
+      newSelectedIds.add(id);
+    }
+    setSelectedIds(newSelectedIds);
+  };
+
+  const handleDeleteSelected = async () => {
+    if (
+      selectedIds.size > 0 &&
+      confirm(
+        t("locationManagement.confirmDeleteMultiple", {
+          count: selectedIds.size,
+        }),
+      )
+    ) {
+      await deleteLocation(Array.from(selectedIds));
+      setSelectedIds(new Set());
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -217,6 +264,16 @@ export function LocationManagement({
             </CardDescription>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto shrink-0">
+            {selectedIds.size > 0 && (
+              <Button
+                variant="destructive"
+                onClick={handleDeleteSelected}
+                className="w-full sm:w-auto"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                {selectedIds.size}
+              </Button>
+            )}
             <Button
               variant="outline"
               onClick={handleImportLocation}
@@ -262,9 +319,25 @@ export function LocationManagement({
             {(paginatedData) => (
               <>
                 <div className="hidden md:block overflow-x-auto">
+                  <div className="mb-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleSelectAll(paginatedData)}
+                    >
+                      {paginatedData.every((location) =>
+                        location.id ? selectedIds.has(location.id) : false,
+                      )
+                        ? t("locationManagement.deselectAll")
+                        : t("locationManagement.selectAll")}
+                    </Button>
+                  </div>
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead className="w-12">
+                          {t("locationManagement.tableHeaderSelect")}
+                        </TableHead>
                         <TableHead>
                           {t("locationManagement.tableHeaderName")}
                         </TableHead>
@@ -292,6 +365,9 @@ export function LocationManagement({
                       {isLoading
                         ? Array.from({ length: 8 }).map((_, index) => (
                             <TableRow key={index}>
+                              <TableCell>
+                                <Skeleton className="h-4 w-4" />
+                              </TableCell>
                               <TableCell>
                                 <Skeleton className="h-4 w-32" />
                               </TableCell>
@@ -333,6 +409,19 @@ export function LocationManagement({
 
                             return (
                               <TableRow key={location.id?.toString()}>
+                                <TableCell>
+                                  <Checkbox
+                                    checked={
+                                      location.id
+                                        ? selectedIds.has(location.id)
+                                        : false
+                                    }
+                                    onCheckedChange={() =>
+                                      location.id &&
+                                      handleToggleSelect(location.id)
+                                    }
+                                  />
+                                </TableCell>
                                 <TableCell className="font-medium">
                                   {location.name}
                                 </TableCell>
@@ -437,18 +526,27 @@ export function LocationManagement({
                             key={location.id?.toString()}
                             className="overflow-hidden"
                           >
-                            <CardHeader className="pb-3">
-                              <div className="flex items-start justify-between gap-2 min-w-0">
-                                <div className="flex-1 min-w-0">
-                                  <CardTitle className="text-base break-words">
-                                    {location.name}
-                                  </CardTitle>
-                                  {location.address && (
-                                    <CardDescription className="text-sm mt-1 break-words">
-                                      {location.address}
-                                    </CardDescription>
-                                  )}
-                                </div>
+                            <CardHeader className="pb-3 flex flex-row items-start space-x-3 space-y-0">
+                              <Checkbox
+                                checked={
+                                  location.id
+                                    ? selectedIds.has(location.id)
+                                    : false
+                                }
+                                onCheckedChange={() =>
+                                  location.id && handleToggleSelect(location.id)
+                                }
+                                className="mt-1"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <CardTitle className="text-base break-words">
+                                  {location.name}
+                                </CardTitle>
+                                {location.address && (
+                                  <CardDescription className="text-sm mt-1 break-words">
+                                    {location.address}
+                                  </CardDescription>
+                                )}
                               </div>
                             </CardHeader>
                             <CardContent className="space-y-3">

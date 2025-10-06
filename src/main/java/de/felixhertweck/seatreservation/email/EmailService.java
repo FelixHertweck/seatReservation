@@ -393,15 +393,27 @@ public class EmailService {
      * @param user The user to whom the email will be sent.
      * @param deletedReservations The list of deleted reservations.
      * @param activeReservations The list of active reservations.
+     * @param additionalMailAddress An optional email address to override the user's email.
      * @throws IOException If an I/O error occurs while sending the email.
      */
     public void sendUpdateReservationConfirmation(
-            User user, List<Reservation> deletedReservations, List<Reservation> activeReservations)
+            User user,
+            List<Reservation> deletedReservations,
+            List<Reservation> activeReservations,
+            String additionalMailAddress)
             throws IOException {
-        if (skipForNullOrEmptyAddress(user.getEmail())) {
-            return;
+        List<String> emailAddresses = new ArrayList<>();
+        if (!skipForNullOrEmptyAddress(user.getEmail())
+                && !skipForLocalhostAddress(user.getEmail())) {
+            emailAddresses.add(user.getEmail());
         }
-        if (skipForLocalhostAddress(user.getEmail())) {
+        if (!skipForNullOrEmptyAddress(additionalMailAddress)
+                && !skipForLocalhostAddress(additionalMailAddress)
+                && !emailAddresses.contains(additionalMailAddress)) {
+            emailAddresses.add(additionalMailAddress);
+        }
+        if (emailAddresses.isEmpty()) {
+            LOG.warn("No valid email addresses provided for update reservation confirmation.");
             return;
         }
 
@@ -493,6 +505,9 @@ public class EmailService {
                 activeSeatListHtml
                         .append("<li>")
                         .append(reservation.getSeat().getSeatNumber())
+                        .append(" (")
+                        .append(reservation.getSeat().getSeatRow())
+                        .append(")")
                         .append("</li>");
             }
             LOG.debugf("HTML list of seats generated: %s", activeSeatListHtml.toString());
@@ -501,7 +516,12 @@ public class EmailService {
 
         LOG.debug("Placeholders replaced in reservation email template.");
 
-        Mail mail = Mail.withHtml(user.getEmail(), EMAIL_HEADER_RESERVATION_UPDATE, htmlContent);
+        Mail mail =
+                Mail.withHtml(
+                        emailAddresses.getFirst(), EMAIL_HEADER_RESERVATION_UPDATE, htmlContent);
+        if (emailAddresses.size() > 1) {
+            emailAddresses.subList(1, emailAddresses.size()).forEach(mail::addCc);
+        }
         addBcc(mail);
         try {
             mailer.send(mail);
@@ -515,6 +535,20 @@ public class EmailService {
                     user.getEmail(),
                     user.id);
         }
+    }
+
+    /**
+     * Sends an update reservation confirmation email to the user.
+     *
+     * @param user The user to whom the email will be sent.
+     * @param deletedReservations The list of deleted reservations.
+     * @param activeReservations The list of active reservations.
+     * @throws IOException If an I/O error occurs while sending the email.
+     */
+    public void sendUpdateReservationConfirmation(
+            User user, List<Reservation> deletedReservations, List<Reservation> activeReservations)
+            throws IOException {
+        sendUpdateReservationConfirmation(user, deletedReservations, activeReservations, null);
     }
 
     /**
