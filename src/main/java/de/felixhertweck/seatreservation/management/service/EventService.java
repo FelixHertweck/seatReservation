@@ -170,6 +170,7 @@ public class EventService {
         event.setDescription(dto.getDescription());
         event.setStartTime(dto.getStartTime());
         event.setEndTime(dto.getEndTime());
+        event.setBookingStartTime(dto.getBookingStartTime());
         event.setBookingDeadline(dto.getBookingDeadline());
         event.setEventLocation(location);
         eventRepository.persist(event);
