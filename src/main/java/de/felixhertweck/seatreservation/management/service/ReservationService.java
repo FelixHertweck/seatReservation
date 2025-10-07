@@ -369,8 +369,14 @@ public class ReservationService {
                 throw new SecurityException("You are not allowed to delete this reservation.");
             }
 
-            deletedReservations.add(reservation);
             reservationRepository.delete(reservation);
+
+            if (reservation.getStatus() == ReservationStatus.RESERVED) {
+                LOG.debugf(
+                        "Adding reservation ID %d to deleted reservations for email notification.",
+                        reservation.id);
+                deletedReservations.add(reservation);
+            }
         }
 
         // Group by user and event
