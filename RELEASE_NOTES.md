@@ -1,3 +1,36 @@
+# Release 0.0.7
+
+This release focuses on improving the user experience by enhancing deletion functionalities, fixing several bugs related to event and reservation management, and refining the overall UI responsiveness.
+
+## New Features
+- **Reservation & Manager**: Enhanced deletions of reservation and manager objects with multi-select support, making it easier to manage multiple entries at once.
+
+## Fixes
+- **Reservation**: Ensured that reservation update notifications are only sent when the status is "reserved", reducing unnecessary notifications.
+- **Event Management**: The booking start time is now correctly updated when an event is modified.
+- **Export**: The CSV export for reservations now correctly includes the seat row and reservation status in the header.
+- **Authentication**: Updated the authentication system to handle cases where user email addresses may not be unique.
+- **Reservations**: Corrected an issue with handling selected reservation locations.
+- **Email**: Prevented duplicate email addresses in email recipients and set the default BCC address to null to avoid unintended recipients.
+
+## Refactored
+- **Profile**: The email verification process on the user profile page has been improved with clearer buttons and better styling on mobile devices.
+- **Manager**: Components in the manager section have been updated for better responsiveness and a more consistent user interface.
+- **Frontend**: Various styling improvements have been made across the frontend for a better visual experience.
+
+## Style
+- **Admin**: The admin components are now more responsive and have improved styling.
+- **SVG**: The styling for SVGs has been improved for better responsiveness and rendering.
+
+## Build
+- **Dependencies**: Bumped `@hey-api/openapi-ts` from 0.84.1 to 0.85.0 in /webapp.
+- **Dependencies**: Bumped `org.codehaus.mojo:exec-maven-plugin`.
+- **Dependencies**: Bumped `@types/node` from 24.6.1 to 24.7.0 in /webapp.
+- **Dependencies**: Bumped `react-dom` and `@types/react-dom` in /webapp.
+- **Dependencies**: Bumped `react-hook-form` from 7.63.0 to 7.64.0 in /webapp.
+- **Dependencies**: Bumped `eslint` from 9.36.0 to 9.37.0 in /webapp.
+
+---
 # Release 0.0.6
 
 This release introduces several new features, fixes, and improvements across the application, focusing on enhanced event and user management, improved export functionalities, and better UI/UX.

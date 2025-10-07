@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.0.7 - 2025-10-07
+
+### Added
+- **Reservation & Manager**: Enhanced deletions of reservation and manager objects with multi-select support.
+
+### Fixed
+- **Reservation**: Only send reservation update for reserved status.
+- **Event**: Update event also update booking start time.
+- **Export**: Add seat row to CSV export header and update tests.
+- **Export**: Include reservation status in CSV export header.
+- **Auth**: Update authentication cause email is not unique for user.
+- **Reservations**: Fix selected reservation location handling.
+- **Email**: Prevent duplicate email addresses in recipients and set default BCC address to null.
+
+### Refactored
+- **Profile**: Enhance email verification buttons and update email prompt style on mobile devices.
+- **Manager**: Enhance manager components for improved responsiveness and UI consistency.
+- **Frontend**: Enhance multiple frontend styles.
+
+### Style
+- **Admin**: Improve responsiveness and styling in admin components.
+- **SVG**: Improve SVG styling for better responsiveness.
+
+### Build
+- **Dependencies**: Bumped `@hey-api/openapi-ts` from 0.84.1 to 0.85.0 in /webapp.
+- **Dependencies**: Bumped `org.codehaus.mojo:exec-maven-plugin`.
+- **Dependencies**: Bumped `@types/node` from 24.6.1 to 24.7.0 in /webapp.
+- **Dependencies**: Bumped `react-dom` and `@types/react-dom` in /webapp.
+- **Dependencies**: Bumped `react-hook-form` from 7.63.0 to 7.64.0 in /webapp.
+- **Dependencies**: Bumped `eslint` from 9.36.0 to 9.37.0 in /webapp.
+
 ## 0.0.6 - 2025-10-01
 
 ### Added
