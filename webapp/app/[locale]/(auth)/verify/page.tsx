@@ -108,28 +108,6 @@ export default function VerifyEmailPage() {
     }
   };
 
-  if (isLoggedIn && user?.emailVerified) {
-    return (
-      <div className="flex min-h-screen w-full items-center justify-center bg-background">
-        <Card className="w-full max-w-md mx-4">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold">
-              {t("emailVerification.alreadyVerified")}
-            </CardTitle>
-            <CardDescription>
-              {t("emailVerification.emailAlreadyVerifiedInfo")}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Button onClick={handleContinue} className="w-full">
-              {t("emailVerification.continueButton")}
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   if (isLoggedIn && !user?.email) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center bg-background">
@@ -155,6 +133,8 @@ export default function VerifyEmailPage() {
     );
   }
 
+  const alreadyVerified = isLoggedIn && user?.emailVerified;
+
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-background">
       <Card className="w-full max-w-md mx-4">
@@ -170,6 +150,11 @@ export default function VerifyEmailPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {isLoggedIn && user?.emailVerified && (
+            <div className="mb-4 text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md p-3">
+              {t("emailVerification.alreadyVerified")}
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-4">
               <div className="flex justify-center">
@@ -200,29 +185,41 @@ export default function VerifyEmailPage() {
             <Button
               type="submit"
               className="w-full"
+              variant={alreadyVerified ? "outline" : "default"}
               disabled={isLoadingForm || verificationCode.length !== 6}
             >
               {isLoadingForm
                 ? t("emailVerification.verifying")
                 : t("emailVerification.verifyButton")}
             </Button>
+            {alreadyVerified && (
+              <div className="space-y-2">
+                <Button onClick={handleContinue} className="w-full">
+                  {t("emailVerification.continueButton")}
+                </Button>
+              </div>
+            )}
           </form>
-          <div className="mt-4 text-center text-sm space-y-2">
-            <button
-              onClick={handleResendCode}
-              className="text-primary hover:underline bg-transparent border-none cursor-pointer text-sm"
-            >
-              {t("emailVerification.resendCode")}
-            </button>
-          </div>
-          <div className="mt-4 text-center text-sm">
-            <Link
-              href={`/${locale}/profile`}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              {t("emailVerification.backToProfile")}
-            </Link>
-          </div>
+          {!alreadyVerified && (
+            <>
+              <div className="mt-4 text-center text-sm space-y-2">
+                <button
+                  onClick={handleResendCode}
+                  className="text-primary hover:underline bg-transparent border-none cursor-pointer text-sm"
+                >
+                  {t("emailVerification.resendCode")}
+                </button>
+              </div>
+              <div className="mt-4 text-center text-sm">
+                <Link
+                  href={`/${locale}/profile`}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  {t("emailVerification.backToProfile")}
+                </Link>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
     </div>

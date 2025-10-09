@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.userManagment.dto;
 
 import java.util.Set;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
@@ -29,17 +30,21 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 @RegisterForReflection
 public class UserProfileUpdateDTO {
     @NoHtmlSanitize
+    @NotNull(message = "email cannot be null")
     @Email(regexp = "^(|.+[@].+[\\\\.].+)$", message = "Invalid email format")
     private final String email;
 
+    @NotNull(message = "firstname cannot be null")
     private final String firstname;
 
+    @NotNull(message = "lastname cannot be null")
     private final String lastname;
 
     @Size(min = 8, message = "Password must be at least 8 characters long")
     @NoHtmlSanitize
     private final String password;
 
+    @NotNull(message = "tags cannot be null")
     private final Set<String> tags;
 
     public String getEmail() {
@@ -63,14 +68,10 @@ public class UserProfileUpdateDTO {
     }
 
     public UserProfileUpdateDTO(
-            String firstname,
-            String lastname,
-            String passwordHash,
-            String email,
-            Set<String> tags) {
+            String firstname, String lastname, String password, String email, Set<String> tags) {
         this.firstname = firstname;
         this.lastname = lastname;
-        this.password = passwordHash;
+        this.password = password;
         this.email = email;
         this.tags = tags;
     }

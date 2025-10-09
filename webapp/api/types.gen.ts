@@ -11,18 +11,19 @@ export type AdminUserCreationDto = {
     firstname: string;
     lastname: string;
     sendEmailVerification: boolean;
-    roles?: Array<string>;
-    tags?: Array<string>;
+    roles: Array<string>;
+    tags: Array<string>;
 };
 
 export type AdminUserUpdateDto = {
     email?: string;
-    sendEmailVerification?: boolean;
-    firstname?: string;
-    lastname?: string;
+    emailVerified: boolean;
+    sendEmailVerification: boolean;
+    firstname: string;
+    lastname: string;
     password?: string;
-    tags?: Array<string>;
-    roles?: Array<string>;
+    tags: Array<string>;
+    roles: Array<string>;
 };
 
 export type BlockSeatsRequestDto = {
@@ -220,11 +221,11 @@ export type UserEventResponseDto = {
 };
 
 export type UserProfileUpdateDto = {
-    email?: string;
-    firstname?: string;
-    lastname?: string;
+    email: string;
+    firstname: string;
+    lastname: string;
     password?: string;
-    tags?: Array<string>;
+    tags: Array<string>;
 };
 
 export type UserReservationResponseDto = {

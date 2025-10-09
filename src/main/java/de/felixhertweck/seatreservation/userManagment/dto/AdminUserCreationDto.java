@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.userManagment.dto;
 
 import java.util.Set;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
@@ -55,8 +56,11 @@ public class AdminUserCreationDto {
     @NotNull(message = "sendEmailVerification cannot be null")
     private final Boolean sendEmailVerification;
 
+    @NotNull(message = "roles cannot be null")
+    @NotEmpty(message = "roles cannot be empty")
     private Set<String> roles;
 
+    @NotNull(message = "tags cannot be null")
     private final Set<String> tags;
 
     public String getUsername() {

@@ -70,7 +70,7 @@ public class UserResourceTest {
                         "John",
                         "Doe",
                         Set.of("USER"),
-                        null));
+                        Set.of()));
         dtos.add(
                 new AdminUserCreationDto(
                         "testuser2",
@@ -80,7 +80,7 @@ public class UserResourceTest {
                         "Jane",
                         "Doe",
                         Set.of("MANAGER"),
-                        null));
+                        Set.of()));
 
         given().contentType("application/json")
                 .body(dtos)
@@ -104,7 +104,7 @@ public class UserResourceTest {
                         "John",
                         "Doe",
                         Set.of("USER"),
-                        null));
+                        Set.of()));
 
         given().contentType("application/json")
                 .body(dtos)
@@ -126,7 +126,7 @@ public class UserResourceTest {
                         "John",
                         "Doe",
                         Set.of("USER"),
-                        null));
+                        Set.of()));
 
         given().contentType("application/json")
                 .body(dtos)
@@ -150,7 +150,7 @@ public class UserResourceTest {
                         "John",
                         "Doe",
                         Set.of("USER"),
-                        null));
+                        Set.of()));
 
         given().contentType("application/json")
                 .body(dtos)
@@ -173,7 +173,7 @@ public class UserResourceTest {
                         "John",
                         "Doe",
                         Set.of("USER"),
-                        null));
+                        Set.of()));
         dtos.add(
                 new AdminUserCreationDto(
                         "existinguser",
@@ -183,7 +183,7 @@ public class UserResourceTest {
                         "Jane",
                         "Doe",
                         Set.of("USER"),
-                        null));
+                        Set.of()));
 
         given().contentType("application/json")
                 .body(
@@ -195,7 +195,7 @@ public class UserResourceTest {
                                 "John",
                                 "Doe",
                                 Set.of("USER"),
-                                null))
+                                Set.of()))
                 .when()
                 .post("/api/users/admin")
                 .then()

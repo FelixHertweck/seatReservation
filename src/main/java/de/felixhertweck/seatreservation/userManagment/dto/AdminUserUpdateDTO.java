@@ -21,6 +21,8 @@ package de.felixhertweck.seatreservation.userManagment.dto;
 
 import java.util.Set;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
 import io.quarkus.runtime.annotations.RegisterForReflection;
@@ -31,16 +33,25 @@ public class AdminUserUpdateDTO {
     @Email(regexp = "^(|.+[@].+[\\\\.].+)$", message = "Invalid email format")
     private final String email;
 
+    @NotNull(message = "emailVerified cannot be null")
+    private final Boolean emailVerified;
+
+    @NotNull(message = "sendEmailVerification cannot be null")
     private final Boolean sendEmailVerification;
 
+    @NotNull(message = "Firstname cannot be null")
     private final String firstname;
 
+    @NotNull(message = "Lastname cannot be null")
     private final String lastname;
 
     @NoHtmlSanitize private final String password;
 
+    @NotNull(message = "tags cannot be null")
     private final Set<String> tags;
 
+    @NotNull(message = "roles cannot be null")
+    @NotEmpty(message = "roles cannot be empty")
     private final Set<String> roles;
 
     public String getEmail() {
@@ -71,12 +82,17 @@ public class AdminUserUpdateDTO {
         return sendEmailVerification;
     }
 
+    public Boolean getEmailVerified() {
+        return emailVerified;
+    }
+
     public AdminUserUpdateDTO(
             String firstname,
             String lastname,
             String password,
             String email,
             Boolean sendEmailVerification,
+            Boolean emailVerified,
             Set<String> roles,
             Set<String> tags) {
         this.firstname = firstname;
@@ -84,6 +100,7 @@ public class AdminUserUpdateDTO {
         this.password = password;
         this.email = email;
         this.sendEmailVerification = sendEmailVerification;
+        this.emailVerified = emailVerified;
         this.roles = roles;
         this.tags = tags;
     }

@@ -328,9 +328,10 @@ public class UserServiceTest {
         final AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
                         "New",
+                        existingUser.getLastname(),
                         null,
-                        null,
-                        null,
+                        existingUser.getEmail(),
+                        false,
                         false,
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
@@ -369,10 +370,11 @@ public class UserServiceTest {
         existingUser.id = 1L;
         final AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
-                        null,
+                        existingUser.getFirstname(),
                         "New",
                         null,
-                        null,
+                        existingUser.getEmail(),
+                        false,
                         false,
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
@@ -411,10 +413,11 @@ public class UserServiceTest {
         existingUser.id = 1L;
         final AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
-                        null,
-                        null,
+                        existingUser.getFirstname(),
+                        existingUser.getLastname(),
                         "newpassword",
-                        null,
+                        existingUser.getEmail(),
+                        false,
                         false,
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
@@ -455,10 +458,11 @@ public class UserServiceTest {
         existingUser.id = 1L;
         final AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
-                        null,
-                        null,
+                        existingUser.getFirstname(),
+                        existingUser.getLastname(),
                         "newpassword",
-                        null,
+                        existingUser.getEmail(),
+                        false,
                         false,
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
@@ -492,10 +496,11 @@ public class UserServiceTest {
         existingUser.id = 1L;
         final AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
-                        null,
-                        null,
+                        existingUser.getFirstname(),
+                        existingUser.getLastname(),
                         "newpassword",
-                        null,
+                        existingUser.getEmail(),
+                        false,
                         false,
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
@@ -533,7 +538,14 @@ public class UserServiceTest {
         Set<String> newRoles = new HashSet<>(Arrays.asList(Roles.USER, Roles.ADMIN));
         final AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
-                        null, null, null, null, false, newRoles, Collections.emptySet());
+                        null,
+                        null,
+                        null,
+                        existingUser.getEmail(),
+                        false,
+                        false,
+                        newRoles,
+                        Collections.emptySet());
 
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
 
@@ -570,7 +582,8 @@ public class UserServiceTest {
                         "New",
                         "Name",
                         "newpass",
-                        null,
+                        existingUser.getEmail(),
+                        false,
                         false,
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
@@ -618,6 +631,7 @@ public class UserServiceTest {
                         null,
                         "new@example.com",
                         true,
+                        false,
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
 
@@ -660,6 +674,7 @@ public class UserServiceTest {
                         null,
                         null,
                         null,
+                        false,
                         false,
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
@@ -705,6 +720,7 @@ public class UserServiceTest {
                         null,
                         "duplicate@example.com",
                         true,
+                        false,
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
 
@@ -763,6 +779,7 @@ public class UserServiceTest {
                         null,
                         "new@example.com",
                         true,
+                        false,
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
 
@@ -817,7 +834,8 @@ public class UserServiceTest {
                         null,
                         null,
                         "new@example.com",
-                        false, // sendEmailVerification ist false
+                        false,
+                        false,
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
 
@@ -855,8 +873,9 @@ public class UserServiceTest {
                         null,
                         null,
                         null,
-                        "old@example.com", // E-Mail ist gleich
-                        true, // sendEmailVerification ist true
+                        "old@example.com",
+                        true,
+                        true,
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
 
@@ -1016,7 +1035,13 @@ public class UserServiceTest {
                         "User",
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
-        final UserProfileUpdateDTO dto = new UserProfileUpdateDTO("New", null, null, null, null);
+        final UserProfileUpdateDTO dto =
+                new UserProfileUpdateDTO(
+                        "New",
+                        "User",
+                        null,
+                        existingUser.getEmail(),
+                        Collections.singleton(Roles.USER));
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
@@ -1052,7 +1077,13 @@ public class UserServiceTest {
                         "Old",
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
-        final UserProfileUpdateDTO dto = new UserProfileUpdateDTO(null, "New", null, null, null);
+        final UserProfileUpdateDTO dto =
+                new UserProfileUpdateDTO(
+                        "John",
+                        "New",
+                        null,
+                        existingUser.getEmail(),
+                        Collections.singleton(Roles.USER));
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
@@ -1300,7 +1331,8 @@ public class UserServiceTest {
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
         final UserProfileUpdateDTO dto =
-                new UserProfileUpdateDTO(null, null, "newpassword", null, null);
+                new UserProfileUpdateDTO(
+                        "John", "Doe", "newpassword", "old@example.com", Collections.emptySet());
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
@@ -1324,7 +1356,7 @@ public class UserServiceTest {
                         "First1",
                         "Last1",
                         Set.of(Roles.USER),
-                        null);
+                        Set.of());
         AdminUserCreationDto dto2 =
                 new AdminUserCreationDto(
                         "user2",
@@ -1334,7 +1366,7 @@ public class UserServiceTest {
                         "First2",
                         "Last2",
                         Set.of(Roles.MANAGER),
-                        null);
+                        Set.of());
         dtos.add(dto1);
         dtos.add(dto2);
 
@@ -1392,7 +1424,7 @@ public class UserServiceTest {
                         "Invalid",
                         "User",
                         Set.of(Roles.USER),
-                        null); // Invalid username
+                        Set.of()); // Invalid username
         dtos.add(invalidDto);
 
         assertThrows(InvalidUserException.class, () -> userService.importUsers(dtos));
@@ -1413,7 +1445,7 @@ public class UserServiceTest {
                         "Existing",
                         "User",
                         Set.of(Roles.USER),
-                        null);
+                        Set.of());
         dtos.add(duplicateDto);
 
         when(userRepository.findByUsernameOptional("existinguser"))
@@ -1453,7 +1485,7 @@ public class UserServiceTest {
                         "First1",
                         "Last1",
                         Set.of(Roles.USER),
-                        null);
+                        Set.of());
         dtos.add(dto1);
 
         when(userRepository.findByUsernameOptional("user1")).thenReturn(Optional.empty());
