@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -198,24 +199,31 @@ public class UserService {
             String lastname,
             String password,
             Set<String> tags,
-            boolean sendEmailVerification) {
+            boolean sendEmailVerification,
+            boolean markEmailAsVerified) {
         LOG.debugf("Entering updateUserCore for user ID: %d", existingUser.id);
 
-        // Update email if provided and different
-        if (email != null && !email.trim().isEmpty() && !email.equals(existingUser.getEmail())) {
+        if (markEmailAsVerified != existingUser.isEmailVerified()) {
+            LOG.debugf(
+                    "Updating emailVerified for user ID %d from %s to %s",
+                    existingUser.id,
+                    existingUser.isEmailVerified().toString(),
+                    Boolean.toString(markEmailAsVerified));
+            existingUser.setEmailVerified(markEmailAsVerified);
+        }
+
+        if (!Objects.equals(email, existingUser.getEmail())) {
             LOG.debugf(
                     "Updating email for user ID %d from %s to %s",
                     existingUser.id, existingUser.getEmail(), email);
             existingUser.setEmail(email);
-            // Reset email verification status
-            existingUser.setEmailVerified(false);
+            existingUser.setEmailVerificationSent(false);
+            emailVerificationRepository.deleteByUserId(existingUser.id);
 
-            if (sendEmailVerification) {
-                // Delete existing email verification entry in a new transaction to avoid constraint
-                // violation
-                emailVerificationRepository.deleteByUserId(existingUser.id);
-
-                // Send new email confirmation
+            if (email != null
+                    && !email.trim().isEmpty()
+                    && !markEmailAsVerified
+                    && sendEmailVerification) {
                 try {
                     LOG.debugf(
                             "Sending email confirmation to %s for user ID %d due to email change.",
@@ -237,29 +245,46 @@ public class UserService {
                     throw new SendEmailException(
                             "Failed to send email confirmation: " + e.getMessage());
                 }
-            } else {
-                LOG.debug("Skipping email verification as per the flag.");
+            }
+        } else if (email != null
+                && !email.trim().isEmpty()
+                && !markEmailAsVerified
+                && sendEmailVerification) {
+            try {
+                LOG.debugf(
+                        "Resending email confirmation to %s for user ID %d.",
+                        existingUser.getEmail(), existingUser.id);
+                resendEmailConfirmation(existingUser.getUsername());
+                existingUser.setEmailVerificationSent(true);
+                LOG.debugf(
+                        "Email confirmation resent to %s for user ID: %d",
+                        existingUser.getEmail(), existingUser.id);
+            } catch (IOException e) {
+                LOG.errorf(
+                        e,
+                        "Failed to resend email confirmation to %s for user ID %d: %s",
+                        existingUser.getEmail(),
+                        existingUser.id,
+                        e.getMessage());
+                throw new SendEmailException(
+                        "Failed to resend email confirmation: " + e.getMessage());
             }
         }
 
-        // Update firstname if provided
-        if (firstname != null && !firstname.trim().isEmpty()) {
-            if (!firstname.equals(existingUser.getFirstname())) {
-                LOG.debugf(
-                        "Updating firstname for user ID %d from %s to %s",
-                        existingUser.id, existingUser.getFirstname(), firstname);
-                existingUser.setFirstname(firstname);
-            }
+        // Update firstname
+        if (!Objects.equals(firstname, existingUser.getFirstname())) {
+            LOG.debugf(
+                    "Updating firstname for user ID %d from %s to %s",
+                    existingUser.id, existingUser.getFirstname(), firstname);
+            existingUser.setFirstname(firstname);
         }
 
-        // Update lastname if provided
-        if (lastname != null && !lastname.trim().isEmpty()) {
-            if (!lastname.equals(existingUser.getLastname())) {
-                LOG.debugf(
-                        "Updating lastname for user ID %d from %s to %s",
-                        existingUser.id, existingUser.getLastname(), lastname);
-                existingUser.setLastname(lastname);
-            }
+        // Update lastname
+        if (!Objects.equals(lastname, existingUser.getLastname())) {
+            LOG.debugf(
+                    "Updating lastname for user ID %d from %s to %s",
+                    existingUser.id, existingUser.getLastname(), lastname);
+            existingUser.setLastname(lastname);
         }
 
         // Update password if provided
@@ -292,15 +317,13 @@ public class UserService {
             }
         }
 
-        if (tags != null) {
-            if (!tags.equals(existingUser.getTags())) {
-                LOG.debugf(
-                        "Updating tags for user ID %d from %s to %s",
-                        existingUser.id, existingUser.getTags(), tags);
-                existingUser.setTags(tags);
-            }
+        // Update tags if changed
+        if (!Objects.equals(tags, existingUser.getTags())) {
+            LOG.debugf(
+                    "Updating tags for user ID %d from %s to %s",
+                    existingUser.id, existingUser.getTags(), tags);
+            existingUser.setTags(tags);
         }
-
         LOG.debugf("Exiting updateUserCore for user ID: %d", existingUser.id);
     }
 
@@ -341,7 +364,8 @@ public class UserService {
                 user.getLastname(),
                 user.getPassword(),
                 user.getTags(),
-                user.getSendEmailVerification());
+                user.getSendEmailVerification(),
+                user.getEmailVerified());
 
         if (user.getRoles() != null) {
             LOG.debugf(
@@ -427,6 +451,10 @@ public class UserService {
                                             "User with username " + username + " not found.");
                                 });
 
+        boolean markEmailAsVerified =
+                existingUser.isEmailVerified()
+                        && Objects.equals(existingUser.getEmail(), userProfileUpdateDTO.getEmail());
+
         updateUserCore(
                 existingUser,
                 userProfileUpdateDTO.getEmail(),
@@ -434,7 +462,8 @@ public class UserService {
                 userProfileUpdateDTO.getLastname(),
                 userProfileUpdateDTO.getPassword(),
                 userProfileUpdateDTO.getTags(),
-                true);
+                true,
+                markEmailAsVerified);
 
         userRepository.persist(existingUser);
         LOG.infof("User profile for username %s updated successfully.", username);

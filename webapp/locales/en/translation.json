@@ -337,7 +337,9 @@
     "addButton": "Add",
     "cancelButton": "Cancel",
     "createUserButton": "Create User",
+    "createUserButtonLoading": "Creating...",
     "saveChangesButton": "Save Changes",
+    "saveChangesButtonLoading": "Saving...",
     "passwordPlaceholder": "New Password",
     "passwordUpdatePlaceholder": "Update Password",
     "passwordUpdateHint": "Password must be at least 8 characters long"

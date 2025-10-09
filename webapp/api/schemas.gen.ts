@@ -2,7 +2,7 @@
 
 export const AdminUserCreationDtoSchema = {
     type: 'object',
-    required: ['username', 'password', 'firstname', 'lastname', 'sendEmailVerification'],
+    required: ['username', 'password', 'firstname', 'lastname', 'sendEmailVerification', 'roles', 'tags'],
     properties: {
         username: {
             type: 'string',
@@ -28,7 +28,8 @@ export const AdminUserCreationDtoSchema = {
             uniqueItems: true,
             items: {
                 type: 'string'
-            }
+            },
+            minItems: 1
         },
         tags: {
             type: 'array',
@@ -45,6 +46,9 @@ export const AdminUserUpdateDTOSchema = {
     properties: {
         email: {
             type: 'string'
+        },
+        emailVerified: {
+            type: 'boolean'
         },
         sendEmailVerification: {
             type: 'boolean'
@@ -70,9 +74,11 @@ export const AdminUserUpdateDTOSchema = {
             uniqueItems: true,
             items: {
                 type: 'string'
-            }
+            },
+            minItems: 1
         }
-    }
+    },
+    required: ['emailVerified', 'sendEmailVerification', 'firstname', 'lastname', 'tags', 'roles']
 } as const;
 
 export const BlockSeatsRequestDTOSchema = {
@@ -696,6 +702,7 @@ export const UserEventResponseDTOSchema = {
 
 export const UserProfileUpdateDTOSchema = {
     type: 'object',
+    required: ['email', 'firstname', 'lastname', 'tags'],
     properties: {
         email: {
             type: 'string'

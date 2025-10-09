@@ -4,7 +4,7 @@
     "schemas" : {
       "AdminUserCreationDto" : {
         "type" : "object",
-        "required" : [ "username", "password", "firstname", "lastname", "sendEmailVerification" ],
+        "required" : [ "username", "password", "firstname", "lastname", "sendEmailVerification", "roles", "tags" ],
         "properties" : {
           "username" : {
             "type" : "string",
@@ -30,7 +30,8 @@
             "uniqueItems" : true,
             "items" : {
               "type" : "string"
-            }
+            },
+            "minItems" : 1
           },
           "tags" : {
             "type" : "array",
@@ -46,6 +47,9 @@
         "properties" : {
           "email" : {
             "type" : "string"
+          },
+          "emailVerified" : {
+            "type" : "boolean"
           },
           "sendEmailVerification" : {
             "type" : "boolean"
@@ -71,9 +75,11 @@
             "uniqueItems" : true,
             "items" : {
               "type" : "string"
-            }
+            },
+            "minItems" : 1
           }
-        }
+        },
+        "required" : [ "emailVerified", "sendEmailVerification", "firstname", "lastname", "tags", "roles" ]
       },
       "BlockSeatsRequestDTO" : {
         "type" : "object",
@@ -671,6 +677,7 @@
       },
       "UserProfileUpdateDTO" : {
         "type" : "object",
+        "required" : [ "email", "firstname", "lastname", "tags" ],
         "properties" : {
           "email" : {
             "type" : "string"

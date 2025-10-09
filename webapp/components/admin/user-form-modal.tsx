@@ -21,7 +21,9 @@ interface UserFormModalProps {
   user: UserDto | null;
   availableRoles: string[];
   isCreating: boolean;
-  onSubmit: (userData: AdminUserCreationDto | AdminUserUpdateDto) => void;
+  onSubmit: (
+    userData: AdminUserCreationDto | AdminUserUpdateDto,
+  ) => Promise<void>;
   onClose: () => void;
 }
 
@@ -48,6 +50,8 @@ export function UserFormModal({
   );
   const [tags, setTags] = useState<string[]>(user?.tags || []);
   const [newTag, setNewTag] = useState("");
+
+  const [isFormLoading, setIsFormLoading] = useState(false);
 
   const isPasswordTooShort =
     password.length > 0 && password.length < 8 && password !== "••••••••";
@@ -92,7 +96,9 @@ export function UserFormModal({
     setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    setIsFormLoading(true);
+
     let userData: AdminUserCreationDto | AdminUserUpdateDto;
 
     if (isCreating) {
@@ -105,6 +111,7 @@ export function UserFormModal({
         roles: selectedRoles,
         tags,
         sendEmailVerification,
+        emailVerified,
       };
     } else {
       userData = {
@@ -114,6 +121,7 @@ export function UserFormModal({
         roles: selectedRoles,
         tags,
         sendEmailVerification,
+        emailVerified,
       };
 
       if (password !== "••••••••") {
@@ -121,7 +129,9 @@ export function UserFormModal({
       }
     }
 
-    onSubmit(userData);
+    await onSubmit(userData);
+
+    setIsFormLoading(false);
   };
 
   return (
@@ -222,19 +232,23 @@ export function UserFormModal({
               className="col-span-3"
             />
           </div>
-          {!isCreating && (
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="emailVerified" className="text-right">
-                {t("userFormModal.verifiedLabel")}
-              </Label>
-              <Checkbox
-                id="emailVerified"
-                checked={emailVerified}
-                onCheckedChange={(checked) => setEmailVerified(!!checked)}
-                className="col-span-3"
-              />
-            </div>
-          )}
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="emailVerified" className="text-right">
+              {t("userFormModal.verifiedLabel")}
+            </Label>
+            <Checkbox
+              id="emailVerified"
+              checked={emailVerified}
+              onCheckedChange={(checked) => {
+                setEmailVerified(!!checked);
+                if (checked) {
+                  setSendEmailVerification(false);
+                }
+              }}
+              className="col-span-3"
+              disabled={sendEmailVerification}
+            />
+          </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="sendEmailVerification" className="text-right">
               {t("userFormModal.sendEmailVerificationLabel")}
@@ -242,9 +256,20 @@ export function UserFormModal({
             <Checkbox
               id="sendEmailVerification"
               checked={sendEmailVerification}
-              onCheckedChange={(checked) => setSendEmailVerification(!!checked)}
+              onCheckedChange={(checked) => {
+                setSendEmailVerification(!!checked);
+                if (checked) {
+                  setEmailVerified(false);
+                }
+              }}
               className="col-span-3"
+              aria-describedby="sendEmailVerification-desc"
+              disabled={emailVerified}
             />
+            {/* Visually hidden description for accessibility */}
+            <span id="sendEmailVerification-desc" className="sr-only">
+              {t("userFormModal.sendEmailVerificationDesc")}
+            </span>
           </div>
           <div className="grid grid-cols-4 items-start gap-4">
             <Label className="text-right pt-2">
@@ -259,6 +284,7 @@ export function UserFormModal({
                     onCheckedChange={(checked) =>
                       handleRoleChange(role, !!checked)
                     }
+                    aria-describedby="mutual-exclusivity-info"
                   />
                   <Label htmlFor={`role-${role}`}>{role}</Label>
                 </div>
@@ -296,8 +322,8 @@ export function UserFormModal({
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
                   placeholder={t("userFormModal.addTagPlaceholder")}
-                  onKeyPress={(e) => {
-                    if (e.key === "Enter") {
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
                       handleAddTag();
                     }
@@ -314,10 +340,17 @@ export function UserFormModal({
           <Button variant="outline" onClick={onClose}>
             {t("userFormModal.cancelButton")}
           </Button>
-          <Button onClick={handleSubmit}>
+          <Button
+            onClick={handleSubmit}
+            disabled={isFormLoading || isPasswordTooShort}
+          >
             {isCreating
-              ? t("userFormModal.createUserButton")
-              : t("userFormModal.saveChangesButton")}
+              ? isFormLoading
+                ? t("userFormModal.createUserButtonLoading")
+                : t("userFormModal.createUserButton")
+              : isFormLoading
+                ? t("userFormModal.saveChangesButtonLoading")
+                : t("userFormModal.saveChangesButton")}
           </Button>
         </DialogFooter>
       </DialogContent>
