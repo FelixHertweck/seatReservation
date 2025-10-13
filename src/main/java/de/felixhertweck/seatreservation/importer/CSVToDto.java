@@ -60,16 +60,15 @@ public class CSVToDto {
         }
 
         CSVFormat format =
-                CSVFormat.DEFAULT
-                        .builder()
+                CSVFormat.Builder.create(CSVFormat.DEFAULT)
                         .setDelimiter(';')
                         .setIgnoreSurroundingSpaces(true)
                         .setIgnoreEmptyLines(true)
                         .setTrim(true)
-                        .build();
+                        .get();
 
         try (Reader reader = Files.newBufferedReader(inputPath, StandardCharsets.UTF_8);
-                CSVParser csv = new CSVParser(reader, format)) {
+                CSVParser csv = format.parse(reader)) {
 
             Iterator<CSVRecord> it = csv.iterator();
             if (it.hasNext()) {
