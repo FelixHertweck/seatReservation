@@ -19,23 +19,31 @@
  */
 package de.felixhertweck.seatreservation.security.resource;
 
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.*;
 
 import de.felixhertweck.seatreservation.common.exception.DuplicateUserException;
 import de.felixhertweck.seatreservation.common.exception.InvalidUserException;
+import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.RefreshTokenRepository;
+import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.security.dto.LoginRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
+import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
 import de.felixhertweck.seatreservation.security.service.AuthService;
 import de.felixhertweck.seatreservation.security.service.TokenService;
+import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.security.TestSecurity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -45,10 +53,25 @@ public class AuthResourceTest {
 
     @InjectMock AuthService authService;
     @InjectMock TokenService tokenService;
+    @InjectMock UserSecurityContext userSecurityContext;
+
+    @Inject UserRepository userRepository;
+
+    @Inject RefreshTokenRepository refreshTokenRepository;
+
+    private User testUser;
 
     @BeforeEach
+    @Transactional
     void setUp() {
-        Mockito.reset(authService, tokenService);
+        Mockito.reset(authService, tokenService, userSecurityContext);
+
+        // Clean up refresh tokens
+        refreshTokenRepository.deleteAll();
+
+        // Use existing test user from import-test.sql
+        testUser = userRepository.findById(1L); // admin user
+        assertNotNull(testUser, "Test user should exist from import-test.sql");
     }
 
     @Test
@@ -57,7 +80,16 @@ public class AuthResourceTest {
         String password = "testpassword";
         String token = "mockedToken123";
 
-        Mockito.when(authService.authenticate(identifier, password)).thenReturn(token);
+        // Create a mock User object
+        User mockUser = Mockito.mock(User.class);
+        Mockito.when(mockUser.getUsername()).thenReturn(identifier);
+
+        // Mock the authenticate method to return the mock User
+        Mockito.when(authService.authenticate(identifier, password)).thenReturn(mockUser);
+
+        // Mock token generation
+        Mockito.when(tokenService.generateToken(mockUser)).thenReturn(token);
+        Mockito.when(tokenService.generateRefreshToken(mockUser)).thenReturn("refreshToken123");
 
         LoginRequestDTO loginRequest = new LoginRequestDTO();
         loginRequest.setIdentifier(identifier);
@@ -72,28 +104,46 @@ public class AuthResourceTest {
                         .httpOnly(true)
                         .secure(true)
                         .build();
-        Mockito.when(tokenService.createNewJwtCookie(token)).thenReturn(mockedCookie);
+        Mockito.when(tokenService.createNewJwtCookie(token, "jwt")).thenReturn(mockedCookie);
+
+        NewCookie mockedRefreshCookie =
+                new NewCookie.Builder("refreshToken")
+                        .value("refreshToken123")
+                        .path("/")
+                        .maxAge(60 * 60)
+                        .httpOnly(true)
+                        .secure(true)
+                        .build();
+        Mockito.when(tokenService.createNewRefreshTokenCookie("refreshToken123", "refreshToken"))
+                .thenReturn(mockedRefreshCookie);
+
+        NewCookie mockedRefreshTokenExpirationCookie =
+                new NewCookie.Builder("refreshToken_expiration")
+                        .value("expirationValue123")
+                        .path("/")
+                        .maxAge(60 * 60)
+                        .httpOnly(false)
+                        .secure(true)
+                        .build();
+        Mockito.when(tokenService.createStatusCookie("refreshToken123", "refreshToken_expiration"))
+                .thenReturn(mockedRefreshTokenExpirationCookie);
 
         Mockito.when(tokenService.getExpirationMinutes())
                 .thenReturn(60L); // Mock the expirationMinutes for 60 minutes
 
-        given().contentType(MediaType.APPLICATION_JSON)
-                .body(loginRequest)
-                .when()
-                .post("/api/auth/login")
-                .then()
-                .statusCode(Response.Status.OK.getStatusCode())
-                .header(
-                        "Set-Cookie",
-                        containsString("jwt=")) // Check for the presence of the jwt cookie in the
-                // Set-Cookie header
-                .header(
-                        "Set-Cookie",
-                        containsString(
-                                "Max-Age="
-                                        + (tokenService.getExpirationMinutes()
-                                                * 60))); // Check maxAge of the jwt cookie in the
-        // Set-Cookie header
+        io.restassured.response.Response response =
+                given().contentType(MediaType.APPLICATION_JSON)
+                        .body(loginRequest)
+                        .when()
+                        .post("/api/auth/login");
+
+        response.then().statusCode(Response.Status.OK.getStatusCode());
+
+        // Verify all three cookies are present in the response
+        String setCookieHeaders = response.getHeaders().getValues("Set-Cookie").toString();
+        assertTrue(setCookieHeaders.contains("jwt=" + token));
+        assertTrue(setCookieHeaders.contains("refreshToken=refreshToken123"));
+        assertTrue(setCookieHeaders.contains("refreshToken_expiration=expirationValue123"));
     }
 
     @Test
@@ -163,9 +213,51 @@ public class AuthResourceTest {
         registerRequest.setEmail("newuser@example.com");
         registerRequest.setPassword("securepassword");
 
-        Mockito.doAnswer(invocation -> null)
-                .when(authService)
-                .register(Mockito.any(RegisterRequestDTO.class));
+        // Create a mock User object
+        User mockUser = Mockito.mock(User.class);
+        Mockito.when(mockUser.getUsername()).thenReturn("newuser");
+
+        // Mock the register method to return the mock User
+        Mockito.when(authService.register(Mockito.any(RegisterRequestDTO.class)))
+                .thenReturn(mockUser);
+
+        // Mock token generation
+        Mockito.when(tokenService.generateToken(mockUser)).thenReturn("accessToken123");
+        Mockito.when(tokenService.generateRefreshToken(mockUser)).thenReturn("refreshToken123");
+
+        // Mock cookie creation
+        NewCookie mockedAccessCookie =
+                new NewCookie.Builder("jwt")
+                        .value("accessToken123")
+                        .path("/")
+                        .maxAge(60 * 60)
+                        .httpOnly(true)
+                        .secure(true)
+                        .build();
+        Mockito.when(tokenService.createNewJwtCookie("accessToken123", "jwt"))
+                .thenReturn(mockedAccessCookie);
+
+        NewCookie mockedRefreshCookie =
+                new NewCookie.Builder("refreshToken")
+                        .value("refreshToken123")
+                        .path("/")
+                        .maxAge(60 * 60)
+                        .httpOnly(true)
+                        .secure(true)
+                        .build();
+        Mockito.when(tokenService.createNewRefreshTokenCookie("refreshToken123", "refreshToken"))
+                .thenReturn(mockedRefreshCookie);
+
+        NewCookie mockedRefreshTokenExpirationCookie =
+                new NewCookie.Builder("refreshToken_expiration")
+                        .value("expirationValue123")
+                        .path("/")
+                        .maxAge(60 * 60)
+                        .httpOnly(false)
+                        .secure(true)
+                        .build();
+        Mockito.when(tokenService.createStatusCookie("refreshToken123", "refreshToken_expiration"))
+                .thenReturn(mockedRefreshTokenExpirationCookie);
 
         given().contentType(MediaType.APPLICATION_JSON)
                 .body(registerRequest)
@@ -230,5 +322,285 @@ public class AuthResourceTest {
                 .post("/api/auth/register")
                 .then()
                 .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    void testRefreshToken_Success() throws Exception {
+        String refreshToken = "validRefreshToken123";
+        String newJwtToken = "newJwtToken456";
+        String newRefreshToken = "newRefreshToken789";
+
+        // Mock token service methods
+        Mockito.when(tokenService.validateRefreshToken(refreshToken)).thenReturn(testUser);
+        Mockito.when(tokenService.generateToken(testUser)).thenReturn(newJwtToken);
+        Mockito.when(tokenService.generateRefreshToken(testUser)).thenReturn(newRefreshToken);
+
+        // Mock cookie creation
+        NewCookie mockedJwtCookie =
+                new NewCookie.Builder("jwt")
+                        .value(newJwtToken)
+                        .path("/")
+                        .maxAge(60 * 60)
+                        .httpOnly(true)
+                        .secure(true)
+                        .build();
+        Mockito.when(tokenService.createNewJwtCookie(newJwtToken, "jwt"))
+                .thenReturn(mockedJwtCookie);
+
+        NewCookie mockedRefreshCookie =
+                new NewCookie.Builder("refreshToken")
+                        .value(newRefreshToken)
+                        .path("/")
+                        .maxAge(60 * 60 * 24 * 7)
+                        .httpOnly(true)
+                        .secure(true)
+                        .build();
+        Mockito.when(tokenService.createNewRefreshTokenCookie(newRefreshToken, "refreshToken"))
+                .thenReturn(mockedRefreshCookie);
+
+        NewCookie mockedExpirationCookie =
+                new NewCookie.Builder("refreshToken_expiration")
+                        .value("expirationValue")
+                        .path("/")
+                        .maxAge(60 * 60 * 24 * 7)
+                        .httpOnly(false)
+                        .secure(true)
+                        .build();
+        Mockito.when(tokenService.createStatusCookie(newRefreshToken, "refreshToken_expiration"))
+                .thenReturn(mockedExpirationCookie);
+
+        io.restassured.response.Response response =
+                given().cookie("refreshToken", refreshToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .when()
+                        .post("/api/auth/refresh");
+
+        response.then().statusCode(Response.Status.OK.getStatusCode());
+
+        // Verify cookies are present
+        String setCookieHeaders = response.getHeaders().getValues("Set-Cookie").toString();
+        assertTrue(
+                setCookieHeaders.contains("jwt=" + newJwtToken),
+                "JWT cookie not found or incorrect. Headers: " + setCookieHeaders);
+        assertTrue(
+                setCookieHeaders.contains("refreshToken=" + newRefreshToken),
+                "Refresh token cookie not found or incorrect. Headers: " + setCookieHeaders);
+        assertTrue(
+                setCookieHeaders.contains("refreshToken_expiration=expirationValue"),
+                "Refresh token expiration cookie not found or incorrect. Headers: "
+                        + setCookieHeaders);
+    }
+
+    @Test
+    void testRefreshToken_InvalidToken() throws Exception {
+        String invalidToken = "invalid.jwt.token";
+
+        // Mock token service to throw exception for invalid token
+        Mockito.when(tokenService.validateRefreshToken(invalidToken))
+                .thenThrow(new JwtInvalidException("Invalid refresh token"));
+
+        io.restassured.response.Response response =
+                given().cookie("refreshToken", invalidToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .when()
+                        .post("/api/auth/refresh");
+
+        response.then().statusCode(Response.Status.UNAUTHORIZED.getStatusCode());
+    }
+
+    @Test
+    void testRefreshToken_MissingToken() {
+        io.restassured.response.Response response =
+                given().contentType(MediaType.APPLICATION_JSON).when().post("/api/auth/refresh");
+
+        response.then().statusCode(Response.Status.UNAUTHORIZED.getStatusCode());
+    }
+
+    @Test
+    void testRefreshToken_EmptyToken() throws Exception {
+        String emptyToken = "";
+
+        // Mock token service to throw exception for empty token
+        Mockito.when(tokenService.validateRefreshToken(emptyToken))
+                .thenThrow(new JwtInvalidException("Empty refresh token"));
+
+        given().cookie("refreshToken", emptyToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .when()
+                .post("/api/auth/refresh")
+                .then()
+                .statusCode(Response.Status.UNAUTHORIZED.getStatusCode());
+    }
+
+    @Test
+    @Transactional
+    @TestSecurity(
+            user = "admin",
+            roles = {"ADMIN"})
+    void testLogoutAllDevices_Success() throws Exception {
+        // Mock the security context to return the test user when getCurrentUser is called
+        Mockito.when(userSecurityContext.getCurrentUser()).thenReturn(testUser);
+        Mockito.doNothing().when(tokenService).logoutAllDevices(testUser);
+
+        // Mock cookie clearing
+        NewCookie clearedJwtCookie =
+                new NewCookie.Builder("jwt").value("").path("/").maxAge(0).httpOnly(true).build();
+        Mockito.when(tokenService.createNewNullCookie("jwt", true)).thenReturn(clearedJwtCookie);
+
+        NewCookie clearedRefreshCookie =
+                new NewCookie.Builder("refreshToken")
+                        .value("")
+                        .path("/")
+                        .maxAge(0)
+                        .httpOnly(true)
+                        .build();
+        Mockito.when(tokenService.createNewNullCookie("refreshToken", true))
+                .thenReturn(clearedRefreshCookie);
+
+        NewCookie clearedExpirationCookie =
+                new NewCookie.Builder("refreshToken_expiration")
+                        .value("")
+                        .path("/")
+                        .maxAge(0)
+                        .httpOnly(false)
+                        .build();
+        Mockito.when(tokenService.createNewNullCookie("refreshToken_expiration", false))
+                .thenReturn(clearedExpirationCookie);
+
+        io.restassured.response.Response response =
+                given().contentType(MediaType.APPLICATION_JSON)
+                        .when()
+                        .post("/api/auth/logoutAllDevices");
+
+        response.then().statusCode(Response.Status.OK.getStatusCode());
+
+        // Verify cookies are cleared (maxAge=0)
+        String setCookieHeaders = response.getHeaders().getValues("Set-Cookie").toString();
+        assertTrue(
+                setCookieHeaders.contains("jwt=") && setCookieHeaders.contains("Max-Age=0"),
+                "JWT cookie should be cleared");
+        assertTrue(
+                setCookieHeaders.contains("refreshToken=")
+                        && setCookieHeaders.contains("Max-Age=0"),
+                "Refresh token cookie should be cleared");
+    }
+
+    @Test
+    void testLogoutAllDevices_WithoutAuth_Unauthorized() {
+        // Try to call logoutAllDevices without authentication
+        given().contentType(MediaType.APPLICATION_JSON)
+                .when()
+                .post("/api/auth/logoutAllDevices")
+                .then()
+                .statusCode(Response.Status.UNAUTHORIZED.getStatusCode());
+    }
+
+    @Test
+    @TestSecurity(
+            user = "testuser",
+            roles = {"USER"})
+    void testLogout_Success() {
+        Mockito.when(userSecurityContext.getCurrentUser()).thenReturn(testUser);
+        // Mock cookie clearing
+        NewCookie clearedJwtCookie =
+                new NewCookie.Builder("jwt").value("").path("/").maxAge(0).httpOnly(true).build();
+        Mockito.when(tokenService.createNewNullCookie("jwt", true)).thenReturn(clearedJwtCookie);
+
+        NewCookie clearedRefreshCookie =
+                new NewCookie.Builder("refreshToken")
+                        .value("")
+                        .path("/")
+                        .maxAge(0)
+                        .httpOnly(true)
+                        .build();
+        Mockito.when(tokenService.createNewNullCookie("refreshToken", true))
+                .thenReturn(clearedRefreshCookie);
+
+        NewCookie clearedExpirationCookie =
+                new NewCookie.Builder("refreshToken_expiration")
+                        .value("")
+                        .path("/")
+                        .maxAge(0)
+                        .httpOnly(false)
+                        .build();
+        Mockito.when(tokenService.createNewNullCookie("refreshToken_expiration", false))
+                .thenReturn(clearedExpirationCookie);
+
+        io.restassured.response.Response response =
+                given().cookie("refreshToken", "someRefreshToken")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .when()
+                        .post("/api/auth/logout");
+
+        response.then().statusCode(Response.Status.OK.getStatusCode());
+
+        // Verify cookies are cleared
+        String setCookieHeaders = response.getHeaders().getValues("Set-Cookie").toString();
+        assertTrue(
+                setCookieHeaders.contains("jwt=") && setCookieHeaders.contains("Max-Age=0"),
+                "JWT cookie should be cleared");
+        assertTrue(
+                setCookieHeaders.contains("refreshToken=")
+                        && setCookieHeaders.contains("Max-Age=0"),
+                "Refresh token cookie should be cleared");
+        assertTrue(
+                setCookieHeaders.contains("refreshToken_expiration=")
+                        && setCookieHeaders.contains("Max-Age=0"),
+                "Refresh token expiration cookie should be cleared");
+    }
+
+    @Test
+    @TestSecurity(
+            user = "testuser",
+            roles = {"USER"})
+    void testLogout_NoRefreshTokenCookie() {
+        Mockito.when(userSecurityContext.getCurrentUser()).thenReturn(testUser);
+        // Mock cookie clearing logic as it will still be called
+        NewCookie clearedJwtCookie =
+                new NewCookie.Builder("jwt").value("").path("/").maxAge(0).httpOnly(true).build();
+        Mockito.when(tokenService.createNewNullCookie("jwt", true)).thenReturn(clearedJwtCookie);
+
+        NewCookie clearedRefreshCookie =
+                new NewCookie.Builder("refreshToken")
+                        .value("")
+                        .path("/")
+                        .maxAge(0)
+                        .httpOnly(true)
+                        .build();
+        Mockito.when(tokenService.createNewNullCookie("refreshToken", true))
+                .thenReturn(clearedRefreshCookie);
+
+        NewCookie clearedExpirationCookie =
+                new NewCookie.Builder("refreshToken_expiration")
+                        .value("")
+                        .path("/")
+                        .maxAge(0)
+                        .httpOnly(false)
+                        .build();
+        Mockito.when(tokenService.createNewNullCookie("refreshToken_expiration", false))
+                .thenReturn(clearedExpirationCookie);
+
+        // When no cookies are sent
+        given().contentType(MediaType.APPLICATION_JSON)
+                .when()
+                .post("/api/auth/logout")
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode());
+    }
+
+    @Test
+    void testRefreshToken_ServiceThrowsException() throws Exception {
+        String refreshToken = "validRefreshToken123";
+
+        // Mock token service to throw a generic exception
+        Mockito.when(tokenService.validateRefreshToken(refreshToken))
+                .thenThrow(new RuntimeException("Database connection failed"));
+
+        given().cookie("refreshToken", refreshToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .when()
+                .post("/api/auth/refresh")
+                .then()
+                .statusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
     }
 }

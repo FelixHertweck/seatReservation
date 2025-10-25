@@ -52,7 +52,7 @@ import de.felixhertweck.seatreservation.userManagment.dto.AdminUserCreationDto;
 import de.felixhertweck.seatreservation.userManagment.dto.AdminUserUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
-import de.felixhertweck.seatreservation.userManagment.exceptions.TokenExpiredException;
+import de.felixhertweck.seatreservation.userManagment.exceptions.VerifyTokenExpiredException;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -1517,7 +1517,7 @@ public class UserServiceTest {
 
     // Tests for new verification code system
     @Test
-    void verifyEmailWithCode_Success() throws TokenExpiredException {
+    void verifyEmailWithCode_Success() throws VerifyTokenExpiredException {
         User user =
                 new User(
                         "testuser",
@@ -1606,7 +1606,8 @@ public class UserServiceTest {
 
         when(emailVerificationRepository.findByToken("123456")).thenReturn(emailVerification);
 
-        assertThrows(TokenExpiredException.class, () -> userService.verifyEmailWithCode("123456"));
+        assertThrows(
+                VerifyTokenExpiredException.class, () -> userService.verifyEmailWithCode("123456"));
 
         // Ensure user is not marked as verified
         assertFalse(user.isEmailVerified());

@@ -7,6 +7,7 @@ import { useT } from "@/lib/i18n/hooks";
 import {
   getApiUsersMeOptions,
   postApiAuthLoginMutation,
+  postApiAuthLogoutAllDevicesMutation,
   postApiAuthLogoutMutation,
   postApiAuthRegisterMutation,
   postApiUserResendEmailConfirmationMutation,
@@ -33,9 +34,6 @@ export function useAuth() {
 
   const { mutateAsync: loginMutation } = useMutation({
     ...postApiAuthLoginMutation(),
-    onSuccess: async () => {
-      await refetchUser();
-    },
     onError: (error: any) => {
       // Only show toast for non-401 errors, let 401s be handled by the component
       if (error?.response?.status !== 401) {
@@ -55,14 +53,12 @@ export function useAuth() {
   ) => {
     await loginMutation({ body: { identifier, password } });
     await queryClient.invalidateQueries();
+    await refetchUser();
     redirectUser(router, locale, returnToUrl);
   };
 
   const { mutateAsync: registerMutation } = useMutation({
     ...postApiAuthRegisterMutation(),
-    onSuccess: async () => {
-      await refetchUser();
-    },
   });
 
   const register = async (
@@ -71,6 +67,7 @@ export function useAuth() {
   ) => {
     await registerMutation({ body: userData });
     await queryClient.invalidateQueries();
+    await refetchUser();
     redirectUser(router, locale, returnToUrl);
   };
 
@@ -86,6 +83,22 @@ export function useAuth() {
 
   const logout = async () => {
     await logoutMutation({});
+    router.push(`/${locale}/`);
+    router.refresh();
+  };
+
+  const { mutateAsync: logoutAllMutation } = useMutation({
+    ...postApiAuthLogoutAllDevicesMutation(),
+    onSuccess: async () => {
+      toast({
+        title: t("logoutAll.success.title"),
+        description: t("logoutAll.success.description"),
+      });
+    },
+  });
+
+  const logoutAll = async () => {
+    await logoutAllMutation({});
     router.push(`/${locale}/`);
     router.refresh();
   };
@@ -125,6 +138,7 @@ export function useAuth() {
     login,
     register,
     logout,
+    logoutAll,
     verifyEmail,
     resendConfirmation,
   };

@@ -19,12 +19,13 @@
  */
 package de.felixhertweck.seatreservation.security.exceptions;
 
-public class AuthenticationFailedException extends RuntimeException {
-    public AuthenticationFailedException(String message) {
+/** Exception thrown when a JWT is invalid. */
+public class JwtInvalidException extends AuthenticationFailedException {
+    public JwtInvalidException(String message) {
         super(message);
     }
 
-    public AuthenticationFailedException(String message, Throwable cause) {
+    public JwtInvalidException(String message, Throwable cause) {
         super(message, cause);
     }
 }

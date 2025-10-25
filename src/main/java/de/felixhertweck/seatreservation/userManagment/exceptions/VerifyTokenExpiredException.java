@@ -19,8 +19,8 @@
  */
 package de.felixhertweck.seatreservation.userManagment.exceptions;
 
-public class TokenExpiredException extends RuntimeException {
-    public TokenExpiredException(String message) {
+public class VerifyTokenExpiredException extends RuntimeException {
+    public VerifyTokenExpiredException(String message) {
         super(message);
     }
 }

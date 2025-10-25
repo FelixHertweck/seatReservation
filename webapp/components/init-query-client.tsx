@@ -5,6 +5,26 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { client } from "@/api/client.gen";
 import { toast } from "@/hooks/use-toast";
 import { useLoginRequiredPopup } from "@/hooks/use-login-popup";
+import { getRefreshTokenExpiration } from "@/lib/refreshTokenExpirationCookie";
+
+// Promise cache for token refresh to prevent multiple simultaneous refresh calls
+let refreshPromise: Promise<Response> | null = null;
+
+const refreshToken = async (): Promise<Response> => {
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+
+  refreshPromise = fetch("/api/auth/refresh", {
+    method: "POST",
+    credentials: "include",
+  }).finally(() => {
+    // Clear the promise after it resolves/rejects so next refresh can be triggered
+    refreshPromise = null;
+  });
+
+  return refreshPromise;
+};
 
 export default function InitQueryClient({
   children,
@@ -17,7 +37,28 @@ export default function InitQueryClient({
     baseUrl: `/`,
     throwOnError: true,
     fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
-      const response = await fetch(input, init);
+      let response = await fetch(input, init);
+      const refreshTokenExpiration = getRefreshTokenExpiration();
+      if (
+        !response.ok &&
+        response.status === 401 &&
+        refreshTokenExpiration !== null &&
+        refreshTokenExpiration.getTime() > Date.now()
+      ) {
+        // Refresh token (uses cached promise if multiple requests fail simultaneously)
+        const refreshResponse = await refreshToken();
+        if (refreshResponse.ok) {
+          // Retry original request
+          response = await fetch(input, init);
+        } else {
+          console.error(
+            "Failed to refresh token:",
+            refreshResponse.status,
+            refreshResponse.statusText,
+          );
+          triggerLoginRequired();
+        }
+      }
       if (!response.ok) {
         const error = new Error(response.statusText) as any;
         error.response = { status: response.status };
@@ -51,6 +92,7 @@ export default function InitQueryClient({
         staleTime: 60000,
         refetchOnMount: true,
         refetchOnWindowFocus: true,
+        retryDelay: 1000,
         throwOnError(error) {
           const status = (error as any)?.response?.status;
           if (status !== 401) {
@@ -59,12 +101,12 @@ export default function InitQueryClient({
               description: error.message || "Please try again.",
               variant: "destructive",
             });
+            return false;
           }
-          return false;
+          return true;
         },
         retry: (failureCount, error) => {
-          const status = (error as any)?.response?.status;
-          if (status === 401 && failureCount > 0) {
+          if ((error as any)?.response?.status === 401) {
             triggerLoginRequired();
             return false;
           }
@@ -73,6 +115,14 @@ export default function InitQueryClient({
       },
 
       mutations: {
+        retryDelay: 1000,
+        retry: (failureCount, error) => {
+          if ((error as any)?.response?.status === 401) {
+            triggerLoginRequired();
+            return false;
+          }
+          return failureCount < 2;
+        },
         onError: (error: Error) => {
           // Try to extract message from error response body
           const errorResponse = (error as any)?.response;

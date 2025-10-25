@@ -19,9 +19,12 @@
  */
 package de.felixhertweck.seatreservation.security.resource;
 
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.CookieParam;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -29,10 +32,13 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 
+import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.security.dto.LoginRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
+import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
 import de.felixhertweck.seatreservation.security.service.AuthService;
 import de.felixhertweck.seatreservation.security.service.TokenService;
+import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.jboss.logging.Logger;
@@ -46,27 +52,45 @@ public class AuthResource {
 
     @Inject AuthService authService;
     @Inject TokenService tokenService;
+    @Inject UserSecurityContext userSecurityContext;
 
     @ConfigProperty(name = "jwt.cookie.secure", defaultValue = "false")
     boolean cookieSecure;
 
     @POST
     @Path("/login")
+    @PermitAll
     @APIResponse(responseCode = "200", description = "Login successful, JWT cookie set")
     @APIResponse(responseCode = "401", description = "Unauthorized: Invalid credentials")
-    public Response login(@Valid LoginRequestDTO loginRequest) {
+    public Response login(@Valid LoginRequestDTO loginRequest) throws JwtInvalidException {
         LOG.debugf("Received login request for user identifier: %s", loginRequest.getIdentifier());
         LOG.debugf("LoginRequestDTO: %s", loginRequest.toString());
-        String token =
+        User user =
                 authService.authenticate(loginRequest.getIdentifier(), loginRequest.getPassword());
 
-        NewCookie jwtCookie = tokenService.createNewJwtCookie(token);
-        LOG.debugf("User %s logged in successfully. JWT cookie set.", loginRequest.getIdentifier());
-        return Response.ok().cookie(jwtCookie).build();
+        String accessToken = tokenService.generateToken(user);
+        NewCookie jwtAccessCookie = tokenService.createNewJwtCookie(accessToken, "jwt");
+
+        String refreshToken = tokenService.generateRefreshToken(user);
+        NewCookie refreshTokenCookie =
+                tokenService.createNewRefreshTokenCookie(refreshToken, "refreshToken");
+
+        NewCookie refreshTokenExpirationCookie =
+                tokenService.createStatusCookie(refreshToken, "refreshToken_expiration");
+
+        LOG.debugf(
+                "User %s logged in successfully. JWT and refresh token cookies set.",
+                loginRequest.getIdentifier());
+        return Response.ok()
+                .cookie(jwtAccessCookie)
+                .cookie(refreshTokenCookie)
+                .cookie(refreshTokenExpirationCookie)
+                .build();
     }
 
     @POST
     @Path("/register")
+    @PermitAll
     @APIResponse(responseCode = "200", description = "Registration successful, JWT cookie set")
     @APIResponse(
             responseCode = "409",
@@ -75,29 +99,111 @@ public class AuthResource {
         LOG.debugf("Received registration request for username: %s", registerRequest.getUsername());
         LOG.debugf("RegisterRequestDTO: %s", registerRequest.toString());
 
-        String token = authService.register(registerRequest);
+        User user = authService.register(registerRequest);
 
-        NewCookie jwtCookie = tokenService.createNewJwtCookie(token);
+        String accessToken = tokenService.generateToken(user);
+        NewCookie jwtAccessCookie = tokenService.createNewJwtCookie(accessToken, "jwt");
 
-        LOG.debugf("User %s registered successfully.", registerRequest.getUsername());
+        String refreshToken = tokenService.generateRefreshToken(user);
+        NewCookie refreshTokenCookie =
+                tokenService.createNewRefreshTokenCookie(refreshToken, "refreshToken");
 
-        return Response.ok().cookie(jwtCookie).build();
+        NewCookie refreshTokenExpirationCookie =
+                tokenService.createStatusCookie(refreshToken, "refreshToken_expiration");
+
+        LOG.debugf(
+                "User %s registered successfully. JWT and refresh token cookies set.",
+                registerRequest.getUsername());
+
+        return Response.ok()
+                .cookie(jwtAccessCookie)
+                .cookie(refreshTokenCookie)
+                .cookie(refreshTokenExpirationCookie)
+                .build();
     }
 
     @POST
     @Path("/logout")
-    @APIResponse(responseCode = "200", description = "Logout successful, JWT cookie cleared")
+    @RolesAllowed({"USER", "ADMIN", "MANAGER"})
+    @APIResponse(
+            responseCode = "200",
+            description = "Logout successful, JWT and refresh token cookies cleared")
     public Response logout() {
         LOG.debugf("Received logout request.");
-        NewCookie jwtCookie =
-                new NewCookie.Builder("jwt")
-                        .value("")
-                        .path("/")
-                        .maxAge(0)
-                        .httpOnly(true)
-                        .secure(cookieSecure)
-                        .build();
-        LOG.debugf("User logged out successfully. JWT cookie cleared.");
-        return Response.ok().cookie(jwtCookie).build();
+
+        NewCookie jwtAccessCookie = tokenService.createNewNullCookie("jwt", true);
+        NewCookie refreshTokenCookie = tokenService.createNewNullCookie("refreshToken", true);
+        NewCookie refreshTokenExpirationCookie =
+                tokenService.createNewNullCookie("refreshToken_expiration", false);
+
+        LOG.debugf("User logged out successfully. JWT and refresh token cookies cleared.");
+        return Response.ok()
+                .cookie(jwtAccessCookie)
+                .cookie(refreshTokenCookie)
+                .cookie(refreshTokenExpirationCookie)
+                .build();
+    }
+
+    @POST
+    @Path("/logoutAllDevices")
+    @RolesAllowed({"USER", "ADMIN", "MANAGER"})
+    public Response logoutAllDevices() {
+        LOG.debugf("Received logout all devices request.");
+
+        User currentUser = userSecurityContext.getCurrentUser();
+        tokenService.logoutAllDevices(currentUser);
+
+        NewCookie jwtAccessCookie = tokenService.createNewNullCookie("jwt", true);
+        NewCookie refreshTokenCookie = tokenService.createNewNullCookie("refreshToken", true);
+        NewCookie refreshTokenExpirationCookie =
+                tokenService.createNewNullCookie("refreshToken_expiration", false);
+
+        LOG.debugf(
+                "User %s logged out from all devices successfully. JWT and refresh token cookies"
+                        + " cleared.",
+                currentUser.getUsername());
+
+        return Response.ok()
+                .cookie(jwtAccessCookie)
+                .cookie(refreshTokenCookie)
+                .cookie(refreshTokenExpirationCookie)
+                .build();
+    }
+
+    @POST
+    @Path("/refresh")
+    @PermitAll
+    @APIResponse(responseCode = "200", description = "Token refresh successful, new JWT cookie set")
+    @APIResponse(responseCode = "401", description = "Unauthorized: Invalid or expired token")
+    public Response refreshToken(@CookieParam("refreshToken") String refreshToken)
+            throws JwtInvalidException {
+        LOG.debugf("Received token refresh request.");
+
+        // Validate that refresh token is present
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            LOG.warn("Refresh token missing in request");
+            throw new JwtInvalidException("No refresh token provided");
+        }
+
+        User user = tokenService.validateRefreshToken(refreshToken);
+
+        String newAccessToken = tokenService.generateToken(user);
+        NewCookie jwtAccessCookie = tokenService.createNewJwtCookie(newAccessToken, "jwt");
+
+        String newRefreshToken = tokenService.generateRefreshToken(user);
+        NewCookie refreshTokenCookie =
+                tokenService.createNewRefreshTokenCookie(newRefreshToken, "refreshToken");
+
+        NewCookie refreshTokenExpirationCookie =
+                tokenService.createStatusCookie(newRefreshToken, "refreshToken_expiration");
+
+        LOG.debugf(
+                "Token refreshed successfully for user: %s. New JWT and refresh token cookies set.",
+                user.getUsername());
+        return Response.ok()
+                .cookie(jwtAccessCookie)
+                .cookie(refreshTokenCookie)
+                .cookie(refreshTokenExpirationCookie)
+                .build();
     }
 }

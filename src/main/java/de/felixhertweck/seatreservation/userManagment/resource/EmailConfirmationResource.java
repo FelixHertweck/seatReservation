@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.userManagment.resource;
 
+import java.io.IOException;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.core.MediaType;
@@ -26,10 +27,8 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.*;
 
-import de.felixhertweck.seatreservation.userManagment.dto.ErrorResponseDto;
 import de.felixhertweck.seatreservation.userManagment.dto.VerifyEmailCodeRequestDto;
 import de.felixhertweck.seatreservation.userManagment.dto.VerifyEmailCodeResponseDto;
-import de.felixhertweck.seatreservation.userManagment.exceptions.TokenExpiredException;
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -67,34 +66,14 @@ public class EmailConfirmationResource {
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(responseCode = "404", description = "User not found")
     @APIResponse(responseCode = "500", description = "Internal server error")
-    public Response resendEmailConfirmation() {
+    public Response resendEmailConfirmation() throws IOException {
         String username = securityContext.getUserPrincipal().getName();
-        try {
-            LOG.debugf(
-                    "Received POST request to /api/user/resend-email-confirmation for user: %s",
-                    username);
-            userService.resendEmailConfirmation(username);
-            LOG.infof("Email confirmation resent successfully for user: %s", username);
-            return Response.noContent().build();
-        } catch (NotFoundException e) {
-            LOG.warnf(
-                    e,
-                    "Resending email confirmation failed for user %s: User not found. Message: %s",
-                    username,
-                    e.getMessage());
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity(new ErrorResponseDto(e.getMessage()))
-                    .build();
-        } catch (Exception e) {
-            LOG.errorf(
-                    e,
-                    "Unexpected error during resending email confirmation for user %s: %s",
-                    username,
-                    e.getMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(new ErrorResponseDto("Internal server error"))
-                    .build();
-        }
+        LOG.debugf(
+                "Received POST request to /api/user/resend-email-confirmation for user: %s",
+                username);
+        userService.resendEmailConfirmation(username);
+        LOG.infof("Email confirmation resent successfully for user: %s", username);
+        return Response.noContent().build();
     }
 
     /**
@@ -114,29 +93,11 @@ public class EmailConfirmationResource {
     @APIResponse(responseCode = "400", description = "Invalid verification code")
     @APIResponse(responseCode = "410", description = "Verification code expired")
     public Response verifyEmailWithCode(@Valid VerifyEmailCodeRequestDto request) {
-        try {
-            LOG.debugf("Received POST request to /api/user/verify-email-code with code");
-            String email = userService.verifyEmailWithCode(request.getVerificationCode());
-            LOG.debugf("Email verified successfully: %s", email);
-            return Response.ok()
-                    .entity(new VerifyEmailCodeResponseDto("Email verified successfully", email))
-                    .build();
-        } catch (IllegalArgumentException e) {
-            LOG.warnf(e, "Email verification failed due to invalid argument: %s", e.getMessage());
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(new ErrorResponseDto(e.getMessage()))
-                    .build();
-        } catch (TokenExpiredException e) {
-            LOG.warnf(
-                    e, "Email verification failed: verification code expired: %s", e.getMessage());
-            return Response.status(Response.Status.GONE)
-                    .entity(new ErrorResponseDto(e.getMessage()))
-                    .build();
-        } catch (Exception e) {
-            LOG.errorf(e, "Unexpected error during email verification: %s", e.getMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(new ErrorResponseDto("Internal server error"))
-                    .build();
-        }
+        LOG.debugf("Received POST request to /api/user/verify-email-code with code");
+        String email = userService.verifyEmailWithCode(request.getVerificationCode());
+        LOG.debugf("Email verified successfully: %s", email);
+        return Response.ok()
+                .entity(new VerifyEmailCodeResponseDto("Email verified successfully", email))
+                .build();
     }
 }
