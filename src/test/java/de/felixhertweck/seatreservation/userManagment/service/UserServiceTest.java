@@ -52,6 +52,7 @@ import de.felixhertweck.seatreservation.userManagment.dto.AdminUserCreationDto;
 import de.felixhertweck.seatreservation.userManagment.dto.AdminUserUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
+import de.felixhertweck.seatreservation.userManagment.exceptions.VerificationCodeNotFoundException;
 import de.felixhertweck.seatreservation.userManagment.exceptions.VerifyTokenExpiredException;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import io.quarkus.test.InjectMock;
@@ -1579,7 +1580,8 @@ public class UserServiceTest {
         when(emailVerificationRepository.findByToken("123456")).thenReturn(null);
 
         assertThrows(
-                IllegalArgumentException.class, () -> userService.verifyEmailWithCode("123456"));
+                VerificationCodeNotFoundException.class,
+                () -> userService.verifyEmailWithCode("123456"));
     }
 
     @Test

@@ -47,6 +47,7 @@ import de.felixhertweck.seatreservation.userManagment.dto.AdminUserUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.exceptions.SendEmailException;
+import de.felixhertweck.seatreservation.userManagment.exceptions.VerificationCodeNotFoundException;
 import de.felixhertweck.seatreservation.userManagment.exceptions.VerifyTokenExpiredException;
 import de.felixhertweck.seatreservation.utils.SecurityUtils;
 import io.quarkus.elytron.security.common.BcryptUtil;
@@ -476,6 +477,7 @@ public class UserService {
      * @param verificationCode The 6-digit verification code to verify.
      * @return The email address of the user if verification is successful.
      * @throws IllegalArgumentException If the verification code is invalid.
+     * @throws VerificationCodeNotFoundException If the verification code is not found.
      * @throws VerifyTokenExpiredException If the verification code has expired.
      */
     @Transactional
@@ -499,7 +501,7 @@ public class UserService {
                 emailVerificationRepository.findByToken(verificationCode);
         if (emailVerification == null) {
             LOG.warnf("Email verification record not found for code: %s", verificationCode);
-            throw new IllegalArgumentException("Verification code not found");
+            throw new VerificationCodeNotFoundException("Verification code not found");
         }
         LOG.debugf("Email verification record found for code: %s", verificationCode);
 
