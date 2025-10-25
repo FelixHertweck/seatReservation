@@ -60,6 +60,8 @@ class SecurityUtilsTest {
     void generateRandomBytes_GeneratesRandomValues() {
         byte[] first = SecurityUtils.generateRandomBytes(16);
         byte[] second = SecurityUtils.generateRandomBytes(16);
+        // Arrays are reference types, so we use assertFalse with Arrays.equals
+        // to verify the byte contents are different
         assertFalse(
                 java.util.Arrays.equals(first, second),
                 "Consecutive calls should generate different random values");
