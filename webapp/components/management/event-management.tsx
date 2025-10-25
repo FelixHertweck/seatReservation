@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
+import { ColumnFilter } from "@/components/common/column-filter";
 import { EventFormModal } from "@/components/management/event-form-modal";
 import type {
   EventResponseDto,
@@ -29,6 +30,7 @@ import type {
 } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
+import { useColumnVisibility } from "@/hooks/use-column-visibility";
 
 export interface EventManagementProps {
   events: EventResponseDto[];
@@ -65,6 +67,28 @@ export function EventManagement({
   const [currentFilters, setCurrentFilters] =
     useState<Record<string, string>>(initialFilter);
   const [selectedIds, setSelectedIds] = useState<Set<bigint>>(new Set());
+
+  // Define column configuration
+  const columnConfig = [
+    { key: "select", label: t("eventManagement.tableHeaderSelect") },
+    { key: "name", label: t("eventManagement.tableHeaderName") },
+    { key: "description", label: t("eventManagement.tableHeaderDescription") },
+    { key: "startTime", label: t("eventManagement.tableHeaderStartTime") },
+    { key: "endTime", label: t("eventManagement.tableHeaderEndTime") },
+    {
+      key: "bookingStartTime",
+      label: t("eventManagement.tableHeaderBookingStartTime"),
+    },
+    {
+      key: "bookingDeadline",
+      label: t("eventManagement.tableHeaderBookingDeadline"),
+    },
+    { key: "location", label: t("eventManagement.tableHeaderLocation") },
+    { key: "actions", label: t("eventManagement.tableHeaderActions") },
+  ];
+
+  const { visibleColumns, toggleColumn, resetColumns, isColumnVisible } =
+    useColumnVisibility(columnConfig, "event-management-columns");
 
   useEffect(() => {
     setCurrentFilters(initialFilter);
@@ -219,22 +243,32 @@ export function EventManagement({
       </CardHeader>
 
       <CardContent>
-        <SearchAndFilter
-          onSearch={handleSearch}
-          onFilter={handleFilter}
-          filterOptions={[
-            {
-              key: "locationId",
-              label: t("eventManagement.locationFilterLabel"),
-              type: "select",
-              options: allLocations.map((loc) => ({
-                value: loc.id?.toString() || "",
-                label: loc.name || "",
-              })),
-            },
-          ]}
-          initialFilters={currentFilters}
-        />
+        <div className="flex gap-2 mb-4">
+          <div className="flex-1">
+            <SearchAndFilter
+              onSearch={handleSearch}
+              onFilter={handleFilter}
+              filterOptions={[
+                {
+                  key: "locationId",
+                  label: t("eventManagement.locationFilterLabel"),
+                  type: "select",
+                  options: allLocations.map((loc) => ({
+                    value: loc.id?.toString() || "",
+                    label: loc.name || "",
+                  })),
+                },
+              ]}
+              initialFilters={currentFilters}
+            />
+          </div>
+          <ColumnFilter
+            columns={columnConfig}
+            visibleColumns={visibleColumns}
+            onVisibilityChange={toggleColumn}
+            onResetColumns={resetColumns}
+          />
+        </div>
 
         <PaginationWrapper
           data={filteredEvents}
@@ -260,33 +294,51 @@ export function EventManagement({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-12">
-                        {t("eventManagement.tableHeaderSelect")}
-                      </TableHead>
-                      <TableHead>
-                        {t("eventManagement.tableHeaderName")}
-                      </TableHead>
-                      <TableHead>
-                        {t("eventManagement.tableHeaderDescription")}
-                      </TableHead>
-                      <TableHead>
-                        {t("eventManagement.tableHeaderStartTime")}
-                      </TableHead>
-                      <TableHead>
-                        {t("eventManagement.tableHeaderEndTime")}
-                      </TableHead>
-                      <TableHead>
-                        {t("eventManagement.tableHeaderBookingStartTime")}
-                      </TableHead>
-                      <TableHead>
-                        {t("eventManagement.tableHeaderBookingDeadline")}
-                      </TableHead>
-                      <TableHead>
-                        {t("eventManagement.tableHeaderLocation")}
-                      </TableHead>
-                      <TableHead>
-                        {t("eventManagement.tableHeaderActions")}
-                      </TableHead>
+                      {isColumnVisible("select") && (
+                        <TableHead className="w-12">
+                          {t("eventManagement.tableHeaderSelect")}
+                        </TableHead>
+                      )}
+                      {isColumnVisible("name") && (
+                        <TableHead>
+                          {t("eventManagement.tableHeaderName")}
+                        </TableHead>
+                      )}
+                      {isColumnVisible("description") && (
+                        <TableHead>
+                          {t("eventManagement.tableHeaderDescription")}
+                        </TableHead>
+                      )}
+                      {isColumnVisible("startTime") && (
+                        <TableHead>
+                          {t("eventManagement.tableHeaderStartTime")}
+                        </TableHead>
+                      )}
+                      {isColumnVisible("endTime") && (
+                        <TableHead>
+                          {t("eventManagement.tableHeaderEndTime")}
+                        </TableHead>
+                      )}
+                      {isColumnVisible("bookingStartTime") && (
+                        <TableHead>
+                          {t("eventManagement.tableHeaderBookingStartTime")}
+                        </TableHead>
+                      )}
+                      {isColumnVisible("bookingDeadline") && (
+                        <TableHead>
+                          {t("eventManagement.tableHeaderBookingDeadline")}
+                        </TableHead>
+                      )}
+                      {isColumnVisible("location") && (
+                        <TableHead>
+                          {t("eventManagement.tableHeaderLocation")}
+                        </TableHead>
+                      )}
+                      {isColumnVisible("actions") && (
+                        <TableHead>
+                          {t("eventManagement.tableHeaderActions")}
+                        </TableHead>
+                      )}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -331,81 +383,99 @@ export function EventManagement({
                           );
                           return (
                             <TableRow key={event.id?.toString()}>
-                              <TableCell>
-                                <Checkbox
-                                  checked={
-                                    event.id ? selectedIds.has(event.id) : false
-                                  }
-                                  onCheckedChange={() =>
-                                    event.id && handleToggleSelect(event.id)
-                                  }
-                                />
-                              </TableCell>
-                              <TableCell className="font-medium">
-                                {event.name}
-                              </TableCell>
-                              <TableCell className="max-w-xs truncate">
-                                {event.description}
-                              </TableCell>
-                              <TableCell>
-                                {event.startTime
-                                  ? new Date(event.startTime).toLocaleString()
-                                  : t("eventManagement.tbd")}
-                              </TableCell>
-                              <TableCell>
-                                {event.endTime
-                                  ? new Date(event.endTime).toLocaleString()
-                                  : t("eventManagement.tbd")}
-                              </TableCell>
-                              <TableCell>
-                                {event.bookingStartTime
-                                  ? new Date(
-                                      event.bookingStartTime,
-                                    ).toLocaleString()
-                                  : t("eventManagement.tbd")}
-                              </TableCell>
-                              <TableCell>
-                                {event.bookingDeadline
-                                  ? new Date(
-                                      event.bookingDeadline,
-                                    ).toLocaleString()
-                                  : t("eventManagement.tbd")}
-                              </TableCell>
-                              <TableCell>
-                                {location ? (
-                                  <Button
-                                    variant="link"
-                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
-                                    onClick={() =>
-                                      location.id &&
-                                      handleLocationClick(location.id)
+                              {isColumnVisible("select") && (
+                                <TableCell>
+                                  <Checkbox
+                                    checked={
+                                      event.id ? selectedIds.has(event.id) : false
                                     }
-                                  >
-                                    {location.name}
-                                    <ExternalLink className="ml-1 h-3 w-3" />
-                                  </Button>
-                                ) : (
-                                  t("eventManagement.noLocation")
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex gap-2">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleEditEvent(event)}
-                                  >
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    onClick={() => handleDeleteEvent(event)}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </TableCell>
+                                    onCheckedChange={() =>
+                                      event.id && handleToggleSelect(event.id)
+                                    }
+                                  />
+                                </TableCell>
+                              )}
+                              {isColumnVisible("name") && (
+                                <TableCell className="font-medium">
+                                  {event.name}
+                                </TableCell>
+                              )}
+                              {isColumnVisible("description") && (
+                                <TableCell className="max-w-xs truncate">
+                                  {event.description}
+                                </TableCell>
+                              )}
+                              {isColumnVisible("startTime") && (
+                                <TableCell>
+                                  {event.startTime
+                                    ? new Date(event.startTime).toLocaleString()
+                                    : t("eventManagement.tbd")}
+                                </TableCell>
+                              )}
+                              {isColumnVisible("endTime") && (
+                                <TableCell>
+                                  {event.endTime
+                                    ? new Date(event.endTime).toLocaleString()
+                                    : t("eventManagement.tbd")}
+                                </TableCell>
+                              )}
+                              {isColumnVisible("bookingStartTime") && (
+                                <TableCell>
+                                  {event.bookingStartTime
+                                    ? new Date(
+                                        event.bookingStartTime,
+                                      ).toLocaleString()
+                                    : t("eventManagement.tbd")}
+                                </TableCell>
+                              )}
+                              {isColumnVisible("bookingDeadline") && (
+                                <TableCell>
+                                  {event.bookingDeadline
+                                    ? new Date(
+                                        event.bookingDeadline,
+                                      ).toLocaleString()
+                                    : t("eventManagement.tbd")}
+                                </TableCell>
+                              )}
+                              {isColumnVisible("location") && (
+                                <TableCell>
+                                  {location ? (
+                                    <Button
+                                      variant="link"
+                                      className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                                      onClick={() =>
+                                        location.id &&
+                                        handleLocationClick(location.id)
+                                      }
+                                    >
+                                      {location.name}
+                                      <ExternalLink className="ml-1 h-3 w-3" />
+                                    </Button>
+                                  ) : (
+                                    t("eventManagement.noLocation")
+                                  )}
+                                </TableCell>
+                              )}
+                              {isColumnVisible("actions") && (
+                                <TableCell>
+                                  <div className="flex gap-2">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleEditEvent(event)}
+                                    >
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      onClick={() => handleDeleteEvent(event)}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              )}
                             </TableRow>
                           );
                         })}

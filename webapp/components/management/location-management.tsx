@@ -30,6 +30,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { LocationFormModal } from "@/components/management/location-form-modal";
 import { LocationImportModal } from "@/components/management/location-import-modal";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
+import { ColumnFilter } from "@/components/common/column-filter";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
 import type {
   EventLocationResponseDto,
@@ -40,6 +41,7 @@ import type {
 } from "@/api";
 import { customSerializer } from "@/lib/jsonBodySerializer";
 import { useT } from "@/lib/i18n/hooks";
+import { useColumnVisibility } from "@/hooks/use-column-visibility";
 
 export interface LocationManagementProps {
   locations: EventLocationResponseDto[];
@@ -87,6 +89,21 @@ export function LocationManagement({
   const [currentFilters, setCurrentFilters] =
     useState<Record<string, string>>(initialFilter);
   const [selectedIds, setSelectedIds] = useState<Set<bigint>>(new Set());
+
+  // Define column configuration
+  const columnConfig = [
+    { key: "select", label: t("locationManagement.tableHeaderSelect") },
+    { key: "name", label: t("locationManagement.tableHeaderName") },
+    { key: "address", label: t("locationManagement.tableHeaderAddress") },
+    { key: "capacity", label: t("locationManagement.tableHeaderCapacity") },
+    { key: "manager", label: t("locationManagement.tableHeaderManager") },
+    { key: "marker", label: t("locationManagement.tableHeaderMarker") },
+    { key: "seats", label: t("locationManagement.tableHeaderSeats") },
+    { key: "actions", label: t("locationManagement.tableHeaderActions") },
+  ];
+
+  const { visibleColumns, toggleColumn, resetColumns, isColumnVisible } =
+    useColumnVisibility(columnConfig, "location-management-columns");
 
   useEffect(() => {
     setCurrentFilters(initialFilter);
@@ -293,24 +310,34 @@ export function LocationManagement({
       </CardHeader>
 
       <CardContent>
-        <div className="space-y-4">
-          <SearchAndFilter
-            onSearch={handleSearch}
-            onFilter={handleFilter}
-            filterOptions={[
-              {
-                key: "locationId",
-                label: t("locationManagement.locationFilterLabel"),
-                type: "select",
-                options: locations.map((loc) => ({
-                  value: loc.id?.toString() || "",
-                  label: loc.name || "",
-                })),
-              },
-            ]}
-            initialFilters={currentFilters}
+        <div className="flex gap-2 mb-4">
+          <div className="flex-1">
+            <SearchAndFilter
+              onSearch={handleSearch}
+              onFilter={handleFilter}
+              filterOptions={[
+                {
+                  key: "locationId",
+                  label: t("locationManagement.locationFilterLabel"),
+                  type: "select",
+                  options: locations.map((loc) => ({
+                    value: loc.id?.toString() || "",
+                    label: loc.name || "",
+                  })),
+                },
+              ]}
+              initialFilters={currentFilters}
+            />
+          </div>
+          <ColumnFilter
+            columns={columnConfig}
+            visibleColumns={visibleColumns}
+            onVisibilityChange={toggleColumn}
+            onResetColumns={resetColumns}
           />
+        </div>
 
+        <div className="space-y-4">
           <PaginationWrapper
             data={filteredLocations}
             itemsPerPage={100}
@@ -335,30 +362,46 @@ export function LocationManagement({
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-12">
-                          {t("locationManagement.tableHeaderSelect")}
-                        </TableHead>
-                        <TableHead>
-                          {t("locationManagement.tableHeaderName")}
-                        </TableHead>
-                        <TableHead>
-                          {t("locationManagement.tableHeaderAddress")}
-                        </TableHead>
-                        <TableHead>
-                          {t("locationManagement.tableHeaderCapacity")}
-                        </TableHead>
-                        <TableHead>
-                          {t("locationManagement.tableHeaderManager")}
-                        </TableHead>
-                        <TableHead>
-                          {t("locationManagement.tableHeaderMarker")}
-                        </TableHead>
-                        <TableHead>
-                          {t("locationManagement.tableHeaderSeats")}
-                        </TableHead>
-                        <TableHead>
-                          {t("locationManagement.tableHeaderActions")}
-                        </TableHead>
+                        {isColumnVisible("select") && (
+                          <TableHead className="w-12">
+                            {t("locationManagement.tableHeaderSelect")}
+                          </TableHead>
+                        )}
+                        {isColumnVisible("name") && (
+                          <TableHead>
+                            {t("locationManagement.tableHeaderName")}
+                          </TableHead>
+                        )}
+                        {isColumnVisible("address") && (
+                          <TableHead>
+                            {t("locationManagement.tableHeaderAddress")}
+                          </TableHead>
+                        )}
+                        {isColumnVisible("capacity") && (
+                          <TableHead>
+                            {t("locationManagement.tableHeaderCapacity")}
+                          </TableHead>
+                        )}
+                        {isColumnVisible("manager") && (
+                          <TableHead>
+                            {t("locationManagement.tableHeaderManager")}
+                          </TableHead>
+                        )}
+                        {isColumnVisible("marker") && (
+                          <TableHead>
+                            {t("locationManagement.tableHeaderMarker")}
+                          </TableHead>
+                        )}
+                        {isColumnVisible("seats") && (
+                          <TableHead>
+                            {t("locationManagement.tableHeaderSeats")}
+                          </TableHead>
+                        )}
+                        {isColumnVisible("actions") && (
+                          <TableHead>
+                            {t("locationManagement.tableHeaderActions")}
+                          </TableHead>
+                        )}
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -409,86 +452,102 @@ export function LocationManagement({
 
                             return (
                               <TableRow key={location.id?.toString()}>
-                                <TableCell>
-                                  <Checkbox
-                                    checked={
-                                      location.id
-                                        ? selectedIds.has(location.id)
-                                        : false
-                                    }
-                                    onCheckedChange={() =>
-                                      location.id &&
-                                      handleToggleSelect(location.id)
-                                    }
-                                  />
-                                </TableCell>
-                                <TableCell className="font-medium">
-                                  {location.name}
-                                </TableCell>
-                                <TableCell>{location.address}</TableCell>
-                                <TableCell>{location.capacity}</TableCell>
-                                <TableCell>
-                                  {location.manager?.username}
-                                </TableCell>
-                                <TableCell
-                                  className="text-sm max-w-48 truncate"
-                                  title={markersDisplay}
-                                >
-                                  {markersDisplay}
-                                </TableCell>
-                                <TableCell>
-                                  {seatCount > 0 ? (
-                                    <Button
-                                      variant="link"
-                                      className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
-                                      onClick={() =>
+                                {isColumnVisible("select") && (
+                                  <TableCell>
+                                    <Checkbox
+                                      checked={
+                                        location.id
+                                          ? selectedIds.has(location.id)
+                                          : false
+                                      }
+                                      onCheckedChange={() =>
                                         location.id &&
-                                        handleSeatsClick(location.id)
+                                        handleToggleSelect(location.id)
                                       }
-                                    >
-                                      {t("locationManagement.seatsCount", {
-                                        count: seatCount,
-                                      })}
-                                      <ExternalLink className="ml-1 h-3 w-3" />
-                                    </Button>
-                                  ) : (
-                                    t("locationManagement.noSeats")
-                                  )}
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex gap-2">
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() =>
-                                        handleExportLocation(location)
-                                      }
-                                      title={t(
-                                        "locationManagement.exportAsJsonTitle",
-                                      )}
-                                    >
-                                      <Download className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() =>
-                                        handleEditLocation(location)
-                                      }
-                                    >
-                                      <Edit className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                      variant="destructive"
-                                      size="sm"
-                                      onClick={() =>
-                                        handleDeleteLocation(location)
-                                      }
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                </TableCell>
+                                    />
+                                  </TableCell>
+                                )}
+                                {isColumnVisible("name") && (
+                                  <TableCell className="font-medium">
+                                    {location.name}
+                                  </TableCell>
+                                )}
+                                {isColumnVisible("address") && (
+                                  <TableCell>{location.address}</TableCell>
+                                )}
+                                {isColumnVisible("capacity") && (
+                                  <TableCell>{location.capacity}</TableCell>
+                                )}
+                                {isColumnVisible("manager") && (
+                                  <TableCell>
+                                    {location.manager?.username}
+                                  </TableCell>
+                                )}
+                                {isColumnVisible("marker") && (
+                                  <TableCell
+                                    className="text-sm max-w-48 truncate"
+                                    title={markersDisplay}
+                                  >
+                                    {markersDisplay}
+                                  </TableCell>
+                                )}
+                                {isColumnVisible("seats") && (
+                                  <TableCell>
+                                    {seatCount > 0 ? (
+                                      <Button
+                                        variant="link"
+                                        className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                                        onClick={() =>
+                                          location.id &&
+                                          handleSeatsClick(location.id)
+                                        }
+                                      >
+                                        {t("locationManagement.seatsCount", {
+                                          count: seatCount,
+                                        })}
+                                        <ExternalLink className="ml-1 h-3 w-3" />
+                                      </Button>
+                                    ) : (
+                                      t("locationManagement.noSeats")
+                                    )}
+                                  </TableCell>
+                                )}
+                                {isColumnVisible("actions") && (
+                                  <TableCell>
+                                    <div className="flex gap-2">
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                          handleExportLocation(location)
+                                        }
+                                        title={t(
+                                          "locationManagement.exportAsJsonTitle",
+                                        )}
+                                      >
+                                        <Download className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                          handleEditLocation(location)
+                                        }
+                                      >
+                                        <Edit className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        onClick={() =>
+                                          handleDeleteLocation(location)
+                                        }
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                )}
                               </TableRow>
                             );
                           })}
