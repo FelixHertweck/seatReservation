@@ -20,11 +20,13 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
+import { ColumnFilter } from "@/components/common/column-filter";
 import { UserFormModal } from "@/components/admin/user-form-modal";
 import { UserImportModal } from "@/components/admin/user-import-modal";
 import type { UserDto, AdminUserCreationDto, AdminUserUpdateDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
+import { useColumnVisibility } from "@/hooks/use-column-visibility";
 
 export interface UserManagementProps {
   users: UserDto[];
@@ -50,6 +52,20 @@ export function UserManagement({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+
+  // Define column configuration
+  const columnConfig = [
+    { key: "username", label: t("userManagement.tableHeaderUsername") },
+    { key: "name", label: t("userManagement.tableHeaderName") },
+    { key: "email", label: t("userManagement.tableHeaderEmail") },
+    { key: "roles", label: t("userManagement.tableHeaderRoles") },
+    { key: "tags", label: t("userManagement.tableHeaderTags") },
+    { key: "verified", label: t("userManagement.tableHeaderVerified") },
+    { key: "actions", label: t("userManagement.tableHeaderActions") },
+  ];
+
+  const { visibleColumns, toggleColumn, resetColumns, isColumnVisible } =
+    useColumnVisibility(columnConfig, "user-management-columns");
 
   useEffect(() => {
     setFilteredUsers(users);
@@ -142,11 +158,21 @@ export function UserManagement({
       </CardHeader>
 
       <CardContent>
-        <SearchAndFilter
-          onSearch={handleSearch}
-          onFilter={handleFilter}
-          filterOptions={[]}
-        />
+        <div className="flex gap-2 mb-4">
+          <div className="flex-1">
+            <SearchAndFilter
+              onSearch={handleSearch}
+              onFilter={handleFilter}
+              filterOptions={[]}
+            />
+          </div>
+          <ColumnFilter
+            columns={columnConfig}
+            visibleColumns={visibleColumns}
+            onVisibilityChange={toggleColumn}
+            onResetColumns={resetColumns}
+          />
+        </div>
 
         <PaginationWrapper
           data={filteredUsers}
@@ -160,86 +186,114 @@ export function UserManagement({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>
-                        {t("userManagement.tableHeaderUsername")}
-                      </TableHead>
-                      <TableHead>
-                        {t("userManagement.tableHeaderName")}
-                      </TableHead>
-                      <TableHead>
-                        {t("userManagement.tableHeaderEmail")}
-                      </TableHead>
-                      <TableHead>
-                        {t("userManagement.tableHeaderRoles")}
-                      </TableHead>
-                      <TableHead>
-                        {t("userManagement.tableHeaderTags")}
-                      </TableHead>
-                      <TableHead>
-                        {t("userManagement.tableHeaderVerified")}
-                      </TableHead>
-                      <TableHead>
-                        {t("userManagement.tableHeaderActions")}
-                      </TableHead>
+                      {isColumnVisible("username") && (
+                        <TableHead>
+                          {t("userManagement.tableHeaderUsername")}
+                        </TableHead>
+                      )}
+                      {isColumnVisible("name") && (
+                        <TableHead>
+                          {t("userManagement.tableHeaderName")}
+                        </TableHead>
+                      )}
+                      {isColumnVisible("email") && (
+                        <TableHead>
+                          {t("userManagement.tableHeaderEmail")}
+                        </TableHead>
+                      )}
+                      {isColumnVisible("roles") && (
+                        <TableHead>
+                          {t("userManagement.tableHeaderRoles")}
+                        </TableHead>
+                      )}
+                      {isColumnVisible("tags") && (
+                        <TableHead>
+                          {t("userManagement.tableHeaderTags")}
+                        </TableHead>
+                      )}
+                      {isColumnVisible("verified") && (
+                        <TableHead>
+                          {t("userManagement.tableHeaderVerified")}
+                        </TableHead>
+                      )}
+                      {isColumnVisible("actions") && (
+                        <TableHead>
+                          {t("userManagement.tableHeaderActions")}
+                        </TableHead>
+                      )}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {paginatedData.map((user) => (
                       <TableRow key={user.id?.toString()}>
-                        <TableCell className="font-medium">
-                          {user.username}
-                        </TableCell>
-                        <TableCell>
-                          {user.firstname} {user.lastname}
-                        </TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>
-                          <div className="flex gap-1 flex-wrap">
-                            {user.roles?.map((role) => (
-                              <Badge key={role} variant="outline">
-                                {role}
-                              </Badge>
-                            ))}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-1 flex-wrap">
-                            {user.tags?.map((tag) => (
-                              <Badge key={tag} variant="secondary">
-                                {tag}
-                              </Badge>
-                            ))}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={
-                              user.emailVerified ? "default" : "secondary"
-                            }
-                          >
-                            {user.emailVerified
-                              ? t("userManagement.verifiedStatus")
-                              : t("userManagement.pendingStatus")}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEditUser(user)}
+                        {isColumnVisible("username") && (
+                          <TableCell className="font-medium">
+                            {user.username}
+                          </TableCell>
+                        )}
+                        {isColumnVisible("name") && (
+                          <TableCell>
+                            {user.firstname} {user.lastname}
+                          </TableCell>
+                        )}
+                        {isColumnVisible("email") && (
+                          <TableCell>{user.email}</TableCell>
+                        )}
+                        {isColumnVisible("roles") && (
+                          <TableCell>
+                            <div className="flex gap-1 flex-wrap">
+                              {user.roles?.map((role) => (
+                                <Badge key={role} variant="outline">
+                                  {role}
+                                </Badge>
+                              ))}
+                            </div>
+                          </TableCell>
+                        )}
+                        {isColumnVisible("tags") && (
+                          <TableCell>
+                            <div className="flex gap-1 flex-wrap">
+                              {user.tags?.map((tag) => (
+                                <Badge key={tag} variant="secondary">
+                                  {tag}
+                                </Badge>
+                              ))}
+                            </div>
+                          </TableCell>
+                        )}
+                        {isColumnVisible("verified") && (
+                          <TableCell>
+                            <Badge
+                              variant={
+                                user.emailVerified ? "default" : "secondary"
+                              }
                             >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => handleDeleteUser(user)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
+                              {user.emailVerified
+                                ? t("userManagement.verifiedStatus")
+                                : t("userManagement.pendingStatus")}
+                            </Badge>
+                          </TableCell>
+                        )}
+                        {isColumnVisible("actions") && (
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEditUser(user)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleDeleteUser(user)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        )}
                       </TableRow>
                     ))}
                   </TableBody>

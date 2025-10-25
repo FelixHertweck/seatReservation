@@ -436,6 +436,11 @@
     "activeFiltersLabel": "Aktive Filter:",
     "clearAllButton": "Alle löschen"
   },
+  "columnFilter": {
+    "columnsButton": "Spalten",
+    "toggleColumns": "Spalten umschalten",
+    "resetButton": "Auf Standard zurücksetzen"
+  },
   "seatMap": {
     "seatTitle": "Platz {{seatNumber}} ({{seatRow}})",
     "resetButton": "Zurücksetzen",

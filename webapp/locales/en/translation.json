@@ -435,6 +435,11 @@
     "activeFiltersLabel": "Active filters:",
     "clearAllButton": "Clear all"
   },
+  "columnFilter": {
+    "columnsButton": "Columns",
+    "toggleColumns": "Toggle columns",
+    "resetButton": "Reset to default"
+  },
   "seatMap": {
     "seatTitle": "Seat {{seatNumber}} ({{seatRow}})",
     "resetButton": "Reset",
