@@ -369,6 +369,11 @@ public class ReservationServiceTest {
     void deleteReservation_Success_AsAdmin() {
         when(reservationRepository.findByIdOptional(reservation.id))
                 .thenReturn(Optional.of(reservation));
+        @SuppressWarnings("unchecked")
+        PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
+        when(allowanceQuery.singleResult()).thenThrow(new NoResultException());
+        when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", regularUser, event))
+                .thenReturn(allowanceQuery);
 
         reservationService.deleteReservation(List.of(reservation.id), adminUser);
 
@@ -379,6 +384,11 @@ public class ReservationServiceTest {
     void deleteReservation_Success_AsManager() {
         when(reservationRepository.findByIdOptional(reservation.id))
                 .thenReturn(Optional.of(reservation));
+        @SuppressWarnings("unchecked")
+        PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
+        when(allowanceQuery.singleResult()).thenThrow(new NoResultException());
+        when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", regularUser, event))
+                .thenReturn(allowanceQuery);
 
         reservationService.deleteReservation(List.of(reservation.id), managerUser);
 
@@ -394,6 +404,62 @@ public class ReservationServiceTest {
                 SecurityException.class,
                 () -> reservationService.deleteReservation(List.of(reservation.id), regularUser));
         verify(reservationRepository, never()).delete(any(Reservation.class));
+    }
+
+    @Test
+    void deleteReservation_Success_WithAllowanceIncrement() {
+        // Set up allowance with initial count
+        allowance.setReservationsAllowedCount(0);
+
+        when(reservationRepository.findByIdOptional(reservation.id))
+                .thenReturn(Optional.of(reservation));
+        @SuppressWarnings("unchecked")
+        PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
+        when(allowanceQuery.singleResult()).thenReturn(allowance);
+        when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", regularUser, event))
+                .thenReturn(allowanceQuery);
+        doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
+
+        reservationService.deleteReservation(List.of(reservation.id), managerUser);
+
+        verify(reservationRepository, times(1)).delete(reservation);
+        verify(eventUserAllowanceRepository, times(1)).persist(allowance);
+        assertEquals(1, allowance.getReservationsAllowedCount()); // Allowance should be incremented
+    }
+
+    @Test
+    void deleteReservation_Success_NoAllowanceExists() {
+        when(reservationRepository.findByIdOptional(reservation.id))
+                .thenReturn(Optional.of(reservation));
+        @SuppressWarnings("unchecked")
+        PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
+        when(allowanceQuery.singleResult()).thenThrow(new NoResultException());
+        when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", regularUser, event))
+                .thenReturn(allowanceQuery);
+
+        // Should not throw exception when no allowance exists
+        reservationService.deleteReservation(List.of(reservation.id), managerUser);
+
+        verify(reservationRepository, times(1)).delete(reservation);
+        verify(eventUserAllowanceRepository, never())
+                .persist(any(EventUserAllowance.class)); // Should not persist allowance
+    }
+
+    @Test
+    void deleteReservation_Success_BlockedReservation_NoAllowanceIncrement() {
+        // Create a blocked reservation
+        Reservation blockedReservation =
+                new Reservation(regularUser, event, seat, Instant.now(), ReservationStatus.BLOCKED);
+        blockedReservation.id = 2L;
+
+        when(reservationRepository.findByIdOptional(blockedReservation.id))
+                .thenReturn(Optional.of(blockedReservation));
+
+        reservationService.deleteReservation(List.of(blockedReservation.id), managerUser);
+
+        verify(reservationRepository, times(1)).delete(blockedReservation);
+        // Verify allowance was never updated for blocked reservations
+        verify(eventUserAllowanceRepository, never()).persist(any(EventUserAllowance.class));
     }
 
     @Test

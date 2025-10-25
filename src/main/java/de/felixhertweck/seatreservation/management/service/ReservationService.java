@@ -376,6 +376,32 @@ public class ReservationService {
                         "Adding reservation ID %d to deleted reservations for email notification.",
                         reservation.id);
                 deletedReservations.add(reservation);
+
+                // Restore allowance count if it exists
+                try {
+                    EventUserAllowance allowance =
+                            eventUserAllowanceRepository
+                                    .find(
+                                            "user = ?1 and event = ?2",
+                                            reservation.getUser(),
+                                            reservation.getEvent())
+                                    .singleResult();
+                    allowance.setReservationsAllowedCount(
+                            allowance.getReservationsAllowedCount() + 1);
+                    eventUserAllowanceRepository.persist(allowance);
+                    LOG.debug(
+                            String.format(
+                                    "Incremented reservation allowance for user ID %d and event ID"
+                                            + " %d. New allowance: %d",
+                                    reservation.getUser().getId(),
+                                    reservation.getEvent().getId(),
+                                    allowance.getReservationsAllowedCount()));
+                } catch (NoResultException e) {
+                    LOG.debugf(
+                            "No allowance found for user ID %d and event ID %d, skipping allowance"
+                                    + " increment.",
+                            reservation.getUser().getId(), reservation.getEvent().getId());
+                }
             }
         }
 
