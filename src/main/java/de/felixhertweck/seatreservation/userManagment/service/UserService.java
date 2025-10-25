@@ -474,7 +474,7 @@ public class UserService {
     /**
      * Verifies the email address of a user using only the 6-digit verification code.
      *
-     * @param verificationCode The 6-digit verification code to verify.
+     * @param verificationCode The 6-digit verification code to verify (must not be null or empty).
      * @return The email address of the user if verification is successful.
      * @throws IllegalArgumentException If the verification code format is invalid (null, empty, or
      *     not 6 digits).
