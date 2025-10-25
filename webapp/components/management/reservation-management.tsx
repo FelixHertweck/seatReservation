@@ -22,6 +22,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
+import { ColumnFilter } from "@/components/common/column-filter";
 import { ReservationFormModal } from "@/components/management/reservation-form-modal";
 import { BlockSeatsModal } from "@/components/management/block-seats-modal";
 import {
@@ -40,6 +41,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
+import { useColumnVisibility } from "@/hooks/use-column-visibility";
 import type {
   UserDto,
   EventResponseDto,
@@ -102,6 +104,23 @@ export function ReservationManagement({
   const [currentFilters, setCurrentFilters] =
     useState<Record<string, string>>(initialFilter);
   const [selectedIds, setSelectedIds] = useState<Set<bigint>>(new Set());
+
+  // Define column configuration
+  const columnConfig = [
+    { key: "select", label: t("reservationManagement.tableHeaderSelect") },
+    { key: "user", label: t("reservationManagement.tableHeaderUser") },
+    { key: "event", label: t("reservationManagement.tableHeaderEvent") },
+    { key: "seat", label: t("reservationManagement.tableHeaderSeat") },
+    { key: "status", label: t("reservationManagement.tableHeaderStatus") },
+    {
+      key: "reservedDate",
+      label: t("reservationManagement.tableHeaderReservedDate"),
+    },
+    { key: "actions", label: t("reservationManagement.tableHeaderActions") },
+  ];
+
+  const { visibleColumns, toggleColumn, resetColumns, isColumnVisible } =
+    useColumnVisibility(columnConfig, "reservation-management-columns");
 
   useEffect(() => {
     setCurrentFilters(initialFilter);
@@ -426,37 +445,47 @@ export function ReservationManagement({
       </CardHeader>
 
       <CardContent>
-        <SearchAndFilter
-          onSearch={handleSearch}
-          onFilter={handleFilter}
-          filterOptions={[
-            {
-              key: "eventId",
-              label: t("reservationManagement.eventFilterLabel"),
-              type: "select",
-              options: events.map((event) => ({
-                value: event.id?.toString() || "",
-                label: event.name || "",
-              })),
-            },
-            {
-              key: "status",
-              label: t("reservationManagement.statusFilterLabel"),
-              type: "select",
-              options: [
+        <div className="flex gap-2 mb-4">
+          <div className="flex-1">
+            <SearchAndFilter
+              onSearch={handleSearch}
+              onFilter={handleFilter}
+              filterOptions={[
                 {
-                  value: "RESERVED",
-                  label: t("reservationManagement.statusReserved"),
+                  key: "eventId",
+                  label: t("reservationManagement.eventFilterLabel"),
+                  type: "select",
+                  options: events.map((event) => ({
+                    value: event.id?.toString() || "",
+                    label: event.name || "",
+                  })),
                 },
                 {
-                  value: "BLOCKED",
-                  label: t("reservationManagement.statusBlocked"),
+                  key: "status",
+                  label: t("reservationManagement.statusFilterLabel"),
+                  type: "select",
+                  options: [
+                    {
+                      value: "RESERVED",
+                      label: t("reservationManagement.statusReserved"),
+                    },
+                    {
+                      value: "BLOCKED",
+                      label: t("reservationManagement.statusBlocked"),
+                    },
+                  ],
                 },
-              ],
-            },
-          ]}
-          initialFilters={currentFilters}
-        />
+              ]}
+              initialFilters={currentFilters}
+            />
+          </div>
+          <ColumnFilter
+            columns={columnConfig}
+            visibleColumns={visibleColumns}
+            onVisibilityChange={toggleColumn}
+            onResetColumns={resetColumns}
+          />
+        </div>
 
         <PaginationWrapper
           data={filteredReservations}
@@ -482,27 +511,41 @@ export function ReservationManagement({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-12">
-                        {t("reservationManagement.tableHeaderSelect")}
-                      </TableHead>
-                      <TableHead>
-                        {t("reservationManagement.tableHeaderUser")}
-                      </TableHead>
-                      <TableHead>
-                        {t("reservationManagement.tableHeaderEvent")}
-                      </TableHead>
-                      <TableHead>
-                        {t("reservationManagement.tableHeaderSeat")}
-                      </TableHead>
-                      <TableHead>
-                        {t("reservationManagement.tableHeaderStatus")}
-                      </TableHead>
-                      <TableHead>
-                        {t("reservationManagement.tableHeaderReservedDate")}
-                      </TableHead>
-                      <TableHead>
-                        {t("reservationManagement.tableHeaderActions")}
-                      </TableHead>
+                      {isColumnVisible("select") && (
+                        <TableHead className="w-12">
+                          {t("reservationManagement.tableHeaderSelect")}
+                        </TableHead>
+                      )}
+                      {isColumnVisible("user") && (
+                        <TableHead>
+                          {t("reservationManagement.tableHeaderUser")}
+                        </TableHead>
+                      )}
+                      {isColumnVisible("event") && (
+                        <TableHead>
+                          {t("reservationManagement.tableHeaderEvent")}
+                        </TableHead>
+                      )}
+                      {isColumnVisible("seat") && (
+                        <TableHead>
+                          {t("reservationManagement.tableHeaderSeat")}
+                        </TableHead>
+                      )}
+                      {isColumnVisible("status") && (
+                        <TableHead>
+                          {t("reservationManagement.tableHeaderStatus")}
+                        </TableHead>
+                      )}
+                      {isColumnVisible("reservedDate") && (
+                        <TableHead>
+                          {t("reservationManagement.tableHeaderReservedDate")}
+                        </TableHead>
+                      )}
+                      {isColumnVisible("actions") && (
+                        <TableHead>
+                          {t("reservationManagement.tableHeaderActions")}
+                        </TableHead>
+                      )}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -541,98 +584,112 @@ export function ReservationManagement({
 
                           return (
                             <TableRow key={reservation.id?.toString()}>
-                              <TableCell>
-                                <Checkbox
-                                  checked={
-                                    reservation.id
-                                      ? selectedIds.has(reservation.id)
-                                      : false
-                                  }
-                                  onCheckedChange={() =>
-                                    reservation.id &&
-                                    handleToggleSelect(reservation.id)
-                                  }
-                                />
-                              </TableCell>
-                              <TableCell>
-                                {reservation.user?.username}
-                              </TableCell>
-                              <TableCell>
-                                {event ? (
-                                  <Button
-                                    variant="link"
-                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
-                                    onClick={() =>
-                                      event.id && handleEventClick(event.id)
+                              {isColumnVisible("select") && (
+                                <TableCell>
+                                  <Checkbox
+                                    checked={
+                                      reservation.id
+                                        ? selectedIds.has(reservation.id)
+                                        : false
                                     }
-                                  >
-                                    {event.name}
-                                    <ExternalLink className="ml-1 h-3 w-3" />
-                                  </Button>
-                                ) : (
-                                  t("reservationManagement.unknownEvent")
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                {reservation.seat ? (
-                                  <Button
-                                    variant="link"
-                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
-                                    onClick={() =>
-                                      reservation.seat?.id &&
-                                      handleSeatClick(reservation.seat.id)
+                                    onCheckedChange={() =>
+                                      reservation.id &&
+                                      handleToggleSelect(reservation.id)
                                     }
-                                  >
+                                  />
+                                </TableCell>
+                              )}
+                              {isColumnVisible("user") && (
+                                <TableCell>
+                                  {reservation.user?.username}
+                                </TableCell>
+                              )}
+                              {isColumnVisible("event") && (
+                                <TableCell>
+                                  {event ? (
+                                    <Button
+                                      variant="link"
+                                      className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                                      onClick={() =>
+                                        event.id && handleEventClick(event.id)
+                                      }
+                                    >
+                                      {event.name}
+                                      <ExternalLink className="ml-1 h-3 w-3" />
+                                    </Button>
+                                  ) : (
+                                    t("reservationManagement.unknownEvent")
+                                  )}
+                                </TableCell>
+                              )}
+                              {isColumnVisible("seat") && (
+                                <TableCell>
+                                  {reservation.seat ? (
+                                    <Button
+                                      variant="link"
+                                      className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                                      onClick={() =>
+                                        reservation.seat?.id &&
+                                        handleSeatClick(reservation.seat.id)
+                                      }
+                                    >
+                                      <Badge variant="outline">
+                                        {reservation.seat.seatNumber}
+                                      </Badge>
+                                      <ExternalLink className="ml-1 h-3 w-3" />
+                                    </Button>
+                                  ) : (
                                     <Badge variant="outline">
-                                      {reservation.seat.seatNumber}
+                                      {t("reservationManagement.unknownSeat")}
                                     </Badge>
-                                    <ExternalLink className="ml-1 h-3 w-3" />
-                                  </Button>
-                                ) : (
-                                  <Badge variant="outline">
-                                    {t("reservationManagement.unknownSeat")}
-                                  </Badge>
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                <Badge
-                                  variant={
-                                    reservation.status === "BLOCKED"
-                                      ? "secondary"
-                                      : "default"
-                                  }
-                                >
-                                  {reservation.status === "BLOCKED"
-                                    ? t("reservationManagement.statusBlocked")
-                                    : t("reservationManagement.statusReserved")}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
-                                {reservation.reservationDateTime
-                                  ? new Date(
-                                      reservation.reservationDateTime,
-                                    ).toLocaleString([], {
-                                      year: "numeric",
-                                      month: "2-digit",
-                                      day: "2-digit",
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    })
-                                  : t("reservationManagement.unknownDate")}
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex gap-2">
-                                  <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    onClick={() =>
-                                      handleDeleteReservation(reservation)
+                                  )}
+                                </TableCell>
+                              )}
+                              {isColumnVisible("status") && (
+                                <TableCell>
+                                  <Badge
+                                    variant={
+                                      reservation.status === "BLOCKED"
+                                        ? "secondary"
+                                        : "default"
                                     }
                                   >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </TableCell>
+                                    {reservation.status === "BLOCKED"
+                                      ? t("reservationManagement.statusBlocked")
+                                      : t("reservationManagement.statusReserved")}
+                                  </Badge>
+                                </TableCell>
+                              )}
+                              {isColumnVisible("reservedDate") && (
+                                <TableCell>
+                                  {reservation.reservationDateTime
+                                    ? new Date(
+                                        reservation.reservationDateTime,
+                                      ).toLocaleString([], {
+                                        year: "numeric",
+                                        month: "2-digit",
+                                        day: "2-digit",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      })
+                                    : t("reservationManagement.unknownDate")}
+                                </TableCell>
+                              )}
+                              {isColumnVisible("actions") && (
+                                <TableCell>
+                                  <div className="flex gap-2">
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      onClick={() =>
+                                        handleDeleteReservation(reservation)
+                                      }
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              )}
                             </TableRow>
                           );
                         })}
