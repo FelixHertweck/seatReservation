@@ -169,6 +169,9 @@ public class TokenService {
         }
 
         String tokenValue = jwt.getClaim("token_value");
+        if (tokenValue == null) {
+            throw new JwtInvalidException("Missing token_value in JWT");
+        }
 
         RefreshToken storedToken = refreshTokenRepository.findById(tokenId);
         if (storedToken == null) {
