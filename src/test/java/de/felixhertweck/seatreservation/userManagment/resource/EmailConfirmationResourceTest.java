@@ -163,7 +163,8 @@ class EmailConfirmationResourceTest {
                 .when()
                 .post("/api/user/verify-email-code")
                 .then()
-                .statusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+                .statusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode())
+                .body(containsString("Database error"));
 
         verify(userService, times(1)).verifyEmailWithCode("123456");
     }
