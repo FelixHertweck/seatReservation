@@ -76,23 +76,23 @@ public class AuthResourceTest {
 
     @Test
     void testLoginSuccess() throws AuthenticationFailedException {
-        String identifier = "testuser";
+        String username = "testuser";
         String password = "testpassword";
         String token = "mockedToken123";
 
         // Create a mock User object
         User mockUser = Mockito.mock(User.class);
-        Mockito.when(mockUser.getUsername()).thenReturn(identifier);
+        Mockito.when(mockUser.getUsername()).thenReturn(username);
 
         // Mock the authenticate method to return the mock User
-        Mockito.when(authService.authenticate(identifier, password)).thenReturn(mockUser);
+        Mockito.when(authService.authenticate(username, password)).thenReturn(mockUser);
 
         // Mock token generation
         Mockito.when(tokenService.generateToken(mockUser)).thenReturn(token);
         Mockito.when(tokenService.generateRefreshToken(mockUser)).thenReturn("refreshToken123");
 
         LoginRequestDTO loginRequest = new LoginRequestDTO();
-        loginRequest.setIdentifier(identifier);
+        loginRequest.setUsername(username);
         loginRequest.setPassword(password);
 
         // Mock the NewCookie creation
@@ -148,15 +148,15 @@ public class AuthResourceTest {
 
     @Test
     void testLoginFailureWrongCredentials() throws AuthenticationFailedException {
-        String identifier = "testuser";
+        String username = "testuser";
         String password = "wrongpassword";
-        String errorMessage = String.format("Failed to authenticate user: %s", identifier);
+        String errorMessage = String.format("Failed to authenticate user: %s", username);
 
-        Mockito.when(authService.authenticate(identifier, password))
+        Mockito.when(authService.authenticate(username, password))
                 .thenThrow(new AuthenticationFailedException(errorMessage));
 
         LoginRequestDTO loginRequest = new LoginRequestDTO();
-        loginRequest.setIdentifier(identifier);
+        loginRequest.setUsername(username);
         loginRequest.setPassword(password);
 
         given().contentType(MediaType.APPLICATION_JSON)
@@ -171,7 +171,7 @@ public class AuthResourceTest {
     @Test
     void login_BadRequest_MissingCredentials() {
         LoginRequestDTO loginRequest = new LoginRequestDTO();
-        loginRequest.setIdentifier(null); // Explicitly set to null
+        loginRequest.setUsername(null); // Explicitly set to null
         loginRequest.setPassword(null); // Explicitly set to null
 
         given().contentType(MediaType.APPLICATION_JSON)
@@ -182,7 +182,7 @@ public class AuthResourceTest {
                 .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
 
         LoginRequestDTO loginRequestEmpty = new LoginRequestDTO();
-        loginRequestEmpty.setIdentifier(""); // Empty identifier
+        loginRequestEmpty.setUsername(""); // Empty username
         loginRequestEmpty.setPassword("password");
 
         given().contentType(MediaType.APPLICATION_JSON)
@@ -193,7 +193,7 @@ public class AuthResourceTest {
                 .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
 
         LoginRequestDTO loginRequestEmpty2 = new LoginRequestDTO();
-        loginRequestEmpty2.setIdentifier("username");
+        loginRequestEmpty2.setUsername("username");
         loginRequestEmpty2.setPassword(""); // Empty password
 
         given().contentType(MediaType.APPLICATION_JSON)
