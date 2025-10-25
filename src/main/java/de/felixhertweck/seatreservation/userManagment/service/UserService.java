@@ -476,7 +476,8 @@ public class UserService {
      *
      * @param verificationCode The 6-digit verification code to verify.
      * @return The email address of the user if verification is successful.
-     * @throws IllegalArgumentException If the verification code is invalid.
+     * @throws IllegalArgumentException If the verification code format is invalid (null, empty, or
+     *     not 6 digits).
      * @throws VerificationCodeNotFoundException If the verification code is not found.
      * @throws VerifyTokenExpiredException If the verification code has expired.
      */
