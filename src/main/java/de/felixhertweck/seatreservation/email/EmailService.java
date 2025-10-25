@@ -669,7 +669,6 @@ public class EmailService {
         // Create and send the email
         LOG.debugf("Event reminder subject: %s", EMAIL_HEADER_REMINDER);
         Mail mail = Mail.withHtml(user.getEmail(), EMAIL_HEADER_REMINDER, htmlContent);
-        addBcc(mail);
 
         try {
             mailer.send(mail);

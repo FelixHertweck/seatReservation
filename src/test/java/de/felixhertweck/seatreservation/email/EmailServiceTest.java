@@ -233,6 +233,8 @@ class EmailServiceTest {
         assertTrue(sentMail.getHtml().contains("<li>A1 (1)</li>"));
         assertTrue(sentMail.getHtml().contains("<svg"));
         assertTrue(sentMail.getHtml().contains("http://localhost:8080/reservations?id=10"));
+        // Verify that BCC is not added to event reminder emails
+        assertTrue(sentMail.getBcc().isEmpty(), "Event reminder emails should not have BCC");
     }
 
     @Test
