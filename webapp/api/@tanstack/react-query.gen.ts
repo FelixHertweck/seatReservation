@@ -717,6 +717,7 @@ export const getApiUserLocationsOptions = (options?: Options<GetApiUserLocations
 
 /**
  * Resend email confirmation
+ *
  * Resends the email confirmation for the authenticated user and extends the token's lifetime.
  */
 export const postApiUserResendEmailConfirmationMutation = (options?: Partial<Options<PostApiUserResendEmailConfirmationData>>): UseMutationOptions<PostApiUserResendEmailConfirmationResponse, DefaultError, Options<PostApiUserResendEmailConfirmationData>> => {
@@ -809,6 +810,7 @@ export const getApiUserReservationsByIdOptions = (options: Options<GetApiUserRes
 
 /**
  * Verify email with 6-digit code
+ *
  * Verifies a user's email address using a 6-digit verification code
  */
 export const postApiUserVerifyEmailCodeMutation = (options?: Partial<Options<PostApiUserVerifyEmailCodeData>>): UseMutationOptions<unknown, DefaultError, Options<PostApiUserVerifyEmailCodeData>> => {

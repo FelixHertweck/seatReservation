@@ -676,6 +676,7 @@ export const getApiUserLocations = <ThrowOnError extends boolean = false>(option
 
 /**
  * Resend email confirmation
+ *
  * Resends the email confirmation for the authenticated user and extends the token's lifetime.
  */
 export const postApiUserResendEmailConfirmation = <ThrowOnError extends boolean = false>(options?: Options<PostApiUserResendEmailConfirmationData, ThrowOnError>) => {
@@ -758,6 +759,7 @@ export const getApiUserReservationsById = <ThrowOnError extends boolean = false>
 
 /**
  * Verify email with 6-digit code
+ *
  * Verifies a user's email address using a 6-digit verification code
  */
 export const postApiUserVerifyEmailCode = <ThrowOnError extends boolean = false>(options: Options<PostApiUserVerifyEmailCodeData, ThrowOnError>) => {
