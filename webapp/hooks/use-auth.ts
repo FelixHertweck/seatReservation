@@ -52,15 +52,13 @@ export function useAuth() {
     returnToUrl?: string | null,
   ) => {
     await loginMutation({ body: { identifier, password } });
+    await queryClient.invalidateQueries();
     await refetchUser();
     redirectUser(router, locale, returnToUrl);
   };
 
   const { mutateAsync: registerMutation } = useMutation({
     ...postApiAuthRegisterMutation(),
-    onSuccess: async () => {
-      await refetchUser();
-    },
   });
 
   const register = async (
@@ -68,6 +66,7 @@ export function useAuth() {
     returnToUrl?: string | null,
   ) => {
     await registerMutation({ body: userData });
+    await queryClient.invalidateQueries();
     await refetchUser();
     redirectUser(router, locale, returnToUrl);
   };
