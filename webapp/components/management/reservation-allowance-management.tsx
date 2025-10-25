@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
+import { ColumnFilter } from "@/components/common/column-filter";
 import { AllowanceFormModal } from "@/components/management/allowance-form-modal";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
 import type {
@@ -31,6 +32,7 @@ import type {
   LimitedUserInfoDto,
 } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
+import { useColumnVisibility } from "@/hooks/use-column-visibility";
 
 export interface ReservationAllowanceManagementProps {
   allowances: EventUserAllowancesDto[];
@@ -69,6 +71,33 @@ export function ReservationAllowanceManagement({
   const [currentFilters, setCurrentFilters] =
     useState<Record<string, string>>(initialFilter);
   const [selectedIds, setSelectedIds] = useState<Set<bigint>>(new Set());
+
+  // Define column configuration
+  const columnConfig = [
+    {
+      key: "select",
+      label: t("reservationAllowanceManagement.tableHeaderSelect"),
+    },
+    {
+      key: "event",
+      label: t("reservationAllowanceManagement.tableHeaderEvent"),
+    },
+    { key: "user", label: t("reservationAllowanceManagement.tableHeaderUser") },
+    {
+      key: "allowedReservations",
+      label: t("reservationAllowanceManagement.tableHeaderAllowedReservations"),
+    },
+    {
+      key: "actions",
+      label: t("reservationAllowanceManagement.tableHeaderActions"),
+    },
+  ];
+
+  const { visibleColumns, toggleColumn, resetColumns, isColumnVisible } =
+    useColumnVisibility(
+      columnConfig,
+      "reservation-allowance-management-columns",
+    );
 
   useEffect(() => {
     setCurrentFilters(initialFilter);
@@ -239,22 +268,30 @@ export function ReservationAllowanceManagement({
       </CardHeader>
 
       <CardContent>
-        <div>
-          <SearchAndFilter
-            onSearch={handleSearch}
-            onFilter={handleFilter}
-            filterOptions={[
-              {
-                key: "eventId",
-                label: t("reservationAllowanceManagement.eventFilterLabel"),
-                type: "select",
-                options: events.map((event) => ({
-                  value: event.id?.toString() || "",
-                  label: event.name || "",
-                })),
-              },
-            ]}
-            initialFilters={currentFilters}
+        <div className="flex gap-2 mb-4">
+          <div className="flex-1">
+            <SearchAndFilter
+              onSearch={handleSearch}
+              onFilter={handleFilter}
+              filterOptions={[
+                {
+                  key: "eventId",
+                  label: t("reservationAllowanceManagement.eventFilterLabel"),
+                  type: "select",
+                  options: events.map((event) => ({
+                    value: event.id?.toString() || "",
+                    label: event.name || "",
+                  })),
+                },
+              ]}
+              initialFilters={currentFilters}
+            />
+          </div>
+          <ColumnFilter
+            columns={columnConfig}
+            visibleColumns={visibleColumns}
+            onVisibilityChange={toggleColumn}
+            onResetColumns={resetColumns}
           />
         </div>
 
@@ -282,23 +319,33 @@ export function ReservationAllowanceManagement({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-12">
-                        {t("reservationAllowanceManagement.tableHeaderSelect")}
-                      </TableHead>
-                      <TableHead>
-                        {t("reservationAllowanceManagement.tableHeaderEvent")}
-                      </TableHead>
-                      <TableHead>
-                        {t("reservationAllowanceManagement.tableHeaderUser")}
-                      </TableHead>
-                      <TableHead>
-                        {t(
-                          "reservationAllowanceManagement.tableHeaderAllowedReservations",
-                        )}
-                      </TableHead>
-                      <TableHead>
-                        {t("reservationAllowanceManagement.tableHeaderActions")}
-                      </TableHead>
+                      {isColumnVisible("select") && (
+                        <TableHead className="w-12">
+                          {t("reservationAllowanceManagement.tableHeaderSelect")}
+                        </TableHead>
+                      )}
+                      {isColumnVisible("event") && (
+                        <TableHead>
+                          {t("reservationAllowanceManagement.tableHeaderEvent")}
+                        </TableHead>
+                      )}
+                      {isColumnVisible("user") && (
+                        <TableHead>
+                          {t("reservationAllowanceManagement.tableHeaderUser")}
+                        </TableHead>
+                      )}
+                      {isColumnVisible("allowedReservations") && (
+                        <TableHead>
+                          {t(
+                            "reservationAllowanceManagement.tableHeaderAllowedReservations",
+                          )}
+                        </TableHead>
+                      )}
+                      {isColumnVisible("actions") && (
+                        <TableHead>
+                          {t("reservationAllowanceManagement.tableHeaderActions")}
+                        </TableHead>
+                      )}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -337,66 +384,76 @@ export function ReservationAllowanceManagement({
                             <TableRow
                               key={`${allowance.id?.toString()}${allowance.eventId?.toString()}`}
                             >
-                              <TableCell>
-                                <Checkbox
-                                  checked={
-                                    allowance.id
-                                      ? selectedIds.has(allowance.id)
-                                      : false
-                                  }
-                                  onCheckedChange={() =>
-                                    allowance.id &&
-                                    handleToggleSelect(allowance.id)
-                                  }
-                                />
-                              </TableCell>
-                              <TableCell>
-                                {event ? (
-                                  <Button
-                                    variant="link"
-                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
-                                    onClick={() =>
-                                      event.id && handleEventClick(event.id)
+                              {isColumnVisible("select") && (
+                                <TableCell>
+                                  <Checkbox
+                                    checked={
+                                      allowance.id
+                                        ? selectedIds.has(allowance.id)
+                                        : false
                                     }
-                                  >
-                                    {event.name}
-                                    <ExternalLink className="ml-1 h-3 w-3" />
-                                  </Button>
-                                ) : (
-                                  t(
-                                    "reservationAllowanceManagement.unknownEvent",
-                                  )
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                {user?.username ||
-                                  t(
-                                    "reservationAllowanceManagement.unknownUser",
+                                    onCheckedChange={() =>
+                                      allowance.id &&
+                                      handleToggleSelect(allowance.id)
+                                    }
+                                  />
+                                </TableCell>
+                              )}
+                              {isColumnVisible("event") && (
+                                <TableCell>
+                                  {event ? (
+                                    <Button
+                                      variant="link"
+                                      className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                                      onClick={() =>
+                                        event.id && handleEventClick(event.id)
+                                      }
+                                    >
+                                      {event.name}
+                                      <ExternalLink className="ml-1 h-3 w-3" />
+                                    </Button>
+                                  ) : (
+                                    t(
+                                      "reservationAllowanceManagement.unknownEvent",
+                                    )
                                   )}
-                              </TableCell>
-                              <TableCell>
-                                {allowance.reservationsAllowedCount}
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex gap-2">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => openEditModal(allowance)}
-                                  >
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    onClick={() =>
-                                      handleDeleteAllowance(allowance)
-                                    }
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </TableCell>
+                                </TableCell>
+                              )}
+                              {isColumnVisible("user") && (
+                                <TableCell>
+                                  {user?.username ||
+                                    t(
+                                      "reservationAllowanceManagement.unknownUser",
+                                    )}
+                                </TableCell>
+                              )}
+                              {isColumnVisible("allowedReservations") && (
+                                <TableCell>
+                                  {allowance.reservationsAllowedCount}
+                                </TableCell>
+                              )}
+                              {isColumnVisible("actions") && (
+                                <TableCell>
+                                  <div className="flex gap-2">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => openEditModal(allowance)}
+                                    >
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      onClick={() =>
+                                        handleDeleteAllowance(allowance)
+                                      }
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              )}
                             </TableRow>
                           );
                         })}

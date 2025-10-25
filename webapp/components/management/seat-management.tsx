@@ -21,10 +21,12 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
+import { ColumnFilter } from "@/components/common/column-filter";
 import { SeatFormModal } from "@/components/management/seat-form-modal";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
 import type { SeatDto, SeatRequestDto, EventLocationResponseDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
+import { useColumnVisibility } from "@/hooks/use-column-visibility";
 
 export interface SeatManagementProps {
   seats: SeatDto[];
@@ -56,6 +58,19 @@ export function SeatManagement({
   const [currentFilters, setCurrentFilters] =
     useState<Record<string, string>>(initialFilter);
   const [selectedIds, setSelectedIds] = useState<Set<bigint>>(new Set());
+
+  // Define column configuration
+  const columnConfig = [
+    { key: "select", label: t("seatManagement.table.selectHeader") },
+    { key: "seatNumber", label: t("seatManagement.table.seatNumberHeader") },
+    { key: "location", label: t("seatManagement.table.locationHeader") },
+    { key: "seatRow", label: t("seatManagement.table.seatRowHeader") },
+    { key: "position", label: t("seatManagement.table.positionHeader") },
+    { key: "actions", label: t("seatManagement.table.actionsHeader") },
+  ];
+
+  const { visibleColumns, toggleColumn, resetColumns, isColumnVisible } =
+    useColumnVisibility(columnConfig, "seat-management-columns");
 
   useEffect(() => {
     setCurrentFilters(initialFilter);
@@ -219,22 +234,30 @@ export function SeatManagement({
       </CardHeader>
 
       <CardContent>
-        <div>
-          <SearchAndFilter
-            onSearch={handleSearch}
-            onFilter={handleFilter}
-            filterOptions={[
-              {
-                key: "locationId",
-                label: t("seatManagement.filter.locationLabel"),
-                type: "select",
-                options: locations.map((loc) => ({
-                  value: loc.id?.toString() || "",
-                  label: loc.name || "",
-                })),
-              },
-            ]}
-            initialFilters={currentFilters}
+        <div className="flex gap-2 mb-4">
+          <div className="flex-1">
+            <SearchAndFilter
+              onSearch={handleSearch}
+              onFilter={handleFilter}
+              filterOptions={[
+                {
+                  key: "locationId",
+                  label: t("seatManagement.filter.locationLabel"),
+                  type: "select",
+                  options: locations.map((loc) => ({
+                    value: loc.id?.toString() || "",
+                    label: loc.name || "",
+                  })),
+                },
+              ]}
+              initialFilters={currentFilters}
+            />
+          </div>
+          <ColumnFilter
+            columns={columnConfig}
+            visibleColumns={visibleColumns}
+            onVisibilityChange={toggleColumn}
+            onResetColumns={resetColumns}
           />
         </div>
 
@@ -262,24 +285,36 @@ export function SeatManagement({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-12">
-                        {t("seatManagement.table.selectHeader")}
-                      </TableHead>
-                      <TableHead>
-                        {t("seatManagement.table.seatNumberHeader")}
-                      </TableHead>
-                      <TableHead>
-                        {t("seatManagement.table.locationHeader")}
-                      </TableHead>
-                      <TableHead>
-                        {t("seatManagement.table.seatRowHeader")}
-                      </TableHead>
-                      <TableHead>
-                        {t("seatManagement.table.positionHeader")}
-                      </TableHead>
-                      <TableHead>
-                        {t("seatManagement.table.actionsHeader")}
-                      </TableHead>
+                      {isColumnVisible("select") && (
+                        <TableHead className="w-12">
+                          {t("seatManagement.table.selectHeader")}
+                        </TableHead>
+                      )}
+                      {isColumnVisible("seatNumber") && (
+                        <TableHead>
+                          {t("seatManagement.table.seatNumberHeader")}
+                        </TableHead>
+                      )}
+                      {isColumnVisible("location") && (
+                        <TableHead>
+                          {t("seatManagement.table.locationHeader")}
+                        </TableHead>
+                      )}
+                      {isColumnVisible("seatRow") && (
+                        <TableHead>
+                          {t("seatManagement.table.seatRowHeader")}
+                        </TableHead>
+                      )}
+                      {isColumnVisible("position") && (
+                        <TableHead>
+                          {t("seatManagement.table.positionHeader")}
+                        </TableHead>
+                      )}
+                      {isColumnVisible("actions") && (
+                        <TableHead>
+                          {t("seatManagement.table.actionsHeader")}
+                        </TableHead>
+                      )}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -316,58 +351,70 @@ export function SeatManagement({
 
                           return (
                             <TableRow key={seat.id?.toString()}>
-                              <TableCell>
-                                <Checkbox
-                                  checked={
-                                    seat.id ? selectedIds.has(seat.id) : false
-                                  }
-                                  onCheckedChange={() =>
-                                    seat.id && handleToggleSelect(seat.id)
-                                  }
-                                />
-                              </TableCell>
-                              <TableCell className="font-medium">
-                                {seat.seatNumber}
-                              </TableCell>
-                              <TableCell>
-                                {location ? (
-                                  <Button
-                                    variant="link"
-                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
-                                    onClick={() =>
-                                      location.id &&
-                                      handleLocationClick(location.id)
+                              {isColumnVisible("select") && (
+                                <TableCell>
+                                  <Checkbox
+                                    checked={
+                                      seat.id ? selectedIds.has(seat.id) : false
                                     }
-                                  >
-                                    {location.name}
-                                    <ExternalLink className="ml-1 h-3 w-3" />
-                                  </Button>
-                                ) : (
-                                  t("seatManagement.unknownLocation")
-                                )}
-                              </TableCell>
-                              <TableCell>{seat.seatRow}</TableCell>
-                              <TableCell>
-                                ({seat.xCoordinate}, {seat.yCoordinate})
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex gap-2">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleEditSeat(seat)}
-                                  >
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    onClick={() => handleDeleteSeat(seat)}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </TableCell>
+                                    onCheckedChange={() =>
+                                      seat.id && handleToggleSelect(seat.id)
+                                    }
+                                  />
+                                </TableCell>
+                              )}
+                              {isColumnVisible("seatNumber") && (
+                                <TableCell className="font-medium">
+                                  {seat.seatNumber}
+                                </TableCell>
+                              )}
+                              {isColumnVisible("location") && (
+                                <TableCell>
+                                  {location ? (
+                                    <Button
+                                      variant="link"
+                                      className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                                      onClick={() =>
+                                        location.id &&
+                                        handleLocationClick(location.id)
+                                      }
+                                    >
+                                      {location.name}
+                                      <ExternalLink className="ml-1 h-3 w-3" />
+                                    </Button>
+                                  ) : (
+                                    t("seatManagement.unknownLocation")
+                                  )}
+                                </TableCell>
+                              )}
+                              {isColumnVisible("seatRow") && (
+                                <TableCell>{seat.seatRow}</TableCell>
+                              )}
+                              {isColumnVisible("position") && (
+                                <TableCell>
+                                  ({seat.xCoordinate}, {seat.yCoordinate})
+                                </TableCell>
+                              )}
+                              {isColumnVisible("actions") && (
+                                <TableCell>
+                                  <div className="flex gap-2">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleEditSeat(seat)}
+                                    >
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      onClick={() => handleDeleteSeat(seat)}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              )}
                             </TableRow>
                           );
                         })}
