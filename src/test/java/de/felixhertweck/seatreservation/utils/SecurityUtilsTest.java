@@ -60,9 +60,8 @@ class SecurityUtilsTest {
     void generateRandomBytes_GeneratesRandomValues() {
         byte[] first = SecurityUtils.generateRandomBytes(16);
         byte[] second = SecurityUtils.generateRandomBytes(16);
-        assertNotEquals(
-                java.util.Arrays.hashCode(first),
-                java.util.Arrays.hashCode(second),
+        assertFalse(
+                java.util.Arrays.equals(first, second),
                 "Consecutive calls should generate different random values");
     }
 
@@ -112,12 +111,6 @@ class SecurityUtilsTest {
             int result = SecurityUtils.nextInt(bound);
             assertTrue(result >= 0 && result < bound, "Result should be within [0, 2)");
         }
-    }
-
-    @Test
-    void nextLong_ReturnsNonNull() {
-        long result = SecurityUtils.nextLong();
-        assertNotNull(result, "nextLong should return a value");
     }
 
     @Test
