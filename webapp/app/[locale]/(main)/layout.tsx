@@ -4,12 +4,12 @@ import {
   SidebarInset,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
+import { AppSidebar } from "@/components/sidebar";
 import { LoginRequiredPopup } from "@/components/common/login-required-popup";
 import { EmailVerificationPrompt } from "@/components/common/email-verification-prompt";
 import { UnsavedChangesAlert } from "@/components/common/unsaved-changes-alert";
 import Link from "next/link";
-import { AppFooter } from "@/components/app-footer";
+import { AppFooter } from "@/components/footer";
 
 export default async function MainLayout({
   params,
