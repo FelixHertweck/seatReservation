@@ -163,7 +163,7 @@ export function UserFormModal({
               />
               {isCreating && (
                 <p className="text-xs text-muted-foreground mt-1">
-                  {t("userFormModal.usernameHint")}
+                  {t("validation.usernameHint")}
                 </p>
               )}
             </div>

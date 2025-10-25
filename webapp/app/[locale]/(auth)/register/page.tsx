@@ -104,7 +104,7 @@ export default function RegisterPage() {
                 required
               />
               <p className="text-xs text-muted-foreground">
-                {t("register.usernameHint")}
+                {t("validation.usernameHint")}
               </p>
             </div>
             <div className="space-y-2">

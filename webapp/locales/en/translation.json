@@ -1,4 +1,7 @@
 {
+  "validation": {
+    "usernameHint": "3-64 characters: letters, numbers, dots, underscores, hyphens"
+  },
   "error": {
     "title": "Error",
     "dataLoadFailed": "Failed to load data. Please try again.",
@@ -69,7 +72,6 @@
     "lastNamePlaceholder": "Doe",
     "username": "Username",
     "usernamePlaceholder": "johndoe",
-    "usernameHint": "3-64 characters: letters, numbers, dots, underscores, hyphens",
     "email": "Email",
     "emailPlaceholder": "john@example.com",
     "password": "Password",
@@ -331,7 +333,6 @@
     "addNewUserTitle": "Add New User",
     "editUserTitle": "Edit User",
     "usernameLabel": "Username",
-    "usernameHint": "3-64 characters: letters, numbers, dots, underscores, hyphens",
     "passwordLabel": "Password",
     "passwordTooShort": "Password must be at least 8 characters long",
     "firstNameLabel": "First Name",
