@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.management.service.EventService;
 import de.felixhertweck.seatreservation.management.service.ReservationService;
@@ -49,7 +48,6 @@ public class NotificationService {
     @Inject EmailService emailService;
 
     @Scheduled(cron = "0 0 9 * * ?")
-    @Transactional
     public void sendEventReminders() {
         LOG.info("Starting scheduled event reminder task.");
         LocalDate tomorrow = LocalDate.now(ZoneId.systemDefault()).plusDays(1);
@@ -79,8 +77,7 @@ public class NotificationService {
                         } catch (Exception e) {
                             LOG.errorf(
                                     e,
-                                    "Fehler beim Senden der Erinnerungs-E-Mail an %s für Event %s:"
-                                            + " %s",
+                                    "Error sending reminder email to %s for event %s: %s",
                                     user.getEmail(),
                                     event.getName(),
                                     e.getMessage());
@@ -91,7 +88,6 @@ public class NotificationService {
     }
 
     @Scheduled(cron = "0 0 8 * * ?")
-    @Transactional
     public void sendDailyReservationCsvToManagers() {
         LOG.info("Starting scheduled CSV export task for event managers.");
         LocalDate today = LocalDate.now(ZoneId.systemDefault());
