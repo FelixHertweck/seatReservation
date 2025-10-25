@@ -103,6 +103,9 @@ export default function RegisterPage() {
                 autoComplete="username"
                 required
               />
+              <p className="text-xs text-muted-foreground">
+                {t("register.usernameHint")}
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">{t("register.email")}</Label>

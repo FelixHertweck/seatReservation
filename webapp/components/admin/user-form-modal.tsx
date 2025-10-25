@@ -152,15 +152,21 @@ export function UserFormModal({
             <Label htmlFor="username" className="text-right">
               {t("userFormModal.usernameLabel")}
             </Label>
-            <Input
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="col-span-3"
-              disabled={!isCreating} // Username typically not editable after creation
-              autoCapitalize="none"
-              autoComplete="username"
-            />
+            <div className="col-span-3">
+              <Input
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                disabled={!isCreating} // Username typically not editable after creation
+                autoCapitalize="none"
+                autoComplete="username"
+              />
+              {isCreating && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t("userFormModal.usernameHint")}
+                </p>
+              )}
+            </div>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="password" className="text-right">
