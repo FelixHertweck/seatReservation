@@ -479,8 +479,7 @@ public class UserService {
      * @throws VerifyTokenExpiredException If the verification code has expired.
      */
     @Transactional
-    public String verifyEmailWithCode(String verificationCode)
-            throws VerifyTokenExpiredException, IllegalArgumentException {
+    public String verifyEmailWithCode(String verificationCode) throws VerifyTokenExpiredException {
         LOG.debugf("Attempting to verify email with verification code.");
 
         // Validate verification code

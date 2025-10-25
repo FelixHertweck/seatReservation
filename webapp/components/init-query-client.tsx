@@ -51,7 +51,11 @@ export default function InitQueryClient({
           // Retry original request
           response = await fetch(input, init);
         } else {
-          console.error("Failed to refresh token:", refreshResponse.status, refreshResponse.statusText);
+          console.error(
+            "Failed to refresh token:",
+            refreshResponse.status,
+            refreshResponse.statusText,
+          );
           triggerLoginRequired();
         }
       }
