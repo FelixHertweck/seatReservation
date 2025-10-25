@@ -3,8 +3,8 @@
 import { type DefaultError, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { deleteApiManagerEventlocations, deleteApiManagerEvents, deleteApiManagerReservationAllowance, deleteApiManagerReservations, deleteApiManagerSeats, deleteApiUserReservations, deleteApiUsersAdminById, getApiManagerEventlocations, getApiManagerEvents, getApiManagerEventsById, getApiManagerReservationAllowance, getApiManagerReservationAllowanceById, getApiManagerReservationAllowanceEventByEventId, getApiManagerReservations, getApiManagerReservationsById, getApiManagerReservationsEventById, getApiManagerReservationsExportByEventIdCsv, getApiManagerReservationsExportByEventIdPdf, getApiManagerSeats, getApiManagerSeatsById, getApiUserEvents, getApiUserLocations, getApiUserReservations, getApiUserReservationsById, getApiUsersAdmin, getApiUsersManager, getApiUsersMe, getApiUsersRoles, type Options, postApiAuthLogin, postApiAuthLogout, postApiAuthRegister, postApiManagerEventlocations, postApiManagerEventlocationsImport, postApiManagerEventlocationsImportById, postApiManagerEvents, postApiManagerReservationAllowance, postApiManagerReservations, postApiManagerReservationsBlock, postApiManagerSeats, postApiUserResendEmailConfirmation, postApiUserReservations, postApiUsersAdmin, postApiUsersAdminImport, postApiUserVerifyEmailCode, putApiManagerEventlocationsById, putApiManagerEventsById, putApiManagerReservationAllowance, putApiManagerSeatsById, putApiUsersAdminById, putApiUsersMe } from '../sdk.gen';
-import type { DeleteApiManagerEventlocationsData, DeleteApiManagerEventlocationsResponse, DeleteApiManagerEventsData, DeleteApiManagerEventsResponse, DeleteApiManagerReservationAllowanceData, DeleteApiManagerReservationAllowanceResponse, DeleteApiManagerReservationsData, DeleteApiManagerReservationsResponse, DeleteApiManagerSeatsData, DeleteApiManagerSeatsResponse, DeleteApiUserReservationsData, DeleteApiUserReservationsResponse, DeleteApiUsersAdminByIdData, DeleteApiUsersAdminByIdResponse, GetApiManagerEventlocationsData, GetApiManagerEventsByIdData, GetApiManagerEventsData, GetApiManagerReservationAllowanceByIdData, GetApiManagerReservationAllowanceData, GetApiManagerReservationAllowanceEventByEventIdData, GetApiManagerReservationsByIdData, GetApiManagerReservationsData, GetApiManagerReservationsEventByIdData, GetApiManagerReservationsExportByEventIdCsvData, GetApiManagerReservationsExportByEventIdPdfData, GetApiManagerSeatsByIdData, GetApiManagerSeatsData, GetApiUserEventsData, GetApiUserLocationsData, GetApiUserReservationsByIdData, GetApiUserReservationsData, GetApiUsersAdminData, GetApiUsersManagerData, GetApiUsersMeData, GetApiUsersRolesData, PostApiAuthLoginData, PostApiAuthLogoutData, PostApiAuthRegisterData, PostApiManagerEventlocationsData, PostApiManagerEventlocationsImportByIdData, PostApiManagerEventlocationsImportByIdResponse, PostApiManagerEventlocationsImportData, PostApiManagerEventlocationsImportResponse, PostApiManagerEventlocationsResponse, PostApiManagerEventsData, PostApiManagerEventsResponse, PostApiManagerReservationAllowanceData, PostApiManagerReservationAllowanceResponse, PostApiManagerReservationsBlockData, PostApiManagerReservationsBlockResponse, PostApiManagerReservationsData, PostApiManagerReservationsResponse, PostApiManagerSeatsData, PostApiManagerSeatsResponse, PostApiUserResendEmailConfirmationData, PostApiUserResendEmailConfirmationResponse, PostApiUserReservationsData, PostApiUserReservationsResponse, PostApiUsersAdminData, PostApiUsersAdminImportData, PostApiUsersAdminImportResponse, PostApiUserVerifyEmailCodeData, PutApiManagerEventlocationsByIdData, PutApiManagerEventlocationsByIdResponse, PutApiManagerEventsByIdData, PutApiManagerEventsByIdResponse, PutApiManagerReservationAllowanceData, PutApiManagerReservationAllowanceResponse, PutApiManagerSeatsByIdData, PutApiManagerSeatsByIdResponse, PutApiUsersAdminByIdData, PutApiUsersAdminByIdResponse, PutApiUsersMeData, PutApiUsersMeResponse } from '../types.gen';
+import { deleteApiManagerEventlocations, deleteApiManagerEvents, deleteApiManagerReservationAllowance, deleteApiManagerReservations, deleteApiManagerSeats, deleteApiUserReservations, deleteApiUsersAdminById, getApiManagerEventlocations, getApiManagerEvents, getApiManagerEventsById, getApiManagerReservationAllowance, getApiManagerReservationAllowanceById, getApiManagerReservationAllowanceEventByEventId, getApiManagerReservations, getApiManagerReservationsById, getApiManagerReservationsEventById, getApiManagerReservationsExportByEventIdCsv, getApiManagerReservationsExportByEventIdPdf, getApiManagerSeats, getApiManagerSeatsById, getApiUserEvents, getApiUserLocations, getApiUserReservations, getApiUserReservationsById, getApiUsersAdmin, getApiUsersManager, getApiUsersMe, getApiUsersRoles, type Options, postApiAuthLogin, postApiAuthLogout, postApiAuthLogoutAllDevices, postApiAuthRefresh, postApiAuthRegister, postApiManagerEventlocations, postApiManagerEventlocationsImport, postApiManagerEventlocationsImportById, postApiManagerEvents, postApiManagerReservationAllowance, postApiManagerReservations, postApiManagerReservationsBlock, postApiManagerSeats, postApiUserResendEmailConfirmation, postApiUserReservations, postApiUsersAdmin, postApiUsersAdminImport, postApiUserVerifyEmailCode, putApiManagerEventlocationsById, putApiManagerEventsById, putApiManagerReservationAllowance, putApiManagerSeatsById, putApiUsersAdminById, putApiUsersMe } from '../sdk.gen';
+import type { DeleteApiManagerEventlocationsData, DeleteApiManagerEventlocationsResponse, DeleteApiManagerEventsData, DeleteApiManagerEventsResponse, DeleteApiManagerReservationAllowanceData, DeleteApiManagerReservationAllowanceResponse, DeleteApiManagerReservationsData, DeleteApiManagerReservationsResponse, DeleteApiManagerSeatsData, DeleteApiManagerSeatsResponse, DeleteApiUserReservationsData, DeleteApiUserReservationsResponse, DeleteApiUsersAdminByIdData, DeleteApiUsersAdminByIdResponse, GetApiManagerEventlocationsData, GetApiManagerEventsByIdData, GetApiManagerEventsData, GetApiManagerReservationAllowanceByIdData, GetApiManagerReservationAllowanceData, GetApiManagerReservationAllowanceEventByEventIdData, GetApiManagerReservationsByIdData, GetApiManagerReservationsData, GetApiManagerReservationsEventByIdData, GetApiManagerReservationsExportByEventIdCsvData, GetApiManagerReservationsExportByEventIdPdfData, GetApiManagerSeatsByIdData, GetApiManagerSeatsData, GetApiUserEventsData, GetApiUserLocationsData, GetApiUserReservationsByIdData, GetApiUserReservationsData, GetApiUsersAdminData, GetApiUsersManagerData, GetApiUsersMeData, GetApiUsersRolesData, PostApiAuthLoginData, PostApiAuthLogoutAllDevicesData, PostApiAuthLogoutData, PostApiAuthRefreshData, PostApiAuthRegisterData, PostApiManagerEventlocationsData, PostApiManagerEventlocationsImportByIdData, PostApiManagerEventlocationsImportByIdResponse, PostApiManagerEventlocationsImportData, PostApiManagerEventlocationsImportResponse, PostApiManagerEventlocationsResponse, PostApiManagerEventsData, PostApiManagerEventsResponse, PostApiManagerReservationAllowanceData, PostApiManagerReservationAllowanceResponse, PostApiManagerReservationsBlockData, PostApiManagerReservationsBlockResponse, PostApiManagerReservationsData, PostApiManagerReservationsResponse, PostApiManagerSeatsData, PostApiManagerSeatsResponse, PostApiUserResendEmailConfirmationData, PostApiUserResendEmailConfirmationResponse, PostApiUserReservationsData, PostApiUserReservationsResponse, PostApiUsersAdminData, PostApiUsersAdminImportData, PostApiUsersAdminImportResponse, PostApiUserVerifyEmailCodeData, PutApiManagerEventlocationsByIdData, PutApiManagerEventlocationsByIdResponse, PutApiManagerEventsByIdData, PutApiManagerEventsByIdResponse, PutApiManagerReservationAllowanceData, PutApiManagerReservationAllowanceResponse, PutApiManagerSeatsByIdData, PutApiManagerSeatsByIdResponse, PutApiUsersAdminByIdData, PutApiUsersAdminByIdResponse, PutApiUsersMeData, PutApiUsersMeResponse } from '../types.gen';
 
 /**
  * Login
@@ -30,6 +30,40 @@ export const postApiAuthLogoutMutation = (options?: Partial<Options<PostApiAuthL
     const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<PostApiAuthLogoutData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await postApiAuthLogout({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Logout All Devices
+ */
+export const postApiAuthLogoutAllDevicesMutation = (options?: Partial<Options<PostApiAuthLogoutAllDevicesData>>): UseMutationOptions<unknown, DefaultError, Options<PostApiAuthLogoutAllDevicesData>> => {
+    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<PostApiAuthLogoutAllDevicesData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await postApiAuthLogoutAllDevices({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Refresh Token
+ */
+export const postApiAuthRefreshMutation = (options?: Partial<Options<PostApiAuthRefreshData>>): UseMutationOptions<unknown, DefaultError, Options<PostApiAuthRefreshData>> => {
+    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<PostApiAuthRefreshData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await postApiAuthRefresh({
                 ...options,
                 ...fnOptions,
                 throwOnError: true

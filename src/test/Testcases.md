@@ -78,17 +78,37 @@ This is an overview of the test cases for the application.
 | `createNewJwtCookie_EmptyToken` | Tests the behavior when creating a cookie with an empty token. |
 | `createNewJwtCookie_NullToken` | Tests the behavior when creating a cookie with a null token. |
 | `generateToken_CustomExpirationTime` | Checks that custom expiration times (e.g., 24 hours) are applied correctly. |
+| `generateRefreshToken_Success` | Successfully generates and stores a refresh token for a user. |
+| `validateRefreshToken_Success` | Successfully validates a valid refresh token. |
+| `validateRefreshToken_ExpiredToken` | Attempts to validate an expired refresh token. Expects `JwtInvalidException`. |
+| `validateRefreshToken_InvalidJwt` | Attempts to validate a malformed or invalid JWT. Expects `JwtInvalidException`. |
+| `validateRefreshToken_TokenNotFoundInDatabase` | Attempts to validate a token that is not in the database. Expects `JwtInvalidException`. |
+| `validateRefreshToken_InvalidTokenValue` | Attempts to validate a token with an incorrect value. Expects `JwtInvalidException`. |
+| `createNewRefreshTokenCookie` | Successfully creates a refresh token cookie with correct properties. |
+| `createStatusCookie` | Successfully creates a status cookie for refresh token expiration. |
+| `logoutAllDevices` | Successfully deletes all refresh tokens for a user. |
+| `logoutAllDevices_DoesNotAffectOtherUsers` | Ensures that logging out all devices for one user does not affect other users' tokens. |
 
 ### AuthResource
 
 | Test Case | Description |
 | :--- | :--- |
-| `login_Success` | Sends a POST request to `/api/auth/login` with valid credentials. Expects a 200 OK status and a JWT cookie with the correct `Max-Age`. |
+| `login_Success` | Sends a POST request to `/api/auth/login` with valid credentials. Expects a 200 OK status and JWT, refresh token, and expiration cookies. |
 | `login_AuthenticationFailedException_InvalidCredentials` | Sends a POST request to `/api/auth/login` with invalid credentials. Expects a 401 Unauthorized status. |
 | `login_BadRequest_MissingCredentials` | Sends a POST request to `/api/auth/login` without a username or password. Expects a 400 Bad Request status. |
-| `register_Success` | Sends a POST request to `/api/auth/register` with valid registration data. Expects a 201 Created status. |
+| `register_Success` | Sends a POST request to `/api/auth/register` with valid registration data. Expects a 200 OK status and JWT, refresh token, and expiration cookies. |
 | `register_Failure_DuplicateUsername` | Sends a POST request to `/api/auth/register` with an already existing username. Expects a 409 Conflict status. |
 | `register_Failure_InvalidData` | Sends a POST request to `/api/auth/register` with invalid data (e.g., missing username, too short password). Expects a 400 Bad Request status. |
+| `refreshToken_Success` | Successfully refreshes the JWT using a valid refresh token. |
+| `refreshToken_InvalidToken` | Attempts to refresh the JWT with an invalid refresh token. Expects 401 Unauthorized. |
+| `refreshToken_MissingToken` | Attempts to refresh the JWT without a refresh token. Expects 401 Unauthorized. |
+| `refreshToken_EmptyToken` | Attempts to refresh the JWT with an empty refresh token. Expects 401 Unauthorized. |
+| `refreshToken_ServiceThrowsException` | Simulates an internal server error during token refresh. Expects 500 Internal Server Error. |
+| `logout_Success` | Successfully logs out the current device by clearing cookies. |
+| `logout_NoRefreshTokenCookie` | Ensures the logout endpoint works correctly even if no refresh token cookie is present. |
+| `logoutAllDevices_Success` | Successfully logs out from all devices by invalidating all refresh tokens. |
+| `logoutAllDevices_WithoutAuth_Unauthorized` | Attempts to log out from all devices without authentication. Expects 401 Unauthorized. |
+| `logoutAllDevices_WithInvalidToken_Unauthorized` | Attempts to log out from all devices with an invalid JWT. Expects 401 Unauthorized. |
 
 ## UserService
 
@@ -513,7 +533,8 @@ This is an overview of the test cases for the application.
 | `testDuplicateUserException` | Tests the handling of `DuplicateUserException` and expects HTTP status 409 (Conflict). |
 | `testSeatAlreadyReservedException` | Tests the handling of `SeatAlreadyReservedException` and expects HTTP status 409 (Conflict). |
 | `testAuthenticationFailedException` | Tests the handling of `AuthenticationFailedException` and expects HTTP status 401 (Unauthorized). |
-| `testTokenExpiredException` | Tests the handling of `TokenExpiredException` and expects HTTP status 401 (Unauthorized). |
+| `testJwtInvalidException` | Tests the handling of `JwtInvalidException` and expects HTTP status 401 (Unauthorized). |
+| `testVerifyTokenExpiredException` | Tests the handling of `VerifyTokenExpiredException` and expects HTTP status 410 (Gone). |
 | `testInvalidUserException` | Tests the handling of `InvalidUserException` and expects HTTP status 400 (Bad Request). |
 | `testEventBookingClosedException` | Tests the handling of `EventBookingClosedException` and expects HTTP status 400 (Bad Request). |
 | `testNoSeatsAvailableException` | Tests the handling of `NoSeatsAvailableException` and expects HTTP status 400 (Bad Request). |

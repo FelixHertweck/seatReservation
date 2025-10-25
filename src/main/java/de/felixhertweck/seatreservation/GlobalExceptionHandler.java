@@ -35,7 +35,8 @@ import de.felixhertweck.seatreservation.reservation.exception.EventBookingClosed
 import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
-import de.felixhertweck.seatreservation.userManagment.exceptions.TokenExpiredException;
+import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
+import de.felixhertweck.seatreservation.userManagment.exceptions.VerifyTokenExpiredException;
 import org.jboss.logging.Logger;
 
 @Provider
@@ -56,10 +57,11 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
             case SeatNotFoundException ignored -> status = Response.Status.NOT_FOUND;
             case NoSeatsAvailableException ignored -> status = Response.Status.BAD_REQUEST;
             case SeatAlreadyReservedException ignored -> status = Response.Status.CONFLICT;
+            case JwtInvalidException ignored -> status = Response.Status.UNAUTHORIZED;
             case AuthenticationFailedException ignored -> status = Response.Status.UNAUTHORIZED;
             case DuplicateUserException ignored -> status = Response.Status.CONFLICT;
             case InvalidUserException ignored -> status = Response.Status.BAD_REQUEST;
-            case TokenExpiredException ignored -> status = Response.Status.UNAUTHORIZED;
+            case VerifyTokenExpiredException ignored -> status = Response.Status.GONE;
             case UserNotFoundException ignored -> status = Response.Status.NOT_FOUND;
             case IllegalArgumentException ignored -> status = Response.Status.BAD_REQUEST;
             case SecurityException ignored -> status = Response.Status.FORBIDDEN;

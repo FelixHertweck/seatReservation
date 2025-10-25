@@ -795,10 +795,60 @@
       "post" : {
         "responses" : {
           "200" : {
-            "description" : "Logout successful, JWT cookie cleared"
+            "description" : "Logout successful, JWT and refresh token cookies cleared"
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
           }
         },
         "summary" : "Logout",
+        "tags" : [ "Auth Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "USER", "ADMIN", "MANAGER" ]
+        } ]
+      }
+    },
+    "/api/auth/logoutAllDevices" : {
+      "post" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Logout All Devices",
+        "tags" : [ "Auth Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "USER", "ADMIN", "MANAGER" ]
+        } ]
+      }
+    },
+    "/api/auth/refresh" : {
+      "post" : {
+        "parameters" : [ {
+          "name" : "refreshToken",
+          "in" : "cookie",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Token refresh successful, new JWT cookie set"
+          },
+          "401" : {
+            "description" : "Unauthorized: Invalid or expired token"
+          }
+        },
+        "summary" : "Refresh Token",
         "tags" : [ "Auth Resource" ]
       }
     },

@@ -277,9 +277,66 @@ export type PostApiAuthLogoutData = {
     url: '/api/auth/logout';
 };
 
+export type PostApiAuthLogoutErrors = {
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
 export type PostApiAuthLogoutResponses = {
     /**
-     * Logout successful, JWT cookie cleared
+     * Logout successful, JWT and refresh token cookies cleared
+     */
+    200: unknown;
+};
+
+export type PostApiAuthLogoutAllDevicesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/auth/logoutAllDevices';
+};
+
+export type PostApiAuthLogoutAllDevicesErrors = {
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type PostApiAuthLogoutAllDevicesResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type PostApiAuthRefreshData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/auth/refresh';
+};
+
+export type PostApiAuthRefreshErrors = {
+    /**
+     * Unauthorized: Invalid or expired token
+     */
+    401: unknown;
+};
+
+export type PostApiAuthRefreshResponses = {
+    /**
+     * Token refresh successful, new JWT cookie set
      */
     200: unknown;
 };

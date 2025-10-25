@@ -28,7 +28,7 @@ import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.felixhertweck.seatreservation.userManagment.dto.VerifyEmailCodeRequestDto;
-import de.felixhertweck.seatreservation.userManagment.exceptions.TokenExpiredException;
+import de.felixhertweck.seatreservation.userManagment.exceptions.VerifyTokenExpiredException;
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -75,7 +75,7 @@ class EmailConfirmationResourceTest {
                 .post("/api/user/verify-email-code")
                 .then()
                 .statusCode(Response.Status.BAD_REQUEST.getStatusCode())
-                .body("error", containsString("Verification code not found"));
+                .body("message", containsString("Verification code not found"));
 
         verify(userService, times(1)).verifyEmailWithCode("123456");
     }
@@ -85,7 +85,7 @@ class EmailConfirmationResourceTest {
         // Given
         VerifyEmailCodeRequestDto request = new VerifyEmailCodeRequestDto("123456");
         when(userService.verifyEmailWithCode("123456"))
-                .thenThrow(new TokenExpiredException("Verification code expired"));
+                .thenThrow(new VerifyTokenExpiredException("Verification code expired"));
 
         // When & Then
         given().contentType(ContentType.JSON)
@@ -163,8 +163,7 @@ class EmailConfirmationResourceTest {
                 .when()
                 .post("/api/user/verify-email-code")
                 .then()
-                .statusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode())
-                .body("error", containsString("Internal server error"));
+                .statusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
 
         verify(userService, times(1)).verifyEmailWithCode("123456");
     }

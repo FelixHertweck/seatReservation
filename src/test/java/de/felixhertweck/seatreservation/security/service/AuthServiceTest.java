@@ -48,7 +48,6 @@ public class AuthServiceTest {
         Mockito.reset(userRepository, tokenService);
         authService = new AuthService();
         authService.userRepository = userRepository;
-        authService.tokenService = tokenService;
     }
 
     @Test
@@ -57,7 +56,6 @@ public class AuthServiceTest {
         String password = "testpassword";
         String salt = "randomSalt"; // Mock salt
         String passwordHash = BcryptUtil.bcryptHash(password + salt);
-        String expectedToken = "mockedToken";
 
         User user = new User();
         user.setUsername(username);
@@ -65,11 +63,11 @@ public class AuthServiceTest {
         user.setPasswordSalt(salt);
 
         when(userRepository.findByUsername(username)).thenReturn(user);
-        when(tokenService.generateToken(user)).thenReturn(expectedToken);
 
-        String actualToken = authService.authenticate(username, password);
+        User authenticatedUser = authService.authenticate(username, password);
 
-        assertEquals(expectedToken, actualToken);
+        assertNotNull(authenticatedUser);
+        assertEquals(username, authenticatedUser.getUsername());
     }
 
     @Test
@@ -78,7 +76,6 @@ public class AuthServiceTest {
         String password = "testpassword";
         String salt = "randomSalt"; // Mock salt
         String passwordHash = BcryptUtil.bcryptHash(password + salt);
-        String expectedToken = "mockedToken";
 
         User user = new User();
         user.setEmail(email);
@@ -86,11 +83,11 @@ public class AuthServiceTest {
         user.setPasswordSalt(salt);
 
         when(userRepository.findAllByEmail(email)).thenReturn(List.of(user));
-        when(tokenService.generateToken(user)).thenReturn(expectedToken);
 
-        String actualToken = authService.authenticate(email, password);
+        User authenticatedUser = authService.authenticate(email, password);
 
-        assertEquals(expectedToken, actualToken);
+        assertNotNull(authenticatedUser);
+        assertEquals(email, authenticatedUser.getEmail());
     }
 
     @Test
@@ -189,9 +186,8 @@ public class AuthServiceTest {
         user.setPasswordSalt(salt);
 
         when(userRepository.findAllByEmail(email)).thenReturn(List.of(user));
-        when(tokenService.generateToken(user)).thenReturn("token");
 
-        String result = authService.authenticate(email, password);
+        User result = authService.authenticate(email, password);
         assertNotNull(result);
 
         // Verify email lookup was used, not username lookup
@@ -236,9 +232,8 @@ public class AuthServiceTest {
         user.setPasswordSalt(salt);
 
         when(userRepository.findAllByEmail(email)).thenReturn(List.of(user));
-        when(tokenService.generateToken(user)).thenReturn("token");
 
-        String result = authService.authenticate(email, password);
+        User result = authService.authenticate(email, password);
         assertNotNull(result);
 
         // Verify email method was called, not username
@@ -260,9 +255,8 @@ public class AuthServiceTest {
         user.setPasswordSalt(salt);
 
         when(userRepository.findByUsername(username)).thenReturn(user);
-        when(tokenService.generateToken(user)).thenReturn("token");
 
-        String result = authService.authenticate(username, password);
+        User result = authService.authenticate(username, password);
         assertNotNull(result);
 
         // Verify username method was called, not email
@@ -296,7 +290,6 @@ public class AuthServiceTest {
         String password = "p@ssw0rd!#$%^&*()";
         String salt = "randomSalt";
         String passwordHash = BcryptUtil.bcryptHash(password + salt);
-        String expectedToken = "mockedToken";
 
         User user = new User();
         user.setUsername(username);
@@ -304,10 +297,10 @@ public class AuthServiceTest {
         user.setPasswordSalt(salt);
 
         when(userRepository.findByUsername(username)).thenReturn(user);
-        when(tokenService.generateToken(user)).thenReturn(expectedToken);
 
-        String actualToken = authService.authenticate(username, password);
+        User authenticatedUser = authService.authenticate(username, password);
 
-        assertEquals(expectedToken, actualToken);
+        assertNotNull(authenticatedUser);
+        assertEquals(username, authenticatedUser.getUsername());
     }
 }

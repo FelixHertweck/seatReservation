@@ -19,6 +19,12 @@
       "description": "You have been successfully logged out."
     }
   },
+  "logoutAll": {
+    "success": {
+      "title": "Logout from all devices successful",
+      "description": "You have been successfully logged out from all devices."
+    }
+  },
   "login": {
     "logoutButton": "Logout",
     "success": {
@@ -779,6 +785,7 @@
     "english": "English",
     "german": "German",
     "logout": "Logout",
+    "logoutAll": "Logout from all devices",
     "login": "Login",
     "unsavedChangesTitle": "Unsaved Changes",
     "unsavedChangesDescription": "You have unsaved changes on this page. What would you like to do?",

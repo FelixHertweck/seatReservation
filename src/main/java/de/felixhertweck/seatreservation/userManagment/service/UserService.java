@@ -47,7 +47,7 @@ import de.felixhertweck.seatreservation.userManagment.dto.AdminUserUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.exceptions.SendEmailException;
-import de.felixhertweck.seatreservation.userManagment.exceptions.TokenExpiredException;
+import de.felixhertweck.seatreservation.userManagment.exceptions.VerifyTokenExpiredException;
 import de.felixhertweck.seatreservation.utils.SecurityUtils;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import org.jboss.logging.Logger;
@@ -476,10 +476,11 @@ public class UserService {
      * @param verificationCode The 6-digit verification code to verify.
      * @return The email address of the user if verification is successful.
      * @throws IllegalArgumentException If the verification code is invalid.
-     * @throws TokenExpiredException If the verification code has expired.
+     * @throws VerifyTokenExpiredException If the verification code has expired.
      */
     @Transactional
-    public String verifyEmailWithCode(String verificationCode) throws TokenExpiredException {
+    public String verifyEmailWithCode(String verificationCode)
+            throws VerifyTokenExpiredException, IllegalArgumentException {
         LOG.debugf("Attempting to verify email with verification code.");
 
         // Validate verification code
@@ -508,7 +509,7 @@ public class UserService {
             LOG.warnf(
                     "Email verification code has expired. Expiration time: %s, Current time: %s",
                     emailVerification.getExpirationTime(), Instant.now());
-            throw new TokenExpiredException("Verification code expired");
+            throw new VerifyTokenExpiredException("Verification code expired");
         }
         LOG.debugf("Verification code is not expired.");
 

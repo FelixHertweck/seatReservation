@@ -42,8 +42,6 @@ public class AuthService {
 
     @Inject UserRepository userRepository;
 
-    @Inject TokenService tokenService;
-
     @Inject UserService userService;
 
     /**
@@ -51,17 +49,17 @@ public class AuthService {
      *
      * @param identifier the identifier of the user
      * @param password the password of the user
-     * @return a JWT token if authentication is successful
+     * @return the authenticated User if authentication is successful
      * @throws AuthenticationFailedException if authentication fails
      */
-    public String authenticate(String identifier, String password)
+    public User authenticate(String identifier, String password)
             throws AuthenticationFailedException {
         LOG.debugf("Attempting to authenticate user with identifier: %s", identifier);
         if (isIdentifierEmail(identifier)) {
             for (User user : userRepository.findAllByEmail(identifier)) {
                 if (passwordMatches(password, user.getPasswordSalt(), user.getPasswordHash())) {
                     LOG.infof("User %s authenticated successfully.", user.getUsername());
-                    return tokenService.generateToken(user);
+                    return user;
                 }
                 LOG.debugf("Password mismatch for user %s.", user.getUsername());
             }
@@ -75,7 +73,7 @@ public class AuthService {
             }
             if (passwordMatches(password, user.getPasswordSalt(), user.getPasswordHash())) {
                 LOG.infof("User %s authenticated successfully.", user.getUsername());
-                return tokenService.generateToken(user);
+                return user;
             }
         }
 
@@ -92,11 +90,11 @@ public class AuthService {
      * Registers a new user with the given registration details.
      *
      * @param registerRequest the registration details
-     * @return a JWT token if registration is successful
+     * @return the registered User
      * @throws DuplicateUserException if the user already exists
      * @throws InvalidUserException if the user details are invalid
      */
-    public String register(RegisterRequestDTO registerRequest)
+    public User register(RegisterRequestDTO registerRequest)
             throws DuplicateUserException, InvalidUserException {
         LOG.debugf("Attempting to register new user: %s", registerRequest.getUsername());
 
@@ -113,7 +111,7 @@ public class AuthService {
 
         LOG.infof("User %s registered successfully", registerRequest.getUsername());
 
-        return tokenService.generateToken(user);
+        return user;
     }
 
     private boolean isIdentifierEmail(String identifier) {

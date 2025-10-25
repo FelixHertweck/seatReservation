@@ -35,7 +35,8 @@ import de.felixhertweck.seatreservation.reservation.exception.EventBookingClosed
 import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
-import de.felixhertweck.seatreservation.userManagment.exceptions.TokenExpiredException;
+import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
+import de.felixhertweck.seatreservation.userManagment.exceptions.VerifyTokenExpiredException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -142,10 +143,10 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void testTokenExpiredException() {
-        TokenExpiredException exception = new TokenExpiredException("Token expired");
+        VerifyTokenExpiredException exception = new VerifyTokenExpiredException("Token expired");
         Response response = exceptionHandler.toResponse(exception);
 
-        assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
+        assertEquals(Response.Status.GONE.getStatusCode(), response.getStatus());
         assertTrue(response.getEntity() instanceof ErrorResponseDTO);
         ErrorResponseDTO errorResponse = (ErrorResponseDTO) response.getEntity();
         assertEquals("Token expired", errorResponse.getMessage());
@@ -218,13 +219,13 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void testExceptionWithEmptyMessage() {
-        RuntimeException exception = new RuntimeException("");
+    void testJwtInvalidException() {
+        JwtInvalidException exception = new JwtInvalidException("JWT token is invalid");
         Response response = exceptionHandler.toResponse(exception);
 
-        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
+        assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
         assertTrue(response.getEntity() instanceof ErrorResponseDTO);
         ErrorResponseDTO errorResponse = (ErrorResponseDTO) response.getEntity();
-        assertEquals("", errorResponse.getMessage());
+        assertEquals("JWT token is invalid", errorResponse.getMessage());
     }
 }

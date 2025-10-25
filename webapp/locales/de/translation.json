@@ -19,6 +19,12 @@
       "description": "Sie wurden erfolgreich abgemeldet."
     }
   },
+  "logoutAll": {
+    "success": {
+      "title": "Logout von allen Geräten erfolgreich",
+      "description": "Sie wurden erfolgreich von allen Geräten abgemeldet."
+    }
+  },
   "login": {
     "logoutButton": "Abmelden",
     "success": {
@@ -781,6 +787,7 @@
     "english": "Englisch",
     "german": "Deutsch",
     "logout": "Abmelden",
+    "logoutAll": "Von allen Geräten abmelden",
     "login": "Anmelden",
     "unsavedChangesTitle": "Ungespeicherte Änderungen",
     "unsavedChangesDescription": "Sie haben ungespeicherte Änderungen auf dieser Seite. Was möchten Sie tun?",

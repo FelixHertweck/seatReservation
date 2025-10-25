@@ -3,7 +3,10 @@ smallrye:
   jwt:
     token:
       expiration:
-        minutes: 60
+        minutes: 3
+    refreshtoken:
+        expiration:
+            days: 7
     always-check-authorization: true
     new-token:
       issuer: http://localhost:8080
