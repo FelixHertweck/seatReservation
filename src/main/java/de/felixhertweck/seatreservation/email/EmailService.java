@@ -764,7 +764,7 @@ public class EmailService {
 
     private boolean skipForNullOrEmptyAddress(String address) {
         if (address == null || address.isEmpty()) {
-            LOG.warn("Skipping email sending for null or empty address.");
+            LOG.debug("Skipping email sending for null or empty address.");
             return true;
         }
         return false;
