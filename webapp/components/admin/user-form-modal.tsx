@@ -13,7 +13,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { X, Info } from "lucide-react";
 import type { UserDto, AdminUserUpdateDto, AdminUserCreationDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 
@@ -149,24 +155,32 @@ export function UserFormModal({
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="username" className="text-right">
-              {t("userFormModal.usernameLabel")}
-            </Label>
-            <div className="col-span-3">
-              <Input
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                disabled={!isCreating} // Username typically not editable after creation
-                autoCapitalize="none"
-                autoComplete="username"
-              />
+            <div className="flex items-center justify-end gap-2 text-right">
+              <Label htmlFor="username">
+                {t("userFormModal.usernameLabel")}
+              </Label>
               {isCreating && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  {t("validation.usernameHint")}
-                </p>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{t("validation.usernameHint")}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
             </div>
+            <Input
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="col-span-3"
+              disabled={!isCreating} // Username typically not editable after creation
+              autoCapitalize="none"
+              autoComplete="username"
+            />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="password" className="text-right">

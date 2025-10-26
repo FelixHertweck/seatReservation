@@ -14,6 +14,13 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import type { RegisterRequestDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
@@ -93,7 +100,19 @@ export default function RegisterPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="username">{t("register.username")}</Label>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="username">{t("register.username")}</Label>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{t("validation.usernameHint")}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
               <Input
                 id="username"
                 placeholder={t("register.usernamePlaceholder")}
@@ -103,9 +122,6 @@ export default function RegisterPage() {
                 autoComplete="username"
                 required
               />
-              <p className="text-xs text-muted-foreground">
-                {t("validation.usernameHint")}
-              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">{t("register.email")}</Label>
