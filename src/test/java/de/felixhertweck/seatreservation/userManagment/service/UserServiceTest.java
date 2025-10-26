@@ -1649,6 +1649,7 @@ public class UserServiceTest {
 
         // Second verification should fail (code already used/deleted)
         assertThrows(
-                IllegalArgumentException.class, () -> userService.verifyEmailWithCode("123456"));
+                VerificationCodeNotFoundException.class,
+                () -> userService.verifyEmailWithCode("123456"));
     }
 }
