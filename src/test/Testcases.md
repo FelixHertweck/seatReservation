@@ -538,6 +538,7 @@ This is an overview of the test cases for the application.
 | `testInvalidUserException` | Tests the handling of `InvalidUserException` and expects HTTP status 400 (Bad Request). |
 | `testEventBookingClosedException` | Tests the handling of `EventBookingClosedException` and expects HTTP status 400 (Bad Request). |
 | `testNoSeatsAvailableException` | Tests the handling of `NoSeatsAvailableException` and expects HTTP status 400 (Bad Request). |
+| `testVerificationCodeNotFoundException` | Tests the handling of `VerificationCodeNotFoundException` and expects HTTP status 400 (Bad Request). |
 | `testGenericException` | Tests the handling of generic `RuntimeException` and expects HTTP status 500 (Internal Server Error) with the original error message. |
 | `testNullPointerException` | Tests the handling of `NullPointerException` and expects HTTP status 500 (Internal Server Error). |
 | `testExceptionWithNullMessage` | Tests the handling of exceptions with a null message and expects HTTP status 500 (Internal Server Error). |
