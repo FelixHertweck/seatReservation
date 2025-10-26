@@ -11,6 +11,7 @@ import {
   Moon,
   Monitor,
   Globe,
+  UserLock,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
@@ -46,7 +47,7 @@ import { useProfileUnsavedChanges } from "@/hooks/use-profile-unsaved-changes";
 export function AppSidebar() {
   const t = useT();
 
-  const { user, logout } = useAuth();
+  const { user, logout, logoutAll } = useAuth();
   const { setOpen, setOpenMobile, isMobile } = useSidebar();
   const { theme, setTheme, resolvedTheme } = useTheme();
   const router = useRouter();
@@ -328,9 +329,18 @@ export function AppSidebar() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={() => {
+                      void logoutAll();
+                    }}
+                    className="focus:bg-destructive/10 focus:text-destructive data-[highlighted]:bg-destructive/10 data-[highlighted]:text-destructive transition-all duration-200 cursor-pointer group"
+                  >
+                    <UserLock className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
+                    {t("sidebar.logoutAll")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
                       void logout();
                     }}
-                    className="hover:bg-destructive/10 hover:text-destructive transition-all duration-200 cursor-pointer group"
+                    className="focus:bg-destructive/10 focus:text-destructive data-[highlighted]:bg-destructive/10 data-[highlighted]:text-destructive transition-all duration-200 cursor-pointer group"
                   >
                     <LogOut className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
                     {t("sidebar.logout")}
