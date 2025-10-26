@@ -28,6 +28,7 @@ import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.felixhertweck.seatreservation.userManagment.dto.VerifyEmailCodeRequestDto;
+import de.felixhertweck.seatreservation.userManagment.exceptions.VerificationCodeNotFoundException;
 import de.felixhertweck.seatreservation.userManagment.exceptions.VerifyTokenExpiredException;
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
 import io.quarkus.test.InjectMock;
@@ -66,7 +67,7 @@ class EmailConfirmationResourceTest {
         // Given
         VerifyEmailCodeRequestDto request = new VerifyEmailCodeRequestDto("123456");
         when(userService.verifyEmailWithCode("123456"))
-                .thenThrow(new IllegalArgumentException("Verification code not found"));
+                .thenThrow(new VerificationCodeNotFoundException("Verification code not found"));
 
         // When & Then
         given().contentType(ContentType.JSON)

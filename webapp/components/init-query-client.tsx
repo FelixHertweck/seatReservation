@@ -116,12 +116,11 @@ export default function InitQueryClient({
 
       mutations: {
         retryDelay: 1000,
-        retry: (failureCount, error) => {
+        retry: (_failureCount, error) => {
           if ((error as any)?.response?.status === 401) {
             triggerLoginRequired();
-            return false;
           }
-          return failureCount < 2;
+          return false;
         },
         onError: (error: Error) => {
           // Try to extract message from error response body
