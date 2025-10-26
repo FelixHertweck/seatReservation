@@ -1,4 +1,7 @@
 {
+  "validation": {
+    "usernameHint": "3-64 characters: letters, numbers, dots, underscores, hyphens"
+  },
   "error": {
     "title": "Error",
     "dataLoadFailed": "Failed to load data. Please try again.",

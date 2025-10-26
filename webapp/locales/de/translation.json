@@ -1,4 +1,7 @@
 {
+  "validation": {
+    "usernameHint": "3-64 Zeichen: Buchstaben, Zahlen, Punkte, Unterstriche, Bindestriche"
+  },
   "error": {
     "title": "Fehler",
     "dataLoadFailed": "Daten konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
