@@ -369,6 +369,11 @@ public class ReservationServiceTest {
     void deleteReservation_Success_AsAdmin() {
         when(reservationRepository.findByIdOptional(reservation.id))
                 .thenReturn(Optional.of(reservation));
+        @SuppressWarnings("unchecked")
+        PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
+        when(allowanceQuery.firstResultOptional()).thenReturn(Optional.empty());
+        when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", regularUser, event))
+                .thenReturn(allowanceQuery);
 
         reservationService.deleteReservation(List.of(reservation.id), adminUser);
 
@@ -379,6 +384,11 @@ public class ReservationServiceTest {
     void deleteReservation_Success_AsManager() {
         when(reservationRepository.findByIdOptional(reservation.id))
                 .thenReturn(Optional.of(reservation));
+        @SuppressWarnings("unchecked")
+        PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
+        when(allowanceQuery.firstResultOptional()).thenReturn(Optional.empty());
+        when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", regularUser, event))
+                .thenReturn(allowanceQuery);
 
         reservationService.deleteReservation(List.of(reservation.id), managerUser);
 
@@ -394,6 +404,138 @@ public class ReservationServiceTest {
                 SecurityException.class,
                 () -> reservationService.deleteReservation(List.of(reservation.id), regularUser));
         verify(reservationRepository, never()).delete(any(Reservation.class));
+    }
+
+    @Test
+    void deleteReservation_Success_WithAllowanceIncrement() {
+        // Set up allowance with initial count
+        allowance.setReservationsAllowedCount(0);
+
+        when(reservationRepository.findByIdOptional(reservation.id))
+                .thenReturn(Optional.of(reservation));
+        when(eventUserAllowanceRepository.findByUserAndEvent(regularUser, event))
+                .thenReturn(Optional.of(allowance));
+        doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
+
+        reservationService.deleteReservation(List.of(reservation.id), managerUser);
+
+        verify(reservationRepository, times(1)).delete(reservation);
+        verify(eventUserAllowanceRepository, times(1)).persist(allowance);
+        assertEquals(1, allowance.getReservationsAllowedCount()); // Allowance should be incremented
+    }
+
+    @Test
+    void deleteReservation_Success_NoAllowanceExists() {
+        when(reservationRepository.findByIdOptional(reservation.id))
+                .thenReturn(Optional.of(reservation));
+        when(eventUserAllowanceRepository.findByUserAndEvent(regularUser, event))
+                .thenReturn(Optional.empty());
+
+        // Should not throw exception when no allowance exists
+        reservationService.deleteReservation(List.of(reservation.id), managerUser);
+
+        verify(reservationRepository, times(1)).delete(reservation);
+        verify(eventUserAllowanceRepository, never())
+                .persist(any(EventUserAllowance.class)); // Should not persist allowance
+    }
+
+    @Test
+    void deleteReservation_Success_BlockedReservation_NoAllowanceIncrement() {
+        // Create a blocked reservation
+        Reservation blockedReservation =
+                new Reservation(regularUser, event, seat, Instant.now(), ReservationStatus.BLOCKED);
+        blockedReservation.id = 2L;
+
+        when(reservationRepository.findByIdOptional(blockedReservation.id))
+                .thenReturn(Optional.of(blockedReservation));
+
+        reservationService.deleteReservation(List.of(blockedReservation.id), managerUser);
+
+        verify(reservationRepository, times(1)).delete(blockedReservation);
+        // Verify allowance was never updated for blocked reservations
+        verify(eventUserAllowanceRepository, never()).persist(any(EventUserAllowance.class));
+    }
+
+    @Test
+    void deleteReservation_Success_MultipleReservations_WithAllowanceIncrement() {
+        // Create multiple reservations for the same user and event
+        Seat seat2 = new Seat("A2", event.getEventLocation(), "2", 1, 2);
+        seat2.id = 2L;
+        Reservation reservation2 =
+                new Reservation(
+                        regularUser, event, seat2, Instant.now(), ReservationStatus.RESERVED);
+        reservation2.id = 2L;
+
+        // Set up allowance with initial count
+        allowance.setReservationsAllowedCount(0);
+
+        when(reservationRepository.findByIdOptional(reservation.id))
+                .thenReturn(Optional.of(reservation));
+        when(reservationRepository.findByIdOptional(reservation2.id))
+                .thenReturn(Optional.of(reservation2));
+        when(eventUserAllowanceRepository.findByUserAndEvent(regularUser, event))
+                .thenReturn(Optional.of(allowance));
+        doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
+
+        reservationService.deleteReservation(List.of(reservation.id, reservation2.id), managerUser);
+
+        verify(reservationRepository, times(1)).delete(reservation);
+        verify(reservationRepository, times(1)).delete(reservation2);
+        // Allowance should be incremented twice (once for each reservation)
+        verify(eventUserAllowanceRepository, times(2)).persist(allowance);
+        assertEquals(2, allowance.getReservationsAllowedCount());
+    }
+
+    @Test
+    void deleteReservation_Success_MixedStatus_OnlyReservedIncrementsAllowance() {
+        // Create one reserved and one blocked reservation
+        Reservation blockedReservation =
+                new Reservation(regularUser, event, seat, Instant.now(), ReservationStatus.BLOCKED);
+        blockedReservation.id = 2L;
+
+        Seat seat2 = new Seat("A2", event.getEventLocation(), "2", 1, 2);
+        seat2.id = 3L;
+        Reservation reservedReservation =
+                new Reservation(
+                        regularUser, event, seat2, Instant.now(), ReservationStatus.RESERVED);
+        reservedReservation.id = 3L;
+
+        allowance.setReservationsAllowedCount(0);
+
+        when(reservationRepository.findByIdOptional(blockedReservation.id))
+                .thenReturn(Optional.of(blockedReservation));
+        when(reservationRepository.findByIdOptional(reservedReservation.id))
+                .thenReturn(Optional.of(reservedReservation));
+        when(eventUserAllowanceRepository.findByUserAndEvent(regularUser, event))
+                .thenReturn(Optional.of(allowance));
+        doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
+
+        reservationService.deleteReservation(
+                List.of(blockedReservation.id, reservedReservation.id), managerUser);
+
+        verify(reservationRepository, times(1)).delete(blockedReservation);
+        verify(reservationRepository, times(1)).delete(reservedReservation);
+        // Allowance should be incremented only once (for the reserved reservation)
+        verify(eventUserAllowanceRepository, times(1)).persist(allowance);
+        assertEquals(1, allowance.getReservationsAllowedCount());
+    }
+
+    @Test
+    void deleteReservation_Success_DifferentAllowanceCounts() {
+        // Test with different starting allowance counts
+        allowance.setReservationsAllowedCount(5);
+
+        when(reservationRepository.findByIdOptional(reservation.id))
+                .thenReturn(Optional.of(reservation));
+        when(eventUserAllowanceRepository.findByUserAndEvent(regularUser, event))
+                .thenReturn(Optional.of(allowance));
+        doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
+
+        reservationService.deleteReservation(List.of(reservation.id), managerUser);
+
+        verify(reservationRepository, times(1)).delete(reservation);
+        verify(eventUserAllowanceRepository, times(1)).persist(allowance);
+        assertEquals(6, allowance.getReservationsAllowedCount());
     }
 
     @Test
