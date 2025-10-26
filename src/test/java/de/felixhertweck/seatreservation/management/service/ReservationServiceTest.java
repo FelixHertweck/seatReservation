@@ -413,11 +413,8 @@ public class ReservationServiceTest {
 
         when(reservationRepository.findByIdOptional(reservation.id))
                 .thenReturn(Optional.of(reservation));
-        @SuppressWarnings("unchecked")
-        PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
-        when(allowanceQuery.firstResultOptional()).thenReturn(Optional.of(allowance));
-        when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", regularUser, event))
-                .thenReturn(allowanceQuery);
+        when(eventUserAllowanceRepository.findByUserAndEvent(regularUser, event))
+                .thenReturn(Optional.of(allowance));
         doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
 
         reservationService.deleteReservation(List.of(reservation.id), managerUser);
@@ -431,11 +428,8 @@ public class ReservationServiceTest {
     void deleteReservation_Success_NoAllowanceExists() {
         when(reservationRepository.findByIdOptional(reservation.id))
                 .thenReturn(Optional.of(reservation));
-        @SuppressWarnings("unchecked")
-        PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
-        when(allowanceQuery.firstResultOptional()).thenReturn(Optional.empty());
-        when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", regularUser, event))
-                .thenReturn(allowanceQuery);
+        when(eventUserAllowanceRepository.findByUserAndEvent(regularUser, event))
+                .thenReturn(Optional.empty());
 
         // Should not throw exception when no allowance exists
         reservationService.deleteReservation(List.of(reservation.id), managerUser);
@@ -479,11 +473,8 @@ public class ReservationServiceTest {
                 .thenReturn(Optional.of(reservation));
         when(reservationRepository.findByIdOptional(reservation2.id))
                 .thenReturn(Optional.of(reservation2));
-        @SuppressWarnings("unchecked")
-        PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
-        when(allowanceQuery.firstResultOptional()).thenReturn(Optional.of(allowance));
-        when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", regularUser, event))
-                .thenReturn(allowanceQuery);
+        when(eventUserAllowanceRepository.findByUserAndEvent(regularUser, event))
+                .thenReturn(Optional.of(allowance));
         doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
 
         reservationService.deleteReservation(List.of(reservation.id, reservation2.id), managerUser);
@@ -515,11 +506,8 @@ public class ReservationServiceTest {
                 .thenReturn(Optional.of(blockedReservation));
         when(reservationRepository.findByIdOptional(reservedReservation.id))
                 .thenReturn(Optional.of(reservedReservation));
-        @SuppressWarnings("unchecked")
-        PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
-        when(allowanceQuery.firstResultOptional()).thenReturn(Optional.of(allowance));
-        when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", regularUser, event))
-                .thenReturn(allowanceQuery);
+        when(eventUserAllowanceRepository.findByUserAndEvent(regularUser, event))
+                .thenReturn(Optional.of(allowance));
         doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
 
         reservationService.deleteReservation(
@@ -539,11 +527,8 @@ public class ReservationServiceTest {
 
         when(reservationRepository.findByIdOptional(reservation.id))
                 .thenReturn(Optional.of(reservation));
-        @SuppressWarnings("unchecked")
-        PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
-        when(allowanceQuery.firstResultOptional()).thenReturn(Optional.of(allowance));
-        when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", regularUser, event))
-                .thenReturn(allowanceQuery);
+        when(eventUserAllowanceRepository.findByUserAndEvent(regularUser, event))
+                .thenReturn(Optional.of(allowance));
         doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
 
         reservationService.deleteReservation(List.of(reservation.id), managerUser);

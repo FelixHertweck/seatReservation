@@ -379,11 +379,7 @@ public class ReservationService {
 
                 // Restore allowance count if it exists
                 eventUserAllowanceRepository
-                        .find(
-                                "user = ?1 and event = ?2",
-                                reservation.getUser(),
-                                reservation.getEvent())
-                        .firstResultOptional()
+                        .findByUserAndEvent(reservation.getUser(), reservation.getEvent())
                         .ifPresentOrElse(
                                 allowance -> {
                                     allowance.setReservationsAllowedCount(
