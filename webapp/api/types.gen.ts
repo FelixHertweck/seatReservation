@@ -122,7 +122,7 @@ export type LimitedUserInfoDto = {
 };
 
 export type LoginRequestDto = {
-    identifier: string;
+    username: string;
     password: string;
 };
 

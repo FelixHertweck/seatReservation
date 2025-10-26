@@ -63,10 +63,10 @@ public class AuthResource {
     @APIResponse(responseCode = "200", description = "Login successful, JWT cookie set")
     @APIResponse(responseCode = "401", description = "Unauthorized: Invalid credentials")
     public Response login(@Valid LoginRequestDTO loginRequest) throws JwtInvalidException {
-        LOG.debugf("Received login request for user identifier: %s", loginRequest.getIdentifier());
+        LOG.debugf("Received login request for username: %s", loginRequest.getUsername());
         LOG.debugf("LoginRequestDTO: %s", loginRequest.toString());
         User user =
-                authService.authenticate(loginRequest.getIdentifier(), loginRequest.getPassword());
+                authService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
 
         String accessToken = tokenService.generateToken(user);
         NewCookie jwtAccessCookie = tokenService.createNewJwtCookie(accessToken, "jwt");
@@ -80,7 +80,7 @@ public class AuthResource {
 
         LOG.debugf(
                 "User %s logged in successfully. JWT and refresh token cookies set.",
-                loginRequest.getIdentifier());
+                loginRequest.getUsername());
         return Response.ok()
                 .cookie(jwtAccessCookie)
                 .cookie(refreshTokenCookie)

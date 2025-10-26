@@ -47,11 +47,11 @@ export function useAuth() {
   });
 
   const login = async (
-    identifier: string,
+    username: string,
     password: string,
     returnToUrl?: string | null,
   ) => {
-    await loginMutation({ body: { identifier, password } });
+    await loginMutation({ body: { username, password } });
     await queryClient.invalidateQueries();
     await refetchUser();
     redirectUser(router, locale, returnToUrl);
