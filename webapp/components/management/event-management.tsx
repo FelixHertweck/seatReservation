@@ -324,7 +324,7 @@ export function EventManagement({
                         {t("eventManagement.tableHeaderBookingDeadline")}
                       </SortableTableHead>
                       <SortableTableHead
-                        sortKey="eventLocationId"
+                        sortKey="location.name"
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
