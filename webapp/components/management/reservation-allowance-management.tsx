@@ -19,10 +19,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { SortableTableHead } from "@/components/common/sortable-table-head";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { AllowanceFormModal } from "@/components/management/allowance-form-modal";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
+import { TruncatedCell } from "@/components/common/truncated-cell";
 import type {
   EventUserAllowancesDto,
   EventUserAllowancesCreateDto,
@@ -31,6 +33,7 @@ import type {
   LimitedUserInfoDto,
 } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
+import { useSortableData } from "@/lib/table-sorting";
 
 export interface ReservationAllowanceManagementProps {
   allowances: EventUserAllowancesDto[];
@@ -69,6 +72,9 @@ export function ReservationAllowanceManagement({
   const [currentFilters, setCurrentFilters] =
     useState<Record<string, string>>(initialFilter);
   const [selectedIds, setSelectedIds] = useState<Set<bigint>>(new Set());
+
+  const { sortedData, sortKey, sortDirection, handleSort } =
+    useSortableData(filteredAllowances);
 
   useEffect(() => {
     setCurrentFilters(initialFilter);
@@ -259,7 +265,7 @@ export function ReservationAllowanceManagement({
         </div>
 
         <PaginationWrapper
-          data={filteredAllowances}
+          data={sortedData}
           itemsPerPage={100}
           paginationLabel={t("reservationAllowanceManagement.paginationLabel")}
         >
@@ -279,24 +285,42 @@ export function ReservationAllowanceManagement({
                       : t("reservationAllowanceManagement.selectAll")}
                   </Button>
                 </div>
-                <Table>
+                <Table className="table-fixed">
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-12">
+                      <TableHead className="w-[5%]">
                         {t("reservationAllowanceManagement.tableHeaderSelect")}
                       </TableHead>
-                      <TableHead>
+                      <SortableTableHead
+                        sortKey="eventId"
+                        currentSortKey={sortKey}
+                        currentSortDirection={sortDirection}
+                        onSort={handleSort}
+                        className="w-[30%]"
+                      >
                         {t("reservationAllowanceManagement.tableHeaderEvent")}
-                      </TableHead>
-                      <TableHead>
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortKey="userId"
+                        currentSortKey={sortKey}
+                        currentSortDirection={sortDirection}
+                        onSort={handleSort}
+                        className="w-[20%]"
+                      >
                         {t("reservationAllowanceManagement.tableHeaderUser")}
-                      </TableHead>
-                      <TableHead>
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortKey="allowedReservations"
+                        currentSortKey={sortKey}
+                        currentSortDirection={sortDirection}
+                        onSort={handleSort}
+                        className="w-[20%]"
+                      >
                         {t(
                           "reservationAllowanceManagement.tableHeaderAllowedReservations",
                         )}
-                      </TableHead>
-                      <TableHead>
+                      </SortableTableHead>
+                      <TableHead className="w-[10%]">
                         {t("reservationAllowanceManagement.tableHeaderActions")}
                       </TableHead>
                     </TableRow>
@@ -350,17 +374,19 @@ export function ReservationAllowanceManagement({
                                   }
                                 />
                               </TableCell>
-                              <TableCell>
+                              <TableCell className="w-[30%]">
                                 {event ? (
                                   <Button
                                     variant="link"
-                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800 truncate w-full justify-start"
                                     onClick={() =>
                                       event.id && handleEventClick(event.id)
                                     }
                                   >
-                                    {event.name}
-                                    <ExternalLink className="ml-1 h-3 w-3" />
+                                    <span className="truncate">
+                                      {event.name}
+                                    </span>
+                                    <ExternalLink className="ml-1 h-3 w-3 flex-shrink-0" />
                                   </Button>
                                 ) : (
                                   t(
@@ -368,13 +394,16 @@ export function ReservationAllowanceManagement({
                                   )
                                 )}
                               </TableCell>
-                              <TableCell>
-                                {user?.username ||
+                              <TruncatedCell
+                                content={
+                                  user?.username ||
                                   t(
                                     "reservationAllowanceManagement.unknownUser",
-                                  )}
-                              </TableCell>
-                              <TableCell>
+                                  )
+                                }
+                                className="w-[20%]"
+                              />
+                              <TableCell className="w-[20%]">
                                 {allowance.reservationsAllowedCount}
                               </TableCell>
                               <TableCell>

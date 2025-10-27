@@ -19,12 +19,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { SortableTableHead } from "@/components/common/sortable-table-head";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { SeatFormModal } from "@/components/management/seat-form-modal";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
+import { TruncatedCell } from "@/components/common/truncated-cell";
 import type { SeatDto, SeatRequestDto, EventLocationResponseDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
+import { useSortableData } from "@/lib/table-sorting";
 
 export interface SeatManagementProps {
   seats: SeatDto[];
@@ -56,6 +59,9 @@ export function SeatManagement({
   const [currentFilters, setCurrentFilters] =
     useState<Record<string, string>>(initialFilter);
   const [selectedIds, setSelectedIds] = useState<Set<bigint>>(new Set());
+
+  const { sortedData, sortKey, sortDirection, handleSort } =
+    useSortableData(filteredSeats);
 
   useEffect(() => {
     setCurrentFilters(initialFilter);
@@ -239,7 +245,7 @@ export function SeatManagement({
         </div>
 
         <PaginationWrapper
-          data={filteredSeats}
+          data={sortedData}
           itemsPerPage={100}
           paginationLabel={t("seatManagement.paginationLabel")}
         >
@@ -259,25 +265,49 @@ export function SeatManagement({
                       : t("seatManagement.selectAll")}
                   </Button>
                 </div>
-                <Table>
+                <Table className="table-fixed">
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-12">
+                      <TableHead className="w-[5%]">
                         {t("seatManagement.table.selectHeader")}
                       </TableHead>
-                      <TableHead>
+                      <SortableTableHead
+                        sortKey="seatNumber"
+                        currentSortKey={sortKey}
+                        currentSortDirection={sortDirection}
+                        onSort={handleSort}
+                        className="w-[20%]"
+                      >
                         {t("seatManagement.table.seatNumberHeader")}
-                      </TableHead>
-                      <TableHead>
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortKey="locationId"
+                        currentSortKey={sortKey}
+                        currentSortDirection={sortDirection}
+                        onSort={handleSort}
+                        className="w-[25%]"
+                      >
                         {t("seatManagement.table.locationHeader")}
-                      </TableHead>
-                      <TableHead>
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortKey="seatRow"
+                        currentSortKey={sortKey}
+                        currentSortDirection={sortDirection}
+                        onSort={handleSort}
+                        className="w-[20%]"
+                      >
                         {t("seatManagement.table.seatRowHeader")}
-                      </TableHead>
-                      <TableHead>
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortKey="xCoordinate"
+                        currentSortKey={sortKey}
+                        currentSortDirection={sortDirection}
+                        onSort={handleSort}
+                        className="w-[15%]"
+                      >
                         {t("seatManagement.table.positionHeader")}
-                      </TableHead>
-                      <TableHead>
+                      </SortableTableHead>
+                      <TableHead className="w-[15%]">
                         {t("seatManagement.table.actionsHeader")}
                       </TableHead>
                     </TableRow>
@@ -316,7 +346,7 @@ export function SeatManagement({
 
                           return (
                             <TableRow key={seat.id?.toString()}>
-                              <TableCell>
+                              <TableCell className="w-[5%]">
                                 <Checkbox
                                   checked={
                                     seat.id ? selectedIds.has(seat.id) : false
@@ -326,31 +356,37 @@ export function SeatManagement({
                                   }
                                 />
                               </TableCell>
-                              <TableCell className="font-medium">
-                                {seat.seatNumber}
-                              </TableCell>
-                              <TableCell>
+                              <TruncatedCell
+                                content={seat.seatNumber}
+                                className="font-medium w-[20%]"
+                              />
+                              <TableCell className="w-[25%]">
                                 {location ? (
                                   <Button
                                     variant="link"
-                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800 truncate w-full justify-start"
                                     onClick={() =>
                                       location.id &&
                                       handleLocationClick(location.id)
                                     }
                                   >
-                                    {location.name}
-                                    <ExternalLink className="ml-1 h-3 w-3" />
+                                    <span className="truncate">
+                                      {location.name}
+                                    </span>
+                                    <ExternalLink className="ml-1 h-3 w-3 flex-shrink-0" />
                                   </Button>
                                 ) : (
                                   t("seatManagement.unknownLocation")
                                 )}
                               </TableCell>
-                              <TableCell>{seat.seatRow}</TableCell>
-                              <TableCell>
+                              <TruncatedCell
+                                content={seat.seatRow}
+                                className="w-[20%]"
+                              />
+                              <TableCell className="w-[15%]">
                                 ({seat.xCoordinate}, {seat.yCoordinate})
                               </TableCell>
-                              <TableCell>
+                              <TableCell className="w-[15%]">
                                 <div className="flex gap-2">
                                   <Button
                                     variant="outline"

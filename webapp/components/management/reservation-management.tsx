@@ -19,11 +19,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { SortableTableHead } from "@/components/common/sortable-table-head";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { ReservationFormModal } from "@/components/management/reservation-form-modal";
 import { BlockSeatsModal } from "@/components/management/block-seats-modal";
+import { TruncatedCell } from "@/components/common/truncated-cell";
 import {
   Select,
   SelectContent,
@@ -51,6 +53,7 @@ import type {
 } from "@/api";
 import { customSerializer } from "@/lib/jsonBodySerializer";
 import { useT } from "@/lib/i18n/hooks";
+import { useSortableData } from "@/lib/table-sorting";
 
 export interface ReservationManagementProps {
   users: UserDto[];
@@ -102,6 +105,9 @@ export function ReservationManagement({
   const [currentFilters, setCurrentFilters] =
     useState<Record<string, string>>(initialFilter);
   const [selectedIds, setSelectedIds] = useState<Set<bigint>>(new Set());
+
+  const { sortedData, sortKey, sortDirection, handleSort } =
+    useSortableData(filteredReservations);
 
   useEffect(() => {
     setCurrentFilters(initialFilter);
@@ -459,7 +465,7 @@ export function ReservationManagement({
         />
 
         <PaginationWrapper
-          data={filteredReservations}
+          data={sortedData}
           itemsPerPage={100}
           paginationLabel={t("reservationManagement.paginationLabel")}
         >
@@ -479,28 +485,58 @@ export function ReservationManagement({
                       : t("reservationManagement.selectAll")}
                   </Button>
                 </div>
-                <Table>
+                <Table className="table-fixed">
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-12">
+                      <TableHead className="w-[5%]">
                         {t("reservationManagement.tableHeaderSelect")}
                       </TableHead>
-                      <TableHead>
+                      <SortableTableHead
+                        sortKey="user.username"
+                        currentSortKey={sortKey}
+                        currentSortDirection={sortDirection}
+                        onSort={handleSort}
+                        className="w-[12%]"
+                      >
                         {t("reservationManagement.tableHeaderUser")}
-                      </TableHead>
-                      <TableHead>
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortKey="eventId"
+                        currentSortKey={sortKey}
+                        currentSortDirection={sortDirection}
+                        onSort={handleSort}
+                        className="w-[20%]"
+                      >
                         {t("reservationManagement.tableHeaderEvent")}
-                      </TableHead>
-                      <TableHead>
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortKey="seat.seatNumber"
+                        currentSortKey={sortKey}
+                        currentSortDirection={sortDirection}
+                        onSort={handleSort}
+                        className="w-[12%]"
+                      >
                         {t("reservationManagement.tableHeaderSeat")}
-                      </TableHead>
-                      <TableHead>
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortKey="reservationStatus"
+                        currentSortKey={sortKey}
+                        currentSortDirection={sortDirection}
+                        onSort={handleSort}
+                        className="w-[10%]"
+                      >
                         {t("reservationManagement.tableHeaderStatus")}
-                      </TableHead>
-                      <TableHead>
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortKey="reservationDateTime"
+                        currentSortKey={sortKey}
+                        currentSortDirection={sortDirection}
+                        onSort={handleSort}
+                        className="w-[15%]"
+                      >
                         {t("reservationManagement.tableHeaderReservedDate")}
-                      </TableHead>
-                      <TableHead>
+                      </SortableTableHead>
+                      <TableHead className="w-[8%]">
                         {t("reservationManagement.tableHeaderActions")}
                       </TableHead>
                     </TableRow>
@@ -554,26 +590,29 @@ export function ReservationManagement({
                                   }
                                 />
                               </TableCell>
-                              <TableCell>
-                                {reservation.user?.username}
-                              </TableCell>
-                              <TableCell>
+                              <TruncatedCell
+                                content={reservation.user?.username}
+                                className="w-[12%]"
+                              />
+                              <TableCell className="w-[20%]">
                                 {event ? (
                                   <Button
                                     variant="link"
-                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800 truncate w-full justify-start"
                                     onClick={() =>
                                       event.id && handleEventClick(event.id)
                                     }
                                   >
-                                    {event.name}
-                                    <ExternalLink className="ml-1 h-3 w-3" />
+                                    <span className="truncate">
+                                      {event.name}
+                                    </span>
+                                    <ExternalLink className="ml-1 h-3 w-3 flex-shrink-0" />
                                   </Button>
                                 ) : (
                                   t("reservationManagement.unknownEvent")
                                 )}
                               </TableCell>
-                              <TableCell>
+                              <TableCell className="w-[12%]">
                                 {reservation.seat ? (
                                   <Button
                                     variant="link"
