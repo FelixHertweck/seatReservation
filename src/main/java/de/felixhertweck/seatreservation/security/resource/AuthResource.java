@@ -131,17 +131,8 @@ public class AuthResource {
     public Response logout() {
         LOG.debugf("Received logout request.");
 
-        NewCookie jwtAccessCookie = tokenService.createNewNullCookie("jwt", true);
-        NewCookie refreshTokenCookie = tokenService.createNewNullCookie("refreshToken", true);
-        NewCookie refreshTokenExpirationCookie =
-                tokenService.createNewNullCookie("refreshToken_expiration", false);
-
         LOG.debugf("User logged out successfully. JWT and refresh token cookies cleared.");
-        return Response.ok()
-                .cookie(jwtAccessCookie)
-                .cookie(refreshTokenCookie)
-                .cookie(refreshTokenExpirationCookie)
-                .build();
+        return Response.ok().cookie(createCookieClearingArray()).build();
     }
 
     @POST
@@ -153,21 +144,12 @@ public class AuthResource {
         User currentUser = userSecurityContext.getCurrentUser();
         tokenService.logoutAllDevices(currentUser);
 
-        NewCookie jwtAccessCookie = tokenService.createNewNullCookie("jwt", true);
-        NewCookie refreshTokenCookie = tokenService.createNewNullCookie("refreshToken", true);
-        NewCookie refreshTokenExpirationCookie =
-                tokenService.createNewNullCookie("refreshToken_expiration", false);
-
         LOG.debugf(
                 "User %s logged out from all devices successfully. JWT and refresh token cookies"
                         + " cleared.",
                 currentUser.getUsername());
 
-        return Response.ok()
-                .cookie(jwtAccessCookie)
-                .cookie(refreshTokenCookie)
-                .cookie(refreshTokenExpirationCookie)
-                .build();
+        return Response.ok().cookie(createCookieClearingArray()).build();
     }
 
     @POST
@@ -181,7 +163,7 @@ public class AuthResource {
         // Validate that refresh token is present
         if (refreshToken == null || refreshToken.isEmpty()) {
             LOG.warn("Refresh token missing in request");
-            return clearCookiesAndReturnUnauthorized("No refresh token provided");
+            return clearCookiesAndReturnUnauthorized();
         }
 
         try {
@@ -208,27 +190,36 @@ public class AuthResource {
                     .build();
         } catch (JwtInvalidException e) {
             LOG.warnf("Token refresh failed: %s", e.getMessage());
-            return clearCookiesAndReturnUnauthorized(e.getMessage());
+            return clearCookiesAndReturnUnauthorized();
         }
     }
 
     /**
-     * Clears authentication cookies and returns a 401 Unauthorized response.
+     * Creates an array of cookies that clear authentication cookies.
      *
-     * @param message the error message to include in the response
-     * @return a 401 response with cookie-clearing headers
+     * @return an array of NewCookie objects that clear JWT, refresh token, and refresh token
+     *     expiration cookies
      */
-    private Response clearCookiesAndReturnUnauthorized(String message) {
+    private NewCookie[] createCookieClearingArray() {
         NewCookie jwtAccessCookie = tokenService.createNewNullCookie("jwt", true);
         NewCookie refreshTokenCookie = tokenService.createNewNullCookie("refreshToken", true);
         NewCookie refreshTokenExpirationCookie =
                 tokenService.createNewNullCookie("refreshToken_expiration", false);
 
+        return new NewCookie[] {jwtAccessCookie, refreshTokenCookie, refreshTokenExpirationCookie};
+    }
+
+    /**
+     * Clears authentication cookies and returns a 401 Unauthorized response.
+     *
+     * @return a 401 response with cookie-clearing headers
+     */
+    private Response clearCookiesAndReturnUnauthorized() {
         return Response.status(Response.Status.UNAUTHORIZED)
-                .cookie(jwtAccessCookie)
-                .cookie(refreshTokenCookie)
-                .cookie(refreshTokenExpirationCookie)
-                .entity(new de.felixhertweck.seatreservation.common.dto.ErrorResponseDTO(message))
+                .cookie(createCookieClearingArray())
+                .entity(
+                        new de.felixhertweck.seatreservation.common.dto.ErrorResponseDTO(
+                                "Invalid or expired refresh token"))
                 .build();
     }
 }
