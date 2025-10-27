@@ -132,7 +132,7 @@ public class AuthResource {
         LOG.debugf("Received logout request.");
 
         LOG.debugf("User logged out successfully. JWT and refresh token cookies cleared.");
-        return Response.ok().cookie(createCookieClearingArray()).build();
+        return addCookieClearingHeaders(Response.ok()).build();
     }
 
     @POST
@@ -149,7 +149,7 @@ public class AuthResource {
                         + " cleared.",
                 currentUser.getUsername());
 
-        return Response.ok().cookie(createCookieClearingArray()).build();
+        return addCookieClearingHeaders(Response.ok()).build();
     }
 
     @POST
@@ -195,18 +195,20 @@ public class AuthResource {
     }
 
     /**
-     * Creates an array of cookies that clear authentication cookies.
+     * Adds cookie-clearing headers to a Response.ResponseBuilder.
      *
-     * @return an array of NewCookie objects that clear JWT, refresh token, and refresh token
-     *     expiration cookies
+     * @param builder the ResponseBuilder to add cookies to
+     * @return the ResponseBuilder with cookie-clearing headers added
      */
-    private NewCookie[] createCookieClearingArray() {
+    private Response.ResponseBuilder addCookieClearingHeaders(Response.ResponseBuilder builder) {
         NewCookie jwtAccessCookie = tokenService.createNewNullCookie("jwt", true);
         NewCookie refreshTokenCookie = tokenService.createNewNullCookie("refreshToken", true);
         NewCookie refreshTokenExpirationCookie =
                 tokenService.createNewNullCookie("refreshToken_expiration", false);
 
-        return new NewCookie[] {jwtAccessCookie, refreshTokenCookie, refreshTokenExpirationCookie};
+        return builder.cookie(jwtAccessCookie)
+                .cookie(refreshTokenCookie)
+                .cookie(refreshTokenExpirationCookie);
     }
 
     /**
@@ -215,8 +217,7 @@ public class AuthResource {
      * @return a 401 response with cookie-clearing headers
      */
     private Response clearCookiesAndReturnUnauthorized() {
-        return Response.status(Response.Status.UNAUTHORIZED)
-                .cookie(createCookieClearingArray())
+        return addCookieClearingHeaders(Response.status(Response.Status.UNAUTHORIZED))
                 .entity(
                         new de.felixhertweck.seatreservation.common.dto.ErrorResponseDTO(
                                 "Invalid or expired refresh token"))
