@@ -22,8 +22,25 @@ package de.felixhertweck.seatreservation;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anySet;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import de.felixhertweck.seatreservation.common.exception.DuplicateUserException;
 import de.felixhertweck.seatreservation.model.entity.Roles;
@@ -32,13 +49,6 @@ import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
 import io.quarkus.runtime.StartupEvent;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class AdminUserInitializerTest {
@@ -71,21 +81,19 @@ class AdminUserInitializerTest {
         ArgumentCaptor<UserCreationDTO> userCreationCaptor =
                 ArgumentCaptor.forClass(UserCreationDTO.class);
 
-        @SuppressWarnings("unchecked")
-        ArgumentCaptor<Set<Roles>> rolesCaptor = ArgumentCaptor.forClass(Set.class);
-
         ArgumentCaptor<Boolean> emailConfirmedCaptor = ArgumentCaptor.forClass(Boolean.class);
 
         verify(userService)
                 .createUser(userCreationCaptor.capture(), anySet(), emailConfirmedCaptor.capture());
 
         UserCreationDTO capturedDto = userCreationCaptor.getValue();
-        assert capturedDto.getUsername().equals("admin");
-        assert capturedDto.getEmail().equals("admin@localhost");
-        assert capturedDto.getFirstname().equals("System");
-        assert capturedDto.getLastname().equals("Admin");
-        assert capturedDto.getPassword() != null && capturedDto.getPassword().length() == 12;
-        assert emailConfirmedCaptor.getValue() == true;
+        assertEquals("admin", capturedDto.getUsername());
+        assertEquals("admin@localhost", capturedDto.getEmail());
+        assertEquals("System", capturedDto.getFirstname());
+        assertEquals("Admin", capturedDto.getLastname());
+        assertNotNull(capturedDto.getPassword());
+        assertEquals(12, capturedDto.getPassword().length());
+        assertTrue(emailConfirmedCaptor.getValue());
     }
 
     @Test
@@ -152,10 +160,10 @@ class AdminUserInitializerTest {
 
         String password = userCreationCaptor.getValue().getPassword();
         // Password should be 12 characters long
-        assert password != null;
-        assert password.length() == 12;
+        assertNotNull(password);
+        assertEquals(12, password.length());
         // Password should contain only allowed characters
-        assert password.matches("[A-Za-z0-9!@#$%^&*()\\-_=+]+");
+        assertTrue(password.matches("[A-Za-z0-9!@#$%^&*()\\-_=+]+"));
     }
 
     @Test
@@ -202,7 +210,7 @@ class AdminUserInitializerTest {
         verify(userService)
                 .createUser(any(UserCreationDTO.class), any(), emailConfirmedCaptor.capture());
 
-        assert emailConfirmedCaptor.getValue() == true;
+        assertTrue(emailConfirmedCaptor.getValue());
     }
 
     @Test
@@ -219,7 +227,7 @@ class AdminUserInitializerTest {
         verify(userService).createUser(userCreationCaptor.capture(), any(), anyBoolean());
 
         UserCreationDTO dto = userCreationCaptor.getValue();
-        assert dto.getTags().contains("system");
-        assert dto.getTags().size() == 1;
+        assertTrue(dto.getTags().contains("system"));
+        assertEquals(1, dto.getTags().size());
     }
 }
