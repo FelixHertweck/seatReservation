@@ -6,6 +6,7 @@ This document provides detailed documentation for test cases in the seat-reserva
 
 - [HtmlSanitizerUtilsTest](#htmlsanitizerutilstest)
 - [SecurityUtilsTest](#securityutilstest)
+- [AdminUserInitializerTest](#adminuserinitializertest)
 
 ---
 
@@ -232,6 +233,96 @@ This document provides detailed documentation for test cases in the seat-reserva
 
 ---
 
+## AdminUserInitializerTest
+
+**Package:** `de.felixhertweck.seatreservation`  
+**Class Under Test:** `AdminUserInitializer`  
+**Purpose:** Validates admin user initialization logic during application startup
+
+### Test Cases (9 total)
+
+#### Admin User Creation
+
+##### `onStart_WithNoExistingAdminUser_CreatesAdminUser`
+- **Description:** Verifies that an admin user is created when none exists on application startup
+- **Setup:** Repository returns empty Optional when checking for admin user
+- **Expected Behavior:**
+  - Checks for existing admin user
+  - Creates new admin user with:
+    - Username: "admin"
+    - Email: "admin@localhost"
+    - Firstname: "System"
+    - Lastname: "Admin"
+    - Random 12-character password
+    - Email confirmed: true
+    - System tag: "system"
+- **Category:** Functional Test / Initialization
+
+##### `onStart_WithExistingAdminUser_SkipsCreation`
+- **Description:** Verifies that admin creation is skipped when admin already exists
+- **Setup:** Repository returns existing admin user
+- **Expected Behavior:** UserService.createUser() is never called
+- **Category:** Functional Test / Idempotency
+
+#### Error Handling
+
+##### `onStart_WhenDuplicateUserExceptionThrown_LogsWarningAndContinues`
+- **Description:** Verifies graceful handling when duplicate user exception occurs
+- **Setup:** UserService.createUser() throws DuplicateUserException
+- **Expected Behavior:**
+  - Exception is caught and logged as warning
+  - Application startup continues without throwing
+- **Category:** Error Handling / Resilience
+
+##### `onStart_WhenGeneralExceptionThrown_LogsErrorAndContinues`
+- **Description:** Verifies graceful handling when general exception occurs
+- **Setup:** UserService.createUser() throws RuntimeException
+- **Expected Behavior:**
+  - Exception is caught and logged as error
+  - Application startup continues without throwing
+- **Category:** Error Handling / Resilience
+
+#### Password Generation
+
+##### `onStart_GeneratesRandomPassword`
+- **Description:** Verifies that a random password is generated with correct properties
+- **Expected Behavior:**
+  - Password is exactly 12 characters long
+  - Contains only allowed characters: A-Z, a-z, 0-9, !@#$%^&*()-_=+
+- **Category:** Security / Password Generation
+
+#### Behavior Validation
+
+##### `onStart_MultipleInvocations_EachChecksForAdmin`
+- **Description:** Verifies that each startup checks for admin user independently
+- **Test Method:** Calls onStart() twice
+- **Expected Behavior:**
+  - Repository checked twice
+  - UserService called twice
+- **Category:** Behavior / Idempotency
+
+##### `onStart_CreatesUserWithAdminRole`
+- **Description:** Verifies admin user is created with ADMIN role
+- **Expected Behavior:**
+  - Roles parameter contains Roles.ADMIN
+  - Only one role assigned
+- **Category:** Authorization / Role Assignment
+- **Note:** Verified indirectly through method call
+
+##### `onStart_CreatesUserWithEmailConfirmed`
+- **Description:** Verifies admin user is created with email already confirmed
+- **Expected Behavior:** emailConfirmed parameter is true
+- **Category:** Functional Test / Email Confirmation
+
+##### `onStart_CreatesUserWithSystemGroups`
+- **Description:** Verifies admin user is assigned to system group
+- **Expected Behavior:**
+  - Tags contains "system"
+  - Only one tag assigned
+- **Category:** Functional Test / Group Assignment
+
+---
+
 ## Test Execution
 
 To run these specific test suites:
@@ -243,8 +334,11 @@ To run these specific test suites:
 # Run SecurityUtilsTest
 ./mvnw test -Dtest=SecurityUtilsTest
 
-# Run both
-./mvnw test -Dtest=HtmlSanitizerUtilsTest,SecurityUtilsTest
+# Run AdminUserInitializerTest
+./mvnw test -Dtest=AdminUserInitializerTest
+
+# Run all three
+./mvnw test -Dtest=HtmlSanitizerUtilsTest,SecurityUtilsTest,AdminUserInitializerTest
 ```
 
 ## Coverage Notes
@@ -254,9 +348,10 @@ These tests are plain JUnit unit tests. The Quarkus jacoco configuration primari
 1. **Isolated validation** of utility functions without full application context
 2. **Fast execution** without Quarkus overhead
 3. **Security validation** ensuring critical security utilities work correctly
-4. **Clear documentation** of expected behavior through test examples
+4. **Initialization validation** ensuring admin user setup works correctly
+5. **Clear documentation** of expected behavior through test examples
 
-The tested utilities (`HtmlSanitizerUtils` and `SecurityUtils`) are used by various services in the application that have their own integration tests, so their coverage appears indirectly in the overall jacoco report.
+The tested utilities (`HtmlSanitizerUtils`, `SecurityUtils`, and `AdminUserInitializer`) are used by various services in the application that have their own integration tests, so their coverage appears indirectly in the overall jacoco report.
 
 ## Test Naming Convention
 
