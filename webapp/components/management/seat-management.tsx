@@ -281,7 +281,7 @@ export function SeatManagement({
                         {t("seatManagement.table.seatNumberHeader")}
                       </SortableTableHead>
                       <SortableTableHead
-                        sortKey="locationId"
+                        sortKey="location.name"
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
