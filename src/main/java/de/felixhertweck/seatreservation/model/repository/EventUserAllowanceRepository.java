@@ -49,9 +49,4 @@ public class EventUserAllowanceRepository implements PanacheRepository<EventUser
     public Optional<EventUserAllowance> findByUserAndEventId(User user, Long eventId) {
         return find("user = ?1 and event.id = ?2", user, eventId).firstResultOptional();
     }
-
-    public EventUserAllowance persistOrUpdate(EventUserAllowance allowance) {
-        persistAndFlush(allowance);
-        return allowance;
-    }
 }

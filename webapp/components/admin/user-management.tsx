@@ -18,13 +18,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { SortableTableHead } from "@/components/common/sortable-table-head";
 import { Badge } from "@/components/ui/badge";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { UserFormModal } from "@/components/admin/user-form-modal";
 import { UserImportModal } from "@/components/admin/user-import-modal";
+import { TruncatedCell } from "@/components/common/truncated-cell";
 import type { UserDto, AdminUserCreationDto, AdminUserUpdateDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
+import { useSortableData } from "@/lib/table-sorting";
 
 export interface UserManagementProps {
   users: UserDto[];
@@ -50,6 +53,9 @@ export function UserManagement({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+
+  const { sortedData, sortKey, sortDirection, handleSort } =
+    useSortableData(filteredUsers);
 
   useEffect(() => {
     setFilteredUsers(users);
@@ -149,36 +155,59 @@ export function UserManagement({
         />
 
         <PaginationWrapper
-          data={filteredUsers}
+          data={sortedData}
           itemsPerPage={100}
           paginationLabel={t("userManagement.paginationLabel")}
         >
           {(paginatedData) => (
             <>
-              {/* Desktop Table View */}
               <div className="hidden md:block">
-                <Table>
+                <Table className="table-fixed">
                   <TableHeader>
                     <TableRow>
-                      <TableHead>
+                      <SortableTableHead
+                        sortKey="username"
+                        currentSortKey={sortKey}
+                        currentSortDirection={sortDirection}
+                        onSort={handleSort}
+                        className="w-[12%]"
+                      >
                         {t("userManagement.tableHeaderUsername")}
-                      </TableHead>
-                      <TableHead>
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortKey="firstname"
+                        currentSortKey={sortKey}
+                        currentSortDirection={sortDirection}
+                        onSort={handleSort}
+                        className="w-[15%]"
+                      >
                         {t("userManagement.tableHeaderName")}
-                      </TableHead>
-                      <TableHead>
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortKey="email"
+                        currentSortKey={sortKey}
+                        currentSortDirection={sortDirection}
+                        onSort={handleSort}
+                        className="w-[20%]"
+                      >
                         {t("userManagement.tableHeaderEmail")}
-                      </TableHead>
-                      <TableHead>
+                      </SortableTableHead>
+                      <TableHead className="w-[15%]">
                         {t("userManagement.tableHeaderRoles")}
                       </TableHead>
-                      <TableHead>
+                      <TableHead className="w-[15%]">
                         {t("userManagement.tableHeaderTags")}
                       </TableHead>
-                      <TableHead>
+                      <SortableTableHead
+                        sortKey="emailVerified"
+                        currentSortKey={sortKey}
+                        currentSortDirection={sortDirection}
+                        onSort={handleSort}
+                        className="w-[10%]"
+                      >
                         {t("userManagement.tableHeaderVerified")}
-                      </TableHead>
-                      <TableHead>
+                      </SortableTableHead>
+                      <TableHead className="w-[8%]">
                         {t("userManagement.tableHeaderActions")}
                       </TableHead>
                     </TableRow>
@@ -186,14 +215,19 @@ export function UserManagement({
                   <TableBody>
                     {paginatedData.map((user) => (
                       <TableRow key={user.id?.toString()}>
-                        <TableCell className="font-medium">
-                          {user.username}
-                        </TableCell>
-                        <TableCell>
-                          {user.firstname} {user.lastname}
-                        </TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>
+                        <TruncatedCell
+                          content={user.username}
+                          className="font-medium w-[12%]"
+                        />
+                        <TruncatedCell
+                          content={`${user.firstname} ${user.lastname}`}
+                          className="w-[15%]"
+                        />
+                        <TruncatedCell
+                          content={user.email}
+                          className="w-[20%]"
+                        />
+                        <TableCell className="w-[15%]">
                           <div className="flex gap-1 flex-wrap">
                             {user.roles?.map((role) => (
                               <Badge key={role} variant="outline">

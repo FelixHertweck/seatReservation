@@ -1,4 +1,7 @@
 {
+  "validation": {
+    "usernameHint": "3-64 Zeichen: Buchstaben, Zahlen, Punkte, Unterstriche, Bindestriche"
+  },
   "error": {
     "title": "Fehler",
     "dataLoadFailed": "Daten konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
@@ -42,8 +45,8 @@
     },
     "signIn": "Anmelden",
     "enterCredentials": "Geben Sie Ihre Anmeldedaten ein, um auf Ihr Konto zuzugreifen",
-    "identifier": "Benutzername oder Email",
-    "enterIdentifier": "Geben Sie Ihren Benutzernamen oder Email ein",
+    "username": "Benutzername",
+    "enterUsername": "Geben Sie Ihren Benutzernamen ein",
     "password": "Passwort",
     "enterPassword": "Geben Sie Ihr Passwort ein",
     "signingIn": "Melde mich an...",
@@ -51,7 +54,7 @@
     "noAccount": "Sie haben noch kein Konto? ",
     "register": "Registrieren",
     "error": {
-      "invalidCredentials": "Ungültiger Benutzername/E-Mail oder Passwort.",
+      "invalidCredentials": "Ungültiger Benutzername oder Passwort.",
       "title": "Anmeldefehler",
       "description": "Beim Anmelden ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
     }

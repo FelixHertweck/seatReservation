@@ -36,6 +36,7 @@ import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableEx
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
+import de.felixhertweck.seatreservation.userManagment.exceptions.VerificationCodeNotFoundException;
 import de.felixhertweck.seatreservation.userManagment.exceptions.VerifyTokenExpiredException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -150,6 +151,18 @@ class GlobalExceptionHandlerTest {
         assertTrue(response.getEntity() instanceof ErrorResponseDTO);
         ErrorResponseDTO errorResponse = (ErrorResponseDTO) response.getEntity();
         assertEquals("Token expired", errorResponse.getMessage());
+    }
+
+    @Test
+    void testVerificationCodeNotFoundException() {
+        VerificationCodeNotFoundException exception =
+                new VerificationCodeNotFoundException("Verification code not found");
+        Response response = exceptionHandler.toResponse(exception);
+
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+        assertTrue(response.getEntity() instanceof ErrorResponseDTO);
+        ErrorResponseDTO errorResponse = (ErrorResponseDTO) response.getEntity();
+        assertEquals("Verification code not found", errorResponse.getMessage());
     }
 
     @Test

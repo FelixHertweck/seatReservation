@@ -19,9 +19,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { SortableTableHead } from "@/components/common/sortable-table-head";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { EventFormModal } from "@/components/management/event-form-modal";
+import { TruncatedCell } from "@/components/common/truncated-cell";
 import type {
   EventResponseDto,
   EventLocationResponseDto,
@@ -29,6 +31,7 @@ import type {
 } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
+import { useSortableData } from "@/lib/table-sorting";
 
 export interface EventManagementProps {
   events: EventResponseDto[];
@@ -65,6 +68,9 @@ export function EventManagement({
   const [currentFilters, setCurrentFilters] =
     useState<Record<string, string>>(initialFilter);
   const [selectedIds, setSelectedIds] = useState<Set<bigint>>(new Set());
+
+  const { sortedData, sortKey, sortDirection, handleSort } =
+    useSortableData(filteredEvents);
 
   useEffect(() => {
     setCurrentFilters(initialFilter);
@@ -237,7 +243,7 @@ export function EventManagement({
         />
 
         <PaginationWrapper
-          data={filteredEvents}
+          data={sortedData}
           itemsPerPage={100}
           paginationLabel={t("eventManagement.paginationLabel")}
         >
@@ -257,34 +263,76 @@ export function EventManagement({
                       : t("eventManagement.selectAll")}
                   </Button>
                 </div>
-                <Table>
+                <Table className="table-fixed">
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-12">
+                      <TableHead className="w-[5%]">
                         {t("eventManagement.tableHeaderSelect")}
                       </TableHead>
-                      <TableHead>
+                      <SortableTableHead
+                        sortKey="name"
+                        currentSortKey={sortKey}
+                        currentSortDirection={sortDirection}
+                        onSort={handleSort}
+                        className="w-[10%]"
+                      >
                         {t("eventManagement.tableHeaderName")}
-                      </TableHead>
-                      <TableHead>
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortKey="description"
+                        currentSortKey={sortKey}
+                        currentSortDirection={sortDirection}
+                        onSort={handleSort}
+                        className="w-[15%]"
+                      >
                         {t("eventManagement.tableHeaderDescription")}
-                      </TableHead>
-                      <TableHead>
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortKey="startTime"
+                        currentSortKey={sortKey}
+                        currentSortDirection={sortDirection}
+                        onSort={handleSort}
+                        className="w-[13%]"
+                      >
                         {t("eventManagement.tableHeaderStartTime")}
-                      </TableHead>
-                      <TableHead>
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortKey="endTime"
+                        currentSortKey={sortKey}
+                        currentSortDirection={sortDirection}
+                        onSort={handleSort}
+                        className="w-[13%]"
+                      >
                         {t("eventManagement.tableHeaderEndTime")}
-                      </TableHead>
-                      <TableHead>
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortKey="bookingStartTime"
+                        currentSortKey={sortKey}
+                        currentSortDirection={sortDirection}
+                        onSort={handleSort}
+                        className="w-[13%]"
+                      >
                         {t("eventManagement.tableHeaderBookingStartTime")}
-                      </TableHead>
-                      <TableHead>
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortKey="bookingDeadline"
+                        currentSortKey={sortKey}
+                        currentSortDirection={sortDirection}
+                        onSort={handleSort}
+                        className="w-[13%]"
+                      >
                         {t("eventManagement.tableHeaderBookingDeadline")}
-                      </TableHead>
-                      <TableHead>
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortKey="location.name"
+                        currentSortKey={sortKey}
+                        currentSortDirection={sortDirection}
+                        onSort={handleSort}
+                        className="w-[10%]"
+                      >
                         {t("eventManagement.tableHeaderLocation")}
-                      </TableHead>
-                      <TableHead>
+                      </SortableTableHead>
+                      <TableHead className="w-[8%]">
                         {t("eventManagement.tableHeaderActions")}
                       </TableHead>
                     </TableRow>
@@ -331,7 +379,7 @@ export function EventManagement({
                           );
                           return (
                             <TableRow key={event.id?.toString()}>
-                              <TableCell>
+                              <TableCell className="w-[5%]">
                                 <Checkbox
                                   checked={
                                     event.id ? selectedIds.has(event.id) : false
@@ -341,54 +389,58 @@ export function EventManagement({
                                   }
                                 />
                               </TableCell>
-                              <TableCell className="font-medium">
-                                {event.name}
-                              </TableCell>
-                              <TableCell className="max-w-xs truncate">
-                                {event.description}
-                              </TableCell>
-                              <TableCell>
+                              <TruncatedCell
+                                content={event.name}
+                                className="font-medium w-[10%]"
+                              />
+                              <TruncatedCell
+                                content={event.description}
+                                className="w-[15%]"
+                              />
+                              <TableCell className="w-[13%]">
                                 {event.startTime
                                   ? new Date(event.startTime).toLocaleString()
                                   : t("eventManagement.tbd")}
                               </TableCell>
-                              <TableCell>
+                              <TableCell className="w-[13%]">
                                 {event.endTime
                                   ? new Date(event.endTime).toLocaleString()
                                   : t("eventManagement.tbd")}
                               </TableCell>
-                              <TableCell>
+                              <TableCell className="w-[13%]">
                                 {event.bookingStartTime
                                   ? new Date(
                                       event.bookingStartTime,
                                     ).toLocaleString()
                                   : t("eventManagement.tbd")}
                               </TableCell>
-                              <TableCell>
+                              <TableCell className="w-[13%]">
                                 {event.bookingDeadline
                                   ? new Date(
                                       event.bookingDeadline,
                                     ).toLocaleString()
                                   : t("eventManagement.tbd")}
                               </TableCell>
-                              <TableCell>
+                              <TableCell className="w-[10%]">
                                 {location ? (
                                   <Button
                                     variant="link"
-                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800 truncate justify-start"
                                     onClick={() =>
                                       location.id &&
                                       handleLocationClick(location.id)
                                     }
                                   >
-                                    {location.name}
-                                    <ExternalLink className="ml-1 h-3 w-3" />
+                                    <span className="truncate">
+                                      {location.name}
+                                    </span>
+                                    <ExternalLink className="ml-1 h-3 w-3 flex-shrink-0" />
                                   </Button>
                                 ) : (
                                   t("eventManagement.noLocation")
                                 )}
                               </TableCell>
-                              <TableCell>
+                              <TableCell className="w-[8%]">
                                 <div className="flex gap-2">
                                   <Button
                                     variant="outline"

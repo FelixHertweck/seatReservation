@@ -399,9 +399,9 @@ export const LimitedUserInfoDTOSchema = {
 
 export const LoginRequestDTOSchema = {
     type: 'object',
-    required: ['identifier', 'password'],
+    required: ['username', 'password'],
     properties: {
-        identifier: {
+        username: {
             type: 'string',
             pattern: '\\S'
         },

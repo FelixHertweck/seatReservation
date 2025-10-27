@@ -26,24 +26,24 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
 public class LoginRequestDTO {
-    @NotBlank(message = "Identifier (username or email) must not be blank")
+    @NotBlank(message = "Username must not be blank")
     @NoHtmlSanitize
-    private String identifier;
+    private String username;
 
     @NotBlank(message = "Password must not be blank")
     @NoHtmlSanitize
     private String password;
 
-    public String getIdentifier() {
-        return identifier;
+    public String getUsername() {
+        return username;
     }
 
     public String getPassword() {
         return password;
     }
 
-    public void setIdentifier(String identifier) {
-        this.identifier = identifier;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public void setPassword(String password) {

@@ -25,7 +25,7 @@ export default function LoginPage() {
   const t = useT();
   const searchParams = useSearchParams();
 
-  const [identifier, setIdentifier] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoadingForm, setIsLoadingForm] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
@@ -41,7 +41,7 @@ export default function LoginPage() {
       setCurrentlyLoggingIn(true);
       const returnToUrl = searchParams.get("returnTo");
 
-      await login(identifier.trim(), password, returnToUrl);
+      await login(username.trim(), password, returnToUrl);
       setCurrentlyLoggingIn(false);
     } catch (error: any) {
       if (error?.response?.status === 401) {
@@ -105,13 +105,13 @@ export default function LoginPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="identifier">{t("login.identifier")}</Label>
+              <Label htmlFor="username">{t("login.username")}</Label>
               <Input
-                id="identifier"
+                id="username"
                 type="text"
-                placeholder={t("login.enterIdentifier")}
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
+                placeholder={t("login.enterUsername")}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 autoCapitalize="none"
                 autoComplete="username"
                 required

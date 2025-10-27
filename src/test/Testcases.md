@@ -314,10 +314,15 @@ This is an overview of the test cases for the application.
 
 | Test Case | Description |
 | :--- | :--- |
-| `deleteReservation_Success_AsAdmin` | Successfully deletes a reservation as an administrator. |
-| `deleteReservation_Success_AsManager` | Successfully deletes a reservation as a manager for an event they are allowed to manage. |
-| `deleteReservation_NotFoundException` | Attempts to delete a non-existent reservation. Expects `NotFoundException`. |
-| `deleteReservation_ForbiddenException_NotAllowed` | Attempts to delete a reservation as a user who has no permission. Expects `ForbiddenException`. |
+| `deleteReservation_Success_AsAdmin` | Successfully deletes a reservation as an administrator. Verifies that no allowance exists and no error is thrown. |
+| `deleteReservation_Success_AsManager` | Successfully deletes a reservation as a manager for an event they are allowed to manage. Verifies that no allowance exists and no error is thrown. |
+| `deleteReservation_Forbidden` | Attempts to delete a reservation as a user who has no permission. Expects `SecurityException`. |
+| `deleteReservation_Success_WithAllowanceIncrement` | Successfully deletes a reservation and increments the user's allowance count from 0 to 1 when an allowance exists. |
+| `deleteReservation_Success_NoAllowanceExists` | Successfully deletes a reservation when no allowance exists for the user and event. Verifies no error is thrown and allowance is not persisted. |
+| `deleteReservation_Success_BlockedReservation_NoAllowanceIncrement` | Successfully deletes a blocked reservation and verifies that the allowance count is not incremented. |
+| `deleteReservation_Success_MultipleReservations_WithAllowanceIncrement` | Successfully deletes multiple reservations for the same user and event, incrementing the allowance count for each reservation. |
+| `deleteReservation_Success_MixedStatus_OnlyReservedIncrementsAllowance` | Successfully deletes both reserved and blocked reservations, verifying that only reserved reservations increment the allowance count. |
+| `deleteReservation_Success_DifferentAllowanceCounts` | Successfully deletes a reservation with a non-zero starting allowance count (5) and verifies it increments to 6. |
 | `blockSeats_Success` | Successfully blocks seats for an event as a manager. |
 | `blockSeats_Forbidden` | Attempts to block seats as an unauthorized user. Expects `SecurityException`. |
 | `blockSeats_SeatAlreadyReserved` | Attempts to block already reserved or blocked seats. Expects `IllegalStateException`. |
@@ -538,6 +543,7 @@ This is an overview of the test cases for the application.
 | `testInvalidUserException` | Tests the handling of `InvalidUserException` and expects HTTP status 400 (Bad Request). |
 | `testEventBookingClosedException` | Tests the handling of `EventBookingClosedException` and expects HTTP status 400 (Bad Request). |
 | `testNoSeatsAvailableException` | Tests the handling of `NoSeatsAvailableException` and expects HTTP status 400 (Bad Request). |
+| `testVerificationCodeNotFoundException` | Tests the handling of `VerificationCodeNotFoundException` and expects HTTP status 400 (Bad Request). |
 | `testGenericException` | Tests the handling of generic `RuntimeException` and expects HTTP status 500 (Internal Server Error) with the original error message. |
 | `testNullPointerException` | Tests the handling of `NullPointerException` and expects HTTP status 500 (Internal Server Error). |
 | `testExceptionWithNullMessage` | Tests the handling of exceptions with a null message and expects HTTP status 500 (Internal Server Error). |

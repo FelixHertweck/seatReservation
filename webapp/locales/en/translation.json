@@ -1,4 +1,7 @@
 {
+  "validation": {
+    "usernameHint": "3-64 characters: letters, numbers, dots, underscores, hyphens"
+  },
   "error": {
     "title": "Error",
     "dataLoadFailed": "Failed to load data. Please try again.",
@@ -42,8 +45,8 @@
     },
     "signIn": "Sign In",
     "enterCredentials": "Enter your credentials to access your account",
-    "identifier": "Username or Email",
-    "enterIdentifier": "Enter your username or email",
+    "username": "Username",
+    "enterUsername": "Enter your username",
     "password": "Password",
     "enterPassword": "Enter your password",
     "signingIn": "Signing in...",
@@ -51,7 +54,7 @@
     "noAccount": "Don't have an account? ",
     "register": "Register",
     "error": {
-      "invalidCredentials": "Invalid username/email or password.",
+      "invalidCredentials": "Invalid username or password.",
       "title": "Login Error",
       "description": "An error occurred while logging in. Please try again."
     }

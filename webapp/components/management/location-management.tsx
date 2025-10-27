@@ -26,11 +26,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { SortableTableHead } from "@/components/common/sortable-table-head";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LocationFormModal } from "@/components/management/location-form-modal";
 import { LocationImportModal } from "@/components/management/location-import-modal";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
+import { TruncatedCell } from "@/components/common/truncated-cell";
 import type {
   EventLocationResponseDto,
   EventLocationRequestDto,
@@ -40,6 +42,7 @@ import type {
 } from "@/api";
 import { customSerializer } from "@/lib/jsonBodySerializer";
 import { useT } from "@/lib/i18n/hooks";
+import { useSortableData } from "@/lib/table-sorting";
 
 export interface LocationManagementProps {
   locations: EventLocationResponseDto[];
@@ -87,6 +90,9 @@ export function LocationManagement({
   const [currentFilters, setCurrentFilters] =
     useState<Record<string, string>>(initialFilter);
   const [selectedIds, setSelectedIds] = useState<Set<bigint>>(new Set());
+
+  const { sortedData, sortKey, sortDirection, handleSort } =
+    useSortableData(filteredLocations);
 
   useEffect(() => {
     setCurrentFilters(initialFilter);
@@ -312,7 +318,7 @@ export function LocationManagement({
           />
 
           <PaginationWrapper
-            data={filteredLocations}
+            data={sortedData}
             itemsPerPage={100}
             paginationLabel={t("locationManagement.paginationLabel")}
           >
@@ -332,31 +338,61 @@ export function LocationManagement({
                         : t("locationManagement.selectAll")}
                     </Button>
                   </div>
-                  <Table>
+                  <Table className="table-fixed">
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-12">
+                        <TableHead className="w-[5%]">
                           {t("locationManagement.tableHeaderSelect")}
                         </TableHead>
-                        <TableHead>
+                        <SortableTableHead
+                          sortKey="name"
+                          currentSortKey={sortKey}
+                          currentSortDirection={sortDirection}
+                          onSort={handleSort}
+                          className="w-[15%]"
+                        >
                           {t("locationManagement.tableHeaderName")}
-                        </TableHead>
-                        <TableHead>
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortKey="address"
+                          currentSortKey={sortKey}
+                          currentSortDirection={sortDirection}
+                          onSort={handleSort}
+                          className="w-[20%]"
+                        >
                           {t("locationManagement.tableHeaderAddress")}
-                        </TableHead>
-                        <TableHead>
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortKey="capacity"
+                          currentSortKey={sortKey}
+                          currentSortDirection={sortDirection}
+                          onSort={handleSort}
+                          className="w-[8%]"
+                        >
                           {t("locationManagement.tableHeaderCapacity")}
-                        </TableHead>
-                        <TableHead>
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortKey="managerName"
+                          currentSortKey={sortKey}
+                          currentSortDirection={sortDirection}
+                          onSort={handleSort}
+                          className="w-[12%]"
+                        >
                           {t("locationManagement.tableHeaderManager")}
-                        </TableHead>
-                        <TableHead>
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortKey="marker"
+                          currentSortKey={sortKey}
+                          currentSortDirection={sortDirection}
+                          onSort={handleSort}
+                          className="w-[18%]"
+                        >
                           {t("locationManagement.tableHeaderMarker")}
-                        </TableHead>
-                        <TableHead>
+                        </SortableTableHead>
+                        <TableHead className="w-[10%]">
                           {t("locationManagement.tableHeaderSeats")}
                         </TableHead>
-                        <TableHead>
+                        <TableHead className="w-[12%]">
                           {t("locationManagement.tableHeaderActions")}
                         </TableHead>
                       </TableRow>
@@ -422,21 +458,26 @@ export function LocationManagement({
                                     }
                                   />
                                 </TableCell>
-                                <TableCell className="font-medium">
-                                  {location.name}
+                                <TruncatedCell
+                                  content={location.name}
+                                  className="font-medium w-[15%]"
+                                />
+                                <TruncatedCell
+                                  content={location.address}
+                                  className="w-[20%]"
+                                />
+                                <TableCell className="w-[8%]">
+                                  {location.capacity}
                                 </TableCell>
-                                <TableCell>{location.address}</TableCell>
-                                <TableCell>{location.capacity}</TableCell>
-                                <TableCell>
-                                  {location.manager?.username}
-                                </TableCell>
-                                <TableCell
-                                  className="text-sm max-w-48 truncate"
-                                  title={markersDisplay}
-                                >
-                                  {markersDisplay}
-                                </TableCell>
-                                <TableCell>
+                                <TruncatedCell
+                                  content={location.manager?.username}
+                                  className="w-[12%]"
+                                />
+                                <TruncatedCell
+                                  content={markersDisplay}
+                                  className="w-[18%]"
+                                />
+                                <TableCell className="w-[10%]">
                                   {seatCount > 0 ? (
                                     <Button
                                       variant="link"

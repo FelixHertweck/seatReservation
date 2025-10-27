@@ -45,40 +45,28 @@ public class AuthService {
     @Inject UserService userService;
 
     /**
-     * Authenticates a user with the given identifier and password.
+     * Authenticates a user with the given username and password.
      *
-     * @param identifier the identifier of the user
+     * @param username the username of the user
      * @param password the password of the user
      * @return the authenticated User if authentication is successful
      * @throws AuthenticationFailedException if authentication fails
      */
-    public User authenticate(String identifier, String password)
+    public User authenticate(String username, String password)
             throws AuthenticationFailedException {
-        LOG.debugf("Attempting to authenticate user with identifier: %s", identifier);
-        if (isIdentifierEmail(identifier)) {
-            for (User user : userRepository.findAllByEmail(identifier)) {
-                if (passwordMatches(password, user.getPasswordSalt(), user.getPasswordHash())) {
-                    LOG.infof("User %s authenticated successfully.", user.getUsername());
-                    return user;
-                }
-                LOG.debugf("Password mismatch for user %s.", user.getUsername());
-            }
-
-        } else {
-            User user = userRepository.findByUsername(identifier);
-            if (user == null) {
-                LOG.warnf("Authentication failed for identifier %s: User not found.", identifier);
-                throw new AuthenticationFailedException(
-                        "Failed to authenticate user: " + identifier);
-            }
-            if (passwordMatches(password, user.getPasswordSalt(), user.getPasswordHash())) {
-                LOG.infof("User %s authenticated successfully.", user.getUsername());
-                return user;
-            }
+        LOG.debugf("Attempting to authenticate user with username: %s", username);
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            LOG.warnf("Authentication failed for username %s: User not found.", username);
+            throw new AuthenticationFailedException("Failed to authenticate user: " + username);
+        }
+        if (passwordMatches(password, user.getPasswordSalt(), user.getPasswordHash())) {
+            LOG.infof("User %s authenticated successfully.", user.getUsername());
+            return user;
         }
 
-        LOG.warnf("Authentication failed for identifier %s: No matching users found.", identifier);
-        throw new AuthenticationFailedException("Failed to authenticate user: " + identifier);
+        LOG.warnf("Authentication failed for username %s: Password mismatch.", username);
+        throw new AuthenticationFailedException("Failed to authenticate user: " + username);
     }
 
     public boolean passwordMatches(String password, String passwordSalt, String storedHash) {
@@ -112,9 +100,5 @@ public class AuthService {
         LOG.infof("User %s registered successfully", registerRequest.getUsername());
 
         return user;
-    }
-
-    private boolean isIdentifierEmail(String identifier) {
-        return identifier.contains("@");
     }
 }

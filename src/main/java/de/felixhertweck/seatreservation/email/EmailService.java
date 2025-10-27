@@ -122,9 +122,11 @@ public class EmailService {
     public void sendEmailConfirmation(User user, EmailVerification emailVerification)
             throws IOException {
         if (skipForNullOrEmptyAddress(user.getEmail())) {
+            LOG.warn("No valid email addresses provided for email confirmation.");
             return;
         }
         if (skipForLocalhostAddress(user.getEmail())) {
+            LOG.warn("No valid email addresses provided for email confirmation.");
             return;
         }
 
@@ -559,9 +561,11 @@ public class EmailService {
      */
     public void sendPasswordChangedNotification(User user) throws IOException {
         if (skipForNullOrEmptyAddress(user.getEmail())) {
+            LOG.warn("No valid email addresses provided for password change notification.");
             return;
         }
         if (skipForLocalhostAddress(user.getEmail())) {
+            LOG.warn("No valid email addresses provided for password change notification.");
             return;
         }
 
@@ -601,9 +605,11 @@ public class EmailService {
      */
     public void sendEventReminder(User user, Event event, List<Reservation> reservations) {
         if (skipForNullOrEmptyAddress(user.getEmail())) {
+            LOG.warn("No valid email addresses provided for event reminder.");
             return;
         }
         if (skipForLocalhostAddress(user.getEmail())) {
+            LOG.warn("No valid email addresses provided for event reminder.");
             return;
         }
 
@@ -669,7 +675,6 @@ public class EmailService {
         // Create and send the email
         LOG.debugf("Event reminder subject: %s", EMAIL_HEADER_REMINDER);
         Mail mail = Mail.withHtml(user.getEmail(), EMAIL_HEADER_REMINDER, htmlContent);
-        addBcc(mail);
 
         try {
             mailer.send(mail);
@@ -695,9 +700,11 @@ public class EmailService {
      */
     public void sendEventReservationsCsvToManager(User manager, Event event) throws IOException {
         if (skipForNullOrEmptyAddress(manager.getEmail())) {
+            LOG.warn("No valid email addresses provided to send CSV export.");
             return;
         }
         if (skipForLocalhostAddress(manager.getEmail())) {
+            LOG.warn("No valid email addresses provided to send CSV export.");
             return;
         }
         LOG.debugf("Manager ID: %d, Event ID: %d", manager.id, event.id);
@@ -764,7 +771,7 @@ public class EmailService {
 
     private boolean skipForNullOrEmptyAddress(String address) {
         if (address == null || address.isEmpty()) {
-            LOG.warn("Skipping email sending for null or empty address.");
+            LOG.debug("Skipping email sending for null or empty address.");
             return true;
         }
         return false;
@@ -772,7 +779,7 @@ public class EmailService {
 
     private boolean skipForLocalhostAddress(String address) {
         if (address.endsWith("@localhost")) {
-            LOG.infof("Skipping email sending for localhost address: %s", address);
+            LOG.debugf("Skipping email sending for localhost address: %s", address);
             return true;
         }
         return false;
