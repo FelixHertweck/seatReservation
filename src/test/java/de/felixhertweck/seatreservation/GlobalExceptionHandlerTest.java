@@ -19,9 +19,14 @@
  */
 package de.felixhertweck.seatreservation;
 
+import java.util.Map;
+import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.common.dto.ErrorResponseDTO;
 import de.felixhertweck.seatreservation.common.exception.DuplicateUserException;
@@ -36,19 +41,21 @@ import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableEx
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
+import de.felixhertweck.seatreservation.security.service.TokenService;
 import de.felixhertweck.seatreservation.userManagment.exceptions.VerificationCodeNotFoundException;
 import de.felixhertweck.seatreservation.userManagment.exceptions.VerifyTokenExpiredException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class GlobalExceptionHandlerTest {
 
-    private GlobalExceptionHandler exceptionHandler;
+    @Mock private TokenService tokenService;
 
-    @BeforeEach
-    void setUp() {
-        exceptionHandler = new GlobalExceptionHandler();
-    }
+    @InjectMocks private GlobalExceptionHandler exceptionHandler;
 
     @Test
     void testUserNotFoundException() {
@@ -233,12 +240,35 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void testJwtInvalidException() {
+        // Arrange
         JwtInvalidException exception = new JwtInvalidException("JWT token is invalid");
+        NewCookie jwtCookie = new NewCookie.Builder("jwt").value("").maxAge(0).build();
+        NewCookie refreshCookie = new NewCookie.Builder("refreshToken").value("").maxAge(0).build();
+        NewCookie refreshExpCookie =
+                new NewCookie.Builder("refreshToken_expiration").value("").maxAge(0).build();
+
+        when(tokenService.createNewNullCookie("jwt", true)).thenReturn(jwtCookie);
+        when(tokenService.createNewNullCookie("refreshToken", true)).thenReturn(refreshCookie);
+        when(tokenService.createNewNullCookie("refreshToken_expiration", false))
+                .thenReturn(refreshExpCookie);
+
+        // Act
         Response response = exceptionHandler.toResponse(exception);
 
+        // Assert
         assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
         assertTrue(response.getEntity() instanceof ErrorResponseDTO);
         ErrorResponseDTO errorResponse = (ErrorResponseDTO) response.getEntity();
         assertEquals("JWT token is invalid", errorResponse.getMessage());
+
+        Map<String, NewCookie> cookies = response.getCookies();
+        assertEquals(3, cookies.size());
+        assertTrue(cookies.containsKey("jwt"));
+        assertTrue(cookies.containsKey("refreshToken"));
+        assertTrue(cookies.containsKey("refreshToken_expiration"));
+
+        assertEquals(0, cookies.get("jwt").getMaxAge());
+        assertEquals(0, cookies.get("refreshToken").getMaxAge());
+        assertEquals(0, cookies.get("refreshToken_expiration").getMaxAge());
     }
 }

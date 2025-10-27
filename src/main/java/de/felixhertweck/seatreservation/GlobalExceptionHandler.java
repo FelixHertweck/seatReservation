@@ -19,6 +19,10 @@
  */
 package de.felixhertweck.seatreservation;
 
+import java.util.ArrayList;
+import java.util.List;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
@@ -36,6 +40,7 @@ import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableEx
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
+import de.felixhertweck.seatreservation.security.service.TokenService;
 import de.felixhertweck.seatreservation.userManagment.exceptions.VerificationCodeNotFoundException;
 import de.felixhertweck.seatreservation.userManagment.exceptions.VerifyTokenExpiredException;
 import org.jboss.logging.Logger;
@@ -45,10 +50,13 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
 
     private static final Logger LOG = Logger.getLogger(GlobalExceptionHandler.class);
 
+    @Inject TokenService tokenService;
+
     @Override
     public Response toResponse(Exception exception) {
         ErrorResponseDTO errorResponse = new ErrorResponseDTO(exception.getMessage());
         Response.Status status;
+        List<NewCookie> cookies = new ArrayList<>();
 
         switch (exception) {
             case EventBookingClosedException ignored -> status = Response.Status.BAD_REQUEST;
@@ -58,7 +66,17 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
             case SeatNotFoundException ignored -> status = Response.Status.NOT_FOUND;
             case NoSeatsAvailableException ignored -> status = Response.Status.BAD_REQUEST;
             case SeatAlreadyReservedException ignored -> status = Response.Status.CONFLICT;
-            case JwtInvalidException ignored -> status = Response.Status.UNAUTHORIZED;
+            case JwtInvalidException ignored -> {
+                NewCookie jwtAccessCookie = tokenService.createNewNullCookie("jwt", true);
+                NewCookie refreshTokenCookie =
+                        tokenService.createNewNullCookie("refreshToken", true);
+                NewCookie refreshTokenExpirationCookie =
+                        tokenService.createNewNullCookie("refreshToken_expiration", false);
+                cookies.add(jwtAccessCookie);
+                cookies.add(refreshTokenCookie);
+                cookies.add(refreshTokenExpirationCookie);
+                status = Response.Status.UNAUTHORIZED;
+            }
             case AuthenticationFailedException ignored -> status = Response.Status.UNAUTHORIZED;
             case DuplicateUserException ignored -> status = Response.Status.CONFLICT;
             case InvalidUserException ignored -> status = Response.Status.BAD_REQUEST;
@@ -76,6 +94,9 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
         LOG.warnf(
                 "Exception occurred (handled by GlobalExceptionHandler): %s", exception.toString());
 
-        return Response.status(status).entity(errorResponse).build();
+        return Response.status(status)
+                .entity(errorResponse)
+                .cookie(cookies.toArray(NewCookie[]::new))
+                .build();
     }
 }

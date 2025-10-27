@@ -156,14 +156,14 @@ public class TokenService {
         JsonWebToken jwt;
         try {
             jwt = parser.parse(refreshToken);
-        } catch (Exception e) {
+        } catch (ParseException | RuntimeException e) {
             throw new JwtInvalidException("Invalid JWT", e);
         }
 
         // Extract token id and value from JWT
         Long tokenId;
         try {
-            tokenId = Long.parseLong(jwt.getClaim("token_id"));
+            tokenId = Long.valueOf(jwt.getClaim("token_id"));
         } catch (NumberFormatException e) {
             throw new JwtInvalidException("Invalid token_id in JWT", e);
         }

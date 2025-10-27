@@ -39,7 +39,6 @@ import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
 import de.felixhertweck.seatreservation.security.service.AuthService;
 import de.felixhertweck.seatreservation.security.service.TokenService;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.jboss.logging.Logger;
 
@@ -53,9 +52,6 @@ public class AuthResource {
     @Inject AuthService authService;
     @Inject TokenService tokenService;
     @Inject UserSecurityContext userSecurityContext;
-
-    @ConfigProperty(name = "jwt.cookie.secure", defaultValue = "false")
-    boolean cookieSecure;
 
     @POST
     @Path("/login")
