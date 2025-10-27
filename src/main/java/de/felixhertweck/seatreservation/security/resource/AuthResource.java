@@ -175,35 +175,60 @@ public class AuthResource {
     @PermitAll
     @APIResponse(responseCode = "200", description = "Token refresh successful, new JWT cookie set")
     @APIResponse(responseCode = "401", description = "Unauthorized: Invalid or expired token")
-    public Response refreshToken(@CookieParam("refreshToken") String refreshToken)
-            throws JwtInvalidException {
+    public Response refreshToken(@CookieParam("refreshToken") String refreshToken) {
         LOG.debugf("Received token refresh request.");
 
         // Validate that refresh token is present
         if (refreshToken == null || refreshToken.isEmpty()) {
             LOG.warn("Refresh token missing in request");
-            throw new JwtInvalidException("No refresh token provided");
+            return clearCookiesAndReturnUnauthorized("No refresh token provided");
         }
 
-        User user = tokenService.validateRefreshToken(refreshToken);
+        try {
+            User user = tokenService.validateRefreshToken(refreshToken);
 
-        String newAccessToken = tokenService.generateToken(user);
-        NewCookie jwtAccessCookie = tokenService.createNewJwtCookie(newAccessToken, "jwt");
+            String newAccessToken = tokenService.generateToken(user);
+            NewCookie jwtAccessCookie = tokenService.createNewJwtCookie(newAccessToken, "jwt");
 
-        String newRefreshToken = tokenService.generateRefreshToken(user);
-        NewCookie refreshTokenCookie =
-                tokenService.createNewRefreshTokenCookie(newRefreshToken, "refreshToken");
+            String newRefreshToken = tokenService.generateRefreshToken(user);
+            NewCookie refreshTokenCookie =
+                    tokenService.createNewRefreshTokenCookie(newRefreshToken, "refreshToken");
 
+            NewCookie refreshTokenExpirationCookie =
+                    tokenService.createStatusCookie(newRefreshToken, "refreshToken_expiration");
+
+            LOG.debugf(
+                    "Token refreshed successfully for user: %s. New JWT and refresh token cookies"
+                            + " set.",
+                    user.getUsername());
+            return Response.ok()
+                    .cookie(jwtAccessCookie)
+                    .cookie(refreshTokenCookie)
+                    .cookie(refreshTokenExpirationCookie)
+                    .build();
+        } catch (JwtInvalidException e) {
+            LOG.warnf("Token refresh failed: %s", e.getMessage());
+            return clearCookiesAndReturnUnauthorized(e.getMessage());
+        }
+    }
+
+    /**
+     * Clears authentication cookies and returns a 401 Unauthorized response.
+     *
+     * @param message the error message to include in the response
+     * @return a 401 response with cookie-clearing headers
+     */
+    private Response clearCookiesAndReturnUnauthorized(String message) {
+        NewCookie jwtAccessCookie = tokenService.createNewNullCookie("jwt", true);
+        NewCookie refreshTokenCookie = tokenService.createNewNullCookie("refreshToken", true);
         NewCookie refreshTokenExpirationCookie =
-                tokenService.createStatusCookie(newRefreshToken, "refreshToken_expiration");
+                tokenService.createNewNullCookie("refreshToken_expiration", false);
 
-        LOG.debugf(
-                "Token refreshed successfully for user: %s. New JWT and refresh token cookies set.",
-                user.getUsername());
-        return Response.ok()
+        return Response.status(Response.Status.UNAUTHORIZED)
                 .cookie(jwtAccessCookie)
                 .cookie(refreshTokenCookie)
                 .cookie(refreshTokenExpirationCookie)
+                .entity(new de.felixhertweck.seatreservation.common.dto.ErrorResponseDTO(message))
                 .build();
     }
 }
