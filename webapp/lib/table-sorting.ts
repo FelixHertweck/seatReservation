@@ -51,22 +51,13 @@ export function useSortableData<T>(data: T[]) {
       } else if (typeof aValue === "boolean" && typeof bValue === "boolean") {
         comparison = aValue === bValue ? 0 : aValue ? 1 : -1;
       } else if (typeof aValue === "string" && typeof bValue === "string") {
-        // Try to parse as numbers first (for strings like "1", "10", "100")
-        const aNum = parseFloat(aValue);
-        const bNum = parseFloat(bValue);
-
-        if (!isNaN(aNum) && !isNaN(bNum)) {
-          // Both are numeric strings - compare as numbers
-          comparison = aNum - bNum;
-        } else {
-          // At least one is not numeric - use natural sort with locale
-          comparison = aValue
-            .toLowerCase()
-            .localeCompare(bValue.toLowerCase(), undefined, {
-              numeric: true,
-              sensitivity: "base",
-            });
-        }
+        // Use natural sort with locale for string comparison
+        comparison = aValue
+          .toLowerCase()
+          .localeCompare(bValue.toLowerCase(), undefined, {
+            numeric: true,
+            sensitivity: "base",
+          });
       } else {
         // Fallback to string comparison
         comparison = String(aValue).localeCompare(String(bValue), undefined, {
