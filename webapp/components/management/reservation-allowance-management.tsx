@@ -301,7 +301,7 @@ export function ReservationAllowanceManagement({
                         {t("reservationAllowanceManagement.tableHeaderEvent")}
                       </SortableTableHead>
                       <SortableTableHead
-                        sortKey="userId"
+                        sortKey="user.username"
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
