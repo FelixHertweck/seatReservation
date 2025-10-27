@@ -19,7 +19,6 @@
  */
 package de.felixhertweck.seatreservation.reservation.resource;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import jakarta.annotation.security.RolesAllowed;
@@ -147,10 +146,7 @@ public class ReservationResource {
             responseCode = "404",
             description = "Not Found: Reservation with specified ID not found for the current user")
     public void deleteReservation(@QueryParam("ids") List<Long> ids)
-            throws PersistenceException,
-                    ReservationNotFoundException,
-                    SecurityException,
-                    IOException {
+            throws PersistenceException, ReservationNotFoundException, SecurityException {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.debugf(
                 "Received DELETE request to /api/user/reservations with IDs: %s for user: %s",

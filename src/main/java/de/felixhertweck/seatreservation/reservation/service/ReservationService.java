@@ -19,7 +19,6 @@
  */
 package de.felixhertweck.seatreservation.reservation.service;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,7 +31,8 @@ import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
-import de.felixhertweck.seatreservation.email.EmailService;
+import de.felixhertweck.seatreservation.email.event.ReservationConfirmationEvent;
+import de.felixhertweck.seatreservation.email.event.ReservationUpdateEvent;
 import de.felixhertweck.seatreservation.management.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.*;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
@@ -55,7 +55,11 @@ public class ReservationService {
     @Inject EventRepository eventRepository;
     @Inject SeatRepository seatRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
-    @Inject EmailService emailService;
+
+    @Inject
+    jakarta.enterprise.event.Event<ReservationConfirmationEvent> reservationConfirmationEvent;
+
+    @Inject jakarta.enterprise.event.Event<ReservationUpdateEvent> reservationUpdateEvent;
 
     public List<UserReservationResponseDTO> findReservationsByUser(User currentUser) {
         LOG.debugf("Attempting to find reservations for user: %s", currentUser.getUsername());
@@ -254,18 +258,12 @@ public class ReservationService {
                 event.id,
                 eventUserAllowance.getReservationsAllowedCount());
 
-        try {
-            LOG.debugf(
-                    "Attempting to send reservation confirmation email to %s.",
-                    currentUser.getEmail());
-            emailService.sendReservationConfirmation(currentUser, newReservations);
-            LOG.debugf(
-                    "Reservation confirmation email sent to %s for user %s.",
-                    currentUser.getEmail(), currentUser.getUsername());
-        } catch (IOException | PersistenceException | IllegalStateException e) {
-            // Log the exception, but don't let it fail the transaction
-            LOG.error("Failed to send reservation confirmation email", e);
-        }
+        // Fire async event for sending reservation confirmation email
+        LOG.debugf(
+                "Firing async event for reservation confirmation email to %s.",
+                currentUser.getEmail());
+        reservationConfirmationEvent.fireAsync(
+                new ReservationConfirmationEvent(currentUser, newReservations));
 
         return newReservations.stream()
                 .map(UserReservationResponseDTO::new)
@@ -281,14 +279,12 @@ public class ReservationService {
      * @param currentUser The user attempting to delete the reservations.
      * @throws ReservationNotFoundException if any reservation is not found.
      * @throws SecurityException if the user is not authorized to delete any reservation.
-     * @throws IOException if sending the confirmation email fails.
      * @throws PersistenceException if the reservation cannot be deleted from the database.
      * @throws IllegalArgumentException if the list of IDs is null or empty.
      */
     @Transactional
     public void deleteReservationForUser(List<Long> ids, User currentUser)
-            throws IOException,
-                    PersistenceException,
+            throws PersistenceException,
                     ReservationNotFoundException,
                     SecurityException,
                     IllegalArgumentException {
@@ -378,21 +374,12 @@ public class ReservationService {
             List<Reservation> activeReservations =
                     reservationRepository.findByUserAndEventId(currentUser, entry.getKey());
 
-            try {
-                emailService.sendUpdateReservationConfirmation(
-                        currentUser, entry.getValue(), activeReservations);
-            } catch (IOException e) {
-                LOG.errorf(
-                        "Failed to send reservation update confirmation for user %s (ID: %d) and"
-                                + " reservations %s.",
-                        currentUser.getUsername(), currentUser.getId(), entry.getValue());
-                return;
-            }
-
+            // Fire async event for sending reservation update confirmation email
             LOG.debugf(
-                    "Sent reservation update confirmation for user %s (ID: %d) and reservations"
-                            + " %s.",
-                    currentUser.getUsername(), currentUser.getId(), entry.getValue());
+                    "Firing async event for reservation update confirmation for user %s (ID: %d).",
+                    currentUser.getUsername(), currentUser.getId());
+            reservationUpdateEvent.fireAsync(
+                    new ReservationUpdateEvent(currentUser, entry.getValue(), activeReservations));
         }
     }
 }
