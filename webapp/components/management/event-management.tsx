@@ -425,7 +425,7 @@ export function EventManagement({
                                 {location ? (
                                   <Button
                                     variant="link"
-                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800 truncate justify-start max-w-full"
+                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800 truncate justify-start"
                                     onClick={() =>
                                       location.id &&
                                       handleLocationClick(location.id)
