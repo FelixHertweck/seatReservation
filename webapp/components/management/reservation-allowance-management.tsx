@@ -292,7 +292,7 @@ export function ReservationAllowanceManagement({
                         {t("reservationAllowanceManagement.tableHeaderSelect")}
                       </TableHead>
                       <SortableTableHead
-                        sortKey="eventId"
+                        sortKey="event.name"
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
