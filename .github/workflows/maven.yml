@@ -58,21 +58,21 @@ jobs:
         uses: advanced-security/maven-dependency-submission-action@v5
 
       - name: Upload Backend Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ inputs.build-artifact-name }}
           path: ${{ inputs.build-artifact-path }}
           retention-days: 4
 
       - name: Upload OpenAPI schema
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: openapi-schema
           path: |
             target/openapi
         
       - name: Upload Jacoco report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: jacoco-report
           path: |
