@@ -7,6 +7,14 @@ import { toast } from "@/hooks/use-toast";
 import { useLoginRequiredPopup } from "@/hooks/use-login-popup";
 import { getRefreshTokenExpiration } from "@/lib/refreshTokenExpirationCookie";
 
+export interface ErrorWithResponse extends Error {
+  response?: {
+    status: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    data?: any;
+  };
+}
+
 // Promise cache for token refresh to prevent multiple simultaneous refresh calls
 let refreshPromise: Promise<Response> | null = null;
 
@@ -43,7 +51,7 @@ export default function InitQueryClient({
         !response.ok &&
         response.status === 401 &&
         refreshTokenExpiration !== null &&
-        refreshTokenExpiration.getTime() > Date.now()
+        refreshTokenExpiration.getTime() > new Date().getTime()
       ) {
         // Refresh token (uses cached promise if multiple requests fail simultaneously)
         const refreshResponse = await refreshToken();
@@ -60,7 +68,7 @@ export default function InitQueryClient({
         }
       }
       if (!response.ok) {
-        const error = new Error(response.statusText) as any;
+        const error = new Error(response.statusText) as ErrorWithResponse;
         error.response = { status: response.status };
 
         // Try to parse error response body as JSON
@@ -94,7 +102,7 @@ export default function InitQueryClient({
         refetchOnWindowFocus: true,
         retryDelay: 1000,
         throwOnError(error) {
-          const status = (error as any)?.response?.status;
+          const status = (error as ErrorWithResponse)?.response?.status;
           if (status !== 401) {
             toast({
               title: "An error occurred",
@@ -106,7 +114,7 @@ export default function InitQueryClient({
           return true;
         },
         retry: (failureCount, error) => {
-          if ((error as any)?.response?.status === 401) {
+          if ((error as ErrorWithResponse)?.response?.status === 401) {
             triggerLoginRequired();
             return false;
           }
@@ -117,14 +125,13 @@ export default function InitQueryClient({
       mutations: {
         retryDelay: 1000,
         retry: (_failureCount, error) => {
-          if ((error as any)?.response?.status === 401) {
+          if ((error as ErrorWithResponse)?.response?.status === 401) {
             triggerLoginRequired();
           }
           return false;
         },
         onError: (error: Error) => {
-          // Try to extract message from error response body
-          const errorResponse = (error as any)?.response;
+          const errorResponse = (error as ErrorWithResponse)?.response;
           const responseData = errorResponse?.data;
 
           // Handle different error formats

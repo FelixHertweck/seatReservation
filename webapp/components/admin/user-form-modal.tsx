@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import type { UserDto, AdminUserUpdateDto, AdminUserCreationDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
+import { customSerializer } from "@/lib/jsonBodySerializer";
 
 interface UserFormModalProps {
   user: UserDto | null;
@@ -36,64 +37,57 @@ export function UserFormModal({
 }: UserFormModalProps) {
   const t = useT();
 
-  const [username, setUsername] = useState(user?.username || "");
-  const [firstname, setFirstname] = useState(user?.firstname || "");
-  const [lastname, setLastname] = useState(user?.lastname || "");
-  const [email, setEmail] = useState(user?.email || "");
-  const [password, setPassword] = useState(isCreating ? "" : "••••••••");
-  const [emailVerified, setEmailVerified] = useState(
-    user?.emailVerified || false,
+  function getInitialFormState(user: UserDto | null, isCreating: boolean) {
+    return {
+      username: user?.username || "",
+      firstname: user?.firstname || "",
+      lastname: user?.lastname || "",
+      email: user?.email || "",
+      password: isCreating ? "" : "••••••••",
+      emailVerified: user?.emailVerified || false,
+      selectedRoles: user?.roles || [],
+      tags: user?.tags || [],
+    };
+  }
+
+  const formKey = customSerializer.json({ user, isCreating });
+  const [formState, setFormState] = useState(() =>
+    getInitialFormState(user, isCreating),
   );
   const [sendEmailVerification, setSendEmailVerification] = useState(false);
-  const [selectedRoles, setSelectedRoles] = useState<string[]>(
-    user?.roles || [],
-  );
-  const [tags, setTags] = useState<string[]>(user?.tags || []);
   const [newTag, setNewTag] = useState("");
 
   const [isFormLoading, setIsFormLoading] = useState(false);
 
   const isPasswordTooShort =
-    password.length > 0 && password.length < 8 && password !== "••••••••";
-
-  useEffect(() => {
-    if (user) {
-      setUsername(user.username || "");
-      setFirstname(user.firstname || "");
-      setLastname(user.lastname || "");
-      setEmail(user.email || "");
-      setEmailVerified(user.emailVerified || false);
-      setSelectedRoles(user.roles || []);
-      setTags(user.tags || []);
-      setPassword(isCreating ? "" : "••••••••");
-    } else {
-      setUsername("");
-      setFirstname("");
-      setLastname("");
-      setEmail("");
-      setPassword("");
-      setEmailVerified(false);
-      setSelectedRoles([]);
-      setTags([]);
-      setSendEmailVerification(false);
-    }
-  }, [user, isCreating]);
+    formState.password.length > 0 &&
+    formState.password.length < 8 &&
+    formState.password !== "••••••••";
 
   const handleRoleChange = (role: string, checked: boolean) => {
-    setSelectedRoles((prev) =>
-      checked ? [...prev, role] : prev.filter((r) => r !== role),
-    );
+    setFormState((prev) => ({
+      ...prev,
+      selectedRoles: checked
+        ? [...prev.selectedRoles, role]
+        : prev.selectedRoles.filter((r) => r !== role),
+    }));
   };
 
   const handleAddTag = () => {
-    if (newTag.trim() && !tags.includes(newTag.trim())) {
-      setTags([...tags, newTag.trim()]);
+    if (newTag.trim() && !formState.tags.includes(newTag.trim())) {
+      setFormState((prev) => ({
+        ...prev,
+        tags: [...prev.tags, newTag.trim()],
+      }));
       setNewTag("");
     }
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
-    setTags(tags.filter((tag) => tag !== tagToRemove));
+    setFormState((prev) => ({
+      ...prev,
+      tags: prev.tags.filter((tag) => tag !== tagToRemove),
+    }));
   };
 
   const handleSubmit = async () => {
@@ -103,40 +97,43 @@ export function UserFormModal({
 
     if (isCreating) {
       userData = {
-        username,
-        firstname,
-        lastname,
-        email,
-        password,
-        roles: selectedRoles,
-        tags,
+        username: formState.username,
+        firstname: formState.firstname,
+        lastname: formState.lastname,
+        email: formState.email,
+        password: formState.password,
+        roles: formState.selectedRoles,
+        tags: formState.tags,
         sendEmailVerification,
-        emailVerified,
+        emailVerified: formState.emailVerified,
       };
     } else {
       userData = {
-        firstname,
-        lastname,
-        email,
-        roles: selectedRoles,
-        tags,
+        firstname: formState.firstname,
+        lastname: formState.lastname,
+        email: formState.email,
+        roles: formState.selectedRoles,
+        tags: formState.tags,
         sendEmailVerification,
-        emailVerified,
+        emailVerified: formState.emailVerified,
       };
 
-      if (password !== "••••••••") {
-        userData.password = password;
+      if (formState.password !== "••••••••") {
+        userData.password = formState.password;
       }
     }
 
-    await onSubmit(userData);
-
-    setIsFormLoading(false);
+    try {
+      await onSubmit(userData);
+    } finally {
+      setIsFormLoading(false);
+    }
   };
 
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent
+        key={formKey}
         className="sm:max-w-[425px]"
         onInteractOutside={(e) => e.preventDefault()}
       >
@@ -154,8 +151,10 @@ export function UserFormModal({
             </Label>
             <Input
               id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={formState.username}
+              onChange={(e) =>
+                setFormState((prev) => ({ ...prev, username: e.target.value }))
+              }
               className="col-span-3"
               disabled={!isCreating} // Username typically not editable after creation
               autoCapitalize="none"
@@ -170,10 +169,15 @@ export function UserFormModal({
               <Input
                 id="password"
                 type="password"
-                value={password}
+                value={formState.password}
                 autoCapitalize="none"
                 autoComplete={isCreating ? "new-password" : "current-password"}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) =>
+                  setFormState((prev) => ({
+                    ...prev,
+                    password: e.target.value,
+                  }))
+                }
                 placeholder={
                   isCreating
                     ? t("userFormModal.passwordPlaceholder")
@@ -181,8 +185,8 @@ export function UserFormModal({
                 }
                 required={isCreating}
                 onFocus={() => {
-                  if (!isCreating && password === "••••••••") {
-                    setPassword("");
+                  if (!isCreating && formState.password === "••••••••") {
+                    setFormState((prev) => ({ ...prev, password: "" }));
                   }
                 }}
               />
@@ -204,8 +208,10 @@ export function UserFormModal({
             </Label>
             <Input
               id="firstname"
-              value={firstname}
-              onChange={(e) => setFirstname(e.target.value)}
+              value={formState.firstname}
+              onChange={(e) =>
+                setFormState((prev) => ({ ...prev, firstname: e.target.value }))
+              }
               className="col-span-3"
             />
           </div>
@@ -215,8 +221,10 @@ export function UserFormModal({
             </Label>
             <Input
               id="lastname"
-              value={lastname}
-              onChange={(e) => setLastname(e.target.value)}
+              value={formState.lastname}
+              onChange={(e) =>
+                setFormState((prev) => ({ ...prev, lastname: e.target.value }))
+              }
               className="col-span-3"
             />
           </div>
@@ -227,8 +235,10 @@ export function UserFormModal({
             <Input
               id="email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={formState.email}
+              onChange={(e) =>
+                setFormState((prev) => ({ ...prev, email: e.target.value }))
+              }
               className="col-span-3"
             />
           </div>
@@ -238,9 +248,9 @@ export function UserFormModal({
             </Label>
             <Checkbox
               id="emailVerified"
-              checked={emailVerified}
+              checked={formState.emailVerified}
               onCheckedChange={(checked) => {
-                setEmailVerified(!!checked);
+                setFormState((prev) => ({ ...prev, emailVerified: !!checked }));
                 if (checked) {
                   setSendEmailVerification(false);
                 }
@@ -259,12 +269,12 @@ export function UserFormModal({
               onCheckedChange={(checked) => {
                 setSendEmailVerification(!!checked);
                 if (checked) {
-                  setEmailVerified(false);
+                  setFormState((prev) => ({ ...prev, emailVerified: false }));
                 }
               }}
               className="col-span-3"
               aria-describedby="sendEmailVerification-desc"
-              disabled={emailVerified}
+              disabled={formState.emailVerified}
             />
             {/* Visually hidden description for accessibility */}
             <span id="sendEmailVerification-desc" className="sr-only">
@@ -280,7 +290,7 @@ export function UserFormModal({
                 <div key={role} className="flex items-center space-x-2">
                   <Checkbox
                     id={`role-${role}`}
-                    checked={selectedRoles.includes(role)}
+                    checked={formState.selectedRoles.includes(role)}
                     onCheckedChange={(checked) =>
                       handleRoleChange(role, !!checked)
                     }
@@ -297,7 +307,7 @@ export function UserFormModal({
             </Label>
             <div className="col-span-3">
               <div className="flex flex-wrap gap-2 mb-2">
-                {tags.map((tag) => (
+                {formState.tags.map((tag) => (
                   <Badge
                     key={tag}
                     variant="secondary"

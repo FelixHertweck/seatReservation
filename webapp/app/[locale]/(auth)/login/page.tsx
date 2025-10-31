@@ -18,6 +18,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useT } from "@/lib/i18n/hooks";
 import { isValidRedirectUrlEncoded } from "@/lib/utils";
+import { ErrorWithResponse } from "@/components/init-query-client";
 
 export default function LoginPage() {
   const params = useParams();
@@ -43,8 +44,8 @@ export default function LoginPage() {
 
       await login(username.trim(), password, returnToUrl);
       setCurrentlyLoggingIn(false);
-    } catch (error: any) {
-      if (error?.response?.status === 401) {
+    } catch (error) {
+      if ((error as ErrorWithResponse).response?.status === 401) {
         setLoginError(t("login.error.invalidCredentials"));
       }
       setCurrentlyLoggingIn(false);

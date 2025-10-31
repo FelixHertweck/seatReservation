@@ -18,20 +18,33 @@ import { useAuth } from "@/hooks/use-auth";
 import { useProfileUnsavedChanges } from "@/hooks/use-profile-unsaved-changes";
 import { useRouter, useParams } from "next/navigation";
 
+interface FormData {
+  firstname: string;
+  lastname: string;
+  email: string;
+  tags: string[];
+}
+
 export default function ProfilePage() {
   const t = useT();
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as string;
 
-  const { user, updateProfile, isLoading, resendConfirmation } = useProfile();
+  const { user, updateProfile, isLoading } = useProfile();
   const { isLoggedIn: isAuthenticated } = useAuth();
 
-  const [firstname, setFirstname] = useState("");
-  const [lastname, setLastname] = useState("");
-  const [email, setEmail] = useState("");
-  const [originalEmail, setOriginalEmail] = useState("");
-  const [tags, setTags] = useState<string[]>([]);
+  const initialFormData: FormData = {
+    firstname: user?.firstname || "",
+    lastname: user?.lastname || "",
+    email: user?.email || "",
+    tags: user?.tags || [],
+  };
+
+  const [formData, setFormData] = useState<FormData>(initialFormData);
+  const [originalEmail, setOriginalEmail] = useState(initialFormData.email);
+  const [originalFormData, setOriginalFormData] =
+    useState<FormData>(initialFormData);
   const [newTag, setNewTag] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -40,37 +53,29 @@ export default function ProfilePage() {
 
   const { hasUnsavedChanges, setHasUnsavedChanges } =
     useProfileUnsavedChanges();
-  const [originalFormData, setOriginalFormData] = useState({
-    firstname: "",
-    lastname: "",
-    email: "",
-    tags: [] as string[],
-  });
+
+  if (
+    user &&
+    (user.firstname !== originalFormData.firstname ||
+      user.lastname !== originalFormData.lastname ||
+      user.email !== originalFormData.email ||
+      JSON.stringify(user.tags || []) !== JSON.stringify(originalFormData.tags))
+  ) {
+    const newData: FormData = {
+      firstname: user.firstname || "",
+      lastname: user.lastname || "",
+      email: user.email || "",
+      tags: user.tags || [],
+    };
+    setFormData(newData);
+    setOriginalFormData(newData);
+    setOriginalEmail(newData.email);
+    setHasUnsavedChanges(false);
+  }
 
   useEffect(() => {
-    if (user) {
-      const initialData = {
-        firstname: user.firstname || "",
-        lastname: user.lastname || "",
-        email: user.email || "",
-        tags: user.tags || [],
-      };
-
-      setFirstname(initialData.firstname);
-      setLastname(initialData.lastname);
-      setEmail(initialData.email);
-      setOriginalEmail(initialData.email);
-      setTags(initialData.tags);
-
-      setOriginalFormData(initialData);
-      setHasUnsavedChanges(false);
-    }
-  }, [user, setHasUnsavedChanges]);
-
-  useEffect(() => {
-    const currentData = { firstname, lastname, email, tags };
     const hasChanges =
-      JSON.stringify(currentData) !== JSON.stringify(originalFormData) ||
+      JSON.stringify(formData) !== JSON.stringify(originalFormData) ||
       (showPasswordSection && (newPassword || confirmPassword));
 
     setHasUnsavedChanges(!!hasChanges);
@@ -78,17 +83,13 @@ export default function ProfilePage() {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (hasChanges) {
         e.preventDefault();
-        e.returnValue = "";
       }
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [
-    firstname,
-    lastname,
-    email,
-    tags,
+    formData,
     originalFormData,
     showPasswordSection,
     newPassword,
@@ -97,14 +98,20 @@ export default function ProfilePage() {
   ]);
 
   const handleAddTag = () => {
-    if (newTag.trim() && !tags.includes(newTag.trim())) {
-      setTags([...tags, newTag.trim()]);
+    if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
+      setFormData((prev) => ({
+        ...prev,
+        tags: [...prev.tags, newTag.trim()],
+      }));
       setNewTag("");
     }
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
-    setTags(tags.filter((tag) => tag !== tagToRemove));
+    setFormData((prev) => ({
+      ...prev,
+      tags: prev.tags.filter((tag) => tag !== tagToRemove),
+    }));
   };
 
   const isPasswordValid = newPassword.length >= 8;
@@ -134,10 +141,7 @@ export default function ProfilePage() {
     }
 
     const updatedProfile: UserProfileUpdateDto = {
-      firstname,
-      lastname,
-      email,
-      tags,
+      ...formData,
       ...(showPasswordSection && newPassword ? { password: newPassword } : {}),
     };
 
@@ -148,8 +152,7 @@ export default function ProfilePage() {
       description: t("profilePage.profileUpdatedDescription"),
     });
 
-    const newFormData = { firstname, lastname, email, tags };
-    setOriginalFormData(newFormData);
+    setOriginalFormData(formData);
     setHasUnsavedChanges(false);
 
     if (showPasswordSection) {
@@ -158,88 +161,17 @@ export default function ProfilePage() {
       setShowPasswordSection(false);
     }
 
-    if (email !== originalEmail) {
+    if (formData.email !== originalEmail) {
       toast({
         title: t("email.confirmationEmailSentTitle"),
         description: t("email.confirmationEmailSentDescription"),
       });
-      setOriginalEmail(email);
+      setOriginalEmail(formData.email);
 
       setTimeout(() => {
         router.push(`/${locale}/verify`);
       }, 700);
       return;
-    }
-  };
-
-  const EmailSubButtons = () => {
-    if (isLoading) return;
-    if (!user?.email) return;
-    if (user?.emailVerified) return;
-    if (email !== originalEmail) return;
-
-    if (user?.emailVerificationSent) {
-      return (
-        <div className="flex flex-col items-start gap-2">
-          <span className="text-xs text-gray-500">
-            {t("profilePage.confirmationEmailInfo")}
-          </span>
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              className="text-xs"
-              size={"sm"}
-              onClick={async () => {
-                await resendConfirmation();
-                toast({
-                  title: t("profilePage.confirmationEmailResentTitle"),
-                  description: t(
-                    "profilePage.confirmationEmailResentDescription",
-                  ),
-                });
-              }}
-            >
-              {t("profilePage.resendButton")}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="text-xs bg-transparent"
-              size={"sm"}
-              onClick={() => router.push(`/${locale}/verify`)}
-            >
-              {t("profilePage.verifyEmailButton")}
-            </Button>
-          </div>
-        </div>
-      );
-    } else {
-      return (
-        <div className="flex flex-col items-start gap-2">
-          <span className="text-xs text-gray-500">
-            {t("profilePage.noConfirmationEmailSentInfo")}
-          </span>
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              className="text-xs"
-              size={"sm"}
-              onClick={async () => {
-                await resendConfirmation();
-                toast({
-                  title: t("profilePage.confirmationEmailTitle"),
-                  description: t("profilePage.confirmationEmailDescription"),
-                });
-                setTimeout(() => {
-                  router.push(`/${locale}/verify`);
-                }, 700);
-              }}
-            >
-              {t("profilePage.sendConfirmationEmailButton")}
-            </Button>
-          </div>
-        </div>
-      );
     }
   };
 
@@ -268,8 +200,13 @@ export default function ProfilePage() {
               ) : (
                 <Input
                   id="firstname"
-                  value={firstname}
-                  onChange={(e) => setFirstname(e.target.value)}
+                  value={formData.firstname}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      firstname: e.target.value,
+                    }))
+                  }
                 />
               )}
             </div>
@@ -280,8 +217,13 @@ export default function ProfilePage() {
               ) : (
                 <Input
                   id="lastname"
-                  value={lastname}
-                  onChange={(e) => setLastname(e.target.value)}
+                  value={formData.lastname}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      lastname: e.target.value,
+                    }))
+                  }
                 />
               )}
             </div>
@@ -312,12 +254,17 @@ export default function ProfilePage() {
                 <Input
                   id="email"
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, email: e.target.value }))
+                  }
                   className="mb-2"
                 />
               )}
-              <EmailSubButtons />
+              <EmailSubButtons
+                email={formData.email}
+                originalEmail={originalEmail}
+              />
             </div>
 
             <div className="border-t pt-4">
@@ -407,7 +354,7 @@ export default function ProfilePage() {
               ) : (
                 <>
                   <div className="flex flex-wrap gap-2 mb-2">
-                    {tags.map((tag) => (
+                    {formData.tags.map((tag) => (
                       <Badge
                         key={tag}
                         variant="secondary"
@@ -466,3 +413,87 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+const EmailSubButtons = ({
+  email,
+  originalEmail,
+}: {
+  email: string;
+  originalEmail: string;
+}) => {
+  const t = useT();
+  const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as string;
+
+  const { user, isLoading, resendConfirmation } = useProfile();
+
+  if (isLoading) return;
+  if (!user?.email) return;
+  if (user?.emailVerified) return;
+  if (email !== originalEmail) return;
+
+  if (user?.emailVerificationSent) {
+    return (
+      <div className="flex flex-col items-start gap-2">
+        <span className="text-xs text-gray-500">
+          {t("profilePage.confirmationEmailInfo")}
+        </span>
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            className="text-xs"
+            size={"sm"}
+            onClick={async () => {
+              await resendConfirmation();
+              toast({
+                title: t("profilePage.confirmationEmailResentTitle"),
+                description: t(
+                  "profilePage.confirmationEmailResentDescription",
+                ),
+              });
+            }}
+          >
+            {t("profilePage.resendButton")}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="text-xs bg-transparent"
+            size={"sm"}
+            onClick={() => router.push(`/${locale}/verify`)}
+          >
+            {t("profilePage.verifyEmailButton")}
+          </Button>
+        </div>
+      </div>
+    );
+  } else {
+    return (
+      <div className="flex flex-col items-start gap-2">
+        <span className="text-xs text-gray-500">
+          {t("profilePage.noConfirmationEmailSentInfo")}
+        </span>
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            className="text-xs"
+            size={"sm"}
+            onClick={async () => {
+              await resendConfirmation();
+              toast({
+                title: t("profilePage.confirmationEmailTitle"),
+                description: t("profilePage.confirmationEmailDescription"),
+              });
+              setTimeout(() => {
+                router.push(`/${locale}/verify`);
+              }, 700);
+            }}
+          >
+            {t("profilePage.sendConfirmationEmailButton")}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+};

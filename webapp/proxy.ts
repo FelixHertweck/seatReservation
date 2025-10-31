@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { detectLanguageFromHeader } from "./lib/i18n/language-detector";
 import { fallbackLng, languages, cookieName } from "./lib/i18n/config";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith("/api/")) {
     return NextResponse.next();
   }

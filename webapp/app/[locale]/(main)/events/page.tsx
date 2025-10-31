@@ -59,35 +59,6 @@ export default function EventsPage() {
     return reservations.filter((r) => r.eventId === eventId);
   };
 
-  const LoadingAnimation = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
-      {Array.from({ length: 3 }).map((_, index) => (
-        <EventCardSkeleton key={index} />
-      ))}
-    </div>
-  );
-
-  const NoEventsAvailable = () => {
-    if (events.length === 0) {
-      return (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground text-lg">
-            {t("eventsPage.noEventsAvailable")}
-          </p>
-          <p className="text-muted-foreground">{t("eventsPage.tryAgain")}</p>
-        </div>
-      );
-    }
-    return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground text-lg">
-          {t("eventsPage.noEventsMatchSearch")}
-        </p>
-        <p className="text-muted-foreground">{t("eventsPage.checkSearch")}</p>
-      </div>
-    );
-  };
-
   return (
     <div className="container mx-auto px-2 py-3 md:p-6">
       <div className="mb-3 md:mb-6">
@@ -109,7 +80,7 @@ export default function EventsPage() {
       {eventsLoading || reservationsLoading ? (
         <LoadingAnimation />
       ) : filteredEvents.length === 0 ? (
-        <NoEventsAvailable />
+        <NoEventsAvailable eventsLength={events.length} />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
           {filteredEvents.map((event) => (
@@ -135,3 +106,33 @@ export default function EventsPage() {
     </div>
   );
 }
+
+const LoadingAnimation = () => (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
+    {Array.from({ length: 3 }).map((_, index) => (
+      <EventCardSkeleton key={index} />
+    ))}
+  </div>
+);
+
+const NoEventsAvailable = ({ eventsLength }: { eventsLength: number }) => {
+  const t = useT();
+  if (eventsLength === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-muted-foreground text-lg">
+          {t("eventsPage.noEventsAvailable")}
+        </p>
+        <p className="text-muted-foreground">{t("eventsPage.tryAgain")}</p>
+      </div>
+    );
+  }
+  return (
+    <div className="text-center py-12">
+      <p className="text-muted-foreground text-lg">
+        {t("eventsPage.noEventsMatchSearch")}
+      </p>
+      <p className="text-muted-foreground">{t("eventsPage.checkSearch")}</p>
+    </div>
+  );
+};

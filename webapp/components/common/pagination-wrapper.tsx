@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import {
   Pagination,
   PaginationContent,
@@ -36,9 +36,14 @@ export function PaginationWrapper<T>({
   paginationLabel = "entries",
   children,
 }: PaginationWrapperProps<T>) {
-  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedPage, setSelectedPage] = useState(1);
 
   const t = useT();
+
+  const currentPage = useMemo(() => {
+    const maxPage = Math.ceil(data.length / itemsPerPage);
+    return Math.min(selectedPage, Math.max(1, maxPage));
+  }, [selectedPage, data.length, itemsPerPage]);
 
   const { paginatedData, totalPages, startIndex, endIndex } = useMemo(() => {
     const totalPages = Math.ceil(data.length / itemsPerPage);
@@ -49,16 +54,11 @@ export function PaginationWrapper<T>({
     return { paginatedData, totalPages, startIndex, endIndex };
   }, [data, currentPage, itemsPerPage]);
 
-  // Reset to page 1 when data changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [data.length]);
-
   // Dropdown-based page selector to avoid horizontal overflow on mobile
   const pageSelector = (
     <Select
       value={String(currentPage)}
-      onValueChange={(val) => setCurrentPage(Number(val))}
+      onValueChange={(val) => setSelectedPage(Number(val))}
     >
       <SelectTrigger
         className="w-24 sm:w-28"
@@ -94,7 +94,7 @@ export function PaginationWrapper<T>({
             <PaginationContent>
               <PaginationItem>
                 <PaginationPrevious
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  onClick={() => setSelectedPage(Math.max(1, currentPage - 1))}
                   className={
                     currentPage === 1
                       ? "pointer-events-none opacity-50"
@@ -108,7 +108,7 @@ export function PaginationWrapper<T>({
               <PaginationItem>
                 <PaginationNext
                   onClick={() =>
-                    setCurrentPage(Math.min(totalPages, currentPage + 1))
+                    setSelectedPage(Math.min(totalPages, currentPage + 1))
                   }
                   className={
                     currentPage === totalPages
