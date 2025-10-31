@@ -14,6 +14,7 @@ import {
   UserLock,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import {
   Sidebar,
@@ -49,7 +50,7 @@ export function AppSidebar() {
 
   const { user, logout, logoutAll } = useAuth();
   const { setOpen, setOpenMobile, isMobile } = useSidebar();
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -200,11 +201,13 @@ export function AppSidebar() {
           href="/"
           className={`w-full transition-all duration-500 flex items-center justify-center bg-transparent`}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src="/logo.png"
             alt="Logo"
-            className={`h-auto w-full max-h-[100px] bg-transparent object-contain ${resolvedTheme === "dark" ? "invert" : ""}`}
+            width={300}
+            height={100}
+            className="h-auto w-full max-h-[100px] bg-transparent object-contain dark:invert"
+            priority
           />
         </Link>
       </SidebarMenu>

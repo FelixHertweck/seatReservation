@@ -23,6 +23,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useT } from "@/lib/i18n/hooks";
 import { isValidRedirectUrlEncoded } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import { ErrorWithResponse } from "@/components/init-query-client";
 
 export default function VerifyEmailPage() {
   const params = useParams();
@@ -51,8 +52,8 @@ export default function VerifyEmailPage() {
 
       try {
         await verifyEmail(code);
-      } catch (error: any) {
-        if (error?.response?.status === 400) {
+      } catch (error) {
+        if ((error as ErrorWithResponse)?.response?.status === 400) {
           setVerificationError(t("emailVerification.invalidCode"));
         } else {
           setVerificationError(t("emailVerification.verificationFailed"));

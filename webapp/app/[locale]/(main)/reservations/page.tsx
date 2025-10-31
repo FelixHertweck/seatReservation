@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useReservations } from "@/hooks/use-reservations";
 import { useT } from "@/lib/i18n/hooks";
 import {
@@ -34,10 +34,36 @@ export default function EventsPage() {
     deleteReservation,
   } = useReservations();
   const { isLoading: eventsLoading, events, locations } = useEvents();
-  const [reservationSearchQuery, setReservationSearchQuery] =
-    useState<string>("");
+  const searchParams = useSearchParams();
+  const { isLoggedIn } = useAuth();
   const [selectedReservation, setSelectedReservation] =
     useState<SelectedReservation | null>(null);
+
+  const reservationSearchQuery = useMemo(() => {
+    const eventIdFromUrl = searchParams.get("id");
+    if (eventIdFromUrl && events && !eventsLoading && isLoggedIn) {
+      const eventId = BigInt(eventIdFromUrl);
+      const event = events.find((e) => e.id === eventId);
+      if (event) {
+        return event.name || "";
+      } else {
+        router.replace("/reservations");
+        setTimeout(() => {
+          toast({
+            title: t("reservationsPage.noReservationsFoundTitle"),
+            description: t("reservationsPage.noReservationsFoundDescription"),
+            variant: "destructive",
+          });
+        }, 500);
+        return "";
+      }
+    }
+    return "";
+  }, [searchParams, events, eventsLoading, isLoggedIn, router, t]);
+
+  const [userSearchQuery, setUserSearchQuery] = useState<string>("");
+  const effectiveSearchQuery =
+    userSearchQuery !== "" ? userSearchQuery : reservationSearchQuery;
 
   const groupedReservations = useMemo(() => {
     if (!reservations || !events) return [];
@@ -45,15 +71,13 @@ export default function EventsPage() {
     const filtered = reservations.filter((reservation) => {
       const event = events.find((e) => e.id === reservation.eventId);
       const eventName = event?.name?.toLowerCase() || "";
-
-      return eventName.includes(reservationSearchQuery.toLowerCase());
+      return eventName.includes(effectiveSearchQuery.toLowerCase());
     });
 
     const grouped = filtered.reduce(
       (acc, reservation) => {
         const eventId = reservation.eventId?.toString();
         if (!eventId) return acc;
-
         if (!acc[eventId]) {
           acc[eventId] = [];
         }
@@ -64,45 +88,10 @@ export default function EventsPage() {
     );
 
     return Object.values(grouped);
-  }, [reservations, reservationSearchQuery, events]);
-
-  const searchParams = useSearchParams();
-  const { isLoggedIn } = useAuth();
-
-  useEffect(() => {
-    if (eventsLoading || !isLoggedIn) return;
-
-    const eventIdFromUrl = searchParams.get("id");
-
-    if (eventIdFromUrl && reservationSearchQuery === "") {
-      const eventId = BigInt(eventIdFromUrl);
-      const event = events?.find((e) => e.id === eventId);
-
-      if (event) {
-        setReservationSearchQuery(event.name || "");
-      } else {
-        router.replace("/reservations");
-        setTimeout(() => {
-          toast({
-            title: t("reservationsPage.noReservationsFoundTitle"),
-            description: t("reservationsPage.noReservationsFoundDescription"),
-            variant: "destructive",
-          });
-        }, 500);
-      }
-    }
-  }, [
-    eventsLoading,
-    isLoggedIn,
-    searchParams,
-    events,
-    router,
-    t,
-    reservationSearchQuery,
-  ]);
+  }, [reservations, effectiveSearchQuery, events]);
 
   const handleReservationSearch = (query: string) => {
-    setReservationSearchQuery(query);
+    setUserSearchQuery(query);
   };
 
   const handleDeleteReservation = async (reservationIds: bigint[]) => {
@@ -126,39 +115,6 @@ export default function EventsPage() {
     });
   };
 
-  const LoadingAnimation = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
-      {Array.from({ length: 3 }).map((_, index) => (
-        <ReservationCardSkeleton key={index} />
-      ))}
-    </div>
-  );
-
-  const NoReservationAvailable = () => {
-    if (reservations.length === 0) {
-      return (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground text-lg">
-            {t("reservationsPage.noReservationsYet")}
-          </p>
-          <p className="text-muted-foreground">
-            {t("reservationsPage.switchToAvailableEvents")}
-          </p>
-        </div>
-      );
-    }
-    return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground text-lg">
-          {t("reservationsPage.noReservationsMatchSearch")}
-        </p>
-        <p className="text-muted-foreground">
-          {t("reservationsPage.checkSearch")}
-        </p>
-      </div>
-    );
-  };
-
   return (
     <div className="container mx-auto px-2 py-3 md:p-6">
       <div className="mb-3 md:mb-6">
@@ -173,13 +129,13 @@ export default function EventsPage() {
         onSearch={handleReservationSearch}
         onFilter={() => {}}
         filterOptions={[]}
-        initialQuery={reservationSearchQuery}
+        initialQuery={effectiveSearchQuery}
       />
 
       {reservationsLoading ? (
         <LoadingAnimation />
       ) : groupedReservations.length === 0 ? (
-        <NoReservationAvailable />
+        <NoReservationAvailable reservationLength={reservations.length} />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
           {groupedReservations.map((eventReservations) => {
@@ -217,3 +173,42 @@ export default function EventsPage() {
     </div>
   );
 }
+
+const LoadingAnimation = () => (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
+    {Array.from({ length: 3 }).map((_, index) => (
+      <ReservationCardSkeleton key={index} />
+    ))}
+  </div>
+);
+
+const NoReservationAvailable = ({
+  reservationLength,
+}: {
+  reservationLength: number;
+}) => {
+  const t = useT();
+
+  if (reservationLength === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-muted-foreground text-lg">
+          {t("reservationsPage.noReservationsYet")}
+        </p>
+        <p className="text-muted-foreground">
+          {t("reservationsPage.switchToAvailableEvents")}
+        </p>
+      </div>
+    );
+  }
+  return (
+    <div className="text-center py-12">
+      <p className="text-muted-foreground text-lg">
+        {t("reservationsPage.noReservationsMatchSearch")}
+      </p>
+      <p className="text-muted-foreground">
+        {t("reservationsPage.checkSearch")}
+      </p>
+    </div>
+  );
+};

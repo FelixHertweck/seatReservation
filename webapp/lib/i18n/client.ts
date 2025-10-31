@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import i18next from "i18next";
 import {
   initReactI18next,
@@ -38,7 +38,6 @@ export function useTranslation(
   options: { keyPrefix?: string } = {},
 ) {
   const [cookies, setCookie] = useCookies([cookieName]);
-  const [activeLng, setActiveLng] = useState<string | null>(null);
   const ret = useTranslationOrg(ns, options);
   const { i18n } = ret;
 
@@ -46,22 +45,12 @@ export function useTranslation(
     if (lng && i18n.resolvedLanguage !== lng) {
       i18n.changeLanguage(lng);
     }
-    setActiveLng(i18n.resolvedLanguage ?? null);
   }, [lng, i18n]);
 
   useEffect(() => {
-    if (activeLng === i18n.resolvedLanguage) return;
-    setActiveLng(i18n.resolvedLanguage ?? null);
-  }, [activeLng, i18n.resolvedLanguage]);
-
-  useEffect(() => {
-    if (!lng || i18n.resolvedLanguage === lng) return;
-    i18n.changeLanguage(lng);
-  }, [lng, i18n]);
-
-  useEffect(() => {
-    if (cookies.i18next === lng) return;
-    setCookie(cookieName, lng, { path: "/" });
+    if (cookies.i18next !== lng) {
+      setCookie(cookieName, lng, { path: "/" });
+    }
   }, [lng, cookies.i18next, setCookie]);
 
   return ret;

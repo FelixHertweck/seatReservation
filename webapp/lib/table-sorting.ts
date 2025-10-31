@@ -79,6 +79,7 @@ export function useSortableData<T>(data: T[]) {
 }
 
 // Helper function to get nested object values
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getNestedValue(obj: any, path: string): any {
   return path.split(".").reduce((current, key) => current?.[key], obj);
 }

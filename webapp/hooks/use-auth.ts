@@ -16,6 +16,7 @@ import {
 import type { RegisterRequestDto, VerifyEmailCodeRequestDto } from "@/api";
 import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { isValidRedirectUrlEncoded } from "@/lib/utils";
+import { ErrorWithResponse } from "@/components/init-query-client";
 
 export function useAuth() {
   const t = useT();
@@ -34,9 +35,9 @@ export function useAuth() {
 
   const { mutateAsync: loginMutation } = useMutation({
     ...postApiAuthLoginMutation(),
-    onError: (error: any) => {
+    onError: (error) => {
       // Only show toast for non-401 errors, let 401s be handled by the component
-      if (error?.response?.status !== 401) {
+      if ((error as ErrorWithResponse).response?.status !== 401) {
         toast({
           title: t("login.error.title"),
           description: error.message || t("login.error.description"),
