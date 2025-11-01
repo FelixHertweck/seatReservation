@@ -32,8 +32,13 @@ import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.management.service.ReservationService;
-import de.felixhertweck.seatreservation.model.entity.*;
+import de.felixhertweck.seatreservation.model.entity.EmailVerification;
+import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.Reservation;
+import de.felixhertweck.seatreservation.model.entity.Seat;
+import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
@@ -41,7 +46,7 @@ import de.felixhertweck.seatreservation.utils.SvgRenderer;
 import de.felixhertweck.seatreservation.utils.VerificationCodeGenerator;
 import io.quarkus.logging.Log;
 import io.quarkus.mailer.Mail;
-import io.quarkus.mailer.Mailer;
+import io.quarkus.mailer.reactive.ReactiveMailer;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
@@ -75,7 +80,7 @@ public class EmailService {
 
     private static final Logger LOG = Logger.getLogger(EmailService.class);
 
-    @Inject Mailer mailer;
+    @Inject ReactiveMailer mailer;
 
     @Inject EmailVerificationRepository emailVerificationRepository;
 
@@ -84,9 +89,6 @@ public class EmailService {
     @Inject SeatRepository seatRepository;
 
     @Inject ReservationService reservationService;
-
-    @ConfigProperty(name = "email.backend-base-url", defaultValue = "")
-    String backendBaseUrl;
 
     @ConfigProperty(name = "email.frontend-base-url", defaultValue = "")
     String frontendBaseUrl;
@@ -158,18 +160,20 @@ public class EmailService {
         LOG.debugf("Email confirmation subject: %s", EMAIL_HEADER_CONFIRMATION);
         Mail mail = Mail.withHtml(user.getEmail(), EMAIL_HEADER_CONFIRMATION, htmlContent);
 
-        try {
-            mailer.send(mail);
-            LOG.infof(
-                    "Email confirmation sent successfully to %s for user ID: %d",
-                    user.getEmail(), user.id);
-        } catch (Exception e) {
-            LOG.errorf(
-                    e,
-                    "Failed to send email confirmation to %s for user ID: %d",
-                    user.getEmail(),
-                    user.id);
-        }
+        mailer.send(mail)
+                .subscribe()
+                .with(
+                        success ->
+                                LOG.infof(
+                                        "Email confirmation sent successfully to %s for user ID:"
+                                                + " %d",
+                                        user.getEmail(), user.id),
+                        failure ->
+                                LOG.errorf(
+                                        failure,
+                                        "Failed to send email confirmation to %s for user ID: %d",
+                                        user.getEmail(),
+                                        user.id));
     }
 
     /**
@@ -363,18 +367,21 @@ public class EmailService {
             emailAddresses.subList(1, emailAddresses.size()).forEach(mail::addCc);
         }
         addBcc(mail);
-        try {
-            mailer.send(mail);
-            LOG.infof(
-                    "Reservation confirmation email sent successfully to %s for user ID: %d",
-                    user.getEmail(), user.id);
-        } catch (Exception e) {
-            LOG.errorf(
-                    e,
-                    "Failed to send reservation confirmation to %s for user ID: %d",
-                    user.getEmail(),
-                    user.id);
-        }
+        mailer.send(mail)
+                .subscribe()
+                .with(
+                        success ->
+                                LOG.infof(
+                                        "Reservation confirmation email sent successfully to %s for"
+                                                + " user ID: %d",
+                                        user.getEmail(), user.id),
+                        failure ->
+                                LOG.errorf(
+                                        failure,
+                                        "Failed to send reservation confirmation to %s for user ID:"
+                                                + " %d",
+                                        user.getEmail(),
+                                        user.id));
     }
 
     /**
@@ -496,7 +503,7 @@ public class EmailService {
         htmlContent = htmlContent.replace("{seatMap}", svgContent);
         htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
 
-        if (activeReservations.isEmpty()) {
+        if (activeReservations == null || activeReservations.isEmpty()) {
             htmlContent = htmlContent.replace("{existingHeaderVisible}", "hidden");
             htmlContent = htmlContent.replace("{activeSeatList}", "");
 
@@ -525,18 +532,21 @@ public class EmailService {
             emailAddresses.subList(1, emailAddresses.size()).forEach(mail::addCc);
         }
         addBcc(mail);
-        try {
-            mailer.send(mail);
-            LOG.infof(
-                    "Reservation update confirmation email sent successfully to %s for user ID: %d",
-                    user.getEmail(), user.id);
-        } catch (Exception e) {
-            LOG.errorf(
-                    e,
-                    "Failed to send reservation update confirmation to %s for user ID: %d",
-                    user.getEmail(),
-                    user.id);
-        }
+        mailer.send(mail)
+                .subscribe()
+                .with(
+                        success ->
+                                LOG.infof(
+                                        "Reservation update confirmation email sent successfully to"
+                                                + " %s for user ID: %d",
+                                        user.getEmail(), user.id),
+                        failure ->
+                                LOG.errorf(
+                                        failure,
+                                        "Failed to send reservation update confirmation to %s for"
+                                                + " user ID: %d",
+                                        user.getEmail(),
+                                        user.id));
     }
 
     /**
@@ -582,18 +592,21 @@ public class EmailService {
         // Create and send the email
         Mail mail = Mail.withHtml(user.getEmail(), EMAIL_HEADER_PASSWORD_CHANGED, htmlContent);
 
-        try {
-            mailer.send(mail);
-            LOG.infof(
-                    "Password changed notification sent successfully to %s for user ID: %d",
-                    user.getEmail(), user.id);
-        } catch (Exception e) {
-            LOG.errorf(
-                    e,
-                    "Failed to send password changed notification to %s for user ID: %d",
-                    user.getEmail(),
-                    user.id);
-        }
+        mailer.send(mail)
+                .subscribe()
+                .with(
+                        success ->
+                                LOG.infof(
+                                        "Password changed notification sent successfully to %s for"
+                                                + " user ID: %d",
+                                        user.getEmail(), user.id),
+                        failure ->
+                                LOG.errorf(
+                                        failure,
+                                        "Failed to send password changed notification to %s for"
+                                                + " user ID: %d",
+                                        user.getEmail(),
+                                        user.id));
     }
 
     /**
@@ -676,19 +689,22 @@ public class EmailService {
         LOG.debugf("Event reminder subject: %s", EMAIL_HEADER_REMINDER);
         Mail mail = Mail.withHtml(user.getEmail(), EMAIL_HEADER_REMINDER, htmlContent);
 
-        try {
-            mailer.send(mail);
-            LOG.infof(
-                    "Event reminder sent successfully to %s for user ID: %d, event ID: %d",
-                    user.getEmail(), user.id, event.id);
-        } catch (Exception e) {
-            LOG.errorf(
-                    e,
-                    "Failed to send event reminder to %s for user ID: %d, event ID: %d",
-                    user.getEmail(),
-                    user.id,
-                    event.id);
-        }
+        mailer.send(mail)
+                .subscribe()
+                .with(
+                        success ->
+                                LOG.infof(
+                                        "Event reminder sent successfully to %s for user ID: %d,"
+                                                + " event ID: %d",
+                                        user.getEmail(), user.id, event.id),
+                        failure ->
+                                LOG.errorf(
+                                        failure,
+                                        "Failed to send event reminder to %s for user ID: %d, event"
+                                                + " ID: %d",
+                                        user.getEmail(),
+                                        user.id,
+                                        event.id));
     }
 
     /**
@@ -697,8 +713,11 @@ public class EmailService {
      * @param manager the manager of the event
      * @param event the event for which the reservations are to be exported
      * @throws IOException if the email template cannot be read or CSV export fails
+     * @throws EventNotFoundException if the event is not found
+     * @throws SecurityException if there are security issues during CSV export
      */
-    public void sendEventReservationsCsvToManager(User manager, Event event) throws IOException {
+    public void sendEventReservationsCsvToManager(User manager, Event event)
+            throws EventNotFoundException, SecurityException, IOException {
         if (skipForNullOrEmptyAddress(manager.getEmail())) {
             LOG.warn("No valid email addresses provided to send CSV export.");
             return;
@@ -752,21 +771,22 @@ public class EmailService {
                         htmlContent);
         mail.addAttachment("reservations_" + event.id + ".csv", csvData, "text/csv");
 
-        try {
-            mailer.send(mail);
-            LOG.infof(
-                    "Reservation CSV export email sent successfully to %s for manager ID: %d, event"
-                            + " ID: %d",
-                    manager.getEmail(), manager.id, event.id);
-        } catch (Exception e) {
-            LOG.errorf(
-                    e,
-                    "Failed to send reservation CSV export email to %s for manager ID: %d, event"
-                            + " ID: %d",
-                    manager.getEmail(),
-                    manager.id,
-                    event.id);
-        }
+        mailer.send(mail)
+                .subscribe()
+                .with(
+                        success ->
+                                LOG.infof(
+                                        "Reservation CSV export email sent successfully to %s for"
+                                                + " manager ID: %d, event ID: %d",
+                                        manager.getEmail(), manager.id, event.id),
+                        failure ->
+                                LOG.errorf(
+                                        failure,
+                                        "Failed to send reservation CSV export email to %s for"
+                                                + " manager ID: %d, event ID: %d",
+                                        manager.getEmail(),
+                                        manager.id,
+                                        event.id));
     }
 
     private boolean skipForNullOrEmptyAddress(String address) {

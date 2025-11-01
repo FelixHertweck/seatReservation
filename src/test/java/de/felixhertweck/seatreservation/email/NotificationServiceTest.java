@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.email;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -26,9 +27,17 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.management.service.EventService;
 import de.felixhertweck.seatreservation.management.service.ReservationService;
@@ -479,7 +488,7 @@ class NotificationServiceTest {
         when(eventService.findEventsBetweenDates(startOfToday, endOfToday)).thenReturn(eventsToday);
 
         // First email fails, second should still be attempted
-        doThrow(new RuntimeException("CSV generation failed"))
+        doThrow(new IOException("CSV generation failed"))
                 .when(emailService)
                 .sendEventReservationsCsvToManager(manager1, testEvent);
         doNothing().when(emailService).sendEventReservationsCsvToManager(manager2, secondEvent);
