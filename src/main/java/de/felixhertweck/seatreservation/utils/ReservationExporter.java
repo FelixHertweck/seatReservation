@@ -66,17 +66,17 @@ public class ReservationExporter {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (BufferedWriter writer =
                 new BufferedWriter(new OutputStreamWriter(baos, StandardCharsets.UTF_8))) {
-            // CSV Header
+            // CSV Header - Using CRLF line terminator for RFC compliance
             writer.write(
                     "ID,Reservation Status,Seat Number,Seat Row,First Name,Last Name,Reservation"
-                            + " Date\n");
+                            + " Date\r\n");
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
             for (Reservation reservation : reservations) {
                 writer.write(
                         String.format(
-                                "%d,%s,%s,%s,%s,%s,%s\n",
+                                "%d,%s,%s,%s,%s,%s,%s\r\n",
                                 reservation.id,
                                 reservation.getStatus(),
                                 reservation.getSeat().getSeatRow(),

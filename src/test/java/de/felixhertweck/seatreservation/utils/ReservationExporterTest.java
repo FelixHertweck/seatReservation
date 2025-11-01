@@ -24,7 +24,9 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
@@ -118,7 +120,7 @@ class ReservationExporterTest {
         String csv = new String(csvBytes);
         assertEquals(
                 "ID,Reservation Status,Seat Number,Seat Row,First Name,Last Name,Reservation"
-                        + " Date\n",
+                        + " Date\r\n",
                 csv);
     }
 
