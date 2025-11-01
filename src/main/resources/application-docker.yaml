@@ -26,7 +26,6 @@ jwt:
 
 email:  
   frontend-base-url: ${APP_URL} # Change in case provide frontend on different URL
-  backend-base-url: ${APP_URL}
   bcc-address: ${EMAIL_BCC_ADDRESS:} # Optional BCC address for event notifications to users (leave empty to disable)
 
 smallrye:

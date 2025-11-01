@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.email;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.management.service.EventService;
 import de.felixhertweck.seatreservation.management.service.ReservationService;
 import de.felixhertweck.seatreservation.model.entity.Event;
@@ -112,10 +114,11 @@ public class NotificationService {
                 } else {
                     LOG.warnf("No manager found for event: %s (ID: %d)", event.getName(), event.id);
                 }
-            } catch (Exception e) {
+            } catch (EventNotFoundException | SecurityException | IOException e) {
                 LOG.errorf(
                         e,
-                        "Error sending CSV export email for event %s: %s",
+                        "Unexpected error during CSV generation or email preparation for event %s:"
+                                + " %s",
                         event.getName(),
                         e.getMessage());
             }
