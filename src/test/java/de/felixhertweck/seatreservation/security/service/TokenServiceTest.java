@@ -511,4 +511,95 @@ public class TokenServiceTest {
         RefreshToken remainingToken = refreshTokenRepository.listAll().get(0);
         assertEquals(otherUser.id, remainingToken.getUser().id);
     }
+
+    @Test
+    @Transactional
+    void testDeleteRefreshToken_ValidToken() throws Exception {
+        // Given - Generate a refresh token
+        String refreshToken = tokenService.generateRefreshToken(testUser);
+        assertEquals(1, refreshTokenRepository.count());
+
+        // When - Delete the refresh token
+        tokenService.deleteRefreshToken(refreshToken);
+
+        // Then - Token should be deleted from database
+        assertEquals(0, refreshTokenRepository.count());
+    }
+
+    @Test
+    @Transactional
+    void testDeleteRefreshToken_NullToken() throws Exception {
+        // Given - Generate a token first
+        tokenService.generateRefreshToken(testUser);
+        assertEquals(1, refreshTokenRepository.count());
+
+        // When - Delete with null token
+        tokenService.deleteRefreshToken(null);
+
+        // Then - Token should still exist
+        assertEquals(1, refreshTokenRepository.count());
+    }
+
+    @Test
+    @Transactional
+    void testDeleteRefreshToken_EmptyToken() throws Exception {
+        // Given - Generate a token first
+        tokenService.generateRefreshToken(testUser);
+        assertEquals(1, refreshTokenRepository.count());
+
+        // When - Delete with empty token
+        tokenService.deleteRefreshToken("");
+
+        // Then - Token should still exist
+        assertEquals(1, refreshTokenRepository.count());
+    }
+
+    @Test
+    @Transactional
+    void testDeleteRefreshToken_InvalidToken() throws Exception {
+        // Given - Generate a token first
+        tokenService.generateRefreshToken(testUser);
+        assertEquals(1, refreshTokenRepository.count());
+
+        // When - Delete with invalid token (should not throw exception)
+        tokenService.deleteRefreshToken("invalid.token.format");
+
+        // Then - Original token should still exist
+        assertEquals(1, refreshTokenRepository.count());
+    }
+
+    @Test
+    @Transactional
+    void testDeleteRefreshToken_NonExistentToken() throws Exception {
+        // Given - Generate a token but mock JWT parser to return non-existent ID
+        String refreshToken = tokenService.generateRefreshToken(testUser);
+        assertEquals(1, refreshTokenRepository.count());
+
+        // Create another token with a non-existent ID
+        JsonWebToken mockJwt = mock(JsonWebToken.class);
+        when(mockJwt.getClaim("token_id")).thenReturn("999999");
+        when(jwtParser.parse("fake.token.jwt")).thenReturn(mockJwt);
+
+        // When - Delete the non-existent token
+        tokenService.deleteRefreshToken("fake.token.jwt");
+
+        // Then - Original token should still exist
+        assertEquals(1, refreshTokenRepository.count());
+    }
+
+    @Test
+    @Transactional
+    void testDeleteRefreshToken_OnlyDeletesSpecifiedToken() throws Exception {
+        // Given - Generate multiple tokens
+        String token1 = tokenService.generateRefreshToken(testUser);
+        String token2 = tokenService.generateRefreshToken(testUser);
+        String token3 = tokenService.generateRefreshToken(testUser);
+        assertEquals(3, refreshTokenRepository.count());
+
+        // When - Delete only the second token
+        tokenService.deleteRefreshToken(token2);
+
+        // Then - Only two tokens should remain
+        assertEquals(2, refreshTokenRepository.count());
+    }
 }

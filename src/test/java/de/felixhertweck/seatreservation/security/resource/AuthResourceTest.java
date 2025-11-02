@@ -504,8 +504,12 @@ public class AuthResourceTest {
     @TestSecurity(
             user = "testuser",
             roles = {"USER"})
-    void testLogout_Success() {
+    void testLogout_Success() throws Exception {
         Mockito.when(userSecurityContext.getCurrentUser()).thenReturn(testUser);
+
+        // Mock deleteRefreshToken to do nothing (success case)
+        Mockito.doNothing().when(tokenService).deleteRefreshToken("someRefreshToken");
+
         // Mock cookie clearing
         NewCookie clearedJwtCookie =
                 new NewCookie.Builder("jwt").value("").path("/").maxAge(0).httpOnly(true).build();
@@ -539,6 +543,9 @@ public class AuthResourceTest {
 
         response.then().statusCode(Response.Status.OK.getStatusCode());
 
+        // Verify deleteRefreshToken was called
+        Mockito.verify(tokenService).deleteRefreshToken("someRefreshToken");
+
         // Verify cookies are cleared
         String setCookieHeaders = response.getHeaders().getValues("Set-Cookie").toString();
         assertTrue(
@@ -558,8 +565,12 @@ public class AuthResourceTest {
     @TestSecurity(
             user = "testuser",
             roles = {"USER"})
-    void testLogout_NoRefreshTokenCookie() {
+    void testLogout_NoRefreshTokenCookie() throws Exception {
         Mockito.when(userSecurityContext.getCurrentUser()).thenReturn(testUser);
+
+        // Mock deleteRefreshToken to handle null/empty token gracefully
+        Mockito.doNothing().when(tokenService).deleteRefreshToken(null);
+
         // Mock cookie clearing logic as it will still be called
         NewCookie clearedJwtCookie =
                 new NewCookie.Builder("jwt").value("").path("/").maxAge(0).httpOnly(true).build();
