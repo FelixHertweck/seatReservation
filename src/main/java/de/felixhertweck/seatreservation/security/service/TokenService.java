@@ -280,13 +280,13 @@ public class TokenService {
     }
 
     /**
-     * Deletes a specific refresh token from the database.
+     * Deletes a specific refresh token from the database. This method handles errors gracefully and
+     * will not throw exceptions, allowing logout to proceed even if the token is invalid.
      *
      * @param refreshToken the refresh token JWT to delete
-     * @throws JwtInvalidException if the JWT is invalid or cannot be parsed
      */
     @Transactional
-    public void deleteRefreshToken(String refreshToken) throws JwtInvalidException {
+    public void deleteRefreshToken(String refreshToken) {
         if (refreshToken == null || refreshToken.isEmpty()) {
             LOG.debugf("No refresh token provided to delete");
             return;
@@ -294,7 +294,21 @@ public class TokenService {
 
         try {
             JsonWebToken jwt = parser.parse(refreshToken);
-            Long tokenId = Long.valueOf(jwt.getClaim("token_id"));
+            Object tokenIdClaim = jwt.getClaim("token_id");
+
+            if (tokenIdClaim == null) {
+                LOG.warnf("Refresh token missing token_id claim");
+                return;
+            }
+
+            Long tokenId;
+            try {
+                tokenId = Long.valueOf(tokenIdClaim.toString());
+            } catch (NumberFormatException e) {
+                LOG.warnf("Invalid token_id format: %s", tokenIdClaim);
+                return;
+            }
+
             RefreshToken storedToken = refreshTokenRepository.findById(tokenId);
 
             if (storedToken != null) {

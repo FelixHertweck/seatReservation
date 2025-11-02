@@ -139,12 +139,7 @@ public class AuthResource {
         LOG.debugf("Received logout request.");
 
         // Delete the refresh token from database
-        try {
-            tokenService.deleteRefreshToken(refreshToken);
-        } catch (Exception e) {
-            LOG.warnf("Failed to delete refresh token during logout: %s", e.getMessage());
-            // Continue with clearing cookies even if token deletion fails
-        }
+        tokenService.deleteRefreshToken(refreshToken);
 
         NewCookie jwtAccessCookie = tokenService.createNewNullCookie("jwt", true);
         NewCookie refreshTokenCookie = tokenService.createNewNullCookie("refreshToken", true);

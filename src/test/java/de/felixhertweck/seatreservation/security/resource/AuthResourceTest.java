@@ -504,7 +504,7 @@ public class AuthResourceTest {
     @TestSecurity(
             user = "testuser",
             roles = {"USER"})
-    void testLogout_Success() throws Exception {
+    void testLogout_Success() {
         Mockito.when(userSecurityContext.getCurrentUser()).thenReturn(testUser);
 
         // Mock deleteRefreshToken to do nothing (success case)
@@ -565,7 +565,7 @@ public class AuthResourceTest {
     @TestSecurity(
             user = "testuser",
             roles = {"USER"})
-    void testLogout_NoRefreshTokenCookie() throws Exception {
+    void testLogout_NoRefreshTokenCookie() {
         Mockito.when(userSecurityContext.getCurrentUser()).thenReturn(testUser);
 
         // Mock deleteRefreshToken to handle null/empty token gracefully

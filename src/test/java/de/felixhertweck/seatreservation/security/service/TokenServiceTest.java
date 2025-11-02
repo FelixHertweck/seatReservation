@@ -537,7 +537,7 @@ public class TokenServiceTest {
 
     @Test
     @Transactional
-    void testDeleteRefreshToken_NullToken() throws Exception {
+    void testDeleteRefreshToken_NullToken() {
         // Given - Create a token in database
         String tokenHash = io.quarkus.elytron.security.common.BcryptUtil.bcryptHash("test-token");
         RefreshToken refreshToken =
@@ -555,7 +555,7 @@ public class TokenServiceTest {
 
     @Test
     @Transactional
-    void testDeleteRefreshToken_EmptyToken() throws Exception {
+    void testDeleteRefreshToken_EmptyToken() {
         // Given - Create a token in database
         String tokenHash = io.quarkus.elytron.security.common.BcryptUtil.bcryptHash("test-token");
         RefreshToken refreshToken =
