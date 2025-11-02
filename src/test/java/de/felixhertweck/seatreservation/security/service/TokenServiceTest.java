@@ -77,6 +77,22 @@ public class TokenServiceTest {
         Mockito.reset(jwtParser);
     }
 
+    /**
+     * Helper method to create a test refresh token in the database.
+     *
+     * @param tokenValue the token value to hash and store
+     * @param user the user to associate with the token
+     * @return the persisted RefreshToken entity
+     */
+    private RefreshToken createTestRefreshToken(String tokenValue, User user) {
+        String tokenHash = io.quarkus.elytron.security.common.BcryptUtil.bcryptHash(tokenValue);
+        RefreshToken refreshToken =
+                new RefreshToken(
+                        tokenHash, user, Instant.now(), Instant.now().plus(Duration.ofDays(7)));
+        refreshToken.persist();
+        return refreshToken;
+    }
+
     @Test
     void generateToken_ValidTokenContent() {
         User user = new User();
@@ -516,11 +532,7 @@ public class TokenServiceTest {
     @Transactional
     void testDeleteRefreshToken_ValidToken() throws Exception {
         // Given - Create a refresh token directly in database
-        String tokenHash = io.quarkus.elytron.security.common.BcryptUtil.bcryptHash("test-token");
-        RefreshToken refreshToken =
-                new RefreshToken(
-                        tokenHash, testUser, Instant.now(), Instant.now().plus(Duration.ofDays(7)));
-        refreshToken.persist();
+        RefreshToken refreshToken = createTestRefreshToken("test-token", testUser);
         assertEquals(1, refreshTokenRepository.count());
 
         // Mock JWT parser to return the token ID
@@ -539,11 +551,7 @@ public class TokenServiceTest {
     @Transactional
     void testDeleteRefreshToken_NullToken() {
         // Given - Create a token in database
-        String tokenHash = io.quarkus.elytron.security.common.BcryptUtil.bcryptHash("test-token");
-        RefreshToken refreshToken =
-                new RefreshToken(
-                        tokenHash, testUser, Instant.now(), Instant.now().plus(Duration.ofDays(7)));
-        refreshToken.persist();
+        createTestRefreshToken("test-token", testUser);
         assertEquals(1, refreshTokenRepository.count());
 
         // When - Delete with null token
@@ -557,11 +565,7 @@ public class TokenServiceTest {
     @Transactional
     void testDeleteRefreshToken_EmptyToken() {
         // Given - Create a token in database
-        String tokenHash = io.quarkus.elytron.security.common.BcryptUtil.bcryptHash("test-token");
-        RefreshToken refreshToken =
-                new RefreshToken(
-                        tokenHash, testUser, Instant.now(), Instant.now().plus(Duration.ofDays(7)));
-        refreshToken.persist();
+        createTestRefreshToken("test-token", testUser);
         assertEquals(1, refreshTokenRepository.count());
 
         // When - Delete with empty token
@@ -575,11 +579,7 @@ public class TokenServiceTest {
     @Transactional
     void testDeleteRefreshToken_InvalidToken() throws Exception {
         // Given - Create a token in database
-        String tokenHash = io.quarkus.elytron.security.common.BcryptUtil.bcryptHash("test-token");
-        RefreshToken refreshToken =
-                new RefreshToken(
-                        tokenHash, testUser, Instant.now(), Instant.now().plus(Duration.ofDays(7)));
-        refreshToken.persist();
+        createTestRefreshToken("test-token", testUser);
         assertEquals(1, refreshTokenRepository.count());
 
         // Mock parser to throw exception for invalid token
@@ -597,11 +597,7 @@ public class TokenServiceTest {
     @Transactional
     void testDeleteRefreshToken_NonExistentToken() throws Exception {
         // Given - Create a token in database
-        String tokenHash = io.quarkus.elytron.security.common.BcryptUtil.bcryptHash("test-token");
-        RefreshToken refreshToken =
-                new RefreshToken(
-                        tokenHash, testUser, Instant.now(), Instant.now().plus(Duration.ofDays(7)));
-        refreshToken.persist();
+        createTestRefreshToken("test-token", testUser);
         assertEquals(1, refreshTokenRepository.count());
 
         // Create a mock JWT with a non-existent ID
@@ -620,32 +616,9 @@ public class TokenServiceTest {
     @Transactional
     void testDeleteRefreshToken_OnlyDeletesSpecifiedToken() throws Exception {
         // Given - Create multiple tokens in database
-        String tokenHash1 = io.quarkus.elytron.security.common.BcryptUtil.bcryptHash("token1");
-        RefreshToken token1 =
-                new RefreshToken(
-                        tokenHash1,
-                        testUser,
-                        Instant.now(),
-                        Instant.now().plus(Duration.ofDays(7)));
-        token1.persist();
-
-        String tokenHash2 = io.quarkus.elytron.security.common.BcryptUtil.bcryptHash("token2");
-        RefreshToken token2 =
-                new RefreshToken(
-                        tokenHash2,
-                        testUser,
-                        Instant.now(),
-                        Instant.now().plus(Duration.ofDays(7)));
-        token2.persist();
-
-        String tokenHash3 = io.quarkus.elytron.security.common.BcryptUtil.bcryptHash("token3");
-        RefreshToken token3 =
-                new RefreshToken(
-                        tokenHash3,
-                        testUser,
-                        Instant.now(),
-                        Instant.now().plus(Duration.ofDays(7)));
-        token3.persist();
+        RefreshToken token1 = createTestRefreshToken("token1", testUser);
+        RefreshToken token2 = createTestRefreshToken("token2", testUser);
+        RefreshToken token3 = createTestRefreshToken("token3", testUser);
 
         assertEquals(3, refreshTokenRepository.count());
 

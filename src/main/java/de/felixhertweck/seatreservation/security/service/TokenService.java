@@ -317,9 +317,12 @@ public class TokenService {
             } else {
                 LOG.debugf("Refresh token with id %d not found in database.", tokenId);
             }
-        } catch (ParseException | RuntimeException e) {
-            LOG.warnf("Failed to parse or delete refresh token: %s", e.getMessage());
+        } catch (ParseException e) {
+            LOG.warnf("Failed to parse refresh token: %s", e.getMessage());
             // Don't throw an exception, as we still want to clear cookies even if token is invalid
+        } catch (Exception e) {
+            LOG.errorf("Unexpected error while deleting refresh token: %s", e.getMessage());
+            // Don't throw an exception, as we still want to clear cookies even if an error occurs
         }
     }
 }
