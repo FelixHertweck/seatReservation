@@ -278,4 +278,34 @@ public class TokenService {
         refreshTokenRepository.deleteByUser(user);
         LOG.debugf("All refresh tokens for user %s have been deleted.", user.getUsername());
     }
+
+    /**
+     * Deletes a specific refresh token from the database.
+     *
+     * @param refreshToken the refresh token JWT to delete
+     * @throws JwtInvalidException if the JWT is invalid or cannot be parsed
+     */
+    @Transactional
+    public void deleteRefreshToken(String refreshToken) throws JwtInvalidException {
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            LOG.debugf("No refresh token provided to delete");
+            return;
+        }
+
+        try {
+            JsonWebToken jwt = parser.parse(refreshToken);
+            Long tokenId = Long.valueOf(jwt.getClaim("token_id"));
+            RefreshToken storedToken = refreshTokenRepository.findById(tokenId);
+
+            if (storedToken != null) {
+                refreshTokenRepository.delete(storedToken);
+                LOG.debugf("Refresh token with id %d has been deleted.", tokenId);
+            } else {
+                LOG.debugf("Refresh token with id %d not found in database.", tokenId);
+            }
+        } catch (ParseException | RuntimeException e) {
+            LOG.warnf("Failed to parse or delete refresh token: %s", e.getMessage());
+            // Don't throw an exception, as we still want to clear cookies even if token is invalid
+        }
+    }
 }

@@ -135,8 +135,16 @@ public class AuthResource {
     @APIResponse(
             responseCode = "200",
             description = "Logout successful, JWT and refresh token cookies cleared")
-    public Response logout() {
+    public Response logout(@CookieParam("refreshToken") String refreshToken) {
         LOG.debugf("Received logout request.");
+
+        // Delete the refresh token from database
+        try {
+            tokenService.deleteRefreshToken(refreshToken);
+        } catch (Exception e) {
+            LOG.warnf("Failed to delete refresh token during logout: %s", e.getMessage());
+            // Continue with clearing cookies even if token deletion fails
+        }
 
         NewCookie jwtAccessCookie = tokenService.createNewNullCookie("jwt", true);
         NewCookie refreshTokenCookie = tokenService.createNewNullCookie("refreshToken", true);
