@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.security.resource;
 
+import java.util.Collections;
+import java.util.Map;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.MediaType;
@@ -26,8 +28,10 @@ import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import de.felixhertweck.seatreservation.common.exception.DuplicateUserException;
 import de.felixhertweck.seatreservation.common.exception.InvalidUserException;
@@ -43,6 +47,7 @@ import de.felixhertweck.seatreservation.security.service.TokenService;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.QuarkusTestProfile;
 import io.quarkus.test.security.TestSecurity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -602,5 +607,88 @@ public class AuthResourceTest {
                 .post("/api/auth/refresh")
                 .then()
                 .statusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+    }
+
+    @Test
+    void testGetRegistrationStatus_RegistrationEnabled() {
+        Mockito.when(authService.isRegistrationEnabled()).thenReturn(true);
+
+        given().contentType(MediaType.APPLICATION_JSON)
+                .when()
+                .get("/api/auth/registration-status")
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode())
+                .body("enabled", equalTo(true));
+    }
+
+    @Test
+    void testGetRegistrationStatus_RegistrationDisabled() {
+        Mockito.when(authService.isRegistrationEnabled()).thenReturn(false);
+
+        given().contentType(MediaType.APPLICATION_JSON)
+                .when()
+                .get("/api/auth/registration-status")
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode())
+                .body("enabled", equalTo(false));
+    }
+
+    @Test
+    void testGetRegistrationStatus_IsPublicEndpoint() {
+        // Should not require authentication
+        Mockito.when(authService.isRegistrationEnabled()).thenReturn(true);
+
+        given().contentType(MediaType.APPLICATION_JSON)
+                .when()
+                .get("/api/auth/registration-status")
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode());
+    }
+
+    @Test
+    void testRegisterWhenDisabled_Returns403Forbidden() {
+        RegisterRequestDTO request = new RegisterRequestDTO();
+        request.setUsername("newuser");
+        request.setPassword("SecurePassword123!");
+        request.setFirstname("John");
+        request.setLastname("Doe");
+        request.setEmail("john@example.com");
+
+        // Mock the authService.register to throw RegistrationDisabledException
+        Mockito.doThrow(
+                        new de.felixhertweck.seatreservation.common.exception
+                                .RegistrationDisabledException(
+                                "User registration is currently disabled"))
+                .when(authService)
+                .register(Mockito.any(RegisterRequestDTO.class));
+
+        given().contentType(MediaType.APPLICATION_JSON)
+                .body(request)
+                .when()
+                .post("/api/auth/register")
+                .then()
+                .statusCode(Response.Status.FORBIDDEN.getStatusCode())
+                .body("message", containsString("registration is currently disabled"));
+    }
+
+    @Test
+    void testGetRegistrationStatus_RegistrationEnabledByDefault() {
+        // By default in @QuarkusTest, registration is enabled
+        Mockito.when(authService.isRegistrationEnabled()).thenReturn(true);
+
+        given().contentType(MediaType.APPLICATION_JSON)
+                .when()
+                .get("/api/auth/registration-status")
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode())
+                .body("enabled", equalTo(true));
+    }
+
+    /** Test profile that disables registration. */
+    public static class DisabledRegistrationProfile implements QuarkusTestProfile {
+        @Override
+        public Map<String, String> getConfigOverrides() {
+            return Collections.singletonMap("registration.enabled", "false");
+        }
     }
 }

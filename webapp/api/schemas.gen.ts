@@ -458,6 +458,15 @@ export const RegisterRequestDTOSchema = {
     }
 } as const;
 
+export const RegistrationStatusDTOSchema = {
+    type: 'object',
+    properties: {
+        enabled: {
+            type: 'boolean'
+        }
+    }
+} as const;
+
 export const ReservationRequestDTOSchema = {
     type: 'object',
     required: ['eventId', 'userId', 'seatIds'],

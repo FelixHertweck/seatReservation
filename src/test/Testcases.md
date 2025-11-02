@@ -62,6 +62,9 @@ This is an overview of the test cases for the application.
 | `testAuthenticateUsernameIdentification` | Checks that usernames without an @ symbol are correctly identified as usernames. |
 | `testAuthenticateWithInvalidHash` | Tests the behavior with an invalid password hash format. Expects `RuntimeException`. |
 | `testAuthenticateSpecialCharactersInPassword` | Tests authentication with special characters in the password. |
+| `testIsRegistrationEnabled_DefaultTrue` | Checks that registration is enabled by default. |
+| `testIsRegistrationEnabled_WhenDisabled` | Checks that the `isRegistrationEnabled()` method correctly returns `false` when registration is disabled. |
+| `testRegisterThrowsExceptionWhenRegistrationDisabled` | Attempts to register a new user when registration is disabled. Expects `RegistrationDisabledException`. |
 
 ### TokenService
 
@@ -109,6 +112,11 @@ This is an overview of the test cases for the application.
 | `logoutAllDevices_Success` | Successfully logs out from all devices by invalidating all refresh tokens. |
 | `logoutAllDevices_WithoutAuth_Unauthorized` | Attempts to log out from all devices without authentication. Expects 401 Unauthorized. |
 | `logoutAllDevices_WithInvalidToken_Unauthorized` | Attempts to log out from all devices with an invalid JWT. Expects 401 Unauthorized. |
+| `testGetRegistrationStatus_RegistrationEnabled` | Sends a GET request to `/api/auth/registration-status` when registration is enabled. Expects a 200 OK status with `enabled: true`. |
+| `testGetRegistrationStatus_RegistrationDisabled` | Sends a GET request to `/api/auth/registration-status` when registration is disabled. Expects a 200 OK status with `enabled: false`. |
+| `testGetRegistrationStatus_IsPublicEndpoint` | Verifies that the `/api/auth/registration-status` endpoint is public and does not require authentication. |
+| `testRegisterWhenDisabled_Returns403Forbidden` | Attempts to register a new user when registration is disabled. Expects a 403 Forbidden status. |
+| `testGetRegistrationStatus_RegistrationEnabledByDefault` | Verifies that registration status is `true` (enabled) by default in test configuration. |
 
 ## UserService
 
@@ -1412,10 +1420,40 @@ This section describes test cases for the internationalization of the user inter
 | :--- | :--- |
 | `onStart_WithNoExistingAdminUser_CreatesAdminUser` | Checks that an admin user is created on application startup when no admin user exists. Verifies that the user has username "admin", email "admin@localhost", firstname "System", lastname "Admin", and a 12-character random password. |
 | `onStart_WithExistingAdminUser_SkipsCreation` | Verifies that no admin user is created if one already exists in the database. |
-| `onStart_WhenDuplicateUserExceptionThrown_LogsWarningAndContinues` | Tests that when a `DuplicateUserException` occurs during admin creation, the application logs a warning and continues without crashing. |
-| `onStart_WhenGeneralExceptionThrown_LogsErrorAndContinues` | Tests that when a general exception occurs during admin creation, the application logs an error and continues without crashing. |
-| `onStart_GeneratesRandomPassword` | Verifies that the generated password is 12 characters long and contains only allowed characters (A-Z, a-z, 0-9, and special characters). |
-| `onStart_MultipleInvocations_EachChecksForAdmin` | Tests that multiple startup invocations each check for the admin user and attempt creation if needed. |
-| `onStart_CreatesUserWithAdminRole` | Verifies that the created admin user has the ADMIN role assigned. |
-| `onStart_CreatesUserWithEmailConfirmed` | Checks that the created admin user has their email marked as confirmed (`emailConfirmed = true`). |
-| `onStart_CreatesUserWithSystemGroups` | Verifies that the created admin user has the "system" tag assigned. |
+
+## DTOs
+
+### RegistrationStatusDTO
+
+| Test Case | Description |
+| :--- | :--- |
+| `testConstructor_WithEnabledTrue` | Creates a `RegistrationStatusDTO` with `enabled=true` and verifies it is correctly set. |
+| `testConstructor_WithEnabledFalse` | Creates a `RegistrationStatusDTO` with `enabled=false` and verifies it is correctly set. |
+| `testDefaultConstructor` | Creates a `RegistrationStatusDTO` using the default constructor and verifies the object is not null. |
+| `testSetEnabled_ToTrue` | Creates a `RegistrationStatusDTO` with `enabled=false`, sets it to `true`, and verifies the change. |
+| `testSetEnabled_ToFalse` | Creates a `RegistrationStatusDTO` with `enabled=true`, sets it to `false`, and verifies the change. |
+| `testGetEnabled` | Creates a `RegistrationStatusDTO`, sets `enabled=true`, and verifies `isEnabled()` returns the correct value. |
+| `testMultipleStateChanges` | Performs multiple state changes on a `RegistrationStatusDTO` to verify that the enabled flag can be toggled correctly. |
+
+## Exceptions
+
+### RegistrationDisabledException
+
+| Test Case | Description |
+| :--- | :--- |
+| `testExceptionCreation_WithMessage` | Creates a `RegistrationDisabledException` with a message and verifies it is stored correctly. |
+| `testExceptionIsRuntimeException` | Verifies that `RegistrationDisabledException` extends `RuntimeException`. |
+| `testExceptionThrowingAndCatching` | Tests throwing and catching `RegistrationDisabledException` by the specific exception type. |
+| `testExceptionCatchAsRuntimeException` | Tests that `RegistrationDisabledException` can be caught as a `RuntimeException`. |
+| `testExceptionWithEmptyMessage` | Creates a `RegistrationDisabledException` with an empty message and verifies it is handled correctly. |
+| `testExceptionWithNullMessage` | Creates a `RegistrationDisabledException` with a null message and verifies it is handled correctly. |
+| `testExceptionStackTrace` | Verifies that `RegistrationDisabledException` has a proper stack trace. |
+
+## Global Exception Handler
+
+### GlobalExceptionHandler
+
+| Test Case | Description |
+| :--- | :--- |
+| `testRegistrationDisabledException` | Tests that `RegistrationDisabledException` is mapped to HTTP 403 Forbidden status with correct error response. |
+| `testRegistrationDisabledExceptionWithDifferentMessage` | Tests that `RegistrationDisabledException` with a custom message is properly mapped to HTTP 403 Forbidden with the correct message. |

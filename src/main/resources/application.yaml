@@ -1,4 +1,7 @@
 
+registration:
+  enabled: true
+
 smallrye:
   jwt:
     token:

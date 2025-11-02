@@ -25,6 +25,7 @@ import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.CookieParam;
+import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -35,6 +36,7 @@ import jakarta.ws.rs.core.Response;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.security.dto.LoginRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
+import de.felixhertweck.seatreservation.security.dto.RegistrationStatusDTO;
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
 import de.felixhertweck.seatreservation.security.service.AuthService;
 import de.felixhertweck.seatreservation.security.service.TokenService;
@@ -52,6 +54,15 @@ public class AuthResource {
     @Inject AuthService authService;
     @Inject TokenService tokenService;
     @Inject UserSecurityContext userSecurityContext;
+
+    @GET
+    @Path("/registration-status")
+    @PermitAll
+    @APIResponse(responseCode = "200", description = "Registration status retrieved successfully")
+    public RegistrationStatusDTO getRegistrationStatus() {
+        LOG.debugf("Received request to check registration status");
+        return new RegistrationStatusDTO(authService.isRegistrationEnabled());
+    }
 
     @POST
     @Path("/login")

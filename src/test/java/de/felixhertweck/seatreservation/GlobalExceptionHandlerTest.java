@@ -32,6 +32,7 @@ import de.felixhertweck.seatreservation.common.dto.ErrorResponseDTO;
 import de.felixhertweck.seatreservation.common.exception.DuplicateUserException;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.InvalidUserException;
+import de.felixhertweck.seatreservation.common.exception.RegistrationDisabledException;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
 import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
 import de.felixhertweck.seatreservation.management.exception.ReservationNotFoundException;
@@ -270,5 +271,29 @@ class GlobalExceptionHandlerTest {
         assertEquals(0, cookies.get("jwt").getMaxAge());
         assertEquals(0, cookies.get("refreshToken").getMaxAge());
         assertEquals(0, cookies.get("refreshToken_expiration").getMaxAge());
+    }
+
+    @Test
+    void testRegistrationDisabledException() {
+        RegistrationDisabledException exception =
+                new RegistrationDisabledException("User registration is currently disabled");
+        Response response = exceptionHandler.toResponse(exception);
+
+        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), response.getStatus());
+        assertTrue(response.getEntity() instanceof ErrorResponseDTO);
+        ErrorResponseDTO errorResponse = (ErrorResponseDTO) response.getEntity();
+        assertEquals("User registration is currently disabled", errorResponse.getMessage());
+    }
+
+    @Test
+    void testRegistrationDisabledExceptionWithDifferentMessage() {
+        String customMessage = "Registration feature is temporarily unavailable";
+        RegistrationDisabledException exception = new RegistrationDisabledException(customMessage);
+        Response response = exceptionHandler.toResponse(exception);
+
+        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), response.getStatus());
+        assertTrue(response.getEntity() instanceof ErrorResponseDTO);
+        ErrorResponseDTO errorResponse = (ErrorResponseDTO) response.getEntity();
+        assertEquals(customMessage, errorResponse.getMessage());
     }
 }
