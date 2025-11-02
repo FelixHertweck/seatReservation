@@ -12,7 +12,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Tooltip,
@@ -24,6 +23,8 @@ import { Info } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import type { RegisterRequestDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
+import { InputWithLoading } from "@/components/common/input-with-loading";
+import { TFunction } from "i18next";
 
 export default function RegisterPage() {
   const t = useT();
@@ -36,7 +37,7 @@ export default function RegisterPage() {
     lastname: "",
   });
   const [isLoading, setIsLoading] = useState(false);
-  const { register } = useAuth();
+  const { register, registrationStatus } = useAuth();
 
   const isPasswordTooShort =
     formData.password.length > 0 && formData.password.length < 8;
@@ -62,6 +63,8 @@ export default function RegisterPage() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const isDisabled = registrationStatus.data?.enabled === false;
+
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md">
@@ -76,25 +79,29 @@ export default function RegisterPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstname">{t("register.firstName")}</Label>
-                <Input
+                <InputWithLoading
                   id="firstname"
                   placeholder={t("register.firstNamePlaceholder")}
                   value={formData.firstname}
                   onChange={(e) =>
                     handleInputChange("firstname", e.target.value)
                   }
+                  disabled={registrationStatus.isLoading || isDisabled}
+                  loading={registrationStatus.isLoading}
                   required
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastname">{t("register.lastName")}</Label>
-                <Input
+                <InputWithLoading
                   id="lastname"
                   placeholder={t("register.lastNamePlaceholder")}
                   value={formData.lastname}
                   onChange={(e) =>
                     handleInputChange("lastname", e.target.value)
                   }
+                  disabled={registrationStatus.isLoading || isDisabled}
+                  loading={registrationStatus.isLoading}
                   required
                 />
               </div>
@@ -113,34 +120,40 @@ export default function RegisterPage() {
                   </Tooltip>
                 </TooltipProvider>
               </div>
-              <Input
+              <InputWithLoading
                 id="username"
                 placeholder={t("register.usernamePlaceholder")}
                 value={formData.username}
                 onChange={(e) => handleInputChange("username", e.target.value)}
                 autoCapitalize="none"
                 autoComplete="username"
+                disabled={registrationStatus.isLoading || isDisabled}
+                loading={registrationStatus.isLoading}
                 required
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">{t("register.email")}</Label>
-              <Input
+              <InputWithLoading
                 id="email"
                 type="email"
                 placeholder={t("register.emailPlaceholder")}
                 value={formData.email}
                 onChange={(e) => handleInputChange("email", e.target.value)}
+                disabled={registrationStatus.isLoading || isDisabled}
+                loading={registrationStatus.isLoading}
                 required
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">{t("register.password")}</Label>
-              <Input
+              <InputWithLoading
                 id="password"
                 type="password"
                 value={formData.password}
                 onChange={(e) => handleInputChange("password", e.target.value)}
+                disabled={registrationStatus.isLoading || isDisabled}
+                loading={registrationStatus.isLoading}
                 required
               />
               {isPasswordTooShort && (
@@ -149,12 +162,19 @@ export default function RegisterPage() {
                 </p>
               )}
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading
-                ? t("register.creatingAccount")
-                : t("register.createAccountButton")}
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isLoading || isDisabled || isPasswordTooShort}
+            >
+              {ButtonLabel(t, isLoading, isDisabled)}
             </Button>
           </form>
+          {isDisabled && (
+            <div className="mt-4 text-center text-sm text-destructive">
+              {t("register.registrationDisabled.description")}
+            </div>
+          )}
           <div className="mt-4 text-center text-sm">
             {t("register.alreadyHaveAccount")}
             <Link href="/login" className="text-primary hover:underline">
@@ -166,3 +186,15 @@ export default function RegisterPage() {
     </div>
   );
 }
+
+const ButtonLabel = (
+  t: TFunction<string, string>,
+  isLoading: boolean,
+  isDisabled: boolean,
+) => {
+  if (isDisabled) {
+    return t("register.registrationDisabled.title");
+  }
+  if (isLoading) return t("register.creatingAccount");
+  return t("register.createAccountButton");
+};

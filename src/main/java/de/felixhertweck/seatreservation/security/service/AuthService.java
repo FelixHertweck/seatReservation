@@ -25,6 +25,7 @@ import jakarta.inject.Inject;
 
 import de.felixhertweck.seatreservation.common.exception.DuplicateUserException;
 import de.felixhertweck.seatreservation.common.exception.InvalidUserException;
+import de.felixhertweck.seatreservation.common.exception.RegistrationDisabledException;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
@@ -33,6 +34,7 @@ import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailed
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
 import io.quarkus.elytron.security.common.BcryptUtil;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
@@ -43,6 +45,18 @@ public class AuthService {
     @Inject UserRepository userRepository;
 
     @Inject UserService userService;
+
+    @ConfigProperty(name = "registration.enabled", defaultValue = "true")
+    boolean registrationEnabled;
+
+    /**
+     * Checks if user registration is enabled.
+     *
+     * @return true if registration is enabled, false otherwise
+     */
+    public boolean isRegistrationEnabled() {
+        return registrationEnabled;
+    }
 
     /**
      * Authenticates a user with the given username and password.
@@ -81,10 +95,18 @@ public class AuthService {
      * @return the registered User
      * @throws DuplicateUserException if the user already exists
      * @throws InvalidUserException if the user details are invalid
+     * @throws RegistrationDisabledException if registration is disabled
      */
     public User register(RegisterRequestDTO registerRequest)
-            throws DuplicateUserException, InvalidUserException {
+            throws DuplicateUserException, InvalidUserException, RegistrationDisabledException {
         LOG.debugf("Attempting to register new user: %s", registerRequest.getUsername());
+
+        if (!registrationEnabled) {
+            LOG.warnf(
+                    "Registration attempt made for user %s when registration is disabled.",
+                    registerRequest.getUsername());
+            throw new RegistrationDisabledException("User registration is currently disabled");
+        }
 
         UserCreationDTO userCreationDTO = new UserCreationDTO(registerRequest);
 

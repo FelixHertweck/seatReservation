@@ -442,6 +442,14 @@
           }
         }
       },
+      "RegistrationStatusDTO" : {
+        "type" : "object",
+        "properties" : {
+          "enabled" : {
+            "type" : "boolean"
+          }
+        }
+      },
       "ReservationRequestDTO" : {
         "type" : "object",
         "required" : [ "eventId", "userId", "seatIds" ],
@@ -876,6 +884,24 @@
           }
         },
         "summary" : "Register",
+        "tags" : [ "Auth Resource" ]
+      }
+    },
+    "/api/auth/registration-status" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "Registration status retrieved successfully",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RegistrationStatusDTO"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Registration Status",
         "tags" : [ "Auth Resource" ]
       }
     },

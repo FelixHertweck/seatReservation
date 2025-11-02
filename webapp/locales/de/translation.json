@@ -79,7 +79,11 @@
     "creatingAccount": "Konto wird erstellt...",
     "createAccountButton": "Konto erstellen",
     "alreadyHaveAccount": "Sie haben bereits ein Konto? ",
-    "signIn": "Anmelden"
+    "signIn": "Anmelden",
+    "registrationDisabled": {
+      "title": "Registrierung deaktiviert",
+      "description": "Eine Registrierung ist derzeit nicht verfügbar."
+    }
   },
   "mainLayout": {
     "eventManagementTitle": "Event-Verwaltung"

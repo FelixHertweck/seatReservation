@@ -19,11 +19,17 @@
  */
 package de.felixhertweck.seatreservation.security.service;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
+import de.felixhertweck.seatreservation.common.exception.RegistrationDisabledException;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import io.quarkus.test.InjectMock;
@@ -169,5 +175,40 @@ public class AuthServiceTest {
 
         assertNotNull(authenticatedUser);
         assertEquals(username, authenticatedUser.getUsername());
+    }
+
+    @Test
+    void testIsRegistrationEnabled_DefaultTrue() {
+        authService.registrationEnabled = true;
+        assertTrue(
+                authService.isRegistrationEnabled(), "Registration should be enabled by default");
+    }
+
+    @Test
+    void testIsRegistrationEnabled_WhenDisabled() {
+        authService.registrationEnabled = false;
+        assertFalse(authService.isRegistrationEnabled(), "Registration should be disabled");
+    }
+
+    @Test
+    void testRegisterThrowsExceptionWhenRegistrationDisabled() {
+        authService.registrationEnabled = false;
+
+        RegisterRequestDTO registerRequest = new RegisterRequestDTO();
+        registerRequest.setUsername("newuser");
+        registerRequest.setPassword("password123");
+        registerRequest.setFirstname("John");
+        registerRequest.setLastname("Doe");
+        registerRequest.setEmail("john@example.com");
+
+        RegistrationDisabledException thrown =
+                assertThrows(
+                        RegistrationDisabledException.class,
+                        () -> authService.register(registerRequest),
+                        "Expected RegistrationDisabledException when registration is disabled");
+
+        assertTrue(
+                thrown.getMessage().contains("registration is currently disabled"),
+                "Exception message should indicate registration is disabled");
     }
 }

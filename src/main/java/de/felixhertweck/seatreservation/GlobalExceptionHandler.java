@@ -31,6 +31,7 @@ import de.felixhertweck.seatreservation.common.dto.ErrorResponseDTO;
 import de.felixhertweck.seatreservation.common.exception.DuplicateUserException;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.InvalidUserException;
+import de.felixhertweck.seatreservation.common.exception.RegistrationDisabledException;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
 import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
 import de.felixhertweck.seatreservation.management.exception.ReservationNotFoundException;
@@ -80,6 +81,7 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
             case AuthenticationFailedException ignored -> status = Response.Status.UNAUTHORIZED;
             case DuplicateUserException ignored -> status = Response.Status.CONFLICT;
             case InvalidUserException ignored -> status = Response.Status.BAD_REQUEST;
+            case RegistrationDisabledException ignored -> status = Response.Status.FORBIDDEN;
             case VerificationCodeNotFoundException ignored -> status = Response.Status.BAD_REQUEST;
             case VerifyTokenExpiredException ignored -> status = Response.Status.GONE;
             case UserNotFoundException ignored -> status = Response.Status.NOT_FOUND;

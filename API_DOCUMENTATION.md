@@ -45,8 +45,24 @@ Registers a new user and sets a JWT cookie.
 -   **Roles:** Public
 -   **Request Body:** `RegisterRequestDTO`
 -   **Responses:**
--       `200 OK`: Successful registration. Sets a `jwt` cookie and triggers an email verification flow.
--       `409 Conflict`: User with this username already exists.
+    -   `200 OK`: Successful registration. Sets a `jwt` cookie and triggers an email verification flow.
+    -   `400 Bad Request`: Invalid data (e.g., missing fields, password too short, invalid email format, username does not match pattern).
+    -   `409 Conflict`: User with this username already exists.
+    -   `403 Forbidden`: User registration is currently disabled.
+
+**Example Error Response (403 Forbidden):**
+```json
+{
+  "message": "User registration is currently disabled"
+}
+```
+
+**Example Error Response (409 Conflict):**
+```json
+{
+  "message": "User with username 'john_doe' already exists."
+}
+```
 
 ---
 
@@ -57,6 +73,49 @@ Logs out the current user by clearing the JWT cookie.
 -   **Roles:** Authenticated
 -   **Responses:**
     -   `200 OK`: Successful logout. Clears the `jwt` cookie.
+
+---
+
+#### GET /registration-status
+
+Retrieves the current registration status of the application.
+
+-   **Roles:** Public
+-   **Response Body:** `RegistrationStatusDTO`
+-   **Responses:**
+    -   `200 OK`: Registration status retrieved successfully. Returns `RegistrationStatusDTO` with `enabled` flag.
+
+**Example Response:**
+```json
+{
+  "enabled": true
+}
+```
+
+**Description:** 
+This endpoint allows clients to check whether user registration is currently enabled or disabled in the application. The registration status is controlled by the configuration property `registration.enabled` (default: `true`). When registration is disabled, attempts to call the `/register` endpoint will return a `403 Forbidden` status.
+
+---
+
+#### POST /logoutAllDevices
+
+Logs out the current user from all devices by invalidating all refresh tokens.
+
+-   **Roles:** Authenticated
+-   **Responses:**
+    -   `200 OK`: Successfully logged out from all devices. Clears all authentication cookies.
+
+---
+
+#### POST /refresh
+
+Refreshes the JWT token using a valid refresh token.
+
+-   **Roles:** Public (but requires valid refresh token cookie)
+-   **Request Cookie:** `refreshToken`
+-   **Responses:**
+    -   `200 OK`: Token successfully refreshed. Returns new JWT and refresh token cookies.
+    -   `401 Unauthorized`: Invalid or missing refresh token.
 
 ---
 
@@ -884,3 +943,74 @@ Deletes one or more reservations of the current user.
     -   `404 Not Found`: One or more reservations do not belong to the user or do not exist.
     -   `401 Unauthorized`: Not authenticated.
     -   `403 Forbidden`: Access denied.
+
+---
+
+## Data Transfer Objects (DTOs)
+
+### RegistrationStatusDTO
+
+Represents the current registration status of the application.
+
+**Fields:**
+- `enabled` (boolean): Indicates whether user registration is currently enabled (`true`) or disabled (`false`).
+
+**Example:**
+```json
+{
+  "enabled": true
+}
+```
+
+**Usage:** Returned by the `GET /api/auth/registration-status` endpoint. Clients can use this information to display or hide the registration form in the UI based on the application's current registration settings.
+
+---
+
+## Configuration
+
+### Registration Settings
+
+The registration feature can be controlled via the following configuration property:
+
+**Property:** `registration.enabled`
+**Type:** `boolean`
+**Default Value:** `true`
+**Environment Variable:** `REGISTRATION_ENABLED`
+
+**Description:**
+When set to `true`, new users can register via the `POST /api/auth/register` endpoint. When set to `false`, registration is disabled and any attempt to register will result in a `403 Forbidden` response with the message "User registration is currently disabled".
+
+**Example Configuration (application.yaml):**
+```yaml
+registration:
+  enabled: false
+```
+
+**Use Cases:**
+- Disable registration temporarily for maintenance
+- Disable registration when using an external authentication provider
+- Restrict new user sign-ups to admin-created accounts only
+
+---
+
+## Error Handling
+
+### RegistrationDisabledException
+
+**HTTP Status Code:** `403 Forbidden`
+
+**Message:** "User registration is currently disabled"
+
+**Description:** This exception is thrown when a client attempts to register a new user via the `POST /api/auth/register` endpoint while registration is disabled in the configuration.
+
+**Response Example:**
+```json
+{
+  "message": "User registration is currently disabled"
+}
+```
+
+**When Encountered:**
+- Check the application's configuration to verify the `registration.enabled` setting
+- If registration should be enabled, update the configuration and restart the application
+- If registration should remain disabled, contact the application administrator

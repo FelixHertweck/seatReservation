@@ -79,7 +79,11 @@
     "creatingAccount": "Creating account...",
     "createAccountButton": "Create account",
     "alreadyHaveAccount": "Already have an account? ",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "registrationDisabled": {
+      "title": "Registration Disabled",
+      "description": "Registration is currently not available."
+    }
   },
   "mainLayout": {
     "eventManagementTitle": "Event Management"

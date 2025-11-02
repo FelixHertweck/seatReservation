@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import { useT } from "@/lib/i18n/hooks";
 import {
+  getApiAuthRegistrationStatusOptions,
   getApiUsersMeOptions,
   postApiAuthLoginMutation,
   postApiAuthLogoutAllDevicesMutation,
@@ -13,7 +14,11 @@ import {
   postApiUserResendEmailConfirmationMutation,
   postApiUserVerifyEmailCodeMutation,
 } from "@/api/@tanstack/react-query.gen";
-import type { RegisterRequestDto, VerifyEmailCodeRequestDto } from "@/api";
+import type {
+  RegisterRequestDto,
+  RegistrationStatusDto,
+  VerifyEmailCodeRequestDto,
+} from "@/api";
 import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { isValidRedirectUrlEncoded } from "@/lib/utils";
 import { ErrorWithResponse } from "@/components/init-query-client";
@@ -132,10 +137,21 @@ export function useAuth() {
     });
   };
 
+  const {
+    data: registrationStatus,
+    isLoading: isLoadingRegistrationStatus,
+    isSuccess: isSuccessRegistrationStatus,
+  } = useQuery(getApiAuthRegistrationStatusOptions());
+
   return {
     user,
     isLoggedIn: isSuccess,
     isLoading,
+    registrationStatus: {
+      data: registrationStatus,
+      isLoading: isLoadingRegistrationStatus,
+      isSuccess: isSuccessRegistrationStatus,
+    } as RegistrationStatus,
     login,
     register,
     logout,
@@ -155,4 +171,10 @@ function redirectUser(
       ? decodeURIComponent(returnToUrl)
       : `/${locale}/events`,
   );
+}
+
+interface RegistrationStatus {
+  data: RegistrationStatusDto | undefined;
+  isLoading: boolean;
+  isSuccess: boolean;
 }

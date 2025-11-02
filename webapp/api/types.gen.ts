@@ -140,6 +140,10 @@ export type RegisterRequestDto = {
     password: string;
 };
 
+export type RegistrationStatusDto = {
+    enabled?: boolean;
+};
+
 export type ReservationRequestDto = {
     eventId: bigint;
     userId: bigint;
@@ -365,6 +369,22 @@ export type PostApiAuthRegisterResponses = {
      */
     200: unknown;
 };
+
+export type GetApiAuthRegistrationStatusData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/auth/registration-status';
+};
+
+export type GetApiAuthRegistrationStatusResponses = {
+    /**
+     * Registration status retrieved successfully
+     */
+    200: RegistrationStatusDto;
+};
+
+export type GetApiAuthRegistrationStatusResponse = GetApiAuthRegistrationStatusResponses[keyof GetApiAuthRegistrationStatusResponses];
 
 export type DeleteApiManagerEventlocationsData = {
     body?: never;
