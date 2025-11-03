@@ -91,6 +91,28 @@ This is an overview of the test cases for the application.
 | `createStatusCookie` | Successfully creates a status cookie for refresh token expiration. |
 | `logoutAllDevices` | Successfully deletes all refresh tokens for a user. |
 | `logoutAllDevices_DoesNotAffectOtherUsers` | Ensures that logging out all devices for one user does not affect other users' tokens. |
+| `deleteRefreshToken_ValidToken` | Successfully deletes a specific refresh token from the database using its token ID and user. |
+| `deleteRefreshToken_NullToken` | Verifies that passing a null token is handled gracefully without throwing an exception. |
+| `deleteRefreshToken_EmptyToken` | Verifies that passing an empty token is handled gracefully without throwing an exception. |
+| `deleteRefreshToken_InvalidToken` | Verifies that an invalid JWT is handled gracefully without throwing an exception. |
+| `deleteRefreshToken_NonExistentToken` | Verifies that attempting to delete a non-existent token is handled gracefully. |
+| `deleteRefreshToken_OnlyDeletesSpecifiedToken` | Ensures that only the specified token is deleted and other tokens are not affected. |
+| `deleteRefreshToken_DifferentUserCannotDeleteToken` | Verifies that a user cannot delete a refresh token that belongs to another user. |
+| `deleteRefreshToken_InvalidTokenIdFormat` | Verifies that a token with an invalid token_id format is handled gracefully without throwing an exception. |
+| `deleteRefreshToken_MissingTokenIdClaim` | Verifies that a token missing the token_id claim is handled gracefully without throwing an exception. |
+
+### RefreshTokenRepository
+
+| Test Case | Description |
+| :--- | :--- |
+| `findAllByUser_MultipleTokens` | Successfully retrieves all refresh tokens for a specific user when multiple tokens exist. |
+| `findAllByUser_NoTokens` | Successfully retrieves an empty list when no tokens exist for a user. |
+| `deleteAllByUser_Success` | Successfully deletes all refresh tokens for a specific user without affecting other users' tokens. |
+| `deleteAllByUser_NoTokens` | Successfully handles the case when no tokens exist for a user. |
+| `deleteWithIdAndUser_Success` | Successfully deletes a specific refresh token by its ID and user combination. |
+| `deleteWithIdAndUser_WrongUser` | Verifies that a token is not deleted if the user does not match, even with the correct token ID. |
+| `deleteWithIdAndUser_NonExistentId` | Verifies that attempting to delete a non-existent token ID returns false without throwing an exception. |
+| `deleteWithIdAndUser_OnlyDeletesSpecificToken` | Ensures that only the specified token is deleted and other tokens for the same user are not affected. |
 
 ### AuthResource
 
@@ -107,8 +129,9 @@ This is an overview of the test cases for the application.
 | `refreshToken_MissingToken` | Attempts to refresh the JWT without a refresh token. Expects 401 Unauthorized. |
 | `refreshToken_EmptyToken` | Attempts to refresh the JWT with an empty refresh token. Expects 401 Unauthorized. |
 | `refreshToken_ServiceThrowsException` | Simulates an internal server error during token refresh. Expects 500 Internal Server Error. |
-| `logout_Success` | Successfully logs out the current device by clearing cookies. |
+| `logout_Success` | Successfully logs out the current device by clearing cookies and deleting the refresh token from the database. |
 | `logout_NoRefreshTokenCookie` | Ensures the logout endpoint works correctly even if no refresh token cookie is present. |
+| `logout_WithDifferentUser` | Verifies that the logout endpoint correctly associates the refresh token with the current authenticated user. |
 | `logoutAllDevices_Success` | Successfully logs out from all devices by invalidating all refresh tokens. |
 | `logoutAllDevices_WithoutAuth_Unauthorized` | Attempts to log out from all devices without authentication. Expects 401 Unauthorized. |
 | `logoutAllDevices_WithInvalidToken_Unauthorized` | Attempts to log out from all devices with an invalid JWT. Expects 401 Unauthorized. |

@@ -275,7 +275,55 @@ public class TokenService {
      */
     @Transactional
     public void logoutAllDevices(User user) {
-        refreshTokenRepository.deleteByUser(user);
+        refreshTokenRepository.deleteAllByUser(user);
         LOG.debugf("All refresh tokens for user %s have been deleted.", user.getUsername());
+    }
+
+    /**
+     * Deletes a specific refresh token from the database. This method handles errors gracefully and
+     * will not throw exceptions, allowing logout to proceed even if the token is invalid.
+     *
+     * <p><strong>Requirements for successful deletion:</strong>
+     *
+     * <ul>
+     *   <li>The refreshToken must be a valid JWT with a token_id claim
+     *   <li>The refreshToken must match the user provided (same user association)
+     * </ul>
+     *
+     * <p>If these requirements are not met, the method logs a warning but does not throw an
+     * exception, ensuring the logout operation completes successfully.
+     *
+     * @param refreshToken the refresh token JWT to delete
+     * @param user the user associated with the refresh token
+     */
+    @Transactional
+    public void deleteRefreshToken(String refreshToken, User user) {
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            LOG.debugf("No refresh token provided to delete");
+            return;
+        }
+
+        try {
+            JsonWebToken jwt = parser.parse(refreshToken);
+            Object tokenIdClaim = jwt.getClaim("token_id");
+
+            if (tokenIdClaim == null) {
+                LOG.warnf("Refresh token missing token_id claim");
+                return;
+            }
+
+            Long tokenId = Long.valueOf(tokenIdClaim.toString());
+
+            boolean deleted = refreshTokenRepository.deleteWithIdAndUser(tokenId, user);
+            if (deleted) {
+                LOG.debugf("Refresh token with id %d has been deleted.", tokenId);
+            } else {
+                LOG.debugf("Refresh token with id %d not found in database.", tokenId);
+            }
+        } catch (ParseException e) {
+            LOG.warnf("Failed to parse refresh token: %s", e.getMessage());
+        } catch (NumberFormatException e) {
+            LOG.warnf("Invalid token_id format: %s", e.getMessage());
+        }
     }
 }

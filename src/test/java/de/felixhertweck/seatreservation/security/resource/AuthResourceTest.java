@@ -506,6 +506,10 @@ public class AuthResourceTest {
             roles = {"USER"})
     void testLogout_Success() {
         Mockito.when(userSecurityContext.getCurrentUser()).thenReturn(testUser);
+
+        // Mock deleteRefreshToken to do nothing (success case)
+        Mockito.doNothing().when(tokenService).deleteRefreshToken("someRefreshToken", testUser);
+
         // Mock cookie clearing
         NewCookie clearedJwtCookie =
                 new NewCookie.Builder("jwt").value("").path("/").maxAge(0).httpOnly(true).build();
@@ -539,6 +543,9 @@ public class AuthResourceTest {
 
         response.then().statusCode(Response.Status.OK.getStatusCode());
 
+        // Verify deleteRefreshToken was called with the correct user
+        Mockito.verify(tokenService).deleteRefreshToken("someRefreshToken", testUser);
+
         // Verify cookies are cleared
         String setCookieHeaders = response.getHeaders().getValues("Set-Cookie").toString();
         assertTrue(
@@ -560,6 +567,10 @@ public class AuthResourceTest {
             roles = {"USER"})
     void testLogout_NoRefreshTokenCookie() {
         Mockito.when(userSecurityContext.getCurrentUser()).thenReturn(testUser);
+
+        // Mock deleteRefreshToken to handle null/empty token gracefully
+        Mockito.doNothing().when(tokenService).deleteRefreshToken(null, testUser);
+
         // Mock cookie clearing logic as it will still be called
         NewCookie clearedJwtCookie =
                 new NewCookie.Builder("jwt").value("").path("/").maxAge(0).httpOnly(true).build();
@@ -591,6 +602,53 @@ public class AuthResourceTest {
                 .post("/api/auth/logout")
                 .then()
                 .statusCode(Response.Status.OK.getStatusCode());
+    }
+
+    @Test
+    @TestSecurity(
+            user = "testuser",
+            roles = {"USER"})
+    void testLogout_WithDifferentUser() {
+        Mockito.when(userSecurityContext.getCurrentUser()).thenReturn(testUser);
+
+        // Mock deleteRefreshToken to do nothing
+        Mockito.doNothing().when(tokenService).deleteRefreshToken("someRefreshToken", testUser);
+
+        // Mock cookie clearing
+        NewCookie clearedJwtCookie =
+                new NewCookie.Builder("jwt").value("").path("/").maxAge(0).httpOnly(true).build();
+        Mockito.when(tokenService.createNewNullCookie("jwt", true)).thenReturn(clearedJwtCookie);
+
+        NewCookie clearedRefreshCookie =
+                new NewCookie.Builder("refreshToken")
+                        .value("")
+                        .path("/")
+                        .maxAge(0)
+                        .httpOnly(true)
+                        .build();
+        Mockito.when(tokenService.createNewNullCookie("refreshToken", true))
+                .thenReturn(clearedRefreshCookie);
+
+        NewCookie clearedExpirationCookie =
+                new NewCookie.Builder("refreshToken_expiration")
+                        .value("")
+                        .path("/")
+                        .maxAge(0)
+                        .httpOnly(false)
+                        .build();
+        Mockito.when(tokenService.createNewNullCookie("refreshToken_expiration", false))
+                .thenReturn(clearedExpirationCookie);
+
+        io.restassured.response.Response response =
+                given().cookie("refreshToken", "someRefreshToken")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .when()
+                        .post("/api/auth/logout");
+
+        response.then().statusCode(Response.Status.OK.getStatusCode());
+
+        // Verify deleteRefreshToken was called with the correct user
+        Mockito.verify(tokenService).deleteRefreshToken("someRefreshToken", testUser);
     }
 
     @Test
