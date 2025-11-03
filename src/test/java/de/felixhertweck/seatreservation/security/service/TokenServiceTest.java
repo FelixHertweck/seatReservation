@@ -28,7 +28,14 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.NewCookie;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -41,6 +48,7 @@ import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.smallrye.jwt.auth.principal.JWTParser;
+import io.smallrye.jwt.auth.principal.ParseException;
 import io.smallrye.jwt.build.Jwt;
 import io.smallrye.jwt.build.JwtClaimsBuilder;
 import org.eclipse.microprofile.jwt.Claims;
@@ -434,7 +442,7 @@ public class TokenServiceTest {
                 .thenReturn(System.currentTimeMillis() / 1000 + 604800); // 7 days
         try {
             when(jwtParser.parse(refreshToken)).thenReturn(mockJwt);
-        } catch (Exception e) {
+        } catch (ParseException e) {
             fail("Failed to mock JWT parser");
         }
 
@@ -442,7 +450,7 @@ public class TokenServiceTest {
         NewCookie cookie = null;
         try {
             cookie = tokenService.createNewRefreshTokenCookie(refreshToken, "refreshToken");
-        } catch (Exception e) {
+        } catch (JwtInvalidException e) {
             fail("Should not throw exception: " + e.getMessage());
         }
 
@@ -468,7 +476,7 @@ public class TokenServiceTest {
                 .thenReturn(System.currentTimeMillis() / 1000 + 604800); // 7 days
         try {
             when(jwtParser.parse(refreshToken)).thenReturn(mockJwt);
-        } catch (Exception e) {
+        } catch (ParseException e) {
             fail("Failed to mock JWT parser");
         }
 
@@ -476,7 +484,7 @@ public class TokenServiceTest {
         NewCookie cookie = null;
         try {
             cookie = tokenService.createStatusCookie(refreshToken, "refreshToken_expiration");
-        } catch (Exception e) {
+        } catch (JwtInvalidException e) {
             fail("Should not throw exception: " + e.getMessage());
         }
 
@@ -541,7 +549,7 @@ public class TokenServiceTest {
         when(jwtParser.parse("test.refresh.token")).thenReturn(mockJwt);
 
         // When - Delete the refresh token
-        tokenService.deleteRefreshToken("test.refresh.token");
+        tokenService.deleteRefreshToken("test.refresh.token", testUser);
 
         // Then - Token should be deleted from database
         assertEquals(0, refreshTokenRepository.count());
@@ -555,7 +563,7 @@ public class TokenServiceTest {
         assertEquals(1, refreshTokenRepository.count());
 
         // When - Delete with null token
-        tokenService.deleteRefreshToken(null);
+        tokenService.deleteRefreshToken(null, testUser);
 
         // Then - Token should still exist
         assertEquals(1, refreshTokenRepository.count());
@@ -569,7 +577,7 @@ public class TokenServiceTest {
         assertEquals(1, refreshTokenRepository.count());
 
         // When - Delete with empty token
-        tokenService.deleteRefreshToken("");
+        tokenService.deleteRefreshToken("", testUser);
 
         // Then - Token should still exist
         assertEquals(1, refreshTokenRepository.count());
@@ -583,11 +591,10 @@ public class TokenServiceTest {
         assertEquals(1, refreshTokenRepository.count());
 
         // Mock parser to throw exception for invalid token
-        when(jwtParser.parse("invalid.token.format"))
-                .thenThrow(new RuntimeException("Invalid JWT"));
+        when(jwtParser.parse("invalid.token.format")).thenThrow(new ParseException("Invalid JWT"));
 
         // When - Delete with invalid token (should not throw exception)
-        tokenService.deleteRefreshToken("invalid.token.format");
+        tokenService.deleteRefreshToken("invalid.token.format", testUser);
 
         // Then - Original token should still exist
         assertEquals(1, refreshTokenRepository.count());
@@ -606,7 +613,7 @@ public class TokenServiceTest {
         when(jwtParser.parse("fake.token.jwt")).thenReturn(mockJwt);
 
         // When - Delete the non-existent token
-        tokenService.deleteRefreshToken("fake.token.jwt");
+        tokenService.deleteRefreshToken("fake.token.jwt", testUser);
 
         // Then - Original token should still exist
         assertEquals(1, refreshTokenRepository.count());
@@ -616,9 +623,9 @@ public class TokenServiceTest {
     @Transactional
     void testDeleteRefreshToken_OnlyDeletesSpecifiedToken() throws Exception {
         // Given - Create multiple tokens in database
-        RefreshToken token1 = createTestRefreshToken("token1", testUser);
+        createTestRefreshToken("token1", testUser);
         RefreshToken token2 = createTestRefreshToken("token2", testUser);
-        RefreshToken token3 = createTestRefreshToken("token3", testUser);
+        createTestRefreshToken("token3", testUser);
 
         assertEquals(3, refreshTokenRepository.count());
 
@@ -628,9 +635,70 @@ public class TokenServiceTest {
         when(jwtParser.parse("test.token2.jwt")).thenReturn(mockJwt);
 
         // When - Delete only the second token
-        tokenService.deleteRefreshToken("test.token2.jwt");
+        tokenService.deleteRefreshToken("test.token2.jwt", testUser);
 
         // Then - Only two tokens should remain
         assertEquals(2, refreshTokenRepository.count());
+    }
+
+    @Test
+    @Transactional
+    void testDeleteRefreshToken_DifferentUserCannotDeleteToken() throws Exception {
+        // Given - Create a token for testUser
+        RefreshToken refreshToken = createTestRefreshToken("test-token", testUser);
+        assertEquals(1, refreshTokenRepository.count());
+
+        // Get a different user
+        User otherUser = userRepository.findById(2L);
+        assertNotNull(otherUser);
+
+        // Mock JWT parser to return the token ID
+        JsonWebToken mockJwt = mock(JsonWebToken.class);
+        when(mockJwt.getClaim("token_id")).thenReturn(refreshToken.id.toString());
+        when(jwtParser.parse("test.refresh.token")).thenReturn(mockJwt);
+
+        // When - Try to delete the token with a different user
+        tokenService.deleteRefreshToken("test.refresh.token", otherUser);
+
+        // Then - Token should still exist (not deleted by different user)
+        assertEquals(1, refreshTokenRepository.count());
+    }
+
+    @Test
+    @Transactional
+    void testDeleteRefreshToken_InvalidTokenIdFormat() throws Exception {
+        // Given - Create a token in database
+        createTestRefreshToken("test-token", testUser);
+        assertEquals(1, refreshTokenRepository.count());
+
+        // Mock JWT parser to return an invalid token_id format
+        JsonWebToken mockJwt = mock(JsonWebToken.class);
+        when(mockJwt.getClaim("token_id")).thenReturn("not-a-number");
+        when(jwtParser.parse("invalid.token.format")).thenReturn(mockJwt);
+
+        // When - Delete with invalid token_id format (should not throw exception)
+        tokenService.deleteRefreshToken("invalid.token.format", testUser);
+
+        // Then - Original token should still exist
+        assertEquals(1, refreshTokenRepository.count());
+    }
+
+    @Test
+    @Transactional
+    void testDeleteRefreshToken_MissingTokenIdClaim() throws Exception {
+        // Given - Create a token in database
+        createTestRefreshToken("test-token", testUser);
+        assertEquals(1, refreshTokenRepository.count());
+
+        // Mock JWT parser to return null for token_id
+        JsonWebToken mockJwt = mock(JsonWebToken.class);
+        when(mockJwt.getClaim("token_id")).thenReturn(null);
+        when(jwtParser.parse("missing.claim.token")).thenReturn(mockJwt);
+
+        // When - Delete with missing token_id claim (should not throw exception)
+        tokenService.deleteRefreshToken("missing.claim.token", testUser);
+
+        // Then - Original token should still exist
+        assertEquals(1, refreshTokenRepository.count());
     }
 }

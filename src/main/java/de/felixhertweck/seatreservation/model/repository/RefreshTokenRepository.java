@@ -35,7 +35,7 @@ public class RefreshTokenRepository implements PanacheRepository<RefreshToken> {
      * @param user the user whose refresh tokens to find
      * @return a list of refresh tokens belonging to the user
      */
-    public List<RefreshToken> findByUser(User user) {
+    public List<RefreshToken> findAllByUser(User user) {
         return list("user", user);
     }
 
@@ -45,7 +45,18 @@ public class RefreshTokenRepository implements PanacheRepository<RefreshToken> {
      * @param user the user whose refresh tokens to delete
      * @return the number of tokens deleted
      */
-    public long deleteByUser(User user) {
+    public long deleteAllByUser(User user) {
         return delete("user", user);
+    }
+
+    /**
+     * Delete a refresh token by its ID and user if it exists.
+     *
+     * @param id the ID of the refresh token to delete
+     * @param user the user who owns the refresh token
+     * @return true if the token was deleted, false otherwise
+     */
+    public boolean deleteWithIdAndUser(Long id, User user) {
+        return delete("id = ?1 and user = ?2", id, user) > 0;
     }
 }

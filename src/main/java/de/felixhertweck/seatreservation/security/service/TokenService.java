@@ -275,7 +275,7 @@ public class TokenService {
      */
     @Transactional
     public void logoutAllDevices(User user) {
-        refreshTokenRepository.deleteByUser(user);
+        refreshTokenRepository.deleteAllByUser(user);
         LOG.debugf("All refresh tokens for user %s have been deleted.", user.getUsername());
     }
 
@@ -283,10 +283,21 @@ public class TokenService {
      * Deletes a specific refresh token from the database. This method handles errors gracefully and
      * will not throw exceptions, allowing logout to proceed even if the token is invalid.
      *
+     * <p><strong>Requirements for successful deletion:</strong>
+     *
+     * <ul>
+     *   <li>The refreshToken must be a valid JWT with a token_id claim
+     *   <li>The refreshToken must match the user provided (same user association)
+     * </ul>
+     *
+     * <p>If these requirements are not met, the method logs a warning but does not throw an
+     * exception, ensuring the logout operation completes successfully.
+     *
      * @param refreshToken the refresh token JWT to delete
+     * @param user the user associated with the refresh token
      */
     @Transactional
-    public void deleteRefreshToken(String refreshToken) {
+    public void deleteRefreshToken(String refreshToken, User user) {
         if (refreshToken == null || refreshToken.isEmpty()) {
             LOG.debugf("No refresh token provided to delete");
             return;
@@ -301,28 +312,18 @@ public class TokenService {
                 return;
             }
 
-            Long tokenId;
-            try {
-                tokenId = Long.valueOf(tokenIdClaim.toString());
-            } catch (NumberFormatException e) {
-                LOG.warnf("Invalid token_id format: %s", tokenIdClaim);
-                return;
-            }
+            Long tokenId = Long.valueOf(tokenIdClaim.toString());
 
-            RefreshToken storedToken = refreshTokenRepository.findById(tokenId);
-
-            if (storedToken != null) {
-                refreshTokenRepository.delete(storedToken);
+            boolean deleted = refreshTokenRepository.deleteWithIdAndUser(tokenId, user);
+            if (deleted) {
                 LOG.debugf("Refresh token with id %d has been deleted.", tokenId);
             } else {
                 LOG.debugf("Refresh token with id %d not found in database.", tokenId);
             }
         } catch (ParseException e) {
             LOG.warnf("Failed to parse refresh token: %s", e.getMessage());
-            // Don't throw an exception, as we still want to clear cookies even if token is invalid
-        } catch (Exception e) {
-            LOG.errorf("Unexpected error while deleting refresh token: %s", e.getMessage());
-            // Don't throw an exception, as we still want to clear cookies even if an error occurs
+        } catch (NumberFormatException e) {
+            LOG.warnf("Invalid token_id format: %s", e.getMessage());
         }
     }
 }

@@ -137,9 +137,10 @@ public class AuthResource {
             description = "Logout successful, JWT and refresh token cookies cleared")
     public Response logout(@CookieParam("refreshToken") String refreshToken) {
         LOG.debugf("Received logout request.");
+        User currentUser = userSecurityContext.getCurrentUser();
 
         // Delete the refresh token from database
-        tokenService.deleteRefreshToken(refreshToken);
+        tokenService.deleteRefreshToken(refreshToken, currentUser);
 
         NewCookie jwtAccessCookie = tokenService.createNewNullCookie("jwt", true);
         NewCookie refreshTokenCookie = tokenService.createNewNullCookie("refreshToken", true);
