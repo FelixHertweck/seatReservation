@@ -36,6 +36,7 @@ public class Event extends PanacheEntity {
     private Instant bookingDeadline;
     private Instant bookingStartTime;
     private Instant reminderSendDate;
+    private boolean reminderSent;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private EventLocation event_location;
@@ -128,6 +129,16 @@ public class Event extends PanacheEntity {
 
     public void setReminderSendDate(Instant reminderSendDate) {
         this.reminderSendDate = reminderSendDate;
+        // Reset reminderSent flag when reminder date is changed
+        this.reminderSent = false;
+    }
+
+    public boolean isReminderSent() {
+        return reminderSent;
+    }
+
+    public void setReminderSent(boolean reminderSent) {
+        this.reminderSent = reminderSent;
     }
 
     public EventLocation getEventLocation() {
@@ -173,6 +184,7 @@ public class Event extends PanacheEntity {
                 && Objects.equals(bookingDeadline, event.bookingDeadline)
                 && Objects.equals(bookingStartTime, event.bookingStartTime)
                 && Objects.equals(reminderSendDate, event.reminderSendDate)
+                && reminderSent == event.reminderSent
                 && Objects.equals(event_location, event.event_location)
                 && Objects.equals(userAllowances, event.userAllowances)
                 && Objects.equals(manager, event.manager)
@@ -192,6 +204,7 @@ public class Event extends PanacheEntity {
                 bookingDeadline,
                 bookingStartTime,
                 reminderSendDate,
+                reminderSent,
                 event_location,
                 userAllowances,
                 manager,
@@ -217,6 +230,8 @@ public class Event extends PanacheEntity {
                 + bookingStartTime
                 + ", reminderSendDate="
                 + reminderSendDate
+                + ", reminderSent="
+                + reminderSent
                 + ", event_location="
                 + event_location
                 + ", userAllowances="

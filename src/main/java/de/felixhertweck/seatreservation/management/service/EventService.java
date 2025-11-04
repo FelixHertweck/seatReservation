@@ -328,6 +328,18 @@ public class EventService {
     }
 
     /**
+     * Marks the reminder as sent for the given event.
+     *
+     * @param event The event to mark the reminder as sent
+     */
+    @Transactional
+    public void markReminderAsSent(Event event) {
+        LOG.debugf("Marking reminder as sent for event ID: %d", event.id);
+        event.setReminderSent(true);
+        eventRepository.persist(event);
+    }
+
+    /**
      * Validates event timing constraints.
      *
      * @param dto The event request DTO containing the timing information

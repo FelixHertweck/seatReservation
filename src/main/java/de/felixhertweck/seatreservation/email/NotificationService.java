@@ -49,21 +49,27 @@ public class NotificationService {
 
     @Inject EmailService emailService;
 
-    @Scheduled(cron = "0 0 9 * * ?")
+    @Scheduled(every = "5m")
     public void sendEventReminders() {
         LOG.info("Starting scheduled event reminder task.");
-        LocalDate today = LocalDate.now(ZoneId.systemDefault());
-        Instant startOfToday = today.atStartOfDay(ZoneId.systemDefault()).toInstant();
-        Instant endOfToday =
-                today.atTime(23, 59, 59, 999_999_999).atZone(ZoneId.systemDefault()).toInstant();
+        Instant now = Instant.now();
+        // Check for events with reminder time in the last 5 minutes (to avoid missing any)
+        Instant fiveMinutesAgo = now.minusSeconds(300);
 
-        // Find all events with a reminder date set to today
-        List<Event> eventsWithRemindersToday =
-                eventService.findEventsWithReminderDateBetween(startOfToday, endOfToday);
-        LOG.debugf(
-                "Found %d events with reminders to send today.", eventsWithRemindersToday.size());
+        // Find all events with a reminder date set to the current time window
+        List<Event> eventsWithReminders =
+                eventService.findEventsWithReminderDateBetween(fiveMinutesAgo, now);
+        LOG.debugf("Found %d events with reminders to send now.", eventsWithReminders.size());
 
-        for (Event event : eventsWithRemindersToday) {
+        for (Event event : eventsWithReminders) {
+            // Skip if reminder already sent
+            if (event.isReminderSent()) {
+                LOG.debugf(
+                        "Skipping event %s (ID: %d) - reminder already sent",
+                        event.getName(), event.id);
+                continue;
+            }
+
             LOG.debugf("Processing event: %s (ID: %d)", event.getName(), event.id);
             List<Reservation> reservations = reservationService.findByEvent(event);
             LOG.debugf("Found %d reservations for event %s.", reservations.size(), event.getName());
@@ -87,6 +93,10 @@ public class NotificationService {
                                     e.getMessage());
                         }
                     });
+
+            // Mark reminder as sent
+            eventService.markReminderAsSent(event);
+            LOG.debugf("Marked reminder as sent for event: %s (ID: %d)", event.getName(), event.id);
         }
         LOG.info("Finished scheduled event reminder task.");
     }
