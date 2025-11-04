@@ -87,6 +87,7 @@ public class EventService {
                         dto.getBookingStartTime(),
                         location,
                         manager);
+        event.setReminderSendDate(dto.getReminderSendDate());
         eventRepository.persist(event);
         LOG.infof("Event '%s' (ID: %d) created successfully.", event.getName(), event.getId());
         LOG.debugf(
@@ -172,6 +173,7 @@ public class EventService {
         event.setEndTime(dto.getEndTime());
         event.setBookingStartTime(dto.getBookingStartTime());
         event.setBookingDeadline(dto.getBookingDeadline());
+        event.setReminderSendDate(dto.getReminderSendDate());
         event.setEventLocation(location);
         eventRepository.persist(event);
         LOG.infof("Event '%s' (ID: %d) updated successfully", event.getName(), event.getId());
@@ -190,6 +192,18 @@ public class EventService {
      */
     public List<Event> findEventsBetweenDates(Instant start, Instant end) {
         return eventRepository.find("startTime BETWEEN ?1 AND ?2", start, end).list();
+    }
+
+    /**
+     * Retrieves a list of Events that have a reminder send date between the specified start and end
+     * times.
+     *
+     * @param start The start time of the period to search for reminder dates.
+     * @param end The end time of the period to search for reminder dates.
+     * @return A list of Events that have a reminder send date within the specified time range.
+     */
+    public List<Event> findEventsWithReminderDateBetween(Instant start, Instant end) {
+        return eventRepository.find("reminderSendDate BETWEEN ?1 AND ?2", start, end).list();
     }
 
     /**

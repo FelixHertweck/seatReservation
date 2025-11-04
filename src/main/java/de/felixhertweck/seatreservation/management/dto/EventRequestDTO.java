@@ -44,6 +44,8 @@ public class EventRequestDTO {
     @NotNull(message = "Booking start time must not be null")
     private Instant bookingStartTime;
 
+    private Instant reminderSendDate;
+
     @NotNull(message = "EventLocation ID must not be null")
     private Long eventLocationId;
 
@@ -97,6 +99,14 @@ public class EventRequestDTO {
 
     public void setBookingStartTime(Instant bookingStartTime) {
         this.bookingStartTime = bookingStartTime;
+    }
+
+    public Instant getReminderSendDate() {
+        return reminderSendDate;
+    }
+
+    public void setReminderSendDate(Instant reminderSendDate) {
+        this.reminderSendDate = reminderSendDate;
     }
 
     public void setEventLocationId(Long eventLocationId) {

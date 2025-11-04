@@ -35,6 +35,7 @@ public class Event extends PanacheEntity {
     private Instant endTime;
     private Instant bookingDeadline;
     private Instant bookingStartTime;
+    private Instant reminderSendDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private EventLocation event_location;
@@ -71,6 +72,7 @@ public class Event extends PanacheEntity {
         this.bookingStartTime = bookingStartTime;
         this.event_location = location;
         this.manager = manager;
+        this.reminderSendDate = null; // Will be set explicitly if needed
     }
 
     public String getName() {
@@ -121,6 +123,14 @@ public class Event extends PanacheEntity {
         this.bookingStartTime = bookingStartTime;
     }
 
+    public Instant getReminderSendDate() {
+        return reminderSendDate;
+    }
+
+    public void setReminderSendDate(Instant reminderSendDate) {
+        this.reminderSendDate = reminderSendDate;
+    }
+
     public EventLocation getEventLocation() {
         return event_location;
     }
@@ -163,6 +173,7 @@ public class Event extends PanacheEntity {
                 && Objects.equals(endTime, event.endTime)
                 && Objects.equals(bookingDeadline, event.bookingDeadline)
                 && Objects.equals(bookingStartTime, event.bookingStartTime)
+                && Objects.equals(reminderSendDate, event.reminderSendDate)
                 && Objects.equals(event_location, event.event_location)
                 && Objects.equals(userAllowances, event.userAllowances)
                 && Objects.equals(manager, event.manager)
@@ -181,6 +192,7 @@ public class Event extends PanacheEntity {
                 endTime,
                 bookingDeadline,
                 bookingStartTime,
+                reminderSendDate,
                 event_location,
                 userAllowances,
                 manager,
@@ -204,6 +216,8 @@ public class Event extends PanacheEntity {
                 + bookingDeadline
                 + ", bookingStartTime="
                 + bookingStartTime
+                + ", reminderSendDate="
+                + reminderSendDate
                 + ", event_location="
                 + event_location
                 + ", userAllowances="

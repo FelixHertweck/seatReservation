@@ -86,27 +86,25 @@ class NotificationServiceTest {
     @Test
     void sendEventReminders_WithEventsAndReservations_SendsEmails() {
         // Arrange
-        Instant startOfTomorrow =
-                LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
-        Instant endOfTomorrow =
+        Instant startOfToday = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Instant endOfToday =
                 LocalDate.now()
-                        .plusDays(1)
                         .atTime(23, 59, 59, 999_999_999)
                         .atZone(ZoneId.systemDefault())
                         .toInstant();
 
-        List<Event> eventsTomorrow = List.of(testEvent);
+        List<Event> eventsWithRemindersToday = List.of(testEvent);
         List<Reservation> reservations = List.of(testReservation);
 
-        when(eventService.findEventsBetweenDates(startOfTomorrow, endOfTomorrow))
-                .thenReturn(eventsTomorrow);
+        when(eventService.findEventsWithReminderDateBetween(startOfToday, endOfToday))
+                .thenReturn(eventsWithRemindersToday);
         when(reservationService.findByEvent(testEvent)).thenReturn(reservations);
 
         // Act
         notificationService.sendEventReminders();
 
         // Assert
-        verify(eventService).findEventsBetweenDates(startOfTomorrow, endOfTomorrow);
+        verify(eventService).findEventsWithReminderDateBetween(startOfToday, endOfToday);
         verify(reservationService).findByEvent(testEvent);
         verify(emailService).sendEventReminder(eq(testUser), eq(testEvent), anyList());
     }
@@ -114,23 +112,21 @@ class NotificationServiceTest {
     @Test
     void sendEventReminders_WithNoEvents_DoesNotSendEmails() {
         // Arrange
-        Instant startOfTomorrow =
-                LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
-        Instant endOfTomorrow =
+        Instant startOfToday = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Instant endOfToday =
                 LocalDate.now()
-                        .plusDays(1)
                         .atTime(23, 59, 59, 999_999_999)
                         .atZone(ZoneId.systemDefault())
                         .toInstant();
 
-        when(eventService.findEventsBetweenDates(startOfTomorrow, endOfTomorrow))
+        when(eventService.findEventsWithReminderDateBetween(startOfToday, endOfToday))
                 .thenReturn(List.of());
 
         // Act
         notificationService.sendEventReminders();
 
         // Assert
-        verify(eventService).findEventsBetweenDates(startOfTomorrow, endOfTomorrow);
+        verify(eventService).findEventsWithReminderDateBetween(startOfToday, endOfToday);
         verify(reservationService, never()).findByEvent(any());
         verify(emailService, never()).sendEventReminder(any(), any(), any());
     }
@@ -138,26 +134,24 @@ class NotificationServiceTest {
     @Test
     void sendEventReminders_WithEventsButNoReservations_DoesNotSendEmails() {
         // Arrange
-        Instant startOfTomorrow =
-                LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
-        Instant endOfTomorrow =
+        Instant startOfToday = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Instant endOfToday =
                 LocalDate.now()
-                        .plusDays(1)
                         .atTime(23, 59, 59, 999_999_999)
                         .atZone(ZoneId.systemDefault())
                         .toInstant();
 
-        List<Event> eventsTomorrow = List.of(testEvent);
+        List<Event> eventsWithRemindersToday = List.of(testEvent);
 
-        when(eventService.findEventsBetweenDates(startOfTomorrow, endOfTomorrow))
-                .thenReturn(eventsTomorrow);
+        when(eventService.findEventsWithReminderDateBetween(startOfToday, endOfToday))
+                .thenReturn(eventsWithRemindersToday);
         when(reservationService.findByEvent(testEvent)).thenReturn(List.of());
 
         // Act
         notificationService.sendEventReminders();
 
         // Assert
-        verify(eventService).findEventsBetweenDates(startOfTomorrow, endOfTomorrow);
+        verify(eventService).findEventsWithReminderDateBetween(startOfToday, endOfToday);
         verify(reservationService).findByEvent(testEvent);
         verify(emailService, never()).sendEventReminder(any(), any(), any());
     }
@@ -175,19 +169,17 @@ class NotificationServiceTest {
         secondReservation.setUser(secondUser);
         secondReservation.setEvent(secondEvent);
 
-        Instant startOfTomorrow =
-                LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
-        Instant endOfTomorrow =
+        Instant startOfToday = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Instant endOfToday =
                 LocalDate.now()
-                        .plusDays(1)
                         .atTime(23, 59, 59, 999_999_999)
                         .atZone(ZoneId.systemDefault())
                         .toInstant();
 
-        List<Event> eventsTomorrow = List.of(testEvent, secondEvent);
+        List<Event> eventsWithRemindersToday = List.of(testEvent, secondEvent);
 
-        when(eventService.findEventsBetweenDates(startOfTomorrow, endOfTomorrow))
-                .thenReturn(eventsTomorrow);
+        when(eventService.findEventsWithReminderDateBetween(startOfToday, endOfToday))
+                .thenReturn(eventsWithRemindersToday);
         when(reservationService.findByEvent(testEvent)).thenReturn(List.of(testReservation));
         when(reservationService.findByEvent(secondEvent)).thenReturn(List.of(secondReservation));
 
@@ -195,7 +187,7 @@ class NotificationServiceTest {
         notificationService.sendEventReminders();
 
         // Assert
-        verify(eventService).findEventsBetweenDates(startOfTomorrow, endOfTomorrow);
+        verify(eventService).findEventsWithReminderDateBetween(startOfToday, endOfToday);
         verify(reservationService).findByEvent(testEvent);
         verify(reservationService).findByEvent(secondEvent);
         verify(emailService).sendEventReminder(eq(testUser), eq(testEvent), anyList());
@@ -209,20 +201,18 @@ class NotificationServiceTest {
         secondReservation.setUser(testUser); // Same user, different reservation
         secondReservation.setEvent(testEvent);
 
-        Instant startOfTomorrow =
-                LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
-        Instant endOfTomorrow =
+        Instant startOfToday = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Instant endOfToday =
                 LocalDate.now()
-                        .plusDays(1)
                         .atTime(23, 59, 59, 999_999_999)
                         .atZone(ZoneId.systemDefault())
                         .toInstant();
 
-        List<Event> eventsTomorrow = List.of(testEvent);
+        List<Event> eventsWithRemindersToday = List.of(testEvent);
         List<Reservation> reservations = List.of(testReservation, secondReservation);
 
-        when(eventService.findEventsBetweenDates(startOfTomorrow, endOfTomorrow))
-                .thenReturn(eventsTomorrow);
+        when(eventService.findEventsWithReminderDateBetween(startOfToday, endOfToday))
+                .thenReturn(eventsWithRemindersToday);
         when(reservationService.findByEvent(testEvent)).thenReturn(reservations);
 
         // Act
@@ -248,20 +238,18 @@ class NotificationServiceTest {
         secondReservation.setUser(secondUser);
         secondReservation.setEvent(testEvent);
 
-        Instant startOfTomorrow =
-                LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
-        Instant endOfTomorrow =
+        Instant startOfToday = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Instant endOfToday =
                 LocalDate.now()
-                        .plusDays(1)
                         .atTime(23, 59, 59, 999_999_999)
                         .atZone(ZoneId.systemDefault())
                         .toInstant();
 
-        List<Event> eventsTomorrow = List.of(testEvent);
+        List<Event> eventsWithRemindersToday = List.of(testEvent);
         List<Reservation> reservations = List.of(testReservation, secondReservation);
 
-        when(eventService.findEventsBetweenDates(startOfTomorrow, endOfTomorrow))
-                .thenReturn(eventsTomorrow);
+        when(eventService.findEventsWithReminderDateBetween(startOfToday, endOfToday))
+                .thenReturn(eventsWithRemindersToday);
         when(reservationService.findByEvent(testEvent)).thenReturn(reservations);
 
         // First email fails, second should still be attempted
@@ -283,20 +271,18 @@ class NotificationServiceTest {
         // Arrange
         testUser.setEmail(null);
 
-        Instant startOfTomorrow =
-                LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
-        Instant endOfTomorrow =
+        Instant startOfToday = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Instant endOfToday =
                 LocalDate.now()
-                        .plusDays(1)
                         .atTime(23, 59, 59, 999_999_999)
                         .atZone(ZoneId.systemDefault())
                         .toInstant();
 
-        List<Event> eventsTomorrow = List.of(testEvent);
+        List<Event> eventsWithRemindersToday = List.of(testEvent);
         List<Reservation> reservations = List.of(testReservation);
 
-        when(eventService.findEventsBetweenDates(startOfTomorrow, endOfTomorrow))
-                .thenReturn(eventsTomorrow);
+        when(eventService.findEventsWithReminderDateBetween(startOfToday, endOfToday))
+                .thenReturn(eventsWithRemindersToday);
         when(reservationService.findByEvent(testEvent)).thenReturn(reservations);
 
         // Act
@@ -309,43 +295,39 @@ class NotificationServiceTest {
     @Test
     void sendEventReminders_CalculatesCorrectDateRange() {
         // Arrange
-        Instant expectedStart =
-                LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Instant expectedStart = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant();
         Instant expectedEnd =
                 LocalDate.now()
-                        .plusDays(1)
                         .atTime(23, 59, 59, 999_999_999)
                         .atZone(ZoneId.systemDefault())
                         .toInstant();
 
-        when(eventService.findEventsBetweenDates(any(), any())).thenReturn(List.of());
+        when(eventService.findEventsWithReminderDateBetween(any(), any())).thenReturn(List.of());
 
         // Act
         notificationService.sendEventReminders();
 
         // Assert
-        verify(eventService).findEventsBetweenDates(expectedStart, expectedEnd);
+        verify(eventService).findEventsWithReminderDateBetween(expectedStart, expectedEnd);
     }
 
     @Test
     void sendEventReminders_WithServiceException_HandlesGracefully() {
         // Arrange
-        Instant startOfTomorrow =
-                LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
-        Instant endOfTomorrow =
+        Instant startOfToday = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Instant endOfToday =
                 LocalDate.now()
-                        .plusDays(1)
                         .atTime(23, 59, 59, 999_999_999)
                         .atZone(ZoneId.systemDefault())
                         .toInstant();
 
-        when(eventService.findEventsBetweenDates(startOfTomorrow, endOfTomorrow))
+        when(eventService.findEventsWithReminderDateBetween(startOfToday, endOfToday))
                 .thenThrow(new RuntimeException("Database connection failed"));
 
         // Act & Assert
         assertThrows(RuntimeException.class, () -> notificationService.sendEventReminders());
 
-        verify(eventService).findEventsBetweenDates(startOfTomorrow, endOfTomorrow);
+        verify(eventService).findEventsWithReminderDateBetween(startOfToday, endOfToday);
         verify(reservationService, never()).findByEvent(any());
         verify(emailService, never()).sendEventReminder(any(), any(), any());
     }

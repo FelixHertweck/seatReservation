@@ -52,16 +52,18 @@ public class NotificationService {
     @Scheduled(cron = "0 0 9 * * ?")
     public void sendEventReminders() {
         LOG.info("Starting scheduled event reminder task.");
-        LocalDate tomorrow = LocalDate.now(ZoneId.systemDefault()).plusDays(1);
-        Instant startOfTomorrow = tomorrow.atStartOfDay(ZoneId.systemDefault()).toInstant();
-        Instant endOfTomorrow =
-                tomorrow.atTime(23, 59, 59, 999_999_999).atZone(ZoneId.systemDefault()).toInstant();
+        LocalDate today = LocalDate.now(ZoneId.systemDefault());
+        Instant startOfToday = today.atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Instant endOfToday =
+                today.atTime(23, 59, 59, 999_999_999).atZone(ZoneId.systemDefault()).toInstant();
 
-        List<Event> eventsTomorrow =
-                eventService.findEventsBetweenDates(startOfTomorrow, endOfTomorrow);
-        LOG.debugf("Found %d events for tomorrow.", eventsTomorrow.size());
+        // Find all events with a reminder date set to today
+        List<Event> eventsWithRemindersToday =
+                eventService.findEventsWithReminderDateBetween(startOfToday, endOfToday);
+        LOG.debugf(
+                "Found %d events with reminders to send today.", eventsWithRemindersToday.size());
 
-        for (Event event : eventsTomorrow) {
+        for (Event event : eventsWithRemindersToday) {
             LOG.debugf("Processing event: %s (ID: %d)", event.getName(), event.id);
             List<Reservation> reservations = reservationService.findByEvent(event);
             LOG.debugf("Found %d reservations for event %s.", reservations.size(), event.getName());
