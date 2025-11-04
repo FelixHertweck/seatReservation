@@ -115,14 +115,17 @@ public class ReservationResource {
                                     @Schema(
                                             type = SchemaType.ARRAY,
                                             implementation = UserReservationResponseDTO.class)))
+    @APIResponse(
+            responseCode = "400",
+            description =
+                    "Bad Request: Invalid input or event not bookable or reservation limit reached"
+                            + " or user email not verified")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
             description = "Forbidden: Only authenticated users can access this resource")
     @APIResponse(responseCode = "404", description = "Not Found: Event or seat not found")
-    @APIResponse(
-            responseCode = "409",
-            description = "Conflict: Seat already reserved or event booking closed")
+    @APIResponse(responseCode = "409", description = "Conflict: Seat already reserved")
     public List<UserReservationResponseDTO> createReservation(
             @Valid UserReservationsRequestDTO dto) {
         User currentUser = userSecurityContext.getCurrentUser();
@@ -139,13 +142,17 @@ public class ReservationResource {
 
     @DELETE
     @APIResponse(responseCode = "204", description = "No Content")
+    @APIResponse(responseCode = "400", description = "Bad Request: Invalid input")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
-            description = "Forbidden: Only authenticated users can access this resource")
+            description = "Forbidden: User not authorized to delete reservation")
     @APIResponse(
             responseCode = "404",
-            description = "Not Found: Reservation with specified ID not found for the current user")
+            description = "Not Found: Reservation with specified ID not found")
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error: Error sending email or database error")
     public void deleteReservation(@QueryParam("ids") List<Long> ids)
             throws PersistenceException,
                     ReservationNotFoundException,

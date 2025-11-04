@@ -99,6 +99,8 @@ public class AuthResource {
     @Path("/register")
     @PermitAll
     @APIResponse(responseCode = "200", description = "Registration successful, JWT cookie set")
+    @APIResponse(responseCode = "400", description = "Bad Request: Invalid user data")
+    @APIResponse(responseCode = "403", description = "Forbidden: Registration is disabled")
     @APIResponse(
             responseCode = "409",
             description = "Conflict: User with this username already exists")
@@ -135,6 +137,10 @@ public class AuthResource {
     @APIResponse(
             responseCode = "200",
             description = "Logout successful, JWT and refresh token cookies cleared")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only authenticated users can access this resource")
     public Response logout(@CookieParam("refreshToken") String refreshToken) {
         LOG.debugf("Received logout request.");
         User currentUser = userSecurityContext.getCurrentUser();
@@ -158,6 +164,11 @@ public class AuthResource {
     @POST
     @Path("/logoutAllDevices")
     @RolesAllowed({"USER", "ADMIN", "MANAGER"})
+    @APIResponse(responseCode = "200", description = "Logout from all devices successful")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only authenticated users can access this resource")
     public Response logoutAllDevices() {
         LOG.debugf("Received logout all devices request.");
 

@@ -60,10 +60,14 @@ public class UserResource {
     @Path("/admin/import")
     @RolesAllowed(Roles.ADMIN)
     @APIResponse(responseCode = "200", description = "Users imported successfully")
+    @APIResponse(responseCode = "400", description = "Bad Request: Invalid user data")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
             description = "Forbidden: Only ADMIN role can access this resource")
+    @APIResponse(
+            responseCode = "409",
+            description = "Conflict: User with this username already exists")
     public Set<UserDTO> importUsers(@Valid Set<AdminUserCreationDto> userCreationDTOs) {
         LOG.debugf(
                 "Received POST request to /api/users/admin/import for %d users.",
@@ -76,6 +80,7 @@ public class UserResource {
     @Path("/admin")
     @RolesAllowed(Roles.ADMIN)
     @APIResponse(responseCode = "201", description = "User created successfully")
+    @APIResponse(responseCode = "400", description = "Bad Request: Invalid user data")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
@@ -100,6 +105,7 @@ public class UserResource {
     @Path("/admin/{id}")
     @RolesAllowed(Roles.ADMIN)
     @APIResponse(responseCode = "200", description = "User updated successfully")
+    @APIResponse(responseCode = "400", description = "Bad Request: Invalid user data")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
@@ -185,10 +191,12 @@ public class UserResource {
     @Path("/me")
     @RolesAllowed({Roles.USER, Roles.MANAGER, Roles.ADMIN})
     @APIResponse(responseCode = "200", description = "User profile updated successfully")
+    @APIResponse(responseCode = "400", description = "Bad Request: Invalid user data")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
             description = "Forbidden: Only authenticated users can access this resource")
+    @APIResponse(responseCode = "404", description = "Not Found: User not found")
     @APIResponse(
             responseCode = "409",
             description = "Conflict: User with this username already exists")
