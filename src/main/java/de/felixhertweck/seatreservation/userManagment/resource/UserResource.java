@@ -114,6 +114,9 @@ public class UserResource {
     @APIResponse(
             responseCode = "409",
             description = "Conflict: User with this username already exists")
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error: Error sending email confirmation")
     public UserDTO updateUser(@PathParam("id") Long id, @Valid AdminUserUpdateDTO user) {
         LOG.debugf("Received PUT request to /api/users/admin/%d for user update.", id);
         UserDTO updatedUser = userService.updateUser(id, user);
@@ -200,6 +203,9 @@ public class UserResource {
     @APIResponse(
             responseCode = "409",
             description = "Conflict: User with this username already exists")
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error: Error sending email confirmation")
     public UserDTO updateCurrentUserProfile(@Valid UserProfileUpdateDTO userProfileUpdateDTO) {
         String username = securityContext.getUserPrincipal().getName();
         LOG.debugf(
