@@ -143,6 +143,7 @@ public class ReservationResource {
                                     @Schema(
                                             type = SchemaType.ARRAY,
                                             implementation = ReservationResponseDTO.class)))
+    @APIResponse(responseCode = "400", description = "Bad Request: Invalid input")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
@@ -165,6 +166,7 @@ public class ReservationResource {
 
     @DELETE
     @APIResponse(responseCode = "204", description = "Reservation deleted successfully")
+    @APIResponse(responseCode = "400", description = "Bad Request: Invalid input")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
@@ -195,6 +197,7 @@ public class ReservationResource {
                                     @Schema(
                                             type = SchemaType.ARRAY,
                                             implementation = ReservationResponseDTO.class)))
+    @APIResponse(responseCode = "400", description = "Bad Request: Invalid input")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",

@@ -144,6 +144,7 @@ public class EventResource {
 
     @DELETE
     @APIResponse(responseCode = "204", description = "Event deleted")
+    @APIResponse(responseCode = "400", description = "Bad Request: Invalid input")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
