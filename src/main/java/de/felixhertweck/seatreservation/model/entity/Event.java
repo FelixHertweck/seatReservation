@@ -72,7 +72,6 @@ public class Event extends PanacheEntity {
         this.bookingStartTime = bookingStartTime;
         this.event_location = location;
         this.manager = manager;
-        this.reminderSendDate = null; // Will be set explicitly if needed
     }
 
     public String getName() {
