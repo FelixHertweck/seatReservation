@@ -152,7 +152,7 @@ public class ReservationResource {
             description = "Not Found: Reservation with specified ID not found")
     @APIResponse(
             responseCode = "500",
-            description = "Internal Server Error: Error sending email or database error")
+            description = "Internal Server Error: Database persistence error")
     public void deleteReservation(@QueryParam("ids") List<Long> ids)
             throws PersistenceException,
                     ReservationNotFoundException,

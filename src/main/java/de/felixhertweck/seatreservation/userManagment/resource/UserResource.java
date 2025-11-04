@@ -67,7 +67,8 @@ public class UserResource {
             description = "Forbidden: Only ADMIN role can access this resource")
     @APIResponse(
             responseCode = "409",
-            description = "Conflict: User with this username already exists")
+            description =
+                    "Conflict: One or more users in the batch have a conflicting username or email")
     public Set<UserDTO> importUsers(@Valid Set<AdminUserCreationDto> userCreationDTOs) {
         LOG.debugf(
                 "Received POST request to /api/users/admin/import for %d users.",
