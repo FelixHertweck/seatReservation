@@ -27,6 +27,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
+import de.felixhertweck.seatreservation.email.NotificationService;
 import de.felixhertweck.seatreservation.management.dto.EventRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventResponseDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;
@@ -45,6 +46,8 @@ public class EventService {
     @Inject EventRepository eventRepository;
 
     @Inject EventLocationRepository eventLocationRepository;
+
+    @Inject NotificationService notificationService;
 
     /**
      * Creates a new Event and assigns the currently authenticated manager as its creator. Access
@@ -93,6 +96,12 @@ public class EventService {
         LOG.debugf(
                 "Event '%s' (ID: %d) created successfully by manager: %s (ID: %d)",
                 event.getName(), event.getId(), manager.getUsername(), manager.getId());
+
+        // Schedule reminder if reminder date is set
+        if (event.getReminderSendDate() != null) {
+            notificationService.scheduleEventReminder(event);
+        }
+
         return new EventResponseDTO(event);
     }
 
@@ -180,6 +189,15 @@ public class EventService {
         LOG.debugf(
                 "Event '%s' (ID: %d) updated successfully by manager: %s (ID: %d)",
                 event.getName(), event.getId(), manager.getUsername(), manager.getId());
+
+        // Reschedule reminder when event is updated
+        if (event.getReminderSendDate() != null) {
+            notificationService.scheduleEventReminder(event);
+        } else {
+            // Cancel reminder if reminder date was removed
+            notificationService.cancelEventReminder(event.getId());
+        }
+
         return new EventResponseDTO(event);
     }
 
@@ -285,6 +303,17 @@ public class EventService {
                     event.getName(), event.getId(), currentUser.getUsername(), currentUser.getId());
         }
         LOG.infof("Events '%s' deleted successfully", ids);
+    }
+
+    /**
+     * Finds an event by its ID without access control checks.
+     *
+     * @param id The ID of the event
+     * @return The event if found, null otherwise
+     */
+    public Event findById(Long id) {
+        LOG.debugf("Attempting to find event by ID: %d", id);
+        return eventRepository.findByIdOptional(id).orElse(null);
     }
 
     private Event getEventById(Long id) throws EventNotFoundException {

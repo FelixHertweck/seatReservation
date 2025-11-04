@@ -20,12 +20,17 @@
 package de.felixhertweck.seatreservation.email;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -36,6 +41,7 @@ import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.User;
 import io.quarkus.scheduler.Scheduled;
+import io.quarkus.scheduler.Scheduler;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
@@ -49,30 +55,98 @@ public class NotificationService {
 
     @Inject EmailService emailService;
 
-    @Scheduled(every = "5m")
-    public void sendEventReminders() {
-        LOG.info("Starting scheduled event reminder task.");
+    @Inject Scheduler scheduler;
+
+    private ExecutorService executorService;
+
+    @PostConstruct
+    void init() {
+        executorService = Executors.newThreadPerTaskExecutor(Executors.defaultThreadFactory());
+    }
+
+    @PreDestroy
+    void destroy() {
+        executorService.shutdown();
+    }
+
+    /**
+     * Schedules a reminder job for the given event.
+     *
+     * @param event The event for which to schedule a reminder
+     */
+    public void scheduleEventReminder(Event event) {
+        if (event.getReminderSendDate() == null) {
+            LOG.debugf(
+                    "No reminder date set for event %s (ID: %d), skipping",
+                    event.getName(), event.id);
+            return;
+        }
+
+        // Cancel existing job if any
+        String jobId = "reminder-event-" + event.id;
+        scheduler.unscheduleJob(jobId);
+
+        // Calculate delay until reminder should be sent
         Instant now = Instant.now();
-        // Check for events with reminder time in the last 5 minutes (to avoid missing any)
-        Instant fiveMinutesAgo = now.minusSeconds(300);
+        Instant reminderTime = event.getReminderSendDate();
 
-        // Find all events with a reminder date set to the current time window
-        List<Event> eventsWithReminders =
-                eventService.findEventsWithReminderDateBetween(fiveMinutesAgo, now);
-        LOG.debugf("Found %d events with reminders to send now.", eventsWithReminders.size());
+        if (reminderTime.isBefore(now)) {
+            LOG.warnf(
+                    "Reminder date %s for event %s (ID: %d) is in the past, skipping",
+                    reminderTime, event.getName(), event.id);
+            return;
+        }
 
-        for (Event event : eventsWithReminders) {
+        long delaySeconds = Duration.between(now, reminderTime).getSeconds();
+
+        LOG.infof(
+                "Scheduling reminder for event %s (ID: %d) at %s (in %d seconds)",
+                event.getName(), event.id, reminderTime, delaySeconds);
+
+        // Schedule the reminder job
+        scheduler
+                .newJob(jobId)
+                .setInterval(delaySeconds + "s")
+                .setTask(
+                        executionContext -> {
+                            executorService.execute(() -> sendReminderForEvent(event.id));
+                        })
+                .schedule();
+    }
+
+    /**
+     * Sends reminder emails for a specific event.
+     *
+     * @param eventId The ID of the event
+     */
+    private void sendReminderForEvent(Long eventId) {
+        try {
+            LOG.infof("Executing reminder task for event ID: %d", eventId);
+
+            // Fetch fresh event data
+            Event event = eventService.findById(eventId);
+            if (event == null) {
+                LOG.warnf("Event with ID %d not found, skipping reminder", eventId);
+                return;
+            }
+
             // Skip if reminder already sent
             if (event.isReminderSent()) {
                 LOG.debugf(
                         "Skipping event %s (ID: %d) - reminder already sent",
                         event.getName(), event.id);
-                continue;
+                return;
             }
 
             LOG.debugf("Processing event: %s (ID: %d)", event.getName(), event.id);
             List<Reservation> reservations = reservationService.findByEvent(event);
             LOG.debugf("Found %d reservations for event %s.", reservations.size(), event.getName());
+
+            if (reservations.isEmpty()) {
+                LOG.debugf("No reservations for event %s, skipping reminder", event.getName());
+                eventService.markReminderAsSent(event);
+                return;
+            }
 
             Map<User, List<Reservation>> reservationsByUser =
                     reservations.stream().collect(Collectors.groupingBy(Reservation::getUser));
@@ -96,9 +170,21 @@ public class NotificationService {
 
             // Mark reminder as sent
             eventService.markReminderAsSent(event);
-            LOG.debugf("Marked reminder as sent for event: %s (ID: %d)", event.getName(), event.id);
+            LOG.infof("Reminder sent and marked for event: %s (ID: %d)", event.getName(), event.id);
+        } catch (Exception e) {
+            LOG.errorf(e, "Error processing reminder for event ID: %d", eventId);
         }
-        LOG.info("Finished scheduled event reminder task.");
+    }
+
+    /**
+     * Cancels the scheduled reminder for an event.
+     *
+     * @param eventId The ID of the event
+     */
+    public void cancelEventReminder(Long eventId) {
+        String jobId = "reminder-event-" + eventId;
+        scheduler.unscheduleJob(jobId);
+        LOG.debugf("Cancelled reminder job for event ID: %d", eventId);
     }
 
     @Scheduled(cron = "0 0 8 * * ?")
