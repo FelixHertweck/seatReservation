@@ -629,4 +629,90 @@ public class EventServiceTest {
                         eventReservationAllowanceService.getReservationAllowanceById(
                                 99L, managerUser));
     }
+
+    @Test
+    void createEvent_WithReminderSendDate_Success() {
+        EventRequestDTO dto = new EventRequestDTO();
+        dto.setName("Event with Reminder");
+        dto.setDescription("Event Description");
+        Instant eventStart = Instant.now().plusSeconds(Duration.ofDays(5).toSeconds());
+        Instant reminderDate = Instant.now().plusSeconds(Duration.ofDays(4).toSeconds());
+        dto.setStartTime(eventStart);
+        dto.setEndTime(Instant.now().plusSeconds(Duration.ofDays(6).toSeconds()));
+        dto.setBookingStartTime(Instant.now().plusSeconds(Duration.ofDays(3).toSeconds()));
+        dto.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(4).toSeconds()));
+        dto.setReminderSendDate(reminderDate);
+        dto.setEventLocationId(eventLocation.id);
+
+        when(eventLocationRepository.findByIdOptional(eventLocation.id))
+                .thenReturn(Optional.of(eventLocation));
+        doAnswer(
+                        invocation -> {
+                            Event event = invocation.getArgument(0);
+                            event.id = 10L;
+                            return null;
+                        })
+                .when(eventRepository)
+                .persist(any(Event.class));
+
+        EventResponseDTO createdEvent = eventService.createEvent(dto, managerUser);
+
+        assertNotNull(createdEvent);
+        assertEquals("Event with Reminder", createdEvent.name());
+        assertEquals(reminderDate, createdEvent.reminderSendDate());
+        verify(eventRepository, times(1)).persist(any(Event.class));
+    }
+
+    @Test
+    void updateEvent_WithReminderSendDate_Success() throws Exception {
+        Instant newReminderDate = Instant.now().plusSeconds(Duration.ofDays(3).toSeconds());
+        EventRequestDTO dto = new EventRequestDTO();
+        dto.setName("Updated Event");
+        dto.setDescription("Updated Description");
+        dto.setStartTime(Instant.now().plusSeconds(Duration.ofDays(5).toSeconds()));
+        dto.setEndTime(Instant.now().plusSeconds(Duration.ofDays(6).toSeconds()));
+        dto.setBookingStartTime(Instant.now().plusSeconds(Duration.ofDays(2).toSeconds()));
+        dto.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(4).toSeconds()));
+        dto.setReminderSendDate(newReminderDate);
+        dto.setEventLocationId(eventLocation.id);
+
+        when(eventRepository.findByIdOptional(existingEvent.id))
+                .thenReturn(Optional.of(existingEvent));
+        when(eventLocationRepository.findByIdOptional(eventLocation.id))
+                .thenReturn(Optional.of(eventLocation));
+
+        EventResponseDTO updatedEvent =
+                eventService.updateEvent(existingEvent.id, dto, managerUser);
+
+        assertNotNull(updatedEvent);
+        assertEquals("Updated Event", updatedEvent.name());
+        assertEquals(newReminderDate, updatedEvent.reminderSendDate());
+        verify(eventRepository, times(1)).persist(any(Event.class));
+    }
+
+    @Test
+    void findEventsWithReminderDateBetween_Success() {
+        Instant start = Instant.now();
+        Instant end = Instant.now().plusSeconds(Duration.ofDays(1).toSeconds());
+
+        Event event1 = new Event();
+        event1.setName("Event 1");
+        event1.setReminderSendDate(start.plusSeconds(3600)); // 1 hour after start
+
+        Event event2 = new Event();
+        event2.setName("Event 2");
+        event2.setReminderSendDate(start.plusSeconds(7200)); // 2 hours after start
+
+        when(eventRepository.find("reminderSendDate BETWEEN ?1 AND ?2", start, end))
+                .thenReturn(mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class));
+        when(eventRepository.find("reminderSendDate BETWEEN ?1 AND ?2", start, end).list())
+                .thenReturn(List.of(event1, event2));
+
+        List<Event> events = eventService.findEventsWithReminderDateBetween(start, end);
+
+        assertNotNull(events);
+        assertEquals(2, events.size());
+        assertTrue(events.stream().anyMatch(e -> "Event 1".equals(e.getName())));
+        assertTrue(events.stream().anyMatch(e -> "Event 2".equals(e.getName())));
+    }
 }
