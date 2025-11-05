@@ -28,6 +28,12 @@ import io.quarkus.hibernate.orm.panache.PanacheRepository;
 
 @ApplicationScoped
 public class EventLocationRepository implements PanacheRepository<EventLocation> {
+    /**
+     * Finds all event locations managed by a specific user.
+     *
+     * @param manager the manager user to search for
+     * @return a list of event locations managed by the specified user
+     */
     public List<EventLocation> findByManager(User manager) {
         return find("manager", manager).list();
     }

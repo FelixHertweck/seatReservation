@@ -19,11 +19,26 @@
  */
 package de.felixhertweck.seatreservation.security.exceptions;
 
+/**
+ * Exception thrown when user authentication fails. This is a runtime exception that indicates
+ * invalid credentials or authentication issues.
+ */
 public class AuthenticationFailedException extends RuntimeException {
+    /**
+     * Constructs an AuthenticationFailedException with the specified detail message.
+     *
+     * @param message the detail message
+     */
     public AuthenticationFailedException(String message) {
         super(message);
     }
 
+    /**
+     * Constructs an AuthenticationFailedException with the specified detail message and cause.
+     *
+     * @param message the detail message
+     * @param cause the cause of the exception
+     */
     public AuthenticationFailedException(String message, Throwable cause) {
         super(message, cause);
     }

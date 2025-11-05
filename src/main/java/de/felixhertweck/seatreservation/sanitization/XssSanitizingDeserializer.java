@@ -34,6 +34,15 @@ public class XssSanitizingDeserializer extends JsonDeserializer<String>
 
     private static final Logger LOG = Logger.getLogger(XssSanitizingDeserializer.class);
 
+    /**
+     * Deserializes a string value from JSON and applies XSS sanitization. The sanitization can be
+     * skipped if the field is marked with @NoHtmlSanitize.
+     *
+     * @param p the JSON parser
+     * @param ctxt the deserialization context
+     * @return the sanitized string value
+     * @throws IOException if an I/O error occurs during parsing
+     */
     @Override
     public String deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         String value = StringDeserializer.instance.deserialize(p, ctxt);
@@ -51,6 +60,15 @@ public class XssSanitizingDeserializer extends JsonDeserializer<String>
         return sanitizedValue;
     }
 
+    /**
+     * Creates a contextual deserializer instance for a specific bean property. If the property is
+     * annotated with @NoHtmlSanitize, returns the default StringDeserializer to skip sanitization.
+     * Otherwise, returns this sanitizing deserializer instance.
+     *
+     * @param ctxt the deserialization context
+     * @param property the bean property being deserialized
+     * @return a JsonDeserializer for String values, either sanitizing or standard
+     */
     @Override
     public JsonDeserializer<?> createContextual(
             DeserializationContext ctxt, BeanProperty property) {

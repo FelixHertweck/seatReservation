@@ -21,9 +21,17 @@ package de.felixhertweck.seatreservation.utils;
 
 import java.util.UUID;
 
+/**
+ * Utility class for generating random UUID strings. Provides methods to generate random UUID-based
+ * strings for various purposes.
+ */
 public class RandomUUIDString {
+    /**
+     * Generates a random UUID string.
+     *
+     * @return a random UUID string
+     */
     public static String generate() {
-        UUID randomUUID = UUID.randomUUID();
-        return randomUUID.toString().replaceAll("_", "");
+        return UUID.randomUUID().toString();
     }
 }

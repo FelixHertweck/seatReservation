@@ -19,7 +19,16 @@
  */
 package de.felixhertweck.seatreservation.userManagment.exceptions;
 
+/**
+ * Exception thrown when an error occurs while sending an email. This is a runtime exception that
+ * indicates email sending failures.
+ */
 public class SendEmailException extends RuntimeException {
+    /**
+     * Constructs a SendEmailException with the specified detail message.
+     *
+     * @param message the detail message
+     */
     public SendEmailException(String message) {
         super(message);
     }

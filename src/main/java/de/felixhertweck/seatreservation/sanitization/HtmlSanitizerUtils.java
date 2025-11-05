@@ -34,6 +34,12 @@ public class HtmlSanitizerUtils {
         // Private constructor to prevent instantiation
     }
 
+    /**
+     * Sanitizes the provided HTML string by removing potentially dangerous elements and attributes.
+     *
+     * @param unsafeHtml the HTML string to sanitize
+     * @return the sanitized HTML string, or null if input is null
+     */
     public static String sanitize(String unsafeHtml) {
         LOG.debugf("Attempting to sanitize HTML: %s", unsafeHtml);
         if (unsafeHtml == null) {

@@ -283,11 +283,11 @@ export type PostApiAuthLogoutData = {
 
 export type PostApiAuthLogoutErrors = {
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only authenticated users can access this resource
      */
     403: unknown;
 };
@@ -308,18 +308,18 @@ export type PostApiAuthLogoutAllDevicesData = {
 
 export type PostApiAuthLogoutAllDevicesErrors = {
     /**
-     * Not Authorized
+     * Unauthorized
      */
     401: unknown;
     /**
-     * Not Allowed
+     * Forbidden: Only authenticated users can access this resource
      */
     403: unknown;
 };
 
 export type PostApiAuthLogoutAllDevicesResponses = {
     /**
-     * OK
+     * Logout from all devices successful
      */
     200: unknown;
 };
@@ -354,9 +354,13 @@ export type PostApiAuthRegisterData = {
 
 export type PostApiAuthRegisterErrors = {
     /**
-     * Bad Request
+     * Bad Request: Invalid user data
      */
     400: unknown;
+    /**
+     * Forbidden: Registration is disabled
+     */
+    403: unknown;
     /**
      * Conflict: User with this username already exists
      */
@@ -396,6 +400,10 @@ export type DeleteApiManagerEventlocationsData = {
 };
 
 export type DeleteApiManagerEventlocationsErrors = {
+    /**
+     * Bad Request: Invalid input
+     */
+    400: unknown;
     /**
      * Unauthorized
      */
@@ -609,6 +617,10 @@ export type DeleteApiManagerEventsData = {
 
 export type DeleteApiManagerEventsErrors = {
     /**
+     * Bad Request: Invalid input
+     */
+    400: unknown;
+    /**
      * Unauthorized
      */
     401: unknown;
@@ -781,6 +793,10 @@ export type DeleteApiManagerReservationAllowanceData = {
 };
 
 export type DeleteApiManagerReservationAllowanceErrors = {
+    /**
+     * Bad Request: Invalid input
+     */
+    400: unknown;
     /**
      * Unauthorized
      */
@@ -986,6 +1002,10 @@ export type DeleteApiManagerReservationsData = {
 
 export type DeleteApiManagerReservationsErrors = {
     /**
+     * Bad Request: Invalid input
+     */
+    400: unknown;
+    /**
      * Unauthorized
      */
     401: unknown;
@@ -1044,7 +1064,7 @@ export type PostApiManagerReservationsData = {
 
 export type PostApiManagerReservationsErrors = {
     /**
-     * Bad Request
+     * Bad Request: Invalid input
      */
     400: unknown;
     /**
@@ -1083,7 +1103,7 @@ export type PostApiManagerReservationsBlockData = {
 
 export type PostApiManagerReservationsBlockErrors = {
     /**
-     * Bad Request
+     * Bad Request: Invalid input
      */
     400: unknown;
     /**
@@ -1261,6 +1281,10 @@ export type DeleteApiManagerSeatsData = {
 };
 
 export type DeleteApiManagerSeatsErrors = {
+    /**
+     * Bad Request: Invalid input
+     */
+    400: unknown;
     /**
      * Unauthorized
      */
@@ -1444,6 +1468,10 @@ export type GetApiUserEventsErrors = {
      * Forbidden: Only authenticated users can access this resource
      */
     403: unknown;
+    /**
+     * Not Found: User not found
+     */
+    404: unknown;
 };
 
 export type GetApiUserEventsResponses = {
@@ -1471,6 +1499,10 @@ export type GetApiUserLocationsErrors = {
      * Forbidden: Only authenticated users can access this resource
      */
     403: unknown;
+    /**
+     * Not Found: User not found
+     */
+    404: unknown;
 };
 
 export type GetApiUserLocationsResponses = {
@@ -1495,11 +1527,15 @@ export type PostApiUserResendEmailConfirmationErrors = {
      */
     401: unknown;
     /**
-     * User not found
+     * Forbidden: User not authenticated
+     */
+    403: unknown;
+    /**
+     * Not Found: User not found
      */
     404: unknown;
     /**
-     * Internal server error
+     * Internal Server Error: Error sending email
      */
     500: unknown;
 };
@@ -1524,17 +1560,25 @@ export type DeleteApiUserReservationsData = {
 
 export type DeleteApiUserReservationsErrors = {
     /**
+     * Bad Request: Invalid input
+     */
+    400: unknown;
+    /**
      * Unauthorized
      */
     401: unknown;
     /**
-     * Forbidden: Only authenticated users can access this resource
+     * Forbidden: User not authorized to delete reservation
      */
     403: unknown;
     /**
-     * Not Found: Reservation with specified ID not found for the current user
+     * Not Found: Reservation with specified ID not found
      */
     404: unknown;
+    /**
+     * Internal Server Error: Database persistence error
+     */
+    500: unknown;
 };
 
 export type DeleteApiUserReservationsResponses = {
@@ -1582,7 +1626,7 @@ export type PostApiUserReservationsData = {
 
 export type PostApiUserReservationsErrors = {
     /**
-     * Bad Request
+     * Bad Request: Invalid input or event not bookable or reservation limit reached or user email not verified
      */
     400: unknown;
     /**
@@ -1598,7 +1642,7 @@ export type PostApiUserReservationsErrors = {
      */
     404: unknown;
     /**
-     * Conflict: Seat already reserved or event booking closed
+     * Conflict: Seat already reserved
      */
     409: unknown;
 };
@@ -1654,11 +1698,11 @@ export type PostApiUserVerifyEmailCodeData = {
 
 export type PostApiUserVerifyEmailCodeErrors = {
     /**
-     * Invalid verification code
+     * Bad Request: Invalid verification code format or code not found
      */
     400: unknown;
     /**
-     * Verification code expired
+     * Gone: Verification code expired
      */
     410: unknown;
 };
@@ -1706,7 +1750,7 @@ export type PostApiUsersAdminData = {
 
 export type PostApiUsersAdminErrors = {
     /**
-     * Bad Request
+     * Bad Request: Invalid user data
      */
     400: unknown;
     /**
@@ -1739,7 +1783,7 @@ export type PostApiUsersAdminImportData = {
 
 export type PostApiUsersAdminImportErrors = {
     /**
-     * Bad Request
+     * Bad Request: Invalid user data
      */
     400: unknown;
     /**
@@ -1750,6 +1794,10 @@ export type PostApiUsersAdminImportErrors = {
      * Forbidden: Only ADMIN role can access this resource
      */
     403: unknown;
+    /**
+     * Conflict: One or more users in the batch have a conflicting username or email
+     */
+    409: unknown;
 };
 
 export type PostApiUsersAdminImportResponses = {
@@ -1805,7 +1853,7 @@ export type PutApiUsersAdminByIdData = {
 
 export type PutApiUsersAdminByIdErrors = {
     /**
-     * Bad Request
+     * Bad Request: Invalid user data
      */
     400: unknown;
     /**
@@ -1824,6 +1872,10 @@ export type PutApiUsersAdminByIdErrors = {
      * Conflict: User with this username already exists
      */
     409: unknown;
+    /**
+     * Internal Server Error: Error sending email confirmation
+     */
+    500: unknown;
 };
 
 export type PutApiUsersAdminByIdResponses = {
@@ -1898,7 +1950,7 @@ export type PutApiUsersMeData = {
 
 export type PutApiUsersMeErrors = {
     /**
-     * Bad Request
+     * Bad Request: Invalid user data
      */
     400: unknown;
     /**
@@ -1910,9 +1962,17 @@ export type PutApiUsersMeErrors = {
      */
     403: unknown;
     /**
+     * Not Found: User not found
+     */
+    404: unknown;
+    /**
      * Conflict: User with this username already exists
      */
     409: unknown;
+    /**
+     * Internal Server Error: Error sending email confirmation
+     */
+    500: unknown;
 };
 
 export type PutApiUsersMeResponses = {

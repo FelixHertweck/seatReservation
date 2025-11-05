@@ -134,6 +134,7 @@ public class EventLocationResource {
     @DELETE
     @APIResponse(responseCode = "200", description = "OK")
     @APIResponse(responseCode = "204", description = "Event location deleted successfully")
+    @APIResponse(responseCode = "400", description = "Bad Request: Invalid input")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",

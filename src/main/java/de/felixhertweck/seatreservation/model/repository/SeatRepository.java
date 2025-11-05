@@ -32,6 +32,12 @@ public class SeatRepository implements PanacheRepository<Seat> {
 
     private static final Logger LOG = Logger.getLogger(SeatRepository.class);
 
+    /**
+     * Finds all seats for a specific event location.
+     *
+     * @param eventLocation the event location to search for
+     * @return a list of seats for the specified event location
+     */
     public List<Seat> findByEventLocation(EventLocation eventLocation) {
         LOG.debugf("Finding seats by event location ID: %d", eventLocation.id);
         List<Seat> seats = find("location", eventLocation).list();

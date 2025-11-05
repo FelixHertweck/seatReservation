@@ -21,10 +21,21 @@ package de.felixhertweck.seatreservation.security.exceptions;
 
 /** Exception thrown when a JWT is invalid. */
 public class JwtInvalidException extends AuthenticationFailedException {
+    /**
+     * Constructs a JwtInvalidException with the specified detail message.
+     *
+     * @param message the detail message
+     */
     public JwtInvalidException(String message) {
         super(message);
     }
 
+    /**
+     * Constructs a JwtInvalidException with the specified detail message and cause.
+     *
+     * @param message the detail message
+     * @param cause the cause of the exception
+     */
     public JwtInvalidException(String message, Throwable cause) {
         super(message, cause);
     }

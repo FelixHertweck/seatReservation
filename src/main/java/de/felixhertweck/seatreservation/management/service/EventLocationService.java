@@ -33,7 +33,11 @@ import de.felixhertweck.seatreservation.management.dto.ImportEventLocationDto;
 import de.felixhertweck.seatreservation.management.dto.ImportSeatDto;
 import de.felixhertweck.seatreservation.management.dto.MakerRequestDTO;
 import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
-import de.felixhertweck.seatreservation.model.entity.*;
+import de.felixhertweck.seatreservation.model.entity.EventLocation;
+import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
+import de.felixhertweck.seatreservation.model.entity.Roles;
+import de.felixhertweck.seatreservation.model.entity.Seat;
+import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import org.jboss.logging.Logger;
@@ -207,6 +211,13 @@ public class EventLocationService {
         return new EventLocationResponseDTO(location);
     }
 
+    /**
+     * Converts a list of marker DTOs to EventLocationMarker entities.
+     *
+     * @param dtoMarkers The list of marker DTOs to convert
+     * @param eventLocation The event location to associate with the markers
+     * @return A list of EventLocationMarker entities
+     */
     private List<EventLocationMarker> convertToMarkerEntities(
             List<MakerRequestDTO> dtoMarkers, EventLocation eventLocation) {
         if (dtoMarkers == null) {
