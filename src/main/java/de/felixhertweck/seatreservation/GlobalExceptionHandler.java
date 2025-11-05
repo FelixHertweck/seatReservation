@@ -46,6 +46,11 @@ import de.felixhertweck.seatreservation.userManagment.exceptions.VerificationCod
 import de.felixhertweck.seatreservation.userManagment.exceptions.VerifyTokenExpiredException;
 import org.jboss.logging.Logger;
 
+/**
+ * Global exception handler for mapping application exceptions to HTTP responses. Implements
+ * ExceptionMapper to provide consistent error handling across all REST endpoints. Handles
+ * application-specific exceptions and maps them to appropriate HTTP status codes.
+ */
 @Provider
 public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
 
@@ -53,6 +58,13 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
 
     @Inject TokenService tokenService;
 
+    /**
+     * Maps exceptions to HTTP responses with appropriate status codes and error messages. Clears
+     * JWT cookies when JwtInvalidException occurs to force re-authentication.
+     *
+     * @param exception the exception to handle
+     * @return a Response with appropriate status code and error details
+     */
     @Override
     public Response toResponse(Exception exception) {
         ErrorResponseDTO errorResponse = new ErrorResponseDTO(exception.getMessage());

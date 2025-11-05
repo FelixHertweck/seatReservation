@@ -789,6 +789,12 @@ public class EmailService {
                                         event.id));
     }
 
+    /**
+     * Checks if an email address is null or empty and should be skipped.
+     *
+     * @param address the email address to check
+     * @return true if the address is null or empty, false otherwise
+     */
     private boolean skipForNullOrEmptyAddress(String address) {
         if (address == null || address.isEmpty()) {
             LOG.debug("Skipping email sending for null or empty address.");
@@ -797,6 +803,12 @@ public class EmailService {
         return false;
     }
 
+    /**
+     * Checks if an email address is a localhost address and should be skipped.
+     *
+     * @param address the email address to check
+     * @return true if the address ends with @localhost, false otherwise
+     */
     private boolean skipForLocalhostAddress(String address) {
         if (address.endsWith("@localhost")) {
             LOG.debugf("Skipping email sending for localhost address: %s", address);

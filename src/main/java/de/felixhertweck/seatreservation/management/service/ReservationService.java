@@ -42,8 +42,18 @@ import de.felixhertweck.seatreservation.email.EmailService;
 import de.felixhertweck.seatreservation.management.dto.ReservationRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.ReservationResponseDTO;
 import de.felixhertweck.seatreservation.management.exception.ReservationNotFoundException;
-import de.felixhertweck.seatreservation.model.entity.*;
-import de.felixhertweck.seatreservation.model.repository.*;
+import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
+import de.felixhertweck.seatreservation.model.entity.Reservation;
+import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
+import de.felixhertweck.seatreservation.model.entity.Roles;
+import de.felixhertweck.seatreservation.model.entity.Seat;
+import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.EventRepository;
+import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
+import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
+import de.felixhertweck.seatreservation.model.repository.SeatRepository;
+import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.utils.ReservationExporter;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
@@ -142,6 +152,17 @@ public class ReservationService {
         throw new SecurityException("You are not allowed to access this reservation.");
     }
 
+    /**
+     * Retrieves reservations for a specific event by its ID. Access is restricted based on user
+     * roles: - ADMIN: Returns reservations for any event. - MANAGER: Returns reservations only for
+     * events the manager is allowed to manage. - Other roles: Throws SecurityException.
+     *
+     * @param eventId The ID of the event for which to retrieve reservations
+     * @param currentUser The user attempting to retrieve the reservations
+     * @return A list of DTOs representing the reservations for the specified event
+     * @throws SecurityException If the user is not authorized to access this event's reservations
+     * @throws IllegalArgumentException If the event is not found
+     */
     public List<ReservationResponseDTO> findReservationsByEventId(Long eventId, User currentUser) {
         LOG.debugf(
                 "Attempting to retrieve reservations for event ID: %d by user: %s (ID: %d)",
@@ -567,6 +588,17 @@ public class ReservationService {
                 .collect(Collectors.toSet());
     }
 
+    /**
+     * Exports all reservations for a given event to a CSV format. Access control: The user must be
+     * the manager of the event or have ADMIN role to export.
+     *
+     * @param eventId The ID of the event for which to export reservations
+     * @param currentUser The user attempting the export
+     * @return A byte array containing the CSV export data
+     * @throws EventNotFoundException If the event is not found
+     * @throws SecurityException If the user is not authorized to export this event
+     * @throws IOException If an I/O error occurs during export
+     */
     public byte[] exportReservationsToCsv(Long eventId, User currentUser)
             throws EventNotFoundException, SecurityException, IOException {
         LOG.debugf(
@@ -583,6 +615,17 @@ public class ReservationService {
         return baos.toByteArray();
     }
 
+    /**
+     * Exports all reservations for a given event to a PDF format. Access control: The user must be
+     * the manager of the event or have ADMIN role to export.
+     *
+     * @param eventId The ID of the event for which to export reservations
+     * @param currentUser The user attempting the export
+     * @return A byte array containing the PDF export data
+     * @throws EventNotFoundException If the event is not found
+     * @throws SecurityException If the user is not authorized to export this event
+     * @throws IOException If an I/O error occurs during export
+     */
     public byte[] exportReservationsToPdf(Long eventId, User currentUser)
             throws EventNotFoundException, SecurityException, IOException {
         LOG.debugf(
@@ -609,6 +652,16 @@ public class ReservationService {
         return baos.toByteArray();
     }
 
+    /**
+     * Finds export-ready reservations for the given event. This private method retrieves the event
+     * and validates access permissions. It is used by both CSV and PDF export methods.
+     *
+     * @param eventId The ID of the event for which to retrieve reservations
+     * @param currentUser The user attempting the export
+     * @return The Event entity
+     * @throws EventNotFoundException If the event is not found
+     * @throws SecurityException If the user is not authorized to export this event
+     */
     private Event getSortedReservations(Long eventId, User currentUser) {
         Event event =
                 eventRepository
@@ -633,6 +686,12 @@ public class ReservationService {
         return event;
     }
 
+    /**
+     * Sorts the reservations for an event by seat number in ascending order.
+     *
+     * @param event The event whose reservations should be sorted
+     * @return A sorted list of Reservation entities ordered by seat number
+     */
     private List<Reservation> findByEventSorted(Event event) {
         List<Reservation> reservations = findByEvent(event);
 
@@ -642,6 +701,12 @@ public class ReservationService {
         return reservations;
     }
 
+    /**
+     * Finds all reservations for a given event.
+     *
+     * @param event The event for which to find reservations
+     * @return A list of Reservation entities belonging to the event
+     */
     public List<Reservation> findByEvent(Event event) {
         return reservationRepository.find("event", event).list();
     }

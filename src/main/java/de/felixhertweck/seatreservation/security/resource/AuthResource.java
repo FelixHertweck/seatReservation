@@ -44,6 +44,10 @@ import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.jboss.logging.Logger;
 
+/**
+ * REST resource for authentication and authorization endpoints. Provides endpoints for user login,
+ * registration, logout, and token refresh.
+ */
 @Path("/api/auth")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -55,6 +59,11 @@ public class AuthResource {
     @Inject TokenService tokenService;
     @Inject UserSecurityContext userSecurityContext;
 
+    /**
+     * Gets the current registration status.
+     *
+     * @return RegistrationStatusDTO containing the registration status
+     */
     @GET
     @Path("/registration-status")
     @PermitAll
@@ -64,6 +73,13 @@ public class AuthResource {
         return new RegistrationStatusDTO(authService.isRegistrationEnabled());
     }
 
+    /**
+     * Authenticates a user and returns JWT and refresh token cookies.
+     *
+     * @param loginRequest the login credentials
+     * @return Response with JWT and refresh token cookies
+     * @throws JwtInvalidException if JWT generation fails
+     */
     @POST
     @Path("/login")
     @PermitAll
@@ -95,6 +111,12 @@ public class AuthResource {
                 .build();
     }
 
+    /**
+     * Registers a new user and returns JWT and refresh token cookies.
+     *
+     * @param registerRequest the registration details
+     * @return Response with JWT and refresh token cookies
+     */
     @POST
     @Path("/register")
     @PermitAll
@@ -131,6 +153,12 @@ public class AuthResource {
                 .build();
     }
 
+    /**
+     * Logs out the current user by clearing JWT and refresh token cookies.
+     *
+     * @param refreshToken the refresh token cookie value
+     * @return Response with cleared JWT and refresh token cookies
+     */
     @POST
     @Path("/logout")
     @RolesAllowed({"USER", "ADMIN", "MANAGER"})
@@ -161,6 +189,11 @@ public class AuthResource {
                 .build();
     }
 
+    /**
+     * Logs out the current user from all devices by clearing all their refresh tokens.
+     *
+     * @return Response with cleared JWT and refresh token cookies
+     */
     @POST
     @Path("/logoutAllDevices")
     @RolesAllowed({"USER", "ADMIN", "MANAGER"})
@@ -192,6 +225,13 @@ public class AuthResource {
                 .build();
     }
 
+    /**
+     * Refreshes the JWT token using a valid refresh token.
+     *
+     * @param refreshToken the refresh token cookie value
+     * @return Response with new JWT and refresh token cookies
+     * @throws JwtInvalidException if the refresh token is invalid or expired
+     */
     @POST
     @Path("/refresh")
     @PermitAll

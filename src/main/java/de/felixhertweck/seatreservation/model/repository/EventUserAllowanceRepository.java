@@ -30,22 +30,54 @@ import io.quarkus.hibernate.orm.panache.PanacheRepository;
 
 @ApplicationScoped
 public class EventUserAllowanceRepository implements PanacheRepository<EventUserAllowance> {
+    /**
+     * Finds all event user allowances for a specific user.
+     *
+     * @param user the user to search for
+     * @return a list of event user allowances for the specified user
+     */
     public List<EventUserAllowance> findByUser(User user) {
         return find("user", user).list();
     }
 
+    /**
+     * Finds all event user allowances for a specific event ID.
+     *
+     * @param eventId the event ID to search for
+     * @return a list of event user allowances for the specified event
+     */
     public List<EventUserAllowance> findByEventId(Long eventId) {
         return find("event.id", eventId).list();
     }
 
+    /**
+     * Finds all event user allowances for a specific event.
+     *
+     * @param event the event to search for
+     * @return a list of event user allowances for the specified event
+     */
     public List<EventUserAllowance> findByEvent(Event event) {
         return find("event", event).list();
     }
 
+    /**
+     * Finds an event user allowance by user and event.
+     *
+     * @param user the user to search for
+     * @param event the event to search for
+     * @return Optional event user allowance entity
+     */
     public Optional<EventUserAllowance> findByUserAndEvent(User user, Event event) {
         return find("user = ?1 and event = ?2", user, event).firstResultOptional();
     }
 
+    /**
+     * Finds an event user allowance by user and event ID.
+     *
+     * @param user the user to search for
+     * @param eventId the event ID to search for
+     * @return Optional event user allowance entity
+     */
     public Optional<EventUserAllowance> findByUserAndEventId(User user, Long eventId) {
         return find("user = ?1 and event.id = ?2", user, eventId).firstResultOptional();
     }

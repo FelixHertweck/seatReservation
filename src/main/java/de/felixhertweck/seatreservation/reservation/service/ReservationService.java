@@ -34,7 +34,12 @@ import jakarta.transaction.Transactional;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.email.EmailService;
 import de.felixhertweck.seatreservation.management.exception.ReservationNotFoundException;
-import de.felixhertweck.seatreservation.model.entity.*;
+import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
+import de.felixhertweck.seatreservation.model.entity.Reservation;
+import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
+import de.felixhertweck.seatreservation.model.entity.Seat;
+import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
@@ -57,6 +62,12 @@ public class ReservationService {
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
     @Inject EmailService emailService;
 
+    /**
+     * Retrieves all reservations for the currently authenticated user.
+     *
+     * @param currentUser the currently authenticated user
+     * @return a list of user reservation response DTOs
+     */
     public List<UserReservationResponseDTO> findReservationsByUser(User currentUser) {
         LOG.debugf("Attempting to find reservations for user: %s", currentUser.getUsername());
         List<Reservation> reservations = reservationRepository.findByUser(currentUser);
@@ -66,7 +77,18 @@ public class ReservationService {
         return reservations.stream().map(UserReservationResponseDTO::new).toList();
     }
 
-    public UserReservationResponseDTO findReservationByIdForUser(Long id, User currentUser) {
+    /**
+     * Retrieves a specific reservation by its ID for the currently authenticated user. Verifies
+     * that the user owns the reservation before returning it.
+     *
+     * @param id the reservation ID to retrieve
+     * @param currentUser the currently authenticated user
+     * @return the user reservation response DTO
+     * @throws ReservationNotFoundException if the reservation is not found
+     * @throws SecurityException if the current user does not own the reservation
+     */
+    public UserReservationResponseDTO findReservationByIdForUser(Long id, User currentUser)
+            throws ReservationNotFoundException, SecurityException {
         LOG.debugf(
                 "Attempting to find reservation with ID %d for user: %s",
                 id, currentUser.getUsername());
@@ -91,6 +113,24 @@ public class ReservationService {
         return new UserReservationResponseDTO(reservation);
     }
 
+    /**
+     * Creates reservations for the specified user for the given event and seats. Validates that the
+     * user has a verified email address, has allowances for the event, and that the seats are
+     * available. Automatically deducts the reserved seats from the user's allowance and sends a
+     * confirmation email after successful reservation.
+     *
+     * @param dto the reservation request DTO containing event ID and seat IDs
+     * @param currentUser the currently authenticated user attempting to create the reservations
+     * @return a list of newly created user reservation response DTOs
+     * @throws EventNotFoundException if the event or any seat is not found
+     * @throws NoSeatsAvailableException if the user has exceeded their reservation limit for the
+     *     event
+     * @throws EventBookingClosedException if the event booking has not started or has already ended
+     * @throws SeatAlreadyReservedException if any of the requested seats are already reserved or
+     *     blocked
+     * @throws IllegalStateException if the user does not have a verified email address
+     * @throws IllegalArgumentException if no seats are selected
+     */
     @Transactional
     public List<UserReservationResponseDTO> createReservationForUser(
             UserReservationsRequestDTO dto, User currentUser)

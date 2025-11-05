@@ -41,7 +41,16 @@ public class EventLocationService {
     @Inject UserRepository userRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
 
-    public List<UserEventLocationResponseDTO> getLocationsForCurrentUser(String username) {
+    /**
+     * Retrieves all event locations for which the specified user has event allowances or active
+     * reservations.
+     *
+     * @param username the username of the user for whom to retrieve event locations
+     * @return a list of event locations the user is allowed to access
+     * @throws UserNotFoundException if the user with the specified username is not found
+     */
+    public List<UserEventLocationResponseDTO> getLocationsForCurrentUser(String username)
+            throws UserNotFoundException {
         LOG.debugf("Stub: Retrieving event locations for user: %s", username);
         User user = userRepository.findByUsername(username);
 

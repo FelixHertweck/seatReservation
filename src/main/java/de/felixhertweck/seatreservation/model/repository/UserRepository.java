@@ -32,6 +32,12 @@ public class UserRepository implements PanacheRepository<User> {
 
     private static final Logger LOG = Logger.getLogger(UserRepository.class);
 
+    /**
+     * Finds a user by username.
+     *
+     * @param username the username to search for
+     * @return the user entity or null if not found
+     */
     public User findByUsername(String username) {
         LOG.debugf("Finding user by username: %s", username);
         User user = find("username", username).firstResult();
@@ -43,6 +49,12 @@ public class UserRepository implements PanacheRepository<User> {
         return user;
     }
 
+    /**
+     * Finds a user by username.
+     *
+     * @param username the username to search for
+     * @return Optional user entity
+     */
     public Optional<User> findByUsernameOptional(String username) {
         LOG.debugf("Finding user by username (optional): %s", username);
         Optional<User> user = find("username", username).firstResultOptional();
@@ -54,6 +66,12 @@ public class UserRepository implements PanacheRepository<User> {
         return user;
     }
 
+    /**
+     * Finds a user by email address.
+     *
+     * @param email the email address to search for
+     * @return the user entity or null if not found
+     */
     public User findByEmail(String email) {
         LOG.debugf("Finding user by email: %s", email);
         User user = find("email", email).firstResult();
@@ -65,6 +83,12 @@ public class UserRepository implements PanacheRepository<User> {
         return user;
     }
 
+    /**
+     * Finds all users with a specific email address.
+     *
+     * @param email the email address to search for
+     * @return a list of users with the specified email address
+     */
     public List<User> findAllByEmail(String email) {
         LOG.debugf("Finding all users by email: %s", email);
         List<User> users = list("email", email);

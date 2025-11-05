@@ -49,6 +49,12 @@ public class NotificationService {
 
     @Inject EmailService emailService;
 
+    /**
+     * Sends event reminder emails to users for events scheduled for tomorrow. This method runs
+     * daily at 9:00 AM. It queries all events scheduled for tomorrow, retrieves all reservations
+     * for those events, and sends reminder emails to the respective users. Handles exceptions
+     * gracefully without interrupting the scheduled task.
+     */
     @Scheduled(cron = "0 0 9 * * ?")
     public void sendEventReminders() {
         LOG.info("Starting scheduled event reminder task.");

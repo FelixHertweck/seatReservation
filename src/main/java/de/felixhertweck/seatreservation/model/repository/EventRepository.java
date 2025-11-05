@@ -30,10 +30,22 @@ import io.quarkus.hibernate.orm.panache.PanacheRepository;
 @ApplicationScoped
 public class EventRepository implements PanacheRepository<Event> {
 
+    /**
+     * Finds all events managed by a specific user.
+     *
+     * @param manager the manager user to search for
+     * @return a list of events managed by the specified user
+     */
     public List<Event> findByManager(User manager) {
         return find("manager", manager).list();
     }
 
+    /**
+     * Finds an event by its name.
+     *
+     * @param name the event name to search for
+     * @return Optional event entity
+     */
     public Optional<Event> findByName(String name) {
         return find("name", name).firstResultOptional();
     }

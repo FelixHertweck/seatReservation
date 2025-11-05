@@ -25,8 +25,21 @@ import java.util.Set;
 import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 
+/**
+ * Utility class for rendering seats and markers as SVG graphics. Provides methods to generate SVG
+ * output for seat layouts with support for different reservation statuses and markers.
+ */
 public class SvgRenderer {
 
+    /**
+     * Renders a collection of seats as SVG with reserved seat numbers. No markers are included in
+     * the output.
+     *
+     * @param allSeats the collection of all seats to render
+     * @param newReservedSeatNumbers the set of newly reserved seat numbers
+     * @param existingReservedSeatNumbers the set of previously reserved seat numbers
+     * @return an SVG string representation of the seats
+     */
     public static String renderSeats(
             Collection<Seat> allSeats,
             Set<String> newReservedSeatNumbers,
@@ -34,6 +47,15 @@ public class SvgRenderer {
         return renderSeats(allSeats, newReservedSeatNumbers, existingReservedSeatNumbers, null);
     }
 
+    /**
+     * Renders a collection of seats and optional markers as SVG with reserved seat numbers.
+     *
+     * @param allSeats the collection of all seats to render
+     * @param newReservedSeatNumbers the set of newly reserved seat numbers
+     * @param existingReservedSeatNumbers the set of previously reserved seat numbers
+     * @param markers the collection of markers to include in the SVG (optional)
+     * @return an SVG string representation of the seats and markers
+     */
     public static String renderSeats(
             Collection<Seat> allSeats,
             Set<String> newReservedSeatNumbers,
