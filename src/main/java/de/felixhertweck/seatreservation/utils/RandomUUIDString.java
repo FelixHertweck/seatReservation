@@ -32,7 +32,6 @@ public class RandomUUIDString {
      * @return a random UUID string without underscores
      */
     public static String generate() {
-        UUID randomUUID = UUID.randomUUID();
-        return randomUUID.toString().replaceAll("_", "");
+        return UUID.randomUUID().toString();
     }
 }
