@@ -27,9 +27,9 @@ import java.util.UUID;
  */
 public class RandomUUIDString {
     /**
-     * Generates a random UUID string with underscores removed.
+     * Generates a random UUID string.
      *
-     * @return a random UUID string without underscores
+     * @return a random UUID string
      */
     public static String generate() {
         return UUID.randomUUID().toString();
