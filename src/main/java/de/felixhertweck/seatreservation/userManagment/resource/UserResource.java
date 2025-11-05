@@ -24,9 +24,16 @@ import java.util.Set;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.SecurityContext;
-import jakarta.ws.rs.*;
 
 import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
 import de.felixhertweck.seatreservation.common.dto.UserDTO;
@@ -40,10 +47,10 @@ import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.jboss.logging.Logger;
 
-/*
- * This class provides RESTful endpoints for user management operations.
- * It allows administrators to create, update, delete users, and manage user roles.
- * It also allows users to update their own profiles.
+/**
+ * REST resource for user management operations. Provides endpoints for creating, updating,
+ * deleting, and retrieving users. Allows administrators to manage users and users to manage their
+ * own profiles.
  */
 @Path("/api/users")
 @Produces(MediaType.APPLICATION_JSON)
@@ -56,14 +63,25 @@ public class UserResource {
     @Inject SecurityContext securityContext;
     @Inject UserSecurityContext userSecurityContext;
 
+    /**
+     * Imports a batch of users from the provided DTOs.
+     *
+     * @param userCreationDTOs the set of user creation DTOs to import
+     * @return a set of created UserDTOs
+     */
     @POST
     @Path("/admin/import")
     @RolesAllowed(Roles.ADMIN)
     @APIResponse(responseCode = "200", description = "Users imported successfully")
+    @APIResponse(responseCode = "400", description = "Bad Request: Invalid user data")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
             description = "Forbidden: Only ADMIN role can access this resource")
+    @APIResponse(
+            responseCode = "409",
+            description =
+                    "Conflict: One or more users in the batch have a conflicting username or email")
     public Set<UserDTO> importUsers(@Valid Set<AdminUserCreationDto> userCreationDTOs) {
         LOG.debugf(
                 "Received POST request to /api/users/admin/import for %d users.",
@@ -72,10 +90,17 @@ public class UserResource {
         return importedUsers;
     }
 
+    /**
+     * Creates a new user with the provided creation details.
+     *
+     * @param userCreationDTO the user creation DTO containing user details
+     * @return the created UserDTO
+     */
     @POST
     @Path("/admin")
     @RolesAllowed(Roles.ADMIN)
     @APIResponse(responseCode = "201", description = "User created successfully")
+    @APIResponse(responseCode = "400", description = "Bad Request: Invalid user data")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
@@ -96,10 +121,18 @@ public class UserResource {
         return createdUser;
     }
 
+    /**
+     * Updates an existing user with the provided update details.
+     *
+     * @param id the ID of the user to update
+     * @param user the user update DTO containing updated user details
+     * @return the updated UserDTO
+     */
     @PUT
     @Path("/admin/{id}")
     @RolesAllowed(Roles.ADMIN)
     @APIResponse(responseCode = "200", description = "User updated successfully")
+    @APIResponse(responseCode = "400", description = "Bad Request: Invalid user data")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
@@ -108,6 +141,9 @@ public class UserResource {
     @APIResponse(
             responseCode = "409",
             description = "Conflict: User with this username already exists")
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error: Error sending email confirmation")
     public UserDTO updateUser(@PathParam("id") Long id, @Valid AdminUserUpdateDTO user) {
         LOG.debugf("Received PUT request to /api/users/admin/%d for user update.", id);
         UserDTO updatedUser = userService.updateUser(id, user);
@@ -115,6 +151,11 @@ public class UserResource {
         return updatedUser;
     }
 
+    /**
+     * Deletes a user by ID.
+     *
+     * @param id the ID of the user to delete
+     */
     @DELETE
     @Path("/admin/{id}")
     @RolesAllowed(Roles.ADMIN)
@@ -130,6 +171,11 @@ public class UserResource {
         LOG.debugf("User with ID %d deleted successfully by admin.", id);
     }
 
+    /**
+     * Gets all users with limited information (for managers and admins).
+     *
+     * @return a list of LimitedUserInfoDTOs
+     */
     @GET
     @Path("/manager")
     @RolesAllowed({Roles.ADMIN, Roles.MANAGER})
@@ -147,6 +193,11 @@ public class UserResource {
         return users;
     }
 
+    /**
+     * Gets the list of available roles.
+     *
+     * @return a list of available role names
+     */
     @GET
     @RolesAllowed({Roles.USER, Roles.MANAGER, Roles.ADMIN})
     @Path("/roles")
@@ -164,6 +215,11 @@ public class UserResource {
         return roles;
     }
 
+    /**
+     * Gets all users with full details (admin view).
+     *
+     * @return a list of UserDTOs
+     */
     @GET
     @Path("/admin")
     @RolesAllowed(Roles.ADMIN)
@@ -181,17 +237,28 @@ public class UserResource {
         return users;
     }
 
+    /**
+     * Updates the current authenticated user's profile.
+     *
+     * @param userProfileUpdateDTO the user profile update DTO
+     * @return the updated UserDTO
+     */
     @PUT
     @Path("/me")
     @RolesAllowed({Roles.USER, Roles.MANAGER, Roles.ADMIN})
     @APIResponse(responseCode = "200", description = "User profile updated successfully")
+    @APIResponse(responseCode = "400", description = "Bad Request: Invalid user data")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
             description = "Forbidden: Only authenticated users can access this resource")
+    @APIResponse(responseCode = "404", description = "Not Found: User not found")
     @APIResponse(
             responseCode = "409",
             description = "Conflict: User with this username already exists")
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error: Error sending email confirmation")
     public UserDTO updateCurrentUserProfile(@Valid UserProfileUpdateDTO userProfileUpdateDTO) {
         String username = securityContext.getUserPrincipal().getName();
         LOG.debugf(
@@ -201,6 +268,11 @@ public class UserResource {
         return updatedUser;
     }
 
+    /**
+     * Gets the current authenticated user's profile information.
+     *
+     * @return the current UserDTO
+     */
     @GET
     @Path("/me")
     @RolesAllowed({Roles.USER, Roles.ADMIN, Roles.MANAGER})

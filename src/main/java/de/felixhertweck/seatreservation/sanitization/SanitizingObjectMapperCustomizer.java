@@ -31,6 +31,12 @@ public class SanitizingObjectMapperCustomizer implements ObjectMapperCustomizer 
 
     private static final Logger LOG = Logger.getLogger(SanitizingObjectMapperCustomizer.class);
 
+    /**
+     * Customizes the ObjectMapper to add XSS sanitization for all String deserialization. Registers
+     * the XssSanitizingDeserializer to automatically sanitize string inputs.
+     *
+     * @param objectMapper the ObjectMapper to customize
+     */
     @Override
     public void customize(ObjectMapper objectMapper) {
         LOG.debugf("Customizing ObjectMapper for XSS sanitization.");

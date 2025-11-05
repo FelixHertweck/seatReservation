@@ -19,7 +19,16 @@
  */
 package de.felixhertweck.seatreservation.userManagment.exceptions;
 
+/**
+ * Exception thrown when a verification token has expired. This is a runtime exception that
+ * indicates an expired verification code or token.
+ */
 public class VerifyTokenExpiredException extends RuntimeException {
+    /**
+     * Constructs a VerifyTokenExpiredException with the specified detail message.
+     *
+     * @param message the detail message
+     */
     public VerifyTokenExpiredException(String message) {
         super(message);
     }

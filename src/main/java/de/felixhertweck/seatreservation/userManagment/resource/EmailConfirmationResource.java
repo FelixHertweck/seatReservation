@@ -64,8 +64,9 @@ public class EmailConfirmationResource {
                             + " token's lifetime.")
     @APIResponse(responseCode = "204", description = "Email confirmation resent successfully")
     @APIResponse(responseCode = "401", description = "Unauthorized")
-    @APIResponse(responseCode = "404", description = "User not found")
-    @APIResponse(responseCode = "500", description = "Internal server error")
+    @APIResponse(responseCode = "403", description = "Forbidden: User not authenticated")
+    @APIResponse(responseCode = "404", description = "Not Found: User not found")
+    @APIResponse(responseCode = "500", description = "Internal Server Error: Error sending email")
     public Response resendEmailConfirmation() throws IOException {
         String username = securityContext.getUserPrincipal().getName();
         LOG.debugf(
@@ -90,8 +91,10 @@ public class EmailConfirmationResource {
             summary = "Verify email with 6-digit code",
             description = "Verifies a user's email address using a 6-digit verification code")
     @APIResponse(responseCode = "200", description = "Email verified successfully")
-    @APIResponse(responseCode = "400", description = "Invalid verification code")
-    @APIResponse(responseCode = "410", description = "Verification code expired")
+    @APIResponse(
+            responseCode = "400",
+            description = "Bad Request: Invalid verification code format or code not found")
+    @APIResponse(responseCode = "410", description = "Gone: Verification code expired")
     public Response verifyEmailWithCode(@Valid VerifyEmailCodeRequestDto request) {
         LOG.debugf("Received POST request to /api/user/verify-email-code with code");
         String email = userService.verifyEmailWithCode(request.getVerificationCode());

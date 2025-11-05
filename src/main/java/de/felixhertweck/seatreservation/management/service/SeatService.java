@@ -46,8 +46,18 @@ public class SeatService {
 
     @Inject EventLocationRepository eventLocationRepository;
 
+    /**
+     * Creates a new seat for the specified event location by a manager.
+     *
+     * @param dto the seat request DTO containing seat details
+     * @param manager the manager attempting to create the seat
+     * @return the created seat DTO
+     * @throws IllegalArgumentException if the event location is not found or seat data is invalid
+     * @throws SecurityException if the manager does not own the event location
+     */
     @Transactional
-    public SeatDTO createSeatManager(SeatRequestDTO dto, User manager) {
+    public SeatDTO createSeatManager(SeatRequestDTO dto, User manager)
+            throws IllegalArgumentException, SecurityException {
         LOG.debugf(
                 "Attempting to create seat with number: %s for event location ID: %d by manager: %s"
                         + " (ID: %d)",
@@ -115,6 +125,13 @@ public class SeatService {
         return new SeatDTO(seat);
     }
 
+    /**
+     * Finds all seats for a given manager. Returns all seats for admin users, or only seats
+     * belonging to event locations managed by the specified manager.
+     *
+     * @param manager the manager whose seats should be retrieved
+     * @return a list of seat DTOs
+     */
     public List<SeatDTO> findAllSeatsForManager(User manager) {
         LOG.debugf(
                 "Attempting to retrieve all seats for manager: %s (ID: %d)",
@@ -140,7 +157,18 @@ public class SeatService {
         return result;
     }
 
-    public SeatDTO findSeatByIdForManager(Long id, User manager) {
+    /**
+     * Finds a seat by its ID for a given manager. Access control checks are performed to ensure the
+     * manager owns the seat's event location.
+     *
+     * @param id the seat ID to retrieve
+     * @param manager the manager attempting to access the seat
+     * @return the seat DTO
+     * @throws SeatNotFoundException if the seat is not found
+     * @throws SecurityException if the manager does not have permission to access the seat
+     */
+    public SeatDTO findSeatByIdForManager(Long id, User manager)
+            throws SeatNotFoundException, SecurityException {
         LOG.debugf(
                 "Attempting to retrieve seat with ID: %d for manager: %s (ID: %d)",
                 id, manager.getUsername(), manager.getId());
@@ -151,8 +179,20 @@ public class SeatService {
         return new SeatDTO(seat);
     }
 
+    /**
+     * Updates an existing seat for the specified event location by a manager.
+     *
+     * @param id the seat ID to update
+     * @param dto the seat request DTO containing updated seat details
+     * @param manager the manager attempting to update the seat
+     * @return the updated seat DTO
+     * @throws SeatNotFoundException if the seat is not found
+     * @throws SecurityException if the manager does not own the seat or the new event location
+     * @throws IllegalArgumentException if the event location is not found or seat data is invalid
+     */
     @Transactional
-    public SeatDTO updateSeatForManager(Long id, SeatRequestDTO dto, User manager) {
+    public SeatDTO updateSeatForManager(Long id, SeatRequestDTO dto, User manager)
+            throws SeatNotFoundException, SecurityException, IllegalArgumentException {
         LOG.debugf(
                 "Attempting to update seat with ID: %d for manager: %s (ID: %d)",
                 id, manager.getUsername(), manager.getId());
@@ -246,7 +286,18 @@ public class SeatService {
                 ids, manager.getUsername(), manager.getId());
     }
 
-    public Seat findSeatEntityById(Long id, User currentUser) {
+    /**
+     * Finds a seat entity by its ID for a given user. Verifies ownership by checking if the user is
+     * an ADMIN or the manager of the seat's event location.
+     *
+     * @param id the seat ID to find
+     * @param currentUser the user attempting to access the seat
+     * @return the seat entity
+     * @throws SeatNotFoundException if the seat is not found
+     * @throws SecurityException if the user does not have permission to access the seat
+     */
+    public Seat findSeatEntityById(Long id, User currentUser)
+            throws SeatNotFoundException, SecurityException {
         LOG.debugf(
                 "Attempting to find seat entity by ID: %d for user: %s (ID: %d)",
                 id, currentUser.getUsername(), currentUser.getId());

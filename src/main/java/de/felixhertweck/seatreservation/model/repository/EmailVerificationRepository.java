@@ -33,6 +33,12 @@ public class EmailVerificationRepository implements PanacheRepository<EmailVerif
 
     private static final Logger LOG = Logger.getLogger(EmailVerificationRepository.class);
 
+    /**
+     * Finds an EmailVerification by user.
+     *
+     * @param user the user to search for
+     * @return Optional EmailVerification entity
+     */
     public Optional<EmailVerification> findByUser(User user) {
         LOG.debugf("Finding EmailVerification by user ID: %d", user.id);
         Optional<EmailVerification> result = find("user", user).firstResultOptional();
@@ -44,6 +50,11 @@ public class EmailVerificationRepository implements PanacheRepository<EmailVerif
         return result;
     }
 
+    /**
+     * Deletes an EmailVerification by user ID in a new transaction.
+     *
+     * @param userId the user ID to delete the verification for
+     */
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     public void deleteByUserId(Long userId) {
         LOG.debugf(

@@ -19,7 +19,16 @@
  */
 package de.felixhertweck.seatreservation.userManagment.exceptions;
 
+/**
+ * Exception thrown when a verification code is not found. This is a runtime exception that
+ * indicates an invalid or missing verification code.
+ */
 public class VerificationCodeNotFoundException extends RuntimeException {
+    /**
+     * Constructs a VerificationCodeNotFoundException with the specified detail message.
+     *
+     * @param message the detail message
+     */
     public VerificationCodeNotFoundException(String message) {
         super(message);
     }

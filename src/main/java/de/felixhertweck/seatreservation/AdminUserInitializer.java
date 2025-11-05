@@ -34,6 +34,10 @@ import de.felixhertweck.seatreservation.utils.SecurityUtils;
 import io.quarkus.runtime.StartupEvent;
 import org.jboss.logging.Logger;
 
+/**
+ * Initializer for creating the default admin user on application startup. Checks if an admin user
+ * exists during application startup and creates one with a random password if not found.
+ */
 @ApplicationScoped
 public class AdminUserInitializer {
 
@@ -45,6 +49,11 @@ public class AdminUserInitializer {
 
     private static final int PASSWORD_LENGTH = 12;
 
+    /**
+     * Generates a random password with mixed character types.
+     *
+     * @return a randomly generated password of fixed length
+     */
     private static String generateRandomPassword() {
         String chars =
                 "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+";
@@ -55,6 +64,12 @@ public class AdminUserInitializer {
         return sb.toString();
     }
 
+    /**
+     * Observes the startup event and creates an admin user if one does not exist. Logs the
+     * generated password on creation for initial access.
+     *
+     * @param ev the startup event triggered during application startup
+     */
     @Transactional
     public void onStart(@Observes StartupEvent ev) {
         LOG.info("Checking for admin user on application startup...");

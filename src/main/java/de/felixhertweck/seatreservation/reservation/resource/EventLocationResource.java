@@ -61,6 +61,7 @@ public class EventLocationResource {
     @APIResponse(
             responseCode = "403",
             description = "Forbidden: Only authenticated users can access this resource")
+    @APIResponse(responseCode = "404", description = "Not Found: User not found")
     public List<UserEventLocationResponseDTO> getLocations() {
         String username = securityIdentity.getPrincipal().getName();
         LOG.debugf("Received GET request to /api/user/locations for user: %s", username);

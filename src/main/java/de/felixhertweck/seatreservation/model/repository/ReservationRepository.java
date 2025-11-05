@@ -29,26 +29,54 @@ import io.quarkus.hibernate.orm.panache.PanacheRepository;
 
 @ApplicationScoped
 public class ReservationRepository implements PanacheRepository<Reservation> {
-    /*
-     * This method returns all reservations for a given user that are not blocked.
+    /**
+     * Finds all reservations for a given user that are not blocked.
+     *
+     * @param user the user to search for
+     * @return a list of non-blocked reservations for the specified user
      */
     public List<Reservation> findByUser(User user) {
         return find("user = ?1 and status != ?2", user, ReservationStatus.BLOCKED).list();
     }
 
+    /**
+     * Finds all reservations for a specific event ID.
+     *
+     * @param eventId the event ID to search for
+     * @return a list of reservations for the specified event
+     */
     public List<Reservation> findByEventId(Long eventId) {
         return find("event.id", eventId).list();
     }
 
+    /**
+     * Finds all reservations for a specific user and event.
+     *
+     * @param user the user to search for
+     * @param event the event to search for
+     * @return a list of reservations for the specified user and event
+     */
     public List<Reservation> findByUserAndEvent(
             User user, de.felixhertweck.seatreservation.model.entity.Event event) {
         return find("user = ?1 and event = ?2", user, event).list();
     }
 
+    /**
+     * Finds all reservations for a specific user and event ID.
+     *
+     * @param user the user to search for
+     * @param eventId the event ID to search for
+     * @return a list of reservations for the specified user and event
+     */
     public List<Reservation> findByUserAndEventId(User user, Long eventId) {
         return find("user = ?1 and event.id = ?2", user, eventId).list();
     }
 
+    /**
+     * Persists multiple reservations at once.
+     *
+     * @param newReservations the list of reservations to persist
+     */
     public void persistAll(List<Reservation> newReservations) {
         newReservations.forEach(this::persist);
     }
