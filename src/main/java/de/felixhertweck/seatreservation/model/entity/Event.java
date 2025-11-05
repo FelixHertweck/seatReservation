@@ -20,8 +20,17 @@
 package de.felixhertweck.seatreservation.model.entity;
 
 import java.time.Instant;
-import java.util.*;
-import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 
@@ -64,7 +73,8 @@ public class Event extends PanacheEntity {
             Instant bookingDeadline,
             Instant bookingStartTime,
             EventLocation location,
-            User manager) {
+            User manager,
+            Instant reminderSendDate) {
         this.name = name;
         this.description = description;
         this.startTime = startTime;
@@ -73,6 +83,8 @@ public class Event extends PanacheEntity {
         this.bookingStartTime = bookingStartTime;
         this.event_location = location;
         this.manager = manager;
+        this.reminderSendDate = reminderSendDate;
+        this.reminderSent = false;
     }
 
     public String getName() {
@@ -184,7 +196,7 @@ public class Event extends PanacheEntity {
                 && Objects.equals(bookingDeadline, event.bookingDeadline)
                 && Objects.equals(bookingStartTime, event.bookingStartTime)
                 && Objects.equals(reminderSendDate, event.reminderSendDate)
-                && reminderSent == event.reminderSent
+                && Objects.equals(reminderSent, event.reminderSent)
                 && Objects.equals(event_location, event.event_location)
                 && Objects.equals(userAllowances, event.userAllowances)
                 && Objects.equals(manager, event.manager)

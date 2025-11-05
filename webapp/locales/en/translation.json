@@ -604,13 +604,19 @@
     "tableHeaderEndTime": "End Time",
     "tableHeaderBookingDeadline": "Booking Deadline",
     "tableHeaderBookingStartTime": "Booking Start Time",
+    "tableHeaderReminderSendDate": "Reminder Send Date",
     "tableHeaderLocation": "Location",
     "tableHeaderActions": "Actions",
     "tbd": "TBD",
     "noLocation": "No location",
     "paginationLabel": "Events",
     "deleteButtonLabel": "Delete",
-    "editButtonLabel": "Edit"
+    "editButtonLabel": "Edit",
+    "reminderStatusFilterLabel": "Reminder Status",
+    "reminderStatusAll": "All",
+    "reminderStatusScheduled": "Scheduled",
+    "reminderStatusSent": "Sent",
+    "reminderStatusNotScheduled": "Not Scheduled"
   },
   "locationFormModal": {
     "createLocationTitle": "Create Location",

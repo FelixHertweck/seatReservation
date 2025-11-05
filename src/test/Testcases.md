@@ -246,6 +246,9 @@ This is an overview of the test cases for the application.
 | :--- | :--- |
 | `createEvent_Success` | Successfully creates a new event with valid data and a manager. |
 | `createEvent_IllegalArgumentException_LocationNotFound` | Attempts to create an event with a non-existent EventLocation ID. Expects `IllegalArgumentException`. |
+| `createEvent_WithReminderSendDate_Success` | Successfully creates a new event with a reminder send date and verifies the reminder is set. |
+| `createEvent_WithoutReminderSendDate_NoReminderScheduled` | Creates an event without a reminder date and verifies that no reminder is scheduled via `NotificationService`. |
+| `createEvent_WithReminderSendDate_ReminderScheduled` | Creates an event with a reminder date and verifies that a reminder is scheduled via `NotificationService.scheduleEventReminder()`. |
 
 ### updateEvent(Long id, EventRequestDTO dto, User manager)
 
@@ -256,6 +259,16 @@ This is an overview of the test cases for the application.
 | `updateEvent_EventNotFoundException` | Attempts to update a non-existent event. Expects `EventNotFoundException`. |
 | `updateEvent_ForbiddenException_NotManagerOrAdmin` | Attempts to update an event as a user who is neither a manager nor an administrator. Expects `ForbiddenException`. |
 | `updateEvent_IllegalArgumentException_LocationNotFound` | Attempts to update an event with a non-existent EventLocation ID. Expects `IllegalArgumentException`. |
+| `updateEvent_WithReminderSendDate_Success` | Successfully updates an event with a new reminder send date and verifies the date is updated. |
+| `updateEvent_FromNoReminderToReminder_ReminderScheduled` | Updates an event from having no reminder to having a reminder date and verifies that the reminder is scheduled via `NotificationService`. |
+| `updateEvent_FromReminderToNoReminder_ReminderCancelled` | Updates an event from having a reminder to no reminder and verifies that the old reminder is cancelled and no new reminder is scheduled. |
+| `updateEvent_FromReminderToNewReminder_ReminderRescheduled` | Updates an event from one reminder time to another and verifies that the old reminder is cancelled and a new reminder is scheduled at the new time. |
+
+### findEventsWithReminderDateBetween(Instant start, Instant end)
+
+| Test Case | Description |
+| :--- | :--- |
+| `findEventsWithReminderDateBetween_Success` | Successfully retrieves events that have a reminder send date within a specified time range. |
 
 ### getEventsByCurrentManager(User manager)
 

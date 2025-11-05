@@ -89,7 +89,8 @@ public class EventService {
                         dto.getBookingDeadline(),
                         dto.getBookingStartTime(),
                         location,
-                        manager);
+                        manager,
+                        dto.getReminderSendDate());
         event.setReminderSendDate(dto.getReminderSendDate());
         eventRepository.persist(event);
         LOG.infof("Event '%s' (ID: %d) created successfully.", event.getName(), event.getId());
@@ -192,6 +193,7 @@ public class EventService {
 
         // Reschedule reminder when event is updated
         if (event.getReminderSendDate() != null) {
+            notificationService.cancelEventReminder(event.getId());
             notificationService.scheduleEventReminder(event);
         } else {
             // Cancel reminder if reminder date was removed
@@ -386,6 +388,12 @@ public class EventService {
         if (!dto.getBookingStartTime().isBefore(dto.getBookingDeadline())) {
             throw new IllegalArgumentException(
                     "Booking start time must be before booking deadline");
+        }
+
+        if (dto.getReminderSendDate() != null
+                && !dto.getReminderSendDate().isBefore(dto.getStartTime())) {
+            throw new IllegalArgumentException(
+                    "Reminder send date must be before event start time");
         }
     }
 }

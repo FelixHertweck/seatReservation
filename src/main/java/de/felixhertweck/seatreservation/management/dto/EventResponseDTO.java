@@ -36,6 +36,7 @@ public record EventResponseDTO(
         Instant bookingDeadline,
         Instant bookingStartTime,
         Instant reminderSendDate,
+        Boolean isReminderSent,
         List<SeatStatusDTO> seatStatuses,
         List<Long> eventUserAllowancesIds,
         Long eventLocationId,
@@ -50,6 +51,7 @@ public record EventResponseDTO(
                 event.getBookingDeadline(),
                 event.getBookingStartTime(),
                 event.getReminderSendDate(),
+                event.isReminderSent(),
                 event.getReservations().stream().map(SeatStatusDTO::new).toList(),
                 event.getUserAllowances() != null
                         ? event.getUserAllowances().stream()

@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.management.dto;
 
 import java.time.Instant;
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
@@ -44,7 +45,7 @@ public class EventRequestDTO {
     @NotNull(message = "Booking start time must not be null")
     private Instant bookingStartTime;
 
-    private Instant reminderSendDate;
+    @Nullable private Instant reminderSendDate;
 
     @NotNull(message = "EventLocation ID must not be null")
     private Long eventLocationId;

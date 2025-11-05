@@ -192,6 +192,9 @@
           "bookingStartTime" : {
             "$ref" : "#/components/schemas/Instant"
           },
+          "reminderSendDate" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
           "eventLocationId" : {
             "type" : "integer",
             "format" : "int64"
@@ -222,6 +225,12 @@
           },
           "bookingStartTime" : {
             "$ref" : "#/components/schemas/Instant"
+          },
+          "reminderSendDate" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "isReminderSent" : {
+            "type" : "boolean"
           },
           "seatStatuses" : {
             "type" : "array",
@@ -786,7 +795,12 @@
         },
         "responses" : {
           "200" : {
-            "description" : "Login successful, JWT cookie set"
+            "description" : "Login successful, JWT cookie set",
+            "content" : {
+              "application/json" : {
+                "schema" : { }
+              }
+            }
           },
           "401" : {
             "description" : "Unauthorized: Invalid credentials"
@@ -801,9 +815,21 @@
     },
     "/api/auth/logout" : {
       "post" : {
+        "parameters" : [ {
+          "name" : "refreshToken",
+          "in" : "cookie",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
         "responses" : {
           "200" : {
-            "description" : "Logout successful, JWT and refresh token cookies cleared"
+            "description" : "Logout successful, JWT and refresh token cookies cleared",
+            "content" : {
+              "application/json" : {
+                "schema" : { }
+              }
+            }
           },
           "401" : {
             "description" : "Not Authorized"
@@ -823,7 +849,12 @@
       "post" : {
         "responses" : {
           "200" : {
-            "description" : "OK"
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : { }
+              }
+            }
           },
           "401" : {
             "description" : "Not Authorized"
@@ -850,7 +881,12 @@
         } ],
         "responses" : {
           "200" : {
-            "description" : "Token refresh successful, new JWT cookie set"
+            "description" : "Token refresh successful, new JWT cookie set",
+            "content" : {
+              "application/json" : {
+                "schema" : { }
+              }
+            }
           },
           "401" : {
             "description" : "Unauthorized: Invalid or expired token"
@@ -874,7 +910,12 @@
         },
         "responses" : {
           "200" : {
-            "description" : "Registration successful, JWT cookie set"
+            "description" : "Registration successful, JWT cookie set",
+            "content" : {
+              "application/json" : {
+                "schema" : { }
+              }
+            }
           },
           "409" : {
             "description" : "Conflict: User with this username already exists"
@@ -2359,7 +2400,12 @@
         },
         "responses" : {
           "200" : {
-            "description" : "Email verified successfully"
+            "description" : "Email verified successfully",
+            "content" : {
+              "application/json" : {
+                "schema" : { }
+              }
+            }
           },
           "400" : {
             "description" : "Invalid verification code"

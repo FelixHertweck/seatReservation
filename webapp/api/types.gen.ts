@@ -61,6 +61,7 @@ export type EventRequestDto = {
     endTime: Instant;
     bookingDeadline: Instant;
     bookingStartTime: Instant;
+    reminderSendDate?: Instant;
     eventLocationId: bigint;
 };
 
@@ -72,6 +73,8 @@ export type EventResponseDto = {
     endTime?: Instant;
     bookingDeadline?: Instant;
     bookingStartTime?: Instant;
+    reminderSendDate?: Instant;
+    isReminderSent?: boolean;
     seatStatuses?: Array<SeatStatusDto>;
     eventUserAllowancesIds?: Array<bigint>;
     eventLocationId?: bigint;

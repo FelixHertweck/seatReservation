@@ -196,6 +196,9 @@ export const EventRequestDTOSchema = {
         bookingStartTime: {
             '$ref': '#/components/schemas/Instant'
         },
+        reminderSendDate: {
+            '$ref': '#/components/schemas/Instant'
+        },
         eventLocationId: {
             type: 'integer',
             format: 'int64'
@@ -227,6 +230,12 @@ export const EventResponseDTOSchema = {
         },
         bookingStartTime: {
             '$ref': '#/components/schemas/Instant'
+        },
+        reminderSendDate: {
+            '$ref': '#/components/schemas/Instant'
+        },
+        isReminderSent: {
+            type: 'boolean'
         },
         seatStatuses: {
             type: 'array',

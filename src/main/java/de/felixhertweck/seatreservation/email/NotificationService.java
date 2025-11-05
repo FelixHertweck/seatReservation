@@ -106,7 +106,7 @@ public class NotificationService {
         // Schedule the reminder job
         scheduler
                 .newJob(jobId)
-                .setInterval(delaySeconds + "s")
+                .setDelayed(delaySeconds + "s")
                 .setTask(
                         executionContext -> {
                             executorService.execute(() -> sendReminderForEvent(event.id));
@@ -127,6 +127,7 @@ public class NotificationService {
             Event event = eventService.findById(eventId);
             if (event == null) {
                 LOG.warnf("Event with ID %d not found, skipping reminder", eventId);
+                scheduler.unscheduleJob("reminder-event-" + eventId);
                 return;
             }
 
@@ -144,6 +145,7 @@ public class NotificationService {
 
             if (reservations.isEmpty()) {
                 LOG.debugf("No reservations for event %s, skipping reminder", event.getName());
+                scheduler.unscheduleJob("reminder-event-" + eventId);
                 eventService.markReminderAsSent(event);
                 return;
             }
@@ -170,8 +172,10 @@ public class NotificationService {
 
             // Mark reminder as sent
             eventService.markReminderAsSent(event);
+            scheduler.unscheduleJob("reminder-event-" + eventId);
             LOG.infof("Reminder sent and marked for event: %s (ID: %d)", event.getName(), event.id);
         } catch (Exception e) {
+            scheduler.unscheduleJob("reminder-event-" + eventId);
             LOG.errorf(e, "Error processing reminder for event ID: %d", eventId);
         }
     }
@@ -187,6 +191,7 @@ public class NotificationService {
         LOG.debugf("Cancelled reminder job for event ID: %d", eventId);
     }
 
+    /** Sends daily reservation CSVs to event managers for events happening today. */
     @Scheduled(cron = "0 0 8 * * ?")
     public void sendDailyReservationCsvToManagers() {
         LOG.info("Starting scheduled CSV export task for event managers.");

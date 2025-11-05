@@ -60,6 +60,9 @@ export function EventFormModal({
     bookingStartTime: event?.bookingStartTime
       ? new Date(event.bookingStartTime).toLocaleString("sv-SE").slice(0, 16)
       : "",
+    reminderSendDate: event?.reminderSendDate
+      ? new Date(event.reminderSendDate).toLocaleString("sv-SE").slice(0, 16)
+      : "",
     eventLocationId: event?.eventLocationId?.toString() || "",
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -76,6 +79,9 @@ export function EventFormModal({
         endTime: new Date(formData.endTime),
         bookingDeadline: new Date(formData.bookingDeadline),
         bookingStartTime: new Date(formData.bookingStartTime),
+        reminderSendDate: formData.reminderSendDate
+          ? new Date(formData.reminderSendDate)
+          : undefined,
         eventLocationId: BigInt(formData.eventLocationId),
       };
       await onSubmit(eventData);
@@ -187,6 +193,7 @@ export function EventFormModal({
                 id="endTime"
                 type="datetime-local"
                 value={formData.endTime}
+                min={formData.startTime}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, endTime: e.target.value }))
                 }
@@ -203,6 +210,7 @@ export function EventFormModal({
                 id="bookingStartTime"
                 type="datetime-local"
                 value={formData.bookingStartTime}
+                max={formData.bookingDeadline || formData.startTime}
                 onChange={(e) =>
                   setFormData((prev) => ({
                     ...prev,
@@ -221,6 +229,8 @@ export function EventFormModal({
                 id="bookingDeadline"
                 type="datetime-local"
                 value={formData.bookingDeadline}
+                min={formData.bookingStartTime}
+                max={formData.startTime}
                 onChange={(e) =>
                   setFormData((prev) => ({
                     ...prev,
@@ -231,6 +241,26 @@ export function EventFormModal({
               />
             </div>
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="reminderSendDate">
+              {t("eventFormModal.reminderSendDateLabel")}
+            </Label>
+            <Input
+              id="reminderSendDate"
+              type="datetime-local"
+              value={formData.reminderSendDate}
+              min={formData.bookingStartTime}
+              max={formData.startTime}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  reminderSendDate: e.target.value,
+                }))
+              }
+            />
+          </div>
+
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onClose}>
               {t("eventFormModal.cancelButton")}
