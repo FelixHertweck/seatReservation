@@ -136,11 +136,11 @@ public class AuthService {
     }
 
     /**
-     * Calculates the remaining lockout time for an account.
+     * Calculates the instant when the lockout for an account will expire.
      *
      * @param username the username to check
      * @param lockoutWindowStart the start of the lockout window
-     * @return the remaining lockout time in seconds
+     * @return the instant when the lockout expires
      */
     private Instant calculateRemainingLockoutTime(String username, Instant lockoutWindowStart) {
         Instant oldestFailedAttempt =
