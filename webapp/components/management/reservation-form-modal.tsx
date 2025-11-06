@@ -158,6 +158,16 @@ export function ReservationFormModal({
 
         <form
           onSubmit={handleSubmit}
+          onKeyDown={(e) => {
+            if (
+              e.key === "Enter" &&
+              !e.shiftKey &&
+              !(e.target instanceof HTMLTextAreaElement)
+            ) {
+              e.preventDefault();
+              handleSubmit(e as React.FormEvent<HTMLFormElement>);
+            }
+          }}
           className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0 overflow-y-auto lg:overflow-y-visible px-4 sm:px-0"
         >
           {/* Left side - Seat Map */}

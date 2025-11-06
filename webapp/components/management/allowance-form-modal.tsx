@@ -149,6 +149,16 @@ export function AllowanceFormModal({
       <DialogContent
         className="sm:max-w-[600px]"
         onInteractOutside={(e) => e.preventDefault()}
+        onKeyDown={(e) => {
+          if (
+            e.key === "Enter" &&
+            !e.shiftKey &&
+            !(e.target instanceof HTMLTextAreaElement)
+          ) {
+            e.preventDefault();
+            handleSubmit();
+          }
+        }}
       >
         <DialogHeader>
           <DialogTitle>

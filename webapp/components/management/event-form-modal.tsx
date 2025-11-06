@@ -109,7 +109,20 @@ export function EventFormModal({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form
+          onSubmit={handleSubmit}
+          onKeyDown={(e) => {
+            if (
+              e.key === "Enter" &&
+              !e.shiftKey &&
+              !(e.target instanceof HTMLTextAreaElement)
+            ) {
+              e.preventDefault();
+              handleSubmit(e as React.FormEvent<HTMLFormElement>);
+            }
+          }}
+          className="space-y-4"
+        >
           <div className="space-y-2">
             <Label htmlFor="name">{t("eventFormModal.eventNameLabel")}</Label>
             <Input
