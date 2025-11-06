@@ -35,6 +35,11 @@ email:
     expiration:
       minutes: 30
 
+  seatmap:
+    token:
+      expiration:
+        days: 30
+
   # Optional BCC address for event notifications to users (leave empty to disable)
   bcc-address: ""
  
@@ -189,6 +194,33 @@ email:
                 li {
                     margin-bottom: 5px;
                 }
+                .seatmap-container {
+                    text-align: center;
+                    margin: 30px 0;
+                }
+                .seatmap-image {
+                    max-width: 100%;
+                    height: auto;
+                    border: 2px solid #a0a0a0;
+                    border-radius: 8px;
+                    margin-bottom: 20px;
+                }
+                .button {
+                    display: inline-block;
+                    background: linear-gradient(135deg, #3498db, #2980b9);
+                    color: white !important;
+                    text-decoration: none;
+                    padding: 10px 20px;
+                    border-radius: 6px;
+                    font-weight: bold;
+                    font-size: 14px;
+                    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+                    transition: all 0.3s ease;
+                }
+                .button:hover {
+                    background: linear-gradient(135deg, #2980b9, #21618c);
+                    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+                }
             </style>
         </head>
         <body>
@@ -207,14 +239,16 @@ email:
                     {seatList}
                 </ul>
                 <p>You can view the event details here: <a href="{eventLink}">View Event</a></p>
-                <p><strong>Here is an overview of your seats:</strong></p>
-                <p>It is possible that the following display is not supported by your email client.</p>
-                {seatMap}
-                <div style="margin-top: 20px; text-align: center;">
-                    <span style="display: inline-block; width: 15px; height: 15px; background-color: #2B7FFF; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
-                    <span style="vertical-align: middle;">My Reserved</span>
-                    <span style="display: inline-block; width: 15px; height: 15px; background-color: #F0B100; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
-                    <span style="vertical-align: middle;">Already Reserved</span>
+                <div class="seatmap-container">
+                    <p><strong>Here is an overview of your seats:</strong></p>
+                    <img src="cid:seatmap-image" alt="Seat Map" class="seatmap-image" />
+                    <div style="margin-bottom: 20px;">
+                        <span style="display: inline-block; width: 15px; height: 15px; background-color: #2B7FFF; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
+                        <span style="vertical-align: middle;">My Reserved</span>
+                        <span style="display: inline-block; width: 15px; height: 15px; background-color: #F0B100; border-radius: 3px; vertical-align: middle; margin-right: 5px; margin-left: 15px;"></span>
+                        <span style="vertical-align: middle;">Already Reserved</span>
+                    </div>
+                    <a href="{seatmapLink}" class="button">🪑 View Interactive Seat Map</a>
                 </div>
                 <p>We look forward to seeing you!</p>
                 <p>Sincerely,</p>
@@ -335,6 +369,33 @@ email:
                 }
                 .hidden { display: none; }
                 .visible { display: block; }
+                .seatmap-container {
+                    text-align: center;
+                    margin: 30px 0;
+                }
+                .seatmap-image {
+                    max-width: 100%;
+                    height: auto;
+                    border: 2px solid #a0a0a0;
+                    border-radius: 8px;
+                    margin-bottom: 20px;
+                }
+                .button {
+                    display: inline-block;
+                    background: linear-gradient(135deg, #3498db, #2980b9);
+                    color: white !important;
+                    text-decoration: none;
+                    padding: 10px 20px;
+                    border-radius: 6px;
+                    font-weight: bold;
+                    font-size: 14px;
+                    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+                    transition: all 0.3s ease;
+                }
+                .button:hover {
+                    background: linear-gradient(135deg, #2980b9, #21618c);
+                    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+                }
             </style>
         </head>
         <body>
@@ -354,14 +415,16 @@ email:
                     {existingSeatList}
                 </ul>
                 <p>You can view the event details here: <a href="{eventLink}">View Event</a></p>
-                <p><strong>Here is an overview of your seats:</strong></p>
-                <p>It is possible that the following display is not supported by your email client.</p>
-                {seatMap}
-                <div style="margin-top: 20px; text-align: center;">
-                    <span style="display: inline-block; width: 15px; height: 15px; background-color: #2B7FFF; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
-                    <span style="vertical-align: middle;">My Reserved</span>
-                    <span style="display: inline-block; width: 15px; height: 15px; background-color: #F0B100; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
-                    <span style="vertical-align: middle;">Already Reserved</span>
+                <div class="seatmap-container">
+                    <p><strong>Here is an overview of your seats:</strong></p>
+                    <img src="cid:seatmap-image" alt="Seat Map" class="seatmap-image" />
+                    <div style="margin-bottom: 20px;">
+                        <span style="display: inline-block; width: 15px; height: 15px; background-color: #2B7FFF; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
+                        <span style="vertical-align: middle;">My Reserved</span>
+                        <span style="display: inline-block; width: 15px; height: 15px; background-color: #F0B100; border-radius: 3px; vertical-align: middle; margin-right: 5px; margin-left: 15px;"></span>
+                        <span style="vertical-align: middle;">Already Reserved</span>
+                    </div>
+                    <a href="{seatmapLink}" class="button">🪑 View Interactive Seat Map</a>
                 </div>
                 <p style="margin-top: 20px;">We wish you a great time at the event!</p>
                 <p>Best regards</p>
@@ -409,6 +472,33 @@ email:
                 }
                 .hidden { display: none; }
                 .visible { display: block; }
+                .seatmap-container {
+                    text-align: center;
+                    margin: 30px 0;
+                }
+                .seatmap-image {
+                    max-width: 100%;
+                    height: auto;
+                    border: 2px solid #a0a0a0;
+                    border-radius: 8px;
+                    margin-bottom: 20px;
+                }
+                .button {
+                    display: inline-block;
+                    background: linear-gradient(135deg, #3498db, #2980b9);
+                    color: white !important;
+                    text-decoration: none;
+                    padding: 10px 20px;
+                    border-radius: 6px;
+                    font-weight: bold;
+                    font-size: 14px;
+                    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+                    transition: all 0.3s ease;
+                }
+                .button:hover {
+                    background: linear-gradient(135deg, #2980b9, #21618c);
+                    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+                }
             </style>
         </head>
         <body>
@@ -428,14 +518,16 @@ email:
                     {activeSeatList}
                 </ul>
                 <p>You can view the event details here: <a href="{eventLink}">View Event</a></p>
-                <p><strong>Here is an overview of your current seats:</strong></p>
-                <p>It is possible that the following display is not supported by your email client.</p>
-                {seatMap}
-                <div style="margin-top: 20px; text-align: center;">
-                    <span style="display: inline-block; width: 15px; height: 15px; background-color: #2B7FFF; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
-                    <span style="vertical-align: middle; margin-right: 15px;">New Reserved</span>
-                    <span style="display: inline-block; width: 15px; height: 15px; background-color: #F0B100; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
-                    <span style="vertical-align: middle;">Already Reserved</span>
+                <div class="seatmap-container">
+                    <p><strong>Here is an overview of your current seats:</strong></p>
+                    <img src="cid:seatmap-image" alt="Seat Map" class="seatmap-image" />
+                    <div style="margin-bottom: 20px;">
+                        <span style="display: inline-block; width: 15px; height: 15px; background-color: #2B7FFF; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
+                        <span style="vertical-align: middle; margin-right: 15px;">New Reserved</span>
+                        <span style="display: inline-block; width: 15px; height: 15px; background-color: #F0B100; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
+                        <span style="vertical-align: middle;">Already Reserved</span>
+                    </div>
+                    <a href="{seatmapLink}" class="button">🪑 View Interactive Seat Map</a>
                 </div>
                 <p style="margin-top: 20px;">We wish you a great time at the event!</p>
                 <p>Best regards</p>

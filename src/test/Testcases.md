@@ -15,6 +15,43 @@ This is an overview of the test cases for the application.
 | `sendEventReservationsCsvToManager_Success` | Successfully sends an email with a CSV export of reservations to the manager. |
 | `sendEventReservationsCsvToManager_IOException` | Simulates an error while sending the email with the CSV export to the manager (e.g., via an `IOException`). Expects the exception to be handled correctly. |
 
+### EmailSeatMapService
+
+| Test Case | Description |
+| :--- | :--- |
+| `createEmailSeatMapToken_Success` | Successfully creates a new email seat map token for a user, event, and reservations. |
+| `createEmailSeatMapToken_GeneratesUniqueToken` | Verifies that each call to create a token generates a unique token value. |
+| `createEmailSeatMapToken_WithMultipleReservations` | Successfully creates a token with multiple reservations. |
+| `createEmailSeatMapToken_WithEmptyReservations` | Successfully creates a token with an empty list of reservations. |
+| `getSvgImage_Success_WithValidToken` | Successfully retrieves an SVG seat map image for a valid, non-expired token. |
+| `getSvgImage_ReturnsEmpty_WhenTokenNotFound` | Returns empty Optional when the token does not exist in the database. |
+| `getSvgImage_ReturnsEmpty_WhenTokenExpired` | Returns empty Optional when the token has expired. |
+| `getSvgImage_ReturnsEmpty_WhenTokenIsNull` | Returns empty Optional and does not query the database when token is null. |
+| `getSvgImage_ReturnsEmpty_WhenTokenIsBlank` | Returns empty Optional and does not query the database when token is blank. |
+| `getSvgImage_ReturnsEmpty_WhenEventIsNull` | Returns empty Optional when the token's associated event is null. |
+| `getSvgImage_ReturnsEmpty_WhenEventLocationIsNull` | Returns empty Optional when the event has no location. |
+| `getSvgImage_WithExistingReservations` | Successfully generates SVG image including both new and existing reservations. |
+| `getSvgImage_WithMarkers` | Successfully generates SVG image including event location markers. |
+| `getSvgImage_WithNoExpirationTime` | Successfully returns SVG when expiration time is null (no expiration). |
+| `getPngImage_Success_WithValidToken` | Successfully converts and retrieves a PNG seat map image for a valid token. |
+| `getPngImage_ReturnsEmpty_WhenTokenNotFound` | Returns empty Optional when the token does not exist in the database. |
+| `getPngImage_ReturnsEmpty_WhenTokenExpired` | Returns empty Optional when the token has expired. |
+
+### EmailSeatMapTokenRepository
+
+| Test Case | Description |
+| :--- | :--- |
+| `findByToken_Success_WhenTokenExists` | Successfully retrieves a token by its token string when it exists in the database. |
+| `findByToken_ReturnsEmpty_WhenTokenNotExists` | Returns empty Optional when searching for a non-existent token. |
+| `deleteExpiredTokens_Success` | Successfully deletes only expired tokens while keeping valid tokens. |
+| `deleteExpiredTokens_ReturnsZero_WhenNoExpiredTokens` | Returns 0 when there are no expired tokens to delete. |
+| `deleteByUser_Success` | Successfully deletes all tokens for a specific user. |
+| `deleteByUser_ReturnsZero_WhenNoTokensExist` | Returns 0 when there are no tokens for the specified user. |
+| `findExpiredTokens_Success` | Successfully retrieves a list of all expired tokens. |
+| `findExpiredTokens_ReturnsEmpty_WhenNoExpiredTokens` | Returns an empty list when there are no expired tokens. |
+| `persist_Success_WithMultipleSeatNumbers` | Successfully persists a token with multiple seat numbers. |
+| `persist_Success_WithEmptySeatNumbers` | Successfully persists a token with an empty set of seat numbers. |
+
 ### EmailVerificationCleanupService
 
 | Test Case | Description |
@@ -598,6 +635,37 @@ This is an overview of the test cases for the application.
 # Resource Tests
 
 This document describes the tests for the REST resources.
+
+## Email
+
+### EmailSeatMapResource
+
+Base Path: `/api/email/seatmap`
+
+Role: Public (no authentication required)
+
+---
+
+#### GET /
+
+Retrieves the seat map SVG image for a given token.
+
+**Description:**
+
+This endpoint allows users to view their seat reservations via a secure token link included in email notifications. The token is validated against the database and must not be expired.
+
+**Test Cases:**
+
+*   **Success:**
+    *   A valid, non-expired token is provided and the SVG seat map image is returned with a `200 OK` status and content type `image/svg+xml`.
+    *   A valid token with complex SVG content (circles, rectangles) is provided and the complete SVG is returned correctly.
+*   **Failure:**
+    *   An invalid token is provided and receives a `404 Not Found` status with message "Not found or token invalid/expired".
+    *   An expired token is provided and receives a `404 Not Found` status.
+    *   No token is provided (missing query parameter) and receives a `404 Not Found` status.
+    *   An empty token string is provided and receives a `404 Not Found` status.
+
+---
 
 ## Event Management
 

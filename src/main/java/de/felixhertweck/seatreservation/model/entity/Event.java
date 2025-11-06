@@ -20,8 +20,17 @@
 package de.felixhertweck.seatreservation.model.entity;
 
 import java.time.Instant;
-import java.util.*;
-import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 
@@ -47,6 +56,9 @@ public class Event extends PanacheEntity {
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reservation> reservations = new ArrayList<>();
+
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<EmailSeatMapToken> emailSeatMapTokens = new HashSet<>();
 
     public Event() {}
 
@@ -147,6 +159,14 @@ public class Event extends PanacheEntity {
 
     public void setReservations(List<Reservation> reservations) {
         this.reservations = reservations;
+    }
+
+    public Set<EmailSeatMapToken> getEmailSeatMapTokens() {
+        return emailSeatMapTokens;
+    }
+
+    public void setEmailSeatMapTokens(Set<EmailSeatMapToken> emailSeatMapTokens) {
+        this.emailSeatMapTokens = emailSeatMapTokens;
     }
 
     @Override
