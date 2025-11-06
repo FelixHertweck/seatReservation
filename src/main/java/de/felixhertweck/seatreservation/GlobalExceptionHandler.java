@@ -39,6 +39,8 @@ import de.felixhertweck.seatreservation.management.exception.SeatNotFoundExcepti
 import de.felixhertweck.seatreservation.reservation.exception.EventBookingClosedException;
 import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
+import de.felixhertweck.seatreservation.security.dto.LoginLockedDTO;
+import de.felixhertweck.seatreservation.security.exceptions.AccountLockedException;
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
 import de.felixhertweck.seatreservation.security.service.TokenService;
@@ -100,6 +102,14 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
             case IllegalArgumentException ignored -> status = Response.Status.BAD_REQUEST;
             case SecurityException ignored -> status = Response.Status.FORBIDDEN;
             case IllegalStateException ignored -> status = Response.Status.BAD_REQUEST;
+            case AccountLockedException accountLockedException -> {
+                status = Response.Status.TOO_MANY_REQUESTS;
+                LoginLockedDTO errorResponseLogin =
+                        new LoginLockedDTO(
+                                accountLockedException.getMessage(),
+                                accountLockedException.getRetryAfter());
+                return Response.status(status).entity(errorResponseLogin).build();
+            }
             default -> {
                 status = Response.Status.INTERNAL_SERVER_ERROR;
             }

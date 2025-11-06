@@ -14,14 +14,16 @@ import {
   postApiUserResendEmailConfirmationMutation,
   postApiUserVerifyEmailCodeMutation,
 } from "@/api/@tanstack/react-query.gen";
-import type {
-  RegisterRequestDto,
-  RegistrationStatusDto,
-  VerifyEmailCodeRequestDto,
+import {
+  Instant,
+  type RegisterRequestDto,
+  type RegistrationStatusDto,
+  type VerifyEmailCodeRequestDto,
 } from "@/api";
 import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { isValidRedirectUrlEncoded } from "@/lib/utils";
 import { ErrorWithResponse } from "@/components/init-query-client";
+import { useState } from "react";
 
 export function useAuth() {
   const t = useT();
@@ -30,6 +32,8 @@ export function useAuth() {
 
   const router = useRouter();
   const queryClient = useQueryClient();
+
+  const [retryAfter, setRetryAfter] = useState<Instant | null>(null);
 
   const {
     data: user,
@@ -41,11 +45,24 @@ export function useAuth() {
   const { mutateAsync: loginMutation } = useMutation({
     ...postApiAuthLoginMutation(),
     onError: (error) => {
-      // Only show toast for non-401 errors, let 401s be handled by the component
-      if ((error as ErrorWithResponse).response?.status !== 401) {
+      const errorWithType = error as ErrorWithResponse;
+      const errorResponse = errorWithType.response;
+      const status = errorResponse?.status;
+      if (status === 429) {
+        setRetryAfter(errorResponse?.data?.retryAfter ?? null);
         toast({
           title: t("login.error.title"),
-          description: error.message || t("login.error.description"),
+          description: t("login.error.tooManyAttemptsDescription"),
+          variant: "destructive",
+        });
+      }
+      // Only show toast for non-401 errors, let 401s be handled by the component
+      else if (status !== 401) {
+        toast({
+          title: t("login.error.title"),
+          description:
+            (error as ErrorWithResponse).message ||
+            t("login.error.description"),
           variant: "destructive",
         });
       }
@@ -58,6 +75,7 @@ export function useAuth() {
     returnToUrl?: string | null,
   ) => {
     await loginMutation({ body: { username, password } });
+    setRetryAfter(null);
     await queryClient.invalidateQueries();
     await refetchUser();
     redirectUser(router, locale, returnToUrl);
@@ -158,6 +176,7 @@ export function useAuth() {
     logoutAll,
     verifyEmail,
     resendConfirmation,
+    retryAfter,
   };
 }
 

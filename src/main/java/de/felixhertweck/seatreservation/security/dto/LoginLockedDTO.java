@@ -17,26 +17,32 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.security.exceptions;
+package de.felixhertweck.seatreservation.security.dto;
 
 import java.time.Instant;
 
-/** Exception thrown when an account is temporarily locked due to too many failed login attempts. */
-public class AccountLockedException extends RuntimeException {
+public class LoginLockedDTO {
+    private String message;
+    private Instant retryAfter;
 
-    private final Instant retryAfter;
-
-    public AccountLockedException(String message, Instant retryAfter) {
-        super(message);
+    public LoginLockedDTO(String message, Instant retryAfter) {
+        this.message = message;
         this.retryAfter = retryAfter;
     }
 
-    /**
-     * Gets the retry after instant timestamp.
-     *
-     * @return the instant when the user can retry
-     */
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
     public Instant getRetryAfter() {
         return retryAfter;
+    }
+
+    public void setRetryAfter(Instant retryAfter) {
+        this.retryAfter = retryAfter;
     }
 }

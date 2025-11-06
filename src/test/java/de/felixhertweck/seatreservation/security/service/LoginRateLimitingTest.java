@@ -24,6 +24,7 @@ import java.time.Instant;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
@@ -122,7 +123,12 @@ public class LoginRateLimitingTest {
                         () -> authService.authenticate(username, password));
 
         assertNotNull(thrown.getMessage());
-        assertEquals(300L, thrown.getRemainingLockoutSeconds());
+        assertNotNull(thrown.getRetryAfter());
+        Instant retryAfter = thrown.getRetryAfter();
+        assertTrue(retryAfter.isAfter(Instant.now()), "Retry after should be in the future");
+        assertTrue(
+                retryAfter.isBefore(Instant.now().plusSeconds(301)),
+                "Retry after should be within 5 minutes");
     }
 
     @Test
@@ -202,7 +208,12 @@ public class LoginRateLimitingTest {
                         AccountLockedException.class,
                         () -> authService.authenticate(username, password));
 
-        assertEquals(600L, thrown.getRemainingLockoutSeconds());
+        assertNotNull(thrown.getRetryAfter());
+        Instant retryAfter = thrown.getRetryAfter();
+        assertTrue(retryAfter.isAfter(Instant.now()), "Retry after should be in the future");
+        assertTrue(
+                retryAfter.isBefore(Instant.now().plusSeconds(601)),
+                "Retry after should be within 10 minutes");
     }
 
     @Test

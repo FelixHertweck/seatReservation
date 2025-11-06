@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,9 +30,69 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isLoadingForm, setIsLoadingForm] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
-  const { user, isLoggedIn, login, logout } = useAuth();
+  const { user, isLoggedIn, login, logout, retryAfter } = useAuth();
   const router = useRouter();
   const [currentlyLoggingIn, setCurrentlyLoggingIn] = useState(false);
+  const [remainingTime, setRemainingTime] = useState<number>(0);
+  const [isRetryAfterActive, setIsRetryAfterActive] = useState(false);
+
+  useEffect(() => {
+    if (!retryAfter) {
+      setIsRetryAfterActive(false);
+      setRemainingTime(0);
+      return;
+    }
+
+    const retryAfterDate = new Date(retryAfter).getTime();
+    const now = new Date().getTime();
+
+    if (retryAfterDate > now) {
+      setIsRetryAfterActive(true);
+      const calculateRemaining = () => {
+        const current = new Date().getTime();
+        const remaining = Math.max(
+          0,
+          Math.ceil((retryAfterDate - current) / 1000),
+        );
+        setRemainingTime(remaining);
+        return remaining > 0;
+      };
+
+      calculateRemaining();
+      const interval = setInterval(() => {
+        if (!calculateRemaining()) {
+          clearInterval(interval);
+          setIsRetryAfterActive(false);
+        }
+      }, 1000);
+
+      return () => clearInterval(interval);
+    } else {
+      setIsRetryAfterActive(false);
+      setRemainingTime(0);
+    }
+  }, [retryAfter]);
+
+  const formatRetryTime = (): string => {
+    const hours = Math.floor(remainingTime / 3600);
+    const minutes = Math.floor((remainingTime % 3600) / 60);
+    const seconds = remainingTime % 60;
+
+    let duration = "";
+    if (hours > 0) duration += `${hours}h `;
+    if (minutes > 0) duration += `${minutes}m `;
+    duration += `${seconds}s`;
+
+    if (retryAfter) {
+      const retryDate = new Date(retryAfter);
+      const timeString = retryDate.toLocaleTimeString(locale);
+      return t("login.error.accountLocked", {
+        time: timeString,
+        duration: duration.trim(),
+      });
+    }
+    return "";
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,7 +172,10 @@ export default function LoginPage() {
                 type="text"
                 placeholder={t("login.enterUsername")}
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                  setLoginError(null);
+                }}
                 autoCapitalize="none"
                 autoComplete="username"
                 required
@@ -127,17 +190,26 @@ export default function LoginPage() {
                 autoComplete="current-password"
                 placeholder={t("login.enterPassword")}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setLoginError(null);
+                }}
                 required
               />
             </div>
-            {loginError && (
-              <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md p-3">
-                {loginError}
-              </div>
-            )}
-            <Button type="submit" className="w-full" disabled={isLoadingForm}>
-              {isLoadingForm ? t("login.signingIn") : t("login.signInButton")}
+            <Button
+              type="submit"
+              className="w-full"
+              variant={loginError ? "destructive" : "default"}
+              disabled={isLoadingForm || isRetryAfterActive || !!loginError}
+            >
+              {loginError
+                ? loginError
+                : isRetryAfterActive
+                  ? formatRetryTime()
+                  : isLoadingForm
+                    ? t("login.signingIn")
+                    : t("login.signInButton")}
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">

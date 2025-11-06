@@ -56,7 +56,8 @@
     "error": {
       "invalidCredentials": "Invalid username or password.",
       "title": "Login Error",
-      "description": "An error occurred while logging in. Please try again."
+      "description": "An error occurred while logging in. Please try again.",
+      "accountLocked": "Account locked until {{time}} ({{duration}})"
     }
   },
   "register": {

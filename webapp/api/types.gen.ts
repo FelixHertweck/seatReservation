@@ -124,6 +124,11 @@ export type LimitedUserInfoDto = {
     tags?: Array<string>;
 };
 
+export type LoginLockedDto = {
+    message?: string;
+    retryAfter?: Instant;
+};
+
 export type LoginRequestDto = {
     username: string;
     password: string;
@@ -271,8 +276,10 @@ export type PostApiAuthLoginErrors = {
     /**
      * Too Many Requests: Account temporarily locked due to too many failed login attempts
      */
-    429: unknown;
+    429: LoginLockedDto;
 };
+
+export type PostApiAuthLoginError = PostApiAuthLoginErrors[keyof PostApiAuthLoginErrors];
 
 export type PostApiAuthLoginResponses = {
     /**

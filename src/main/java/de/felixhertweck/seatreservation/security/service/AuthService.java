@@ -123,15 +123,15 @@ public class AuthService {
                 loginAttemptRepository.countFailedAttempts(username, lockoutWindowStart);
 
         if (failedAttempts >= maxFailedAttempts) {
-            long remainingSeconds = calculateRemainingLockoutTime(username, lockoutWindowStart);
+            Instant retryAfter = calculateRemainingLockoutTime(username, lockoutWindowStart);
             LOG.warnf(
                     "Account locked for username %s due to %d failed attempts. Remaining lockout"
-                            + " time: %d seconds",
-                    username, failedAttempts, remainingSeconds);
+                            + " time: %s",
+                    username, failedAttempts, retryAfter.toString());
             throw new AccountLockedException(
                     "Account temporarily locked due to too many failed login attempts. Please try"
                             + " again later.",
-                    remainingSeconds);
+                    retryAfter);
         }
     }
 
@@ -142,20 +142,15 @@ public class AuthService {
      * @param lockoutWindowStart the start of the lockout window
      * @return the remaining lockout time in seconds
      */
-    private long calculateRemainingLockoutTime(String username, Instant lockoutWindowStart) {
+    private Instant calculateRemainingLockoutTime(String username, Instant lockoutWindowStart) {
         Instant oldestFailedAttempt =
                 loginAttemptRepository.getOldestFailedAttemptTime(username, lockoutWindowStart);
         if (oldestFailedAttempt == null) {
-            return lockoutDurationSeconds;
+            return Instant.now().plusSeconds(lockoutDurationSeconds);
         }
 
         // Calculate when the lockout will expire based on the oldest failed attempt
-        Instant lockoutExpiry = oldestFailedAttempt.plusSeconds(lockoutDurationSeconds);
-        long remainingSeconds =
-                Instant.now().until(lockoutExpiry, java.time.temporal.ChronoUnit.SECONDS);
-
-        // Return at least 0 seconds, even if calculation results in negative
-        return Math.max(0, remainingSeconds);
+        return oldestFailedAttempt.plusSeconds(lockoutDurationSeconds);
     }
 
     public boolean passwordMatches(String password, String passwordSalt, String storedHash) {
