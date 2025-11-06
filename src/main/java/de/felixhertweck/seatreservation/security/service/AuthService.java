@@ -36,7 +36,6 @@ import de.felixhertweck.seatreservation.security.exceptions.AccountLockedExcepti
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
-import de.felixhertweck.seatreservation.utils.RandomUUIDString;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
@@ -88,7 +87,7 @@ public class AuthService {
         checkAccountLockout(username);
 
         // Generate random password hash to mitigate timing attacks
-        String randomPasswordHash = BcryptUtil.bcryptHash(RandomUUIDString.generate());
+        String randomPasswordHash = "$2a$12$G0LZJi5jGdl5wqspjaVYN.eXdZcZ3X9cMny/3m8mRM3vK/5Yf6TE6";
 
         User user = userRepository.findByUsername(username);
         if (user == null) {
