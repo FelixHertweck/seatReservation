@@ -24,6 +24,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.model.entity.LoginAttempt;
+import de.felixhertweck.seatreservation.model.entity.User;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import org.jboss.logging.Logger;
 
@@ -67,6 +68,21 @@ public class LoginAttemptRepository implements PanacheRepository<LoginAttempt> {
         LOG.debugf(
                 "Recording login attempt for username: %s, successful: %s", username, successful);
         LoginAttempt attempt = new LoginAttempt(username, Instant.now(), successful);
+        persist(attempt);
+    }
+
+    /**
+     * Records a login attempt for an authenticated user.
+     *
+     * @param user the user who attempted to login
+     * @param successful whether the login was successful
+     */
+    @Transactional
+    public void recordAttempt(User user, boolean successful) {
+        LOG.debugf(
+                "Recording login attempt for user ID: %d, successful: %s",
+                (Object) user.id, successful);
+        LoginAttempt attempt = new LoginAttempt(user, Instant.now(), successful);
         persist(attempt);
     }
 

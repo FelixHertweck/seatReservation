@@ -102,12 +102,12 @@ public class AuthService {
         }
         if (passwordMatches(password, user.getPasswordSalt(), user.getPasswordHash())) {
             LOG.infof("User %s authenticated successfully.", user.getUsername());
-            loginAttemptRepository.recordAttempt(username, true);
+            loginAttemptRepository.recordAttempt(user, true);
             return user;
         }
 
         LOG.warnf("Authentication failed for username %s: Password mismatch.", username);
-        loginAttemptRepository.recordAttempt(username, false);
+        loginAttemptRepository.recordAttempt(user, false);
         throw new AuthenticationFailedException("Failed to authenticate user: " + username);
     }
 

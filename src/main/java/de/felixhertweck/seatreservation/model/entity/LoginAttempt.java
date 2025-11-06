@@ -22,6 +22,9 @@ package de.felixhertweck.seatreservation.model.entity;
 import java.time.Instant;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
@@ -33,6 +36,10 @@ import io.quarkus.hibernate.orm.panache.PanacheEntity;
 @Entity
 @Table(name = "login_attempts")
 public class LoginAttempt extends PanacheEntity {
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = true)
+    private User user;
 
     @Column(nullable = false)
     private String username;
@@ -47,7 +54,21 @@ public class LoginAttempt extends PanacheEntity {
     public LoginAttempt() {}
 
     /**
-     * Creates a new login attempt record.
+     * Creates a new login attempt record with User entity.
+     *
+     * @param user the user who attempted to login
+     * @param attemptTime the time of the login attempt
+     * @param successful whether the login attempt was successful
+     */
+    public LoginAttempt(User user, Instant attemptTime, Boolean successful) {
+        this.user = user;
+        this.username = user.getUsername();
+        this.attemptTime = attemptTime;
+        this.successful = successful;
+    }
+
+    /**
+     * Creates a new login attempt record with username only (for non-existent users).
      *
      * @param username the username of the login attempt
      * @param attemptTime the time of the login attempt
@@ -57,6 +78,14 @@ public class LoginAttempt extends PanacheEntity {
         this.username = username;
         this.attemptTime = attemptTime;
         this.successful = successful;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public String getUsername() {

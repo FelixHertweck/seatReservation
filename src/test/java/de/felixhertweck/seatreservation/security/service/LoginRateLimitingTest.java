@@ -81,7 +81,7 @@ public class LoginRateLimitingTest {
 
         assertNotNull(authenticatedUser);
         assertEquals(username, authenticatedUser.getUsername());
-        verify(loginAttemptRepository, times(1)).recordAttempt(username, true);
+        verify(loginAttemptRepository, times(1)).recordAttempt(any(User.class), Mockito.eq(true));
     }
 
     @Test
@@ -105,7 +105,7 @@ public class LoginRateLimitingTest {
                 AuthenticationFailedException.class,
                 () -> authService.authenticate(username, wrongPassword));
 
-        verify(loginAttemptRepository, times(1)).recordAttempt(username, false);
+        verify(loginAttemptRepository, times(1)).recordAttempt(any(User.class), Mockito.eq(false));
     }
 
     @Test
@@ -144,7 +144,7 @@ public class LoginRateLimitingTest {
         User authenticatedUser = authService.authenticate(username, password);
 
         assertNotNull(authenticatedUser);
-        verify(loginAttemptRepository, times(1)).recordAttempt(username, true);
+        verify(loginAttemptRepository, times(1)).recordAttempt(any(User.class), Mockito.eq(true));
     }
 
     @Test
