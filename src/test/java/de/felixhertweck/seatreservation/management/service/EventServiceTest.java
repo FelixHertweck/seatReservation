@@ -43,6 +43,7 @@ import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
+import de.felixhertweck.seatreservation.email.NotificationService;
 import de.felixhertweck.seatreservation.management.dto.EventRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventResponseDTO;
 import de.felixhertweck.seatreservation.management.dto.EventUserAllowanceUpdateDto;
@@ -57,6 +58,7 @@ import de.felixhertweck.seatreservation.model.repository.EventLocationRepository
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -71,6 +73,7 @@ public class EventServiceTest {
     @InjectMock EventLocationRepository eventLocationRepository;
     @InjectMock UserRepository userRepository;
     @InjectMock EventUserAllowanceRepository eventUserAllowanceRepository;
+    @InjectMock NotificationService notificationService;
 
     @Inject EventService eventService;
     @Inject EventReservationAllowanceService eventReservationAllowanceService;
@@ -88,6 +91,7 @@ public class EventServiceTest {
         Mockito.reset(eventLocationRepository);
         Mockito.reset(userRepository);
         Mockito.reset(eventUserAllowanceRepository);
+        Mockito.reset(notificationService);
 
         adminUser =
                 new User(
@@ -141,7 +145,8 @@ public class EventServiceTest {
                         Instant.now().plusSeconds(Duration.ofHours(12).toSeconds()),
                         Instant.now().plusSeconds(Duration.ofHours(1).toSeconds()),
                         eventLocation,
-                        managerUser);
+                        managerUser,
+                        Instant.now().plusSeconds(Duration.ofHours(13).toSeconds()));
         existingEvent.id = 1L;
     }
 
@@ -311,7 +316,8 @@ public class EventServiceTest {
                                 Instant.now(),
                                 Instant.now(),
                                 eventLocation,
-                                regularUser));
+                                regularUser,
+                                Instant.now()));
         when(eventRepository.listAll()).thenReturn(allEvents);
 
         List<EventResponseDTO> result = eventService.getEventsByCurrentManager(adminUser);
@@ -359,8 +365,7 @@ public class EventServiceTest {
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
         // Mocking PanacheQuery for find method when no existing allowance is found
         @SuppressWarnings("unchecked")
-        io.quarkus.hibernate.orm.panache.PanacheQuery<EventUserAllowance> mockQueryNewAllowance =
-                mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
+        PanacheQuery<EventUserAllowance> mockQueryNewAllowance = mock(PanacheQuery.class);
         when(eventUserAllowanceRepository.find(
                         "user = ?1 and event = ?2", regularUser, existingEvent))
                 .thenReturn(mockQueryNewAllowance);
@@ -392,8 +397,7 @@ public class EventServiceTest {
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
         // Mocking PanacheQuery for find method
         @SuppressWarnings("unchecked")
-        io.quarkus.hibernate.orm.panache.PanacheQuery<EventUserAllowance> mockQuery =
-                mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
+        PanacheQuery<EventUserAllowance> mockQuery = mock(PanacheQuery.class);
         when(eventUserAllowanceRepository.find(
                         "user = ?1 and event = ?2", regularUser, existingEvent))
                 .thenReturn(mockQuery);
@@ -419,8 +423,7 @@ public class EventServiceTest {
                 .thenReturn(Optional.of(existingEvent));
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
         @SuppressWarnings("unchecked")
-        io.quarkus.hibernate.orm.panache.PanacheQuery<EventUserAllowance> mockQuery =
-                mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
+        PanacheQuery<EventUserAllowance> mockQuery = mock(PanacheQuery.class);
         when(eventUserAllowanceRepository.find(
                         "user = ?1 and event = ?2", regularUser, existingEvent))
                 .thenReturn(mockQuery);
@@ -638,5 +641,262 @@ public class EventServiceTest {
                 () ->
                         eventReservationAllowanceService.getReservationAllowanceById(
                                 99L, managerUser));
+    }
+
+    @Test
+    void createEvent_WithReminderSendDate_Success() {
+        EventRequestDTO dto = new EventRequestDTO();
+        dto.setName("Event with Reminder");
+        dto.setDescription("Event Description");
+        Instant eventStart = Instant.now().plusSeconds(Duration.ofDays(5).toSeconds());
+        Instant reminderDate = Instant.now().plusSeconds(Duration.ofDays(4).toSeconds());
+        dto.setStartTime(eventStart);
+        dto.setEndTime(Instant.now().plusSeconds(Duration.ofDays(6).toSeconds()));
+        dto.setBookingStartTime(Instant.now().plusSeconds(Duration.ofDays(3).toSeconds()));
+        dto.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(4).toSeconds()));
+        dto.setReminderSendDate(reminderDate);
+        dto.setEventLocationId(eventLocation.id);
+
+        when(eventLocationRepository.findByIdOptional(eventLocation.id))
+                .thenReturn(Optional.of(eventLocation));
+        doAnswer(
+                        invocation -> {
+                            Event event = invocation.getArgument(0);
+                            event.id = 10L;
+                            return null;
+                        })
+                .when(eventRepository)
+                .persist(any(Event.class));
+
+        EventResponseDTO createdEvent = eventService.createEvent(dto, managerUser);
+
+        assertNotNull(createdEvent);
+        assertEquals("Event with Reminder", createdEvent.name());
+        assertEquals(reminderDate, createdEvent.reminderSendDate());
+        verify(eventRepository, times(1)).persist(any(Event.class));
+    }
+
+    @Test
+    void updateEvent_WithReminderSendDate_Success() throws Exception {
+        Instant newReminderDate = Instant.now().plusSeconds(Duration.ofDays(3).toSeconds());
+        EventRequestDTO dto = new EventRequestDTO();
+        dto.setName("Updated Event");
+        dto.setDescription("Updated Description");
+        dto.setStartTime(Instant.now().plusSeconds(Duration.ofDays(5).toSeconds()));
+        dto.setEndTime(Instant.now().plusSeconds(Duration.ofDays(6).toSeconds()));
+        dto.setBookingStartTime(Instant.now().plusSeconds(Duration.ofDays(2).toSeconds()));
+        dto.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(4).toSeconds()));
+        dto.setReminderSendDate(newReminderDate);
+        dto.setEventLocationId(eventLocation.id);
+
+        when(eventRepository.findByIdOptional(existingEvent.id))
+                .thenReturn(Optional.of(existingEvent));
+        when(eventLocationRepository.findByIdOptional(eventLocation.id))
+                .thenReturn(Optional.of(eventLocation));
+
+        EventResponseDTO updatedEvent =
+                eventService.updateEvent(existingEvent.id, dto, managerUser);
+
+        assertNotNull(updatedEvent);
+        assertEquals("Updated Event", updatedEvent.name());
+        assertEquals(newReminderDate, updatedEvent.reminderSendDate());
+        verify(eventRepository, times(1)).persist(any(Event.class));
+    }
+
+    @Test
+    void findEventsWithReminderDateBetween_Success() {
+        Instant start = Instant.now();
+        Instant end = Instant.now().plusSeconds(Duration.ofDays(1).toSeconds());
+
+        Event event1 = new Event();
+        event1.setName("Event 1");
+        event1.setReminderSendDate(start.plusSeconds(3600)); // 1 hour after start
+
+        Event event2 = new Event();
+        event2.setName("Event 2");
+        event2.setReminderSendDate(start.plusSeconds(7200)); // 2 hours after start
+
+        when(eventRepository.find("reminderSendDate BETWEEN ?1 AND ?2", start, end))
+                .thenReturn(mock(PanacheQuery.class));
+        when(eventRepository.find("reminderSendDate BETWEEN ?1 AND ?2", start, end).list())
+                .thenReturn(List.of(event1, event2));
+
+        List<Event> events = eventService.findEventsWithReminderDateBetween(start, end);
+
+        assertNotNull(events);
+        assertEquals(2, events.size());
+        assertTrue(events.stream().anyMatch(e -> "Event 1".equals(e.getName())));
+        assertTrue(events.stream().anyMatch(e -> "Event 2".equals(e.getName())));
+    }
+
+    @Test
+    void createEvent_WithoutReminderSendDate_NoReminderScheduled() {
+        // Event without reminder date should not schedule a reminder
+        EventRequestDTO dto = new EventRequestDTO();
+        dto.setName("Event without Reminder");
+        dto.setDescription("Event Description");
+        Instant eventStart = Instant.now().plusSeconds(Duration.ofDays(5).toSeconds());
+        dto.setStartTime(eventStart);
+        dto.setEndTime(Instant.now().plusSeconds(Duration.ofDays(6).toSeconds()));
+        dto.setBookingStartTime(Instant.now().plusSeconds(Duration.ofDays(3).toSeconds()));
+        dto.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(4).toSeconds()));
+        dto.setReminderSendDate(null); // No reminder date
+        dto.setEventLocationId(eventLocation.id);
+
+        when(eventLocationRepository.findByIdOptional(eventLocation.id))
+                .thenReturn(Optional.of(eventLocation));
+        doAnswer(
+                        invocation -> {
+                            Event event = invocation.getArgument(0);
+                            event.id = 10L;
+                            return null;
+                        })
+                .when(eventRepository)
+                .persist(any(Event.class));
+
+        EventResponseDTO createdEvent = eventService.createEvent(dto, managerUser);
+
+        assertNotNull(createdEvent);
+        assertEquals("Event without Reminder", createdEvent.name());
+        assertEquals(null, createdEvent.reminderSendDate());
+        verify(eventRepository, times(1)).persist(any(Event.class));
+        // Verify that no reminder was scheduled
+        verify(notificationService, never()).scheduleEventReminder(any(Event.class));
+    }
+
+    @Test
+    void createEvent_WithReminderSendDate_ReminderScheduled() {
+        // Event with reminder date should schedule a reminder
+        EventRequestDTO dto = new EventRequestDTO();
+        dto.setName("Event with Reminder");
+        dto.setDescription("Event Description");
+        Instant eventStart = Instant.now().plusSeconds(Duration.ofDays(5).toSeconds());
+        Instant reminderDate = Instant.now().plusSeconds(Duration.ofDays(4).toSeconds());
+        dto.setStartTime(eventStart);
+        dto.setEndTime(Instant.now().plusSeconds(Duration.ofDays(6).toSeconds()));
+        dto.setBookingStartTime(Instant.now().plusSeconds(Duration.ofDays(3).toSeconds()));
+        dto.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(4).toSeconds()));
+        dto.setReminderSendDate(reminderDate);
+        dto.setEventLocationId(eventLocation.id);
+
+        when(eventLocationRepository.findByIdOptional(eventLocation.id))
+                .thenReturn(Optional.of(eventLocation));
+        doAnswer(
+                        invocation -> {
+                            Event event = invocation.getArgument(0);
+                            event.id = 10L;
+                            return null;
+                        })
+                .when(eventRepository)
+                .persist(any(Event.class));
+
+        EventResponseDTO createdEvent = eventService.createEvent(dto, managerUser);
+
+        assertNotNull(createdEvent);
+        assertEquals("Event with Reminder", createdEvent.name());
+        assertEquals(reminderDate, createdEvent.reminderSendDate());
+        verify(eventRepository, times(1)).persist(any(Event.class));
+        // Verify that reminder was scheduled
+        verify(notificationService, times(1)).scheduleEventReminder(any(Event.class));
+    }
+
+    @Test
+    void updateEvent_FromNoReminderToReminder_ReminderScheduled() throws Exception {
+        // Update event from no reminder to having a reminder
+        existingEvent.setReminderSendDate(null); // Start without reminder
+
+        Instant newReminderDate = Instant.now().plusSeconds(Duration.ofDays(3).toSeconds());
+        EventRequestDTO dto = new EventRequestDTO();
+        dto.setName("Updated Event");
+        dto.setDescription("Updated Description");
+        dto.setStartTime(Instant.now().plusSeconds(Duration.ofDays(5).toSeconds()));
+        dto.setEndTime(Instant.now().plusSeconds(Duration.ofDays(6).toSeconds()));
+        dto.setBookingStartTime(Instant.now().plusSeconds(Duration.ofDays(2).toSeconds()));
+        dto.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(4).toSeconds()));
+        dto.setReminderSendDate(newReminderDate);
+        dto.setEventLocationId(eventLocation.id);
+
+        when(eventRepository.findByIdOptional(existingEvent.id))
+                .thenReturn(Optional.of(existingEvent));
+        when(eventLocationRepository.findByIdOptional(eventLocation.id))
+                .thenReturn(Optional.of(eventLocation));
+
+        EventResponseDTO updatedEvent =
+                eventService.updateEvent(existingEvent.id, dto, managerUser);
+
+        assertNotNull(updatedEvent);
+        assertEquals("Updated Event", updatedEvent.name());
+        assertEquals(newReminderDate, updatedEvent.reminderSendDate());
+        verify(eventRepository, times(1)).persist(any(Event.class));
+        // Should cancel old (non-existent) reminder and schedule new one
+        verify(notificationService, times(1)).cancelEventReminder(existingEvent.id);
+        verify(notificationService, times(1)).scheduleEventReminder(any(Event.class));
+    }
+
+    @Test
+    void updateEvent_FromReminderToNoReminder_ReminderCancelled() throws Exception {
+        // Update event from having a reminder to no reminder
+        Instant oldReminderDate = Instant.now().plusSeconds(Duration.ofDays(3).toSeconds());
+        existingEvent.setReminderSendDate(oldReminderDate); // Start with reminder
+
+        EventRequestDTO dto = new EventRequestDTO();
+        dto.setName("Updated Event");
+        dto.setDescription("Updated Description");
+        dto.setStartTime(Instant.now().plusSeconds(Duration.ofDays(5).toSeconds()));
+        dto.setEndTime(Instant.now().plusSeconds(Duration.ofDays(6).toSeconds()));
+        dto.setBookingStartTime(Instant.now().plusSeconds(Duration.ofDays(2).toSeconds()));
+        dto.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(4).toSeconds()));
+        dto.setReminderSendDate(null); // Remove reminder
+        dto.setEventLocationId(eventLocation.id);
+
+        when(eventRepository.findByIdOptional(existingEvent.id))
+                .thenReturn(Optional.of(existingEvent));
+        when(eventLocationRepository.findByIdOptional(eventLocation.id))
+                .thenReturn(Optional.of(eventLocation));
+
+        EventResponseDTO updatedEvent =
+                eventService.updateEvent(existingEvent.id, dto, managerUser);
+
+        assertNotNull(updatedEvent);
+        assertEquals("Updated Event", updatedEvent.name());
+        assertEquals(null, updatedEvent.reminderSendDate());
+        verify(eventRepository, times(1)).persist(any(Event.class));
+        // Should cancel old reminder and not schedule a new one
+        verify(notificationService, times(1)).cancelEventReminder(existingEvent.id);
+        verify(notificationService, never()).scheduleEventReminder(any(Event.class));
+    }
+
+    @Test
+    void updateEvent_FromReminderToNewReminder_ReminderRescheduled() throws Exception {
+        // Update event from one reminder time to another
+        Instant oldReminderDate = Instant.now().plusSeconds(Duration.ofDays(3).toSeconds());
+        existingEvent.setReminderSendDate(oldReminderDate); // Start with old reminder
+
+        Instant newReminderDate = Instant.now().plusSeconds(Duration.ofDays(2).toSeconds());
+        EventRequestDTO dto = new EventRequestDTO();
+        dto.setName("Updated Event");
+        dto.setDescription("Updated Description");
+        dto.setStartTime(Instant.now().plusSeconds(Duration.ofDays(5).toSeconds()));
+        dto.setEndTime(Instant.now().plusSeconds(Duration.ofDays(6).toSeconds()));
+        dto.setBookingStartTime(Instant.now().plusSeconds(Duration.ofDays(2).toSeconds()));
+        dto.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(4).toSeconds()));
+        dto.setReminderSendDate(newReminderDate); // New reminder date
+        dto.setEventLocationId(eventLocation.id);
+
+        when(eventRepository.findByIdOptional(existingEvent.id))
+                .thenReturn(Optional.of(existingEvent));
+        when(eventLocationRepository.findByIdOptional(eventLocation.id))
+                .thenReturn(Optional.of(eventLocation));
+
+        EventResponseDTO updatedEvent =
+                eventService.updateEvent(existingEvent.id, dto, managerUser);
+
+        assertNotNull(updatedEvent);
+        assertEquals("Updated Event", updatedEvent.name());
+        assertEquals(newReminderDate, updatedEvent.reminderSendDate());
+        verify(eventRepository, times(1)).persist(any(Event.class));
+        // Should cancel old reminder and schedule new one
+        verify(notificationService, times(1)).cancelEventReminder(existingEvent.id);
+        verify(notificationService, times(1)).scheduleEventReminder(any(Event.class));
     }
 }

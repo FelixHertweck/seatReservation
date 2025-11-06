@@ -27,6 +27,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
+import de.felixhertweck.seatreservation.email.NotificationService;
 import de.felixhertweck.seatreservation.management.dto.EventRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventResponseDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;
@@ -45,6 +46,8 @@ public class EventService {
     @Inject EventRepository eventRepository;
 
     @Inject EventLocationRepository eventLocationRepository;
+
+    @Inject NotificationService notificationService;
 
     /**
      * Creates a new Event and assigns the currently authenticated manager as its creator. Access
@@ -86,12 +89,19 @@ public class EventService {
                         dto.getBookingDeadline(),
                         dto.getBookingStartTime(),
                         location,
-                        manager);
+                        manager,
+                        dto.getReminderSendDate());
         eventRepository.persist(event);
         LOG.infof("Event '%s' (ID: %d) created successfully.", event.getName(), event.getId());
         LOG.debugf(
                 "Event '%s' (ID: %d) created successfully by manager: %s (ID: %d)",
                 event.getName(), event.getId(), manager.getUsername(), manager.getId());
+
+        // Schedule reminder if reminder date is set
+        if (event.getReminderSendDate() != null) {
+            notificationService.scheduleEventReminder(event);
+        }
+
         return new EventResponseDTO(event);
     }
 
@@ -172,12 +182,23 @@ public class EventService {
         event.setEndTime(dto.getEndTime());
         event.setBookingStartTime(dto.getBookingStartTime());
         event.setBookingDeadline(dto.getBookingDeadline());
+        event.setReminderSendDate(dto.getReminderSendDate());
         event.setEventLocation(location);
         eventRepository.persist(event);
         LOG.infof("Event '%s' (ID: %d) updated successfully", event.getName(), event.getId());
         LOG.debugf(
                 "Event '%s' (ID: %d) updated successfully by manager: %s (ID: %d)",
                 event.getName(), event.getId(), manager.getUsername(), manager.getId());
+
+        // Reschedule reminder when event is updated
+        if (event.getReminderSendDate() != null) {
+            notificationService.cancelEventReminder(event.getId());
+            notificationService.scheduleEventReminder(event);
+        } else {
+            // Cancel reminder if reminder date was removed
+            notificationService.cancelEventReminder(event.getId());
+        }
+
         return new EventResponseDTO(event);
     }
 
@@ -190,6 +211,18 @@ public class EventService {
      */
     public List<Event> findEventsBetweenDates(Instant start, Instant end) {
         return eventRepository.find("startTime BETWEEN ?1 AND ?2", start, end).list();
+    }
+
+    /**
+     * Retrieves a list of Events that have a reminder send date between the specified start and end
+     * times.
+     *
+     * @param start The start time of the period to search for reminder dates.
+     * @param end The end time of the period to search for reminder dates.
+     * @return A list of Events that have a reminder send date within the specified time range.
+     */
+    public List<Event> findEventsWithReminderDateBetween(Instant start, Instant end) {
+        return eventRepository.find("reminderSendDate BETWEEN ?1 AND ?2", start, end).list();
     }
 
     /**
@@ -273,6 +306,17 @@ public class EventService {
         LOG.infof("Events '%s' deleted successfully", ids);
     }
 
+    /**
+     * Finds an event by its ID without access control checks.
+     *
+     * @param id The ID of the event
+     * @return The event if found, null otherwise
+     */
+    public Event findById(Long id) {
+        LOG.debugf("Attempting to find event by ID: %d", id);
+        return eventRepository.findByIdOptional(id).orElse(null);
+    }
+
     private Event getEventById(Long id) throws EventNotFoundException {
         LOG.debugf("Attempting to find event by ID: %d", id);
         return eventRepository
@@ -314,6 +358,18 @@ public class EventService {
     }
 
     /**
+     * Marks the reminder as sent for the given event.
+     *
+     * @param event The event to mark the reminder as sent
+     */
+    @Transactional
+    public void markReminderAsSent(Event event) {
+        LOG.debugf("Marking reminder as sent for event ID: %d", event.id);
+        event.setReminderSent(true);
+        eventRepository.persist(event);
+    }
+
+    /**
      * Validates event timing constraints.
      *
      * @param dto The event request DTO containing the timing information
@@ -331,6 +387,12 @@ public class EventService {
         if (!dto.getBookingStartTime().isBefore(dto.getBookingDeadline())) {
             throw new IllegalArgumentException(
                     "Booking start time must be before booking deadline");
+        }
+
+        if (dto.getReminderSendDate() != null
+                && !dto.getReminderSendDate().isBefore(dto.getStartTime())) {
+            throw new IllegalArgumentException(
+                    "Reminder send date must be before event start time");
         }
     }
 }

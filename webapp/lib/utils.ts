@@ -40,3 +40,35 @@ export function isValidRedirectUrlEncoded(url: string): boolean {
     return false; // Invalid URL encoding
   }
 }
+
+/**
+ * Formats a date string or Date object to display date and time separately
+ * @param dateValue - The date string or Date object to format
+ * @param locale - The locale to use for formatting (default: "de-DE")
+ * @returns An object with date and time strings, or null if dateValue is invalid
+ */
+export function formatDateTime(
+  dateValue: string | Date | null | undefined,
+  locale: string = "de-DE",
+): { date: string; time: string } | null {
+  if (!dateValue) return null;
+
+  try {
+    const date = new Date(dateValue);
+    if (isNaN(date.getTime())) return null;
+
+    return {
+      date: date.toLocaleDateString(locale, {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      }),
+      time: date.toLocaleTimeString(locale, {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    };
+  } catch {
+    return null;
+  }
+}

@@ -44,6 +44,8 @@ public class Event extends PanacheEntity {
     private Instant endTime;
     private Instant bookingDeadline;
     private Instant bookingStartTime;
+    private Instant reminderSendDate;
+    private boolean reminderSent;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private EventLocation event_location;
@@ -74,7 +76,8 @@ public class Event extends PanacheEntity {
             Instant bookingDeadline,
             Instant bookingStartTime,
             EventLocation location,
-            User manager) {
+            User manager,
+            Instant reminderSendDate) {
         this.name = name;
         this.description = description;
         this.startTime = startTime;
@@ -83,6 +86,8 @@ public class Event extends PanacheEntity {
         this.bookingStartTime = bookingStartTime;
         this.event_location = location;
         this.manager = manager;
+        this.reminderSendDate = reminderSendDate;
+        this.reminderSent = false;
     }
 
     public String getName() {
@@ -131,6 +136,24 @@ public class Event extends PanacheEntity {
 
     public void setBookingStartTime(Instant bookingStartTime) {
         this.bookingStartTime = bookingStartTime;
+    }
+
+    public Instant getReminderSendDate() {
+        return reminderSendDate;
+    }
+
+    public void setReminderSendDate(Instant reminderSendDate) {
+        this.reminderSendDate = reminderSendDate;
+        // Reset reminderSent flag when reminder date is changed
+        this.reminderSent = false;
+    }
+
+    public boolean isReminderSent() {
+        return reminderSent;
+    }
+
+    public void setReminderSent(boolean reminderSent) {
+        this.reminderSent = reminderSent;
     }
 
     public EventLocation getEventLocation() {
@@ -183,6 +206,8 @@ public class Event extends PanacheEntity {
                 && Objects.equals(endTime, event.endTime)
                 && Objects.equals(bookingDeadline, event.bookingDeadline)
                 && Objects.equals(bookingStartTime, event.bookingStartTime)
+                && Objects.equals(reminderSendDate, event.reminderSendDate)
+                && Objects.equals(reminderSent, event.reminderSent)
                 && Objects.equals(event_location, event.event_location)
                 && Objects.equals(userAllowances, event.userAllowances)
                 && Objects.equals(manager, event.manager)
@@ -201,6 +226,8 @@ public class Event extends PanacheEntity {
                 endTime,
                 bookingDeadline,
                 bookingStartTime,
+                reminderSendDate,
+                reminderSent,
                 event_location,
                 userAllowances,
                 manager,
@@ -224,6 +251,10 @@ public class Event extends PanacheEntity {
                 + bookingDeadline
                 + ", bookingStartTime="
                 + bookingStartTime
+                + ", reminderSendDate="
+                + reminderSendDate
+                + ", reminderSent="
+                + reminderSent
                 + ", event_location="
                 + event_location
                 + ", userAllowances="

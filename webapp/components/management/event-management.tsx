@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Edit, Trash2, ExternalLink } from "lucide-react";
+import { Plus, Edit, Trash2, ExternalLink, Mail, Clock, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -32,6 +32,7 @@ import type {
 import { useT } from "@/lib/i18n/hooks";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
 import { useSortableData } from "@/lib/table-sorting";
+import { formatDateTime } from "@/lib/utils";
 
 export interface EventManagementProps {
   events: EventResponseDto[];
@@ -101,6 +102,20 @@ export function EventManagement({
         filtered = filtered.filter(
           (event) => event.eventLocationId?.toString() === filters.locationId,
         );
+      }
+      if (filters.reminderStatus) {
+        filtered = filtered.filter((event) => {
+          if (filters.reminderStatus === "sent") {
+            return event.isReminderSent === true;
+          } else if (filters.reminderStatus === "scheduled") {
+            return (
+              event.reminderSendDate != null && event.isReminderSent !== true
+            );
+          } else if (filters.reminderStatus === "notScheduled") {
+            return event.reminderSendDate == null;
+          }
+          return true;
+        });
       }
 
       setFilteredEvents(filtered);
@@ -238,6 +253,25 @@ export function EventManagement({
                 label: loc.name || "",
               })),
             },
+            {
+              key: "reminderStatus",
+              label: t("eventManagement.reminderStatusFilterLabel"),
+              type: "select",
+              options: [
+                {
+                  value: "scheduled",
+                  label: t("eventManagement.reminderStatusScheduled"),
+                },
+                {
+                  value: "sent",
+                  label: t("eventManagement.reminderStatusSent"),
+                },
+                {
+                  value: "notScheduled",
+                  label: t("eventManagement.reminderStatusNotScheduled"),
+                },
+              ],
+            },
           ]}
           initialFilters={currentFilters}
         />
@@ -274,7 +308,7 @@ export function EventManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[10%]"
+                        className="w-[15%]"
                       >
                         {t("eventManagement.tableHeaderName")}
                       </SortableTableHead>
@@ -283,7 +317,7 @@ export function EventManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[15%]"
+                        className="w-[13%]"
                       >
                         {t("eventManagement.tableHeaderDescription")}
                       </SortableTableHead>
@@ -292,7 +326,7 @@ export function EventManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[13%]"
+                        className="w-[8%]"
                       >
                         {t("eventManagement.tableHeaderStartTime")}
                       </SortableTableHead>
@@ -301,7 +335,7 @@ export function EventManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[13%]"
+                        className="w-[8%]"
                       >
                         {t("eventManagement.tableHeaderEndTime")}
                       </SortableTableHead>
@@ -310,7 +344,7 @@ export function EventManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[13%]"
+                        className="w-[8%]"
                       >
                         {t("eventManagement.tableHeaderBookingStartTime")}
                       </SortableTableHead>
@@ -319,10 +353,24 @@ export function EventManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[13%]"
+                        className="w-[8%]"
                       >
                         {t("eventManagement.tableHeaderBookingDeadline")}
                       </SortableTableHead>
+                      <SortableTableHead
+                        sortKey="reminderSendDate"
+                        currentSortKey={sortKey}
+                        currentSortDirection={sortDirection}
+                        onSort={handleSort}
+                        className="w-[10%]"
+                      >
+                        {t("eventManagement.tableHeaderReminderSendDate")}
+                      </SortableTableHead>
+                      <TableHead className="w-[5%]">
+                        <div className="flex items-center justify-center">
+                          <Mail className="h-4 w-4" />
+                        </div>
+                      </TableHead>
                       <SortableTableHead
                         sortKey="location.name"
                         currentSortKey={sortKey}
@@ -397,29 +445,91 @@ export function EventManagement({
                                 content={event.description}
                                 className="w-[15%]"
                               />
-                              <TableCell className="w-[13%]">
-                                {event.startTime
-                                  ? new Date(event.startTime).toLocaleString()
-                                  : t("eventManagement.tbd")}
+                              <TableCell className="w-[10%]">
+                                {(() => {
+                                  const formatted = formatDateTime(
+                                    event.startTime,
+                                  );
+                                  return formatted ? (
+                                    <div className="flex flex-col text-sm">
+                                      <span>{formatted.date}</span>
+                                      <span>{formatted.time}</span>
+                                    </div>
+                                  ) : (
+                                    t("eventManagement.tbd")
+                                  );
+                                })()}
                               </TableCell>
-                              <TableCell className="w-[13%]">
-                                {event.endTime
-                                  ? new Date(event.endTime).toLocaleString()
-                                  : t("eventManagement.tbd")}
+                              <TableCell className="w-[10%]">
+                                {(() => {
+                                  const formatted = formatDateTime(
+                                    event.endTime,
+                                  );
+                                  return formatted ? (
+                                    <div className="flex flex-col text-sm">
+                                      <span>{formatted.date}</span>
+                                      <span>{formatted.time}</span>
+                                    </div>
+                                  ) : (
+                                    t("eventManagement.tbd")
+                                  );
+                                })()}
                               </TableCell>
-                              <TableCell className="w-[13%]">
-                                {event.bookingStartTime
-                                  ? new Date(
-                                      event.bookingStartTime,
-                                    ).toLocaleString()
-                                  : t("eventManagement.tbd")}
+                              <TableCell className="w-[10%]">
+                                {(() => {
+                                  const formatted = formatDateTime(
+                                    event.bookingStartTime,
+                                  );
+                                  return formatted ? (
+                                    <div className="flex flex-col text-sm">
+                                      <span>{formatted.date}</span>
+                                      <span>{formatted.time}</span>
+                                    </div>
+                                  ) : (
+                                    t("eventManagement.tbd")
+                                  );
+                                })()}
                               </TableCell>
-                              <TableCell className="w-[13%]">
-                                {event.bookingDeadline
-                                  ? new Date(
-                                      event.bookingDeadline,
-                                    ).toLocaleString()
-                                  : t("eventManagement.tbd")}
+                              <TableCell className="w-[10%]">
+                                {(() => {
+                                  const formatted = formatDateTime(
+                                    event.bookingDeadline,
+                                  );
+                                  return formatted ? (
+                                    <div className="flex flex-col text-sm">
+                                      <span>{formatted.date}</span>
+                                      <span>{formatted.time}</span>
+                                    </div>
+                                  ) : (
+                                    t("eventManagement.tbd")
+                                  );
+                                })()}
+                              </TableCell>
+                              <TableCell className="w-[10%]">
+                                {(() => {
+                                  const formatted = formatDateTime(
+                                    event.reminderSendDate,
+                                  );
+                                  return formatted ? (
+                                    <div className="flex flex-col text-sm">
+                                      <span>{formatted.date}</span>
+                                      <span>{formatted.time}</span>
+                                    </div>
+                                  ) : (
+                                    "-"
+                                  );
+                                })()}
+                              </TableCell>
+                              <TableCell className="w-[5%]">
+                                <div className="flex items-center justify-center">
+                                  {event.isReminderSent ? (
+                                    <Mail className="h-4 w-4 text-green-600" />
+                                  ) : event.reminderSendDate ? (
+                                    <Clock className="h-4 w-4 text-orange-500" />
+                                  ) : (
+                                    <X className="h-4 w-4 text-red-500" />
+                                  )}
+                                </div>
                               </TableCell>
                               <TableCell className="w-[10%]">
                                 {location ? (
@@ -508,9 +618,14 @@ export function EventManagement({
                               className="mt-1"
                             />
                             <div className="flex-1 min-w-0">
-                              <CardTitle className="text-base">
-                                {event.name}
-                              </CardTitle>
+                              <div className="flex items-center gap-2">
+                                <CardTitle className="text-base">
+                                  {event.name}
+                                </CardTitle>
+                                {event.isReminderSent && (
+                                  <Mail className="h-4 w-4 text-green-600 flex-shrink-0" />
+                                )}
+                              </div>
                               {event.description && (
                                 <CardDescription className="text-sm mt-1 line-clamp-2">
                                   {event.description}
@@ -564,6 +679,20 @@ export function EventManagement({
                                   {event.bookingDeadline
                                     ? new Date(
                                         event.bookingDeadline,
+                                      ).toLocaleString()
+                                    : t("eventManagement.tbd")}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-muted-foreground mb-1">
+                                  {t(
+                                    "eventManagement.tableHeaderReminderSendDate",
+                                  )}
+                                </p>
+                                <p className="text-sm">
+                                  {event.reminderSendDate
+                                    ? new Date(
+                                        event.reminderSendDate,
                                       ).toLocaleString()
                                     : t("eventManagement.tbd")}
                                 </p>

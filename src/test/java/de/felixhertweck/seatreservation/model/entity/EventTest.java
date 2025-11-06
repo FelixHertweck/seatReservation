@@ -25,7 +25,11 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -72,6 +76,7 @@ class EventTest {
         Instant endTime = startTime.plusSeconds(Duration.ofHours(2).toSeconds());
         Instant bookingDeadline = startTime.minusSeconds(Duration.ofHours(1).toSeconds());
         Instant bookingStartTime = startTime.minusSeconds(Duration.ofDays(1).toSeconds());
+        Instant reminderSendDate = startTime.minusSeconds(Duration.ofDays(1).toSeconds());
 
         Event constructedEvent =
                 new Event(
@@ -82,7 +87,8 @@ class EventTest {
                         bookingDeadline,
                         bookingStartTime,
                         location,
-                        manager);
+                        manager,
+                        reminderSendDate);
 
         assertEquals(name, constructedEvent.getName());
         assertEquals(description, constructedEvent.getDescription());

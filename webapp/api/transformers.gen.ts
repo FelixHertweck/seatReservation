@@ -75,6 +75,9 @@ const eventResponseDtoSchemaResponseTransformer = (data: any) => {
     if (data.bookingStartTime) {
         data.bookingStartTime = instantSchemaResponseTransformer(data.bookingStartTime);
     }
+    if (data.reminderSendDate) {
+        data.reminderSendDate = instantSchemaResponseTransformer(data.reminderSendDate);
+    }
     if (data.seatStatuses) {
         data.seatStatuses = data.seatStatuses.map((item: any) => {
             return seatStatusDtoSchemaResponseTransformer(item);
