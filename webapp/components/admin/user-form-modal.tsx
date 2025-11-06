@@ -90,7 +90,10 @@ export function UserFormModal({
     }));
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
     setIsFormLoading(true);
 
     let userData: AdminUserCreationDto | AdminUserUpdateDto;
@@ -144,6 +147,7 @@ export function UserFormModal({
               : t("userFormModal.editUserTitle")}
           </DialogTitle>
         </DialogHeader>
+        <form onSubmit={handleSubmit}>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="username" className="text-right">
@@ -347,11 +351,11 @@ export function UserFormModal({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button type="button" variant="outline" onClick={onClose}>
             {t("userFormModal.cancelButton")}
           </Button>
           <Button
-            onClick={handleSubmit}
+            type="submit"
             disabled={isFormLoading || isPasswordTooShort}
           >
             {isCreating
@@ -363,6 +367,7 @@ export function UserFormModal({
                 : t("userFormModal.saveChangesButton")}
           </Button>
         </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

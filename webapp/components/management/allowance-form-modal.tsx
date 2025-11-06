@@ -76,7 +76,10 @@ export function AllowanceFormModal({
     }
   }, [allowance, isCreating]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
     if (!selectedEventId || !allowedReservations) {
       toast({
         title: t("allowanceFormModal.validationErrorTitle"),
@@ -157,6 +160,7 @@ export function AllowanceFormModal({
               : t("allowanceFormModal.editAllowanceTitle")}
           </DialogTitle>
         </DialogHeader>
+        <form onSubmit={handleSubmit}>
         <div className="grid gap-6 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="event" className="text-right">
@@ -235,11 +239,11 @@ export function AllowanceFormModal({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isLoading}>
+          <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
             {t("allowanceFormModal.cancelButton")}
           </Button>
           <Button
-            onClick={handleSubmit}
+            type="submit"
             disabled={
               isLoading ||
               selectedUserIds.length === 0 ||
@@ -254,6 +258,7 @@ export function AllowanceFormModal({
                 : t("allowanceFormModal.saveChangesButton")}
           </Button>
         </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
