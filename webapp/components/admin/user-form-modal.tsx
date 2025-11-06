@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -36,6 +36,7 @@ export function UserFormModal({
   onClose,
 }: UserFormModalProps) {
   const t = useT();
+  const formRef = useRef<HTMLFormElement>(null);
 
   function getInitialFormState(user: UserDto | null, isCreating: boolean) {
     return {
@@ -147,7 +148,7 @@ export function UserFormModal({
               : t("userFormModal.editUserTitle")}
           </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit}>
+        <form ref={formRef} onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="username" className="text-right">
@@ -364,24 +365,25 @@ export function UserFormModal({
               </div>
             </div>
           </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
-              {t("userFormModal.cancelButton")}
-            </Button>
-            <Button
-              type="submit"
-              disabled={isFormLoading || isPasswordTooShort}
-            >
-              {isCreating
-                ? isFormLoading
-                  ? t("userFormModal.createUserButtonLoading")
-                  : t("userFormModal.createUserButton")
-                : isFormLoading
-                  ? t("userFormModal.saveChangesButtonLoading")
-                  : t("userFormModal.saveChangesButton")}
-            </Button>
-          </DialogFooter>
         </form>
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={onClose}>
+            {t("userFormModal.cancelButton")}
+          </Button>
+          <Button
+            type="button"
+            onClick={() => formRef.current?.requestSubmit()}
+            disabled={isFormLoading || isPasswordTooShort}
+          >
+            {isCreating
+              ? isFormLoading
+                ? t("userFormModal.createUserButtonLoading")
+                : t("userFormModal.createUserButton")
+              : isFormLoading
+                ? t("userFormModal.saveChangesButtonLoading")
+                : t("userFormModal.saveChangesButton")}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -50,6 +50,7 @@ export function AllowanceFormModal({
   onClose,
 }: AllowanceFormModalProps) {
   const t = useT();
+  const formRef = useRef<HTMLFormElement>(null);
 
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>(
     allowance && !isCreating ? [allowance.userId?.toString() || ""] : [],
@@ -160,7 +161,7 @@ export function AllowanceFormModal({
               : t("allowanceFormModal.editAllowanceTitle")}
           </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit}>
+        <form ref={formRef} onSubmit={handleSubmit}>
           <div className="grid gap-6 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="event" className="text-right">
@@ -238,32 +239,33 @@ export function AllowanceFormModal({
               />
             </div>
           </div>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={isLoading}
-            >
-              {t("allowanceFormModal.cancelButton")}
-            </Button>
-            <Button
-              type="submit"
-              disabled={
-                isLoading ||
-                selectedUserIds.length === 0 ||
-                !selectedEventId ||
-                !allowedReservations
-              }
-            >
-              {isLoading
-                ? t("allowanceFormModal.submittingButton")
-                : isCreating
-                  ? t("allowanceFormModal.createAllowanceButton")
-                  : t("allowanceFormModal.saveChangesButton")}
-            </Button>
-          </DialogFooter>
         </form>
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={isLoading}
+          >
+            {t("allowanceFormModal.cancelButton")}
+          </Button>
+          <Button
+            type="button"
+            onClick={() => formRef.current?.requestSubmit()}
+            disabled={
+              isLoading ||
+              selectedUserIds.length === 0 ||
+              !selectedEventId ||
+              !allowedReservations
+            }
+          >
+            {isLoading
+              ? t("allowanceFormModal.submittingButton")
+              : isCreating
+                ? t("allowanceFormModal.createAllowanceButton")
+                : t("allowanceFormModal.saveChangesButton")}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
