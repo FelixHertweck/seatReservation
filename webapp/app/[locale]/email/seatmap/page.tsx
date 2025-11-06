@@ -109,7 +109,7 @@ export default function EmailSeatmapPage() {
 
   const handleReset = () => {
     const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
-    setScale(isMobile ? 1 : 2);
+    setScale(isMobile ? 1.2 : 1.8);
     setPosition({ x: 0, y: 0 });
   };
 

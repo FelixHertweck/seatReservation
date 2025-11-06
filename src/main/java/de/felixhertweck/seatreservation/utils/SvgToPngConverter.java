@@ -22,6 +22,7 @@ package de.felixhertweck.seatreservation.utils;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.batik.transcoder.TranscoderException;
 import org.apache.batik.transcoder.TranscoderInput;
@@ -52,7 +53,7 @@ public class SvgToPngConverter {
         LOG.debug("Converting SVG to PNG...");
 
         try (ByteArrayInputStream inputStream =
-                        new ByteArrayInputStream(svgContent.getBytes("UTF-8"));
+                        new ByteArrayInputStream(svgContent.getBytes(StandardCharsets.UTF_8));
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
             PNGTranscoder transcoder = new PNGTranscoder();
