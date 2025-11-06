@@ -103,7 +103,7 @@ export function EventManagement({
           (event) => event.eventLocationId?.toString() === filters.locationId,
         );
       }
-      if (filters.reminderStatus && filters.reminderStatus !== "all") {
+      if (filters.reminderStatus) {
         filtered = filtered.filter((event) => {
           if (filters.reminderStatus === "sent") {
             return event.isReminderSent === true;
@@ -258,10 +258,6 @@ export function EventManagement({
               label: t("eventManagement.reminderStatusFilterLabel"),
               type: "select",
               options: [
-                {
-                  value: "all",
-                  label: t("eventManagement.reminderStatusAll"),
-                },
                 {
                   value: "scheduled",
                   label: t("eventManagement.reminderStatusScheduled"),

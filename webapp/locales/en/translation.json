@@ -583,6 +583,7 @@
     "endTimeLabel": "End Time",
     "bookingDeadlineLabel": "Booking Deadline",
     "bookingStartTimeLabel": "Booking Start Time",
+    "reminderSendDateLabel": "Reminder Send Date",
     "cancelButton": "Cancel",
     "savingButton": "Saving...",
     "createButton": "Create",
@@ -613,7 +614,6 @@
     "deleteButtonLabel": "Delete",
     "editButtonLabel": "Edit",
     "reminderStatusFilterLabel": "Reminder Status",
-    "reminderStatusAll": "All",
     "reminderStatusScheduled": "Scheduled",
     "reminderStatusSent": "Sent",
     "reminderStatusNotScheduled": "Not Scheduled"

@@ -585,6 +585,7 @@
     "endTimeLabel": "Endzeit",
     "bookingDeadlineLabel": "Buchungsfrist",
     "bookingStartTimeLabel": "Buchungs-Startzeit",
+    "reminderSendDateLabel": "Erinnerungs-Email Datum",
     "cancelButton": "Abbrechen",
     "savingButton": "Speichern...",
     "createButton": "Erstellen",
@@ -615,7 +616,6 @@
     "deleteButtonLabel": "Löschen",
     "editButtonLabel": "Bearbeiten",
     "reminderStatusFilterLabel": "Erinnerungsstatus",
-    "reminderStatusAll": "Alle",
     "reminderStatusScheduled": "Geplant",
     "reminderStatusSent": "Gesendet",
     "reminderStatusNotScheduled": "Nicht geplant"
