@@ -69,4 +69,25 @@ public class LoginAttemptRepository implements PanacheRepository<LoginAttempt> {
         LoginAttempt attempt = new LoginAttempt(username, Instant.now(), successful);
         persist(attempt);
     }
+
+    /**
+     * Gets the timestamp of the oldest failed login attempt within a time window.
+     *
+     * @param username the username to check
+     * @param since the start time of the window
+     * @return the timestamp of the oldest failed attempt, or null if none found
+     */
+    public Instant getOldestFailedAttemptTime(String username, Instant since) {
+        LOG.debugf(
+                "Getting oldest failed login attempt time for username: %s since: %s",
+                username, since);
+        return find(
+                        "username = ?1 and successful = false and attemptTime >= ?2 order by"
+                                + " attemptTime asc",
+                        username,
+                        since)
+                .firstResultOptional()
+                .map(LoginAttempt::getAttemptTime)
+                .orElse(null);
+    }
 }

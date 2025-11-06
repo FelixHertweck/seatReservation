@@ -25,6 +25,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -146,5 +147,47 @@ public class LoginAttemptRepositoryTest {
 
         assertEquals(0L, deletedCount);
         assertEquals(1L, loginAttemptRepository.count());
+    }
+
+    @Test
+    void testGetOldestFailedAttemptTime() {
+        String username = "testuser";
+        Instant fiveMinutesAgo = Instant.now().minus(5, ChronoUnit.MINUTES);
+
+        loginAttemptRepository.recordAttempt(username, false);
+        loginAttemptRepository.recordAttempt(username, false);
+        loginAttemptRepository.recordAttempt(username, false);
+
+        Instant oldestAttempt =
+                loginAttemptRepository.getOldestFailedAttemptTime(username, fiveMinutesAgo);
+
+        assertNotNull(oldestAttempt);
+        assertTrue(oldestAttempt.isAfter(fiveMinutesAgo) || oldestAttempt.equals(fiveMinutesAgo));
+    }
+
+    @Test
+    void testGetOldestFailedAttemptTime_NoAttempts() {
+        String username = "testuser";
+        Instant fiveMinutesAgo = Instant.now().minus(5, ChronoUnit.MINUTES);
+
+        Instant oldestAttempt =
+                loginAttemptRepository.getOldestFailedAttemptTime(username, fiveMinutesAgo);
+
+        assertEquals(null, oldestAttempt);
+    }
+
+    @Test
+    void testGetOldestFailedAttemptTime_ExcludesSuccessful() {
+        String username = "testuser";
+        Instant fiveMinutesAgo = Instant.now().minus(5, ChronoUnit.MINUTES);
+
+        loginAttemptRepository.recordAttempt(username, true);
+        loginAttemptRepository.recordAttempt(username, false);
+
+        Instant oldestAttempt =
+                loginAttemptRepository.getOldestFailedAttemptTime(username, fiveMinutesAgo);
+
+        assertNotNull(oldestAttempt);
+        // The oldest failed attempt should be more recent than a successful one if recorded after
     }
 }

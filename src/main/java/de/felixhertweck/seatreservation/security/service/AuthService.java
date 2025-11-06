@@ -135,10 +135,19 @@ public class AuthService {
      * @return the remaining lockout time in seconds
      */
     private long calculateRemainingLockoutTime(String username, Instant lockoutWindowStart) {
-        // In a real implementation, you might want to track the exact time of the first failed
-        // attempt
-        // For now, we'll use a conservative estimate based on the lockout window
-        return lockoutDurationSeconds;
+        Instant oldestFailedAttempt =
+                loginAttemptRepository.getOldestFailedAttemptTime(username, lockoutWindowStart);
+        if (oldestFailedAttempt == null) {
+            return lockoutDurationSeconds;
+        }
+
+        // Calculate when the lockout will expire based on the oldest failed attempt
+        Instant lockoutExpiry = oldestFailedAttempt.plusSeconds(lockoutDurationSeconds);
+        long remainingSeconds =
+                Instant.now().until(lockoutExpiry, java.time.temporal.ChronoUnit.SECONDS);
+
+        // Return at least 0 seconds, even if calculation results in negative
+        return Math.max(0, remainingSeconds);
     }
 
     public boolean passwordMatches(String password, String passwordSalt, String storedHash) {
