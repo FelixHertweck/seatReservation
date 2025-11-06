@@ -175,6 +175,8 @@ export function EventFormModal({
               <Input
                 id="startTime"
                 type="datetime-local"
+                min="1900-01-01T00:00"
+                max="2100-12-31T23:59"
                 value={formData.startTime}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -192,6 +194,7 @@ export function EventFormModal({
               <Input
                 id="endTime"
                 type="datetime-local"
+                max="2100-12-31T23:59"
                 value={formData.endTime}
                 min={formData.startTime}
                 onChange={(e) =>
@@ -210,6 +213,7 @@ export function EventFormModal({
                 id="bookingStartTime"
                 type="datetime-local"
                 value={formData.bookingStartTime}
+                min="1900-01-01T00:00"
                 max={formData.bookingDeadline || formData.startTime}
                 onChange={(e) =>
                   setFormData((prev) => ({
