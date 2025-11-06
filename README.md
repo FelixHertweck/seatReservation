@@ -53,6 +53,26 @@ Admins have full control over the system, including user management and system-w
 - Backend:  [![Build Status](https://github.com/FelixHertweck/SeatReservation/actions/workflows/backend.yml/badge.svg?branch=main)](https://github.com/FelixHertweck/SeatReservation/actions/workflows/backend.yml)
 - Backend Native: [![Build Status](https://github.com/FelixHertweck/SeatReservation/actions/workflows/backend-native.yml/badge.svg?branch=main)](https://github.com/FelixHertweck/SeatReservation/actions/workflows/backend-native.yml)
 
+## Development Container
+
+For a streamlined development experience, this project includes a development container configuration that provides a fully configured environment with all necessary tools and dependencies.
+
+### Quick Start with Dev Container
+
+1. Install [VS Code](https://code.visualstudio.com/) and the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+2. Install [Docker Desktop](https://www.docker.com/products/docker-desktop)
+3. Open this repository in VS Code
+4. Click "Reopen in Container" when prompted (or use Command Palette: `Dev Containers: Reopen in Container`)
+
+The dev container includes:
+- Java 21 (for Quarkus backend)
+- Node.js 20.x (for Next.js frontend)
+- PostgreSQL 17 (database)
+- Maven (via SDKMAN)
+- All necessary VS Code extensions
+
+For more details, see [.devcontainer/README.md](.devcontainer/README.md).
+
 ## Initial Setup
 
 Before running the application, ensure the following setup steps are completed:
