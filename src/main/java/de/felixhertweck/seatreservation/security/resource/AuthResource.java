@@ -85,6 +85,11 @@ public class AuthResource {
     @PermitAll
     @APIResponse(responseCode = "200", description = "Login successful, JWT cookie set")
     @APIResponse(responseCode = "401", description = "Unauthorized: Invalid credentials")
+    @APIResponse(
+            responseCode = "429",
+            description =
+                    "Too Many Requests: Account temporarily locked due to too many failed login"
+                            + " attempts")
     public Response login(@Valid LoginRequestDTO loginRequest) throws JwtInvalidException {
         LOG.debugf("Received login request for username: %s", loginRequest.getUsername());
         LOG.debugf("LoginRequestDTO: %s", loginRequest.toString());

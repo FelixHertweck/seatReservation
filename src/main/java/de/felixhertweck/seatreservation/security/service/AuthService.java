@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.security.service;
 
+import java.time.Instant;
 import java.util.Set;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -28,8 +29,10 @@ import de.felixhertweck.seatreservation.common.exception.InvalidUserException;
 import de.felixhertweck.seatreservation.common.exception.RegistrationDisabledException;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.LoginAttemptRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
+import de.felixhertweck.seatreservation.security.exceptions.AccountLockedException;
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
@@ -46,8 +49,16 @@ public class AuthService {
 
     @Inject UserService userService;
 
+    @Inject LoginAttemptRepository loginAttemptRepository;
+
     @ConfigProperty(name = "registration.enabled", defaultValue = "true")
     boolean registrationEnabled;
+
+    @ConfigProperty(name = "login.max-failed-attempts", defaultValue = "5")
+    int maxFailedAttempts;
+
+    @ConfigProperty(name = "login.lockout-duration-seconds", defaultValue = "300")
+    int lockoutDurationSeconds;
 
     /**
      * Checks if user registration is enabled.
@@ -65,22 +76,69 @@ public class AuthService {
      * @param password the password of the user
      * @return the authenticated User if authentication is successful
      * @throws AuthenticationFailedException if authentication fails
+     * @throws AccountLockedException if the account is temporarily locked due to too many failed
+     *     attempts
      */
     public User authenticate(String username, String password)
-            throws AuthenticationFailedException {
+            throws AuthenticationFailedException, AccountLockedException {
         LOG.debugf("Attempting to authenticate user with username: %s", username);
+
+        // Check if account is locked due to failed login attempts
+        checkAccountLockout(username);
+
         User user = userRepository.findByUsername(username);
         if (user == null) {
             LOG.warnf("Authentication failed for username %s: User not found.", username);
+            loginAttemptRepository.recordAttempt(username, false);
             throw new AuthenticationFailedException("Failed to authenticate user: " + username);
         }
         if (passwordMatches(password, user.getPasswordSalt(), user.getPasswordHash())) {
             LOG.infof("User %s authenticated successfully.", user.getUsername());
+            loginAttemptRepository.recordAttempt(username, true);
             return user;
         }
 
         LOG.warnf("Authentication failed for username %s: Password mismatch.", username);
+        loginAttemptRepository.recordAttempt(username, false);
         throw new AuthenticationFailedException("Failed to authenticate user: " + username);
+    }
+
+    /**
+     * Checks if the account is temporarily locked due to too many failed login attempts.
+     *
+     * @param username the username to check
+     * @throws AccountLockedException if the account is locked
+     */
+    private void checkAccountLockout(String username) throws AccountLockedException {
+        Instant lockoutWindowStart = Instant.now().minusSeconds(lockoutDurationSeconds);
+        long failedAttempts =
+                loginAttemptRepository.countFailedAttempts(username, lockoutWindowStart);
+
+        if (failedAttempts >= maxFailedAttempts) {
+            long remainingSeconds = calculateRemainingLockoutTime(username, lockoutWindowStart);
+            LOG.warnf(
+                    "Account locked for username %s due to %d failed attempts. Remaining lockout"
+                            + " time: %d seconds",
+                    username, failedAttempts, remainingSeconds);
+            throw new AccountLockedException(
+                    "Account temporarily locked due to too many failed login attempts. Please try"
+                            + " again later.",
+                    remainingSeconds);
+        }
+    }
+
+    /**
+     * Calculates the remaining lockout time for an account.
+     *
+     * @param username the username to check
+     * @param lockoutWindowStart the start of the lockout window
+     * @return the remaining lockout time in seconds
+     */
+    private long calculateRemainingLockoutTime(String username, Instant lockoutWindowStart) {
+        // In a real implementation, you might want to track the exact time of the first failed
+        // attempt
+        // For now, we'll use a conservative estimate based on the lockout window
+        return lockoutDurationSeconds;
     }
 
     public boolean passwordMatches(String password, String passwordSalt, String storedHash) {

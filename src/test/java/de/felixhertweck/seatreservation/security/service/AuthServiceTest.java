@@ -19,15 +19,20 @@
  */
 package de.felixhertweck.seatreservation.security.service;
 
+import java.time.Instant;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.common.exception.RegistrationDisabledException;
 import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.LoginAttemptRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
@@ -45,13 +50,22 @@ public class AuthServiceTest {
 
     @InjectMock TokenService tokenService;
 
+    @InjectMock LoginAttemptRepository loginAttemptRepository;
+
     AuthService authService;
 
     @BeforeEach
     void setUp() {
-        Mockito.reset(userRepository, tokenService);
+        Mockito.reset(userRepository, tokenService, loginAttemptRepository);
         authService = new AuthService();
         authService.userRepository = userRepository;
+        authService.loginAttemptRepository = loginAttemptRepository;
+        authService.maxFailedAttempts = 5;
+        authService.lockoutDurationSeconds = 300;
+
+        // Mock loginAttemptRepository to return 0 failed attempts by default
+        when(loginAttemptRepository.countFailedAttempts(anyString(), any(Instant.class)))
+                .thenReturn(0L);
     }
 
     @Test
