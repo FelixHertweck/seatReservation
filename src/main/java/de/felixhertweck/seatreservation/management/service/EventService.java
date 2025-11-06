@@ -91,7 +91,6 @@ public class EventService {
                         location,
                         manager,
                         dto.getReminderSendDate());
-        event.setReminderSendDate(dto.getReminderSendDate());
         eventRepository.persist(event);
         LOG.infof("Event '%s' (ID: %d) created successfully.", event.getName(), event.getId());
         LOG.debugf(
