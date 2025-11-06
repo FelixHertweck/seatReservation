@@ -2,7 +2,7 @@
   "name": "Seat Reservation Development",
   "dockerComposeFile": "docker-compose.yml",
   "service": "app",
-  "workspaceFolder": "/workspace",
+  "workspaceFolder": "/workspaces/seatReservation",
 
   // Configure tool-specific properties.
   "customizations": {
