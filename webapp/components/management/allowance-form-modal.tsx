@@ -161,103 +161,108 @@ export function AllowanceFormModal({
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
-        <div className="grid gap-6 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="event" className="text-right">
-              {t("allowanceFormModal.eventLabel")}
-            </Label>
-            <Select
-              value={selectedEventId}
-              onValueChange={setSelectedEventId}
-              disabled={!isCreating}
-            >
-              <SelectTrigger className="col-span-3">
-                <SelectValue
-                  placeholder={t("allowanceFormModal.selectEventPlaceholder")}
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {events.map((event) => (
-                  <SelectItem
-                    key={event.id?.toString()}
-                    value={event.id?.toString() || ""}
-                  >
-                    {event.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <div className="grid gap-6 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="event" className="text-right">
+                {t("allowanceFormModal.eventLabel")}
+              </Label>
+              <Select
+                value={selectedEventId}
+                onValueChange={setSelectedEventId}
+                disabled={!isCreating}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue
+                    placeholder={t("allowanceFormModal.selectEventPlaceholder")}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {events.map((event) => (
+                    <SelectItem
+                      key={event.id?.toString()}
+                      value={event.id?.toString() || ""}
+                    >
+                      {event.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div className="grid grid-cols-4 items-start gap-4">
-            <Label className="text-right pt-2">
-              {t("allowanceFormModal.usersLabel")}
-            </Label>
-            <div className="col-span-3">
-              {isCreating && (
-                <UserMultiSelect
-                  users={
-                    isCreating
-                      ? users
-                      : users.filter(
-                          (user) =>
-                            user.id?.toString() ===
-                            allowance?.userId?.toString(),
-                        )
-                  }
-                  selectedUserIds={selectedUserIds}
-                  onSelectionChange={setSelectedUserIds}
-                  label=""
-                  placeholder={t("allowanceFormModal.searchUserPlaceholder")}
-                  maxHeight="250px"
-                />
-              )}
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label className="text-right pt-2">
+                {t("allowanceFormModal.usersLabel")}
+              </Label>
+              <div className="col-span-3">
+                {isCreating && (
+                  <UserMultiSelect
+                    users={
+                      isCreating
+                        ? users
+                        : users.filter(
+                            (user) =>
+                              user.id?.toString() ===
+                              allowance?.userId?.toString(),
+                          )
+                    }
+                    selectedUserIds={selectedUserIds}
+                    onSelectionChange={setSelectedUserIds}
+                    label=""
+                    placeholder={t("allowanceFormModal.searchUserPlaceholder")}
+                    maxHeight="250px"
+                  />
+                )}
 
-              {!isCreating && selectedUserIds.length > 0 && (
-                <div className="text-sm text-muted-foreground mt-2">
-                  {t("allowanceFormModal.selectedUserLabel")}{" "}
-                  {
-                    users.find((u) => u.id?.toString() === selectedUserIds[0])
-                      ?.username
-                  }
-                </div>
-              )}
+                {!isCreating && selectedUserIds.length > 0 && (
+                  <div className="text-sm text-muted-foreground mt-2">
+                    {t("allowanceFormModal.selectedUserLabel")}{" "}
+                    {
+                      users.find((u) => u.id?.toString() === selectedUserIds[0])
+                        ?.username
+                    }
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="allowedReservations" className="text-right">
+                {t("allowanceFormModal.allowedReservationsLabel")}
+              </Label>
+              <Input
+                id="allowedReservations"
+                type="number"
+                value={allowedReservations}
+                onChange={(e) => setAllowedReservations(e.target.value)}
+                className="col-span-3"
+              />
             </div>
           </div>
-
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="allowedReservations" className="text-right">
-              {t("allowanceFormModal.allowedReservationsLabel")}
-            </Label>
-            <Input
-              id="allowedReservations"
-              type="number"
-              value={allowedReservations}
-              onChange={(e) => setAllowedReservations(e.target.value)}
-              className="col-span-3"
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
-            {t("allowanceFormModal.cancelButton")}
-          </Button>
-          <Button
-            type="submit"
-            disabled={
-              isLoading ||
-              selectedUserIds.length === 0 ||
-              !selectedEventId ||
-              !allowedReservations
-            }
-          >
-            {isLoading
-              ? t("allowanceFormModal.submittingButton")
-              : isCreating
-                ? t("allowanceFormModal.createAllowanceButton")
-                : t("allowanceFormModal.saveChangesButton")}
-          </Button>
-        </DialogFooter>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={isLoading}
+            >
+              {t("allowanceFormModal.cancelButton")}
+            </Button>
+            <Button
+              type="submit"
+              disabled={
+                isLoading ||
+                selectedUserIds.length === 0 ||
+                !selectedEventId ||
+                !allowedReservations
+              }
+            >
+              {isLoading
+                ? t("allowanceFormModal.submittingButton")
+                : isCreating
+                  ? t("allowanceFormModal.createAllowanceButton")
+                  : t("allowanceFormModal.saveChangesButton")}
+            </Button>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
