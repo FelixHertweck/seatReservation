@@ -317,7 +317,7 @@ export function EventManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[15%]"
+                        className="w-[13%]"
                       >
                         {t("eventManagement.tableHeaderDescription")}
                       </SortableTableHead>

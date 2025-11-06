@@ -144,7 +144,19 @@ public class NotificationService {
             // Step 1: Load data in a SHORT transaction
             ReminderData data = self.loadReminderData(eventId);
             if (data == null) {
-                return; // Event not found, already sent, or no reservations
+                // Event not found or already sent, cancel the job
+                cancelEventReminder(eventId);
+                return;
+            }
+
+            // Check if there are no reservations
+            if (data.reservations.isEmpty()) {
+                LOG.debugf(
+                        "No reservations for event %s, marking reminder as sent",
+                        data.event.getName());
+                self.markReminderComplete(eventId);
+                cancelEventReminder(eventId);
+                return;
             }
 
             // Step 2: Send emails OUTSIDE transaction (can take as long as needed)
@@ -193,11 +205,14 @@ public class NotificationService {
         List<Reservation> reservations = reservationService.findByEvent(event);
         LOG.debugf("Found %d reservations for event %s.", reservations.size(), event.getName());
 
+        // Return early if no reservations, but let the orchestration method handle marking as sent
         if (reservations.isEmpty()) {
-            LOG.debugf("No reservations for event %s, skipping reminder", event.getName());
-            cancelEventReminder(eventId);
-            eventService.markReminderAsSent(event);
-            return null;
+            LOG.debugf(
+                    "No reservations for event %s, will mark reminder as sent in orchestration"
+                            + " method",
+                    event.getName());
+            // Return ReminderData with empty reservations list to signal this case
+            return new ReminderData(event, reservations);
         }
 
         // Eagerly load all lazy fields that will be needed outside the transaction
