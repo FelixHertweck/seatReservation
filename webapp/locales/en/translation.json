@@ -841,5 +841,40 @@
     "allRightsReserved": "All rights reserved.",
     "legalNotice": "Legal Notice",
     "privacyPolicy": "Privacy Policy"
+  },
+  "emailSeatmap": {
+    "title": "Your Seat Map",
+    "subtitle": "View your reserved seats",
+    "stage": "Stage",
+    "loading": {
+      "title": "Loading your seat map...",
+      "subtitle": "Please wait a moment"
+    },
+    "error": {
+      "title": "Error",
+      "failedToLoad": "Failed to load seat map",
+      "invalidToken": "The token may be invalid or expired. Please check your email for a new link.",
+      "noToken": "No token provided"
+    },
+    "controls": {
+      "zoomOut": "Zoom out",
+      "zoomIn": "Zoom in",
+      "reset": "Reset view",
+      "download": "Download seat map"
+    },
+    "legend": {
+      "yourSeats": "Your Reserved Seats",
+      "otherSeats": "Other Reserved Seats",
+      "availableSeats": "Available Seats"
+    },
+    "instructions": {
+      "desktop": "Use mouse wheel to zoom • Drag to pan • Click buttons to zoom",
+      "mobile": "Drag to pan • Click buttons to zoom"
+    },
+    "toast": {
+      "downloadStarted": "Download started",
+      "downloadDescription": "Your seat map is being downloaded",
+      "errorTitle": "Error"
+    }
   }
 }

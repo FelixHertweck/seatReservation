@@ -155,6 +155,16 @@
       <artifactId>commons-csv</artifactId>
       <version>1.14.1</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.xmlgraphics</groupId>
+      <artifactId>batik-transcoder</artifactId>
+      <version>1.18</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.xmlgraphics</groupId>
+      <artifactId>batik-codec</artifactId>
+      <version>1.18</version>
+    </dependency>
   </dependencies>
 
   <build>

@@ -35,8 +35,7 @@ INSERT INTO user_roles (user_id, role) VALUES (3, 'USER');
 INSERT INTO eventlocations (id, name, address, manager_id) VALUES (1, 'City Hall', 'Hauptstraße 1, 12345 Musterstadt', 2);
 
 -- Insert event
-INSERT INTO events (id, name, startTime, endTime, bookingStartTime, bookingDeadline, event_location_id, manager_id) VALUES (1, 'City Band Concert', '2024-12-31 19:00:00', '2024-12-31 21:00:00', '2024-12-12 17:00:00', '2026-12-12 17:00:00', 1, 2);
-
+INSERT INTO events (id, name, startTime, endTime, bookingStartTime, bookingDeadline, reminderSent, event_location_id, manager_id) VALUES (1, 'City Band Concert', '2024-12-31 19:00:00', '2024-12-31 21:00:00', '2024-12-12 17:00:00', '2026-12-12 17:00:00', false, 1, 2);
 
 INSERT INTO eventlocationsMarkers (id, event_location_id, label, xCoordinate, yCoordinate) VALUES
 (1, 1, 'R 1', 6, 1),

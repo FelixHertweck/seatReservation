@@ -55,6 +55,7 @@ public class SeatResourceTest {
 
     @BeforeEach
     @Transactional
+    @SuppressWarnings("unused")
     void setUp() {
         var manager = userRepository.findByUsernameOptional("manager").orElseThrow();
 
@@ -81,6 +82,7 @@ public class SeatResourceTest {
 
     @AfterEach
     @Transactional
+    @SuppressWarnings("unused")
     void tearDown() {
         // It's safer to delete all created entities to clean up the state
         seatRepository.deleteAll();
