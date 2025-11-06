@@ -33,6 +33,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
+import de.felixhertweck.seatreservation.email.service.EmailSeatMapService;
 import de.felixhertweck.seatreservation.management.service.ReservationService;
 import de.felixhertweck.seatreservation.model.entity.EmailVerification;
 import de.felixhertweck.seatreservation.model.entity.Event;
@@ -42,7 +43,6 @@ import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
-import de.felixhertweck.seatreservation.utils.SvgRenderer;
 import de.felixhertweck.seatreservation.utils.VerificationCodeGenerator;
 import io.quarkus.logging.Log;
 import io.quarkus.mailer.Mail;
@@ -89,6 +89,8 @@ public class EmailService {
     @Inject SeatRepository seatRepository;
 
     @Inject ReservationService reservationService;
+
+    @Inject EmailSeatMapService emailSeatMapService;
 
     @ConfigProperty(name = "email.frontend-base-url", defaultValue = "")
     String frontendBaseUrl;
@@ -222,6 +224,16 @@ public class EmailService {
     }
 
     /**
+     * Generates a link to the email seatmap page.
+     *
+     * @param token The email seatmap token.
+     * @return The complete seatmap link.
+     */
+    private String generateSeatmapLink(String token) {
+        return frontendBaseUrl.trim() + "/email/seatmap?token=" + token;
+    }
+
+    /**
      * Generates a verification link for email confirmation.
      *
      * @param verificationCode The verification code to include in the link.
@@ -272,7 +284,18 @@ public class EmailService {
         String eventName = event.getName();
         LOG.debugf("Event for reservation confirmation: %s (ID: %d)", eventName, event.id);
 
-        // Prepare data for SVG rendering
+        // Create email seatmap token
+        String seatmapToken =
+                emailSeatMapService.createEmailSeatMapToken(user, event, reservations);
+        String seatmapLink = generateSeatmapLink(seatmapToken);
+        LOG.debugf("Created email seatmap token: %s", seatmapToken);
+
+        // Get PNG image from EmailSeatMapService
+        Optional<byte[]> pngImageOpt = emailSeatMapService.getPngImage(seatmapToken);
+        byte[] pngImage = pngImageOpt.orElse(new byte[0]);
+        LOG.debugf("Retrieved PNG image with size: %d bytes", pngImage.length);
+
+        // Prepare data for seat list rendering
         List<Seat> allSeats = seatRepository.findByEventLocation(event.getEventLocation());
         List<Reservation> allUserReservationsForEvent =
                 reservationRepository.findByUserAndEvent(user, event);
@@ -290,18 +313,6 @@ public class EmailService {
                         .collect(Collectors.toSet());
         existingSeatNumbers.removeAll(newSeatNumbers); // Keep only previously reserved seats
         LOG.debugf("Existing seat numbers (excluding new ones): %s", existingSeatNumbers);
-
-        String svgContent =
-                SvgRenderer.renderSeats(
-                        allSeats,
-                        newSeatNumbers.stream()
-                                .map(Seat::getSeatNumber)
-                                .collect(Collectors.toSet()),
-                        existingSeatNumbers.stream()
-                                .map(Seat::getSeatNumber)
-                                .collect(Collectors.toSet()),
-                        event.getEventLocation().getMarkers());
-        LOG.debug("SVG content for seat map generated.");
 
         StringBuilder seatListHtml = new StringBuilder();
         for (Reservation reservation : reservations) {
@@ -333,7 +344,7 @@ public class EmailService {
                         event.getEndTime().atZone(ZoneId.systemDefault()).format(formatter));
         htmlContent = htmlContent.replace("{seatList}", seatListHtml.toString());
         htmlContent = htmlContent.replace("{eventLink}", generateEventLink(event.id));
-        htmlContent = htmlContent.replace("{seatMap}", svgContent);
+        htmlContent = htmlContent.replace("{seatmapLink}", seatmapLink);
         htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
 
         // Show or hide existing reservations section based on presence of existing seats
@@ -363,6 +374,12 @@ public class EmailService {
                         emailAddresses.getFirst(),
                         EMAIL_HEADER_RESERVATION_CONFIRMATION,
                         htmlContent);
+
+        // Add PNG image as inline attachment
+        if (pngImage.length > 0) {
+            mail.addInlineAttachment("seatmap.png", pngImage, "image/png", "seatmap-image");
+        }
+
         if (emailAddresses.size() > 1) {
             emailAddresses.subList(1, emailAddresses.size()).forEach(mail::addCc);
         }
@@ -444,7 +461,19 @@ public class EmailService {
         String eventName = event.getName();
         LOG.debugf("Event for reservation confirmation: %s (ID: %d)", eventName, event.id);
 
-        // Prepare data for SVG rendering
+        // Create email seatmap token with active reservations
+        String seatmapToken =
+                emailSeatMapService.createEmailSeatMapToken(
+                        user, event, activeReservations != null ? activeReservations : List.of());
+        String seatmapLink = generateSeatmapLink(seatmapToken);
+        LOG.debugf("Created email seatmap token: %s", seatmapToken);
+
+        // Get PNG image from EmailSeatMapService
+        Optional<byte[]> pngImageOpt = emailSeatMapService.getPngImage(seatmapToken);
+        byte[] pngImage = pngImageOpt.orElse(new byte[0]);
+        LOG.debugf("Retrieved PNG image with size: %d bytes", pngImage.length);
+
+        // Prepare data for seat list rendering
         List<Seat> allSeats = seatRepository.findByEventLocation(event.getEventLocation());
 
         LOG.debugf(
@@ -460,14 +489,6 @@ public class EmailService {
                                 .collect(Collectors.toSet())
                         : Set.of();
         LOG.debugf("Existing seat numbers (excluding new ones): %s", existingSeatNumbers);
-
-        String svgContent =
-                SvgRenderer.renderSeats(
-                        allSeats,
-                        Set.of(),
-                        existingSeatNumbers,
-                        event.getEventLocation().getMarkers());
-        LOG.debug("SVG content for seat map generated.");
 
         StringBuilder deletedSeatListHtml = new StringBuilder();
         for (Reservation reservation : deletedReservations) {
@@ -500,7 +521,7 @@ public class EmailService {
 
         htmlContent = htmlContent.replace("{deletedSeatList}", deletedSeatListHtml.toString());
         htmlContent = htmlContent.replace("{eventLink}", generateEventLink(event.id));
-        htmlContent = htmlContent.replace("{seatMap}", svgContent);
+        htmlContent = htmlContent.replace("{seatmapLink}", seatmapLink);
         htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
 
         if (activeReservations == null || activeReservations.isEmpty()) {
@@ -528,6 +549,12 @@ public class EmailService {
         Mail mail =
                 Mail.withHtml(
                         emailAddresses.getFirst(), EMAIL_HEADER_RESERVATION_UPDATE, htmlContent);
+
+        // Add PNG image as inline attachment
+        if (pngImage.length > 0) {
+            mail.addInlineAttachment("seatmap.png", pngImage, "image/png", "seatmap-image");
+        }
+
         if (emailAddresses.size() > 1) {
             emailAddresses.subList(1, emailAddresses.size()).forEach(mail::addCc);
         }
@@ -631,21 +658,21 @@ public class EmailService {
                         "User ID: %d, Event ID: %d, Number of reservations: %d",
                         user.id, event.id, reservations.size()));
 
+        // Create email seatmap token
+        String seatmapToken =
+                emailSeatMapService.createEmailSeatMapToken(user, event, reservations);
+        String seatmapLink = generateSeatmapLink(seatmapToken);
+        LOG.debugf("Created email seatmap token: %s", seatmapToken);
+
+        // Get PNG image from EmailSeatMapService
+        Optional<byte[]> pngImageOpt = emailSeatMapService.getPngImage(seatmapToken);
+        byte[] pngImage = pngImageOpt.orElse(new byte[0]);
+        LOG.debugf("Retrieved PNG image with size: %d bytes", pngImage.length);
+
         List<Seat> reservedSeats =
                 reservations.stream().map(Reservation::getSeat).collect(Collectors.toList());
 
-        // Prepare data for SVG rendering
-        List<Seat> allSeats = seatRepository.findByEventLocation(event.getEventLocation());
-
         String htmlContent = emailContentEventReminder;
-
-        String svgContent =
-                SvgRenderer.renderSeats(
-                        allSeats,
-                        reservedSeats.stream().map(Seat::getSeatNumber).collect(Collectors.toSet()),
-                        Set.of(),
-                        event.getEventLocation().getMarkers());
-        LOG.debug("SVG content for seat map generated.");
 
         // Prepare seat list HTML
         StringBuilder seatListHtml = new StringBuilder();
@@ -680,7 +707,7 @@ public class EmailService {
                                 .toString());
         htmlContent = htmlContent.replace("{eventLocation}", event.getEventLocation().getName());
         htmlContent = htmlContent.replace("{seatList}", seatListHtml.toString());
-        htmlContent = htmlContent.replace("{seatMap}", svgContent);
+        htmlContent = htmlContent.replace("{seatmapLink}", seatmapLink);
         htmlContent = htmlContent.replace("{eventLink}", generateEventLink(event.id));
         htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
         LOG.debug("Placeholders replaced in event reminder email template.");
@@ -688,6 +715,11 @@ public class EmailService {
         // Create and send the email
         LOG.debugf("Event reminder subject: %s", EMAIL_HEADER_REMINDER);
         Mail mail = Mail.withHtml(user.getEmail(), EMAIL_HEADER_REMINDER, htmlContent);
+
+        // Add PNG image as inline attachment
+        if (pngImage.length > 0) {
+            mail.addInlineAttachment("seatmap.png", pngImage, "image/png", "seatmap-image");
+        }
 
         mailer.send(mail)
                 .subscribe()

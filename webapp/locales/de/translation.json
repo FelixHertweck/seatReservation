@@ -849,5 +849,40 @@
     "allRightsReserved": "Alle Rechte vorbehalten.",
     "legalNotice": "Impressum",
     "privacyPolicy": "Datenschutzerklärung"
+  },
+  "emailSeatmap": {
+    "title": "Ihre Sitzplatzkarte",
+    "subtitle": "Zeigen Sie Ihre reservierten Sitzplätze an",
+    "stage": "Bühne",
+    "loading": {
+      "title": "Ihre Sitzplatzkarte wird geladen...",
+      "subtitle": "Bitte warten Sie einen Moment"
+    },
+    "error": {
+      "title": "Fehler",
+      "failedToLoad": "Sitzplatzkarte konnte nicht geladen werden",
+      "invalidToken": "Der Token ist möglicherweise ungültig oder abgelaufen. Bitte überprüfen Sie Ihre E-Mail für einen neuen Link.",
+      "noToken": "Kein Token angegeben"
+    },
+    "controls": {
+      "zoomOut": "Herauszoomen",
+      "zoomIn": "Hineinzoomen",
+      "reset": "Ansicht zurücksetzen",
+      "download": "Sitzplatzkarte herunterladen"
+    },
+    "legend": {
+      "yourSeats": "Ihre reservierten Sitzplätze",
+      "otherSeats": "Andere reservierte Sitzplätze",
+      "availableSeats": "Verfügbare Sitzplätze"
+    },
+    "instructions": {
+      "desktop": "Mausrad zum Zoomen verwenden • Ziehen zum Verschieben • Klicken Sie auf die Schaltflächen zum Zoomen",
+      "mobile": "Ziehen zum Verschieben • Klicken Sie auf die Schaltflächen zum Zoomen"
+    },
+    "toast": {
+      "downloadStarted": "Download gestartet",
+      "downloadDescription": "Ihre Sitzplatzkarte wird heruntergeladen",
+      "errorTitle": "Fehler"
+    }
   }
 }

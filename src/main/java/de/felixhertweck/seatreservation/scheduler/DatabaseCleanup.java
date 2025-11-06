@@ -25,6 +25,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
 import de.felixhertweck.seatreservation.model.repository.RefreshTokenRepository;
 import io.quarkus.scheduler.Scheduled;
@@ -43,6 +44,8 @@ public class DatabaseCleanup {
     @Inject EmailVerificationRepository emailVerificationRepository;
 
     @Inject RefreshTokenRepository refreshTokenRepository;
+
+    @Inject EmailSeatMapTokenRepository emailSeatMapTokenRepository;
 
     /**
      * Cleans up expired email verification entries.
@@ -126,6 +129,44 @@ public class DatabaseCleanup {
         Instant oneDayAgo = Instant.now().minus(1, ChronoUnit.DAYS);
         long deletedCount = refreshTokenRepository.delete("expiresAt < ?1", oneDayAgo);
         LOG.infof("Manually cleaned up %d expired refresh tokens.", deletedCount);
+        return (int) deletedCount;
+    }
+
+    /**
+     * Cleans up expired email seat map tokens.
+     *
+     * <p>Runs daily at 4:00 AM. Deletes all email seat map tokens where the expiration time has
+     * passed.
+     */
+    @Scheduled(cron = "0 0 4 * * ?") // Every day at 4:00 AM
+    @Transactional
+    public void cleanupExpiredEmailSeatMapTokens() {
+        LOG.info("Starting scheduled cleanup of expired email seat map tokens.");
+
+        try {
+            long deletedCount = emailSeatMapTokenRepository.deleteExpiredTokens();
+
+            if (deletedCount > 0) {
+                LOG.infof(
+                        "Successfully cleaned up %d expired email seat map tokens.", deletedCount);
+            } else {
+                LOG.debug("No expired email seat map tokens found to clean up.");
+            }
+        } catch (Exception e) {
+            LOG.error("Error during email seat map token cleanup", e);
+        }
+    }
+
+    /**
+     * Manual cleanup method for email seat map tokens that can be called programmatically.
+     *
+     * @return the number of deleted entries
+     */
+    @Transactional
+    public int manualCleanupExpiredEmailSeatMapTokens() {
+        LOG.info("Manual cleanup of expired email seat map tokens triggered.");
+        long deletedCount = emailSeatMapTokenRepository.deleteExpiredTokens();
+        LOG.infof("Manually cleaned up %d expired email seat map tokens.", deletedCount);
         return (int) deletedCount;
     }
 }

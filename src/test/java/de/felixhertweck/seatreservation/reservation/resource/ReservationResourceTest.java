@@ -29,8 +29,19 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
 
-import de.felixhertweck.seatreservation.model.entity.*;
-import de.felixhertweck.seatreservation.model.repository.*;
+import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.EventLocation;
+import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
+import de.felixhertweck.seatreservation.model.entity.Reservation;
+import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
+import de.felixhertweck.seatreservation.model.entity.Seat;
+import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenRepository;
+import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
+import de.felixhertweck.seatreservation.model.repository.EventRepository;
+import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
+import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
+import de.felixhertweck.seatreservation.model.repository.SeatRepository;
+import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.reservation.dto.UserReservationsRequestDTO;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
@@ -47,6 +58,7 @@ public class ReservationResourceTest {
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
     @Inject SeatRepository seatRepository;
     @Inject ReservationRepository reservationRepository;
+    @Inject EmailSeatMapTokenRepository emailSeatMapTokenRepository;
 
     private Event testEvent;
     private Seat testSeat1;
@@ -56,7 +68,16 @@ public class ReservationResourceTest {
 
     @BeforeEach
     @Transactional
+    @SuppressWarnings("unused")
     void setUp() {
+        // Clean up any leftover data from previous tests
+        emailSeatMapTokenRepository.deleteAll();
+        reservationRepository.deleteAll();
+        eventUserAllowanceRepository.deleteAll();
+        eventRepository.deleteAll();
+        seatRepository.deleteAll();
+        eventLocationRepository.deleteAll();
+
         var manager = userRepository.findByUsernameOptional("manager").orElseThrow();
         var testUser = userRepository.findByUsernameOptional("user").orElseThrow();
         userRepository.findByUsernameOptional("admin").orElseThrow();
@@ -97,7 +118,9 @@ public class ReservationResourceTest {
 
     @AfterEach
     @Transactional
+    @SuppressWarnings("unused")
     void tearDown() {
+        emailSeatMapTokenRepository.deleteAll();
         reservationRepository.deleteAll();
         eventUserAllowanceRepository.deleteAll();
         eventRepository.deleteAll();

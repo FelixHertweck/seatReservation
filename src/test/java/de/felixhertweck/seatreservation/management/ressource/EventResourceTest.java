@@ -59,6 +59,7 @@ public class EventResourceTest {
 
     @BeforeEach
     @Transactional
+    @SuppressWarnings("unused")
     void setUp() {
         var manager = userRepository.findByUsernameOptional("manager").orElseThrow();
         userRepository
@@ -93,6 +94,7 @@ public class EventResourceTest {
 
     @AfterEach
     @Transactional
+    @SuppressWarnings("unused")
     void tearDown() {
         eventUserAllowanceRepository.deleteAll();
         eventRepository.deleteAll();
