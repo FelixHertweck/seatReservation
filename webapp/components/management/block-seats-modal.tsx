@@ -66,8 +66,10 @@ export function BlockSeatsModal({
   const availableSeatStatuses: SeatStatusDto[] =
     selectedEvent?.seatStatuses ?? [];
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent | React.KeyboardEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
     if (!formData.eventId) return;
 
     setIsLoading(true);

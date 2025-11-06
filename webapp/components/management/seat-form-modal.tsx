@@ -49,8 +49,10 @@ export function SeatFormModal({
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent | React.KeyboardEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
     setIsLoading(true);
 
     try {
