@@ -36,6 +36,7 @@ import de.felixhertweck.seatreservation.security.exceptions.AccountLockedExcepti
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
+import de.felixhertweck.seatreservation.utils.RandomUUIDString;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
@@ -86,9 +87,16 @@ public class AuthService {
         // Check if account is locked due to failed login attempts
         checkAccountLockout(username);
 
+        // Generate random password hash to mitigate timing attacks
+        String randomPasswordHash = BcryptUtil.bcryptHash(RandomUUIDString.generate());
+
         User user = userRepository.findByUsername(username);
         if (user == null) {
             LOG.warnf("Authentication failed for username %s: User not found.", username);
+
+            // Perform password hash comparison with random hash to mitigate timing attacks
+            BcryptUtil.matches(password, randomPasswordHash);
+
             loginAttemptRepository.recordAttempt(username, false);
             throw new AuthenticationFailedException("Failed to authenticate user: " + username);
         }

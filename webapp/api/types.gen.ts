@@ -268,6 +268,10 @@ export type PostApiAuthLoginErrors = {
      * Unauthorized: Invalid credentials
      */
     401: unknown;
+    /**
+     * Too Many Requests: Account temporarily locked due to too many failed login attempts
+     */
+    429: unknown;
 };
 
 export type PostApiAuthLoginResponses = {

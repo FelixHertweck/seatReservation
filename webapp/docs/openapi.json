@@ -25,6 +25,9 @@
           "401" : {
             "description" : "Unauthorized: Invalid credentials"
           },
+          "429" : {
+            "description" : "Too Many Requests: Account temporarily locked due to too many failed login attempts"
+          },
           "400" : {
             "description" : "Bad Request"
           }
