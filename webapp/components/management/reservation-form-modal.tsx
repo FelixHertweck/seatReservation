@@ -167,7 +167,7 @@ export function ReservationFormModal({
               !(e.target instanceof HTMLTextAreaElement)
             ) {
               e.preventDefault();
-              handleSubmit(e as React.FormEvent<HTMLFormElement>);
+              handleSubmit(e);
             }
           }}
           className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0 overflow-y-auto lg:overflow-y-visible px-4 sm:px-0"
