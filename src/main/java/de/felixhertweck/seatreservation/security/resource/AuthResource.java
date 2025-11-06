@@ -34,6 +34,7 @@ import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 
 import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.security.dto.LoginLockedDTO;
 import de.felixhertweck.seatreservation.security.dto.LoginRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.RegistrationStatusDTO;
@@ -41,6 +42,8 @@ import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
 import de.felixhertweck.seatreservation.security.service.AuthService;
 import de.felixhertweck.seatreservation.security.service.TokenService;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.jboss.logging.Logger;
 
@@ -85,6 +88,12 @@ public class AuthResource {
     @PermitAll
     @APIResponse(responseCode = "200", description = "Login successful, JWT cookie set")
     @APIResponse(responseCode = "401", description = "Unauthorized: Invalid credentials")
+    @APIResponse(
+            responseCode = "429",
+            description =
+                    "Too Many Requests: Account temporarily locked due to too many failed login"
+                            + " attempts",
+            content = @Content(schema = @Schema(implementation = LoginLockedDTO.class)))
     public Response login(@Valid LoginRequestDTO loginRequest) throws JwtInvalidException {
         LOG.debugf("Received login request for username: %s", loginRequest.getUsername());
         LOG.debugf("LoginRequestDTO: %s", loginRequest.toString());

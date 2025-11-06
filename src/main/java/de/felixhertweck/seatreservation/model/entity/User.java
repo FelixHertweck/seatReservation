@@ -86,6 +86,9 @@ public class User extends PanacheEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<EmailSeatMapToken> emailSeatMapTokens = new HashSet<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<LoginAttempt> loginAttempts = new HashSet<>();
+
     /** Constructor for JPA. */
     public User() {}
 
@@ -235,6 +238,14 @@ public class User extends PanacheEntity {
 
     public void setEmailSeatMapTokens(Set<EmailSeatMapToken> emailSeatMapTokens) {
         this.emailSeatMapTokens = emailSeatMapTokens;
+    }
+
+    public Set<LoginAttempt> getLoginAttempts() {
+        return loginAttempts;
+    }
+
+    public void setLoginAttempts(Set<LoginAttempt> loginAttempts) {
+        this.loginAttempts = loginAttempts;
     }
 
     @Override

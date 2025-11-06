@@ -406,6 +406,18 @@ export const LimitedUserInfoDTOSchema = {
     }
 } as const;
 
+export const LoginLockedDTOSchema = {
+    type: 'object',
+    properties: {
+        message: {
+            type: 'string'
+        },
+        retryAfter: {
+            '$ref': '#/components/schemas/Instant'
+        }
+    }
+} as const;
+
 export const LoginRequestDTOSchema = {
     type: 'object',
     required: ['username', 'password'],

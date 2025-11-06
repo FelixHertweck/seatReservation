@@ -69,7 +69,7 @@ export default function InitQueryClient({
       }
       if (!response.ok) {
         const error = new Error(response.statusText) as ErrorWithResponse;
-        error.response = { status: response.status };
+        error.response = { ...response, status: response.status };
 
         // Try to parse error response body as JSON
         try {

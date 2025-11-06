@@ -2,6 +2,13 @@
 registration:
   enabled: true
 
+# Login rate limiting configuration
+login:
+  # Maximum number of failed login attempts before account lockout
+  max-failed-attempts: 5
+  # Duration in seconds for which account remains locked after max failed attempts
+  lockout-duration-seconds: 300
+
 smallrye:
   jwt:
     token:

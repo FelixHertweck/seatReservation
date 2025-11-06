@@ -25,6 +25,16 @@
           "401" : {
             "description" : "Unauthorized: Invalid credentials"
           },
+          "429" : {
+            "description" : "Too Many Requests: Account temporarily locked due to too many failed login attempts",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/LoginLockedDTO"
+                }
+              }
+            }
+          },
           "400" : {
             "description" : "Bad Request"
           }
@@ -2418,6 +2428,17 @@
             "items" : {
               "type" : "string"
             }
+          }
+        }
+      },
+      "LoginLockedDTO" : {
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string"
+          },
+          "retryAfter" : {
+            "$ref" : "#/components/schemas/Instant"
           }
         }
       },

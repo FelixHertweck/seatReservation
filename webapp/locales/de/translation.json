@@ -56,7 +56,9 @@
     "error": {
       "invalidCredentials": "Ungültiger Benutzername oder Passwort.",
       "title": "Anmeldefehler",
-      "description": "Beim Anmelden ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
+      "description": "Beim Anmelden ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+      "accountLocked": "Konto gesperrt bis {{time}} ({{duration}})",
+      "tooManyAttemptsDescription": "Zu viele fehlgeschlagene Anmeldeversuche. Ihr Konto wurde vorübergehend gesperrt."
     }
   },
   "register": {

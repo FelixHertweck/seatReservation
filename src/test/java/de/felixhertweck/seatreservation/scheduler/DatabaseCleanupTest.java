@@ -24,12 +24,16 @@ import java.time.temporal.ChronoUnit;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import de.felixhertweck.seatreservation.model.entity.EmailVerification;
 import de.felixhertweck.seatreservation.model.entity.RefreshToken;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
+import de.felixhertweck.seatreservation.model.repository.LoginAttemptRepository;
 import de.felixhertweck.seatreservation.model.repository.RefreshTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import io.quarkus.test.junit.QuarkusTest;
@@ -45,6 +49,8 @@ class DatabaseCleanupTest {
 
     @Inject RefreshTokenRepository refreshTokenRepository;
 
+    @Inject LoginAttemptRepository loginAttemptRepository;
+
     @Inject UserRepository userRepository;
 
     private User testUser;
@@ -55,6 +61,7 @@ class DatabaseCleanupTest {
         // Clean up any existing test data
         emailVerificationRepository.deleteAll();
         refreshTokenRepository.deleteAll();
+        loginAttemptRepository.deleteAll();
 
         // Use existing test user from import-test.sql (user with id=3)
         testUser = userRepository.findById(3L);
@@ -202,5 +209,68 @@ class DatabaseCleanupTest {
         // Verify nothing was deleted
         assertEquals(1, emailVerificationRepository.count());
         assertEquals(1, refreshTokenRepository.count());
+    }
+
+    @Test
+    @Transactional
+    void testCleanupOldLoginAttempts() {
+        // Create login attempts older than 30 days (should be deleted)
+        loginAttemptRepository.recordAttempt(testUser, false);
+        loginAttemptRepository.recordAttempt(testUser, false);
+
+        // Create recent login attempts (should NOT be deleted)
+        loginAttemptRepository.recordAttempt(testUser, true);
+        loginAttemptRepository.recordAttempt(testUser, false);
+
+        // Verify all four exist
+        assertEquals(4, loginAttemptRepository.count());
+
+        // Manually set two attempts to be older than 30 days
+        loginAttemptRepository.update(
+                "attemptTime = ?1 where id in (select id from LoginAttempt order by id limit 2)",
+                Instant.now().minus(31, ChronoUnit.DAYS));
+
+        // Run cleanup
+        cleanupScheduler.cleanupOldLoginAttempts();
+
+        // Verify only the old attempts were deleted
+        assertEquals(2, loginAttemptRepository.count());
+    }
+
+    @Test
+    @Transactional
+    void testManualCleanupOldLoginAttempts() {
+        // Create old login attempts (older than 30 days)
+        loginAttemptRepository.recordAttempt(testUser, false);
+        loginAttemptRepository.recordAttempt(testUser, false);
+
+        // Manually set attempts to be older than 30 days
+        loginAttemptRepository.update(
+                "attemptTime = ?1 where true", Instant.now().minus(31, ChronoUnit.DAYS));
+
+        assertEquals(2, loginAttemptRepository.count());
+
+        // Run manual cleanup
+        cleanupScheduler.manualCleanupOldLoginAttempts();
+
+        // Verify all old attempts were deleted
+        assertEquals(0, loginAttemptRepository.count());
+    }
+
+    @Test
+    @Transactional
+    void testCleanupOldLoginAttemptsWithNoOldEntries() {
+        // Create only recent login attempts
+        loginAttemptRepository.recordAttempt(testUser, true);
+        loginAttemptRepository.recordAttempt(testUser, false);
+        loginAttemptRepository.recordAttempt(testUser, true);
+
+        assertEquals(3, loginAttemptRepository.count());
+
+        // Run cleanup
+        cleanupScheduler.cleanupOldLoginAttempts();
+
+        // Verify nothing was deleted
+        assertEquals(3, loginAttemptRepository.count());
     }
 }

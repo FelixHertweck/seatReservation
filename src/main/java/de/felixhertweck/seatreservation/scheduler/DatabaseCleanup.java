@@ -27,6 +27,7 @@ import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
+import de.felixhertweck.seatreservation.model.repository.LoginAttemptRepository;
 import de.felixhertweck.seatreservation.model.repository.RefreshTokenRepository;
 import io.quarkus.scheduler.Scheduled;
 import org.jboss.logging.Logger;
@@ -46,6 +47,8 @@ public class DatabaseCleanup {
     @Inject RefreshTokenRepository refreshTokenRepository;
 
     @Inject EmailSeatMapTokenRepository emailSeatMapTokenRepository;
+
+    @Inject LoginAttemptRepository loginAttemptRepository;
 
     /**
      * Cleans up expired email verification entries.
@@ -168,5 +171,29 @@ public class DatabaseCleanup {
         long deletedCount = emailSeatMapTokenRepository.deleteExpiredTokens();
         LOG.infof("Manually cleaned up %d expired email seat map tokens.", deletedCount);
         return (int) deletedCount;
+    }
+
+    /**
+     * Cleans up old login attempts older than 30 days.
+     *
+     * <p>Runs daily at 2:00 AM.
+     */
+    @Scheduled(cron = "0 0 2 * * ?") // Every day at 2:00 AM
+    public void cleanupOldLoginAttempts() {
+        LOG.info("Starting scheduled cleanup of old login attempts.");
+        Instant cutoffTime = Instant.now().minus(30, ChronoUnit.DAYS);
+        long deletedCount = loginAttemptRepository.deleteOldAttempts(cutoffTime);
+        if (deletedCount > 0) {
+            LOG.infof("Successfully cleaned up %d old login attempts.", deletedCount);
+        } else {
+            LOG.debug("No old login attempts found to clean up.");
+        }
+    }
+
+    public void manualCleanupOldLoginAttempts() {
+        LOG.info("Manual cleanup of old login attempts triggered.");
+        Instant cutoffTime = Instant.now().minus(30, ChronoUnit.DAYS);
+        long deletedCount = loginAttemptRepository.deleteOldAttempts(cutoffTime);
+        LOG.infof("Manually cleaned up %d old login attempts.", deletedCount);
     }
 }
