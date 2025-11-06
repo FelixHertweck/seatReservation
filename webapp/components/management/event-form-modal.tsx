@@ -120,7 +120,7 @@ export function EventFormModal({
               !(e.target instanceof HTMLTextAreaElement)
             ) {
               e.preventDefault();
-              handleSubmit(e as React.FormEvent<HTMLFormElement>);
+              handleSubmit(e);
             }
           }}
           className="space-y-4"
