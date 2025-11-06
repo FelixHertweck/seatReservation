@@ -136,6 +136,16 @@ export function UserFormModal({
         key={formKey}
         className="sm:max-w-[425px]"
         onInteractOutside={(e) => e.preventDefault()}
+        onKeyDown={(e) => {
+          if (
+            e.key === "Enter" &&
+            !e.shiftKey &&
+            !(e.target instanceof HTMLTextAreaElement)
+          ) {
+            e.preventDefault();
+            handleSubmit();
+          }
+        }}
       >
         <DialogHeader>
           <DialogTitle>

@@ -90,8 +90,10 @@ export function ReservationFormModal({
       return usernameA.localeCompare(usernameB);
     });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent | React.KeyboardEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
     setIsLoading(true);
 
     try {
@@ -158,6 +160,16 @@ export function ReservationFormModal({
 
         <form
           onSubmit={handleSubmit}
+          onKeyDown={(e) => {
+            if (
+              e.key === "Enter" &&
+              !e.shiftKey &&
+              !(e.target instanceof HTMLTextAreaElement)
+            ) {
+              e.preventDefault();
+              handleSubmit(e);
+            }
+          }}
           className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0 overflow-y-auto lg:overflow-y-visible px-4 sm:px-0"
         >
           {/* Left side - Seat Map */}

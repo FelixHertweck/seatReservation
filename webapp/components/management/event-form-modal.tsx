@@ -67,8 +67,10 @@ export function EventFormModal({
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent | React.KeyboardEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
     setIsLoading(true);
 
     try {
@@ -109,7 +111,20 @@ export function EventFormModal({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form
+          onSubmit={handleSubmit}
+          onKeyDown={(e) => {
+            if (
+              e.key === "Enter" &&
+              !e.shiftKey &&
+              !(e.target instanceof HTMLTextAreaElement)
+            ) {
+              e.preventDefault();
+              handleSubmit(e);
+            }
+          }}
+          className="space-y-4"
+        >
           <div className="space-y-2">
             <Label htmlFor="name">{t("eventFormModal.eventNameLabel")}</Label>
             <Input

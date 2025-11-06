@@ -49,8 +49,10 @@ export function SeatFormModal({
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent | React.KeyboardEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
     setIsLoading(true);
 
     try {
@@ -86,7 +88,20 @@ export function SeatFormModal({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form
+          onSubmit={handleSubmit}
+          onKeyDown={(e) => {
+            if (
+              e.key === "Enter" &&
+              !e.shiftKey &&
+              !(e.target instanceof HTMLTextAreaElement)
+            ) {
+              e.preventDefault();
+              handleSubmit(e as React.FormEvent<HTMLFormElement>);
+            }
+          }}
+          className="space-y-4"
+        >
           <div className="space-y-2">
             <Label htmlFor="seatNumber">
               {t("seatFormModal.seatNumberLabel")}
