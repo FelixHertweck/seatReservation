@@ -28,16 +28,37 @@ import java.util.Set;
 import jakarta.inject.Inject;
 import jakarta.persistence.NoResultException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import de.felixhertweck.seatreservation.email.EmailService;
 import de.felixhertweck.seatreservation.management.dto.ReservationRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.ReservationResponseDTO;
 import de.felixhertweck.seatreservation.management.exception.ReservationNotFoundException;
+import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.EventLocation;
+import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
+import de.felixhertweck.seatreservation.model.entity.Reservation;
+import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.Roles;
-import de.felixhertweck.seatreservation.model.entity.*;
-import de.felixhertweck.seatreservation.model.repository.*;
+import de.felixhertweck.seatreservation.model.entity.Seat;
+import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.EventRepository;
+import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
+import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
+import de.felixhertweck.seatreservation.model.repository.SeatRepository;
+import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -53,6 +74,7 @@ public class ReservationServiceTest {
     @InjectMock SeatRepository seatRepository;
     @InjectMock UserRepository userRepository;
     @InjectMock EventUserAllowanceRepository eventUserAllowanceRepository;
+    @InjectMock EmailService emailService;
 
     @Inject ReservationService reservationService;
 
@@ -65,6 +87,7 @@ public class ReservationServiceTest {
     private EventUserAllowance allowance;
 
     @BeforeEach
+    @SuppressWarnings("unused")
     void setUp() {
         Mockito.reset(reservationRepository);
 
@@ -72,6 +95,7 @@ public class ReservationServiceTest {
         Mockito.reset(seatRepository);
         Mockito.reset(userRepository);
         Mockito.reset(eventUserAllowanceRepository);
+        Mockito.reset(emailService);
 
         adminUser =
                 new User(
@@ -140,7 +164,6 @@ public class ReservationServiceTest {
         reservation.id = 1L;
 
         allowance = new EventUserAllowance(regularUser, event, 1);
-        new EventUserAllowance(managerUser, event, 10);
     }
 
     @Test

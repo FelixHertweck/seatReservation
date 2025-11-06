@@ -22,7 +22,16 @@ package de.felixhertweck.seatreservation.model.entity;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 
@@ -73,6 +82,9 @@ public class User extends PanacheEntity {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<RefreshToken> refreshTokens = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<EmailSeatMapToken> emailSeatMapTokens = new HashSet<>();
 
     /** Constructor for JPA. */
     public User() {}
@@ -215,6 +227,14 @@ public class User extends PanacheEntity {
 
     public void setRefreshTokens(Set<RefreshToken> refreshTokens) {
         this.refreshTokens = refreshTokens;
+    }
+
+    public Set<EmailSeatMapToken> getEmailSeatMapTokens() {
+        return emailSeatMapTokens;
+    }
+
+    public void setEmailSeatMapTokens(Set<EmailSeatMapToken> emailSeatMapTokens) {
+        this.emailSeatMapTokens = emailSeatMapTokens;
     }
 
     @Override

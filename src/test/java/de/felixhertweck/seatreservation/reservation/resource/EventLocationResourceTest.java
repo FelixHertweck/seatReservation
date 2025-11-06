@@ -26,9 +26,12 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
 
+import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
+import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
+import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
@@ -43,16 +46,20 @@ class EventLocationResourceTest {
     @Inject EventLocationRepository eventLocationRepository;
     @Inject EventRepository eventRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
-    @Inject de.felixhertweck.seatreservation.model.repository.SeatRepository seatRepository;
+    @Inject SeatRepository seatRepository;
 
-    @Inject
-    de.felixhertweck.seatreservation.model.repository.ReservationRepository reservationRepository;
+    @Inject ReservationRepository reservationRepository;
+
+    @Inject EmailSeatMapTokenRepository emailSeatMapTokenRepository;
 
     @BeforeEach
     @Transactional
+    @SuppressWarnings("unused")
     void setUp() {
         // Clean slate (respect FK constraints)
-        // 1) Reservations -> 2) Allowances -> 3) Seats -> 4) Events -> 5) Locations
+        // 1) EmailSeatMapTokens -> 2) Reservations -> 3) Allowances -> 4) Seats -> 5) Events -> 6)
+        // Locations
+        emailSeatMapTokenRepository.deleteAll();
         reservationRepository.deleteAll();
         eventUserAllowanceRepository.deleteAll();
         seatRepository.deleteAll();
@@ -88,8 +95,10 @@ class EventLocationResourceTest {
 
     @AfterEach
     @Transactional
+    @SuppressWarnings("unused")
     void tearDown() {
         // Reverse order respecting FKs
+        emailSeatMapTokenRepository.deleteAll();
         reservationRepository.deleteAll();
         eventUserAllowanceRepository.deleteAll();
         seatRepository.deleteAll();

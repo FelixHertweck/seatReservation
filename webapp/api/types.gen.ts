@@ -393,6 +393,24 @@ export type GetApiAuthRegistrationStatusResponses = {
 
 export type GetApiAuthRegistrationStatusResponse = GetApiAuthRegistrationStatusResponses[keyof GetApiAuthRegistrationStatusResponses];
 
+export type GetApiEmailSeatmapData = {
+    body?: never;
+    path?: never;
+    query?: {
+        token?: string;
+    };
+    url: '/api/email/seatmap';
+};
+
+export type GetApiEmailSeatmapResponses = {
+    /**
+     * OK
+     */
+    200: Blob | File;
+};
+
+export type GetApiEmailSeatmapResponse = GetApiEmailSeatmapResponses[keyof GetApiEmailSeatmapResponses];
+
 export type DeleteApiManagerEventlocationsData = {
     body?: never;
     path?: never;

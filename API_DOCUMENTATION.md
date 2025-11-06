@@ -8,6 +8,7 @@ This is the API documentation for the seat reservation system.
 - [User Management (Admin)](#user-management-admin)
 - [User Profile (User)](#user-profile-user)
 - [Email Confirmation](#email-confirmation)
+- [Email Seat Map](#email-seat-map)
 - [Event Locations (Manager/Admin)](#event-locations-manageradmin)
 - [Events (Manager/Admin)](#events-manageradmin)
 - [Seats (Manager/Admin)](#seats-manageradmin)
@@ -289,6 +290,41 @@ Verifies a user's email address using a 6-digit verification code.
     -   `400 Bad Request`: Invalid verification code.
     -   `410 Gone`: Verification code expired.
     -   `500 Internal Server Error`: Internal server error.
+
+---
+
+## Email Seat Map
+
+### EmailSeatMapResource
+
+Base path: `/api/email/seatmap`
+
+---
+
+#### GET /
+
+Retrieves the seat map as SVG for a given email token. This endpoint is used to display the personalized seat map from email links.
+
+-   **Roles:** Public
+-   **Query Parameters:**
+    -   `token` (string, required): The unique token from the email link
+-   **Produces:** `image/svg+xml`
+-   **Responses:**
+    -   `200 OK`: Returns the seat map as an SVG image. The SVG highlights the user's newly reserved seats in blue, previously reserved seats in orange, and available seats in gray.
+    -   `404 Not Found`: Token not found, invalid, or expired.
+
+**Description:**  
+When a user makes a reservation, they receive an email containing a personalized seat map. The email includes a PNG image and a link to this endpoint. The token is valid for 30 days (configurable via `email.seatmap.token.expiration.days`). The SVG dynamically adjusts its size based on the seat layout and is rendered at high resolution (144 DPI) for optimal quality.
+
+**Color Coding:**
+- **Blue (#2B7FFF)**: Newly reserved seats
+- **Orange (#F0B100)**: Previously reserved seats by the same user
+- **Gray (#CCCCCC)**: Available seats
+
+**Example Request:**
+```
+GET /api/email/seatmap?token=123e4567-e89b-12d3-a456-426614174000
+```
 
 ---
 

@@ -59,6 +59,9 @@ public class Event extends PanacheEntity {
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reservation> reservations = new ArrayList<>();
 
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<EmailSeatMapToken> emailSeatMapTokens = new HashSet<>();
+
     public Event() {}
 
     public Long getId() {
@@ -179,6 +182,14 @@ public class Event extends PanacheEntity {
 
     public void setReservations(List<Reservation> reservations) {
         this.reservations = reservations;
+    }
+
+    public Set<EmailSeatMapToken> getEmailSeatMapTokens() {
+        return emailSeatMapTokens;
+    }
+
+    public void setEmailSeatMapTokens(Set<EmailSeatMapToken> emailSeatMapTokens) {
+        this.emailSeatMapTokens = emailSeatMapTokens;
     }
 
     @Override

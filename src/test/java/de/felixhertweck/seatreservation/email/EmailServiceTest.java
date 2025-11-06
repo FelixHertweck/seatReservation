@@ -25,16 +25,31 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import jakarta.inject.Inject;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import de.felixhertweck.seatreservation.model.entity.*;
+import de.felixhertweck.seatreservation.email.service.EmailSeatMapService;
+import de.felixhertweck.seatreservation.model.entity.EmailVerification;
+import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.EventLocation;
+import de.felixhertweck.seatreservation.model.entity.Reservation;
+import de.felixhertweck.seatreservation.model.entity.Seat;
+import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
-import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
-import de.felixhertweck.seatreservation.reservation.service.ReservationService;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.MockMailbox;
 import io.quarkus.test.InjectMock;
@@ -48,13 +63,13 @@ class EmailServiceTest {
     @Inject MockMailbox mailbox;
 
     @InjectMock EmailVerificationRepository emailVerificationRepository;
-    @InjectMock ReservationRepository reservationRepository;
     @InjectMock SeatRepository seatRepository;
-    @InjectMock ReservationService reservationService;
+    @InjectMock EmailSeatMapService emailSeatMapService;
 
     @Inject EmailService emailService;
 
     @BeforeEach
+    @SuppressWarnings("unused")
     void setUp() {
         mailbox.clear();
     }
@@ -211,6 +226,9 @@ class EmailServiceTest {
                 Collections.singletonList(createTestReservation(user, event, seat));
 
         when(seatRepository.findByEventLocation(any())).thenReturn(Collections.singletonList(seat));
+        when(emailSeatMapService.createEmailSeatMapToken(any(), any(), any()))
+                .thenReturn("test-token-123");
+        when(emailSeatMapService.getPngImage(anyString())).thenReturn(Optional.of(new byte[0]));
 
         emailService.sendEventReminder(user, event, reservations);
 
@@ -231,7 +249,9 @@ class EmailServiceTest {
                                         .toString()));
         assertTrue(sentMail.getHtml().contains(event.getEventLocation().getName()));
         assertTrue(sentMail.getHtml().contains("<li>A1 (1)</li>"));
-        assertTrue(sentMail.getHtml().contains("<svg"));
+        assertTrue(
+                sentMail.getHtml()
+                        .contains("http://localhost:8080/email/seatmap?token=test-token-123"));
         assertTrue(sentMail.getHtml().contains("http://localhost:8080/reservations?id=10"));
         // Verify that BCC is not added to event reminder emails
         assertTrue(sentMail.getBcc().isEmpty(), "Event reminder emails should not have BCC");
@@ -245,6 +265,10 @@ class EmailServiceTest {
         Seat seat = createTestSeat(location, "A1");
         List<Reservation> reservations =
                 Collections.singletonList(createTestReservation(user, event, seat));
+
+        when(emailSeatMapService.createEmailSeatMapToken(any(), any(), any()))
+                .thenReturn("test-token-123");
+        when(emailSeatMapService.getPngImage(anyString())).thenReturn(Optional.of(new byte[0]));
 
         // Note: MockMailbox doesn't throw IOException, so this test verifies normal behavior
         // In a real scenario, you might want to test error handling differently

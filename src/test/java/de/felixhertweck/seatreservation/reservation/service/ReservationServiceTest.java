@@ -27,7 +27,12 @@ import java.util.Optional;
 import java.util.Set;
 import jakarta.inject.Inject;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
@@ -36,9 +41,19 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
+import de.felixhertweck.seatreservation.email.EmailService;
 import de.felixhertweck.seatreservation.management.exception.ReservationNotFoundException;
-import de.felixhertweck.seatreservation.model.entity.*;
-import de.felixhertweck.seatreservation.model.repository.*;
+import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.EventLocation;
+import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
+import de.felixhertweck.seatreservation.model.entity.Reservation;
+import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
+import de.felixhertweck.seatreservation.model.entity.Seat;
+import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.EventRepository;
+import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
+import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
+import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.reservation.dto.UserReservationResponseDTO;
 import de.felixhertweck.seatreservation.reservation.dto.UserReservationsRequestDTO;
 import de.felixhertweck.seatreservation.reservation.exception.EventBookingClosedException;
@@ -61,6 +76,8 @@ class ReservationServiceTest {
     @InjectMock SeatRepository seatRepository;
 
     @InjectMock EventUserAllowanceRepository eventUserAllowanceRepository;
+
+    @InjectMock EmailService emailService;
 
     private User currentUser;
     private User otherUser;

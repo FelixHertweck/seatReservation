@@ -85,6 +85,7 @@ public class EventServiceTest {
     private Event existingEvent;
 
     @BeforeEach
+    @SuppressWarnings("unused")
     void setUp() {
         Mockito.reset(eventRepository);
         Mockito.reset(eventLocationRepository);
