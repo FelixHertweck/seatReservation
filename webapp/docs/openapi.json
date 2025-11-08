@@ -2586,6 +2586,9 @@
           "yCoordinate" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "entrance" : {
+            "type" : "string"
           }
         }
       },
@@ -2609,6 +2612,9 @@
             "format" : "int32"
           },
           "seatRow" : {
+            "type" : "string"
+          },
+          "entrance" : {
             "type" : "string"
           }
         }

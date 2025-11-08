@@ -782,7 +782,8 @@
     "cancelButton": "Cancel",
     "savingButton": "Saving...",
     "createButton": "Create",
-    "updateButton": "Update"
+    "updateButton": "Update",
+    "entrance": "Entrance"
   },
   "sidebar": {
     "navigation": "Navigation",
@@ -816,7 +817,8 @@
     "selectAll": "Select All",
     "deselectAll": "Deselect All",
     "filter": {
-      "locationLabel": "Location"
+      "locationLabel": "Location",
+      "entranceLabel": "Entrance"
     },
     "table": {
       "selectHeader": "Select",
@@ -824,7 +826,8 @@
       "seatRowHeader": "Seat Row",
       "locationHeader": "Location",
       "positionHeader": "Position",
-      "actionsHeader": "Actions"
+      "actionsHeader": "Actions",
+      "entranceHeader": "Entrance"
     },
     "unknownLocation": "Unknown location",
     "statusAvailable": "Available",

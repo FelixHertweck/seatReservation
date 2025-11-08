@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.management.dto;
 
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
@@ -40,6 +41,8 @@ public class SeatRequestDTO {
     @NotNull(message = "Row must not be null")
     private String seatRow;
 
+    @Nullable private String entrance;
+
     public SeatRequestDTO() {
         // Default constructor for serialization/deserialization
     }
@@ -49,12 +52,14 @@ public class SeatRequestDTO {
             String seatRow,
             Long eventLocationId,
             int xCoordinate,
-            int yCoordinate) {
+            int yCoordinate,
+            String entrance) {
         this.seatNumber = seatNumber;
         this.eventLocationId = eventLocationId;
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
         this.seatRow = seatRow;
+        this.entrance = entrance;
     }
 
     public String getSeatNumber() {
@@ -95,5 +100,13 @@ public class SeatRequestDTO {
 
     public void setSeatRow(String seatRow) {
         this.seatRow = seatRow;
+    }
+
+    public String getEntrance() {
+        return entrance;
+    }
+
+    public void setEntrance(String entrance) {
+        this.entrance = entrance;
     }
 }

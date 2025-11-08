@@ -113,7 +113,8 @@ public class SeatService {
                         eventLocation,
                         dto.getSeatRow(),
                         dto.getxCoordinate(),
-                        dto.getyCoordinate());
+                        dto.getyCoordinate(),
+                        dto.getEntrance());
         seatRepository.persist(seat);
         LOG.infof(
                 "Seat %s created successfully for event location ID %d",
@@ -229,10 +230,15 @@ public class SeatService {
             LOG.warnf("Invalid seat data: coordinates are negative for seat ID %d.", id);
             throw new IllegalArgumentException("Coordinates cannot be negative");
         }
+        if (dto.getSeatRow() == null || dto.getSeatRow().trim().isEmpty()) {
+            LOG.warnf("Invalid seat data: seat row is empty for seat ID %d.", id);
+            throw new IllegalArgumentException("Seat row cannot be empty");
+        }
 
         LOG.debugf(
                 "Updating seat ID %d: seatNumber='%s' -> '%s', location ID='%d' -> '%d',"
-                        + " xCoordinate='%d' -> '%d', yCoordinate='%d' -> '%d'",
+                        + " xCoordinate='%d' -> '%d', yCoordinate='%d' -> '%d',"
+                        + " seatRow='%s' -> '%s', entrance='%s' -> '%s'",
                 id,
                 seat.getSeatNumber(),
                 dto.getSeatNumber(),
@@ -241,12 +247,21 @@ public class SeatService {
                 seat.getxCoordinate(),
                 dto.getxCoordinate(),
                 seat.getyCoordinate(),
-                dto.getyCoordinate());
+                dto.getyCoordinate(),
+                seat.getSeatRow(),
+                dto.getSeatRow(),
+                seat.getEntrance(),
+                dto.getEntrance());
+
         seat.setSeatNumber(dto.getSeatNumber());
         seat.setLocation(newEventLocation);
         seat.setxCoordinate(dto.getxCoordinate());
         seat.setyCoordinate(dto.getyCoordinate());
+        seat.setSeatRow(dto.getSeatRow());
+        seat.setEntrance(dto.getEntrance());
+
         seatRepository.persist(seat);
+
         LOG.infof("Seat %s updated successfully", seat.getSeatNumber());
         LOG.debugf(
                 "Seat with ID %d updated successfully by manager: %s (ID: %d)",

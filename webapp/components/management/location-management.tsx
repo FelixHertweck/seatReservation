@@ -91,8 +91,11 @@ export function LocationManagement({
     useState<Record<string, string>>(initialFilter);
   const [selectedIds, setSelectedIds] = useState<Set<bigint>>(new Set());
 
-  const { sortedData, sortKey, sortDirection, handleSort } =
-    useSortableData(filteredLocations);
+  const { sortedData, sortKey, sortDirection, handleSort } = useSortableData(
+    filteredLocations,
+    "id",
+    "asc",
+  );
 
   useEffect(() => {
     setCurrentFilters(initialFilter);

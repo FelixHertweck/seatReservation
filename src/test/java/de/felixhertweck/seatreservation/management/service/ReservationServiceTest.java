@@ -42,7 +42,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import de.felixhertweck.seatreservation.email.EmailService;
+import de.felixhertweck.seatreservation.email.service.EmailService;
 import de.felixhertweck.seatreservation.management.dto.ReservationRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.ReservationResponseDTO;
 import de.felixhertweck.seatreservation.management.exception.ReservationNotFoundException;
@@ -155,7 +155,7 @@ public class ReservationServiceTest {
         event.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(1).toSeconds()));
         event.setManager(managerUser);
 
-        seat = new Seat("A1", eventLocation, "1", 1, 1);
+        seat = new Seat("A1", eventLocation, "1", 1, 1, "A");
         seat.id = 1L;
 
         reservation =
@@ -482,7 +482,7 @@ public class ReservationServiceTest {
     @Test
     void deleteReservation_Success_MultipleReservations_WithAllowanceIncrement() {
         // Create multiple reservations for the same user and event
-        Seat seat2 = new Seat("A2", event.getEventLocation(), "2", 1, 2);
+        Seat seat2 = new Seat("A2", event.getEventLocation(), "2", 1, 2, "");
         seat2.id = 2L;
         Reservation reservation2 =
                 new Reservation(
@@ -516,7 +516,7 @@ public class ReservationServiceTest {
                 new Reservation(regularUser, event, seat, Instant.now(), ReservationStatus.BLOCKED);
         blockedReservation.id = 2L;
 
-        Seat seat2 = new Seat("A2", event.getEventLocation(), "2", 1, 2);
+        Seat seat2 = new Seat("A2", event.getEventLocation(), "2", 1, 2, "A");
         seat2.id = 3L;
         Reservation reservedReservation =
                 new Reservation(

@@ -593,6 +593,7 @@ This is an overview of the test cases for the application.
 | `findSeatByIdForManager_NotFound` | Attempts to retrieve a non-existent seat. |
 | `findSeatByIdForManager_ForbiddenException` | Attempts to retrieve a seat for which there is no permission. |
 | `updateSeat_Success_AsManager` | Successfully updates an existing seat as a manager. |
+| `updateSeat_EntranceAndRowUpdate_Success` | Successfully updates seat row and entrance fields for an existing seat. |
 | `updateSeat_Success_AsAdmin` | Successfully updates an existing seat as an admin. |
 | `updateSeat_NotFound` | Attempts to update a non-existent seat. |
 | `updateSeat_InvalidInput` | Attempts to update a seat with invalid data. |
@@ -1055,6 +1056,7 @@ This test ensures that a manager can retrieve a list of all their seats.
 
 *   **Success:**
     *   A manager retrieves the list of their seats and receives `200 OK`.
+    *   After updating a seat, the changed seat row and entrance remain visible when listing all seats.
 *   **Failure:**
     *   An unauthorized user receives `403 Forbidden`.
 
@@ -1072,6 +1074,7 @@ This test checks if a manager can view a specific seat, provided it belongs to o
 
 *   **Success:**
     *   A manager retrieves one of their seats and receives `200 OK`.
+    *   A manager retrieves an updated seat and sees the modified row and entrance values.
 *   **Failure:**
     *   Attempting to retrieve a seat belonging to another manager's location results in `404 Not Found`.
 
@@ -1089,6 +1092,8 @@ This test checks the update of a seat by a manager.
 
 *   **Success:**
     *   A manager updates one of their seats and receives `200 OK`.
+    *   A manager updates entrance and row information, and those changes persist across subsequent list and detail fetches.
+    *   A manager can create a seat, update it, and immediately retrieve the updated data via both detail and list endpoints.
 *   **Failure:**
     *   Attempting to update a seat that does not belong to their locations results in `404 Not Found`.
 

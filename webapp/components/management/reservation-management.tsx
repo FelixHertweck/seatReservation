@@ -106,8 +106,11 @@ export function ReservationManagement({
     useState<Record<string, string>>(initialFilter);
   const [selectedIds, setSelectedIds] = useState<Set<bigint>>(new Set());
 
-  const { sortedData, sortKey, sortDirection, handleSort } =
-    useSortableData(filteredReservations);
+  const { sortedData, sortKey, sortDirection, handleSort } = useSortableData(
+    filteredReservations,
+    "id",
+    "asc",
+  );
 
   useEffect(() => {
     setCurrentFilters(initialFilter);

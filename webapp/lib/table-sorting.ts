@@ -1,9 +1,14 @@
 import * as React from "react";
 import type { SortDirection } from "@/components/common/sortable-table-head";
 
-export function useSortableData<T>(data: T[]) {
-  const [sortKey, setSortKey] = React.useState<string | null>(null);
-  const [sortDirection, setSortDirection] = React.useState<SortDirection>(null);
+export function useSortableData<T>(
+  data: T[],
+  defaultSortKey: string = "id",
+  defaultSortDirection: SortDirection = "asc",
+) {
+  const [sortKey, setSortKey] = React.useState<string | null>(defaultSortKey);
+  const [sortDirection, setSortDirection] =
+    React.useState<SortDirection>(defaultSortDirection);
 
   const handleSort = React.useCallback(
     (key: string) => {

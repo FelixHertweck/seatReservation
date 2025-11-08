@@ -54,8 +54,11 @@ export function UserManagement({
   const [isCreating, setIsCreating] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
-  const { sortedData, sortKey, sortDirection, handleSort } =
-    useSortableData(filteredUsers);
+  const { sortedData, sortKey, sortDirection, handleSort } = useSortableData(
+    filteredUsers,
+    "id",
+    "asc",
+  );
 
   useEffect(() => {
     setFilteredUsers(users);

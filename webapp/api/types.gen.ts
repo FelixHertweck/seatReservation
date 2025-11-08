@@ -182,6 +182,7 @@ export type SeatDto = {
     locationId?: bigint;
     xCoordinate?: number;
     yCoordinate?: number;
+    entrance?: string;
 };
 
 export type SeatRequestDto = {
@@ -190,6 +191,7 @@ export type SeatRequestDto = {
     xCoordinate: number;
     yCoordinate: number;
     seatRow: string;
+    entrance?: string;
 };
 
 export type SeatStatusDto = {
