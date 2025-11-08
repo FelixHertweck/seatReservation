@@ -70,8 +70,11 @@ export function EventManagement({
     useState<Record<string, string>>(initialFilter);
   const [selectedIds, setSelectedIds] = useState<Set<bigint>>(new Set());
 
-  const { sortedData, sortKey, sortDirection, handleSort } =
-    useSortableData(filteredEvents);
+  const { sortedData, sortKey, sortDirection, handleSort } = useSortableData(
+    filteredEvents,
+    "id",
+    "asc",
+  );
 
   useEffect(() => {
     setCurrentFilters(initialFilter);

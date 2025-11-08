@@ -60,8 +60,11 @@ export function SeatManagement({
     useState<Record<string, string>>(initialFilter);
   const [selectedIds, setSelectedIds] = useState<Set<bigint>>(new Set());
 
-  const { sortedData, sortKey, sortDirection, handleSort } =
-    useSortableData(filteredSeats);
+  const { sortedData, sortKey, sortDirection, handleSort } = useSortableData(
+    filteredSeats,
+    "id",
+    "asc",
+  );
 
   useEffect(() => {
     setCurrentFilters(initialFilter);
@@ -276,7 +279,7 @@ export function SeatManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[20%]"
+                        className="w-[15%]"
                       >
                         {t("seatManagement.table.seatNumberHeader")}
                       </SortableTableHead>
@@ -294,9 +297,18 @@ export function SeatManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[20%]"
+                        className="w-[15%]"
                       >
                         {t("seatManagement.table.seatRowHeader")}
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortKey="entrance"
+                        currentSortKey={sortKey}
+                        currentSortDirection={sortDirection}
+                        onSort={handleSort}
+                        className="w-[15%]"
+                      >
+                        {t("seatManagement.table.entranceHeader")}
                       </SortableTableHead>
                       <SortableTableHead
                         sortKey="xCoordinate"
@@ -307,7 +319,7 @@ export function SeatManagement({
                       >
                         {t("seatManagement.table.positionHeader")}
                       </SortableTableHead>
-                      <TableHead className="w-[15%]">
+                      <TableHead className="w-[10%]">
                         {t("seatManagement.table.actionsHeader")}
                       </TableHead>
                     </TableRow>
@@ -358,7 +370,7 @@ export function SeatManagement({
                               </TableCell>
                               <TruncatedCell
                                 content={seat.seatNumber}
-                                className="font-medium w-[20%]"
+                                className="font-medium w-[15%]"
                               />
                               <TableCell className="w-[25%]">
                                 {location ? (
@@ -381,12 +393,16 @@ export function SeatManagement({
                               </TableCell>
                               <TruncatedCell
                                 content={seat.seatRow}
-                                className="w-[20%]"
+                                className="w-[15%]"
+                              />
+                              <TruncatedCell
+                                content={seat.entrance}
+                                className="w-[15%]"
                               />
                               <TableCell className="w-[15%]">
                                 ({seat.xCoordinate}, {seat.yCoordinate})
                               </TableCell>
-                              <TableCell className="w-[15%]">
+                              <TableCell className="w-[10%]">
                                 <div className="flex gap-2">
                                   <Button
                                     variant="outline"

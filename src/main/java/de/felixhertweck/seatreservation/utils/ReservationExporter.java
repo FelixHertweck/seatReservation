@@ -51,8 +51,8 @@ import de.felixhertweck.seatreservation.model.entity.User;
 
 public class ReservationExporter {
 
-    private static final String templatePathReserved = "/export-template/reserved.pdf";
-    private static final String templatePathBlocked = "/export-template/blocked.pdf";
+    private static final String TEMPLATE_PATH_RESERVED = "/export-template/reserved.pdf";
+    private static final String TEMPLATE_PATH_BLOCKED = "/export-template/blocked.pdf";
 
     /**
      * Exports a list of reservations to a CSV format.
@@ -68,8 +68,8 @@ public class ReservationExporter {
                 new BufferedWriter(new OutputStreamWriter(baos, StandardCharsets.UTF_8))) {
             // CSV Header - Using CRLF line terminator for RFC compliance
             writer.write(
-                    "ID,Reservation Status,Seat Number,Seat Row,First Name,Last Name,Reservation"
-                            + " Date\r\n");
+                    "ID,Reservation Status,Seat Number,Seat Row,Entrance,First Name,Last"
+                            + " Name,Reservation Date\r\n");
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
@@ -79,8 +79,9 @@ public class ReservationExporter {
                                 "%d,%s,%s,%s,%s,%s,%s\r\n",
                                 reservation.id,
                                 reservation.getStatus(),
-                                reservation.getSeat().getSeatRow(),
                                 reservation.getSeat().getSeatNumber(),
+                                reservation.getSeat().getSeatRow(),
+                                reservation.getSeat().getEntrance(),
                                 reservation.getUser().getFirstname(),
                                 reservation.getUser().getLastname(),
                                 reservation
@@ -106,39 +107,39 @@ public class ReservationExporter {
     public static ByteArrayOutputStream exportReservationsToPdf(
             List<Reservation> reservations, String reservedUntilValue) throws IOException {
         try (ByteArrayOutputStream finalBaos = new ByteArrayOutputStream()) {
-            Document document = new Document();
-            PdfWriter writer = PdfWriter.getInstance(document, finalBaos);
-            document.open();
+            try (Document document = new Document()) {
+                PdfWriter writer = PdfWriter.getInstance(document, finalBaos);
+                document.open();
 
-            if (reservations.isEmpty()) {
-                addNoReservationsPage(writer, document);
-            } else {
-                for (Reservation reservation : reservations) {
-                    if (reservation.getStatus() == ReservationStatus.BLOCKED) {
-                        byte[] templateBytes = loadTemplatePdf(templatePathBlocked);
-                        if (templateBytes != null) {
-                            addPageFromTemplate(writer, document, reservation, null, templateBytes);
-                        } else {
-                            addStandardBlockedPage(writer, document, reservation);
-                        }
-                    } else { // RESERVED or other statuses
-                        byte[] templateBytes = loadTemplatePdf(templatePathReserved);
-                        if (templateBytes != null) {
-                            addPageFromTemplate(
-                                    writer,
-                                    document,
-                                    reservation,
-                                    reservedUntilValue,
-                                    templateBytes);
-                        } else {
-                            addStandardReservedPage(
-                                    writer, document, reservation, reservedUntilValue);
+                if (reservations.isEmpty()) {
+                    addNoReservationsPage(writer, document);
+                } else {
+                    for (Reservation reservation : reservations) {
+                        if (reservation.getStatus() == ReservationStatus.BLOCKED) {
+                            byte[] templateBytes = loadTemplatePdf(TEMPLATE_PATH_BLOCKED);
+                            if (templateBytes != null) {
+                                addPageFromTemplate(
+                                        writer, document, reservation, null, templateBytes);
+                            } else {
+                                addStandardBlockedPage(writer, document, reservation);
+                            }
+                        } else { // RESERVED or other statuses
+                            byte[] templateBytes = loadTemplatePdf(TEMPLATE_PATH_RESERVED);
+                            if (templateBytes != null) {
+                                addPageFromTemplate(
+                                        writer,
+                                        document,
+                                        reservation,
+                                        reservedUntilValue,
+                                        templateBytes);
+                            } else {
+                                addStandardReservedPage(
+                                        writer, document, reservation, reservedUntilValue);
+                            }
                         }
                     }
                 }
             }
-
-            document.close();
             return finalBaos;
         } catch (DocumentException e) {
             throw new IOException("Error creating PDF document", e);

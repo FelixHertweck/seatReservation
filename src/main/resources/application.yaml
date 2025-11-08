@@ -50,6 +50,9 @@ email:
   # Optional BCC address for event notifications to users (leave empty to disable)
   bcc-address: ""
  
+  # Template for entrance information text
+  entrance-info-template: "Please use entrance {entrance} for seats {seats}"
+
   header:
     confirmation: "Please Confirm Your Email Address"
     password-changed: "Your Password Has Been Changed"
@@ -245,6 +248,10 @@ email:
                 <ul>
                     {seatList}
                 </ul>
+                <div class="entrance-info" style="background-color: #e8f4f8; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; border-radius: 4px;">
+                    <p style="margin: 0; font-weight: bold; color: #2c3e50;">Entrance Information:</p>
+                    <p style="margin: 10px 0 0 0; white-space: pre-line;">{entranceInfo}</p>
+                </div>
                 <p>You can view the event details here: <a href="{eventLink}">View Event</a></p>
                 <div class="seatmap-container">
                     <p><strong>Here is an overview of your seats:</strong></p>
@@ -421,6 +428,10 @@ email:
                 <ul class={existingHeaderVisible}>
                     {existingSeatList}
                 </ul>
+                <div class="entrance-info" style="background-color: #e8f4f8; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; border-radius: 4px;">
+                    <p style="margin: 0; font-weight: bold; color: #2c3e50;">Entrance Information:</p>
+                    <p style="margin: 10px 0 0 0; white-space: pre-line;">{entranceInfo}</p>
+                </div>
                 <p>You can view the event details here: <a href="{eventLink}">View Event</a></p>
                 <div class="seatmap-container">
                     <p><strong>Here is an overview of your seats:</strong></p>
@@ -524,6 +535,10 @@ email:
                 <ul class={existingHeaderVisible}>
                     {activeSeatList}
                 </ul>
+                <div class="entrance-info" style="background-color: #e8f4f8; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; border-radius: 4px;">
+                    <p style="margin: 0; font-weight: bold; color: #2c3e50;">Entrance Information:</p>
+                    <p style="margin: 10px 0 0 0; white-space: pre-line;">{entranceInfo}</p>
+                </div>
                 <p>You can view the event details here: <a href="{eventLink}">View Event</a></p>
                 <div class="seatmap-container">
                     <p><strong>Here is an overview of your current seats:</strong></p>

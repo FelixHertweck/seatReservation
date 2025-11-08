@@ -31,7 +31,8 @@ public record SeatDTO(
         String seatRow,
         Long locationId,
         int xCoordinate,
-        int yCoordinate) {
+        int yCoordinate,
+        String entrance) {
     public SeatDTO(Seat seat) {
         this(
                 seat.getId(),
@@ -39,6 +40,7 @@ public record SeatDTO(
                 seat.getSeatRow(),
                 seat.getLocation().id,
                 seat.getxCoordinate(),
-                seat.getyCoordinate());
+                seat.getyCoordinate(),
+                seat.getEntrance());
     }
 }

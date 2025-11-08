@@ -27,7 +27,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
-import de.felixhertweck.seatreservation.email.NotificationService;
+import de.felixhertweck.seatreservation.email.service.NotificationService;
 import de.felixhertweck.seatreservation.management.dto.EventRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventResponseDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;

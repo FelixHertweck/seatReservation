@@ -32,7 +32,7 @@ import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
-import de.felixhertweck.seatreservation.email.EmailService;
+import de.felixhertweck.seatreservation.email.service.EmailService;
 import de.felixhertweck.seatreservation.management.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;

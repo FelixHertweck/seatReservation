@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
@@ -21,9 +22,13 @@ import { useIsMobile } from "@/hooks/use-mobile";
 export default function ManagerPage() {
   const t = useT();
   const isMobile = useIsMobile();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const managerData = useManager();
-  const [activeTab, setActiveTab] = useState("events");
+  const [activeTab, setActiveTab] = useState(
+    searchParams.get("tab") || "events",
+  );
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
 
   const navigateToTab = (
@@ -32,6 +37,10 @@ export default function ManagerPage() {
     filterType?: string,
   ) => {
     setActiveTab(tab);
+    const params = new URLSearchParams(searchParams);
+    params.set("tab", tab);
+    router.push(`?${params.toString()}`);
+
     if (filterId && filterType) {
       setFilterValues({ [filterType]: filterId.toString() });
     } else {
@@ -41,6 +50,14 @@ export default function ManagerPage() {
 
   const clearFilters = () => {
     setFilterValues({});
+  };
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    const params = new URLSearchParams(searchParams);
+    params.set("tab", tab);
+    router.push(`?${params.toString()}`);
+    clearFilters();
   };
 
   return (
@@ -56,14 +73,11 @@ export default function ManagerPage() {
 
       <Tabs
         value={activeTab}
-        onValueChange={(value) => {
-          setActiveTab(value);
-          clearFilters();
-        }}
+        onValueChange={handleTabChange}
         className="space-y-4"
       >
         {isMobile ? (
-          <Select value={activeTab} onValueChange={setActiveTab}>
+          <Select value={activeTab} onValueChange={handleTabChange}>
             <SelectTrigger className="w-full">
               <SelectValue />
             </SelectTrigger>

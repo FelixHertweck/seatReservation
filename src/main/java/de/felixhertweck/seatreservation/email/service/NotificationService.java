@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.email;
+package de.felixhertweck.seatreservation.email.service;
 
 import java.io.IOException;
 import java.time.Duration;

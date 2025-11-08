@@ -138,7 +138,7 @@ public class SeatResourceTest {
             roles = {"MANAGER"})
     void testCreateSeat() {
         given().contentType("application/json")
-                .body(new SeatRequestDTO("A2", "R: 2", testLocation.id, 1, 2))
+                .body(new SeatRequestDTO("A2", "R: 2", testLocation.id, 1, 2, "A"))
                 .when()
                 .post("/api/manager/seats")
                 .then()
@@ -165,7 +165,7 @@ public class SeatResourceTest {
             roles = {"MANAGER"})
     void testUpdateManagerSeat() {
         given().contentType("application/json")
-                .body(new SeatRequestDTO("A3", "R: 2", testLocation.id, 1, 3))
+                .body(new SeatRequestDTO("A3", "R: 2", testLocation.id, 1, 3, "A"))
                 .when()
                 .put("/api/manager/seats/" + testSeat.id)
                 .then()
@@ -177,9 +177,77 @@ public class SeatResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    void testUpdateManagerSeatEntranceAndRowArePersisted() {
+        given().contentType("application/json")
+                .body(new SeatRequestDTO("A1", "R: 5", testLocation.id, 1, 1, "B"))
+                .when()
+                .put("/api/manager/seats/" + testSeat.id)
+                .then()
+                .statusCode(200)
+                .body("entrance", is("B"))
+                .body("seatRow", is("R: 5"));
+
+        given().when()
+                .get("/api/manager/seats")
+                .then()
+                .statusCode(200)
+                .body("size()", is(1))
+                .body(
+                        String.format("find { it.id == %d }.entrance", testSeat.id.intValue()),
+                        is("B"))
+                .body(
+                        String.format("find { it.id == %d }.seatRow", testSeat.id.intValue()),
+                        is("R: 5"));
+    }
+
+    @Test
+    @TestSecurity(
+            user = "manager",
+            roles = {"MANAGER"})
+    void testCreateUpdateAndRetrieveSeatLifecycle() {
+        int createdSeatId =
+                given().contentType("application/json")
+                        .body(new SeatRequestDTO("B1", "R: 7", testLocation.id, 5, 6, "A"))
+                        .when()
+                        .post("/api/manager/seats")
+                        .then()
+                        .statusCode(200)
+                        .body("seatNumber", is("B1"))
+                        .extract()
+                        .path("id");
+
+        given().contentType("application/json")
+                .body(new SeatRequestDTO("B1", "R: 9", testLocation.id, 7, 8, "C"))
+                .when()
+                .put("/api/manager/seats/" + createdSeatId)
+                .then()
+                .statusCode(200)
+                .body("seatRow", is("R: 9"))
+                .body("entrance", is("C"));
+
+        given().when()
+                .get("/api/manager/seats/" + createdSeatId)
+                .then()
+                .statusCode(200)
+                .body("seatRow", is("R: 9"))
+                .body("entrance", is("C"));
+
+        given().when()
+                .get("/api/manager/seats")
+                .then()
+                .statusCode(200)
+                .body("size()", is(2))
+                .body(String.format("find { it.id == %d }.entrance", createdSeatId), is("C"))
+                .body(String.format("find { it.id == %d }.seatRow", createdSeatId), is("R: 9"));
+    }
+
+    @Test
+    @TestSecurity(
+            user = "manager",
+            roles = {"MANAGER"})
     void testUpdateManagerSeatNotFound() {
         given().contentType("application/json")
-                .body(new SeatRequestDTO("A3", "R: 2", testLocation.id, 1, 3))
+                .body(new SeatRequestDTO("A3", "R: 2", testLocation.id, 1, 3, "A"))
                 .when()
                 .put("/api/manager/seats/999")
                 .then()

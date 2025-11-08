@@ -46,6 +46,7 @@ export function SeatFormModal({
     eventLocationId: seat?.locationId?.toString() || "",
     xCoordinate: seat?.xCoordinate?.toString() || "",
     yCoordinate: seat?.yCoordinate?.toString() || "",
+    entrance: seat?.entrance || "",
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -62,6 +63,7 @@ export function SeatFormModal({
         eventLocationId: BigInt(formData.eventLocationId),
         xCoordinate: Number.parseInt(formData.xCoordinate),
         yCoordinate: Number.parseInt(formData.yCoordinate),
+        entrance: formData.entrance,
       };
       await onSubmit(seatData);
     } finally {
@@ -192,6 +194,20 @@ export function SeatFormModal({
                 required
               />
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="entrance">{t("seatFormModal.entrance")}</Label>
+            <Input
+              id="entrance"
+              type="text"
+              value={formData.entrance}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  entrance: e.target.value,
+                }))
+              }
+            />
           </div>
 
           <div className="flex justify-end gap-2">

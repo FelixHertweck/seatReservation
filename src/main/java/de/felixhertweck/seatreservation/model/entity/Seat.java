@@ -20,7 +20,12 @@
 package de.felixhertweck.seatreservation.model.entity;
 
 import java.util.Objects;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 
@@ -42,6 +47,8 @@ public class Seat extends PanacheEntity {
 
     private String seatRow;
 
+    private String entrance;
+
     public Seat() {}
 
     public Seat(String seatNumber, String seatRow, EventLocation location) {
@@ -55,12 +62,14 @@ public class Seat extends PanacheEntity {
             EventLocation location,
             String seatRow,
             int xCoordinate,
-            int yCoordinate) {
+            int yCoordinate,
+            String entrance) {
         this.seatNumber = seatNumber;
         this.location = location;
         this.seatRow = seatRow;
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
+        this.entrance = entrance;
     }
 
     public String getSeatNumber() {
@@ -107,6 +116,14 @@ public class Seat extends PanacheEntity {
         this.seatRow = seatRow;
     }
 
+    public String getEntrance() {
+        return entrance;
+    }
+
+    public void setEntrance(String entrance) {
+        this.entrance = entrance;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -118,7 +135,9 @@ public class Seat extends PanacheEntity {
         return xCoordinate == that.xCoordinate
                 && yCoordinate == that.yCoordinate
                 && Objects.equals(seatNumber, that.seatNumber)
-                && Objects.equals(location, that.location);
+                && Objects.equals(location, that.location)
+                && Objects.equals(seatRow, that.seatRow)
+                && Objects.equals(entrance, that.entrance);
     }
 
     @Override
@@ -126,7 +145,7 @@ public class Seat extends PanacheEntity {
         if (id != null) {
             return Objects.hash(id);
         }
-        return Objects.hash(seatNumber, location, xCoordinate, yCoordinate);
+        return Objects.hash(seatNumber, location, xCoordinate, yCoordinate, seatRow, entrance);
     }
 
     @Override
@@ -141,6 +160,12 @@ public class Seat extends PanacheEntity {
                 + xCoordinate
                 + ", yCoordinate="
                 + yCoordinate
+                + ", seatRow='"
+                + seatRow
+                + '\''
+                + ", entrance='"
+                + entrance
+                + '\''
                 + ", id="
                 + id
                 + '}';

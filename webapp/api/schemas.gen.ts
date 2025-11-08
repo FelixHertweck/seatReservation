@@ -569,6 +569,9 @@ export const SeatDTOSchema = {
         yCoordinate: {
             type: 'integer',
             format: 'int32'
+        },
+        entrance: {
+            type: 'string'
         }
     }
 } as const;
@@ -593,6 +596,9 @@ export const SeatRequestDTOSchema = {
             format: 'int32'
         },
         seatRow: {
+            type: 'string'
+        },
+        entrance: {
             type: 'string'
         }
     }

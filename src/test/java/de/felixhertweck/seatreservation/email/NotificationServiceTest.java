@@ -36,6 +36,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import de.felixhertweck.seatreservation.email.service.EmailService;
+import de.felixhertweck.seatreservation.email.service.NotificationService;
 import de.felixhertweck.seatreservation.management.service.EventService;
 import de.felixhertweck.seatreservation.management.service.ReservationService;
 import de.felixhertweck.seatreservation.model.entity.Event;

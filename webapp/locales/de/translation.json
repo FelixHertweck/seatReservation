@@ -784,7 +784,8 @@
     "cancelButton": "Abbrechen",
     "savingButton": "Speichern...",
     "createButton": "Erstellen",
-    "updateButton": "Aktualisieren"
+    "updateButton": "Aktualisieren",
+    "entrance": "Eingang"
   },
   "sidebar": {
     "navigation": "Navigation",
@@ -818,7 +819,8 @@
     "selectAll": "Alle auswählen",
     "deselectAll": "Alle abwählen",
     "filter": {
-      "locationLabel": "Standort"
+      "locationLabel": "Standort",
+      "entranceLabel": "Eingang"
     },
     "table": {
       "selectHeader": "Auswahl",
@@ -826,7 +828,8 @@
       "seatRowHeader": "Reihe",
       "locationHeader": "Standort",
       "positionHeader": "Position",
-      "actionsHeader": "Aktionen"
+      "actionsHeader": "Aktionen",
+      "entranceHeader": "Eingang"
     },
     "unknownLocation": "Unbekannter Standort",
     "statusAvailable": "Verfügbar",

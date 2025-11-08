@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.email;
+package de.felixhertweck.seatreservation.email.service;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -26,6 +26,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -33,7 +34,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
-import de.felixhertweck.seatreservation.email.service.EmailSeatMapService;
 import de.felixhertweck.seatreservation.management.service.ReservationService;
 import de.felixhertweck.seatreservation.model.entity.EmailVerification;
 import de.felixhertweck.seatreservation.model.entity.Event;
@@ -115,6 +115,9 @@ public class EmailService {
 
     @ConfigProperty(name = "email.content.reservation-update-confirmation")
     String emailContentReservationUpdateConfirmation;
+
+    @ConfigProperty(name = "email.entrance-info-template")
+    String entranceInfoTemplate;
 
     /**
      * Sends an email confirmation to the specified user.
@@ -347,6 +350,11 @@ public class EmailService {
         htmlContent = htmlContent.replace("{seatmapLink}", seatmapLink);
         htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
 
+        // Add entrance information
+        String entranceInfo = generateEntranceInfo(reservations);
+        htmlContent = htmlContent.replace("{entranceInfo}", entranceInfo);
+        LOG.debugf("Entrance information added: %s", entranceInfo);
+
         // Show or hide existing reservations section based on presence of existing seats
         if (existingSeatNumbers.isEmpty()) {
             htmlContent = htmlContent.replace("{existingHeaderVisible}", "hidden");
@@ -524,6 +532,11 @@ public class EmailService {
         htmlContent = htmlContent.replace("{seatmapLink}", seatmapLink);
         htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
 
+        // Add entrance information for active reservations
+        String entranceInfo = generateEntranceInfo(activeReservations);
+        htmlContent = htmlContent.replace("{entranceInfo}", entranceInfo);
+        LOG.debugf("Entrance information added: %s", entranceInfo);
+
         if (activeReservations == null || activeReservations.isEmpty()) {
             htmlContent = htmlContent.replace("{existingHeaderVisible}", "hidden");
             htmlContent = htmlContent.replace("{activeSeatList}", "");
@@ -537,6 +550,7 @@ public class EmailService {
                         .append(reservation.getSeat().getSeatNumber())
                         .append(" (")
                         .append(reservation.getSeat().getSeatRow())
+                        .append(" ")
                         .append(")")
                         .append("</li>");
             }
@@ -710,6 +724,12 @@ public class EmailService {
         htmlContent = htmlContent.replace("{seatmapLink}", seatmapLink);
         htmlContent = htmlContent.replace("{eventLink}", generateEventLink(event.id));
         htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
+
+        // Add entrance information
+        String entranceInfo = generateEntranceInfo(reservations);
+        htmlContent = htmlContent.replace("{entranceInfo}", entranceInfo);
+        LOG.debugf("Entrance information added: %s", entranceInfo);
+
         LOG.debug("Placeholders replaced in event reminder email template.");
 
         // Create and send the email
@@ -864,5 +884,56 @@ public class EmailService {
                         mail.addBcc(address);
                     }
                 });
+    }
+
+    /**
+     * Generates an entrance information text from a list of reservations. Groups seats by their
+     * entrance and creates a formatted text according to the configured template.
+     *
+     * @param reservations the list of reservations to process
+     * @return a formatted text describing which entrance to use for which seats, or an empty string
+     *     if no valid entrance information is available
+     */
+    private String generateEntranceInfo(List<Reservation> reservations) {
+        if (reservations == null || reservations.isEmpty()) {
+            return "";
+        }
+
+        // Group seats by entrance
+        var seatsByEntrance =
+                reservations.stream()
+                        .map(Reservation::getSeat)
+                        .filter(
+                                seat ->
+                                        seat.getEntrance() != null
+                                                && !seat.getEntrance().trim().isEmpty())
+                        .collect(
+                                Collectors.groupingBy(
+                                        Seat::getEntrance,
+                                        Collectors.mapping(
+                                                Seat::getSeatNumber, Collectors.toList())));
+
+        if (seatsByEntrance.isEmpty()) {
+            return "";
+        }
+
+        // Build the entrance info text
+        StringBuilder result = new StringBuilder();
+
+        for (Entry<String, List<String>> entry : seatsByEntrance.entrySet()) {
+            String entrance = entry.getKey();
+            List<String> seatNumbers = entry.getValue();
+
+            // Join seat numbers with comma
+            String seatsText = String.join(", ", seatNumbers);
+
+            result.append(
+                    entranceInfoTemplate
+                            .replace("{seats}", seatsText)
+                            .replace("{entrance}", entrance));
+            result.append("\n");
+        }
+
+        return result.toString();
     }
 }
