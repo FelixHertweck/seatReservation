@@ -21,7 +21,13 @@ package de.felixhertweck.seatreservation.model.entity;
 
 import java.time.Instant;
 import java.util.Objects;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 
@@ -45,15 +51,27 @@ public class Reservation extends PanacheEntity {
     @Enumerated(EnumType.STRING)
     private ReservationStatus status;
 
+    private String checkInCode;
+
+    @Enumerated(EnumType.STRING)
+    private ReservationLiveStatus liveStatus;
+
     public Reservation() {}
 
     public Reservation(
-            User user, Event event, Seat seat, Instant reservationDate, ReservationStatus status) {
+            User user,
+            Event event,
+            Seat seat,
+            Instant reservationDate,
+            ReservationStatus status,
+            String checkInCode) {
         this.user = user;
         this.event = event;
         this.seat = seat;
         this.reservationDate = reservationDate;
         this.status = status;
+        this.checkInCode = checkInCode;
+        this.liveStatus = ReservationLiveStatus.NO_SHOW;
     }
 
     public ReservationStatus getStatus() {
@@ -96,6 +114,22 @@ public class Reservation extends PanacheEntity {
         this.reservationDate = reservationDate;
     }
 
+    public String getCheckInCode() {
+        return checkInCode;
+    }
+
+    public void setCheckInCode(String checkInCode) {
+        this.checkInCode = checkInCode;
+    }
+
+    public ReservationLiveStatus getLiveStatus() {
+        return liveStatus;
+    }
+
+    public void setLiveStatus(ReservationLiveStatus liveStatus) {
+        this.liveStatus = liveStatus;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -126,6 +160,8 @@ public class Reservation extends PanacheEntity {
                 + id
                 + ", status="
                 + status
+                + ", liveStatus="
+                + liveStatus
                 + ", reservationDate="
                 + reservationDate
                 + ", seat="

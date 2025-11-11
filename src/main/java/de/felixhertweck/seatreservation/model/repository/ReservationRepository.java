@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.model.repository;
 
 import java.util.List;
+import java.util.Optional;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import de.felixhertweck.seatreservation.model.entity.Reservation;
@@ -79,5 +80,15 @@ public class ReservationRepository implements PanacheRepository<Reservation> {
      */
     public void persistAll(List<Reservation> newReservations) {
         newReservations.forEach(this::persist);
+    }
+
+    /**
+     * Finds a reservation by its check-in code.
+     *
+     * @param checkInCode the check-in code to search for
+     * @return an Optional containing the reservation if found, or empty otherwise
+     */
+    public Optional<Reservation> findByCheckInCode(String checkInCode) {
+        return find("checkInCode = ?1", checkInCode).firstResultOptional();
     }
 }

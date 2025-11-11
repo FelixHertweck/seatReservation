@@ -17,19 +17,27 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.management.ressource;
+package de.felixhertweck.seatreservation.management.resource;
 
 import java.util.Collections;
 import java.util.List;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.*;
 
-import de.felixhertweck.seatreservation.common.dto.SeatDTO;
-import de.felixhertweck.seatreservation.management.dto.SeatRequestDTO;
-import de.felixhertweck.seatreservation.management.service.SeatService;
+import de.felixhertweck.seatreservation.management.dto.EventRequestDTO;
+import de.felixhertweck.seatreservation.management.dto.EventResponseDTO;
+import de.felixhertweck.seatreservation.management.service.EventService;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
@@ -39,15 +47,15 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.jboss.logging.Logger;
 
-@Path("/api/manager/seats")
+@Path("/api/manager/events")
 @RolesAllowed({Roles.MANAGER, Roles.ADMIN})
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class SeatResource {
+public class EventResource {
 
-    private static final Logger LOG = Logger.getLogger(SeatResource.class);
+    private static final Logger LOG = Logger.getLogger(EventResource.class);
 
-    @Inject SeatService seatService;
+    @Inject EventService eventService;
 
     @Inject UserSecurityContext userSecurityContext;
 
@@ -55,7 +63,7 @@ public class SeatResource {
     @APIResponse(
             responseCode = "200",
             description = "OK",
-            content = @Content(schema = @Schema(implementation = SeatDTO.class)))
+            content = @Content(schema = @Schema(implementation = EventResponseDTO.class)))
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
@@ -63,15 +71,34 @@ public class SeatResource {
     @APIResponse(responseCode = "404", description = "Not Found: Event location not found")
     @APIResponse(
             responseCode = "409",
-            description =
-                    "Conflict: Seat with this row and number already exists in this event location")
-    public SeatDTO createSeat(@Valid SeatRequestDTO seatRequestDTO) {
-        LOG.debugf("Received POST request to /api/manager/seats to create a new seat.");
+            description = "Conflict: Event with this name already exists in this event location")
+    public EventResponseDTO createEvent(@Valid EventRequestDTO dto) {
+        LOG.debugf("Received POST request to /api/manager/events to create a new event.");
         User currentUser = userSecurityContext.getCurrentUser();
-        SeatDTO result = seatService.createSeatManager(seatRequestDTO, currentUser);
-        LOG.debugf(
-                "Seat with ID %d created successfully for event location ID %d.",
-                result.id(), result.locationId());
+        EventResponseDTO result = eventService.createEvent(dto, currentUser);
+        LOG.debugf("Event '%s' created successfully with ID %d.", result.name(), result.id());
+        return result;
+    }
+
+    @PUT
+    @Path("/{id}")
+    @APIResponse(
+            responseCode = "200",
+            description = "OK",
+            content = @Content(schema = @Schema(implementation = EventResponseDTO.class)))
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(responseCode = "404", description = "Not Found: Event or event location not found")
+    @APIResponse(
+            responseCode = "409",
+            description = "Conflict: Event with this name already exists in this event location")
+    public EventResponseDTO updateEvent(@PathParam("id") Long id, @Valid EventRequestDTO dto) {
+        LOG.debugf("Received PUT request to /api/manager/events/%d to update event.", id);
+        User currentUser = userSecurityContext.getCurrentUser();
+        EventResponseDTO result = eventService.updateEvent(id, dto, currentUser);
+        LOG.debugf("Event with ID %d updated successfully.", id);
         return result;
     }
 
@@ -84,17 +111,17 @@ public class SeatResource {
                             schema =
                                     @Schema(
                                             type = SchemaType.ARRAY,
-                                            implementation = SeatDTO.class)))
+                                            implementation = EventResponseDTO.class)))
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
             description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
-    public List<SeatDTO> getAllManagerSeats() {
-        LOG.debugf("Received GET request to /api/manager/seats to get all manager seats.");
+    public List<EventResponseDTO> getEventsByCurrentManager() {
+        LOG.debugf("Received GET request to /api/manager/events to get events by current manager.");
         User currentUser = userSecurityContext.getCurrentUser();
-        List<SeatDTO> result = seatService.findAllSeatsForManager(currentUser);
+        List<EventResponseDTO> result = eventService.getEventsByCurrentManager(currentUser);
         LOG.debugf(
-                "Successfully responded to GET /api/manager/seats with %d seats.", result.size());
+                "Successfully responded to GET /api/manager/events with %d events.", result.size());
         return result;
     }
 
@@ -103,55 +130,28 @@ public class SeatResource {
     @APIResponse(
             responseCode = "200",
             description = "OK",
-            content = @Content(schema = @Schema(implementation = SeatDTO.class)))
+            content = @Content(schema = @Schema(implementation = EventResponseDTO.class)))
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
             description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
     @APIResponse(
             responseCode = "404",
-            description = "Not Found: Seat with specified ID not found for the current manager")
-    public SeatDTO getManagerSeatById(@PathParam("id") Long id) {
-        LOG.debugf("Received GET request to /api/manager/seats/%d.", id);
+            description = "Not Found: Event with specified ID not found for the current manager")
+    public EventResponseDTO getEventById(@PathParam("id") Long id) {
+        LOG.debugf("Received GET request to /api/manager/events/%d.", id);
         User currentUser = userSecurityContext.getCurrentUser();
-        SeatDTO result = seatService.findSeatByIdForManager(id, currentUser);
+        EventResponseDTO result = eventService.getEventByIdForManager(id, currentUser);
         if (result != null) {
-            LOG.debugf("Successfully retrieved seat with ID %d.", id);
+            LOG.debugf("Successfully retrieved event with ID %d.", id);
         } else {
-            LOG.warnf("Seat with ID %d not found.", id);
+            LOG.warnf("Event with ID %d not found.", id);
         }
         return result;
     }
 
-    @PUT
-    @Path("/{id}")
-    @APIResponse(
-            responseCode = "200",
-            description = "OK",
-            content = @Content(schema = @Schema(implementation = SeatDTO.class)))
-    @APIResponse(responseCode = "401", description = "Unauthorized")
-    @APIResponse(
-            responseCode = "403",
-            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
-    @APIResponse(
-            responseCode = "404",
-            description = "Not Found: Seat with specified ID not found for the current manager")
-    @APIResponse(
-            responseCode = "409",
-            description =
-                    "Conflict: Seat with this row and number already exists in this event location")
-    public SeatDTO updateManagerSeat(
-            @PathParam("id") Long id, @Valid SeatRequestDTO seatUpdateDTO) {
-        LOG.debugf("Received PUT request to /api/manager/seats/%d to update seat.", id);
-        User currentUser = userSecurityContext.getCurrentUser();
-        SeatDTO result = seatService.updateSeatForManager(id, seatUpdateDTO, currentUser);
-        LOG.debugf("Seat with ID %d updated successfully.", id);
-        return result;
-    }
-
     @DELETE
-    @APIResponse(responseCode = "200", description = "OK")
-    @APIResponse(responseCode = "204", description = "Seat deleted successfully")
+    @APIResponse(responseCode = "204", description = "Event deleted")
     @APIResponse(responseCode = "400", description = "Bad Request: Invalid input")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
@@ -159,15 +159,15 @@ public class SeatResource {
             description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
     @APIResponse(
             responseCode = "404",
-            description = "Not Found: Seat with specified ID not found for the current manager")
-    public void deleteManagerSeat(@QueryParam("ids") List<Long> ids) {
+            description = "Not Found: Event with specified ID not found for the current manager")
+    public void deleteEvent(@QueryParam("ids") List<Long> ids) {
         LOG.debugf(
-                "Received DELETE request to /api/manager/seats with IDs: %s",
+                "Received DELETE request to /api/manager/events with IDs: %s",
                 ids != null ? ids : Collections.emptyList());
         User currentUser = userSecurityContext.getCurrentUser();
-        seatService.deleteSeatForManager(ids, currentUser);
+        eventService.deleteEvent(ids, currentUser);
         LOG.debugf(
-                "Seats with IDs %s deleted successfully.",
+                "Events with IDs %s deleted successfully.",
                 ids != null ? ids : Collections.emptyList());
     }
 }

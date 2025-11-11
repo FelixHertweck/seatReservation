@@ -80,6 +80,7 @@ class EmailServiceTest {
         user.setEmail("test@example.com");
         user.setFirstname("Test");
         user.setLastname("User");
+        user.setUsername("testuser");
         user.id = 1L;
         user.setEmailVerified(false);
         user.setEmailVerificationSent(false);
@@ -254,6 +255,8 @@ class EmailServiceTest {
                 sentMail.getHtml()
                         .contains("http://localhost:8080/email/seatmap?token=test-token-123"));
         assertTrue(sentMail.getHtml().contains("http://localhost:8080/reservations?id=10"));
+        assertTrue(sentMail.getHtml().contains("<img src=\"cid:qrcode-image\""));
+        assertTrue(sentMail.getHtml().contains(user.getUsername()));
         // Verify that BCC is not added to event reminder emails
         assertTrue(sentMail.getBcc().isEmpty(), "Event reminder emails should not have BCC");
     }

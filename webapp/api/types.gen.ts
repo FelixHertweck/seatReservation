@@ -31,6 +31,22 @@ export type BlockSeatsRequestDto = {
     seatIds?: Array<bigint>;
 };
 
+export type CheckInInfoRequestDto = {
+    userId: bigint;
+    eventId: bigint;
+    checkInTokens?: Array<string>;
+};
+
+export type CheckInInfoResponseDto = {
+    reservations?: Array<LiveReservationResponseDto>;
+    user?: UserDto;
+};
+
+export type CheckInProcessRequestDto = {
+    checkIn?: Array<bigint>;
+    cancel?: Array<bigint>;
+};
+
 export type EventLocationMakerDto = {
     label?: string;
     xCoordinate?: number;
@@ -124,6 +140,17 @@ export type LimitedUserInfoDto = {
     tags?: Array<string>;
 };
 
+export type LiveReservationResponseDto = {
+    id?: bigint;
+    userId?: bigint;
+    eventId?: bigint;
+    seat?: SeatDto;
+    reservationDateTime?: Instant;
+    status?: ReservationStatus;
+    liveStatus?: ReservationLiveStatus;
+    reservationDate?: Instant;
+};
+
 export type LoginLockedDto = {
     message?: string;
     retryAfter?: Instant;
@@ -151,6 +178,14 @@ export type RegisterRequestDto = {
 export type RegistrationStatusDto = {
     enabled?: boolean;
 };
+
+export const ReservationLiveStatus = {
+    CHECKED_IN: 'CHECKED_IN',
+    CANCELLED: 'CANCELLED',
+    NO_SHOW: 'NO_SHOW'
+} as const;
+
+export type ReservationLiveStatus = typeof ReservationLiveStatus[keyof typeof ReservationLiveStatus];
 
 export type ReservationRequestDto = {
     eventId: bigint;
@@ -1485,6 +1520,132 @@ export type PutApiManagerSeatsByIdResponses = {
 };
 
 export type PutApiManagerSeatsByIdResponse = PutApiManagerSeatsByIdResponses[keyof PutApiManagerSeatsByIdResponses];
+
+export type PostApiSupervisorCheckinInfoData = {
+    body: CheckInInfoRequestDto;
+    path?: never;
+    query?: never;
+    url: '/api/supervisor/checkin/info';
+};
+
+export type PostApiSupervisorCheckinInfoErrors = {
+    /**
+     * Bad Request - Invalid input parameters
+     */
+    400: unknown;
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+    /**
+     * Token not found
+     */
+    404: unknown;
+};
+
+export type PostApiSupervisorCheckinInfoResponses = {
+    /**
+     * OK - Check-in information retrieved successfully
+     */
+    200: CheckInInfoResponseDto;
+};
+
+export type PostApiSupervisorCheckinInfoResponse = PostApiSupervisorCheckinInfoResponses[keyof PostApiSupervisorCheckinInfoResponses];
+
+export type PostApiSupervisorCheckinInfoByUsernameData = {
+    body?: never;
+    path: {
+        username: string;
+    };
+    query?: never;
+    url: '/api/supervisor/checkin/info/{username}';
+};
+
+export type PostApiSupervisorCheckinInfoByUsernameErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+    /**
+     * User or Reservation not found
+     */
+    404: unknown;
+};
+
+export type PostApiSupervisorCheckinInfoByUsernameResponses = {
+    /**
+     * OK - Check-in information processed successfully
+     */
+    200: CheckInInfoResponseDto;
+};
+
+export type PostApiSupervisorCheckinInfoByUsernameResponse = PostApiSupervisorCheckinInfoByUsernameResponses[keyof PostApiSupervisorCheckinInfoByUsernameResponses];
+
+export type PostApiSupervisorCheckinProcessData = {
+    body: CheckInProcessRequestDto;
+    path?: never;
+    query?: never;
+    url: '/api/supervisor/checkin/process';
+};
+
+export type PostApiSupervisorCheckinProcessErrors = {
+    /**
+     * Bad Request - Invalid input parameters
+     */
+    400: unknown;
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type PostApiSupervisorCheckinProcessResponses = {
+    /**
+     * No Content - Successfully processed
+     */
+    204: void;
+};
+
+export type PostApiSupervisorCheckinProcessResponse = PostApiSupervisorCheckinProcessResponses[keyof PostApiSupervisorCheckinProcessResponses];
+
+export type GetApiSupervisorCheckinUsernamesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/supervisor/checkin/usernames';
+};
+
+export type GetApiSupervisorCheckinUsernamesErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type GetApiSupervisorCheckinUsernamesResponses = {
+    /**
+     * OK - Usernames retrieved successfully
+     */
+    200: Array<string>;
+};
+
+export type GetApiSupervisorCheckinUsernamesResponse = GetApiSupervisorCheckinUsernamesResponses[keyof GetApiSupervisorCheckinUsernamesResponses];
 
 export type GetApiUserEventsData = {
     body?: never;

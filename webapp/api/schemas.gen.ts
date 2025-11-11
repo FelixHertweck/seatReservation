@@ -98,6 +98,62 @@ export const BlockSeatsRequestDTOSchema = {
     }
 } as const;
 
+export const CheckInInfoRequestDTOSchema = {
+    type: 'object',
+    required: ['userId', 'eventId'],
+    properties: {
+        userId: {
+            type: 'integer',
+            format: 'int64'
+        },
+        eventId: {
+            type: 'integer',
+            format: 'int64'
+        },
+        checkInTokens: {
+            type: 'array',
+            items: {
+                type: 'string'
+            }
+        }
+    }
+} as const;
+
+export const CheckInInfoResponseDTOSchema = {
+    type: 'object',
+    properties: {
+        reservations: {
+            type: 'array',
+            items: {
+                '$ref': '#/components/schemas/LiveReservationResponseDTO'
+            }
+        },
+        user: {
+            '$ref': '#/components/schemas/UserDTO'
+        }
+    }
+} as const;
+
+export const CheckInProcessRequestDTOSchema = {
+    type: 'object',
+    properties: {
+        checkIn: {
+            type: 'array',
+            items: {
+                type: 'integer',
+                format: 'int64'
+            }
+        },
+        cancel: {
+            type: 'array',
+            items: {
+                type: 'integer',
+                format: 'int64'
+            }
+        }
+    }
+} as const;
+
 export const EventLocationMakerDTOSchema = {
     type: 'object',
     properties: {
@@ -406,6 +462,39 @@ export const LimitedUserInfoDTOSchema = {
     }
 } as const;
 
+export const LiveReservationResponseDTOSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            type: 'integer',
+            format: 'int64'
+        },
+        userId: {
+            type: 'integer',
+            format: 'int64'
+        },
+        eventId: {
+            type: 'integer',
+            format: 'int64'
+        },
+        seat: {
+            '$ref': '#/components/schemas/SeatDTO'
+        },
+        reservationDateTime: {
+            '$ref': '#/components/schemas/Instant'
+        },
+        status: {
+            '$ref': '#/components/schemas/ReservationStatus'
+        },
+        liveStatus: {
+            '$ref': '#/components/schemas/ReservationLiveStatus'
+        },
+        reservationDate: {
+            '$ref': '#/components/schemas/Instant'
+        }
+    }
+} as const;
+
 export const LoginLockedDTOSchema = {
     type: 'object',
     properties: {
@@ -486,6 +575,11 @@ export const RegistrationStatusDTOSchema = {
             type: 'boolean'
         }
     }
+} as const;
+
+export const ReservationLiveStatusSchema = {
+    type: 'string',
+    enum: ['CHECKED_IN', 'CANCELLED', 'NO_SHOW']
 } as const;
 
 export const ReservationRequestDTOSchema = {

@@ -1,0 +1,290 @@
+"use client";
+
+import { useState, useEffect, type SetStateAction, type Dispatch } from "react";
+import { useT } from "@/lib/i18n/hooks";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
+import { Loader2, ChevronUp, X } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import type { CheckInInfoResponseDto } from "@/api";
+
+interface ReservationSelectorProps {
+  checkInInfo: CheckInInfoResponseDto | null | undefined;
+  isLoadingInfo: boolean;
+  isLoading: boolean;
+  isMobile: boolean;
+  isDrawerOpen: boolean;
+  setIsDrawerOpen: (isOpen: boolean) => void;
+  selectedReservations: Set<bigint>;
+  setSelectedReservations: Dispatch<SetStateAction<Set<bigint>>>;
+  onSubmit: () => void;
+  onClear: () => void;
+}
+
+export function ReservationSelector({
+  checkInInfo,
+  isLoadingInfo,
+  isLoading,
+  isMobile,
+  isDrawerOpen,
+  setIsDrawerOpen,
+  selectedReservations,
+  setSelectedReservations,
+  onSubmit,
+  onClear,
+}: ReservationSelectorProps) {
+  const t = useT();
+
+  // Initialize selected reservations when check-in info loads
+  useEffect(() => {
+    if (checkInInfo?.reservations && checkInInfo.reservations.length > 0) {
+      const initialSelected = new Set<bigint>();
+      checkInInfo.reservations.forEach((reservation) => {
+        if (reservation.id) {
+          initialSelected.add(reservation.id);
+        }
+      });
+      setSelectedReservations(initialSelected);
+
+      // Open drawer on mobile, show on desktop
+      if (isMobile) {
+        setIsDrawerOpen(true);
+      }
+    }
+  }, [checkInInfo, isMobile, setIsDrawerOpen, setSelectedReservations]);
+
+  // Toggle reservation selection
+  const toggleReservation = (reservationId: bigint) => {
+    setSelectedReservations((prev: Set<bigint>) => {
+      const newSet = new Set(prev);
+      if (newSet.has(reservationId)) {
+        newSet.delete(reservationId);
+      } else {
+        newSet.add(reservationId);
+      }
+      return newSet;
+    });
+  };
+
+  // Select all reservations
+  const selectAll = () => {
+    if (checkInInfo?.reservations) {
+      const allIds = new Set<bigint>();
+      checkInInfo.reservations.forEach((reservation) => {
+        if (reservation.id) {
+          allIds.add(reservation.id);
+        }
+      });
+      setSelectedReservations(allIds);
+    }
+  };
+
+  // Deselect all reservations
+  const deselectAll = () => {
+    setSelectedReservations(new Set());
+  };
+
+  // Render reservation list
+  const renderReservationList = () => {
+    if (isLoadingInfo) {
+      return (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <span className="ml-2">{t("checkin.reservations.loading")}</span>
+        </div>
+      );
+    }
+
+    if (!checkInInfo?.reservations || checkInInfo.reservations.length === 0) {
+      return (
+        <div className="text-center py-8 text-muted-foreground">
+          {t("checkin.reservations.noReservations")}
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex flex-col h-full">
+        <div className="flex-1 overflow-y-auto space-y-4 p-4">
+          {/* User Info Card - shown once at the top */}
+          {checkInInfo.user && (
+            <Card className="bg-muted/50">
+              <CardContent className="pt-4">
+                <div className="space-y-2">
+                  <div className="text-sm">
+                    <span className="font-semibold">
+                      {t("checkin.reservations.user")}:
+                    </span>{" "}
+                    <span>{checkInInfo.user.username || "N/A"}</span>
+                  </div>
+                  {(checkInInfo.user.firstname ||
+                    checkInInfo.user.lastname) && (
+                    <div className="text-sm">
+                      <span className="font-semibold">
+                        {t("checkin.reservations.name")}:
+                      </span>{" "}
+                      <span>
+                        {checkInInfo.user.firstname || ""}{" "}
+                        {checkInInfo.user.lastname || ""}
+                      </span>
+                    </div>
+                  )}
+                  {checkInInfo.user.email && (
+                    <div className="text-sm">
+                      <span className="font-semibold">
+                        {t("checkin.reservations.email")}:
+                      </span>{" "}
+                      <span>{checkInInfo.user.email}</span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          <div className="flex justify-between items-center">
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={selectAll}>
+                {t("checkin.reservations.selectAll")}
+              </Button>
+              <Button variant="outline" size="sm" onClick={deselectAll}>
+                {t("checkin.reservations.deselectAll")}
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            {checkInInfo.reservations.map((reservation, index) => (
+              <Card
+                key={reservation.id?.toString() || `reservation-${index}`}
+                className="p-4"
+              >
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id={`reservation-${reservation.id || index}`}
+                    checked={selectedReservations.has(reservation.id!)}
+                    onCheckedChange={() => toggleReservation(reservation.id!)}
+                  />
+                  <div className="flex-1">
+                    <label
+                      htmlFor={`reservation-${reservation.id || index}`}
+                      className="text-sm font-medium cursor-pointer"
+                    >
+                      {t("checkin.reservations.seat")}:{" "}
+                      {reservation.seat?.seatNumber || "N/A"}
+                      {reservation.seat?.seatRow &&
+                        ` (${reservation.seat.seatRow})`}
+                    </label>
+                    <div className="mt-2 flex gap-2">
+                      <Badge variant="outline">
+                        {t(
+                          `checkin.reservations.liveStatus.${(reservation.liveStatus || "no_show").toLowerCase()}`,
+                        )}
+                      </Badge>
+                      <span className="mx-2">{"-->"}</span>
+                      <Badge
+                        variant={
+                          selectedReservations.has(reservation.id!)
+                            ? "default"
+                            : "secondary"
+                        }
+                      >
+                        {selectedReservations.has(reservation.id!)
+                          ? t("checkin.reservations.liveStatus.checked_in")
+                          : t("checkin.reservations.liveStatus.cancelled")}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        <div className="sticky bottom-0 bg-background p-4 border-t">
+          <Separator className="mb-4" />
+
+          <div className="flex justify-between text-sm mb-4">
+            <span>
+              {t("checkin.reservations.checkInCount", {
+                count: selectedReservations.size,
+              })}
+            </span>
+            <span>
+              {t("checkin.reservations.cancelledCount", {
+                count:
+                  checkInInfo.reservations.length - selectedReservations.size,
+              })}
+            </span>
+          </div>
+
+          <div className="flex gap-2">
+            <Button onClick={onSubmit} disabled={isLoading} className="flex-1">
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {t("checkin.actions.processing")}
+                </>
+              ) : (
+                t("checkin.actions.submit")
+              )}
+            </Button>
+            <Button variant="outline" onClick={onClear}>
+              <X className="mr-2 h-4 w-4" />
+              {t("checkin.actions.close")}
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <>
+      {/* Reservations Section - Desktop */}
+      {!isMobile && checkInInfo && (
+        <Card className="md:max-h-[calc(100vh-100px)] md:overflow-y-auto">
+          <CardHeader>
+            <CardTitle>{t("checkin.reservations.title")}</CardTitle>
+          </CardHeader>
+          <CardContent>{renderReservationList()}</CardContent>
+        </Card>
+      )}
+
+      {/* Reservations Drawer - Mobile */}
+      {isMobile && (
+        <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+          <DrawerContent onInteractOutside={(e) => e.preventDefault()}>
+            <DrawerHeader>
+              <DrawerTitle>{t("checkin.reservations.title")}</DrawerTitle>
+            </DrawerHeader>
+            <div className="px-4 pb-4 max-h-[80vh] overflow-y-auto">
+              {renderReservationList()}
+            </div>
+          </DrawerContent>
+        </Drawer>
+      )}
+
+      {/* Drawer Trigger - Mobile */}
+      {isMobile && !isDrawerOpen && checkInInfo && (
+        <div
+          className="fixed bottom-0 left-0 right-0 bg-background border-t p-2 flex justify-center cursor-pointer shadow-lg"
+          onClick={() => setIsDrawerOpen(true)}
+        >
+          <ChevronUp className="h-6 w-6 text-muted-foreground" />
+          <span className="sr-only">
+            {t("checkin.reservations.openDrawer")}
+          </span>
+        </div>
+      )}
+    </>
+  );
+}

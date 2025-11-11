@@ -2,7 +2,7 @@
 -- The commands are commented as their support depends on the database
 
 -- Insert admin user
-INSERT INTO users (id, username, email, passwordHash, passwordSalt, firstname, lastname, emailVerified) VALUES (1, 'admin', 'admin@localhost', '$2a$12$G0LZJi5jGdl5wqspjaVYN.eXdZcZ3X9cMny/3m8mRM3vK/5Yf6TE6', 'Salt', 'Admin', 'User', true);
+INSERT INTO users (id, username, email, passwordHash, passwordSalt, firstname, lastname, emailVerified) VALUES (1, 'admin', 'felix@felix-hertweck.de', '$2a$12$G0LZJi5jGdl5wqspjaVYN.eXdZcZ3X9cMny/3m8mRM3vK/5Yf6TE6', 'Salt', 'Admin', 'User', true);
 
 -- Assign ADMIN tags to admin user
 INSERT INTO user_tags (user_id, tags) VALUES (1, 'superuser');
@@ -30,6 +30,17 @@ INSERT INTO user_tags (user_id, tags) VALUES (3, 'demouser');
 
 -- Assign USER role to regular user
 INSERT INTO user_roles (user_id, role) VALUES (3, 'USER');
+
+-- Insert supervisor user
+INSERT INTO users (id, username, email, passwordHash, passwordSalt, firstname, lastname, emailVerified) VALUES (4, 'supervisor', 'supervisor@localhost', '$2a$12$arzn9PpRswUrgIw0xaXoM.Y2PeX8m9OKKEGggA07bUXm/O./85WPa', 'Salt', 'Supervisor', 'User', true);
+
+-- Assign supervisor user tags
+INSERT INTO user_tags (user_id, tags) VALUES (4, 'supervisoruser');
+INSERT INTO user_tags (user_id, tags) VALUES (4, 'demouser');
+
+-- Assign USER role to regular user
+INSERT INTO user_roles (user_id, role) VALUES (4, 'SUPERVISOR');
+
 
 -- Insert event location
 INSERT INTO eventlocations (id, name, address, manager_id) VALUES (1, 'City Hall', 'Hauptstraße 1, 12345 Musterstadt', 2);

@@ -130,7 +130,7 @@ email:
                     <h1>Email Confirmation</h1>
                 </div>
                 <div class="content">
-                    <p>Hello {userName},</p>
+                    <p>Hello {fullName},</p>
                     <p>Thank you for registering with our Seat Reservation System. To complete your registration and verify your email address, please enter the following verification code in your browser:</p>
                     
                     <div style="text-align: center; margin: 40px 0;">
@@ -236,7 +236,7 @@ email:
         <body>
             <div class="container">
                 <h1>Reminder: Your Event Starts Soon!</h1>
-                <p>Hello {userName},</p>
+                <p>Hello {fullName},</p>
                 <p>We would like to remind you that the event <strong>"{eventName}"</strong> is taking place tomorrow.</p>
                 <p><strong>Event Details:</strong></p>
                 <ul>
@@ -248,6 +248,12 @@ email:
                 <ul>
                     {seatList}
                 </ul>
+                <div style="text-align: center; margin: 30px 0;">
+                    <p style="font-size: 16px; font-weight: bold; color: #2c3e50; margin-bottom: 10px;">Your Check-in QR Code:</p>
+                    <p style="font-size: 16px; font-weight: bold; color: #7f8c8d; margin-bottom: 15px;">Please present this QR code at check-in for the event.</p>
+                    <img src="cid:qrcode-image" alt="Check-in QR Code" style="max-width: 150px; height: auto; border: 1px solid #a0a0a0; border-radius: 5px; margin-bottom: 5px;" />
+                    <p style="font-size: 10px; color: #7f8c8d; margin-top: 5px;">{userName}</p>
+                </div>
                 <div class="entrance-info" style="background-color: #e8f4f8; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; border-radius: 4px;">
                     <p style="margin: 0; font-weight: bold; color: #2c3e50;">Entrance Information:</p>
                     <p style="margin: 10px 0 0 0; white-space: pre-line;">{entranceInfo}</p>
@@ -333,7 +339,7 @@ email:
                     <h1>Password Successfully Changed</h1>
                 </div>
                 <div class="content">
-                    <p>Hallo {userName},</p>
+                    <p>Hallo {fullName},</p>
                     <p>Your password for your account has been successfully changed.</p>
                     <p>If you did not make this change, please contact us immediately.</p>
                     <p>Thank you</p>
@@ -415,7 +421,7 @@ email:
         <body>
             <div class="container">
                 <div class="header">Your reservation confirmation</div>
-                <p>Hello {userName},</p>
+                <p>Hello {fullName},</p>
                 <p>Thank you for your reservation for the event "{eventName}".</p>
                 <p><strong>Location:</strong> {eventLocation}</p>
                 <p><strong>Start:</strong> {eventStartTime}</p>
@@ -428,6 +434,12 @@ email:
                 <ul class={existingHeaderVisible}>
                     {existingSeatList}
                 </ul>
+                <div style="text-align: center; margin: 30px 0;">
+                    <p style="font-size: 16px; font-weight: bold; color: #2c3e50; margin-bottom: 10px;">Your Check-in QR Code:</p>
+                    <p style="font-size: 16px; font-weight: bold; color: #7f8c8d; margin-bottom: 15px;">Please present this QR code at check-in for the event.</p>
+                    <img src="cid:qrcode-image" alt="Check-in QR Code" style="max-width: 150px; height: auto; border: 1px solid #a0a0a0; border-radius: 5px; margin-bottom: 5px;" />
+                    <p style="font-size: 10px; color: #7f8c8d; margin-top: 5px;">{userName}</p>
+                </div>
                 <div class="entrance-info" style="background-color: #e8f4f8; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; border-radius: 4px;">
                     <p style="margin: 0; font-weight: bold; color: #2c3e50;">Entrance Information:</p>
                     <p style="margin: 10px 0 0 0; white-space: pre-line;">{entranceInfo}</p>
@@ -522,7 +534,7 @@ email:
         <body>
             <div class="container">
                 <div class="header">Your reservation update confirmation</div>
-                <p>Hello {userName},</p>
+                <p>Hello {fullName},</p>
                 <p>Thank you for your reservation update for the event "{eventName}".</p>
                 <p><strong>Location:</strong> {eventLocation}</p>
                 <p><strong>Start:</strong> {eventStartTime}</p>
@@ -535,6 +547,12 @@ email:
                 <ul class={existingHeaderVisible}>
                     {activeSeatList}
                 </ul>
+                <div style="text-align: center; margin: 30px 0;">
+                    <p style="font-size: 16px; font-weight: bold; color: #2c3e50; margin-bottom: 10px;">Your Check-in QR Code:</p>
+                    <p style="font-size: 16px; font-weight: bold; color: #7f8c8d; margin-bottom: 15px;">Please present this QR code at check-in for the event.</p>
+                    <img src="cid:qrcode-image" alt="Check-in QR Code" style="max-width: 150px; height: auto; border: 1px solid #a0a0a0; border-radius: 5px; margin-bottom: 5px;" />
+                    <p style="font-size: 10px; color: #7f8c8d; margin-top: 5px;">{userName}</p>
+                </div>
                 <div class="entrance-info" style="background-color: #e8f4f8; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; border-radius: 4px;">
                     <p style="margin: 0; font-weight: bold; color: #2c3e50;">Entrance Information:</p>
                     <p style="margin: 10px 0 0 0; white-space: pre-line;">{entranceInfo}</p>

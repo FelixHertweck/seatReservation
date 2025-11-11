@@ -26,6 +26,9 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
 
+import de.felixhertweck.seatreservation.model.entity.Reservation;
+import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
+import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
@@ -33,6 +36,7 @@ import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepos
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.utils.CodeGenerator;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import org.junit.jupiter.api.AfterEach;
@@ -168,15 +172,16 @@ class EventLocationResourceTest {
         var user = userRepository.findByUsername("user");
         var location = eventLocationRepository.findAll().firstResult();
         var event = eventRepository.findAll().firstResult();
-        var seat = new de.felixhertweck.seatreservation.model.entity.Seat("S1", "Row 1", location);
+        var seat = new Seat("S1", "Row 1", location);
         seatRepository.persist(seat);
         var reservation =
-                new de.felixhertweck.seatreservation.model.entity.Reservation(
+                new Reservation(
                         user,
                         event,
                         seat,
                         java.time.Instant.now(),
-                        de.felixhertweck.seatreservation.model.entity.ReservationStatus.RESERVED);
+                        ReservationStatus.RESERVED,
+                        CodeGenerator.generateRandomCode());
         reservationRepository.persist(reservation);
     }
 }

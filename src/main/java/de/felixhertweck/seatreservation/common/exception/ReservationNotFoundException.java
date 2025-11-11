@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.management.exception;
+package de.felixhertweck.seatreservation.common.exception;
 
 public class ReservationNotFoundException extends RuntimeException {
     public ReservationNotFoundException(String message) {

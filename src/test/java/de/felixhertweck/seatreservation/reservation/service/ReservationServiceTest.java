@@ -41,8 +41,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
-import de.felixhertweck.seatreservation.email.service.EmailService;
-import de.felixhertweck.seatreservation.management.exception.ReservationNotFoundException;
+import de.felixhertweck.seatreservation.common.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
@@ -50,6 +49,7 @@ import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
@@ -59,10 +59,12 @@ import de.felixhertweck.seatreservation.reservation.dto.UserReservationsRequestD
 import de.felixhertweck.seatreservation.reservation.exception.EventBookingClosedException;
 import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
+import de.felixhertweck.seatreservation.utils.CodeGenerator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 @QuarkusTest
 class ReservationServiceTest {
@@ -77,7 +79,7 @@ class ReservationServiceTest {
 
     @InjectMock EventUserAllowanceRepository eventUserAllowanceRepository;
 
-    @InjectMock EmailService emailService;
+    @InjectMock EmailSeatMapTokenRepository emailSeatMapTokenRepository;
 
     private User currentUser;
     private User otherUser;
@@ -126,7 +128,12 @@ class ReservationServiceTest {
 
         reservation =
                 new Reservation(
-                        currentUser, event, seat1, Instant.now(), ReservationStatus.RESERVED);
+                        currentUser,
+                        event,
+                        seat1,
+                        Instant.now(),
+                        ReservationStatus.RESERVED,
+                        CodeGenerator.generateRandomCode());
         reservation.id = 1L;
 
         allowance = new EventUserAllowance();
@@ -338,7 +345,13 @@ class ReservationServiceTest {
         dto.setSeatIds(Set.of(seat1.id));
 
         Reservation existingReservation =
-                new Reservation(otherUser, event, seat1, Instant.now(), ReservationStatus.RESERVED);
+                new Reservation(
+                        otherUser,
+                        event,
+                        seat1,
+                        Instant.now(),
+                        ReservationStatus.RESERVED,
+                        CodeGenerator.generateRandomCode());
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
         when(seatRepository.findByIdOptional(seat1.id)).thenReturn(Optional.of(seat1));
         when(eventUserAllowanceRepository.findByUser(currentUser)).thenReturn(List.of(allowance));
@@ -390,5 +403,24 @@ class ReservationServiceTest {
         assertThrows(
                 SecurityException.class,
                 () -> reservationService.deleteReservationForUser(List.of(1L), otherUser));
+    }
+
+    @Test
+    void createReservationForUser_CheckInCodeIsSet() {
+        UserReservationsRequestDTO dto = new UserReservationsRequestDTO();
+        dto.setEventId(event.id);
+        dto.setSeatIds(Set.of(seat1.id));
+
+        when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
+        when(seatRepository.findByIdOptional(seat1.id)).thenReturn(Optional.of(seat1));
+        when(eventUserAllowanceRepository.findByUser(currentUser)).thenReturn(List.of(allowance));
+        when(reservationRepository.findByEventId(event.id)).thenReturn(Collections.emptyList());
+        doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
+
+        reservationService.createReservationForUser(dto, currentUser);
+
+        ArgumentCaptor<List<Reservation>> argumentCaptor = ArgumentCaptor.forClass(List.class);
+        verify(reservationRepository, times(1)).persistAll(argumentCaptor.capture());
+        assertNotNull(argumentCaptor.getValue().getFirst().getCheckInCode());
     }
 }

@@ -33,6 +33,7 @@ import de.felixhertweck.seatreservation.model.entity.*;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.reservation.dto.UserEventLocationResponseDTO;
+import de.felixhertweck.seatreservation.utils.CodeGenerator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -89,7 +90,13 @@ class EventLocationServiceTest {
         // Reservation provides Location B
         var seat = new Seat("S1", "Row 1", locationB);
         var reservation =
-                new Reservation(user, eventB, seat, Instant.now(), ReservationStatus.RESERVED);
+                new Reservation(
+                        user,
+                        eventB,
+                        seat,
+                        Instant.now(),
+                        ReservationStatus.RESERVED,
+                        CodeGenerator.generateRandomCode());
         var reservations = new HashSet<Reservation>();
         reservations.add(reservation);
         user.setReservations(reservations);
@@ -115,7 +122,13 @@ class EventLocationServiceTest {
 
         var seat = new Seat("S1", "Row 1", locationA);
         var reservation =
-                new Reservation(user, eventA, seat, Instant.now(), ReservationStatus.RESERVED);
+                new Reservation(
+                        user,
+                        eventA,
+                        seat,
+                        Instant.now(),
+                        ReservationStatus.RESERVED,
+                        CodeGenerator.generateRandomCode());
         var reservations = new HashSet<Reservation>();
         reservations.add(reservation);
         user.setReservations(reservations);
@@ -174,7 +187,13 @@ class EventLocationServiceTest {
         // Reservation provides Location B
         var seat = new Seat("S1", "Row 1", locationB);
         var reservation =
-                new Reservation(user, eventB, seat, Instant.now(), ReservationStatus.RESERVED);
+                new Reservation(
+                        user,
+                        eventB,
+                        seat,
+                        Instant.now(),
+                        ReservationStatus.RESERVED,
+                        CodeGenerator.generateRandomCode());
         var reservations = new HashSet<Reservation>();
         reservations.add(reservation);
         user.setReservations(reservations);
@@ -213,7 +232,13 @@ class EventLocationServiceTest {
         // Reservation provides Location B
         var seatB = new Seat("S1", "Row 1", locationB);
         var reservationB =
-                new Reservation(user, eventB, seatB, Instant.now(), ReservationStatus.RESERVED);
+                new Reservation(
+                        user,
+                        eventB,
+                        seatB,
+                        Instant.now(),
+                        ReservationStatus.RESERVED,
+                        CodeGenerator.generateRandomCode());
         var reservations = new HashSet<Reservation>();
         reservations.add(reservationB);
         user.setReservations(reservations);
@@ -240,7 +265,13 @@ class EventLocationServiceTest {
         // Event B for Location B with Reservation
         var seatB = new Seat("S1", "Row 1", locationB);
         var reservationB =
-                new Reservation(user, eventB, seatB, Instant.now(), ReservationStatus.RESERVED);
+                new Reservation(
+                        user,
+                        eventB,
+                        seatB,
+                        Instant.now(),
+                        ReservationStatus.RESERVED,
+                        CodeGenerator.generateRandomCode());
         var reservations = new HashSet<Reservation>();
         reservations.add(reservationB);
         user.setReservations(reservations);
@@ -273,7 +304,13 @@ class EventLocationServiceTest {
         // Reservation for eventC (Location A)
         var seatC = new Seat("S2", "Row 2", locationA);
         var reservationC =
-                new Reservation(user, eventC, seatC, Instant.now(), ReservationStatus.RESERVED);
+                new Reservation(
+                        user,
+                        eventC,
+                        seatC,
+                        Instant.now(),
+                        ReservationStatus.RESERVED,
+                        CodeGenerator.generateRandomCode());
         var reservations = new HashSet<Reservation>();
         reservations.add(reservationC);
         user.setReservations(reservations);

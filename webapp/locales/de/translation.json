@@ -795,6 +795,9 @@
     "manager": "Manager",
     "userManagement": "Benutzer-Verwaltung",
     "admin": "Admin",
+    "supervisor": "Supervisor",
+    "liveview": "Liveview",
+    "checkin": "Check-In",
     "theme": "Theme",
     "light": "Hell",
     "dark": "Dunkel",
@@ -888,6 +891,68 @@
       "downloadStarted": "Download gestartet",
       "downloadDescription": "Ihre Sitzplatzkarte wird heruntergeladen",
       "errorTitle": "Fehler"
+    }
+  },
+  "checkin": {
+    "success": {
+      "title": "Check-In erfolgreich",
+      "description": "Der Check-In wurde erfolgreich verarbeitet."
+    },
+    "error": {
+      "title": "Check-In Fehler",
+      "default": "Bei der Verarbeitung des Check-In ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+      "noCheckInInfo": "Keine Check-In Informationen verfügbar.",
+      "scanningFailed": "Fehler beim Scannen des QR-Codes."
+    },
+    "qrScanner": {
+      "title": "QR-Code Scanner",
+      "description": "Richten Sie Ihre Kamera auf einen QR-Code",
+      "startCamera": "Kamera starten",
+      "stopCamera": "Kamera stoppen",
+      "cameraError": "Fehler beim Zugriff auf die Kamera. Bitte überprüfen Sie die Berechtigung.",
+      "noCamera": "Keine Kamera verfügbar.",
+      "reservationsOpen": "Reservierungen geöffnet",
+      "loadingCamera": "Lade QR-Code-Scanner..."
+    },
+    "tabs": {
+      "qrScanner": "QR-Code Scanner",
+      "userSelection": "Benutzerauswahl"
+    },
+    "usernameSelector": {
+      "title": "Benutzer auswählen",
+      "selectUser": "Benutzer auswählen...",
+      "searchUser": "Benutzer suchen...",
+      "noUserFound": "Kein Benutzer gefunden.",
+      "loadingUsers": "Benutzer werden geladen...",
+      "fetchReservations": "Reservierungen abrufen"
+    },
+    "reservations": {
+      "title": "Reservierungen",
+      "user": "Benutzername",
+      "name": "Name",
+      "email": "Email",
+      "selectReservations": "Wählen Sie Reservierungen aus",
+      "noReservations": "Keine Reservierungen vorhanden.",
+      "checkInCount": "Check-Ins: {{count}}",
+      "cancelledCount": "Stornierungen: {{count}}",
+      "selectAll": "Alle auswählen",
+      "deselectAll": "Alle abwählen",
+      "loading": "Lade Reservierungen...",
+      "event": "Event",
+      "seat": "Platz",
+      "liveStatus": {
+        "checked_in": "Eingecheckt",
+        "cancelled": "Storniert",
+        "no_show": "Nicht erschienen"
+      },
+      "openDrawer": "Reservierungsübersicht öffnen"
+    },
+    "actions": {
+      "submit": "Check-In durchführen",
+      "cancel": "Abbrechen",
+      "scan": "Scannen",
+      "close": "Schließen",
+      "processing": "Verarbeite..."
     }
   }
 }

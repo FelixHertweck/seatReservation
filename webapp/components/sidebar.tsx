@@ -12,6 +12,8 @@ import {
   Monitor,
   Globe,
   UserLock,
+  Eye,
+  LogIn as CheckInIcon,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -28,6 +30,9 @@ import {
   SidebarMenuItem,
   SidebarRail,
   useSidebar,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
 } from "@/components/ui/sidebar";
 import {
   DropdownMenu,
@@ -77,7 +82,15 @@ export function AppSidebar() {
   }, [pathname, isMobile, setOpenMobile]);
 
   const getMenuItems = () => {
-    const baseItems = [
+    const baseItems: Array<{
+      title: string;
+      url: string;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      icon: any;
+      badge: string;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      subItems?: Array<{ title: string; url: string; icon: any }>;
+    }> = [
       {
         title: t("sidebar.events"),
         url: "/events",
@@ -97,6 +110,25 @@ export function AppSidebar() {
         badge: "",
       },
     ];
+
+    if (
+      user?.roles?.includes("SUPERVISOR") ||
+      user?.roles?.includes("MANAGER") ||
+      user?.roles?.includes("ADMIN")
+    ) {
+      baseItems.push({
+        title: t("sidebar.liveview"),
+        url: "/liveview",
+        icon: Eye,
+        badge: t("sidebar.supervisor"),
+      });
+      baseItems.push({
+        title: t("sidebar.checkin"),
+        url: "/checkin",
+        icon: CheckInIcon,
+        badge: t("sidebar.supervisor"),
+      });
+    }
 
     if (user?.roles?.includes("MANAGER") || user?.roles?.includes("ADMIN")) {
       baseItems.push({
@@ -201,14 +233,16 @@ export function AppSidebar() {
           href="/"
           className={`w-full transition-all duration-500 flex items-center justify-center bg-transparent`}
         >
-          <Image
-            src="/logo.png"
-            alt="Logo"
-            width={300}
-            height={100}
-            className="h-auto w-full max-h-[100px] bg-transparent object-contain dark:invert"
-            priority
-          />
+          <div className="relative w-full h-[100px] flex items-center justify-center">
+            <Image
+              src="/logo.png"
+              alt="Logo"
+              fill
+              sizes="(max-width: 768px) 100vw, 300px"
+              className="object-contain dark:invert"
+              priority
+            />
+          </div>
         </Link>
       </SidebarMenu>
       <div className="border-b border-sidebar-border/50" />
@@ -247,6 +281,24 @@ export function AppSidebar() {
                       <div className="absolute inset-0 bg-linear-to-r from-transparent via-sidebar-primary/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                     </div>
                   </SidebarMenuButton>
+                  {item.subItems && item.subItems.length > 0 && (
+                    <SidebarMenuSub className="ml-0 border-l border-sidebar-border/50 ml-4">
+                      {item.subItems.map((subItem) => (
+                        <SidebarMenuSubItem key={subItem.title}>
+                          <SidebarMenuSubButton
+                            asChild
+                            onClick={() => handleNavigation(subItem.url)}
+                            className="hover:bg-sidebar-accent/50 transition-all duration-300 group"
+                          >
+                            <div className="flex items-center gap-3 w-full cursor-pointer">
+                              <subItem.icon className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
+                              <span className="text-sm">{subItem.title}</span>
+                            </div>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      ))}
+                    </SidebarMenuSub>
+                  )}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>

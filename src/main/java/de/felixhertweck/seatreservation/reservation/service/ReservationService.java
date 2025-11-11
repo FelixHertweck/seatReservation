@@ -32,8 +32,8 @@ import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
+import de.felixhertweck.seatreservation.common.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.email.service.EmailService;
-import de.felixhertweck.seatreservation.management.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
@@ -49,6 +49,7 @@ import de.felixhertweck.seatreservation.reservation.dto.UserReservationsRequestD
 import de.felixhertweck.seatreservation.reservation.exception.EventBookingClosedException;
 import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
+import de.felixhertweck.seatreservation.utils.CodeGenerator;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
@@ -268,9 +269,15 @@ public class ReservationService {
                         seat.getSeatNumber(), seat.id, event.getName(), event.id);
                 throw new SeatAlreadyReservedException("One or more seats are already reserved");
             }
+            String checkInCode = CodeGenerator.generateRandomCode();
             newReservations.add(
                     new Reservation(
-                            currentUser, event, seat, reservationTime, ReservationStatus.RESERVED));
+                            currentUser,
+                            event,
+                            seat,
+                            reservationTime,
+                            ReservationStatus.RESERVED,
+                            checkInCode));
             LOG.debugf(
                     "Prepared new reservation for seat %s (ID: %d).",
                     seat.getSeatNumber(), seat.id);

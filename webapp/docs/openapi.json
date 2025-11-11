@@ -1423,6 +1423,150 @@
         } ]
       }
     },
+    "/api/supervisor/checkin/info" : {
+      "post" : {
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CheckInInfoRequestDTO"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK - Check-in information retrieved successfully",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CheckInInfoResponseDTO"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "400" : {
+            "description" : "Bad Request - Invalid input parameters"
+          },
+          "404" : {
+            "description" : "Token not found"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Get Check In Info",
+        "tags" : [ "Check In Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "SUPERVISOR", "ADMIN", "MANAGER" ]
+        } ]
+      }
+    },
+    "/api/supervisor/checkin/info/{username}" : {
+      "post" : {
+        "parameters" : [ {
+          "name" : "username",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK - Check-in information processed successfully",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CheckInInfoResponseDTO"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "404" : {
+            "description" : "User or Reservation not found"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Process Check In Info By Username",
+        "tags" : [ "Check In Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "SUPERVISOR", "ADMIN", "MANAGER" ]
+        } ]
+      }
+    },
+    "/api/supervisor/checkin/process" : {
+      "post" : {
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CheckInProcessRequestDTO"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "No Content - Successfully processed"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "400" : {
+            "description" : "Bad Request - Invalid input parameters"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Process Check In",
+        "tags" : [ "Check In Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "SUPERVISOR", "ADMIN", "MANAGER" ]
+        } ]
+      }
+    },
+    "/api/supervisor/checkin/usernames" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK - Usernames retrieved successfully",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Get Usernames With Reservations",
+        "tags" : [ "Check In Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "SUPERVISOR", "ADMIN", "MANAGER" ]
+        } ]
+      }
+    },
     "/api/user/events" : {
       "get" : {
         "responses" : {
@@ -2135,6 +2279,59 @@
           }
         }
       },
+      "CheckInInfoRequestDTO" : {
+        "type" : "object",
+        "required" : [ "userId", "eventId" ],
+        "properties" : {
+          "userId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "eventId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "checkInTokens" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "CheckInInfoResponseDTO" : {
+        "type" : "object",
+        "properties" : {
+          "reservations" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/LiveReservationResponseDTO"
+            }
+          },
+          "user" : {
+            "$ref" : "#/components/schemas/UserDTO"
+          }
+        }
+      },
+      "CheckInProcessRequestDTO" : {
+        "type" : "object",
+        "properties" : {
+          "checkIn" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          },
+          "cancel" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          }
+        }
+      },
       "EventLocationMakerDTO" : {
         "type" : "object",
         "properties" : {
@@ -2431,6 +2628,38 @@
           }
         }
       },
+      "LiveReservationResponseDTO" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "userId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "eventId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "seat" : {
+            "$ref" : "#/components/schemas/SeatDTO"
+          },
+          "reservationDateTime" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "status" : {
+            "$ref" : "#/components/schemas/ReservationStatus"
+          },
+          "liveStatus" : {
+            "$ref" : "#/components/schemas/ReservationLiveStatus"
+          },
+          "reservationDate" : {
+            "$ref" : "#/components/schemas/Instant"
+          }
+        }
+      },
       "LoginLockedDTO" : {
         "type" : "object",
         "properties" : {
@@ -2507,6 +2736,10 @@
             "type" : "boolean"
           }
         }
+      },
+      "ReservationLiveStatus" : {
+        "type" : "string",
+        "enum" : [ "CHECKED_IN", "CANCELLED", "NO_SHOW" ]
       },
       "ReservationRequestDTO" : {
         "type" : "object",

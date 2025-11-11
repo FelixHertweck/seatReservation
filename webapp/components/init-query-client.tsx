@@ -45,6 +45,13 @@ export default function InitQueryClient({
     baseUrl: `/`,
     throwOnError: true,
     fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
+      // Clone the request before the first attempt if it's a Request object
+      // This is necessary because Request bodies can only be read once
+      let clonedRequest: Request | undefined;
+      if (input instanceof Request) {
+        clonedRequest = input.clone();
+      }
+
       let response = await fetch(input, init);
       const refreshTokenExpiration = getRefreshTokenExpiration();
       if (
@@ -56,8 +63,12 @@ export default function InitQueryClient({
         // Refresh token (uses cached promise if multiple requests fail simultaneously)
         const refreshResponse = await refreshToken();
         if (refreshResponse.ok) {
-          // Retry original request
-          response = await fetch(input, init);
+          // Retry original request using the cloned request or original parameters
+          if (clonedRequest) {
+            response = await fetch(clonedRequest);
+          } else {
+            response = await fetch(input, init);
+          }
         } else {
           console.error(
             "Failed to refresh token:",

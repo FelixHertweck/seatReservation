@@ -37,11 +37,11 @@ import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
+import de.felixhertweck.seatreservation.common.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
 import de.felixhertweck.seatreservation.email.service.EmailService;
 import de.felixhertweck.seatreservation.management.dto.ReservationRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.ReservationResponseDTO;
-import de.felixhertweck.seatreservation.management.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
@@ -54,6 +54,7 @@ import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepos
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.utils.CodeGenerator;
 import de.felixhertweck.seatreservation.utils.ReservationExporter;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
@@ -313,7 +314,12 @@ public class ReservationService {
 
             Reservation reservation =
                     new Reservation(
-                            targetUser, event, seat, Instant.now(), ReservationStatus.RESERVED);
+                            targetUser,
+                            event,
+                            seat,
+                            Instant.now(),
+                            ReservationStatus.RESERVED,
+                            CodeGenerator.generateRandomCode());
             reservationRepository.persist(reservation);
             existingReservations.add(reservation);
             LOG.infof(
@@ -575,7 +581,8 @@ public class ReservationService {
                                                 event,
                                                 seat,
                                                 Instant.now(),
-                                                ReservationStatus.BLOCKED))
+                                                ReservationStatus.BLOCKED,
+                                                CodeGenerator.generateRandomCode()))
                         .toList();
 
         reservationRepository.persist(newReservations);
