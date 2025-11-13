@@ -21,9 +21,23 @@ package de.felixhertweck.seatreservation.supervisor.dto;
 
 import java.util.List;
 
-import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
+import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.EventLocation;
+import de.felixhertweck.seatreservation.model.entity.Reservation;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
-public record CheckInInfoResponseDTO(
-        List<SupervisorReservationResponseDTO> reservations, LimitedUserInfoDTO user) {}
+public record WebsocketInitialDTO(
+        String type,
+        SupervisorEventLocationDTO location,
+        SupervisorEventResponseDTO event,
+        List<SupervisorReservationResponseDTO> reservations) {
+    public static WebsocketInitialDTO initial(
+            EventLocation location, Event event, List<Reservation> reservations) {
+        return new WebsocketInitialDTO(
+                "INITIAL",
+                new SupervisorEventLocationDTO(location),
+                new SupervisorEventResponseDTO(event),
+                reservations.stream().map(SupervisorReservationResponseDTO::new).toList());
+    }
+}

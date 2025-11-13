@@ -1,4 +1,12 @@
 {
+  "seatStatus": {
+    "available": "Available",
+    "reserved": "Reserved",
+    "blocked": "Blocked",
+    "checkedIn": "Checked In",
+    "noShow": "No Show",
+    "cancelled": "Cancelled"
+  },
   "validation": {
     "usernameHint": "3-64 characters: letters, numbers, dots, underscores, hyphens"
   },
@@ -445,7 +453,42 @@
     "activeFiltersLabel": "Active filters:",
     "clearAllButton": "Clear all"
   },
+  "common": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "loading": "Loading..."
+  },
+  "digitalWallet": {
+    "appleWallet": {
+      "button": "Add to Apple Wallet",
+      "confirmTitle": "Add to Apple Wallet?",
+      "confirmDescription": "Do you want to add these reservations to your Apple Wallet?",
+      "success": {
+        "title": "Added to Apple Wallet",
+        "description": "The pass has been successfully added to your Apple Wallet"
+      },
+      "error": {
+        "title": "Error adding to Apple Wallet",
+        "description": "The pass could not be added to Apple Wallet. Please try again later"
+      }
+    },
+    "googleWallet": {
+      "button": "Add to Google Wallet",
+      "confirmTitle": "Add to Google Wallet?",
+      "confirmDescription": "Do you want to add these reservations to your Google Wallet?",
+      "success": {
+        "title": "Added to Google Wallet",
+        "description": "The pass has been successfully added to your Google Wallet"
+      },
+      "error": {
+        "title": "Error adding to Google Wallet",
+        "description": "The pass could not be added to Google Wallet. Please try again later"
+      }
+    }
+  },
   "checkin": {
+    "title": "Check-In",
+    "description": "Process event check-ins via QR code scanning or user selection.",
     "success": {
       "title": "Check-In Successful",
       "description": "The check-in has been processed successfully."
@@ -455,6 +498,12 @@
       "default": "An error occurred during check-in. Please try again.",
       "noCheckInInfo": "No check-in information available.",
       "scanningFailed": "Error scanning QR code."
+    },
+    "eventSelector": {
+      "label": "Select Event",
+      "placeholder": "Choose an event...",
+      "loading": "Loading events...",
+      "selectFirst": "Please select an event first to proceed with check-in."
     },
     "qrScanner": {
       "title": "QR Code Scanner",
@@ -492,11 +541,6 @@
       "loading": "Loading reservations...",
       "event": "Event",
       "seat": "Seat",
-      "liveStatus": {
-        "checked_in": "Checked In",
-        "cancelled": "Cancelled",
-        "no_show": "No Show"
-      },
       "openDrawer": "Open Reservations Overview"
     },
     "actions": {
@@ -505,6 +549,50 @@
       "scan": "Scan",
       "close": "Close",
       "processing": "Processing..."
+    }
+  },
+  "liveview": {
+    "title": "Live View",
+    "description": "Monitor check-in in real-time",
+    "eventSelector": {
+      "label": "Select Event",
+      "placeholder": "Choose an event...",
+      "loading": "Loading events...",
+      "selectFirst": "Please select an event first"
+    },
+    "status": {
+      "connected": "Connected",
+      "connecting": "Connecting...",
+      "disconnected": "Disconnected",
+      "loading": "Loading data..."
+    },
+    "event": {
+      "title": "Event Information",
+      "name": "Name",
+      "description": "Description",
+      "startTime": "Start Time",
+      "endTime": "End Time"
+    },
+    "legend": {
+      "title": "Legend"
+    },
+    "seatMap": {
+      "title": "Seat Map"
+    },
+    "reservations": {
+      "title": "Reservations",
+      "count": "Reservations ({{count}})",
+      "user": "User",
+      "seat": "Seat",
+      "status": "Status",
+      "checkedIn": "Checked In",
+      "noShow": "No Show",
+      "cancelled": "Cancelled",
+      "pending": "Pending"
+    },
+    "error": {
+      "title": "Error",
+      "message": "An error occurred while loading data"
     }
   },
   "seatMap": {
@@ -563,6 +651,7 @@
     "seatLabel": "Seat",
     "viewSeatButton": "View Seat",
     "viewSeatMultipleButton": "View Seats",
+    "showQRCodeButton": "QR Code",
     "cancelButton": "Cancel",
     "showLessButton": "Show Less",
     "showMoreButton": "Show More",
@@ -580,6 +669,20 @@
     "seatsToDelete": "Seats to delete",
     "cancelButton": "Cancel",
     "confirmButton": "Delete"
+  },
+  "qrCodeModal": {
+    "title": "QR Code for Check-In",
+    "description": "Show this QR code during check-in or copy the reservation code",
+    "reservationCode": "Reservation Code",
+    "generatingQRCode": "Generating QR code...",
+    "generationError": "Error generating QR code",
+    "generationErrorDescription": "The QR code could not be generated. Please try again.",
+    "copiedToClipboard": "Copied to clipboard",
+    "codeReady": "The reservation code has been copied",
+    "copyCodeButton": "Copy Code",
+    "downloadButton": "Download QR Code",
+    "downloadStarted": "Download started",
+    "qrCodeDownloading": "The QR code is being downloaded"
   },
   "seatMapModal": {
     "yourReservedSeatsTitle": "Your Reserved Seats",

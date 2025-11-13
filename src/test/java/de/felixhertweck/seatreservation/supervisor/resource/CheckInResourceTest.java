@@ -105,7 +105,8 @@ class CheckInResourceTest {
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
     void testProcessCheckInWithEmptyLists() {
         CheckInProcessRequestDTO requestDTO =
-                new CheckInProcessRequestDTO(Collections.emptyList(), Collections.emptyList());
+                new CheckInProcessRequestDTO(
+                        10L, 1L, Collections.emptyList(), Collections.emptyList());
 
         given().contentType(ContentType.JSON)
                 .body(requestDTO)
@@ -119,48 +120,49 @@ class CheckInResourceTest {
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
     void testProcessCheckInWithNonExistentCheckInIds() {
         CheckInProcessRequestDTO requestDTO =
-                new CheckInProcessRequestDTO(List.of(1L, 2L, 3L), Collections.emptyList());
+                new CheckInProcessRequestDTO(10L, 1L, List.of(1L, 2L, 3L), Collections.emptyList());
 
         given().contentType(ContentType.JSON)
                 .body(requestDTO)
                 .when()
                 .post("/api/supervisor/checkin/process")
                 .then()
-                .statusCode(404);
+                .statusCode(400);
     }
 
     @Test
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
-    void testProcessCheckInWithCancelList() {
+    void testProcessCheckInWithCancelListAndNonExistentCheckInIds() {
         CheckInProcessRequestDTO requestDTO =
-                new CheckInProcessRequestDTO(Collections.emptyList(), List.of(4L, 5L));
+                new CheckInProcessRequestDTO(10L, 1L, Collections.emptyList(), List.of(4L, 5L));
 
         given().contentType(ContentType.JSON)
                 .body(requestDTO)
                 .when()
                 .post("/api/supervisor/checkin/process")
                 .then()
-                .statusCode(204);
+                .statusCode(400);
     }
 
     @Test
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
     void testProcessCheckInWithNonExistentCheckInIdsInMixedList() {
         CheckInProcessRequestDTO requestDTO =
-                new CheckInProcessRequestDTO(List.of(1L, 2L), List.of(3L, 4L));
+                new CheckInProcessRequestDTO(10L, 1L, List.of(1L, 2L), List.of(3L, 4L));
 
         given().contentType(ContentType.JSON)
                 .body(requestDTO)
                 .when()
                 .post("/api/supervisor/checkin/process")
                 .then()
-                .statusCode(404);
+                .statusCode(400);
     }
 
     @Test
     void testProcessCheckInWithoutAuthentication() {
         CheckInProcessRequestDTO requestDTO =
-                new CheckInProcessRequestDTO(Collections.emptyList(), Collections.emptyList());
+                new CheckInProcessRequestDTO(
+                        10L, 1L, Collections.emptyList(), Collections.emptyList());
 
         given().contentType(ContentType.JSON)
                 .body(requestDTO)
@@ -188,12 +190,24 @@ class CheckInResourceTest {
     @Test
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
     void testGetUsernamesWithReservations() {
-        given().when().get("/api/supervisor/checkin/usernames").then().statusCode(200);
+        // Assuming event with ID 1 exists and has reservations
+        given().when().get("/api/supervisor/checkin/usernames/1").then().statusCode(200);
     }
 
     @Test
     void testGetUsernamesWithReservationsWithoutAuthentication() {
-        given().when().get("/api/supervisor/checkin/usernames").then().statusCode(401);
+        given().when().get("/api/supervisor/checkin/usernames/1").then().statusCode(401);
+    }
+
+    @Test
+    @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
+    void testGetAllEvents() {
+        given().when().get("/api/supervisor/checkin/events").then().statusCode(200);
+    }
+
+    @Test
+    void testGetAllEventsWithoutAuthentication() {
+        given().when().get("/api/supervisor/checkin/events").then().statusCode(401);
     }
 
     @Test

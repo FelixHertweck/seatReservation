@@ -20,11 +20,27 @@
 package de.felixhertweck.seatreservation.supervisor.dto;
 
 import java.util.List;
+import jakarta.validation.constraints.NotNull;
 
-/**
- * DTO for check-in process request with separate lists for check-ins and cancellations.
- *
- * @param checkIn list of reservation IDs for check-in
- * @param cancel list of reservation IDs for cancellation
- */
-public record CheckInProcessRequestDTO(List<Long> checkIn, List<Long> cancel) {}
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
+@RegisterForReflection
+public class CheckInProcessRequestDTO {
+    @NotNull(message = "userId must not be null")
+    public Long userId;
+
+    @NotNull(message = "eventId must not be null")
+    public Long eventId;
+
+    public List<Long> checkIn;
+
+    public List<Long> cancel;
+
+    public CheckInProcessRequestDTO(
+            Long eventId, Long userId, List<Long> checkIn, List<Long> cancel) {
+        this.eventId = eventId;
+        this.userId = userId;
+        this.checkIn = checkIn;
+        this.cancel = cancel;
+    }
+}

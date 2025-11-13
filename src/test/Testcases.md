@@ -1600,12 +1600,14 @@ This section describes test cases for the internationalization of the user inter
 | `testPostCheckInInfoWithMissingEventId` | Tests POST endpoint request validation: missing `eventId` field results in HTTP 400 Bad Request. |
 | `testProcessCheckInWithEmptyLists` | Tests the POST `/api/supervisor/checkin/process` endpoint with empty check-in and cancel lists and expects HTTP 204 No Content. |
 | `testProcessCheckInWithNonExistentCheckInIds` | Tests POST endpoint with non-existent check-in reservation IDs and expects HTTP 404 Not Found. |
-| `testProcessCheckInWithCancelList` | Tests POST endpoint with only cancel list (non-existent IDs are ignored) and expects HTTP 204 No Content. |
+| `testProcessCheckInWithCancelListAndNonExistentCheckInIds` | Tests POST endpoint with cancel list (non-existent IDs) and expects HTTP 400 Bad Request. |
 | `testProcessCheckInWithNonExistentCheckInIdsInMixedList` | Tests POST endpoint with mixed lists where check-in IDs don't exist and expects HTTP 404 Not Found. |
 | `testProcessCheckInWithoutAuthentication` | Tests POST endpoint without authentication token and expects HTTP 401 Unauthorized. |
 | `testPostCheckInInfoWithoutAuthentication` | Tests POST endpoint without authentication token and expects HTTP 401 Unauthorized. |
-| `testGetUsernamesWithReservations` | Tests the GET `/api/supervisor/checkin/usernames` endpoint and expects HTTP 200 with a list of usernames. |
-| `testGetUsernamesWithReservationsWithoutAuthentication` | Tests GET `/api/supervisor/checkin/usernames` endpoint without authentication token and expects HTTP 401 Unauthorized. |
+| `testGetUsernamesWithReservations` | Tests the GET `/api/supervisor/checkin/usernames/{eventId}` endpoint and expects HTTP 200 with a list of usernames for the specified event. |
+| `testGetUsernamesWithReservationsWithoutAuthentication` | Tests GET `/api/supervisor/checkin/usernames/{eventId}` endpoint without authentication token and expects HTTP 401 Unauthorized. |
+| `testGetAllEvents` | Tests the GET `/api/supervisor/checkin/events` endpoint and expects HTTP 200 with a list of all events. |
+| `testGetAllEventsWithoutAuthentication` | Tests GET `/api/supervisor/checkin/events` endpoint without authentication token and expects HTTP 401 Unauthorized. |
 | `testGetCheckInInfoByUsernameNotFound` | Tests the GET `/api/supervisor/checkin/info/{username}` endpoint with a non-existent username and expects HTTP 404 Not Found. |
 | `testGetCheckInInfoByUsernameWithoutAuthentication` | Tests GET `/api/supervisor/checkin/info/{username}` endpoint without authentication token and expects HTTP 401 Unauthorized. |
 
@@ -1616,7 +1618,6 @@ This section describes test cases for the internationalization of the user inter
 | :--- | :--- |
 | `testGetActiveConnectionCount_NoConnections` | Verifies that initially there are 0 active connections for an event. |
 | `testBroadcastCheckInUpdate_NoActiveConnections` | Tests broadcasting a check-in update when no connections are active (should not throw exception). |
-| `testBroadcastCancellationUpdate_NoActiveConnections` | Tests broadcasting a cancellation update when no connections are active (should not throw exception). |
 | `testRegisterConnection_StringEventId_Success` | Successfully parses a valid event ID string and registers a WebSocket connection for the event. |
 | `testUnregisterConnection_StringEventId_Success` | Successfully parses a valid event ID string and unregisters a WebSocket connection from the event. |
 | `testRegisterConnection_InvalidEventId_NegativeNumber` | Tests that registering a connection with a negative event ID throws `InvalidEventIdException`. |

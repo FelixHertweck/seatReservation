@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, type SetStateAction, type Dispatch } from "react";
+import { useEffect, type SetStateAction, type Dispatch } from "react";
 import { useT } from "@/lib/i18n/hooks";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +18,7 @@ import type { CheckInInfoResponseDto } from "@/api";
 
 interface ReservationSelectorProps {
   checkInInfo: CheckInInfoResponseDto | null | undefined;
+  eventId: bigint | undefined;
   isLoadingInfo: boolean;
   isLoading: boolean;
   isMobile: boolean;
@@ -25,12 +26,13 @@ interface ReservationSelectorProps {
   setIsDrawerOpen: (isOpen: boolean) => void;
   selectedReservations: Set<bigint>;
   setSelectedReservations: Dispatch<SetStateAction<Set<bigint>>>;
-  onSubmit: () => void;
+  onSubmit: (userId: bigint, eventId: bigint) => void;
   onClear: () => void;
 }
 
 export function ReservationSelector({
   checkInInfo,
+  eventId,
   isLoadingInfo,
   isLoading,
   isMobile,
@@ -92,6 +94,12 @@ export function ReservationSelector({
     setSelectedReservations(new Set());
   };
 
+  const onProcessingSubmit = () => {
+    if (checkInInfo?.user && eventId) {
+      onSubmit(checkInInfo.user.id!, eventId);
+    }
+  };
+
   // Render reservation list
   const renderReservationList = () => {
     if (isLoadingInfo) {
@@ -116,38 +124,14 @@ export function ReservationSelector({
         <div className="flex-1 overflow-y-auto space-y-4 p-4">
           {/* User Info Card - shown once at the top */}
           {checkInInfo.user && (
-            <Card className="bg-muted/50">
-              <CardContent className="pt-4">
-                <div className="space-y-2">
-                  <div className="text-sm">
-                    <span className="font-semibold">
-                      {t("checkin.reservations.user")}:
-                    </span>{" "}
-                    <span>{checkInInfo.user.username || "N/A"}</span>
-                  </div>
-                  {(checkInInfo.user.firstname ||
-                    checkInInfo.user.lastname) && (
-                    <div className="text-sm">
-                      <span className="font-semibold">
-                        {t("checkin.reservations.name")}:
-                      </span>{" "}
-                      <span>
-                        {checkInInfo.user.firstname || ""}{" "}
-                        {checkInInfo.user.lastname || ""}
-                      </span>
-                    </div>
-                  )}
-                  {checkInInfo.user.email && (
-                    <div className="text-sm">
-                      <span className="font-semibold">
-                        {t("checkin.reservations.email")}:
-                      </span>{" "}
-                      <span>{checkInInfo.user.email}</span>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            <div className="space-y-2">
+              <div className="text-sm">
+                <span className="font-semibold">
+                  {t("checkin.reservations.user")}:
+                </span>{" "}
+                <span>{checkInInfo.user.username || "N/A"}</span>
+              </div>
+            </div>
           )}
 
           <div className="flex justify-between items-center">
@@ -185,9 +169,17 @@ export function ReservationSelector({
                     </label>
                     <div className="mt-2 flex gap-2">
                       <Badge variant="outline">
-                        {t(
-                          `checkin.reservations.liveStatus.${(reservation.liveStatus || "no_show").toLowerCase()}`,
-                        )}
+                        {(() => {
+                          const status = reservation.liveStatus || "NO_SHOW";
+                          const statusMap: Record<string, string> = {
+                            NO_SHOW: "noShow",
+                            CHECKED_IN: "checkedIn",
+                            CANCELLED: "cancelled",
+                          };
+                          return t(
+                            `seatStatus.${statusMap[status] || "noShow"}`,
+                          );
+                        })()}
                       </Badge>
                       <span className="mx-2">{"-->"}</span>
                       <Badge
@@ -198,8 +190,8 @@ export function ReservationSelector({
                         }
                       >
                         {selectedReservations.has(reservation.id!)
-                          ? t("checkin.reservations.liveStatus.checked_in")
-                          : t("checkin.reservations.liveStatus.cancelled")}
+                          ? t("seatStatus.checkedIn")
+                          : t("seatStatus.cancelled")}
                       </Badge>
                     </div>
                   </div>
@@ -227,7 +219,11 @@ export function ReservationSelector({
           </div>
 
           <div className="flex gap-2">
-            <Button onClick={onSubmit} disabled={isLoading} className="flex-1">
+            <Button
+              onClick={onProcessingSubmit}
+              disabled={isLoading}
+              className="flex-1"
+            >
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

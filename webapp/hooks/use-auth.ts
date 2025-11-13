@@ -159,7 +159,11 @@ export function useAuth() {
     data: registrationStatus,
     isLoading: isLoadingRegistrationStatus,
     isSuccess: isSuccessRegistrationStatus,
-  } = useQuery(getApiAuthRegistrationStatusOptions());
+  } = useQuery({
+    ...getApiAuthRegistrationStatusOptions(),
+    staleTime: Infinity,
+    gcTime: Infinity,
+  });
 
   return {
     user,

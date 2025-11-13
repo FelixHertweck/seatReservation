@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useT } from "@/lib/i18n/hooks";
 import { useCheckin } from "@/hooks/use-checkin";
 import type { CheckInInfoRequestDto, CheckInInfoResponseDto } from "@/api";
@@ -10,12 +10,16 @@ import {
 } from "@/components/checkin/qr-code-scanner";
 import { ReservationSelector } from "@/components/checkin/reservation-selector";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ChevronUp } from "lucide-react";
+import { ChevronUp, Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { UsernameSelector } from "@/components/checkin/username-selector";
 import {
-  UsernameSelector,
-  type UsernameSelectorRef,
-} from "@/components/checkin/username-selector";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function CheckInPage() {
   const t = useT();
@@ -25,9 +29,11 @@ export default function CheckInPage() {
     new Set(),
   );
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [selectedEventId, setSelectedEventId] = useState<bigint | null>(null);
+  const [resetUsernameSelector, setResetUsernameSelector] =
+    useState<boolean>(false);
   const isMobile = useIsMobile();
   const lastScannedDataRef = useRef<string | null>(null);
-  const usernameSelectorRef = useRef<UsernameSelectorRef>(null);
   const [checkInInfo, setCheckInInfo] = useState<
     CheckInInfoResponseDto | undefined | null
   >(null);
@@ -39,38 +45,42 @@ export default function CheckInPage() {
     isLoadingPerformCheckIn,
     performCheckIn,
 
-    usernames,
-    isLoadingUsernames,
+    events,
+    isLoadingEvents,
+
+    getUsernamesByEventId,
 
     fetchCheckInInfoByUsername,
-    isLoadingInfoByUsername,
   } = useCheckin();
 
-  const handleScan = useCallback((data: ScannedData) => {
-    setIsScanning(false);
-    setScannedData(data);
+  const handleScan = useCallback(
+    (data: ScannedData) => {
+      setIsScanning(false);
+      setScannedData(data);
 
-    if (data) {
-      const scannedDataKey = `${data.userId}-${data.eventId}-${data.checkInTokens.join(",")}`;
+      if (data) {
+        const scannedDataKey = `${data.userId}-${data.eventId}-${data.checkInTokens.join(",")}`;
 
-      // Only fetch if this is a new scan (different from last scanned data)
-      if (lastScannedDataRef.current !== scannedDataKey) {
-        lastScannedDataRef.current = scannedDataKey;
+        // Only fetch if this is a new scan (different from last scanned data)
+        if (lastScannedDataRef.current !== scannedDataKey) {
+          lastScannedDataRef.current = scannedDataKey;
 
-        const checkInInfoRequest: CheckInInfoRequestDto = {
-          userId: BigInt(data.userId),
-          eventId: BigInt(data.eventId),
-          checkInTokens: data.checkInTokens,
-        };
-        fetchCheckInInfo(checkInInfoRequest).then((info) => {
-          setCheckInInfo(info);
-        });
+          const checkInInfoRequest: CheckInInfoRequestDto = {
+            userId: BigInt(data.userId),
+            eventId: BigInt(data.eventId),
+            checkInTokens: data.checkInTokens,
+          };
+          fetchCheckInInfo(checkInInfoRequest).then((info) => {
+            setCheckInInfo(info);
+          });
+        }
       }
-    }
-  }, []);
+    },
+    [fetchCheckInInfo],
+  );
 
   // Handle check-in submission
-  const handleSubmit = async () => {
+  const handleSubmit = async (userId: bigint, eventId: bigint) => {
     if (!checkInInfo?.reservations) return;
 
     const checkIn: bigint[] = [];
@@ -86,16 +96,15 @@ export default function CheckInPage() {
       }
     });
 
-    console.log("Check-In IDs:", checkIn);
-    await performCheckIn({ checkIn, cancel });
+    await performCheckIn({ userId, eventId, checkIn, cancel });
 
     // Close drawer and reset
     setIsDrawerOpen(false);
     setCheckInInfo(null);
     setScannedData(null);
+    setResetUsernameSelector((prev) => !prev);
     setSelectedReservations(new Set());
     lastScannedDataRef.current = null;
-    usernameSelectorRef.current?.resetSelectedUsername();
     setIsScanning(true); // Restart scanning after submission
   };
 
@@ -103,87 +112,149 @@ export default function CheckInPage() {
   const handleClear = () => {
     setScannedData(null);
     setCheckInInfo(null);
+    setResetUsernameSelector((prev) => !prev);
     setSelectedReservations(new Set());
     lastScannedDataRef.current = null;
-    usernameSelectorRef.current?.resetSelectedUsername();
     setIsScanning(true); // Restart scanning after clearing data
   };
 
   const onSelectUsername = (username: string) => {
-    fetchCheckInInfoByUsername(username).then((info) => {
-      setCheckInInfo(info);
-    });
+    if (selectedEventId) {
+      fetchCheckInInfoByUsername(username).then((info) => {
+        setCheckInInfo(info);
+      });
+    }
+  };
+
+  const handleEventSelect = (eventId: string) => {
+    setSelectedEventId(BigInt(eventId));
+    setCheckInInfo(null);
+    setScannedData(null);
+    setResetUsernameSelector((prev) => !prev);
+    setSelectedReservations(new Set());
+    lastScannedDataRef.current = null;
+    setIsScanning(true);
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">{t("checkin.qrScanner.title")}</h1>
+    <div className="container mx-auto px-2 py-3 md:p-6">
+      <div className="mb-3 md:mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold mb-1 md:mb-2">
+          {t("checkin.title")}
+        </h1>
+        <p className="text-muted-foreground text-sm md:text-base">
+          {t("checkin.description")}
+        </p>
       </div>
 
-      <div
-        className={`grid gap-6 ${isMobile ? "grid-cols-1" : "md:grid-cols-2"}`}
-      >
-        <Tabs
-          defaultValue="qr-code-scanner"
-          className={isMobile ? "" : "md:sticky md:top-4 md:h-fit"}
-          onValueChange={(value) => {
-            if (value === "qr-code-scanner") {
-              setIsScanning(true);
-            } else {
-              setIsScanning(false);
-            }
-          }}
-        >
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="qr-code-scanner">
-              {t("checkin.tabs.qrScanner")}
-            </TabsTrigger>
-            <TabsTrigger value="username-selection">
-              {t("checkin.tabs.userSelection")}
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="qr-code-scanner">
-            {/* QR Scanner Section */}
-            <div>
-              <QrCodeScanner
-                onScan={handleScan}
-                isScanning={isScanning}
-                setIsScanning={setIsScanning}
-                scannedData={scannedData}
-                setScannedData={setScannedData}
-              />
+      {/* Event Selector */}
+      <div className="mb-8 p-4 border rounded-lg bg-muted/50">
+        <label className="text-sm font-medium mb-2 block">
+          {t("checkin.eventSelector.label")}
+        </label>
+        <div className="flex gap-2 items-center">
+          {isLoadingEvents ? (
+            <div className="flex items-center gap-2 text-muted-foreground w-full justify-center py-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span className="text-sm">
+                {t("checkin.eventSelector.loading")}
+              </span>
             </div>
-          </TabsContent>
-          <TabsContent value="username-selection">
-            {/* Username Input Section */}
-            <UsernameSelector
-              ref={usernameSelectorRef}
-              onSelectUsername={onSelectUsername}
-              isLoadingInfo={isLoadingInfoByUsername}
-              isLoadingUsernames={isLoadingUsernames}
-              usernames={usernames}
-            />
-          </TabsContent>
-        </Tabs>
-
-        {/* Reservations Section - Desktop */}
-        <ReservationSelector
-          checkInInfo={checkInInfo}
-          isLoadingInfo={isLoadingInfo}
-          isLoading={isLoadingPerformCheckIn}
-          isMobile={isMobile}
-          isDrawerOpen={isDrawerOpen}
-          setIsDrawerOpen={setIsDrawerOpen}
-          selectedReservations={selectedReservations}
-          setSelectedReservations={setSelectedReservations}
-          onSubmit={handleSubmit}
-          onClear={handleClear}
-        />
+          ) : (
+            <Select
+              value={selectedEventId?.toString() || ""}
+              onValueChange={handleEventSelect}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue
+                  placeholder={t("checkin.eventSelector.placeholder")}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {events?.map((event) => (
+                  <SelectItem
+                    key={event.id?.toString()}
+                    value={event.id?.toString() || ""}
+                  >
+                    {event.name || "Unbekanntes Event"}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
       </div>
+
+      {/* Show content only if event is selected */}
+      {!selectedEventId ? (
+        <div className="text-center py-12 text-muted-foreground">
+          <p className="text-lg">{t("checkin.eventSelector.selectFirst")}</p>
+        </div>
+      ) : (
+        <div
+          className={`grid gap-6 ${isMobile ? "grid-cols-1" : "md:grid-cols-2"}`}
+        >
+          <Tabs
+            defaultValue="qr-code-scanner"
+            className={isMobile ? "" : "md:sticky md:top-4 md:h-fit"}
+            onValueChange={(value) => {
+              if (value === "qr-code-scanner") {
+                setIsScanning(true);
+              } else {
+                setIsScanning(false);
+              }
+            }}
+          >
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="qr-code-scanner">
+                {t("checkin.tabs.qrScanner")}
+              </TabsTrigger>
+              <TabsTrigger value="username-selection">
+                {t("checkin.tabs.userSelection")}
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="qr-code-scanner">
+              {/* QR Scanner Section */}
+              <div>
+                <QrCodeScanner
+                  onScan={handleScan}
+                  isScanning={isScanning}
+                  setIsScanning={setIsScanning}
+                  scannedData={scannedData}
+                  setScannedData={setScannedData}
+                />
+              </div>
+            </TabsContent>
+            <TabsContent value="username-selection">
+              {/* Username Input Section */}
+              <UsernameSelector
+                eventId={selectedEventId}
+                onSelectUsername={onSelectUsername}
+                getUsernamesByEventId={getUsernamesByEventId}
+                resetTrigger={resetUsernameSelector}
+              />
+            </TabsContent>
+          </Tabs>
+
+          {/* Reservations Section - Desktop */}
+          <ReservationSelector
+            checkInInfo={checkInInfo}
+            eventId={selectedEventId}
+            isLoadingInfo={isLoadingInfo}
+            isLoading={isLoadingPerformCheckIn}
+            isMobile={isMobile}
+            isDrawerOpen={isDrawerOpen}
+            setIsDrawerOpen={setIsDrawerOpen}
+            selectedReservations={selectedReservations}
+            setSelectedReservations={setSelectedReservations}
+            onSubmit={handleSubmit}
+            onClear={handleClear}
+          />
+        </div>
+      )}
 
       {/* Drawer Trigger - Mobile */}
-      {isMobile && !isDrawerOpen && scannedData && (
+      {isMobile && !isDrawerOpen && scannedData && selectedEventId && (
         <div
           className="fixed bottom-0 left-0 right-0 bg-background border-t p-2 flex justify-center cursor-pointer shadow-lg"
           onClick={() => setIsDrawerOpen(true)}

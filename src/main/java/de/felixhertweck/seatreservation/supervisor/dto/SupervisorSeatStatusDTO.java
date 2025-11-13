@@ -19,33 +19,24 @@
  */
 package de.felixhertweck.seatreservation.supervisor.dto;
 
-import java.time.Instant;
-
-import de.felixhertweck.seatreservation.common.dto.SeatDTO;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationLiveStatus;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import io.quarkus.runtime.annotations.RegisterForReflection;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 @RegisterForReflection
-public record LiveReservationResponseDTO(
-        Long id,
-        Long userId,
-        Long eventId,
-        SeatDTO seat,
-        Instant reservationDateTime,
+@Schema(description = "Seat reservation status for supervisor view")
+public record SupervisorSeatStatusDTO(
+        Long seatId,
+        Long reservationId,
         ReservationStatus status,
-        ReservationLiveStatus liveStatus,
-        Instant reservationDate) {
-    public LiveReservationResponseDTO(Reservation reservation) {
+        ReservationLiveStatus liveStatus) {
+    public SupervisorSeatStatusDTO(Reservation reservation) {
         this(
+                reservation.getSeat().getId(),
                 reservation.id,
-                reservation.getUser().getId(),
-                reservation.getEvent().getId(),
-                new SeatDTO(reservation.getSeat()),
-                reservation.getReservationDate(),
                 reservation.getStatus(),
-                reservation.getLiveStatus(),
-                reservation.getReservationDate());
+                reservation.getLiveStatus());
     }
 }

@@ -5,7 +5,12 @@ import React from "react";
 import type { ReactElement } from "react";
 
 import { cn } from "@/lib/utils";
-import type { EventLocationMakerDto, SeatDto, SeatStatusDto } from "@/api";
+import type {
+  EventLocationMakerDto,
+  SeatDto,
+  SeatStatusDto,
+  SupervisorSeatStatusDto,
+} from "@/api";
 // Wichtig: 'useLayoutEffect' importieren
 import {
   useState,
@@ -16,11 +21,11 @@ import {
   useLayoutEffect,
 } from "react";
 import { useT } from "@/lib/i18n/hooks";
-import { findSeatStatus } from "@/lib/reservationSeat";
+import { findSeatStatus, isSupervisorSeatStatus } from "@/lib/reservationSeat";
 
 interface SeatMapProps {
   seats: SeatDto[];
-  seatStatuses: SeatStatusDto[];
+  seatStatuses: SeatStatusDto[] | SupervisorSeatStatusDto[];
   markers: EventLocationMakerDto[];
   selectedSeats: SeatDto[];
   userReservedSeats?: SeatDto[];
@@ -240,21 +245,64 @@ export function SeatMap({
     (seat: SeatDto | undefined) => {
       if (!seat) return "transparent";
 
-      const seatStatus = findSeatStatus(seat.id, seatStatuses);
-
       const isSelected = selectedSeatIds.has(seat.id);
       if (isSelected) return "bg-blue-500 dark:bg-blue-600";
 
       const isUserReserved = userReservedSeatIds.has(seat.id);
       if (isUserReserved) return "bg-yellow-500 dark:bg-yellow-600";
 
-      switch (seatStatus) {
-        case "RESERVED":
-          return "bg-red-500 dark:bg-red-600";
-        case "BLOCKED":
-          return "bg-gray-500 dark:bg-gray-600";
-        default:
-          return "bg-green-500 dark:bg-green-600";
+      // Check if we're working with SupervisorSeatStatusDto (has liveStatus)
+      if (seatStatuses.length > 0 && isSupervisorSeatStatus(seatStatuses[0])) {
+        // Handle SupervisorSeatStatusDto
+        const supervisorStatus = (
+          seatStatuses as SupervisorSeatStatusDto[]
+        ).find((s) => s.seatId === seat.id);
+
+        if (supervisorStatus) {
+          // If status is RESERVED and has live status, show live status color
+          if (
+            supervisorStatus.status === "RESERVED" &&
+            supervisorStatus.liveStatus
+          ) {
+            switch (supervisorStatus.liveStatus) {
+              case "CHECKED_IN":
+                return "bg-yellow-300 dark:bg-yellow-600";
+              case "CANCELLED":
+                return "bg-violet-500 dark:bg-violet-500";
+              case "NO_SHOW":
+                return "bg-red-500 dark:bg-red-600";
+              default:
+                return "bg-red-500 dark:bg-red-600";
+            }
+          }
+
+          // Otherwise use regular status
+          switch (supervisorStatus.status) {
+            case "RESERVED":
+              return "bg-red-500 dark:bg-red-600";
+            case "BLOCKED":
+              return "bg-gray-500 dark:bg-gray-600";
+            default:
+              return "bg-green-500 dark:bg-green-600";
+          }
+        }
+
+        return "bg-green-500 dark:bg-green-600";
+      } else {
+        // Handle regular SeatStatusDto
+        const seatStatus = findSeatStatus(
+          seat.id,
+          seatStatuses as SeatStatusDto[],
+        );
+
+        switch (seatStatus) {
+          case "RESERVED":
+            return "bg-red-500 dark:bg-red-600";
+          case "BLOCKED":
+            return "bg-gray-500 dark:bg-gray-600";
+          default:
+            return "bg-green-500 dark:bg-green-600";
+        }
       }
     },
     [selectedSeatIds, userReservedSeatIds, seatStatuses],
@@ -264,10 +312,24 @@ export function SeatMap({
     (seat: SeatDto | undefined) => {
       if (!seat || readonly) return false;
 
-      const seatStatus = findSeatStatus(seat.id, seatStatuses);
       const isUserReserved = userReservedSeatIds.has(seat.id);
       if (isUserReserved) return true;
-      return !seatStatus; // Can only select seats without status (available)
+
+      // Check if we're working with SupervisorSeatStatusDto
+      if (seatStatuses.length > 0 && isSupervisorSeatStatus(seatStatuses[0])) {
+        // Handle SupervisorSeatStatusDto - can only select seats without status
+        const supervisorStatus = (
+          seatStatuses as SupervisorSeatStatusDto[]
+        ).find((s) => s.seatId === seat.id);
+        return !supervisorStatus; // Can only select seats without status (available)
+      } else {
+        // Handle regular SeatStatusDto
+        const seatStatus = findSeatStatus(
+          seat.id,
+          seatStatuses as SeatStatusDto[],
+        );
+        return !seatStatus; // Can only select seats without status (available)
+      }
     },
     [readonly, userReservedSeatIds, seatStatuses],
   );

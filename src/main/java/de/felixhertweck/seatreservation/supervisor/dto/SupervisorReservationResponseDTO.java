@@ -17,34 +17,37 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.management.dto;
+package de.felixhertweck.seatreservation.supervisor.dto;
 
 import java.time.Instant;
 
 import de.felixhertweck.seatreservation.common.dto.SeatDTO;
-import de.felixhertweck.seatreservation.common.dto.UserDTO;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationLiveStatus;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
-public record ReservationResponseDTO(
+public record SupervisorReservationResponseDTO(
         Long id,
-        UserDTO user,
+        Long userId,
+        String username,
         Long eventId,
         SeatDTO seat,
         Instant reservationDateTime,
         ReservationStatus status,
-        ReservationLiveStatus liveStatus) {
-    public ReservationResponseDTO(Reservation reservation) {
+        ReservationLiveStatus liveStatus,
+        Instant reservationDate) {
+    public SupervisorReservationResponseDTO(Reservation reservation) {
         this(
                 reservation.id,
-                new UserDTO(reservation.getUser()),
+                reservation.getUser().getId(),
+                reservation.getUser().getUsername(),
                 reservation.getEvent().getId(),
                 new SeatDTO(reservation.getSeat()),
                 reservation.getReservationDate(),
                 reservation.getStatus(),
-                reservation.getLiveStatus());
+                reservation.getLiveStatus(),
+                reservation.getReservationDate());
     }
 }

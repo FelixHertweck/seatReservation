@@ -33,7 +33,10 @@ import io.quarkus.hibernate.orm.panache.PanacheEntity;
 
 @Entity
 @Table(
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"event_id", "seat_id"})},
+        uniqueConstraints = {
+            @UniqueConstraint(columnNames = {"event_id", "seat_id"}),
+            @UniqueConstraint(columnNames = {"event_id", "user_id", "checkInCode"})
+        },
         name = "reservations")
 public class Reservation extends PanacheEntity {
 

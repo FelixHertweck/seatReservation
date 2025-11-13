@@ -19,11 +19,29 @@
  */
 package de.felixhertweck.seatreservation.supervisor.dto;
 
-import java.util.List;
+import java.time.Instant;
 
-import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
+import de.felixhertweck.seatreservation.model.entity.Event;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
-public record CheckInInfoResponseDTO(
-        List<SupervisorReservationResponseDTO> reservations, LimitedUserInfoDTO user) {}
+public record SupervisorEventResponseDTO(
+        Long id, String name, String description, Instant startTime, Instant endTime) {
+    public SupervisorEventResponseDTO(Event event, Integer reservationsAllowed) {
+        this(
+                event.getId(),
+                event.getName(),
+                event.getDescription(),
+                event.getStartTime(),
+                event.getEndTime());
+    }
+
+    public SupervisorEventResponseDTO(Event event) {
+        this(
+                event.getId(),
+                event.getName(),
+                event.getDescription(),
+                event.getStartTime(),
+                event.getEndTime());
+    }
+}

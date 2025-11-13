@@ -19,11 +19,10 @@
  */
 package de.felixhertweck.seatreservation.supervisor.dto;
 
-import java.util.List;
+import de.felixhertweck.seatreservation.model.entity.Reservation;
 
-import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
-import io.quarkus.runtime.annotations.RegisterForReflection;
-
-@RegisterForReflection
-public record CheckInInfoResponseDTO(
-        List<SupervisorReservationResponseDTO> reservations, LimitedUserInfoDTO user) {}
+public record WebsocketUpdateDTO(String type, SupervisorSeatStatusDTO seatStatus) {
+    public static WebsocketUpdateDTO update(Reservation reservation) {
+        return new WebsocketUpdateDTO("UPDATE", new SupervisorSeatStatusDTO(reservation));
+    }
+}

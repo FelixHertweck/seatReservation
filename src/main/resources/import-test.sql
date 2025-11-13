@@ -31,5 +31,15 @@ INSERT INTO user_tags (user_id, tags) VALUES (3, 'demouser');
 -- Assign USER role to regular user
 INSERT INTO user_roles (user_id, role) VALUES (3, 'USER');
 
+-- Insert supervisor user for tests
+INSERT INTO users (id, username, email, passwordHash, passwordSalt, firstname, lastname, emailVerified) VALUES (4, 'supervisor', 'supervisor@localhost', '$2a$12$arzn9PpRswUrgIw0xaXoM.Y2PeX8m9OKKEGggA07bUXm/O./85WPa', 'Salt', 'Supervisor', 'User', true);
+
+-- Assign ADMIN tags to supervisor user
+INSERT INTO user_tags (user_id, tags) VALUES (4, 'supervisoruser');
+INSERT INTO user_tags (user_id, tags) VALUES (4, 'demouser');
+
+-- Assign USER role to regular user
+INSERT INTO user_roles (user_id, role) VALUES (3, 'SUPERVISOR');
+
 -- Update sequence for tables
-ALTER SEQUENCE users_seq RESTART WITH 4;
+ALTER SEQUENCE users_seq RESTART WITH 5;

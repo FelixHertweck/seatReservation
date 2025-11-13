@@ -1,0 +1,180 @@
+"use client";
+
+import { useState } from "react";
+import { useLiveView } from "@/hooks/use-liveview";
+import { useT } from "@/lib/i18n/hooks";
+import { Loader2 } from "lucide-react";
+import { SeatMap } from "@/components/common/seat-map";
+import { ReservationList } from "@/components/liveview/reservation-list";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  SupervisorReservationResponseDto,
+  SupervisorSeatStatusDto,
+} from "@/api";
+import SeatmapLegend from "@/components/liveview/seatmap-legend";
+import { LiveviewStatus } from "@/components/liveview/liveview-status";
+
+export default function LiveViewPage() {
+  const t = useT();
+  const [selectedEventId, setSelectedEventId] = useState<bigint | null>(null);
+  // TODO: implement different than any
+  const [selectedSeats, setSelectedSeats] = useState<any[]>([]);
+
+  const {
+    events,
+    isLoadingEvents,
+    isConnected,
+    isConnecting,
+    isInitialLoading,
+    event,
+    location,
+    reservations,
+    error,
+  } = useLiveView(selectedEventId, !!selectedEventId);
+
+  const handleEventSelect = (eventId: string) => {
+    setSelectedEventId(BigInt(eventId));
+    setSelectedSeats([]);
+  };
+
+  // TODO: implement 
+  const handleSeatSelect = (seat: any) => {
+    console.log("Selected seat:", seat);
+  };
+
+  return (
+    <div className="container mx-auto px-2 py-3 md:p-6">
+      <div className="mb-3 md:mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold mb-1 md:mb-2">
+          {t("liveview.title")}
+        </h1>
+        <p className="text-muted-foreground text-sm md:text-base">
+          {t("liveview.description")}
+        </p>
+      </div>
+
+      {/* Event Selector */}
+      <div className="mb-8 p-4 border rounded-lg bg-muted/50">
+        <label className="text-sm font-medium mb-2 block">
+          {t("liveview.eventSelector.label")}
+        </label>
+        <div className="flex gap-2 items-center">
+          {isLoadingEvents ? (
+            <div className="flex items-center gap-2 text-muted-foreground w-full justify-center py-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span className="text-sm">
+                {t("liveview.eventSelector.loading")}
+              </span>
+            </div>
+          ) : (
+            <Select
+              value={selectedEventId?.toString() || ""}
+              onValueChange={handleEventSelect}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue
+                  placeholder={t("liveview.eventSelector.placeholder")}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {events?.map((event) => (
+                  <SelectItem
+                    key={event.id?.toString()}
+                    value={event.id?.toString() || ""}
+                  >
+                    {event.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+      </div>
+
+      {/* Show content only if event is selected */}
+      {!selectedEventId ? (
+        <div className="text-center py-12 text-muted-foreground">
+          <p className="text-lg">{t("liveview.eventSelector.selectFirst")}</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-220px)]">
+          {/* Left Sidebar */}
+          <div className="lg:col-span-1 space-y-6 overflow-y-auto pr-2">
+            {/* Connection Status & Event Information */}
+            <LiveviewStatus
+              isConnected={isConnected}
+              isConnecting={isConnecting}
+              isInitialLoading={isInitialLoading}
+              error={error}
+              event={event}
+            />
+
+            {/* Legend */}
+            {location && !isInitialLoading && <SeatmapLegend />}
+
+            {/* Reservations List */}
+            {reservations && !isInitialLoading && (
+              <div className="p-4 border rounded-lg bg-card">
+                <h3 className="text-lg font-bold mb-4">
+                  {t("liveview.reservations.title")} ({reservations.length})
+                </h3>
+                <div className="max-h-96 overflow-y-auto pr-2">
+                  <ReservationList
+                    reservations={reservations}
+                    isLoading={isInitialLoading}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right Main Content */}
+          <div className="lg:col-span-2 flex flex-col min-h-0">
+            {/* SeatMap */}
+            {location && reservations && !isInitialLoading && (
+              <div className="p-4 border rounded-lg bg-card h-full flex flex-col overflow-hidden">
+                <h3 className="text-lg font-bold mb-4">{location.name}</h3>
+                <div className="flex-1 overflow-hidden">
+                  <SeatMap
+                    seats={location.seats || []}
+                    seatStatuses={convertReservationsToStatuses(reservations)}
+                    markers={location.markers || []}
+                    selectedSeats={selectedSeats}
+                    onSeatSelect={handleSeatSelect}
+                    readonly={true}
+                  />
+                </div>
+              </div>
+            )}
+
+            {isInitialLoading && (
+              <div className="p-4 border rounded-lg bg-card h-full flex items-center justify-center">
+                <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                  <Loader2 className="h-8 w-8 animate-spin" />
+                  <span>{t("liveview.status.loading")}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const convertReservationsToStatuses = (
+  reservations: SupervisorReservationResponseDto[],
+): SupervisorSeatStatusDto[] => {
+  return reservations.map((reservation) => ({
+    seatId: reservation.seat?.id,
+    status: reservation.status,
+    reservationId: reservation.id,
+    liveStatus: reservation.liveStatus,
+  }));
+};

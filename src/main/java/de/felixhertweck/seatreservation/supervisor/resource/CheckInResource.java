@@ -36,6 +36,7 @@ import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.supervisor.dto.CheckInInfoRequestDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.CheckInInfoResponseDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.CheckInProcessRequestDTO;
+import de.felixhertweck.seatreservation.supervisor.dto.SupervisorEventResponseDTO;
 import de.felixhertweck.seatreservation.supervisor.service.CheckInService;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -72,18 +73,20 @@ public class CheckInResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public CheckInInfoResponseDTO getCheckInInfo(@Valid CheckInInfoRequestDTO requestDTO) {
         int tokenCount = requestDTO.checkInTokens != null ? requestDTO.checkInTokens.size() : 0;
-        LOG.infof(
-                "Received check-in info request for user %s and event %s with %d tokens.",
-                requestDTO.userId, requestDTO.eventId, tokenCount);
+        LOG.debug(
+                String.format(
+                        "Received check-in info request for user %s and event %s with %d tokens.",
+                        requestDTO.userId, requestDTO.eventId, tokenCount));
 
         CheckInInfoResponseDTO responseDto =
                 checkInService.getReservationInfos(
                         requestDTO.userId, requestDTO.eventId, requestDTO.checkInTokens);
 
-        LOG.infof(
-                "Check-in info request for user %s and event %s processed successfully with %d"
-                        + " results.",
-                requestDTO.userId, requestDTO.eventId, responseDto.reservations().size());
+        LOG.debug(
+                String.format(
+                        "Check-in info request for user %s and event %s processed successfully with"
+                                + " %d results.",
+                        requestDTO.userId, requestDTO.eventId, responseDto.reservations().size()));
         return responseDto;
     }
 
@@ -101,29 +104,56 @@ public class CheckInResource {
     @APIResponse(responseCode = "400", description = "Bad Request - Invalid input parameters")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response processCheckIn(@Valid CheckInProcessRequestDTO requestDTO) {
-        int checkInCount = requestDTO.checkIn().size();
-        int cancelCount = requestDTO.cancel().size();
+        int checkInCount = requestDTO.checkIn != null ? requestDTO.checkIn.size() : 0;
+        int cancelCount = requestDTO.cancel != null ? requestDTO.cancel.size() : 0;
         LOG.infof(
-                "Received check-in process request with %d check-ins and %d cancellations.",
-                checkInCount, cancelCount);
-
-        checkInService.processCheckIn(requestDTO.checkIn(), requestDTO.cancel());
-
-        LOG.infof(
-                "Check-in process request processed successfully with %d check-ins and %d"
+                "Received check-in process request for user %d, event %d with %d check-ins and %d"
                         + " cancellations.",
-                checkInCount, cancelCount);
+                requestDTO.userId, requestDTO.eventId, checkInCount, cancelCount);
+
+        checkInService.processCheckIn(requestDTO);
+
+        LOG.infof(
+                "Check-in process request for user %d, event %d processed successfully with %d"
+                        + " check-ins and %d cancellations.",
+                requestDTO.userId, requestDTO.eventId, checkInCount, cancelCount);
 
         return Response.noContent().build();
     }
 
     /**
-     * GET endpoint to retrieve a list of all usernames that have an active reservation.
+     * GET endpoint to retrieve a list of all events for the supervisor view.
      *
+     * @return A list of SupervisorEventResponseDTO.
+     */
+    @GET
+    @Path("/events")
+    @APIResponse(
+            responseCode = "200",
+            description = "OK - Events retrieved successfully",
+            content =
+                    @Content(
+                            schema =
+                                    @Schema(
+                                            type = SchemaType.ARRAY,
+                                            implementation = SupervisorEventResponseDTO.class)))
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    public List<SupervisorEventResponseDTO> getAllEvents() {
+        LOG.debugf("Received request for all events for supervisor view.");
+        List<SupervisorEventResponseDTO> events = checkInService.getAllEventsForSupervisor();
+        LOG.debugf("Returning %d events.", events.size());
+        return events;
+    }
+
+    /**
+     * GET endpoint to retrieve a list of all usernames that have an active reservation for a
+     * specific event.
+     *
+     * @param eventId the ID of the event
      * @return A list of strings, where each string is a username.
      */
     @GET
-    @Path("/usernames")
+    @Path("/usernames/{eventId}")
     @APIResponse(
             responseCode = "200",
             description = "OK - Usernames retrieved successfully",
@@ -134,10 +164,13 @@ public class CheckInResource {
                                             type = SchemaType.ARRAY,
                                             implementation = String.class)))
     @APIResponse(responseCode = "401", description = "Unauthorized")
-    public List<String> getUsernamesWithReservations() {
-        LOG.debugf("Received request for usernames with reservations.");
-        List<String> usernames = checkInService.getUsernamesWithReservations();
-        LOG.debugf("Returning %d usernames with reservations.", usernames.size());
+    @APIResponse(responseCode = "404", description = "Event not found")
+    public List<String> getUsernamesWithReservations(@PathParam("eventId") Long eventId) {
+        LOG.debugf("Received request for usernames with reservations for event %d.", eventId);
+        List<String> usernames = checkInService.getUsernamesWithReservations(eventId);
+        LOG.debugf(
+                "Returning %d usernames with reservations for event %d.",
+                usernames.size(), eventId);
         return usernames;
     }
 

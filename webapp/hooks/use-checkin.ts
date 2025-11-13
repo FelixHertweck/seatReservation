@@ -1,26 +1,30 @@
 "use client";
 
-import { Dispatch, SetStateAction, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import { useT } from "@/lib/i18n/hooks";
 import {
-  getApiSupervisorCheckinUsernamesOptions,
   postApiSupervisorCheckinInfoMutation,
   postApiSupervisorCheckinInfoByUsernameMutation,
   postApiSupervisorCheckinProcessMutation,
+  getApiSupervisorCheckinEventsOptions,
 } from "@/api/@tanstack/react-query.gen";
+import { getApiSupervisorCheckinUsernamesByEventId } from "@/api/sdk.gen";
 import type {
   CheckInInfoRequestDto,
   CheckInProcessRequestDto,
   CheckInInfoResponseDto,
+  SupervisorEventResponseDto,
 } from "@/api";
 import { ErrorWithResponse } from "@/components/init-query-client";
 
 export interface UseCheckinReturn {
   // Usernames
-  usernames: string[] | undefined;
-  isLoadingUsernames: boolean;
+  events: SupervisorEventResponseDto[] | undefined;
+  isLoadingEvents: boolean;
+
+  // Usernames by event ID
+  getUsernamesByEventId: (eventId: bigint) => Promise<string[] | undefined>;
 
   // Check-in info
   fetchCheckInInfo: (
@@ -47,16 +51,37 @@ export interface UseCheckinReturn {
 
 export function useCheckin(): UseCheckinReturn {
   const t = useT();
+  const queryClient = useQueryClient();
 
   // GET endpoint: Fetch usernames
   const {
-    data: usernames,
-    isLoading: isLoadingUsernames,
-    isError: isErrorUsernames,
-    error: errorUsernames,
+    data: events,
+    isLoading: isLoadingEvents,
+    error: errorEvents,
+    isError: isErrorEvents,
   } = useQuery({
-    ...getApiSupervisorCheckinUsernamesOptions(),
+    ...getApiSupervisorCheckinEventsOptions(),
   });
+
+  const getUsernamesByEventId = (eventId: bigint) => {
+    // Use a manually-constructed, serializable queryKey (stringify the id)
+    // but call the SDK function with the bigint eventId in the queryFn.
+    const queryKey = [
+      "getApiSupervisorCheckinUsernamesByEventId",
+      { eventId: eventId.toString() },
+    ];
+    return queryClient.fetchQuery({
+      queryKey,
+      queryFn: async ({ signal }) => {
+        const { data } = await getApiSupervisorCheckinUsernamesByEventId({
+          path: { eventId },
+          signal,
+          throwOnError: true,
+        });
+        return data as string[] | undefined;
+      },
+    });
+  };
 
   // POST endpoint: Fetch check-in info
   const checkInInfoMutation = useMutation({
@@ -150,27 +175,30 @@ export function useCheckin(): UseCheckinReturn {
   };
 
   const isLoadingAll =
-    isLoadingUsernames ||
+    isLoadingEvents ||
     checkInInfoMutation.isPending ||
     checkInInfoByUsernameMutation.isPending ||
     checkInMutation.isPending;
 
   const isErrorAll =
-    isErrorUsernames ||
+    isErrorEvents ||
     checkInInfoMutation.isError ||
     checkInInfoByUsernameMutation.isError ||
     checkInMutation.isError;
 
   const errorAll =
-    errorUsernames ||
+    errorEvents ||
     checkInInfoMutation.error ||
     checkInInfoByUsernameMutation.error ||
     checkInMutation.error;
 
   return {
     // Usernames (GET)
-    usernames,
-    isLoadingUsernames,
+    events,
+    isLoadingEvents,
+
+    // Usernames by event ID (GET)
+    getUsernamesByEventId,
 
     // Check-in info (POST to fetch data)
     fetchCheckInInfo,

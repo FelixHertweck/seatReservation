@@ -33,7 +33,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import de.felixhertweck.seatreservation.common.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
@@ -43,6 +42,8 @@ import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.supervisor.dto.CheckInInfoResponseDTO;
+import de.felixhertweck.seatreservation.supervisor.dto.CheckInProcessRequestDTO;
+import de.felixhertweck.seatreservation.supervisor.exception.CheckInException;
 import de.felixhertweck.seatreservation.supervisor.exception.CheckInTokenNotFoundException;
 import de.felixhertweck.seatreservation.supervisor.exception.EventMismatchException;
 import de.felixhertweck.seatreservation.supervisor.exception.UserMismatchException;
@@ -57,17 +58,19 @@ class CheckInServiceTest {
 
     @InjectMock ReservationRepository reservationRepository;
 
-    // Tests for processCheckIn(List<Long>, List<Long>) method
+    // Tests for processCheckIn(CheckInProcessRequestDTO) method
 
     @Test
-    void testProcessCheckInByIds_successfulCheckIn() {
+    void testProcessCheckInByIds_successfulCheckIn() throws CheckInException {
         Long reservationId1 = 1L;
         Long reservationId2 = 2L;
+        Long userId = 1L;
+        Long eventId = 10L;
 
         User user = new User();
-        user.id = 1L;
+        user.id = userId;
         Event event = new Event();
-        event.id = 10L;
+        event.id = eventId;
 
         EventLocation location = new EventLocation();
         location.id = 1L;
@@ -88,13 +91,19 @@ class CheckInServiceTest {
         reservation2.setEvent(event);
         reservation2.setSeat(seat);
 
-        when(reservationRepository.findByIdOptional(reservationId1))
+        when(reservationRepository.findByIdUserIdAndEventId(reservationId1, userId, eventId))
                 .thenReturn(Optional.of(reservation1));
-        when(reservationRepository.findByIdOptional(reservationId2))
+        when(reservationRepository.findByIdUserIdAndEventId(reservationId2, userId, eventId))
                 .thenReturn(Optional.of(reservation2));
 
-        checkInService.processCheckIn(
-                Arrays.asList(reservationId1, reservationId2), Collections.emptyList());
+        CheckInProcessRequestDTO requestDTO =
+                new CheckInProcessRequestDTO(
+                        eventId,
+                        userId,
+                        Arrays.asList(reservationId1, reservationId2),
+                        Collections.emptyList());
+
+        checkInService.processCheckIn(requestDTO);
 
         assertEquals(ReservationLiveStatus.CHECKED_IN, reservation1.getLiveStatus());
         assertEquals(ReservationLiveStatus.CHECKED_IN, reservation2.getLiveStatus());
@@ -103,13 +112,15 @@ class CheckInServiceTest {
     }
 
     @Test
-    void testProcessCheckInByIds_successfulCancel() {
+    void testProcessCheckInByIds_successfulCancel() throws CheckInException {
         Long reservationId1 = 1L;
+        Long userId = 1L;
+        Long eventId = 10L;
 
         User user = new User();
-        user.id = 1L;
+        user.id = userId;
         Event event = new Event();
-        event.id = 10L;
+        event.id = eventId;
 
         EventLocation location = new EventLocation();
         location.id = 1L;
@@ -125,11 +136,17 @@ class CheckInServiceTest {
         reservation1.setSeat(seat);
         reservation1.setLiveStatus(ReservationLiveStatus.CHECKED_IN);
 
-        when(reservationRepository.findByIdOptional(reservationId1))
+        when(reservationRepository.findByIdUserIdAndEventId(reservationId1, userId, eventId))
                 .thenReturn(Optional.of(reservation1));
 
-        checkInService.processCheckIn(
-                Collections.emptyList(), Collections.singletonList(reservationId1));
+        CheckInProcessRequestDTO requestDTO =
+                new CheckInProcessRequestDTO(
+                        eventId,
+                        userId,
+                        Collections.emptyList(),
+                        Collections.singletonList(reservationId1));
+
+        checkInService.processCheckIn(requestDTO);
 
         assertEquals(ReservationLiveStatus.CANCELLED, reservation1.getLiveStatus());
 
@@ -137,14 +154,16 @@ class CheckInServiceTest {
     }
 
     @Test
-    void testProcessCheckInByIds_mixedCheckInAndCancel() {
+    void testProcessCheckInByIds_mixedCheckInAndCancel() throws CheckInException {
         Long checkInId = 1L;
         Long cancelId = 2L;
+        Long userId = 1L;
+        Long eventId = 10L;
 
         User user = new User();
-        user.id = 1L;
+        user.id = userId;
         Event event = new Event();
-        event.id = 10L;
+        event.id = eventId;
 
         EventLocation location = new EventLocation();
         location.id = 1L;
@@ -165,13 +184,19 @@ class CheckInServiceTest {
         cancelReservation.setEvent(event);
         cancelReservation.setSeat(seat);
 
-        when(reservationRepository.findByIdOptional(checkInId))
+        when(reservationRepository.findByIdUserIdAndEventId(checkInId, userId, eventId))
                 .thenReturn(Optional.of(checkInReservation));
-        when(reservationRepository.findByIdOptional(cancelId))
+        when(reservationRepository.findByIdUserIdAndEventId(cancelId, userId, eventId))
                 .thenReturn(Optional.of(cancelReservation));
 
-        checkInService.processCheckIn(
-                Collections.singletonList(checkInId), Collections.singletonList(cancelId));
+        CheckInProcessRequestDTO requestDTO =
+                new CheckInProcessRequestDTO(
+                        eventId,
+                        userId,
+                        Collections.singletonList(checkInId),
+                        Collections.singletonList(cancelId));
+
+        checkInService.processCheckIn(requestDTO);
 
         assertEquals(ReservationLiveStatus.CHECKED_IN, checkInReservation.getLiveStatus());
         assertEquals(ReservationLiveStatus.CANCELLED, cancelReservation.getLiveStatus());
@@ -182,21 +207,34 @@ class CheckInServiceTest {
     @Test
     void testProcessCheckInByIds_reservationNotFound() {
         Long reservationId = 999L;
+        Long userId = 1L;
+        Long eventId = 10L;
 
-        when(reservationRepository.findByIdOptional(reservationId)).thenReturn(Optional.empty());
+        when(reservationRepository.findByIdUserIdAndEventId(reservationId, userId, eventId))
+                .thenReturn(Optional.empty());
 
-        assertThrows(
-                ReservationNotFoundException.class,
-                () ->
-                        checkInService.processCheckIn(
-                                Collections.singletonList(reservationId), Collections.emptyList()));
+        CheckInProcessRequestDTO requestDTO =
+                new CheckInProcessRequestDTO(
+                        eventId,
+                        userId,
+                        Collections.singletonList(reservationId),
+                        Collections.emptyList());
+
+        assertThrows(CheckInException.class, () -> checkInService.processCheckIn(requestDTO));
 
         verify(reservationRepository, never()).persist(any(Reservation.class));
     }
 
     @Test
-    void testProcessCheckInByIds_emptyLists() {
-        checkInService.processCheckIn(Collections.emptyList(), Collections.emptyList());
+    void testProcessCheckInByIds_emptyLists() throws CheckInException {
+        Long userId = 1L;
+        Long eventId = 10L;
+
+        CheckInProcessRequestDTO requestDTO =
+                new CheckInProcessRequestDTO(
+                        eventId, userId, Collections.emptyList(), Collections.emptyList());
+
+        checkInService.processCheckIn(requestDTO);
 
         verify(reservationRepository, never()).persist(any(Reservation.class));
     }
@@ -261,7 +299,7 @@ class CheckInServiceTest {
     }
 
     @Test
-    void testProcessCheckInByTokens_successfulCancel() {
+    void testProcessCheckInByTokens_successfulCancel() throws CheckInException {
         Long reservationId = 1L;
 
         User user = new User();
@@ -283,11 +321,20 @@ class CheckInServiceTest {
         reservation1.setSeat(seat);
         reservation1.setLiveStatus(ReservationLiveStatus.CHECKED_IN);
 
-        when(reservationRepository.findByIdOptional(reservationId))
+        Long userId = 1L;
+        Long eventId = 10L;
+
+        when(reservationRepository.findByIdUserIdAndEventId(reservationId, userId, eventId))
                 .thenReturn(Optional.of(reservation1));
 
-        checkInService.processCheckIn(
-                Collections.emptyList(), Collections.singletonList(reservationId));
+        CheckInProcessRequestDTO requestDTO =
+                new CheckInProcessRequestDTO(
+                        eventId,
+                        userId,
+                        Collections.emptyList(),
+                        Collections.singletonList(reservationId));
+
+        checkInService.processCheckIn(requestDTO);
 
         assertEquals(ReservationLiveStatus.CANCELLED, reservation1.getLiveStatus());
 

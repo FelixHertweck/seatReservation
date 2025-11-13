@@ -31,8 +31,8 @@ import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationLiveStatus;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
-import de.felixhertweck.seatreservation.supervisor.dto.LiveReservationResponseDTO;
 import de.felixhertweck.seatreservation.supervisor.exception.InvalidEventIdException;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -48,11 +48,14 @@ public class LiveViewServiceTest {
 
     @InjectMock ReservationRepository reservationRepository;
 
+    @InjectMock EventRepository eventRepository;
+
     private final Long eventId = 1L;
 
     @BeforeEach
     public void setUp() {
         Mockito.reset(reservationRepository);
+        Mockito.reset(eventRepository);
     }
 
     @Test
@@ -65,23 +68,10 @@ public class LiveViewServiceTest {
     void testBroadcastCheckInUpdate_NoActiveConnections() {
         // Should not throw exception when no connections are active
         Reservation reservation = createTestReservation();
-        LiveReservationResponseDTO dto = new LiveReservationResponseDTO(reservation);
 
         assertDoesNotThrow(
                 () -> {
-                    webSocketService.broadcastCheckInUpdate(eventId, dto);
-                });
-    }
-
-    @Test
-    void testBroadcastCancellationUpdate_NoActiveConnections() {
-        // Should not throw exception when no connections are active
-        Reservation reservation = createTestReservation();
-        LiveReservationResponseDTO dto = new LiveReservationResponseDTO(reservation);
-
-        assertDoesNotThrow(
-                () -> {
-                    webSocketService.broadcastCancellationUpdate(eventId, dto);
+                    webSocketService.broadcastUpdate(eventId, reservation);
                 });
     }
 
@@ -89,7 +79,21 @@ public class LiveViewServiceTest {
     void testRegisterConnection_StringEventId_Success() {
         // Should successfully parse valid event ID string and register connection
         String validEventIdStr = "123";
+        Long parsedEventId = 123L;
         WebSocketConnection mockConnection = Mockito.mock(WebSocketConnection.class);
+
+        // Mock event and location
+        Event mockEvent = new Event();
+        mockEvent.id = parsedEventId;
+        mockEvent.setName("Test Event");
+        EventLocation mockLocation = new EventLocation();
+        mockLocation.id = 1L;
+        mockEvent.setEventLocation(mockLocation);
+
+        Mockito.when(eventRepository.findById(parsedEventId)).thenReturn(mockEvent);
+        Mockito.when(reservationRepository.findByEventId(parsedEventId))
+                .thenReturn(new java.util.ArrayList<>());
+
         assertDoesNotThrow(
                 () -> {
                     webSocketService.registerConnection(validEventIdStr, mockConnection);

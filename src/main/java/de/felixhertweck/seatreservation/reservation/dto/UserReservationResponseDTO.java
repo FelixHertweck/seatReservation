@@ -27,13 +27,19 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
 public record UserReservationResponseDTO(
-        Long id, Long userId, Long eventId, SeatDTO seat, Instant reservationDateTime) {
+        Long id,
+        Long userId,
+        Long eventId,
+        SeatDTO seat,
+        Instant reservationDateTime,
+        String checkInCode) {
     public UserReservationResponseDTO(Reservation reservation) {
         this(
                 reservation.id,
                 reservation.getUser().id,
                 reservation.getEvent().id,
                 new SeatDTO(reservation.getSeat()),
-                reservation.getReservationDate());
+                reservation.getReservationDate(),
+                reservation.getCheckInCode());
     }
 }

@@ -1,4 +1,12 @@
 {
+  "seatStatus": {
+    "available": "Verfügbar",
+    "reserved": "Reserviert",
+    "blocked": "Blockiert",
+    "checkedIn": "Eingecheckt",
+    "noShow": "Nicht erschienen",
+    "cancelled": "Storniert"
+  },
   "validation": {
     "usernameHint": "3-64 Zeichen: Buchstaben, Zahlen, Punkte, Unterstriche, Bindestriche"
   },
@@ -501,6 +509,7 @@
     "seatLabel": "Platz",
     "viewSeatButton": "Platz ansehen",
     "viewSeatMultipleButton": "Plätze ansehen",
+    "showQRCodeButton": "QR-Code",
     "cancelButton": "Abbrechen",
     "showLessButton": "Weniger anzeigen",
     "showMoreButton": "Mehr anzeigen",
@@ -518,6 +527,20 @@
     "seatsToDelete": "Zu löschende Plätze",
     "cancelButton": "Abbrechen",
     "confirmButton": "Löschen"
+  },
+  "qrCodeModal": {
+    "title": "QR-Code für Check-In",
+    "description": "Zeigen Sie diesen QR-Code beim Check-In vor oder kopieren Sie den Reservierungscode",
+    "reservationCode": "Reservierungscode",
+    "generatingQRCode": "QR-Code wird generiert...",
+    "generationError": "Fehler beim Generieren des QR-Codes",
+    "generationErrorDescription": "Der QR-Code konnte nicht generiert werden. Bitte versuchen Sie es erneut.",
+    "copiedToClipboard": "In Zwischenablage kopiert",
+    "codeReady": "Der Reservierungscode wurde kopiert",
+    "copyCodeButton": "Code kopieren",
+    "downloadButton": "QR-Code herunterladen",
+    "downloadStarted": "Download gestartet",
+    "qrCodeDownloading": "Der QR-Code wird heruntergeladen"
   },
   "seatMapModal": {
     "yourReservedSeatsTitle": "Ihre reservierten Plätze",
@@ -893,7 +916,42 @@
       "errorTitle": "Fehler"
     }
   },
+  "common": {
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen",
+    "loading": "Wird geladen..."
+  },
+  "digitalWallet": {
+    "appleWallet": {
+      "button": "Zu Apple Wallet",
+      "confirmTitle": "Zu Apple Wallet hinzufügen?",
+      "confirmDescription": "Möchten Sie diese Reservierungen zu Ihrer Apple Wallet hinzufügen?",
+      "success": {
+        "title": "Zu Apple Wallet hinzugefügt",
+        "description": "Der Pass wurde erfolgreich zu Ihrer Apple Wallet hinzugefügt"
+      },
+      "error": {
+        "title": "Fehler beim Hinzufügen zu Apple Wallet",
+        "description": "Der Pass konnte nicht zu Apple Wallet hinzugefügt werden. Bitte versuchen Sie es später erneut"
+      }
+    },
+    "googleWallet": {
+      "button": "Zu Google Wallet",
+      "confirmTitle": "Zu Google Wallet hinzufügen?",
+      "confirmDescription": "Möchten Sie diese Reservierungen zu Ihrer Google Wallet hinzufügen?",
+      "success": {
+        "title": "Zu Google Wallet hinzugefügt",
+        "description": "Der Pass wurde erfolgreich zu Ihrer Google Wallet hinzugefügt"
+      },
+      "error": {
+        "title": "Fehler beim Hinzufügen zu Google Wallet",
+        "description": "Der Pass konnte nicht zu Google Wallet hinzugefügt werden. Bitte versuchen Sie es später erneut"
+      }
+    }
+  },
   "checkin": {
+    "title": "Check-In",
+    "description": "Verarbeiten Sie Event-Check-Ins über QR-Code-Scannen oder Benutzerauswahl.",
     "success": {
       "title": "Check-In erfolgreich",
       "description": "Der Check-In wurde erfolgreich verarbeitet."
@@ -903,6 +961,12 @@
       "default": "Bei der Verarbeitung des Check-In ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
       "noCheckInInfo": "Keine Check-In Informationen verfügbar.",
       "scanningFailed": "Fehler beim Scannen des QR-Codes."
+    },
+    "eventSelector": {
+      "label": "Event auswählen",
+      "placeholder": "Wähle ein Event...",
+      "loading": "Events werden geladen...",
+      "selectFirst": "Bitte wähle zuerst ein Event aus, um mit dem Check-In fortzufahren."
     },
     "qrScanner": {
       "title": "QR-Code Scanner",
@@ -940,11 +1004,6 @@
       "loading": "Lade Reservierungen...",
       "event": "Event",
       "seat": "Platz",
-      "liveStatus": {
-        "checked_in": "Eingecheckt",
-        "cancelled": "Storniert",
-        "no_show": "Nicht erschienen"
-      },
       "openDrawer": "Reservierungsübersicht öffnen"
     },
     "actions": {
@@ -953,6 +1012,50 @@
       "scan": "Scannen",
       "close": "Schließen",
       "processing": "Verarbeite..."
+    }
+  },
+  "liveview": {
+    "title": "Live View",
+    "description": "Überwachen Sie Check-In in Echtzeit",
+    "eventSelector": {
+      "label": "Event auswählen",
+      "placeholder": "Wähle ein Event...",
+      "loading": "Events werden geladen...",
+      "selectFirst": "Bitte wähle zuerst ein Event aus"
+    },
+    "status": {
+      "connected": "Verbunden",
+      "connecting": "Verbindung wird hergestellt...",
+      "disconnected": "Nicht verbunden",
+      "loading": "Daten werden geladen..."
+    },
+    "event": {
+      "title": "Event Informationen",
+      "name": "Name",
+      "description": "Beschreibung",
+      "startTime": "Startzeit",
+      "endTime": "Endzeit"
+    },
+    "legend": {
+      "title": "Legende"
+    },
+    "seatMap": {
+      "title": "Sitzplan"
+    },
+    "reservations": {
+      "title": "Reservierungen",
+      "count": "Reservierungen ({{count}})",
+      "user": "Benutzer",
+      "seat": "Platz",
+      "status": "Status",
+      "checkedIn": "Eingecheckt",
+      "noShow": "Nicht erschienen",
+      "cancelled": "Storniert",
+      "pending": "Ausstehend"
+    },
+    "error": {
+      "title": "Fehler",
+      "message": "Ein Fehler ist beim Laden der Daten aufgetreten"
     }
   }
 }

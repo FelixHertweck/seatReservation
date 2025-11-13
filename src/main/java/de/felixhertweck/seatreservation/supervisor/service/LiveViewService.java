@@ -29,11 +29,16 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
+import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
-import de.felixhertweck.seatreservation.supervisor.dto.CheckInUpdateDTO;
-import de.felixhertweck.seatreservation.supervisor.dto.InitialReservationsDTO;
-import de.felixhertweck.seatreservation.supervisor.dto.LiveReservationResponseDTO;
+import de.felixhertweck.seatreservation.supervisor.dto.SupervisorReservationResponseDTO;
+import de.felixhertweck.seatreservation.supervisor.dto.WebsocketInitialDTO;
+import de.felixhertweck.seatreservation.supervisor.dto.WebsocketUpdateDTO;
 import de.felixhertweck.seatreservation.supervisor.exception.InvalidEventIdException;
 import io.quarkus.arc.Lock;
 import io.quarkus.websockets.next.WebSocketConnection;
@@ -46,9 +51,21 @@ public class LiveViewService {
 
     @Inject ReservationRepository reservationRepository;
 
+    @Inject EventRepository eventRepository;
+
     // Map: eventId -> List of WebSocket Connections
     private final Map<Long, List<WebSocketConnection>> eventSubscriptions =
             new ConcurrentHashMap<>();
+
+    // Configured ObjectMapper for JSON serialization
+    private final ObjectMapper objectMapper;
+
+    public LiveViewService() {
+        this.objectMapper = new ObjectMapper();
+        this.objectMapper.registerModule(new JavaTimeModule());
+        // Serialize Instant as ISO-8601 string, not as timestamp
+        this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    }
 
     /**
      * Registers a WebSocket connection for a specific event by parsing the event ID string. Sends
@@ -163,16 +180,21 @@ public class LiveViewService {
         LOG.debugf("Sending initial reservations for event %d", eventId);
 
         try {
+            Event event = eventRepository.findById(eventId);
+            EventLocation location = event.getEventLocation();
             List<Reservation> reservations = reservationRepository.findByEventId(eventId);
 
-            List<LiveReservationResponseDTO> dtos =
+            List<SupervisorReservationResponseDTO> dtos =
                     reservations.stream()
-                            .map(LiveReservationResponseDTO::new)
+                            .map(SupervisorReservationResponseDTO::new)
                             .collect(Collectors.toList());
 
-            InitialReservationsDTO initialMessage = InitialReservationsDTO.initial(dtos);
-            ObjectMapper mapper = new ObjectMapper();
-            connection.sendText(mapper.writeValueAsString(initialMessage)).await().indefinitely();
+            WebsocketInitialDTO initialMessage =
+                    WebsocketInitialDTO.initial(location, event, reservations);
+            connection
+                    .sendText(objectMapper.writeValueAsString(initialMessage))
+                    .await()
+                    .indefinitely();
 
             LOG.infof(
                     "Sent %d initial reservations to connection for event %d",
@@ -188,7 +210,7 @@ public class LiveViewService {
      * @param eventId the event ID
      * @param reservation the reservation that was checked in
      */
-    public void broadcastCheckInUpdate(Long eventId, LiveReservationResponseDTO reservation) {
+    public void broadcastUpdate(Long eventId, Reservation reservation) {
         LOG.debugf(
                 "Broadcasting check-in update for event %d, reservation: %s", eventId, reservation);
 
@@ -198,28 +220,7 @@ public class LiveViewService {
             return;
         }
 
-        CheckInUpdateDTO update = CheckInUpdateDTO.checkedIn(reservation);
-        broadcastToConnections(connections, update, eventId);
-    }
-
-    /**
-     * Broadcasts a cancellation update to all subscribed clients for an event.
-     *
-     * @param eventId the event ID
-     * @param reservation the reservation that was cancelled
-     */
-    public void broadcastCancellationUpdate(Long eventId, LiveReservationResponseDTO reservation) {
-        LOG.debugf(
-                "Broadcasting cancellation update for event %d, reservation: %s",
-                eventId, reservation);
-
-        List<WebSocketConnection> connections = eventSubscriptions.get(eventId);
-        if (connections == null || connections.isEmpty()) {
-            LOG.debugf("No active connections for event %d", eventId);
-            return;
-        }
-
-        CheckInUpdateDTO update = CheckInUpdateDTO.cancelled(reservation);
+        WebsocketUpdateDTO update = WebsocketUpdateDTO.update(reservation);
         broadcastToConnections(connections, update, eventId);
     }
 
@@ -236,8 +237,10 @@ public class LiveViewService {
 
         for (WebSocketConnection connection : connections) {
             try {
-                ObjectMapper mapper = new ObjectMapper();
-                connection.sendText(mapper.writeValueAsString(message)).await().indefinitely();
+                connection
+                        .sendText(objectMapper.writeValueAsString(message))
+                        .await()
+                        .indefinitely();
                 LOG.debugf("Message sent to connection for event %d", eventId);
             } catch (IOException e) {
                 LOG.error("Error sending message to connection for event " + eventId, e);

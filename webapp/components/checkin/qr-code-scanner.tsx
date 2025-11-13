@@ -59,7 +59,6 @@ export function QrCodeScanner({
           setIsCameraLoading(false);
           setIsCameraActive(true);
           setIsScanning(true);
-          startScanning();
         };
       }
     } catch (error) {
@@ -161,6 +160,16 @@ export function QrCodeScanner({
       console.log("Error parsing QR code data:", error);
     }
   };
+
+  // Handle isScanning changes
+  useEffect(() => {
+    if (isCameraActive && isScanning) {
+      startScanning();
+    } else {
+      stopScanning();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isScanning, isCameraActive]);
 
   // Cleanup on unmount
   useEffect(() => {

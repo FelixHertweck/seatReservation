@@ -17,17 +17,3 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.supervisor.dto;
-
-import io.quarkus.runtime.annotations.RegisterForReflection;
-
-@RegisterForReflection
-public record CheckInUpdateDTO(String type, LiveReservationResponseDTO reservation) {
-    public static CheckInUpdateDTO checkedIn(LiveReservationResponseDTO reservation) {
-        return new CheckInUpdateDTO("CHECKED_IN", reservation);
-    }
-
-    public static CheckInUpdateDTO cancelled(LiveReservationResponseDTO reservation) {
-        return new CheckInUpdateDTO("CANCELLED", reservation);
-    }
-}

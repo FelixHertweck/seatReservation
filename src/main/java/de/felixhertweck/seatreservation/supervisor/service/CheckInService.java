@@ -27,16 +27,20 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
-import de.felixhertweck.seatreservation.common.dto.UserDTO;
+import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
 import de.felixhertweck.seatreservation.common.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationLiveStatus;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.supervisor.dto.CheckInInfoResponseDTO;
-import de.felixhertweck.seatreservation.supervisor.dto.LiveReservationResponseDTO;
+import de.felixhertweck.seatreservation.supervisor.dto.CheckInProcessRequestDTO;
+import de.felixhertweck.seatreservation.supervisor.dto.SupervisorEventResponseDTO;
+import de.felixhertweck.seatreservation.supervisor.dto.SupervisorReservationResponseDTO;
+import de.felixhertweck.seatreservation.supervisor.exception.CheckInException;
 import de.felixhertweck.seatreservation.supervisor.exception.CheckInTokenNotFoundException;
 import de.felixhertweck.seatreservation.supervisor.exception.EventMismatchException;
 import de.felixhertweck.seatreservation.supervisor.exception.UserMismatchException;
@@ -50,6 +54,8 @@ public class CheckInService {
     @Inject ReservationRepository reservationRepository;
 
     @Inject UserRepository userRepository;
+
+    @Inject EventRepository eventRepository;
 
     @Inject LiveViewService webSocketService;
 
@@ -75,7 +81,7 @@ public class CheckInService {
                 (Object) eventId,
                 (Object) (checkInTokens != null ? checkInTokens.size() : 0));
 
-        List<LiveReservationResponseDTO> processedReservations = new ArrayList<>();
+        List<SupervisorReservationResponseDTO> processedReservations = new ArrayList<>();
         User user = userRepository.findById(userId);
 
         if (checkInTokens != null && !checkInTokens.isEmpty()) {
@@ -91,11 +97,9 @@ public class CheckInService {
 
                 Reservation reservation = reservationOptional.get();
                 validateReservation(reservation, userId, eventId);
-                LOG.infof(
-                        "Reservation %s for user %d and event %d checked in.",
-                        token, userId, eventId);
+                LOG.debugf("Processed reservation %s for token %s.", reservation, token);
 
-                processedReservations.add(new LiveReservationResponseDTO(reservation));
+                processedReservations.add(new SupervisorReservationResponseDTO(reservation));
             }
         }
 
@@ -103,87 +107,124 @@ public class CheckInService {
                 "Processed %d reservations for user %d and event %d.",
                 processedReservations.size(), userId, eventId);
 
-        return new CheckInInfoResponseDTO(processedReservations, new UserDTO(user));
+        return new CheckInInfoResponseDTO(processedReservations, new LimitedUserInfoDTO(user));
     }
 
     /**
      * Processes check-in and cancel requests based on reservation IDs. Broadcasts updates to
      * WebSocket clients.
      *
-     * @param checkInIds list of reservation IDs for check-in
-     * @param cancelIds list of reservation IDs for cancellation
-     * @throws ReservationNotFoundException if a reservation ID is not found
+     * @param requestDTO the request DTO containing check-in and cancel IDs, userId, and eventId
+     * @throws CheckInException if a reservation ID is not found or does not belong to the
+     *     user/event
      */
     @Transactional
-    public void processCheckIn(List<Long> checkInIds, List<Long> cancelIds)
-            throws ReservationNotFoundException {
+    public void processCheckIn(CheckInProcessRequestDTO requestDTO) throws CheckInException {
+        Long eventId = requestDTO.eventId;
+        Long userId = requestDTO.userId;
+        List<Long> checkInIds = requestDTO.checkIn;
+        List<Long> cancelIds = requestDTO.cancel;
+
         LOG.debugf(
-                "Processing check-in with %d check-ins and %d cancellations.",
+                "Processing check-in for user %d, event %d with %d check-ins and %d cancellations.",
+                userId,
+                eventId,
                 checkInIds != null ? checkInIds.size() : 0,
                 cancelIds != null ? cancelIds.size() : 0);
 
         if (checkInIds != null && !checkInIds.isEmpty()) {
             for (Long reservationId : checkInIds) {
                 Optional<Reservation> reservationOptional =
-                        reservationRepository.findByIdOptional(reservationId);
+                        reservationRepository.findByIdUserIdAndEventId(
+                                reservationId, userId, eventId);
 
                 if (!reservationOptional.isPresent()) {
-                    LOG.warnf("Reservation with ID %d not found for check-in.", reservationId);
-                    throw new ReservationNotFoundException(
+                    LOG.warnf(
+                            "Reservation with ID %d not found or does not belong to user %d/event"
+                                    + " %d for check-in.",
+                            reservationId, userId, eventId);
+                    throw new CheckInException(
                             String.format(
-                                    "Reservation with ID %d not found for check-in.",
-                                    reservationId));
+                                    "Reservation with ID %d not found or does not belong to user"
+                                            + " %d/event %d for check-in.",
+                                    reservationId, userId, eventId));
                 }
 
                 Reservation reservation = reservationOptional.get();
+
                 LOG.debugf("Setting reservation %d to CHECK_IN status.", reservationId);
                 reservation.setLiveStatus(ReservationLiveStatus.CHECKED_IN);
                 reservationRepository.persist(reservation);
                 LOG.infof("Reservation %d successfully checked in.", reservationId);
 
                 // Broadcast check-in update to WebSocket clients
-                LiveReservationResponseDTO dto = new LiveReservationResponseDTO(reservation);
-                webSocketService.broadcastCheckInUpdate(reservation.getEvent().getId(), dto);
+                webSocketService.broadcastUpdate(reservation.getEvent().getId(), reservation);
             }
         }
 
         if (cancelIds != null && !cancelIds.isEmpty()) {
             for (Long reservationId : cancelIds) {
                 Optional<Reservation> reservationOptional =
-                        reservationRepository.findByIdOptional(reservationId);
+                        reservationRepository.findByIdUserIdAndEventId(
+                                reservationId, userId, eventId);
 
-                if (reservationOptional.isPresent()) {
-                    Reservation reservation = reservationOptional.get();
-                    LOG.debugf("Setting reservation %d to CANCEL status.", reservationId);
-                    reservation.setLiveStatus(ReservationLiveStatus.CANCELLED);
-                    reservationRepository.persist(reservation);
-                    LOG.infof("Reservation %d successfully cancelled.", reservationId);
-
-                    // Broadcast cancellation update to WebSocket clients
-                    LiveReservationResponseDTO dto = new LiveReservationResponseDTO(reservation);
-                    webSocketService.broadcastCancellationUpdate(
-                            reservation.getEvent().getId(), dto);
-                } else {
-                    LOG.warnf("Reservation with ID %d not found for cancellation.", reservationId);
+                if (!reservationOptional.isPresent()) {
+                    LOG.warnf(
+                            "Reservation with ID %d not found or does not belong to user %d/event"
+                                    + " %d for cancellation.",
+                            reservationId, userId, eventId);
+                    throw new CheckInException(
+                            String.format(
+                                    "Reservation with ID %d not found or does not belong to user"
+                                            + " %d/event %d for cancellation.",
+                                    reservationId, userId, eventId));
                 }
+
+                Reservation reservation = reservationOptional.get();
+
+                LOG.debugf("Setting reservation %d to CANCEL status.", reservationId);
+                reservation.setLiveStatus(ReservationLiveStatus.CANCELLED);
+                reservationRepository.persist(reservation);
+                LOG.infof("Reservation %d successfully cancelled.", reservationId);
+
+                // Broadcast cancellation update to WebSocket clients
+                webSocketService.broadcastUpdate(reservation.getEvent().getId(), reservation);
             }
         }
 
         LOG.debugf(
-                "Check-in processing completed for %d check-ins and %d cancellations.",
+                "Check-in processing completed for user %d, event %d with %d check-ins and %d"
+                        + " cancellations.",
+                userId,
+                eventId,
                 checkInIds != null ? checkInIds.size() : 0,
                 cancelIds != null ? cancelIds.size() : 0);
     }
 
     /**
-     * Retrieves a list of all usernames that have an active reservation.
+     * Retrieves a list of all events for the supervisor view.
      *
+     * @return A list of SupervisorEventResponseDTO.
+     */
+    @Transactional
+    public List<SupervisorEventResponseDTO> getAllEventsForSupervisor() {
+        LOG.debug("Retrieving all events for supervisor view.");
+        return eventRepository.findAll().stream()
+                .map(SupervisorEventResponseDTO::new)
+                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+    }
+
+    /**
+     * Retrieves a list of all usernames that have an active reservation for a specific event.
+     *
+     * @param eventId the ID of the event
      * @return A list of strings, where each string is a username.
      */
     @Transactional
-    public List<String> getUsernamesWithReservations() {
-        LOG.debug("Retrieving all usernames with reservations.");
-        return reservationRepository.findAll().stream()
+    public List<String> getUsernamesWithReservations(Long eventId) {
+        LOG.debugf("Retrieving usernames with reservations for event %d.", eventId);
+        return reservationRepository.find("event.id", eventId).stream()
+                .filter(r -> r.getStatus() != ReservationStatus.BLOCKED)
                 .map(Reservation::getUser)
                 .filter(Objects::nonNull)
                 .map(User::getUsername)
@@ -217,15 +258,15 @@ public class CheckInService {
                     String.format("No reservations found for user %s.", username));
         }
 
-        List<LiveReservationResponseDTO> processedReservations =
+        List<SupervisorReservationResponseDTO> processedReservations =
                 reservations.stream()
-                        .map(LiveReservationResponseDTO::new)
+                        .map(SupervisorReservationResponseDTO::new)
                         .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
 
         LOG.debugf(
                 "Processed %d reservations for user %s.", processedReservations.size(), username);
 
-        return new CheckInInfoResponseDTO(processedReservations, new UserDTO(user));
+        return new CheckInInfoResponseDTO(processedReservations, new LimitedUserInfoDTO(user));
     }
 
     private void validateReservation(Reservation reservation, Long userId, Long eventId)

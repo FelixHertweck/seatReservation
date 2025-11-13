@@ -91,4 +91,17 @@ public class ReservationRepository implements PanacheRepository<Reservation> {
     public Optional<Reservation> findByCheckInCode(String checkInCode) {
         return find("checkInCode = ?1", checkInCode).firstResultOptional();
     }
+
+    /**
+     * Finds a reservation by its ID and associated user ID and event ID.
+     *
+     * @param id the reservation ID to search for
+     * @param userId the user ID to search for
+     * @param eventId the event ID to search for
+     * @return an Optional containing the reservation if found, or empty otherwise
+     */
+    public Optional<Reservation> findByIdUserIdAndEventId(Long id, Long userId, Long eventId) {
+        return find("id = ?1 and user.id = ?2 and event.id = ?3", id, userId, eventId)
+                .firstResultOptional();
+    }
 }
