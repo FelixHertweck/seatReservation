@@ -219,6 +219,7 @@ export function ReservationCard({
         isOpen={qrCodeModalOpen}
         onClose={() => setQrCodeModalOpen(false)}
         reservations={reservations}
+        eventName={eventName}
         userId={user?.id}
       />
 

@@ -3030,12 +3030,14 @@
       },
       "delete" : {
         "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
+          "name" : "ids",
+          "in" : "query",
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
           }
         } ],
         "responses" : {

@@ -945,8 +945,8 @@ export const postApiUsersAdminImport = <ThrowOnError extends boolean = false>(op
 /**
  * Delete User
  */
-export const deleteApiUsersAdminById = <ThrowOnError extends boolean = false>(options: Options<DeleteApiUsersAdminByIdData, ThrowOnError>) => {
-    return (options.client ?? client).delete<DeleteApiUsersAdminByIdResponses, DeleteApiUsersAdminByIdErrors, ThrowOnError>({
+export const deleteApiUsersAdminById = <ThrowOnError extends boolean = false>(options?: Options<DeleteApiUsersAdminByIdData, ThrowOnError>) => {
+    return (options?.client ?? client).delete<DeleteApiUsersAdminByIdResponses, DeleteApiUsersAdminByIdErrors, ThrowOnError>({
         security: [
             {
                 scheme: 'bearer',

@@ -272,7 +272,7 @@ export function LocationManagement({
               {t("locationManagement.description")}
             </CardDescription>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto shrink-0">
+          <div className="flex flex-col md:flex-row gap-2 w-full sm:w-auto shrink-0">
             {selectedIds.size > 0 && (
               <Button
                 variant="destructive"
@@ -341,10 +341,10 @@ export function LocationManagement({
                         : t("locationManagement.selectAll")}
                     </Button>
                   </div>
-                  <Table className="table-fixed">
+                  <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-[5%]">
+                        <TableHead className="w-[50px]">
                           {t("locationManagement.tableHeaderSelect")}
                         </TableHead>
                         <SortableTableHead
@@ -352,7 +352,7 @@ export function LocationManagement({
                           currentSortKey={sortKey}
                           currentSortDirection={sortDirection}
                           onSort={handleSort}
-                          className="w-[15%]"
+                          className="min-w-[150px] max-w-[250px]"
                         >
                           {t("locationManagement.tableHeaderName")}
                         </SortableTableHead>
@@ -361,7 +361,7 @@ export function LocationManagement({
                           currentSortKey={sortKey}
                           currentSortDirection={sortDirection}
                           onSort={handleSort}
-                          className="w-[20%]"
+                          className="min-w-[200px] max-w-[300px]"
                         >
                           {t("locationManagement.tableHeaderAddress")}
                         </SortableTableHead>
@@ -370,7 +370,7 @@ export function LocationManagement({
                           currentSortKey={sortKey}
                           currentSortDirection={sortDirection}
                           onSort={handleSort}
-                          className="w-[8%]"
+                          className="min-w-[100px] max-w-[150px]"
                         >
                           {t("locationManagement.tableHeaderCapacity")}
                         </SortableTableHead>
@@ -379,7 +379,7 @@ export function LocationManagement({
                           currentSortKey={sortKey}
                           currentSortDirection={sortDirection}
                           onSort={handleSort}
-                          className="w-[12%]"
+                          className="min-w-[100px] max-w-[180px]"
                         >
                           {t("locationManagement.tableHeaderManager")}
                         </SortableTableHead>
@@ -388,14 +388,14 @@ export function LocationManagement({
                           currentSortKey={sortKey}
                           currentSortDirection={sortDirection}
                           onSort={handleSort}
-                          className="w-[18%]"
+                          className="min-w-[150px] max-w-[250px]"
                         >
                           {t("locationManagement.tableHeaderMarker")}
                         </SortableTableHead>
-                        <TableHead className="w-[10%]">
+                        <TableHead className="min-w-[120px] max-w-[180px]">
                           {t("locationManagement.tableHeaderSeats")}
                         </TableHead>
-                        <TableHead className="w-[12%]">
+                        <TableHead className="min-w-[120px] max-w-[180px]">
                           {t("locationManagement.tableHeaderActions")}
                         </TableHead>
                       </TableRow>
@@ -463,24 +463,15 @@ export function LocationManagement({
                                 </TableCell>
                                 <TruncatedCell
                                   content={location.name}
-                                  className="font-medium w-[15%]"
+                                  className="font-medium"
                                 />
-                                <TruncatedCell
-                                  content={location.address}
-                                  className="w-[20%]"
-                                />
-                                <TableCell className="w-[8%]">
-                                  {location.capacity}
-                                </TableCell>
+                                <TruncatedCell content={location.address} />
+                                <TableCell>{location.capacity}</TableCell>
                                 <TruncatedCell
                                   content={location.manager?.username}
-                                  className="w-[12%]"
                                 />
-                                <TruncatedCell
-                                  content={markersDisplay}
-                                  className="w-[18%]"
-                                />
-                                <TableCell className="w-[10%]">
+                                <TruncatedCell content={markersDisplay} />
+                                <TableCell>
                                   {seatCount > 0 ? (
                                     <Button
                                       variant="link"
@@ -623,7 +614,7 @@ export function LocationManagement({
                                         "locationManagement.tableHeaderMarker",
                                       )}
                                     </p>
-                                    <p className="text-sm break-words line-clamp-3">
+                                    <p className="text-sm break-words line-clamp-1">
                                       {markersDisplay}
                                     </p>
                                   </div>
@@ -650,42 +641,33 @@ export function LocationManagement({
                                 </div>
                               )}
 
-                              <div className="flex flex-col gap-2 pt-2">
-                                <div className="flex gap-2">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="flex-1 bg-transparent"
-                                    onClick={() => handleEditLocation(location)}
-                                  >
-                                    <Edit className="mr-2 h-4 w-4 shrink-0" />
-                                    <span className="truncate">
-                                      {t("locationManagement.editButtonLabel")}
-                                    </span>
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() =>
-                                      handleExportLocation(location)
-                                    }
-                                    title={t(
-                                      "locationManagement.exportAsJsonTitle",
-                                    )}
-                                  >
-                                    <Download className="h-4 w-4" />
-                                  </Button>
-                                </div>
+                              <div className="flex gap-2 pt-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="flex-1 bg-transparent"
+                                  onClick={() => handleEditLocation(location)}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="flex-1"
+                                  onClick={() => handleExportLocation(location)}
+                                  title={t(
+                                    "locationManagement.exportAsJsonTitle",
+                                  )}
+                                >
+                                  <Download className="h-4 w-4" />
+                                </Button>
                                 <Button
                                   variant="destructive"
                                   size="sm"
-                                  className="w-full"
+                                  className="flex-1"
                                   onClick={() => handleDeleteLocation(location)}
                                 >
-                                  <Trash2 className="mr-2 h-4 w-4 shrink-0" />
-                                  <span className="truncate">
-                                    {t("locationManagement.deleteButtonLabel")}
-                                  </span>
+                                  <Trash2 className="h-4 w-4" />
                                 </Button>
                               </div>
                             </CardContent>

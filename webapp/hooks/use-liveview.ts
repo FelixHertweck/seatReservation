@@ -10,11 +10,10 @@ import {
 import type {
   SupervisorEventLocationDto,
   SupervisorEventResponseDto,
-  SupervisorReservationResponseDto
+  SupervisorReservationResponseDto,
 } from "@/api";
 import { getApiSupervisorCheckinEventsOptions } from "@/api/@tanstack/react-query.gen";
 import { useQuery } from "@tanstack/react-query";
-
 
 /**
  * Public interface for the LiveView hook
@@ -74,7 +73,6 @@ export const useLiveView = (
   const handleMessage = useCallback((data: WebsocketMessage) => {
     try {
       if (isInitialMessage(data)) {
-        setIsInitialLoading(true);
         const initialData = data as WebsocketInitialMessage;
 
         setLocation(initialData.location);
@@ -84,8 +82,6 @@ export const useLiveView = (
 
         setIsInitialLoading(false);
       } else if (isUpdateMessage(data)) {
-        setIsInitialLoading(true);
-
         const updatedSeatStatus = data as WebsocketUpdateMessage;
         setReservations((prevReservations) => {
           return prevReservations.map((res) => {
@@ -119,27 +115,30 @@ export const useLiveView = (
       : null,
     enabled,
     handleMessage,
+    5,
+    3000,
+    (connecting: boolean) => {
+      try {
+        // manage local connecting state via the callback so we avoid setting state inside effects
+        setIsConnecting(connecting);
+        if (connecting) {
+          setIsInitialLoading(true);
+        } else {
+          setIsInitialLoading(false);
+        }
+      } catch (err) {
+        console.error(
+          "[useLiveView] Error handling onConnecting callback:",
+          err,
+        );
+      }
+    },
   );
-
   useEffect(() => {
-    if (enabled && eventId) {
-      setIsConnecting(true);
-      setIsInitialLoading(true);
-    } else {
+    if (!enabled || !eventId) {
       disconnect();
-      setIsConnecting(false);
-      setIsInitialLoading(false);
     }
   }, [enabled, eventId, disconnect]);
-
-  // Update connecting state based on connection status
-  useEffect(() => {
-    if (isConnected && isConnecting) {
-      setIsConnecting(false);
-    } else if (!isConnected && enabled && eventId) {
-      setIsConnecting(true);
-    }
-  }, [isConnected, enabled, eventId, isConnecting]);
 
   return {
     events,

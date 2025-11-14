@@ -365,14 +365,19 @@
     "saveChangesButtonLoading": "Saving...",
     "passwordPlaceholder": "New Password",
     "passwordUpdatePlaceholder": "Update Password",
-    "passwordUpdateHint": "Password must be at least 8 characters long"
+    "passwordUpdateHint": "Password must be at least 8 characters long",
+    "sendEmailVerificationDesc": "Verification email will be sent to the user"
   },
   "userManagement": {
     "confirmDelete": "Are you sure you want to delete {{username}}?",
+    "confirmDeleteMultiple": "Are you sure you want to delete {{count}} users?",
     "title": "User Management",
     "description": "Manage system users and their roles",
     "addUserButton": "Add User",
     "importJsonButton": "Import JSON",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect All",
+    "tableHeaderSelect": "Select",
     "tableHeaderUsername": "Username",
     "tableHeaderName": "Name",
     "tableHeaderEmail": "Email",
@@ -588,7 +593,8 @@
       "checkedIn": "Checked In",
       "noShow": "No Show",
       "cancelled": "Cancelled",
-      "pending": "Pending"
+      "pending": "Pending",
+      "empty": "No reservations available"
     },
     "error": {
       "title": "Error",
@@ -679,7 +685,6 @@
     "generationErrorDescription": "The QR code could not be generated. Please try again.",
     "copiedToClipboard": "Copied to clipboard",
     "codeReady": "The reservation code has been copied",
-    "copyCodeButton": "Copy Code",
     "downloadButton": "Download QR Code",
     "downloadStarted": "Download started",
     "qrCodeDownloading": "The QR code is being downloaded"
@@ -777,7 +782,6 @@
     "tableHeaderReminderSendDate": "Reminder Send Date",
     "tableHeaderLocation": "Location",
     "tableHeaderActions": "Actions",
-    "tbd": "TBD",
     "noLocation": "No location",
     "paginationLabel": "Events",
     "deleteButtonLabel": "Delete",
@@ -1056,6 +1060,14 @@
       "downloadStarted": "Download started",
       "downloadDescription": "Your seat map is being downloaded",
       "errorTitle": "Error"
+    }
+  },
+  "profile": {
+    "update": {
+      "success": {
+        "title": "Successful",
+        "description": "Profile was successfully updated"
+      }
     }
   }
 }

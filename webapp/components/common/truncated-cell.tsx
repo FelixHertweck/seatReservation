@@ -31,7 +31,8 @@ export function TruncatedCell({ content, className = "" }: TruncatedCellProps) {
   const cellContent = (
     <div
       ref={cellRef}
-      className="overflow-hidden text-ellipsis whitespace-nowrap"
+      className="overflow-hidden text-ellipsis whitespace-nowrap block"
+      style={{ width: "100%" }}
     >
       {displayContent}
     </div>
@@ -39,7 +40,7 @@ export function TruncatedCell({ content, className = "" }: TruncatedCellProps) {
 
   if (isTruncated) {
     return (
-      <TableCell className={className}>
+      <TableCell className={`${className} max-w-0`}>
         <TooltipProvider delayDuration={300}>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -54,5 +55,7 @@ export function TruncatedCell({ content, className = "" }: TruncatedCellProps) {
     );
   }
 
-  return <TableCell className={className}>{cellContent}</TableCell>;
+  return (
+    <TableCell className={`${className} max-w-0`}>{cellContent}</TableCell>
+  );
 }

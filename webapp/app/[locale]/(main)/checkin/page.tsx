@@ -110,6 +110,7 @@ export default function CheckInPage() {
 
   // Clear scanned data
   const handleClear = () => {
+    setIsDrawerOpen(false);
     setScannedData(null);
     setCheckInInfo(null);
     setResetUsernameSelector((prev) => !prev);
@@ -254,9 +255,11 @@ export default function CheckInPage() {
       )}
 
       {/* Drawer Trigger - Mobile */}
-      {isMobile && !isDrawerOpen && scannedData && selectedEventId && (
+      {isMobile && scannedData && checkInInfo && (
         <div
-          className="fixed bottom-0 left-0 right-0 bg-background border-t p-2 flex justify-center cursor-pointer shadow-lg"
+          className={`fixed bottom-0 left-0 right-0 bg-background border-t p-2 flex justify-center cursor-pointer shadow-lg ${
+            isDrawerOpen ? "hidden" : ""
+          }`}
           onClick={() => setIsDrawerOpen(true)}
         >
           <ChevronUp className="h-6 w-6 text-muted-foreground" />

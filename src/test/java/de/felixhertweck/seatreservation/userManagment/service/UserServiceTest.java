@@ -922,7 +922,7 @@ public class UserServiceTest {
         when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
         when(userRepository.deleteById(1L)).thenReturn(true); // Mock deleteById to return true
 
-        userService.deleteUser(1L);
+        userService.deleteUser(List.of(1L));
 
         verify(userRepository, times(1)).deleteById(1L);
     }
@@ -933,7 +933,7 @@ public class UserServiceTest {
         when(userRepository.deleteById(anyLong()))
                 .thenReturn(false); // Mock deleteById to return false
 
-        assertThrows(UserNotFoundException.class, () -> userService.deleteUser(1L));
+        assertThrows(UserNotFoundException.class, () -> userService.deleteUser(List.of(1L)));
         verify(userRepository, never()).delete(any(User.class));
     }
 

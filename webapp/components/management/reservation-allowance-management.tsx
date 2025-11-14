@@ -288,10 +288,10 @@ export function ReservationAllowanceManagement({
                       : t("reservationAllowanceManagement.selectAll")}
                   </Button>
                 </div>
-                <Table className="table-fixed">
+                <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[5%]">
+                      <TableHead className="w-[50px]">
                         {t("reservationAllowanceManagement.tableHeaderSelect")}
                       </TableHead>
                       <SortableTableHead
@@ -299,7 +299,7 @@ export function ReservationAllowanceManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[30%]"
+                        className="min-w-[200px]"
                       >
                         {t("reservationAllowanceManagement.tableHeaderEvent")}
                       </SortableTableHead>
@@ -308,7 +308,7 @@ export function ReservationAllowanceManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[20%]"
+                        className="min-w-[150px]"
                       >
                         {t("reservationAllowanceManagement.tableHeaderUser")}
                       </SortableTableHead>
@@ -317,13 +317,13 @@ export function ReservationAllowanceManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[20%]"
+                        className="min-w-[150px]"
                       >
                         {t(
                           "reservationAllowanceManagement.tableHeaderAllowedReservations",
                         )}
                       </SortableTableHead>
-                      <TableHead className="w-[10%]">
+                      <TableHead className="min-w-[100px]">
                         {t("reservationAllowanceManagement.tableHeaderActions")}
                       </TableHead>
                     </TableRow>
@@ -377,7 +377,7 @@ export function ReservationAllowanceManagement({
                                   }
                                 />
                               </TableCell>
-                              <TableCell className="w-[30%]">
+                              <TableCell>
                                 {event ? (
                                   <Button
                                     variant="link"

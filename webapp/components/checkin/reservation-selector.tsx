@@ -4,7 +4,6 @@ import { useEffect, type SetStateAction, type Dispatch } from "react";
 import { useT } from "@/lib/i18n/hooks";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Drawer,
   DrawerContent,
@@ -76,24 +75,6 @@ export function ReservationSelector({
     });
   };
 
-  // Select all reservations
-  const selectAll = () => {
-    if (checkInInfo?.reservations) {
-      const allIds = new Set<bigint>();
-      checkInInfo.reservations.forEach((reservation) => {
-        if (reservation.id) {
-          allIds.add(reservation.id);
-        }
-      });
-      setSelectedReservations(allIds);
-    }
-  };
-
-  // Deselect all reservations
-  const deselectAll = () => {
-    setSelectedReservations(new Set());
-  };
-
   const onProcessingSubmit = () => {
     if (checkInInfo?.user && eventId) {
       onSubmit(checkInInfo.user.id!, eventId);
@@ -134,39 +115,25 @@ export function ReservationSelector({
             </div>
           )}
 
-          <div className="flex justify-between items-center">
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={selectAll}>
-                {t("checkin.reservations.selectAll")}
-              </Button>
-              <Button variant="outline" size="sm" onClick={deselectAll}>
-                {t("checkin.reservations.deselectAll")}
-              </Button>
-            </div>
-          </div>
-
           <div className="space-y-2">
             {checkInInfo.reservations.map((reservation, index) => (
               <Card
                 key={reservation.id?.toString() || `reservation-${index}`}
-                className="p-4"
+                className={`p-4 cursor-pointer transition-colors ${
+                  selectedReservations.has(reservation.id!)
+                    ? "bg-primary/10 border-primary"
+                    : "hover:bg-muted"
+                }`}
+                onClick={() => toggleReservation(reservation.id!)}
               >
-                <div className="flex items-start gap-3">
-                  <Checkbox
-                    id={`reservation-${reservation.id || index}`}
-                    checked={selectedReservations.has(reservation.id!)}
-                    onCheckedChange={() => toggleReservation(reservation.id!)}
-                  />
+                <div className="flex items-start gap-3 justify-between">
                   <div className="flex-1">
-                    <label
-                      htmlFor={`reservation-${reservation.id || index}`}
-                      className="text-sm font-medium cursor-pointer"
-                    >
+                    <div className="text-sm font-medium">
                       {t("checkin.reservations.seat")}:{" "}
                       {reservation.seat?.seatNumber || "N/A"}
                       {reservation.seat?.seatRow &&
                         ` (${reservation.seat.seatRow})`}
-                    </label>
+                    </div>
                     <div className="mt-2 flex gap-2">
                       <Badge variant="outline">
                         {(() => {
@@ -199,8 +166,7 @@ export function ReservationSelector({
               </Card>
             ))}
           </div>
-        </div>
-
+        </div>{" "}
         <div className="sticky bottom-0 bg-background p-4 border-t">
           <Separator className="mb-4" />
 
@@ -258,7 +224,7 @@ export function ReservationSelector({
       {/* Reservations Drawer - Mobile */}
       {isMobile && (
         <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-          <DrawerContent onInteractOutside={(e) => e.preventDefault()}>
+          <DrawerContent>
             <DrawerHeader>
               <DrawerTitle>{t("checkin.reservations.title")}</DrawerTitle>
             </DrawerHeader>

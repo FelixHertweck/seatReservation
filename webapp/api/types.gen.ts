@@ -2072,10 +2072,10 @@ export type PostApiUsersAdminImportResponse = PostApiUsersAdminImportResponses[k
 
 export type DeleteApiUsersAdminByIdData = {
     body?: never;
-    path: {
-        id: bigint;
+    path?: never;
+    query?: {
+        ids?: Array<bigint>;
     };
-    query?: never;
     url: '/api/users/admin/{id}';
 };
 

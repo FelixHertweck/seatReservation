@@ -137,7 +137,7 @@ export default function EventsPage() {
       ) : groupedReservations.length === 0 ? (
         <NoReservationAvailable reservationLength={reservations.length} />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 lg:gap-4">
           {groupedReservations.map((eventReservations) => {
             const firstReservation = eventReservations[0];
             const event = events?.find(

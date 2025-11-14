@@ -271,7 +271,7 @@ export function SeatManagement({
                 <Table className="table-fixed">
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[5%]">
+                      <TableHead className="w-[50px]">
                         {t("seatManagement.table.selectHeader")}
                       </TableHead>
                       <SortableTableHead
@@ -279,7 +279,7 @@ export function SeatManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[15%]"
+                        className="min-w-[150px]"
                       >
                         {t("seatManagement.table.seatNumberHeader")}
                       </SortableTableHead>
@@ -288,7 +288,7 @@ export function SeatManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[25%]"
+                        className="min-w-[200px]"
                       >
                         {t("seatManagement.table.locationHeader")}
                       </SortableTableHead>
@@ -297,7 +297,7 @@ export function SeatManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[15%]"
+                        className="min-w-[100px]"
                       >
                         {t("seatManagement.table.seatRowHeader")}
                       </SortableTableHead>
@@ -306,7 +306,7 @@ export function SeatManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[15%]"
+                        className="min-w-[150px]"
                       >
                         {t("seatManagement.table.entranceHeader")}
                       </SortableTableHead>
@@ -315,11 +315,11 @@ export function SeatManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[15%]"
+                        className="min-w-[200px]"
                       >
                         {t("seatManagement.table.positionHeader")}
                       </SortableTableHead>
-                      <TableHead className="w-[10%]">
+                      <TableHead className="min-w-[120px]">
                         {t("seatManagement.table.actionsHeader")}
                       </TableHead>
                     </TableRow>

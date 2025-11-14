@@ -382,18 +382,20 @@ public class UserService {
     /**
      * Deletes a user by ID.
      *
-     * @param id The ID of the user to delete.
+     * @param ids The IDs of the users to delete.
      * @throws UserNotFoundException If the user with the given ID does not exist.
      */
     @Transactional
-    public void deleteUser(Long id) throws UserNotFoundException {
-        LOG.debugf("Attempting to delete user with ID: %d.", id);
-        boolean deleted = userRepository.deleteById(id);
-        if (!deleted) {
-            LOG.warnf("User with ID %d not found for deletion.", id);
-            throw new UserNotFoundException("User with id " + id + " not found.");
+    public void deleteUser(List<Long> ids) throws UserNotFoundException {
+        for (Long id : ids) {
+            LOG.debugf("Attempting to delete user with ID: %d.", id);
+            boolean deleted = userRepository.deleteById(id);
+            if (!deleted) {
+                LOG.warnf("User with ID %d not found for deletion.", id);
+                throw new UserNotFoundException("User with id " + id + " not found.");
+            }
         }
-        LOG.infof("User with ID %d deleted successfully.", id);
+        LOG.infof("Users with IDs %s deleted successfully.", ids);
     }
 
     public UserDTO getUserById(Long id) {

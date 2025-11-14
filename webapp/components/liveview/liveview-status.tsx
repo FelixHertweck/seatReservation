@@ -88,7 +88,7 @@ export function LiveviewStatus({
                       <span>{formatted.time}</span>
                     </div>
                   ) : (
-                    t("eventManagement.tbd")
+                    "-"
                   );
                 })()}
               </p>
@@ -105,7 +105,7 @@ export function LiveviewStatus({
                       <span>{formatted.time}</span>
                     </div>
                   ) : (
-                    t("eventManagement.tbd")
+                    "-"
                   );
                 })()}
               </p>

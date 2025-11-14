@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.userManagment.resource;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import jakarta.annotation.security.RolesAllowed;
@@ -32,6 +33,7 @@ import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.SecurityContext;
 
@@ -165,10 +167,14 @@ public class UserResource {
             responseCode = "403",
             description = "Forbidden: Only ADMIN role can access this resource")
     @APIResponse(responseCode = "404", description = "Not Found: User with specified ID not found")
-    public void deleteUser(@PathParam("id") Long id) {
-        LOG.debugf("Received DELETE request to /api/users/admin/%d for user deletion.", id);
-        userService.deleteUser(id);
-        LOG.debugf("User with ID %d deleted successfully by admin.", id);
+    public void deleteUser(@QueryParam("ids") List<Long> ids) {
+        LOG.debugf(
+                "Received DELETE request to /api/users/admin/%d for user deletion.",
+                ids != null ? ids : Collections.emptyList());
+        userService.deleteUser(ids);
+        LOG.debugf(
+                "User with ID %d deleted successfully by admin.",
+                ids != null ? ids : Collections.emptyList());
     }
 
     /**
