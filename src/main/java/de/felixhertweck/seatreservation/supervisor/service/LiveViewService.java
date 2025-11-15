@@ -26,13 +26,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-
-import org.jboss.logging.Logger;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
@@ -47,8 +46,7 @@ import de.felixhertweck.seatreservation.supervisor.dto.WebsocketUpdateDTO;
 import de.felixhertweck.seatreservation.supervisor.exception.InvalidEventIdException;
 import io.quarkus.arc.Lock;
 import io.quarkus.websockets.next.WebSocketConnection;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class LiveViewService {
@@ -101,8 +99,7 @@ public class LiveViewService {
             String eventIdStr, WebSocketConnection connection, String username)
             throws InvalidEventIdException {
         long eventId = parseEventId(eventIdStr);
-        User user =
-                userRepository.findByUsername(username);
+        User user = userRepository.findByUsername(username);
         if (!isAuthorizedForEvent(user, eventId)) {
             throw new SecurityException("User is not authorized to access event " + eventId);
         }
@@ -127,8 +124,7 @@ public class LiveViewService {
             String eventIdStr, WebSocketConnection connection, String username)
             throws InvalidEventIdException {
         long eventId = parseEventId(eventIdStr);
-        User user =
-                userRepository.findByUsername(username);
+        User user = userRepository.findByUsername(username);
         if (!isAuthorizedForEvent(user, eventId)) {
             throw new SecurityException("User is not authorized to access event " + eventId);
         }
@@ -209,8 +205,7 @@ public class LiveViewService {
         }
     }
 
-    private boolean isAuthorizedForEvent(
-            User user, long eventId) {
+    private boolean isAuthorizedForEvent(User user, long eventId) {
         if (user == null) return false;
         if (eventRepository.isUserSupervisor(eventId, user.id)) return true;
         Event event = eventRepository.findById(eventId);

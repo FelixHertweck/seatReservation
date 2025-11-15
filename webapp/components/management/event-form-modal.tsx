@@ -149,10 +149,8 @@ export function EventFormModal({
             />
           </div>
 
+          <div className="border-t border-gray-200 my-4" />
           <div className="space-y-2">
-            <Label htmlFor="supervisors">
-              {t("eventFormModal.supervisorsLabel")}
-            </Label>
             <UserMultiSelect
               users={users}
               selectedUserIds={formData.supervisorIds}
@@ -163,6 +161,7 @@ export function EventFormModal({
               placeholder={t("eventFormModal.supervisorsPlaceholder")}
             />
           </div>
+          <div className="border-t border-gray-200 my-4" />
 
           <div className="space-y-2">
             <Label htmlFor="description">

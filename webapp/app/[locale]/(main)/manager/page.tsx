@@ -14,7 +14,7 @@ import { EventManagement } from "@/components/management/event-management";
 import { LocationManagement } from "@/components/management/location-management";
 import { SeatManagement } from "@/components/management/seat-management";
 import { ReservationManagement } from "@/components/management/reservation-management";
-import { ReservationAllowanceManagement } from "@/components/management/reservation-allowance-management";
+import { ReservationAllowanceManagement } from "@/components/management/allowance-management";
 import { useManager } from "@/hooks/use-manager";
 import { useT } from "@/lib/i18n/hooks";
 import { useIsMobile } from "@/hooks/use-mobile";
