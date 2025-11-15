@@ -615,6 +615,8 @@
     "bookingDeadlineLabel": "Buchungsfrist",
     "bookingStartTimeLabel": "Buchungs-Startzeit",
     "reminderSendDateLabel": "Erinnerungs-Email Datum",
+    "supervisorsLabel": "Betreuer",
+    "supervisorsPlaceholder": "Benutzer auswählen...",
     "cancelButton": "Abbrechen",
     "savingButton": "Speichern...",
     "createButton": "Erstellen",
@@ -868,13 +870,13 @@
     "editButtonLabel": "Bearbeiten"
   },
   "userMultiSelect": {
-    "tagsHint": "Tags (klicken um alle Benutzer mit diesem Tag auszuwählen)",
-    "usersSelected": "{{selectedCount}} von {{totalUsers}} Benutzern ausgewählt",
-    "filtered": " ({{filteredCount}} gefiltert)",
-    "clearAll": "Alle abwählen",
-    "selectAll": "Alle auswählen",
+    "quickSelectByTags": "Schnellauswahl nach Tags:",
+    "searchPlaceholder": "Benutzer suchen...",
     "noUsersFound": "Keine Benutzer gefunden",
-    "noUsersAvailable": "Keine Benutzer verfügbar"
+    "noUsersAvailable": "Keine Benutzer verfügbar",
+    "selectedUsers": "Ausgewählte Benutzer",
+    "removeAll": "Alle entfernen",
+    "noUsersSelected": "Keine Benutzer ausgewählt"
   },
   "pagination-wrapper": {
     "label": "Zeige {{fromCount}} bis {{toCount}} von {{totalCount}}"

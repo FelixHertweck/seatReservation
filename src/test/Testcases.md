@@ -1585,6 +1585,9 @@ This section describes test cases for the internationalization of the user inter
 | `testGetReservationInfos_eventMismatchException` | Throws `EventMismatchException` when a token belongs to a reservation for a different event. |
 | `testGetReservationInfos_tokenNotFound` | Throws `CheckInTokenNotFoundException` when a check-in token is not found in the database. |
 | `testGetReservationInfos_multipleTokens` | Successfully processes and validates multiple check-in tokens in a single request. |
+| `testGetUsernamesWithReservations_SupervisorUnauthorized_Throws` | Tests service-level behavior by calling `getUsernamesWithReservations(user,eventId)` with a supervisor user who is not authorized for the event; expects a `SecurityException`. |
+| `testGetUsernamesWithReservations_AdminAllowed` | Tests service-level `getUsernamesWithReservations` is callable by admin user and returns the list of usernames. |
+| `testGetAllEventsForSupervisor_filtersProperly` | Tests `getAllEventsForSupervisor` service method returns only events that are authorized for a supervisor (filters out events where the user is not supervisor or manager). |
 | `testGetUsernamesWithReservations_multipleUsers` | Successfully retrieves a list of distinct usernames from all reservations in the database. |
 | `testGetUsernamesWithReservations_noReservations` | Returns an empty list when no reservations exist in the database. |
 | `testGetReservationInfosByUsername_success` | Successfully retrieves check-in information for a user by username and returns a `CheckInInfoResponseDTO`. |
@@ -1604,9 +1607,17 @@ This section describes test cases for the internationalization of the user inter
 | `testProcessCheckInWithNonExistentCheckInIdsInMixedList` | Tests POST endpoint with mixed lists where check-in IDs don't exist and expects HTTP 404 Not Found. |
 | `testProcessCheckInWithoutAuthentication` | Tests POST endpoint without authentication token and expects HTTP 401 Unauthorized. |
 | `testPostCheckInInfoWithoutAuthentication` | Tests POST endpoint without authentication token and expects HTTP 401 Unauthorized. |
-| `testGetUsernamesWithReservations` | Tests the GET `/api/supervisor/checkin/usernames/{eventId}` endpoint and expects HTTP 200 with a list of usernames for the specified event. |
+| `testGetUsernamesWithReservations` | Tests the GET `/api/supervisor/checkin/usernames/{eventId}` endpoint and expects HTTP 200 with a list of usernames for the specified event (event 10 in the test setup returns two usernames). |
+| `testGetUsernamesWithReservations_AsAdmin` | Tests GET `/api/supervisor/checkin/usernames/10` using `admin` role; expects HTTP 200 and usernames for the event (admin has access to all events). |
+| `testGetUsernamesWithReservations_AsManagerForEvent` | Tests GET `/api/supervisor/checkin/usernames/10` using `manager` role who manages event 10; expects HTTP 200 and usernames for that event. |
+| `testGetUsernamesWithReservations_SupervisorNoAccess` | Tests GET `/api/supervisor/checkin/usernames/20` using a supervisor user without access to the event; expects HTTP 403 Forbidden. |
+| `testGetUsernamesWithReservations_SupervisorAccess` | Tests GET `/api/supervisor/checkin/usernames/10` using a supervisor user with access to event 10; expects HTTP 200 and usernames for the event. |
 | `testGetUsernamesWithReservationsWithoutAuthentication` | Tests GET `/api/supervisor/checkin/usernames/{eventId}` endpoint without authentication token and expects HTTP 401 Unauthorized. |
-| `testGetAllEvents` | Tests the GET `/api/supervisor/checkin/events` endpoint and expects HTTP 200 with a list of all events. |
+| `testGetAllEvents` | Tests the GET `/api/supervisor/checkin/events` endpoint and expects HTTP 200 with a list of events; results depend on calling user's role and access. |
+| `testGetAllEvents_AsAdmin_SeesAll` | Tests GET `/api/supervisor/checkin/events` using `admin` role; expects HTTP 200 and all events are visible. |
+| `testGetAllEvents_AsSupervisor_SeesAuthorizedOnly` | Tests GET `/api/supervisor/checkin/events` using a supervisor who is authorized for a subset of events; expects HTTP 200 and only authorized events returned. |
+| `testGetAllEvents_AsOtherSupervisor_SeesNone` | Tests GET `/api/supervisor/checkin/events` using a supervisor without any event access; expects HTTP 200 and an empty list. |
+| `testGetAllEvents_AsManager_SeesManaged` | Tests GET `/api/supervisor/checkin/events` using a manager who manages one or more events; expects HTTP 200 and only events the manager manages returned. |
 | `testGetAllEventsWithoutAuthentication` | Tests GET `/api/supervisor/checkin/events` endpoint without authentication token and expects HTTP 401 Unauthorized. |
 | `testGetCheckInInfoByUsernameNotFound` | Tests the GET `/api/supervisor/checkin/info/{username}` endpoint with a non-existent username and expects HTTP 404 Not Found. |
 | `testGetCheckInInfoByUsernameWithoutAuthentication` | Tests GET `/api/supervisor/checkin/info/{username}` endpoint without authentication token and expects HTTP 401 Unauthorized. |

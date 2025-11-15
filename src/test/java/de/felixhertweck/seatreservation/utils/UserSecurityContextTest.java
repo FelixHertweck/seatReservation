@@ -21,15 +21,21 @@ package de.felixhertweck.seatreservation.utils;
 
 import java.security.Principal;
 import java.util.Set;
-import jakarta.ws.rs.core.SecurityContext;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import io.quarkus.security.identity.SecurityIdentity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,7 +46,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class UserSecurityContextTest {
 
-    @Mock private SecurityContext securityContext;
+    @Mock private SecurityIdentity securityContext;
 
     @Mock private UserRepository userRepository;
 
@@ -62,7 +68,7 @@ class UserSecurityContextTest {
     void getCurrentUser_ValidUser_ReturnsUser() throws UserNotFoundException {
         // Arrange
         String username = "testuser";
-        when(securityContext.getUserPrincipal()).thenReturn(principal);
+        when(securityContext.getPrincipal()).thenReturn(principal);
         when(principal.getName()).thenReturn(username);
         when(userRepository.findByUsername(username)).thenReturn(testUser);
 
@@ -75,7 +81,7 @@ class UserSecurityContextTest {
         assertEquals(username, result.getUsername());
         assertEquals("test@example.com", result.getEmail());
 
-        verify(securityContext).getUserPrincipal();
+        verify(securityContext).getPrincipal();
         verify(principal).getName();
         verify(userRepository).findByUsername(username);
     }
@@ -84,7 +90,7 @@ class UserSecurityContextTest {
     void getCurrentUser_UserNotFound_ThrowsUserNotFoundException() {
         // Arrange
         String username = "nonexistentuser";
-        when(securityContext.getUserPrincipal()).thenReturn(principal);
+        when(securityContext.getPrincipal()).thenReturn(principal);
         when(principal.getName()).thenReturn(username);
         when(userRepository.findByUsername(username)).thenReturn(null);
 
@@ -95,7 +101,7 @@ class UserSecurityContextTest {
 
         assertEquals("Current user not found.", exception.getMessage());
 
-        verify(securityContext).getUserPrincipal();
+        verify(securityContext).getPrincipal();
         verify(principal).getName();
         verify(userRepository).findByUsername(username);
     }
@@ -103,19 +109,19 @@ class UserSecurityContextTest {
     @Test
     void getCurrentUser_NullPrincipal_ThrowsNullPointerException() {
         // Arrange
-        when(securityContext.getUserPrincipal()).thenReturn(null);
+        when(securityContext.getPrincipal()).thenReturn(null);
 
         // Act & Assert
         assertThrows(NullPointerException.class, () -> userSecurityContext.getCurrentUser());
 
-        verify(securityContext).getUserPrincipal();
+        verify(securityContext).getPrincipal();
         verifyNoInteractions(userRepository);
     }
 
     @Test
     void getCurrentUser_PrincipalWithNullName_CallsRepositoryWithNull() {
         // Arrange
-        when(securityContext.getUserPrincipal()).thenReturn(principal);
+        when(securityContext.getPrincipal()).thenReturn(principal);
         when(principal.getName()).thenReturn(null);
         when(userRepository.findByUsername(null)).thenReturn(null);
 
@@ -126,7 +132,7 @@ class UserSecurityContextTest {
 
         assertEquals("Current user not found.", exception.getMessage());
 
-        verify(securityContext).getUserPrincipal();
+        verify(securityContext).getPrincipal();
         verify(principal).getName();
         verify(userRepository).findByUsername(null);
     }
@@ -135,7 +141,7 @@ class UserSecurityContextTest {
     void getCurrentUser_EmptyUsername_ThrowsUserNotFoundException() {
         // Arrange
         String emptyUsername = "";
-        when(securityContext.getUserPrincipal()).thenReturn(principal);
+        when(securityContext.getPrincipal()).thenReturn(principal);
         when(principal.getName()).thenReturn(emptyUsername);
         when(userRepository.findByUsername(emptyUsername)).thenReturn(null);
 
@@ -146,7 +152,7 @@ class UserSecurityContextTest {
 
         assertEquals("Current user not found.", exception.getMessage());
 
-        verify(securityContext).getUserPrincipal();
+        verify(securityContext).getPrincipal();
         verify(principal).getName();
         verify(userRepository).findByUsername(emptyUsername);
     }
@@ -156,7 +162,7 @@ class UserSecurityContextTest {
             throws UserNotFoundException {
         // Arrange
         String username = "testuser";
-        when(securityContext.getUserPrincipal()).thenReturn(principal);
+        when(securityContext.getPrincipal()).thenReturn(principal);
         when(principal.getName()).thenReturn(username);
         when(userRepository.findByUsername(username)).thenReturn(testUser);
 
@@ -169,7 +175,7 @@ class UserSecurityContextTest {
         assertEquals(testUser, result2);
 
         // Should call repository each time (no caching)
-        verify(securityContext, times(2)).getUserPrincipal();
+        verify(securityContext, times(2)).getPrincipal();
         verify(principal, times(2)).getName();
         verify(userRepository, times(2)).findByUsername(username);
     }
@@ -185,7 +191,7 @@ class UserSecurityContextTest {
 
         Principal secondPrincipal = mock(Principal.class);
 
-        when(securityContext.getUserPrincipal()).thenReturn(principal).thenReturn(secondPrincipal);
+        when(securityContext.getPrincipal()).thenReturn(principal).thenReturn(secondPrincipal);
         when(principal.getName()).thenReturn("testuser");
         when(secondPrincipal.getName()).thenReturn("seconduser");
         when(userRepository.findByUsername("testuser")).thenReturn(testUser);
@@ -201,7 +207,7 @@ class UserSecurityContextTest {
         assertEquals(secondUser, result2);
         assertEquals("seconduser", result2.getUsername());
 
-        verify(securityContext, times(2)).getUserPrincipal();
+        verify(securityContext, times(2)).getPrincipal();
         verify(userRepository).findByUsername("testuser");
         verify(userRepository).findByUsername("seconduser");
     }

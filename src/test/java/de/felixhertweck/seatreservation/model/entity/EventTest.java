@@ -77,6 +77,7 @@ class EventTest {
         Instant bookingDeadline = startTime.minusSeconds(Duration.ofHours(1).toSeconds());
         Instant bookingStartTime = startTime.minusSeconds(Duration.ofDays(1).toSeconds());
         Instant reminderSendDate = startTime.minusSeconds(Duration.ofDays(1).toSeconds());
+        Set<User> supervisors = Set.of(manager);
 
         Event constructedEvent =
                 new Event(
@@ -88,7 +89,8 @@ class EventTest {
                         bookingStartTime,
                         location,
                         manager,
-                        reminderSendDate);
+                        reminderSendDate,
+                        supervisors);
 
         assertEquals(name, constructedEvent.getName());
         assertEquals(description, constructedEvent.getDescription());
@@ -97,6 +99,7 @@ class EventTest {
         assertEquals(bookingDeadline, constructedEvent.getBookingDeadline());
         assertEquals(location, constructedEvent.getEventLocation());
         assertEquals(manager, constructedEvent.getManager());
+        assertEquals(supervisors, constructedEvent.getSupervisors());
     }
 
     @Test

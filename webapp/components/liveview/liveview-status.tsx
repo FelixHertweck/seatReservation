@@ -83,10 +83,10 @@ export function LiveviewStatus({
                 {(() => {
                   const formatted = formatDateTime(event.startTime);
                   return formatted ? (
-                    <div className="flex flex-col text-sm">
+                    <span className="flex flex-col text-sm">
                       <span>{formatted.date}</span>
                       <span>{formatted.time}</span>
-                    </div>
+                    </span>
                   ) : (
                     "-"
                   );
@@ -100,10 +100,10 @@ export function LiveviewStatus({
                 {(() => {
                   const formatted = formatDateTime(event.endTime);
                   return formatted ? (
-                    <div className="flex flex-col text-sm">
+                    <span className="flex flex-col text-sm">
                       <span>{formatted.date}</span>
                       <span>{formatted.time}</span>
-                    </div>
+                    </span>
                   ) : (
                     "-"
                   );

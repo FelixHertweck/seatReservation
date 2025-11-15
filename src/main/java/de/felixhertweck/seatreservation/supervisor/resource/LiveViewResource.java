@@ -23,8 +23,9 @@ import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 
 import de.felixhertweck.seatreservation.model.entity.Roles;
+import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.supervisor.service.LiveViewService;
-import io.quarkus.security.identity.SecurityIdentity;
+import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import io.quarkus.websockets.next.OnClose;
 import io.quarkus.websockets.next.OnOpen;
 import io.quarkus.websockets.next.PathParam;
@@ -32,6 +33,7 @@ import io.quarkus.websockets.next.WebSocket;
 import io.quarkus.websockets.next.WebSocketConnection;
 import org.jboss.logging.Logger;
 
+// TODO: Fortlaufende Authentifizierung / maximal Sessiondauer
 @WebSocket(path = "/api/supervisor/liveview/{eventId}")
 @RolesAllowed({Roles.SUPERVISOR, Roles.ADMIN, Roles.MANAGER})
 public class LiveViewResource {
@@ -40,7 +42,7 @@ public class LiveViewResource {
 
     @Inject LiveViewService webSocketService;
 
-    @Inject SecurityIdentity securityIdentity;
+    @Inject UserSecurityContext userSecurityContext;
 
     /**
      * Handles WebSocket connection opening. Registers the connection for the event and sends
@@ -51,11 +53,11 @@ public class LiveViewResource {
      */
     @OnOpen
     public void onOpen(WebSocketConnection connection, @PathParam("eventId") String eventIdStr) {
-        String username = securityIdentity.getPrincipal().getName();
-        LOG.infof("WebSocket connection opened for event %s by user %s", eventIdStr, username);
+        User currentUser = userSecurityContext.getCurrentUser();
+        LOG.infof("WebSocket connection opened for event %s by user %s", eventIdStr, currentUser);
 
-        // Register the connection
-        webSocketService.registerConnection(eventIdStr, connection);
+        // Register the connection with username for authorization checks
+        webSocketService.registerConnection(eventIdStr, connection, currentUser.getUsername());
 
         LOG.infof("WebSocket connection successfully registered for event %s", eventIdStr);
     }
@@ -68,11 +70,11 @@ public class LiveViewResource {
      */
     @OnClose
     public void onClose(WebSocketConnection connection, @PathParam("eventId") String eventIdStr) {
-        String username = securityIdentity.getPrincipal().getName();
-        LOG.infof("WebSocket connection closed for event %s by user %s", eventIdStr, username);
+        User currentUser = userSecurityContext.getCurrentUser();
+        LOG.infof("WebSocket connection closed for event %s by user %s", eventIdStr, currentUser);
 
-        // Unregister the connection
-        webSocketService.unregisterConnection(eventIdStr, connection);
+        // Unregister the connection with username for authorization checks
+        webSocketService.unregisterConnection(eventIdStr, connection, currentUser.getUsername());
 
         LOG.infof("WebSocket connection unregistered for event %s", eventIdStr);
     }

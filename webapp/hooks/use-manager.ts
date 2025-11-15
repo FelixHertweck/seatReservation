@@ -463,6 +463,7 @@ export function useManager(): UseManagerReturn {
     events: {
       allLocations: locations ?? [],
       events: events ?? [],
+      users: user ?? [],
       createEvent: (event: EventRequestDto) =>
         createEventMutation.mutateAsync({ body: event }),
       updateEvent: (id: bigint, event: EventRequestDto) =>

@@ -28,6 +28,7 @@ import type {
   EventResponseDto,
   EventLocationResponseDto,
   EventRequestDto,
+  LimitedUserInfoDto,
 } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
@@ -37,6 +38,7 @@ import { formatDateTime } from "@/lib/utils";
 export interface EventManagementProps {
   events: EventResponseDto[];
   allLocations: EventLocationResponseDto[];
+  users?: LimitedUserInfoDto[];
   createEvent: (event: EventRequestDto) => Promise<EventResponseDto>;
   updateEvent: (
     id: bigint,
@@ -51,6 +53,7 @@ export interface EventManagementProps {
 export function EventManagement({
   events,
   allLocations,
+  users = [],
   createEvent,
   updateEvent,
   deleteEvent,
@@ -311,7 +314,7 @@ export function EventManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="min-w-[100px] max-w-[120px]"
+                        className="min-w-[130px] max-w-[160px]"
                       >
                         {t("eventManagement.tableHeaderName")}
                       </SortableTableHead>
@@ -320,7 +323,7 @@ export function EventManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="min-w-[150px] max-w-[150px]"
+                        className="min-w-[120px] max-w-[150px]"
                       >
                         {t("eventManagement.tableHeaderDescription")}
                       </SortableTableHead>
@@ -759,6 +762,7 @@ export function EventManagement({
           allLocations={allLocations}
           event={selectedEvent}
           isCreating={isCreating}
+          users={users}
           onSubmit={async (eventData) => {
             if (isCreating) {
               await createEvent(eventData);

@@ -260,6 +260,14 @@
           "eventLocationId" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "supervisorIds" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
           }
         }
       },
@@ -314,6 +322,13 @@
           "managerId" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "supervisorIds" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
           }
         }
       },

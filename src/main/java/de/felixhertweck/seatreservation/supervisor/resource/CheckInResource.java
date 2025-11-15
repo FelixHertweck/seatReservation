@@ -33,11 +33,13 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import de.felixhertweck.seatreservation.model.entity.Roles;
+import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.supervisor.dto.CheckInInfoRequestDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.CheckInInfoResponseDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.CheckInProcessRequestDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.SupervisorEventResponseDTO;
 import de.felixhertweck.seatreservation.supervisor.service.CheckInService;
+import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -49,10 +51,10 @@ import org.jboss.logging.Logger;
 @Produces(MediaType.APPLICATION_JSON)
 public class CheckInResource {
 
-    // TODO: Extend event to have supervisors assigned and check here if the user is one of them
     private static final Logger LOG = Logger.getLogger(CheckInResource.class);
 
     @Inject CheckInService checkInService;
+    @Inject UserSecurityContext userSecurityContext;
 
     /**
      * POST endpoint to retrieve check-in information based on tokens. Validates each token
@@ -78,9 +80,10 @@ public class CheckInResource {
                         "Received check-in info request for user %s and event %s with %d tokens.",
                         requestDTO.userId, requestDTO.eventId, tokenCount));
 
+        User currentUser = userSecurityContext.getCurrentUser();
         CheckInInfoResponseDTO responseDto =
                 checkInService.getReservationInfos(
-                        requestDTO.userId, requestDTO.eventId, requestDTO.checkInTokens);
+                        currentUser, requestDTO.eventId, requestDTO.checkInTokens);
 
         LOG.debug(
                 String.format(
@@ -111,7 +114,8 @@ public class CheckInResource {
                         + " cancellations.",
                 requestDTO.userId, requestDTO.eventId, checkInCount, cancelCount);
 
-        checkInService.processCheckIn(requestDTO);
+        User currentUser = userSecurityContext.getCurrentUser();
+        checkInService.processCheckIn(requestDTO, currentUser);
 
         LOG.infof(
                 "Check-in process request for user %d, event %d processed successfully with %d"
@@ -140,7 +144,9 @@ public class CheckInResource {
     @APIResponse(responseCode = "401", description = "Unauthorized")
     public List<SupervisorEventResponseDTO> getAllEvents() {
         LOG.debugf("Received request for all events for supervisor view.");
-        List<SupervisorEventResponseDTO> events = checkInService.getAllEventsForSupervisor();
+        User currentUser = userSecurityContext.getCurrentUser();
+        List<SupervisorEventResponseDTO> events =
+                checkInService.getAllEventsForSupervisor(currentUser);
         LOG.debugf("Returning %d events.", events.size());
         return events;
     }
@@ -167,7 +173,8 @@ public class CheckInResource {
     @APIResponse(responseCode = "404", description = "Event not found")
     public List<String> getUsernamesWithReservations(@PathParam("eventId") Long eventId) {
         LOG.debugf("Received request for usernames with reservations for event %d.", eventId);
-        List<String> usernames = checkInService.getUsernamesWithReservations(eventId);
+        User currentUser = userSecurityContext.getCurrentUser();
+        List<String> usernames = checkInService.getUsernamesWithReservations(currentUser, eventId);
         LOG.debugf(
                 "Returning %d usernames with reservations for event %d.",
                 usernames.size(), eventId);
@@ -191,7 +198,9 @@ public class CheckInResource {
     public CheckInInfoResponseDTO processCheckInInfoByUsername(
             @PathParam("username") String username) {
         LOG.debugf("Received check-in info request for username %s.", username);
-        CheckInInfoResponseDTO responseDto = checkInService.getReservationInfosByUsername(username);
+        User currentUser = userSecurityContext.getCurrentUser();
+        CheckInInfoResponseDTO responseDto =
+                checkInService.getReservationInfosByUsername(currentUser, username);
         LOG.debugf("Check-in info request for username %s processed successfully.", username);
         return responseDto;
     }

@@ -267,6 +267,14 @@ export const EventRequestDTOSchema = {
         eventLocationId: {
             type: 'integer',
             format: 'int64'
+        },
+        supervisorIds: {
+            type: 'array',
+            uniqueItems: true,
+            items: {
+                type: 'integer',
+                format: 'int64'
+            }
         }
     }
 } as const;
@@ -322,6 +330,13 @@ export const EventResponseDTOSchema = {
         managerId: {
             type: 'integer',
             format: 'int64'
+        },
+        supervisorIds: {
+            type: 'array',
+            items: {
+                type: 'integer',
+                format: 'int64'
+            }
         }
     }
 } as const;

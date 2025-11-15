@@ -88,6 +88,12 @@ const eventResponseDtoSchemaResponseTransformer = (data: any) => {
     if (data.managerId) {
         data.managerId = BigInt(data.managerId.toString());
     }
+    if (data.supervisorIds) {
+        data.supervisorIds = data.supervisorIds.map((item: any) => {
+            BigInt(item.toString());
+            return item;
+        });
+    }
     return data;
 };
 

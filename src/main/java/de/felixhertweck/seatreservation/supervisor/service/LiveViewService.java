@@ -23,26 +23,32 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
+
+import org.jboss.logging.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
+import de.felixhertweck.seatreservation.model.entity.Roles;
+import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
+import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.supervisor.dto.SupervisorReservationResponseDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.WebsocketInitialDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.WebsocketUpdateDTO;
 import de.felixhertweck.seatreservation.supervisor.exception.InvalidEventIdException;
 import io.quarkus.arc.Lock;
 import io.quarkus.websockets.next.WebSocketConnection;
-import org.jboss.logging.Logger;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 @ApplicationScoped
 public class LiveViewService {
@@ -52,6 +58,7 @@ public class LiveViewService {
     @Inject ReservationRepository reservationRepository;
 
     @Inject EventRepository eventRepository;
+    @Inject UserRepository userRepository;
 
     // Map: eventId -> List of WebSocket Connections
     private final Map<Long, List<WebSocketConnection>> eventSubscriptions =
@@ -83,6 +90,26 @@ public class LiveViewService {
     }
 
     /**
+     * Registers a websocket connection with authorization check by username.
+     *
+     * @param eventIdStr the event id as string
+     * @param connection websocket connection
+     * @param username current user's username
+     * @throws InvalidEventIdException if id invalid
+     */
+    public void registerConnection(
+            String eventIdStr, WebSocketConnection connection, String username)
+            throws InvalidEventIdException {
+        long eventId = parseEventId(eventIdStr);
+        User user =
+                userRepository.findByUsername(username);
+        if (!isAuthorizedForEvent(user, eventId)) {
+            throw new SecurityException("User is not authorized to access event " + eventId);
+        }
+        registerConnection(eventId, connection);
+    }
+
+    /**
      * Unregisters a WebSocket connection for a specific event by parsing the event ID string.
      *
      * @param eventIdStr the event ID as String to parse
@@ -93,6 +120,18 @@ public class LiveViewService {
     public void unregisterConnection(String eventIdStr, WebSocketConnection connection)
             throws InvalidEventIdException {
         long eventId = parseEventId(eventIdStr);
+        unregisterConnection(eventId, connection);
+    }
+
+    public void unregisterConnection(
+            String eventIdStr, WebSocketConnection connection, String username)
+            throws InvalidEventIdException {
+        long eventId = parseEventId(eventIdStr);
+        User user =
+                userRepository.findByUsername(username);
+        if (!isAuthorizedForEvent(user, eventId)) {
+            throw new SecurityException("User is not authorized to access event " + eventId);
+        }
         unregisterConnection(eventId, connection);
     }
 
@@ -170,6 +209,17 @@ public class LiveViewService {
         }
     }
 
+    private boolean isAuthorizedForEvent(
+            User user, long eventId) {
+        if (user == null) return false;
+        if (eventRepository.isUserSupervisor(eventId, user.id)) return true;
+        Event event = eventRepository.findById(eventId);
+        if (event != null
+                && event.getManager() != null
+                && Objects.equals(event.getManager().id, user.id)) return true;
+        return user.getRoles() != null && user.getRoles().contains(Roles.ADMIN);
+    }
+
     /**
      * Sends the initial list of reservations for an event to a specific connection.
      *
@@ -196,7 +246,7 @@ public class LiveViewService {
                     .await()
                     .indefinitely();
 
-            LOG.infof(
+            LOG.debugf(
                     "Sent %d initial reservations to connection for event %d",
                     dtos.size(), eventId);
         } catch (IOException e) {

@@ -40,7 +40,8 @@ public record EventResponseDTO(
         List<SeatStatusDTO> seatStatuses,
         List<Long> eventUserAllowancesIds,
         Long eventLocationId,
-        Long managerId) {
+        Long managerId,
+        List<Long> supervisorIds) {
     public EventResponseDTO(Event event) {
         this(
                 event.getId(),
@@ -59,6 +60,7 @@ public record EventResponseDTO(
                                 .toList()
                         : List.of(),
                 event.getEventLocation() != null ? event.getEventLocation().getId() : null,
-                event.getManager() != null ? event.getManager().getId() : null);
+                event.getManager() != null ? event.getManager().getId() : null,
+                event.getSupervisors().stream().map(u -> u.id).toList());
     }
 }

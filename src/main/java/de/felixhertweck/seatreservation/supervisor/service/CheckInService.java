@@ -29,9 +29,11 @@ import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
 import de.felixhertweck.seatreservation.common.exception.ReservationNotFoundException;
+import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationLiveStatus;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
+import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
@@ -72,17 +74,20 @@ public class CheckInService {
      */
     @Transactional
     public CheckInInfoResponseDTO getReservationInfos(
-            Long userId, Long eventId, List<String> checkInTokens)
+            User currentUser, Long eventId, List<String> checkInTokens)
             throws UserMismatchException, EventMismatchException, CheckInTokenNotFoundException {
 
         LOG.debugf(
                 "Getting reservation infos for user %d, event %d with %d check-in tokens.",
-                (Object) userId,
+                (Object) currentUser.id,
                 (Object) eventId,
                 (Object) (checkInTokens != null ? checkInTokens.size() : 0));
 
+        if (!isAuthorizedForEvent(currentUser, eventId)) {
+            throw new SecurityException("User is not authorized to access event " + eventId);
+        }
         List<SupervisorReservationResponseDTO> processedReservations = new ArrayList<>();
-        User user = userRepository.findById(userId);
+        User user = userRepository.findById(currentUser.id);
 
         if (checkInTokens != null && !checkInTokens.isEmpty()) {
             for (String token : checkInTokens) {
@@ -96,7 +101,7 @@ public class CheckInService {
                 }
 
                 Reservation reservation = reservationOptional.get();
-                validateReservation(reservation, userId, eventId);
+                validateReservation(reservation, currentUser.id, eventId);
                 LOG.debugf("Processed reservation %s for token %s.", reservation, token);
 
                 processedReservations.add(new SupervisorReservationResponseDTO(reservation));
@@ -105,9 +110,19 @@ public class CheckInService {
 
         LOG.debugf(
                 "Processed %d reservations for user %d and event %d.",
-                processedReservations.size(), userId, eventId);
+                processedReservations.size(), currentUser.id, eventId);
 
         return new CheckInInfoResponseDTO(processedReservations, new LimitedUserInfoDTO(user));
+    }
+
+    // Backwards-compatible overload for existing tests/usage that provide userId
+    @Transactional
+    public CheckInInfoResponseDTO getReservationInfos(
+            Long userId, Long eventId, List<String> checkInTokens)
+            throws UserMismatchException, EventMismatchException, CheckInTokenNotFoundException {
+        User currentUser = new User();
+        currentUser.id = userId;
+        return getReservationInfos(currentUser, eventId, checkInTokens);
     }
 
     /**
@@ -119,9 +134,13 @@ public class CheckInService {
      *     user/event
      */
     @Transactional
-    public void processCheckIn(CheckInProcessRequestDTO requestDTO) throws CheckInException {
+    public void processCheckIn(CheckInProcessRequestDTO requestDTO, User currentUser)
+            throws CheckInException {
         Long eventId = requestDTO.eventId;
-        Long userId = requestDTO.userId;
+        if (!isAuthorizedForEvent(currentUser, eventId)) {
+            throw new SecurityException("User is not authorized to access event " + eventId);
+        }
+        Long userId = currentUser.id;
         List<Long> checkInIds = requestDTO.checkIn;
         List<Long> cancelIds = requestDTO.cancel;
 
@@ -201,14 +220,36 @@ public class CheckInService {
                 cancelIds != null ? cancelIds.size() : 0);
     }
 
+    // Backwards-compatible overload
+    @Transactional
+    public void processCheckIn(CheckInProcessRequestDTO requestDTO) throws CheckInException {
+        User currentUser = new User();
+        currentUser.id = requestDTO.userId;
+        processCheckIn(requestDTO, currentUser);
+    }
+
     /**
      * Retrieves a list of all events for the supervisor view.
      *
      * @return A list of SupervisorEventResponseDTO.
      */
     @Transactional
-    public List<SupervisorEventResponseDTO> getAllEventsForSupervisor() {
+    public List<SupervisorEventResponseDTO> getAllEventsForSupervisor(User currentUser) {
         LOG.debug("Retrieving all events for supervisor view.");
+        if (currentUser == null) {
+            return eventRepository.findAll().stream()
+                    .map(SupervisorEventResponseDTO::new)
+                    .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+        }
+        return eventRepository.findAll().stream()
+                .filter(e -> isAuthorizedForEvent(currentUser, e.getId()))
+                .map(SupervisorEventResponseDTO::new)
+                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+    }
+
+    // Backwards-compatible overload
+    @Transactional
+    public List<SupervisorEventResponseDTO> getAllEventsForSupervisor() {
         return eventRepository.findAll().stream()
                 .map(SupervisorEventResponseDTO::new)
                 .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
@@ -221,8 +262,11 @@ public class CheckInService {
      * @return A list of strings, where each string is a username.
      */
     @Transactional
-    public List<String> getUsernamesWithReservations(Long eventId) {
+    public List<String> getUsernamesWithReservations(User currentUser, Long eventId) {
         LOG.debugf("Retrieving usernames with reservations for event %d.", eventId);
+        if (currentUser != null && !isAuthorizedForEvent(currentUser, eventId)) {
+            throw new SecurityException("User is not authorized to access event " + eventId);
+        }
         return reservationRepository.find("event.id", eventId).stream()
                 .filter(r -> r.getStatus() != ReservationStatus.BLOCKED)
                 .map(Reservation::getUser)
@@ -230,6 +274,11 @@ public class CheckInService {
                 .map(User::getUsername)
                 .distinct()
                 .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+    }
+
+    // Backwards-compatible overload
+    public List<String> getUsernamesWithReservations(Long eventId) {
+        return getUsernamesWithReservations(null, eventId);
     }
 
     /**
@@ -240,7 +289,7 @@ public class CheckInService {
      * @throws ReservationNotFoundException if no reservations are found for the user
      */
     @Transactional
-    public CheckInInfoResponseDTO getReservationInfosByUsername(String username)
+    public CheckInInfoResponseDTO getReservationInfosByUsername(User currentUser, String username)
             throws ReservationNotFoundException {
         LOG.debugf("Getting reservation infos for username %s.", username);
 
@@ -260,6 +309,11 @@ public class CheckInService {
 
         List<SupervisorReservationResponseDTO> processedReservations =
                 reservations.stream()
+                        .filter(
+                                r ->
+                                        currentUser == null
+                                                || isAuthorizedForEvent(
+                                                        currentUser, r.getEvent().getId()))
                         .map(SupervisorReservationResponseDTO::new)
                         .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
 
@@ -267,6 +321,13 @@ public class CheckInService {
                 "Processed %d reservations for user %s.", processedReservations.size(), username);
 
         return new CheckInInfoResponseDTO(processedReservations, new LimitedUserInfoDTO(user));
+    }
+
+    // Backwards-compatible overload
+    public CheckInInfoResponseDTO getReservationInfosByUsername(String username)
+            throws ReservationNotFoundException {
+        // Fallback to no filtering
+        return getReservationInfosByUsername(null, username);
     }
 
     private void validateReservation(Reservation reservation, Long userId, Long eventId)
@@ -287,5 +348,21 @@ public class CheckInService {
             throw new IllegalStateException(
                     String.format("Reservation %s is blocked.", reservation.getCheckInCode()));
         }
+    }
+
+    private boolean isAuthorizedForEvent(User user, Long eventId) {
+        if (user == null || eventId == null) return false;
+        // If user is a supervisor for the event
+        if (eventRepository.isUserSupervisor(eventId, user.id)) return true;
+        // If user is manager for the event
+        Event event = eventRepository.findById(eventId);
+        if (event != null
+                && event.getManager() != null
+                && Objects.equals(event.getManager().id, user.id)) {
+            return true;
+        }
+        // If user is admin
+        if (user.getRoles() != null && user.getRoles().contains(Roles.ADMIN)) return true;
+        return false;
     }
 }

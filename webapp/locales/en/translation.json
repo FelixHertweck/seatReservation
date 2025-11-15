@@ -758,6 +758,8 @@
     "bookingDeadlineLabel": "Booking Deadline",
     "bookingStartTimeLabel": "Booking Start Time",
     "reminderSendDateLabel": "Reminder Send Date",
+    "supervisorsLabel": "Supervisors",
+    "supervisorsPlaceholder": "Search users to add as supervisors",
     "cancelButton": "Cancel",
     "savingButton": "Saving...",
     "createButton": "Create",
@@ -1011,13 +1013,13 @@
     "editButtonLabel": "Edit"
   },
   "userMultiSelect": {
-    "tagsHint": "Tags (click to select all users with this tag)",
-    "usersSelected": "{{selectedCount}} of {{totalUsers}} users selected",
-    "filtered": " ({{filteredCount}} filtered)",
-    "clearAll": "Deselect All",
-    "selectAll": "Select All",
+    "quickSelectByTags": "Quick select by tags:",
+    "searchPlaceholder": "Search users...",
     "noUsersFound": "No users found",
-    "noUsersAvailable": "No users available"
+    "noUsersAvailable": "No users available",
+    "selectedUsers": "Selected users",
+    "removeAll": "Remove all",
+    "noUsersSelected": "No users selected"
   },
   "pagination-wrapper": {
     "label": "Showing {{fromCount}} to {{toCount}} of {{totalCount}}"
