@@ -32,9 +32,9 @@ import de.felixhertweck.seatreservation.common.exception.DuplicateUserException;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.InvalidUserException;
 import de.felixhertweck.seatreservation.common.exception.RegistrationDisabledException;
+import de.felixhertweck.seatreservation.common.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
 import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
-import de.felixhertweck.seatreservation.management.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.management.exception.SeatNotFoundException;
 import de.felixhertweck.seatreservation.reservation.exception.EventBookingClosedException;
 import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableException;
@@ -44,6 +44,8 @@ import de.felixhertweck.seatreservation.security.exceptions.AccountLockedExcepti
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
 import de.felixhertweck.seatreservation.security.service.TokenService;
+import de.felixhertweck.seatreservation.supervisor.exception.CheckInException;
+import de.felixhertweck.seatreservation.supervisor.exception.CheckInTokenNotFoundException;
 import de.felixhertweck.seatreservation.userManagment.exceptions.VerificationCodeNotFoundException;
 import de.felixhertweck.seatreservation.userManagment.exceptions.VerifyTokenExpiredException;
 import org.jboss.logging.Logger;
@@ -81,6 +83,8 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
             case SeatNotFoundException ignored -> status = Response.Status.NOT_FOUND;
             case NoSeatsAvailableException ignored -> status = Response.Status.BAD_REQUEST;
             case SeatAlreadyReservedException ignored -> status = Response.Status.CONFLICT;
+            case CheckInTokenNotFoundException ignored -> status = Response.Status.NOT_FOUND;
+            case CheckInException ignored -> status = Response.Status.BAD_REQUEST;
             case JwtInvalidException ignored -> {
                 NewCookie jwtAccessCookie = tokenService.createNewNullCookie("jwt", true);
                 NewCookie refreshTokenCookie =
