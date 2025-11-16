@@ -43,6 +43,7 @@ import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.reservation.dto.UserReservationsRequestDTO;
+import de.felixhertweck.seatreservation.utils.CodeGenerator;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import org.junit.jupiter.api.AfterEach;
@@ -109,7 +110,12 @@ public class ReservationResourceTest {
 
         testReservation =
                 new Reservation(
-                        testUser, testEvent, testSeat1, Instant.now(), ReservationStatus.RESERVED);
+                        testUser,
+                        testEvent,
+                        testSeat1,
+                        Instant.now(),
+                        ReservationStatus.RESERVED,
+                        CodeGenerator.generateRandomCode());
         reservationRepository.persist(testReservation);
 
         allowance.setReservationsAllowedCount(allowance.getReservationsAllowedCount() - 1);
@@ -338,7 +344,12 @@ public class ReservationResourceTest {
         var testUser = userRepository.findByUsernameOptional("user").orElseThrow();
         var reservation2 =
                 new Reservation(
-                        testUser, testEvent, testSeat2, Instant.now(), ReservationStatus.RESERVED);
+                        testUser,
+                        testEvent,
+                        testSeat2,
+                        Instant.now(),
+                        ReservationStatus.RESERVED,
+                        CodeGenerator.generateRandomCode());
 
         seedUserReservation(reservation2);
 
