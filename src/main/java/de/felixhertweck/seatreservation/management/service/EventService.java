@@ -20,7 +20,9 @@
 package de.felixhertweck.seatreservation.management.service;
 
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -36,6 +38,7 @@ import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
+import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
@@ -47,6 +50,8 @@ public class EventService {
 
     @Inject EventLocationRepository eventLocationRepository;
 
+    @Inject UserRepository userRepository;
+
     @Inject NotificationService notificationService;
 
     /**
@@ -56,10 +61,13 @@ public class EventService {
      * an administrator.
      *
      * @param dto The DTO containing the details of the Event to be created.
+     * @param manager The currently authenticated user.
+     * @throws IllegalArgumentException If the EventLocation or any supervisor user is not found.
      * @return A DTO representing the newly created Event.
      */
     @Transactional
-    public EventResponseDTO createEvent(EventRequestDTO dto, User manager) {
+    public EventResponseDTO createEvent(EventRequestDTO dto, User manager)
+            throws IllegalArgumentException {
         LOG.debugf(
                 "Attempting to create event with name: %s for manager: %s (ID: %d)",
                 dto.getName(), manager.getUsername(), manager.getId());
@@ -80,6 +88,8 @@ public class EventService {
 
         validateEventTiming(dto);
 
+        Set<User> supervisors = getSupervisorsFromIds(dto.getSupervisorIds());
+
         Event event =
                 new Event(
                         dto.getName(),
@@ -90,12 +100,18 @@ public class EventService {
                         dto.getBookingStartTime(),
                         location,
                         manager,
-                        dto.getReminderSendDate());
+                        dto.getReminderSendDate(),
+                        supervisors);
         eventRepository.persist(event);
         LOG.infof("Event '%s' (ID: %d) created successfully.", event.getName(), event.getId());
         LOG.debugf(
-                "Event '%s' (ID: %d) created successfully by manager: %s (ID: %d)",
-                event.getName(), event.getId(), manager.getUsername(), manager.getId());
+                "Event '%s' (ID: %d) created successfully by manager: %s (ID: %d) and assigned"
+                        + " supervisors: %s",
+                event.getName(),
+                event.getId(),
+                manager.getUsername(),
+                manager.getId(),
+                supervisors.stream().map(User::getUsername).collect(Collectors.joining(", ")));
 
         // Schedule reminder if reminder date is set
         if (event.getReminderSendDate() != null) {
@@ -159,10 +175,26 @@ public class EventService {
 
         validateEventTiming(dto);
 
+        Set<User> supervisors = getSupervisorsFromIds(dto.getSupervisorIds());
+
+        // Prepare supervisor display strings to avoid mismatched printf placeholders
+        String oldSupervisors =
+                event.getSupervisors() == null
+                        ? ""
+                        : event.getSupervisors().stream()
+                                .map(User::getUsername)
+                                .collect(Collectors.joining(", "));
+        String newSupervisors =
+                supervisors == null
+                        ? ""
+                        : supervisors.stream()
+                                .map(User::getUsername)
+                                .collect(Collectors.joining(", "));
+
         LOG.debugf(
                 "Updating event ID %d: name='%s' -> '%s', description='%s' -> '%s', startTime='%s'"
                         + " -> '%s', endTime='%s' -> '%s', bookingDeadline='%s' -> '%s',"
-                        + " eventLocationId='%d' -> '%d'",
+                        + " eventLocationId='%d' -> '%d' , supervisors='%s' -> '%s'",
                 id,
                 event.getName(),
                 dto.getName(),
@@ -175,7 +207,10 @@ public class EventService {
                 event.getBookingDeadline(),
                 dto.getBookingDeadline(),
                 event.getEventLocation().getId(),
-                dto.getEventLocationId());
+                dto.getEventLocationId(),
+                oldSupervisors,
+                newSupervisors);
+
         event.setName(dto.getName());
         event.setDescription(dto.getDescription());
         event.setStartTime(dto.getStartTime());
@@ -184,6 +219,8 @@ public class EventService {
         event.setBookingDeadline(dto.getBookingDeadline());
         event.setReminderSendDate(dto.getReminderSendDate());
         event.setEventLocation(location);
+        event.setSupervisors(supervisors);
+
         eventRepository.persist(event);
         LOG.infof("Event '%s' (ID: %d) updated successfully", event.getName(), event.getId());
         LOG.debugf(
@@ -200,6 +237,37 @@ public class EventService {
         }
 
         return new EventResponseDTO(event);
+    }
+
+    /**
+     * Retrieves a set of User entities based on the provided supervisor IDs.
+     *
+     * @param supervisorIds Set of supervisor user IDs
+     * @return Set of User entities
+     * @throws IllegalArgumentException if any supervisor ID is invalid
+     */
+    private Set<User> getSupervisorsFromIds(Set<Long> supervisorIds)
+            throws IllegalArgumentException {
+        Set<User> supervisors = new HashSet<>();
+        if (supervisorIds == null || supervisorIds.isEmpty()) {
+            // empty set when no supervisors are provided
+            return supervisors;
+        }
+        for (Long supervisorId : supervisorIds) {
+            User supervisor =
+                    userRepository
+                            .findByIdOptional(supervisorId)
+                            .orElseThrow(
+                                    () -> {
+                                        LOG.warnf(
+                                                "User with id %d not found for event creation.",
+                                                supervisorId);
+                                        return new IllegalArgumentException(
+                                                "User with id " + supervisorId + " not found");
+                                    });
+            supervisors.add(supervisor);
+        }
+        return supervisors;
     }
 
     /**
