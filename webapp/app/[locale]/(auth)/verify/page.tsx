@@ -21,9 +21,9 @@ import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useT } from "@/lib/i18n/hooks";
-import { isValidRedirectUrlEncoded } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { ErrorWithResponse } from "@/components/init-query-client";
+import { redirectUser } from "@/lib/redirect-User";
 
 export default function VerifyEmailPage() {
   const params = useParams();
@@ -89,12 +89,7 @@ export default function VerifyEmailPage() {
   };
 
   const handleContinue = () => {
-    const returnToUrl = searchParams.get("returnTo");
-    router.push(
-      returnToUrl && isValidRedirectUrlEncoded(returnToUrl)
-        ? decodeURIComponent(returnToUrl)
-        : `/${locale}/events`,
-    );
+    redirectUser(router, locale, user, searchParams.get("returnTo"));
   };
 
   const handleResendCode = async () => {

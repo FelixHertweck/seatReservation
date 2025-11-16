@@ -20,10 +20,9 @@ import {
   type RegistrationStatusDto,
   type VerifyEmailCodeRequestDto,
 } from "@/api";
-import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { isValidRedirectUrlEncoded } from "@/lib/utils";
 import { ErrorWithResponse } from "@/components/init-query-client";
 import { useState } from "react";
+import { redirectUser } from "@/lib/redirect-User";
 
 export function useAuth() {
   const t = useT();
@@ -78,7 +77,7 @@ export function useAuth() {
     setRetryAfter(null);
     await queryClient.invalidateQueries();
     await refetchUser();
-    redirectUser(router, locale, returnToUrl);
+    redirectUser(router, locale, user, returnToUrl);
   };
 
   const { mutateAsync: registerMutation } = useMutation({
@@ -92,7 +91,7 @@ export function useAuth() {
     await registerMutation({ body: userData });
     await queryClient.invalidateQueries();
     await refetchUser();
-    redirectUser(router, locale, returnToUrl);
+    redirectUser(router, locale, user, returnToUrl);
   };
 
   const { mutateAsync: logoutMutation } = useMutation({
@@ -140,7 +139,7 @@ export function useAuth() {
     };
     await verifyEmailMutation({ body: verificationDto });
     await queryClient.invalidateQueries();
-    redirectUser(router, locale, returnToUrl);
+    redirectUser(router, locale, user, returnToUrl);
   };
 
   const resendConfirmationMutation = useMutation({
@@ -159,7 +158,11 @@ export function useAuth() {
     data: registrationStatus,
     isLoading: isLoadingRegistrationStatus,
     isSuccess: isSuccessRegistrationStatus,
-  } = useQuery(getApiAuthRegistrationStatusOptions());
+  } = useQuery({
+    ...getApiAuthRegistrationStatusOptions(),
+    staleTime: Infinity,
+    gcTime: Infinity,
+  });
 
   return {
     user,
@@ -178,18 +181,6 @@ export function useAuth() {
     resendConfirmation,
     retryAfter,
   };
-}
-
-function redirectUser(
-  router: AppRouterInstance,
-  locale: string,
-  returnToUrl?: string | null,
-) {
-  router.push(
-    returnToUrl && isValidRedirectUrlEncoded(returnToUrl)
-      ? decodeURIComponent(returnToUrl)
-      : `/${locale}/events`,
-  );
 }
 
 interface RegistrationStatus {
