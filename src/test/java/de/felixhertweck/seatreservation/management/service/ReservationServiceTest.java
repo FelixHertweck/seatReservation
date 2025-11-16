@@ -42,10 +42,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import de.felixhertweck.seatreservation.common.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.email.service.EmailService;
 import de.felixhertweck.seatreservation.management.dto.ReservationRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.ReservationResponseDTO;
-import de.felixhertweck.seatreservation.management.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
@@ -59,6 +59,7 @@ import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepos
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.utils.CodeGenerator;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -160,7 +161,12 @@ public class ReservationServiceTest {
 
         reservation =
                 new Reservation(
-                        regularUser, event, seat, Instant.now(), ReservationStatus.RESERVED);
+                        regularUser,
+                        event,
+                        seat,
+                        Instant.now(),
+                        ReservationStatus.RESERVED,
+                        CodeGenerator.generateRandomCode());
         reservation.id = 1L;
 
         allowance = new EventUserAllowance(regularUser, event, 1);
@@ -466,7 +472,13 @@ public class ReservationServiceTest {
     void deleteReservation_Success_BlockedReservation_NoAllowanceIncrement() {
         // Create a blocked reservation
         Reservation blockedReservation =
-                new Reservation(regularUser, event, seat, Instant.now(), ReservationStatus.BLOCKED);
+                new Reservation(
+                        regularUser,
+                        event,
+                        seat,
+                        Instant.now(),
+                        ReservationStatus.BLOCKED,
+                        CodeGenerator.generateRandomCode());
         blockedReservation.id = 2L;
 
         when(reservationRepository.findByIdOptional(blockedReservation.id))
@@ -486,7 +498,12 @@ public class ReservationServiceTest {
         seat2.id = 2L;
         Reservation reservation2 =
                 new Reservation(
-                        regularUser, event, seat2, Instant.now(), ReservationStatus.RESERVED);
+                        regularUser,
+                        event,
+                        seat2,
+                        Instant.now(),
+                        ReservationStatus.RESERVED,
+                        CodeGenerator.generateRandomCode());
         reservation2.id = 2L;
 
         // Set up allowance with initial count
@@ -513,14 +530,25 @@ public class ReservationServiceTest {
     void deleteReservation_Success_MixedStatus_OnlyReservedIncrementsAllowance() {
         // Create one reserved and one blocked reservation
         Reservation blockedReservation =
-                new Reservation(regularUser, event, seat, Instant.now(), ReservationStatus.BLOCKED);
+                new Reservation(
+                        regularUser,
+                        event,
+                        seat,
+                        Instant.now(),
+                        ReservationStatus.BLOCKED,
+                        CodeGenerator.generateRandomCode());
         blockedReservation.id = 2L;
 
         Seat seat2 = new Seat("A2", event.getEventLocation(), "2", 1, 2, "A");
         seat2.id = 3L;
         Reservation reservedReservation =
                 new Reservation(
-                        regularUser, event, seat2, Instant.now(), ReservationStatus.RESERVED);
+                        regularUser,
+                        event,
+                        seat2,
+                        Instant.now(),
+                        ReservationStatus.RESERVED,
+                        CodeGenerator.generateRandomCode());
         reservedReservation.id = 3L;
 
         allowance.setReservationsAllowedCount(0);
