@@ -24,6 +24,7 @@ import java.time.Instant;
 import de.felixhertweck.seatreservation.common.dto.SeatDTO;
 import de.felixhertweck.seatreservation.common.dto.UserDTO;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
+import de.felixhertweck.seatreservation.model.entity.ReservationLiveStatus;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
@@ -34,7 +35,8 @@ public record ReservationResponseDTO(
         Long eventId,
         SeatDTO seat,
         Instant reservationDateTime,
-        ReservationStatus status) {
+        ReservationStatus status,
+        ReservationLiveStatus liveStatus) {
     public ReservationResponseDTO(Reservation reservation) {
         this(
                 reservation.id,
@@ -42,6 +44,7 @@ public record ReservationResponseDTO(
                 reservation.getEvent().getId(),
                 new SeatDTO(reservation.getSeat()),
                 reservation.getReservationDate(),
-                reservation.getStatus());
+                reservation.getStatus(),
+                reservation.getLiveStatus());
     }
 }
