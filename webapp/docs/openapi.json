@@ -1,5 +1,990 @@
 {
   "openapi" : "3.1.0",
+  "components" : {
+    "schemas" : {
+      "AdminUserCreationDto" : {
+        "type" : "object",
+        "required" : [ "username", "password", "firstname", "lastname", "sendEmailVerification", "roles", "tags" ],
+        "properties" : {
+          "username" : {
+            "type" : "string",
+            "pattern" : "^[a-zA-Z0-9._-]{3,64}$"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "password" : {
+            "type" : "string"
+          },
+          "firstname" : {
+            "type" : "string"
+          },
+          "lastname" : {
+            "type" : "string"
+          },
+          "sendEmailVerification" : {
+            "type" : "boolean"
+          },
+          "roles" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string"
+            },
+            "minItems" : 1
+          },
+          "tags" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "AdminUserUpdateDTO" : {
+        "type" : "object",
+        "properties" : {
+          "email" : {
+            "type" : "string"
+          },
+          "emailVerified" : {
+            "type" : "boolean"
+          },
+          "sendEmailVerification" : {
+            "type" : "boolean"
+          },
+          "firstname" : {
+            "type" : "string"
+          },
+          "lastname" : {
+            "type" : "string"
+          },
+          "password" : {
+            "type" : "string"
+          },
+          "tags" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "roles" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string"
+            },
+            "minItems" : 1
+          }
+        },
+        "required" : [ "emailVerified", "sendEmailVerification", "firstname", "lastname", "tags", "roles" ]
+      },
+      "BlockSeatsRequestDTO" : {
+        "type" : "object",
+        "properties" : {
+          "eventId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "seatIds" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          }
+        }
+      },
+      "CheckInInfoRequestDTO" : {
+        "type" : "object",
+        "required" : [ "userId", "eventId" ],
+        "properties" : {
+          "userId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "eventId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "checkInTokens" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "CheckInInfoResponseDTO" : {
+        "type" : "object",
+        "properties" : {
+          "reservations" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SupervisorReservationResponseDTO"
+            }
+          },
+          "user" : {
+            "$ref" : "#/components/schemas/LimitedUserInfoDTO"
+          }
+        }
+      },
+      "CheckInProcessRequestDTO" : {
+        "type" : "object",
+        "required" : [ "userId", "eventId" ],
+        "properties" : {
+          "userId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "eventId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "checkIn" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          },
+          "cancel" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          }
+        }
+      },
+      "EventLocationMakerDTO" : {
+        "type" : "object",
+        "properties" : {
+          "label" : {
+            "type" : "string"
+          },
+          "xCoordinate" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "yCoordinate" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "EventLocationRequestDTO" : {
+        "type" : "object",
+        "required" : [ "name", "address", "capacity" ],
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "address" : {
+            "type" : "string"
+          },
+          "capacity" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "markers" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/MakerRequestDTO"
+            }
+          }
+        }
+      },
+      "EventLocationResponseDTO" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "address" : {
+            "type" : "string"
+          },
+          "capacity" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "manager" : {
+            "$ref" : "#/components/schemas/LimitedUserInfoDTO"
+          },
+          "seatIds" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          },
+          "markers" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/EventLocationMakerDTO"
+            }
+          }
+        }
+      },
+      "EventRequestDTO" : {
+        "type" : "object",
+        "required" : [ "name", "description", "startTime", "endTime", "bookingDeadline", "bookingStartTime", "eventLocationId" ],
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "startTime" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "endTime" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "bookingDeadline" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "bookingStartTime" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "reminderSendDate" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "eventLocationId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "supervisorIds" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          }
+        }
+      },
+      "EventResponseDTO" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "startTime" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "endTime" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "bookingDeadline" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "bookingStartTime" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "reminderSendDate" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "isReminderSent" : {
+            "type" : "boolean"
+          },
+          "seatStatuses" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SeatStatusDTO"
+            }
+          },
+          "eventUserAllowancesIds" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          },
+          "eventLocationId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "managerId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "supervisorIds" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          }
+        }
+      },
+      "EventUserAllowanceUpdateDto" : {
+        "type" : "object",
+        "required" : [ "id", "eventId", "userId", "reservationsAllowedCount" ],
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "eventId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "userId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "reservationsAllowedCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "EventUserAllowancesCreateDto" : {
+        "type" : "object",
+        "required" : [ "eventId", "userIds", "reservationsAllowedCount" ],
+        "properties" : {
+          "eventId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "userIds" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            },
+            "minItems" : 1
+          },
+          "reservationsAllowedCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "EventUserAllowancesDto" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "eventId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "userId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "reservationsAllowedCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "ImportEventLocationDto" : {
+        "type" : "object",
+        "required" : [ "name", "address", "capacity" ],
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "address" : {
+            "type" : "string"
+          },
+          "capacity" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "seats" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ImportSeatDto"
+            }
+          },
+          "markers" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/MakerRequestDTO"
+            }
+          }
+        }
+      },
+      "ImportSeatDto" : {
+        "type" : "object",
+        "required" : [ "seatNumber", "xCoordinate", "yCoordinate" ],
+        "properties" : {
+          "seatNumber" : {
+            "type" : "string"
+          },
+          "xCoordinate" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "yCoordinate" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "seatRow" : {
+            "type" : "string"
+          }
+        }
+      },
+      "Instant" : {
+        "type" : "string",
+        "format" : "date-time",
+        "examples" : [ "2022-03-10T16:15:50Z" ]
+      },
+      "LimitedUserInfoDTO" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "username" : {
+            "type" : "string"
+          },
+          "tags" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "LoginLockedDTO" : {
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string"
+          },
+          "retryAfter" : {
+            "$ref" : "#/components/schemas/Instant"
+          }
+        }
+      },
+      "LoginRequestDTO" : {
+        "type" : "object",
+        "required" : [ "username", "password" ],
+        "properties" : {
+          "username" : {
+            "type" : "string",
+            "pattern" : "\\S"
+          },
+          "password" : {
+            "type" : "string",
+            "pattern" : "\\S"
+          }
+        }
+      },
+      "MakerRequestDTO" : {
+        "type" : "object",
+        "required" : [ "label", "xCoordinate", "yCoordinate" ],
+        "properties" : {
+          "label" : {
+            "type" : "string"
+          },
+          "xCoordinate" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "yCoordinate" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "RegisterRequestDTO" : {
+        "type" : "object",
+        "required" : [ "username", "firstname", "lastname", "email", "password" ],
+        "properties" : {
+          "username" : {
+            "type" : "string",
+            "pattern" : "^[a-zA-Z0-9._-]{3,64}$"
+          },
+          "firstname" : {
+            "type" : "string",
+            "pattern" : "\\S"
+          },
+          "lastname" : {
+            "type" : "string",
+            "pattern" : "\\S"
+          },
+          "email" : {
+            "type" : "string",
+            "pattern" : "\\S"
+          },
+          "password" : {
+            "type" : "string",
+            "pattern" : "\\S",
+            "minLength" : 8
+          }
+        }
+      },
+      "RegistrationStatusDTO" : {
+        "type" : "object",
+        "properties" : {
+          "enabled" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "ReservationLiveStatus" : {
+        "type" : "string",
+        "enum" : [ "CHECKED_IN", "CANCELLED", "NO_SHOW" ]
+      },
+      "ReservationRequestDTO" : {
+        "type" : "object",
+        "required" : [ "eventId", "userId", "seatIds" ],
+        "properties" : {
+          "eventId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "userId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "seatIds" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          },
+          "deductAllowance" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "ReservationResponseDTO" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "user" : {
+            "$ref" : "#/components/schemas/UserDTO"
+          },
+          "eventId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "seat" : {
+            "$ref" : "#/components/schemas/SeatDTO"
+          },
+          "reservationDateTime" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "status" : {
+            "$ref" : "#/components/schemas/ReservationStatus"
+          },
+          "liveStatus" : {
+            "$ref" : "#/components/schemas/ReservationLiveStatus"
+          }
+        }
+      },
+      "ReservationStatus" : {
+        "type" : "string",
+        "enum" : [ "RESERVED", "BLOCKED" ]
+      },
+      "SeatDTO" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "seatNumber" : {
+            "type" : "string"
+          },
+          "seatRow" : {
+            "type" : "string"
+          },
+          "locationId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "xCoordinate" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "yCoordinate" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "entrance" : {
+            "type" : "string"
+          }
+        }
+      },
+      "SeatRequestDTO" : {
+        "type" : "object",
+        "required" : [ "seatNumber", "eventLocationId", "xCoordinate", "yCoordinate", "seatRow" ],
+        "properties" : {
+          "seatNumber" : {
+            "type" : "string"
+          },
+          "eventLocationId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "xCoordinate" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "yCoordinate" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "seatRow" : {
+            "type" : "string"
+          },
+          "entrance" : {
+            "type" : "string"
+          }
+        }
+      },
+      "SeatStatusDTO" : {
+        "type" : "object",
+        "properties" : {
+          "seatId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "status" : {
+            "$ref" : "#/components/schemas/ReservationStatus"
+          }
+        }
+      },
+      "SupervisorEventLocationDTO" : {
+        "description" : "Event location details for supervisor view",
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "seats" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SeatDTO"
+            }
+          },
+          "markers" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/EventLocationMakerDTO"
+            }
+          }
+        }
+      },
+      "SupervisorEventResponseDTO" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "startTime" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "endTime" : {
+            "$ref" : "#/components/schemas/Instant"
+          }
+        }
+      },
+      "SupervisorReservationResponseDTO" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "userId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "username" : {
+            "type" : "string"
+          },
+          "eventId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "seat" : {
+            "$ref" : "#/components/schemas/SeatDTO"
+          },
+          "reservationDateTime" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "status" : {
+            "$ref" : "#/components/schemas/ReservationStatus"
+          },
+          "liveStatus" : {
+            "$ref" : "#/components/schemas/ReservationLiveStatus"
+          },
+          "reservationDate" : {
+            "$ref" : "#/components/schemas/Instant"
+          }
+        }
+      },
+      "SupervisorSeatStatusDTO" : {
+        "description" : "Seat reservation status for supervisor view",
+        "type" : "object",
+        "properties" : {
+          "seatId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "reservationId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "status" : {
+            "$ref" : "#/components/schemas/ReservationStatus"
+          },
+          "liveStatus" : {
+            "$ref" : "#/components/schemas/ReservationLiveStatus"
+          }
+        }
+      },
+      "UserDTO" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "username" : {
+            "type" : "string"
+          },
+          "firstname" : {
+            "type" : "string"
+          },
+          "lastname" : {
+            "type" : "string"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "emailVerified" : {
+            "type" : "boolean"
+          },
+          "emailVerificationSent" : {
+            "type" : "boolean"
+          },
+          "roles" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "tags" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "UserEventLocationResponseDTO" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "address" : {
+            "type" : "string"
+          },
+          "capacity" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "manager" : {
+            "$ref" : "#/components/schemas/LimitedUserInfoDTO"
+          },
+          "seats" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SeatDTO"
+            }
+          },
+          "markers" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/EventLocationMakerDTO"
+            }
+          }
+        }
+      },
+      "UserEventResponseDTO" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "startTime" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "endTime" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "bookingDeadline" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "bookingStartTime" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "seatStatuses" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SeatStatusDTO"
+            }
+          },
+          "locationId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "reservationsAllowed" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "UserProfileUpdateDTO" : {
+        "type" : "object",
+        "required" : [ "email", "firstname", "lastname", "tags" ],
+        "properties" : {
+          "email" : {
+            "type" : "string"
+          },
+          "firstname" : {
+            "type" : "string"
+          },
+          "lastname" : {
+            "type" : "string"
+          },
+          "password" : {
+            "type" : "string",
+            "minLength" : 8
+          },
+          "tags" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "UserReservationResponseDTO" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "userId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "eventId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "seat" : {
+            "$ref" : "#/components/schemas/SeatDTO"
+          },
+          "reservationDateTime" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "checkInCode" : {
+            "type" : "string"
+          }
+        }
+      },
+      "UserReservationsRequestDTO" : {
+        "type" : "object",
+        "required" : [ "eventId", "seatIds" ],
+        "properties" : {
+          "eventId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "seatIds" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            },
+            "minItems" : 1
+          }
+        }
+      },
+      "VerifyEmailCodeRequestDto" : {
+        "type" : "object",
+        "required" : [ "verificationCode" ],
+        "properties" : {
+          "verificationCode" : {
+            "type" : "string",
+            "pattern" : "\\d{6}"
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "SecurityScheme" : {
+        "type" : "http",
+        "scheme" : "bearer",
+        "bearerFormat" : "JWT",
+        "description" : "Authentication"
+      }
+    }
+  },
   "paths" : {
     "/api/auth/login" : {
       "post" : {
@@ -71,7 +1056,7 @@
         "summary" : "Logout",
         "tags" : [ "Auth Resource" ],
         "security" : [ {
-          "SecurityScheme" : [ "USER", "ADMIN", "MANAGER" ]
+          "SecurityScheme" : [ ]
         } ]
       }
     },
@@ -96,7 +1081,7 @@
         "summary" : "Logout All Devices",
         "tags" : [ "Auth Resource" ],
         "security" : [ {
-          "SecurityScheme" : [ "USER", "ADMIN", "MANAGER" ]
+          "SecurityScheme" : [ ]
         } ]
       }
     },
@@ -1423,6 +2408,192 @@
         } ]
       }
     },
+    "/api/supervisor/checkin/events" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK - Events retrieved successfully",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/SupervisorEventResponseDTO"
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Get All Events",
+        "tags" : [ "Check In Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "SUPERVISOR", "ADMIN", "MANAGER" ]
+        } ]
+      }
+    },
+    "/api/supervisor/checkin/info" : {
+      "post" : {
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CheckInInfoRequestDTO"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK - Check-in information retrieved successfully",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CheckInInfoResponseDTO"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "400" : {
+            "description" : "Bad Request - Invalid input parameters"
+          },
+          "404" : {
+            "description" : "Token not found"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Get Check In Info",
+        "tags" : [ "Check In Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "SUPERVISOR", "ADMIN", "MANAGER" ]
+        } ]
+      }
+    },
+    "/api/supervisor/checkin/info/{username}" : {
+      "post" : {
+        "parameters" : [ {
+          "name" : "username",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK - Check-in information processed successfully",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CheckInInfoResponseDTO"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "404" : {
+            "description" : "User or Reservation not found"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Process Check In Info By Username",
+        "tags" : [ "Check In Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "SUPERVISOR", "ADMIN", "MANAGER" ]
+        } ]
+      }
+    },
+    "/api/supervisor/checkin/process" : {
+      "post" : {
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CheckInProcessRequestDTO"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "No Content - Successfully processed"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "400" : {
+            "description" : "Bad Request - Invalid input parameters"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Process Check In",
+        "tags" : [ "Check In Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "SUPERVISOR", "ADMIN", "MANAGER" ]
+        } ]
+      }
+    },
+    "/api/supervisor/checkin/usernames/{eventId}" : {
+      "get" : {
+        "parameters" : [ {
+          "name" : "eventId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK - Usernames retrieved successfully",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "404" : {
+            "description" : "Event not found"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Get Usernames With Reservations",
+        "tags" : [ "Check In Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "SUPERVISOR", "ADMIN", "MANAGER" ]
+        } ]
+      }
+    },
     "/api/user/events" : {
       "get" : {
         "responses" : {
@@ -1452,7 +2623,7 @@
         "summary" : "Get Events",
         "tags" : [ "Event Resource" ],
         "security" : [ {
-          "SecurityScheme" : [ "USER", "MANAGER", "ADMIN" ]
+          "SecurityScheme" : [ "USER" ]
         } ]
       }
     },
@@ -1485,7 +2656,7 @@
         "summary" : "Get Locations",
         "tags" : [ "Event Location Resource" ],
         "security" : [ {
-          "SecurityScheme" : [ "USER", "MANAGER", "ADMIN" ]
+          "SecurityScheme" : [ "USER" ]
         } ]
       }
     },
@@ -1510,7 +2681,10 @@
           "500" : {
             "description" : "Internal Server Error: Error sending email"
           }
-        }
+        },
+        "security" : [ {
+          "SecurityScheme" : [ ]
+        } ]
       }
     },
     "/api/user/reservations" : {
@@ -1539,7 +2713,7 @@
         "summary" : "Get My Reservations",
         "tags" : [ "Reservation Resource" ],
         "security" : [ {
-          "SecurityScheme" : [ "USER", "MANAGER", "ADMIN" ]
+          "SecurityScheme" : [ "USER" ]
         } ]
       },
       "delete" : {
@@ -1577,7 +2751,7 @@
         "summary" : "Delete Reservation",
         "tags" : [ "Reservation Resource" ],
         "security" : [ {
-          "SecurityScheme" : [ "USER", "MANAGER", "ADMIN" ]
+          "SecurityScheme" : [ "USER" ]
         } ]
       },
       "post" : {
@@ -1624,7 +2798,7 @@
         "summary" : "Create Reservation",
         "tags" : [ "Reservation Resource" ],
         "security" : [ {
-          "SecurityScheme" : [ "USER", "MANAGER", "ADMIN" ]
+          "SecurityScheme" : [ "USER" ]
         } ]
       }
     },
@@ -1663,7 +2837,7 @@
         "summary" : "Get My Reservation By Id",
         "tags" : [ "Reservation Resource" ],
         "security" : [ {
-          "SecurityScheme" : [ "USER", "MANAGER", "ADMIN" ]
+          "SecurityScheme" : [ "USER" ]
         } ]
       }
     },
@@ -1874,12 +3048,14 @@
       },
       "delete" : {
         "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
+          "name" : "ids",
+          "in" : "query",
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
           }
         } ],
         "responses" : {
@@ -1978,7 +3154,7 @@
         "summary" : "Update Current User Profile",
         "tags" : [ "User Resource" ],
         "security" : [ {
-          "SecurityScheme" : [ "USER", "MANAGER", "ADMIN" ]
+          "SecurityScheme" : [ ]
         } ]
       },
       "get" : {
@@ -2033,805 +3209,8 @@
         "summary" : "Available Roles",
         "tags" : [ "User Resource" ],
         "security" : [ {
-          "SecurityScheme" : [ "USER", "MANAGER", "ADMIN" ]
+          "SecurityScheme" : [ ]
         } ]
-      }
-    }
-  },
-  "components" : {
-    "schemas" : {
-      "AdminUserCreationDto" : {
-        "type" : "object",
-        "required" : [ "username", "password", "firstname", "lastname", "sendEmailVerification", "roles", "tags" ],
-        "properties" : {
-          "username" : {
-            "type" : "string",
-            "pattern" : "^[a-zA-Z0-9._-]{3,64}$"
-          },
-          "email" : {
-            "type" : "string"
-          },
-          "password" : {
-            "type" : "string"
-          },
-          "firstname" : {
-            "type" : "string"
-          },
-          "lastname" : {
-            "type" : "string"
-          },
-          "sendEmailVerification" : {
-            "type" : "boolean"
-          },
-          "roles" : {
-            "type" : "array",
-            "uniqueItems" : true,
-            "items" : {
-              "type" : "string"
-            },
-            "minItems" : 1
-          },
-          "tags" : {
-            "type" : "array",
-            "uniqueItems" : true,
-            "items" : {
-              "type" : "string"
-            }
-          }
-        }
-      },
-      "AdminUserUpdateDTO" : {
-        "type" : "object",
-        "properties" : {
-          "email" : {
-            "type" : "string"
-          },
-          "emailVerified" : {
-            "type" : "boolean"
-          },
-          "sendEmailVerification" : {
-            "type" : "boolean"
-          },
-          "firstname" : {
-            "type" : "string"
-          },
-          "lastname" : {
-            "type" : "string"
-          },
-          "password" : {
-            "type" : "string"
-          },
-          "tags" : {
-            "type" : "array",
-            "uniqueItems" : true,
-            "items" : {
-              "type" : "string"
-            }
-          },
-          "roles" : {
-            "type" : "array",
-            "uniqueItems" : true,
-            "items" : {
-              "type" : "string"
-            },
-            "minItems" : 1
-          }
-        },
-        "required" : [ "emailVerified", "sendEmailVerification", "firstname", "lastname", "tags", "roles" ]
-      },
-      "BlockSeatsRequestDTO" : {
-        "type" : "object",
-        "properties" : {
-          "eventId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "seatIds" : {
-            "type" : "array",
-            "items" : {
-              "type" : "integer",
-              "format" : "int64"
-            }
-          }
-        }
-      },
-      "EventLocationMakerDTO" : {
-        "type" : "object",
-        "properties" : {
-          "label" : {
-            "type" : "string"
-          },
-          "xCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "yCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        }
-      },
-      "EventLocationRequestDTO" : {
-        "type" : "object",
-        "required" : [ "name", "address", "capacity" ],
-        "properties" : {
-          "name" : {
-            "type" : "string"
-          },
-          "address" : {
-            "type" : "string"
-          },
-          "capacity" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "markers" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/MakerRequestDTO"
-            }
-          }
-        }
-      },
-      "EventLocationResponseDTO" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "name" : {
-            "type" : "string"
-          },
-          "address" : {
-            "type" : "string"
-          },
-          "capacity" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "manager" : {
-            "$ref" : "#/components/schemas/LimitedUserInfoDTO"
-          },
-          "seatIds" : {
-            "type" : "array",
-            "items" : {
-              "type" : "integer",
-              "format" : "int64"
-            }
-          },
-          "markers" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/EventLocationMakerDTO"
-            }
-          }
-        }
-      },
-      "EventRequestDTO" : {
-        "type" : "object",
-        "required" : [ "name", "description", "startTime", "endTime", "bookingDeadline", "bookingStartTime", "eventLocationId" ],
-        "properties" : {
-          "name" : {
-            "type" : "string"
-          },
-          "description" : {
-            "type" : "string"
-          },
-          "startTime" : {
-            "$ref" : "#/components/schemas/Instant"
-          },
-          "endTime" : {
-            "$ref" : "#/components/schemas/Instant"
-          },
-          "bookingDeadline" : {
-            "$ref" : "#/components/schemas/Instant"
-          },
-          "bookingStartTime" : {
-            "$ref" : "#/components/schemas/Instant"
-          },
-          "reminderSendDate" : {
-            "$ref" : "#/components/schemas/Instant"
-          },
-          "eventLocationId" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        }
-      },
-      "EventResponseDTO" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "name" : {
-            "type" : "string"
-          },
-          "description" : {
-            "type" : "string"
-          },
-          "startTime" : {
-            "$ref" : "#/components/schemas/Instant"
-          },
-          "endTime" : {
-            "$ref" : "#/components/schemas/Instant"
-          },
-          "bookingDeadline" : {
-            "$ref" : "#/components/schemas/Instant"
-          },
-          "bookingStartTime" : {
-            "$ref" : "#/components/schemas/Instant"
-          },
-          "reminderSendDate" : {
-            "$ref" : "#/components/schemas/Instant"
-          },
-          "isReminderSent" : {
-            "type" : "boolean"
-          },
-          "seatStatuses" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/SeatStatusDTO"
-            }
-          },
-          "eventUserAllowancesIds" : {
-            "type" : "array",
-            "items" : {
-              "type" : "integer",
-              "format" : "int64"
-            }
-          },
-          "eventLocationId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "managerId" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        }
-      },
-      "EventUserAllowanceUpdateDto" : {
-        "type" : "object",
-        "required" : [ "id", "eventId", "userId", "reservationsAllowedCount" ],
-        "properties" : {
-          "id" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "eventId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "userId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "reservationsAllowedCount" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        }
-      },
-      "EventUserAllowancesCreateDto" : {
-        "type" : "object",
-        "required" : [ "eventId", "userIds", "reservationsAllowedCount" ],
-        "properties" : {
-          "eventId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "userIds" : {
-            "type" : "array",
-            "uniqueItems" : true,
-            "items" : {
-              "type" : "integer",
-              "format" : "int64"
-            },
-            "minItems" : 1
-          },
-          "reservationsAllowedCount" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        }
-      },
-      "EventUserAllowancesDto" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "eventId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "userId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "reservationsAllowedCount" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        }
-      },
-      "ImportEventLocationDto" : {
-        "type" : "object",
-        "required" : [ "name", "address", "capacity" ],
-        "properties" : {
-          "name" : {
-            "type" : "string"
-          },
-          "address" : {
-            "type" : "string"
-          },
-          "capacity" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "seats" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/ImportSeatDto"
-            }
-          },
-          "markers" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/MakerRequestDTO"
-            }
-          }
-        }
-      },
-      "ImportSeatDto" : {
-        "type" : "object",
-        "required" : [ "seatNumber", "xCoordinate", "yCoordinate" ],
-        "properties" : {
-          "seatNumber" : {
-            "type" : "string"
-          },
-          "xCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "yCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "seatRow" : {
-            "type" : "string"
-          }
-        }
-      },
-      "Instant" : {
-        "type" : "string",
-        "format" : "date-time",
-        "examples" : [ "2022-03-10T16:15:50Z" ]
-      },
-      "LimitedUserInfoDTO" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "username" : {
-            "type" : "string"
-          },
-          "tags" : {
-            "type" : "array",
-            "uniqueItems" : true,
-            "items" : {
-              "type" : "string"
-            }
-          }
-        }
-      },
-      "LoginLockedDTO" : {
-        "type" : "object",
-        "properties" : {
-          "message" : {
-            "type" : "string"
-          },
-          "retryAfter" : {
-            "$ref" : "#/components/schemas/Instant"
-          }
-        }
-      },
-      "LoginRequestDTO" : {
-        "type" : "object",
-        "required" : [ "username", "password" ],
-        "properties" : {
-          "username" : {
-            "type" : "string",
-            "pattern" : "\\S"
-          },
-          "password" : {
-            "type" : "string",
-            "pattern" : "\\S"
-          }
-        }
-      },
-      "MakerRequestDTO" : {
-        "type" : "object",
-        "required" : [ "label", "xCoordinate", "yCoordinate" ],
-        "properties" : {
-          "label" : {
-            "type" : "string"
-          },
-          "xCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "yCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        }
-      },
-      "RegisterRequestDTO" : {
-        "type" : "object",
-        "required" : [ "username", "firstname", "lastname", "email", "password" ],
-        "properties" : {
-          "username" : {
-            "type" : "string",
-            "pattern" : "^[a-zA-Z0-9._-]{3,64}$"
-          },
-          "firstname" : {
-            "type" : "string",
-            "pattern" : "\\S"
-          },
-          "lastname" : {
-            "type" : "string",
-            "pattern" : "\\S"
-          },
-          "email" : {
-            "type" : "string",
-            "pattern" : "\\S"
-          },
-          "password" : {
-            "type" : "string",
-            "pattern" : "\\S",
-            "minLength" : 8
-          }
-        }
-      },
-      "RegistrationStatusDTO" : {
-        "type" : "object",
-        "properties" : {
-          "enabled" : {
-            "type" : "boolean"
-          }
-        }
-      },
-      "ReservationRequestDTO" : {
-        "type" : "object",
-        "required" : [ "eventId", "userId", "seatIds" ],
-        "properties" : {
-          "eventId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "userId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "seatIds" : {
-            "type" : "array",
-            "uniqueItems" : true,
-            "items" : {
-              "type" : "integer",
-              "format" : "int64"
-            }
-          },
-          "deductAllowance" : {
-            "type" : "boolean"
-          }
-        }
-      },
-      "ReservationResponseDTO" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "user" : {
-            "$ref" : "#/components/schemas/UserDTO"
-          },
-          "eventId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "seat" : {
-            "$ref" : "#/components/schemas/SeatDTO"
-          },
-          "reservationDateTime" : {
-            "$ref" : "#/components/schemas/Instant"
-          },
-          "status" : {
-            "$ref" : "#/components/schemas/ReservationStatus"
-          }
-        }
-      },
-      "ReservationStatus" : {
-        "type" : "string",
-        "enum" : [ "RESERVED", "BLOCKED" ]
-      },
-      "SeatDTO" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "seatNumber" : {
-            "type" : "string"
-          },
-          "seatRow" : {
-            "type" : "string"
-          },
-          "locationId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "xCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "yCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "entrance" : {
-            "type" : "string"
-          }
-        }
-      },
-      "SeatRequestDTO" : {
-        "type" : "object",
-        "required" : [ "seatNumber", "eventLocationId", "xCoordinate", "yCoordinate", "seatRow" ],
-        "properties" : {
-          "seatNumber" : {
-            "type" : "string"
-          },
-          "eventLocationId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "xCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "yCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "seatRow" : {
-            "type" : "string"
-          },
-          "entrance" : {
-            "type" : "string"
-          }
-        }
-      },
-      "SeatStatusDTO" : {
-        "type" : "object",
-        "properties" : {
-          "seatId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "status" : {
-            "$ref" : "#/components/schemas/ReservationStatus"
-          }
-        }
-      },
-      "UserDTO" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "username" : {
-            "type" : "string"
-          },
-          "firstname" : {
-            "type" : "string"
-          },
-          "lastname" : {
-            "type" : "string"
-          },
-          "email" : {
-            "type" : "string"
-          },
-          "emailVerified" : {
-            "type" : "boolean"
-          },
-          "emailVerificationSent" : {
-            "type" : "boolean"
-          },
-          "roles" : {
-            "type" : "array",
-            "uniqueItems" : true,
-            "items" : {
-              "type" : "string"
-            }
-          },
-          "tags" : {
-            "type" : "array",
-            "uniqueItems" : true,
-            "items" : {
-              "type" : "string"
-            }
-          }
-        }
-      },
-      "UserEventLocationResponseDTO" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "name" : {
-            "type" : "string"
-          },
-          "address" : {
-            "type" : "string"
-          },
-          "capacity" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "manager" : {
-            "$ref" : "#/components/schemas/LimitedUserInfoDTO"
-          },
-          "seats" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/SeatDTO"
-            }
-          },
-          "markers" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/EventLocationMakerDTO"
-            }
-          }
-        }
-      },
-      "UserEventResponseDTO" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "name" : {
-            "type" : "string"
-          },
-          "description" : {
-            "type" : "string"
-          },
-          "startTime" : {
-            "$ref" : "#/components/schemas/Instant"
-          },
-          "endTime" : {
-            "$ref" : "#/components/schemas/Instant"
-          },
-          "bookingDeadline" : {
-            "$ref" : "#/components/schemas/Instant"
-          },
-          "bookingStartTime" : {
-            "$ref" : "#/components/schemas/Instant"
-          },
-          "seatStatuses" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/SeatStatusDTO"
-            }
-          },
-          "locationId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "reservationsAllowed" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        }
-      },
-      "UserProfileUpdateDTO" : {
-        "type" : "object",
-        "required" : [ "email", "firstname", "lastname", "tags" ],
-        "properties" : {
-          "email" : {
-            "type" : "string"
-          },
-          "firstname" : {
-            "type" : "string"
-          },
-          "lastname" : {
-            "type" : "string"
-          },
-          "password" : {
-            "type" : "string",
-            "minLength" : 8
-          },
-          "tags" : {
-            "type" : "array",
-            "uniqueItems" : true,
-            "items" : {
-              "type" : "string"
-            }
-          }
-        }
-      },
-      "UserReservationResponseDTO" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "userId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "eventId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "seat" : {
-            "$ref" : "#/components/schemas/SeatDTO"
-          },
-          "reservationDateTime" : {
-            "$ref" : "#/components/schemas/Instant"
-          }
-        }
-      },
-      "UserReservationsRequestDTO" : {
-        "type" : "object",
-        "required" : [ "eventId", "seatIds" ],
-        "properties" : {
-          "eventId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "seatIds" : {
-            "type" : "array",
-            "uniqueItems" : true,
-            "items" : {
-              "type" : "integer",
-              "format" : "int64"
-            },
-            "minItems" : 1
-          }
-        }
-      },
-      "VerifyEmailCodeRequestDto" : {
-        "type" : "object",
-        "required" : [ "verificationCode" ],
-        "properties" : {
-          "verificationCode" : {
-            "type" : "string",
-            "pattern" : "\\d{6}"
-          }
-        }
-      }
-    },
-    "securitySchemes" : {
-      "SecurityScheme" : {
-        "type" : "http",
-        "scheme" : "bearer",
-        "bearerFormat" : "JWT",
-        "description" : "Authentication"
       }
     }
   },
