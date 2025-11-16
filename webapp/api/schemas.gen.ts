@@ -98,6 +98,71 @@ export const BlockSeatsRequestDTOSchema = {
     }
 } as const;
 
+export const CheckInInfoRequestDTOSchema = {
+    type: 'object',
+    required: ['userId', 'eventId'],
+    properties: {
+        userId: {
+            type: 'integer',
+            format: 'int64'
+        },
+        eventId: {
+            type: 'integer',
+            format: 'int64'
+        },
+        checkInTokens: {
+            type: 'array',
+            items: {
+                type: 'string'
+            }
+        }
+    }
+} as const;
+
+export const CheckInInfoResponseDTOSchema = {
+    type: 'object',
+    properties: {
+        reservations: {
+            type: 'array',
+            items: {
+                '$ref': '#/components/schemas/SupervisorReservationResponseDTO'
+            }
+        },
+        user: {
+            '$ref': '#/components/schemas/LimitedUserInfoDTO'
+        }
+    }
+} as const;
+
+export const CheckInProcessRequestDTOSchema = {
+    type: 'object',
+    required: ['userId', 'eventId'],
+    properties: {
+        userId: {
+            type: 'integer',
+            format: 'int64'
+        },
+        eventId: {
+            type: 'integer',
+            format: 'int64'
+        },
+        checkIn: {
+            type: 'array',
+            items: {
+                type: 'integer',
+                format: 'int64'
+            }
+        },
+        cancel: {
+            type: 'array',
+            items: {
+                type: 'integer',
+                format: 'int64'
+            }
+        }
+    }
+} as const;
+
 export const EventLocationMakerDTOSchema = {
     type: 'object',
     properties: {
@@ -202,6 +267,14 @@ export const EventRequestDTOSchema = {
         eventLocationId: {
             type: 'integer',
             format: 'int64'
+        },
+        supervisorIds: {
+            type: 'array',
+            uniqueItems: true,
+            items: {
+                type: 'integer',
+                format: 'int64'
+            }
         }
     }
 } as const;
@@ -257,6 +330,13 @@ export const EventResponseDTOSchema = {
         managerId: {
             type: 'integer',
             format: 'int64'
+        },
+        supervisorIds: {
+            type: 'array',
+            items: {
+                type: 'integer',
+                format: 'int64'
+            }
         }
     }
 } as const;
@@ -488,6 +568,11 @@ export const RegistrationStatusDTOSchema = {
     }
 } as const;
 
+export const ReservationLiveStatusSchema = {
+    type: 'string',
+    enum: ['CHECKED_IN', 'CANCELLED', 'NO_SHOW']
+} as const;
+
 export const ReservationRequestDTOSchema = {
     type: 'object',
     required: ['eventId', 'userId', 'seatIds'],
@@ -536,6 +621,9 @@ export const ReservationResponseDTOSchema = {
         },
         status: {
             '$ref': '#/components/schemas/ReservationStatus'
+        },
+        liveStatus: {
+            '$ref': '#/components/schemas/ReservationLiveStatus'
         }
     }
 } as const;
@@ -613,6 +701,111 @@ export const SeatStatusDTOSchema = {
         },
         status: {
             '$ref': '#/components/schemas/ReservationStatus'
+        }
+    }
+} as const;
+
+export const SupervisorEventLocationDTOSchema = {
+    description: 'Event location details for supervisor view',
+    type: 'object',
+    properties: {
+        id: {
+            type: 'integer',
+            format: 'int64'
+        },
+        name: {
+            type: 'string'
+        },
+        seats: {
+            type: 'array',
+            items: {
+                '$ref': '#/components/schemas/SeatDTO'
+            }
+        },
+        markers: {
+            type: 'array',
+            items: {
+                '$ref': '#/components/schemas/EventLocationMakerDTO'
+            }
+        }
+    }
+} as const;
+
+export const SupervisorEventResponseDTOSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            type: 'integer',
+            format: 'int64'
+        },
+        name: {
+            type: 'string'
+        },
+        description: {
+            type: 'string'
+        },
+        startTime: {
+            '$ref': '#/components/schemas/Instant'
+        },
+        endTime: {
+            '$ref': '#/components/schemas/Instant'
+        }
+    }
+} as const;
+
+export const SupervisorReservationResponseDTOSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            type: 'integer',
+            format: 'int64'
+        },
+        userId: {
+            type: 'integer',
+            format: 'int64'
+        },
+        username: {
+            type: 'string'
+        },
+        eventId: {
+            type: 'integer',
+            format: 'int64'
+        },
+        seat: {
+            '$ref': '#/components/schemas/SeatDTO'
+        },
+        reservationDateTime: {
+            '$ref': '#/components/schemas/Instant'
+        },
+        status: {
+            '$ref': '#/components/schemas/ReservationStatus'
+        },
+        liveStatus: {
+            '$ref': '#/components/schemas/ReservationLiveStatus'
+        },
+        reservationDate: {
+            '$ref': '#/components/schemas/Instant'
+        }
+    }
+} as const;
+
+export const SupervisorSeatStatusDTOSchema = {
+    description: 'Seat reservation status for supervisor view',
+    type: 'object',
+    properties: {
+        seatId: {
+            type: 'integer',
+            format: 'int64'
+        },
+        reservationId: {
+            type: 'integer',
+            format: 'int64'
+        },
+        status: {
+            '$ref': '#/components/schemas/ReservationStatus'
+        },
+        liveStatus: {
+            '$ref': '#/components/schemas/ReservationLiveStatus'
         }
     }
 } as const;
@@ -783,6 +976,9 @@ export const UserReservationResponseDTOSchema = {
         },
         reservationDateTime: {
             '$ref': '#/components/schemas/Instant'
+        },
+        checkInCode: {
+            type: 'string'
         }
     }
 } as const;
