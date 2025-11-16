@@ -449,6 +449,7 @@ This is an overview of the test cases for the application.
 | `createReservationForUser_SeatAlreadyReservedException` | Attempts to create a reservation for an already reserved seat. Expects `SeatAlreadyReservedException`. |
 | `createReservationForUser_IllegalArgumentException_NoSeatIds` | Attempts to create a reservation without specifying seat IDs. |
 | `createReservationForUser_IllegalStateException_EmailNotVerified` | Attempts to create a reservation with a user whose email address is not verified. Expects `IllegalStateException`. |
+| `createReservationForUser_CheckInCodeIsSet` | Verifies that a check-in code is generated and set on the Reservation object when a reservation is created. |
 
 ### deleteReservationForUser(List<Long> ids, User currentUser)
 
@@ -1566,3 +1567,84 @@ This section describes test cases for the internationalization of the user inter
 | :--- | :--- |
 | `testRegistrationDisabledException` | Tests that `RegistrationDisabledException` is mapped to HTTP 403 Forbidden status with correct error response. |
 | `testRegistrationDisabledExceptionWithDifferentMessage` | Tests that `RegistrationDisabledException` with a custom message is properly mapped to HTTP 403 Forbidden with the correct message. |
+
+## Supervisor
+
+### CheckInService
+
+| Test Case | Description |
+| :--- | :--- |
+| `testProcessCheckInByIds_successfulCheckIn` | Successfully processes check-in requests for multiple reservations by ID and updates their live status to CHECKED_IN. |
+| `testProcessCheckInByIds_successfulCancel` | Successfully processes cancel requests for reservations by ID and updates their live status to CANCELLED. |
+| `testProcessCheckInByIds_mixedCheckInAndCancel` | Successfully processes a combination of check-in and cancel operations in a single request. |
+| `testProcessCheckInByIds_reservationNotFound` | Throws `ReservationNotFoundException` when a check-in ID is not found in the database. |
+| `testProcessCheckInByIds_emptyLists` | Handles empty check-in and cancel lists gracefully without processing any reservations. |
+| `testGetReservationInfos_successfulCheckIn` | Successfully retrieves and validates reservation information for valid check-in tokens. |
+| `testGetReservationInfos_emptyTokenList` | Handles empty token lists gracefully and returns an empty result list. |
+| `testGetReservationInfos_userMismatchException` | Throws `UserMismatchException` when a token belongs to a reservation for a different user. |
+| `testGetReservationInfos_eventMismatchException` | Throws `EventMismatchException` when a token belongs to a reservation for a different event. |
+| `testGetReservationInfos_tokenNotFound` | Throws `CheckInTokenNotFoundException` when a check-in token is not found in the database. |
+| `testGetReservationInfos_multipleTokens` | Successfully processes and validates multiple check-in tokens in a single request. |
+| `testGetUsernamesWithReservations_SupervisorUnauthorized_Throws` | Tests service-level behavior by calling `getUsernamesWithReservations(user,eventId)` with a supervisor user who is not authorized for the event; expects a `SecurityException`. |
+| `testGetUsernamesWithReservations_AdminAllowed` | Tests service-level `getUsernamesWithReservations` is callable by admin user and returns the list of usernames. |
+| `testGetAllEventsForSupervisor_filtersProperly` | Tests `getAllEventsForSupervisor` service method returns only events that are authorized for a supervisor (filters out events where the user is not supervisor or manager). |
+| `testGetUsernamesWithReservations_multipleUsers` | Successfully retrieves a list of distinct usernames from all reservations in the database. |
+| `testGetUsernamesWithReservations_noReservations` | Returns an empty list when no reservations exist in the database. |
+| `testGetReservationInfosByUsername_success` | Successfully retrieves check-in information for a user by username and returns a `CheckInInfoResponseDTO`. |
+| `testGetReservationInfosByUsername_userNotFound` | Throws `ReservationNotFoundException` when attempting to retrieve information for a non-existent username. |
+
+### CheckInResource
+
+| Test Case | Description |
+| :--- | :--- |
+| `testPostCheckInInfoWithEmptyTokens` | Tests the POST `/api/supervisor/checkin/info` endpoint with empty token list and expects HTTP 200 with empty result. |
+| `testPostCheckInInfoWithInvalidTokens` | Tests POST endpoint with invalid (non-existent) tokens and expects HTTP 404 Not Found. |
+| `testPostCheckInInfoWithMissingUserId` | Tests POST endpoint request validation: missing `userId` field results in HTTP 400 Bad Request. |
+| `testPostCheckInInfoWithMissingEventId` | Tests POST endpoint request validation: missing `eventId` field results in HTTP 400 Bad Request. |
+| `testProcessCheckInWithEmptyLists` | Tests the POST `/api/supervisor/checkin/process` endpoint with empty check-in and cancel lists and expects HTTP 204 No Content. |
+| `testProcessCheckInWithNonExistentCheckInIds` | Tests POST endpoint with non-existent check-in reservation IDs and expects HTTP 404 Not Found. |
+| `testProcessCheckInWithCancelListAndNonExistentCheckInIds` | Tests POST endpoint with cancel list (non-existent IDs) and expects HTTP 400 Bad Request. |
+| `testProcessCheckInWithNonExistentCheckInIdsInMixedList` | Tests POST endpoint with mixed lists where check-in IDs don't exist and expects HTTP 404 Not Found. |
+| `testProcessCheckInWithoutAuthentication` | Tests POST endpoint without authentication token and expects HTTP 401 Unauthorized. |
+| `testPostCheckInInfoWithoutAuthentication` | Tests POST endpoint without authentication token and expects HTTP 401 Unauthorized. |
+| `testGetUsernamesWithReservations` | Tests the GET `/api/supervisor/checkin/usernames/{eventId}` endpoint and expects HTTP 200 with a list of usernames for the specified event (event 10 in the test setup returns two usernames). |
+| `testGetUsernamesWithReservations_AsAdmin` | Tests GET `/api/supervisor/checkin/usernames/10` using `admin` role; expects HTTP 200 and usernames for the event (admin has access to all events). |
+| `testGetUsernamesWithReservations_AsManagerForEvent` | Tests GET `/api/supervisor/checkin/usernames/10` using `manager` role who manages event 10; expects HTTP 200 and usernames for that event. |
+| `testGetUsernamesWithReservations_SupervisorNoAccess` | Tests GET `/api/supervisor/checkin/usernames/20` using a supervisor user without access to the event; expects HTTP 403 Forbidden. |
+| `testGetUsernamesWithReservations_SupervisorAccess` | Tests GET `/api/supervisor/checkin/usernames/10` using a supervisor user with access to event 10; expects HTTP 200 and usernames for the event. |
+| `testGetUsernamesWithReservationsWithoutAuthentication` | Tests GET `/api/supervisor/checkin/usernames/{eventId}` endpoint without authentication token and expects HTTP 401 Unauthorized. |
+| `testGetAllEvents` | Tests the GET `/api/supervisor/checkin/events` endpoint and expects HTTP 200 with a list of events; results depend on calling user's role and access. |
+| `testGetAllEvents_AsAdmin_SeesAll` | Tests GET `/api/supervisor/checkin/events` using `admin` role; expects HTTP 200 and all events are visible. |
+| `testGetAllEvents_AsSupervisor_SeesAuthorizedOnly` | Tests GET `/api/supervisor/checkin/events` using a supervisor who is authorized for a subset of events; expects HTTP 200 and only authorized events returned. |
+| `testGetAllEvents_AsOtherSupervisor_SeesNone` | Tests GET `/api/supervisor/checkin/events` using a supervisor without any event access; expects HTTP 200 and an empty list. |
+| `testGetAllEvents_AsManager_SeesManaged` | Tests GET `/api/supervisor/checkin/events` using a manager who manages one or more events; expects HTTP 200 and only events the manager manages returned. |
+| `testGetAllEventsWithoutAuthentication` | Tests GET `/api/supervisor/checkin/events` endpoint without authentication token and expects HTTP 401 Unauthorized. |
+| `testGetCheckInInfoByUsernameNotFound` | Tests the GET `/api/supervisor/checkin/info/{username}` endpoint with a non-existent username and expects HTTP 404 Not Found. |
+| `testGetCheckInInfoByUsernameWithoutAuthentication` | Tests GET `/api/supervisor/checkin/info/{username}` endpoint without authentication token and expects HTTP 401 Unauthorized. |
+
+
+### SupervisorWebSocketService
+
+| Test Case | Description |
+| :--- | :--- |
+| `testGetActiveConnectionCount_NoConnections` | Verifies that initially there are 0 active connections for an event. |
+| `testBroadcastCheckInUpdate_NoActiveConnections` | Tests broadcasting a check-in update when no connections are active (should not throw exception). |
+| `testRegisterConnection_StringEventId_Success` | Successfully parses a valid event ID string and registers a WebSocket connection for the event. |
+| `testUnregisterConnection_StringEventId_Success` | Successfully parses a valid event ID string and unregisters a WebSocket connection from the event. |
+| `testRegisterConnection_InvalidEventId_NegativeNumber` | Tests that registering a connection with a negative event ID throws `InvalidEventIdException`. |
+| `testRegisterConnection_InvalidEventId_NotANumber` | Tests that registering a connection with a non-numeric event ID (e.g., "abc") throws `InvalidEventIdException`. |
+| `testRegisterConnection_InvalidEventId_Blank` | Tests that registering a connection with a blank/whitespace-only event ID throws `InvalidEventIdException`. |
+| `testRegisterConnection_InvalidEventId_Null` | Tests that registering a connection with a null event ID throws `InvalidEventIdException`. |
+
+### SupervisorWebSocketResource
+
+| Test Case | Description |
+| :--- | :--- |
+| `testWebSocketConnection_Open` | Tests WebSocket connection opening and verifies the connection is registered and initial reservations are sent. |
+| `testWebSocketConnection_Close` | Tests WebSocket connection closing and verifies the connection is properly unregistered. |
+| `testWebSocketConnection_InvalidEventId` | Tests WebSocket connection with invalid event ID format and expects proper error handling. |
+| `testWebSocketConnection_WithoutAuthentication` | Tests WebSocket connection without authentication and expects HTTP 401 Unauthorized. |
+| `testWebSocketConnection_InsufficientPermissions` | Tests WebSocket connection with user lacking required roles (SUPERVISOR, ADMIN, MANAGER) and expects HTTP 403 Forbidden. |
+| `testWebSocketMultipleConnections_SameEvent` | Tests multiple simultaneous WebSocket connections to the same event receive broadcasts. |
+| `testWebSocketReceivesCheckInUpdate` | Tests that connected WebSocket clients receive real-time check-in updates via broadcast. |
+| `testWebSocketReceivesCancellationUpdate` | Tests that connected WebSocket clients receive real-time cancellation updates via broadcast. |

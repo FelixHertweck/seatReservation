@@ -4,7 +4,7 @@ import type React from "react";
 
 import { useState, useEffect } from "react";
 import { useProfile } from "@/hooks/use-profile";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -176,13 +176,19 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto px-2 py-3 md:p-6">
+      <div className="mb-3 md:mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold mb-1 md:mb-2">
+          {t("profilePage.profileSettingsTitle")}
+        </h1>
+        <p className="text-muted-foreground text-sm md:text-base">
+          {t("profilePage.profileSettingsDescription")}
+        </p>
+      </div>
+
       <Card className="max-w-2xl mx-auto">
-        <CardHeader>
-          <CardTitle>{t("profilePage.profileSettingsTitle")}</CardTitle>
-        </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4 mt-5">
             <div>
               <Label htmlFor="username">{t("profilePage.usernameLabel")}</Label>
               {isLoading ? (
