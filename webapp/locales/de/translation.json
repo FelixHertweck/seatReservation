@@ -1,4 +1,12 @@
 {
+  "seatStatus": {
+    "available": "Verfügbar",
+    "reserved": "Reserviert",
+    "blocked": "Blockiert",
+    "checkedIn": "Eingecheckt",
+    "noShow": "Nicht erschienen",
+    "cancelled": "Storniert"
+  },
   "validation": {
     "usernameHint": "3-64 Zeichen: Buchstaben, Zahlen, Punkte, Unterstriche, Bindestriche"
   },
@@ -279,6 +287,7 @@
     "profileUpdatedTitle": "Profil aktualisiert",
     "profileUpdatedDescription": "Ihr Profil wurde erfolgreich aktualisiert.",
     "profileSettingsTitle": "Profileinstellungen",
+    "profileSettingsDescription": "Aktualisieren Sie Ihre persönlichen Daten, Ihr Passwort und Ihre Tags.",
     "usernameLabel": "Benutzername",
     "firstNameLabel": "Vorname",
     "lastNameLabel": "Nachname",
@@ -357,14 +366,19 @@
     "saveChangesButtonLoading": "Speichere...",
     "passwordPlaceholder": "Neues Passwort",
     "passwordUpdatePlaceholder": "Passwort aktualisieren",
-    "passwordUpdateHint": "Das Passwort muss mindestens 8 Zeichen lang sein"
+    "passwordUpdateHint": "Das Passwort muss mindestens 8 Zeichen lang sein",
+    "sendEmailVerificationDesc": "Verifizierungs-E-Mail wird an den Benutzer gesendet"
   },
   "userManagement": {
     "confirmDelete": "Sind Sie sicher, dass Sie {{username}} löschen möchten?",
+    "confirmDeleteMultiple": "Sind Sie sicher, dass Sie {{count}} Benutzer löschen möchten?",
     "title": "Benutzerverwaltung",
     "description": "Systembenutzer und deren Rollen verwalten",
     "addUserButton": "Benutzer hinzufügen",
     "importJsonButton": "JSON importieren",
+    "selectAll": "Alle auswählen",
+    "deselectAll": "Alle abwählen",
+    "tableHeaderSelect": "Auswahl",
     "tableHeaderUsername": "Benutzername",
     "tableHeaderName": "Name",
     "tableHeaderEmail": "E-Mail",
@@ -501,6 +515,7 @@
     "seatLabel": "Platz",
     "viewSeatButton": "Platz ansehen",
     "viewSeatMultipleButton": "Plätze ansehen",
+    "showQRCodeButton": "QR-Code",
     "cancelButton": "Abbrechen",
     "showLessButton": "Weniger anzeigen",
     "showMoreButton": "Mehr anzeigen",
@@ -518,6 +533,19 @@
     "seatsToDelete": "Zu löschende Plätze",
     "cancelButton": "Abbrechen",
     "confirmButton": "Löschen"
+  },
+  "qrCodeModal": {
+    "title": "QR-Code für Check-In",
+    "description": "Zeigen Sie diesen QR-Code beim Check-In vor oder kopieren Sie den Reservierungscode",
+    "reservationCode": "Reservierungscode",
+    "generatingQRCode": "QR-Code wird generiert...",
+    "generationError": "Fehler beim Generieren des QR-Codes",
+    "generationErrorDescription": "Der QR-Code konnte nicht generiert werden. Bitte versuchen Sie es erneut.",
+    "copiedToClipboard": "In Zwischenablage kopiert",
+    "codeReady": "Der Reservierungscode wurde kopiert",
+    "downloadButton": "QR-Code herunterladen",
+    "downloadStarted": "Download gestartet",
+    "qrCodeDownloading": "Der QR-Code wird heruntergeladen"
   },
   "seatMapModal": {
     "yourReservedSeatsTitle": "Ihre reservierten Plätze",
@@ -588,6 +616,8 @@
     "bookingDeadlineLabel": "Buchungsfrist",
     "bookingStartTimeLabel": "Buchungs-Startzeit",
     "reminderSendDateLabel": "Erinnerungs-Email Datum",
+    "supervisorsLabel": "Betreuer",
+    "supervisorsPlaceholder": "Benutzer auswählen...",
     "cancelButton": "Abbrechen",
     "savingButton": "Speichern...",
     "createButton": "Erstellen",
@@ -609,10 +639,9 @@
     "tableHeaderEndTime": "Endzeit",
     "tableHeaderBookingDeadline": "Buchungsfrist",
     "tableHeaderBookingStartTime": "Buchungs-Startzeit",
-    "tableHeaderReminderSendDate": "Erinnerungs-Email Datum",
+    "tableHeaderReminderSendDate": "Versanddatum der Erinnerung",
     "tableHeaderLocation": "Ort",
     "tableHeaderActions": "Aktionen",
-    "tbd": "TBD",
     "noLocation": "Kein Ort",
     "paginationLabel": "Events",
     "deleteButtonLabel": "Löschen",
@@ -795,6 +824,9 @@
     "manager": "Manager",
     "userManagement": "Benutzer-Verwaltung",
     "admin": "Admin",
+    "supervisor": "Supervisor",
+    "liveview": "Liveview",
+    "checkin": "Check-In",
     "theme": "Theme",
     "light": "Hell",
     "dark": "Dunkel",
@@ -839,13 +871,13 @@
     "editButtonLabel": "Bearbeiten"
   },
   "userMultiSelect": {
-    "tagsHint": "Tags (klicken um alle Benutzer mit diesem Tag auszuwählen)",
-    "usersSelected": "{{selectedCount}} von {{totalUsers}} Benutzern ausgewählt",
-    "filtered": " ({{filteredCount}} gefiltert)",
-    "clearAll": "Alle abwählen",
-    "selectAll": "Alle auswählen",
+    "quickSelectByTags": "Schnellauswahl nach Tags:",
+    "searchPlaceholder": "Benutzer suchen...",
     "noUsersFound": "Keine Benutzer gefunden",
-    "noUsersAvailable": "Keine Benutzer verfügbar"
+    "noUsersAvailable": "Keine Benutzer verfügbar",
+    "selectedUsers": "Ausgewählte Benutzer",
+    "removeAll": "Alle entfernen",
+    "noUsersSelected": "Keine Benutzer ausgewählt"
   },
   "pagination-wrapper": {
     "label": "Zeige {{fromCount}} bis {{toCount}} von {{totalCount}}"
@@ -888,6 +920,131 @@
       "downloadStarted": "Download gestartet",
       "downloadDescription": "Ihre Sitzplatzkarte wird heruntergeladen",
       "errorTitle": "Fehler"
+    }
+  },
+  "common": {
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen",
+    "loading": "Wird geladen..."
+  },
+  "checkin": {
+    "title": "Check-In",
+    "description": "Verarbeiten Sie Event-Check-Ins über QR-Code-Scannen oder Benutzerauswahl.",
+    "success": {
+      "title": "Check-In erfolgreich",
+      "description": "Der Check-In wurde erfolgreich verarbeitet."
+    },
+    "error": {
+      "title": "Check-In Fehler",
+      "default": "Bei der Verarbeitung des Check-In ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+      "noCheckInInfo": "Keine Check-In Informationen verfügbar.",
+      "scanningFailed": "Fehler beim Scannen des QR-Codes."
+    },
+    "eventSelector": {
+      "label": "Event auswählen",
+      "placeholder": "Wähle ein Event...",
+      "loading": "Events werden geladen...",
+      "noEvents": "Keine Veranstaltungen verfügbar",
+      "selectFirst": "Bitte wähle zuerst ein Event aus, um mit dem Check-In fortzufahren."
+    },
+    "qrScanner": {
+      "title": "QR-Code Scanner",
+      "description": "Richten Sie Ihre Kamera auf einen QR-Code",
+      "startCamera": "Kamera starten",
+      "stopCamera": "Kamera stoppen",
+      "cameraError": "Fehler beim Zugriff auf die Kamera. Bitte überprüfen Sie die Berechtigung.",
+      "noCamera": "Keine Kamera verfügbar.",
+      "reservationsOpen": "Reservierungen geöffnet",
+      "loadingCamera": "Lade QR-Code-Scanner..."
+    },
+    "tabs": {
+      "qrScanner": "QR-Code Scanner",
+      "userSelection": "Benutzerauswahl"
+    },
+    "usernameSelector": {
+      "title": "Benutzer auswählen",
+      "selectUser": "Benutzer auswählen...",
+      "searchUser": "Benutzer suchen...",
+      "noUserFound": "Kein Benutzer gefunden.",
+      "loadingUsers": "Benutzer werden geladen...",
+      "fetchReservations": "Reservierungen abrufen"
+    },
+    "reservations": {
+      "title": "Reservierungen",
+      "user": "Benutzername",
+      "name": "Name",
+      "email": "Email",
+      "selectReservations": "Wählen Sie Reservierungen aus",
+      "noReservations": "Keine Reservierungen vorhanden.",
+      "checkInCount": "Check-Ins: {{count}}",
+      "cancelledCount": "Stornierungen: {{count}}",
+      "selectAll": "Alle auswählen",
+      "deselectAll": "Alle abwählen",
+      "loading": "Lade Reservierungen...",
+      "event": "Event",
+      "seat": "Platz",
+      "openDrawer": "Reservierungsübersicht öffnen"
+    },
+    "actions": {
+      "submit": "Check-In durchführen",
+      "cancel": "Abbrechen",
+      "scan": "Scannen",
+      "close": "Schließen",
+      "processing": "Verarbeite..."
+    }
+  },
+  "liveview": {
+    "title": "Live View",
+    "description": "Überwachen Sie Check-In in Echtzeit",
+    "eventSelector": {
+      "label": "Event auswählen",
+      "placeholder": "Wähle ein Event...",
+      "loading": "Events werden geladen...",
+      "noEvents": "Keine Veranstaltungen verfügbar",
+      "selectFirst": "Bitte wähle zuerst ein Event aus"
+    },
+    "status": {
+      "connected": "Verbunden",
+      "connecting": "Verbindung wird hergestellt...",
+      "disconnected": "Nicht verbunden",
+      "loading": "Daten werden geladen..."
+    },
+    "event": {
+      "title": "Event Informationen",
+      "name": "Name",
+      "description": "Beschreibung",
+      "startTime": "Startzeit",
+      "endTime": "Endzeit"
+    },
+    "legend": {
+      "title": "Legende"
+    },
+    "seatMap": {
+      "title": "Sitzplan"
+    },
+    "reservations": {
+      "title": "Reservierungen",
+      "count": "Reservierungen ({{count}})",
+      "user": "Benutzer",
+      "seat": "Platz",
+      "status": "Status",
+      "checkedIn": "Eingecheckt",
+      "noShow": "Nicht erschienen",
+      "cancelled": "Storniert",
+      "pending": "Ausstehend",
+      "empty": "Keine Reservierungen vorhanden"
+    },
+    "error": {
+      "title": "Fehler",
+      "message": "Ein Fehler ist beim Laden der Daten aufgetreten"
+    }
+  },
+  "profile": {
+    "update": {
+      "success": {
+        "title": "Erfolgreich",
+        "description": "Profil wurde erfolgreich aktualisiert"
+      }
     }
   }
 }
