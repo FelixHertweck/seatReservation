@@ -20,17 +20,21 @@
 package de.felixhertweck.seatreservation.userManagment.resource;
 
 import java.io.IOException;
+import jakarta.annotation.security.PermitAll;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
-import jakarta.ws.rs.*;
 
 import de.felixhertweck.seatreservation.userManagment.dto.VerifyEmailCodeRequestDto;
 import de.felixhertweck.seatreservation.userManagment.dto.VerifyEmailCodeResponseDto;
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
+import io.quarkus.security.Authenticated;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
@@ -47,15 +51,13 @@ public class EmailConfirmationResource {
 
     @Inject SecurityContext securityContext;
 
-    @ConfigProperty(name = "email.frontend-base-url", defaultValue = "")
-    String frontendBaseUrl;
-
     /**
      * Resends the email confirmation for the authenticated user and extends the token's lifetime.
      *
      * @return a response indicating success or failure
      */
     @POST
+    @Authenticated
     @Path("/resend-email-confirmation")
     @Operation(
             summary = "Resend email confirmation",
@@ -84,6 +86,7 @@ public class EmailConfirmationResource {
      * @return a response indicating success or failure
      */
     @POST
+    @PermitAll
     @Path("/verify-email-code")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
