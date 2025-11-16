@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, MapPin, Trash2, Eye } from "lucide-react";
+import { Calendar, MapPin, Trash2, Eye, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,6 +16,8 @@ import type { UserReservationResponseDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { useState } from "react";
 import { DeleteConfirmationModal } from "./delete-confirmation-modal";
+import { QRCodeModal } from "./qr-code-modal";
+import { useAuth } from "@/hooks/use-auth";
 
 interface ReservationCardProps {
   reservations: UserReservationResponseDto[];
@@ -35,7 +37,9 @@ export function ReservationCard({
   onDelete,
 }: ReservationCardProps) {
   const t = useT();
+  const { user } = useAuth();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [qrCodeModalOpen, setQrCodeModalOpen] = useState(false);
   const [selectedReservations, setSelectedReservations] = useState<Set<bigint>>(
     new Set(),
   );
@@ -199,8 +203,25 @@ export function ReservationCard({
               ? t("reservationCard.viewSeatMultipleButton")
               : t("reservationCard.viewSeatButton")}
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setQrCodeModalOpen(true)}
+            className="flex-1 hover:scale-[1.02] transition-all duration-300 active:scale-[0.98]"
+          >
+            <QrCode className="mr-2 h-4 w-4" />
+            {t("reservationCard.showQRCodeButton")}
+          </Button>
         </CardFooter>
       </Card>
+
+      <QRCodeModal
+        isOpen={qrCodeModalOpen}
+        onClose={() => setQrCodeModalOpen(false)}
+        reservations={reservations}
+        eventName={eventName}
+        userId={user?.id}
+      />
 
       <DeleteConfirmationModal
         isOpen={deleteModalOpen}

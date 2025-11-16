@@ -60,10 +60,7 @@ export function PaginationWrapper<T>({
       value={String(currentPage)}
       onValueChange={(val) => setSelectedPage(Number(val))}
     >
-      <SelectTrigger
-        className="w-24 sm:w-28"
-        aria-label={t("pagination-wrapper.pageSelectorAriaLabel")}
-      >
+      <SelectTrigger className="w-24 sm:w-28" aria-label="Select page">
         <SelectValue placeholder={`${currentPage} / ${totalPages}`} />
       </SelectTrigger>
       <SelectContent className="max-h-60">
