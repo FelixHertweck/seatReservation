@@ -1,4 +1,12 @@
 {
+  "seatStatus": {
+    "available": "Available",
+    "reserved": "Reserved",
+    "blocked": "Blocked",
+    "checkedIn": "Checked In",
+    "noShow": "No Show",
+    "cancelled": "Cancelled"
+  },
   "validation": {
     "usernameHint": "3-64 characters: letters, numbers, dots, underscores, hyphens"
   },
@@ -279,6 +287,7 @@
     "profileUpdatedTitle": "Profile Updated",
     "profileUpdatedDescription": "Your profile has been successfully updated.",
     "profileSettingsTitle": "Profile Settings",
+    "profileSettingsDescription": "Update your personal information, password and tags.",
     "usernameLabel": "Username",
     "firstNameLabel": "First Name",
     "lastNameLabel": "Last Name",
@@ -357,14 +366,19 @@
     "saveChangesButtonLoading": "Saving...",
     "passwordPlaceholder": "New Password",
     "passwordUpdatePlaceholder": "Update Password",
-    "passwordUpdateHint": "Password must be at least 8 characters long"
+    "passwordUpdateHint": "Password must be at least 8 characters long",
+    "sendEmailVerificationDesc": "Verification email will be sent to the user"
   },
   "userManagement": {
     "confirmDelete": "Are you sure you want to delete {{username}}?",
+    "confirmDeleteMultiple": "Are you sure you want to delete {{count}} users?",
     "title": "User Management",
     "description": "Manage system users and their roles",
     "addUserButton": "Add User",
     "importJsonButton": "Import JSON",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect All",
+    "tableHeaderSelect": "Select",
     "tableHeaderUsername": "Username",
     "tableHeaderName": "Name",
     "tableHeaderEmail": "Email",
@@ -374,6 +388,7 @@
     "tableHeaderActions": "Actions",
     "verifiedStatus": "Verified",
     "pendingStatus": "Pending",
+    "paginationLabel": "Users",
     "deleteButtonLabel": "Delete",
     "editButtonLabel": "Edit"
   },
@@ -444,6 +459,123 @@
     "activeFiltersLabel": "Active filters:",
     "clearAllButton": "Clear all"
   },
+  "common": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "loading": "Loading..."
+  },
+  "checkin": {
+    "title": "Check-In",
+    "description": "Process event check-ins via QR code scanning or user selection.",
+    "success": {
+      "title": "Check-In Successful",
+      "description": "The check-in has been processed successfully."
+    },
+    "error": {
+      "title": "Check-In Error",
+      "default": "An error occurred during check-in. Please try again.",
+      "noCheckInInfo": "No check-in information available.",
+      "scanningFailed": "Error scanning QR code."
+    },
+    "eventSelector": {
+      "label": "Select Event",
+      "placeholder": "Choose an event...",
+      "loading": "Loading events...",
+      "noEvents": "No events available",
+      "selectFirst": "Please select an event first to proceed with check-in."
+    },
+    "qrScanner": {
+      "title": "QR Code Scanner",
+      "description": "Point your camera at a QR code",
+      "startCamera": "Start Camera",
+      "stopCamera": "Stop Camera",
+      "cameraError": "Error accessing camera. Please check permissions.",
+      "noCamera": "No camera available.",
+      "reservationsOpen": "Reservations Open",
+      "loadingCamera": "Loading QR Code Scanner..."
+    },
+    "tabs": {
+      "qrScanner": "QR Code Scanner",
+      "userSelection": "User Selection"
+    },
+    "usernameSelector": {
+      "title": "Select User",
+      "selectUser": "Select a user...",
+      "searchUser": "Search for a user...",
+      "noUserFound": "No user found.",
+      "loadingUsers": "Loading users...",
+      "fetchReservations": "Fetch Reservations"
+    },
+    "reservations": {
+      "title": "Reservations",
+      "user": "Username",
+      "name": "Name",
+      "email": "Email",
+      "selectReservations": "Select reservations",
+      "noReservations": "No reservations available.",
+      "checkInCount": "Check-Ins: {{count}}",
+      "cancelledCount": "Cancellations: {{count}}",
+      "selectAll": "Select All",
+      "deselectAll": "Deselect All",
+      "loading": "Loading reservations...",
+      "event": "Event",
+      "seat": "Seat",
+      "openDrawer": "Open Reservations Overview"
+    },
+    "actions": {
+      "submit": "Perform Check-In",
+      "cancel": "Cancel",
+      "scan": "Scan",
+      "close": "Close",
+      "processing": "Processing..."
+    }
+  },
+  "liveview": {
+    "title": "Live View",
+    "description": "Monitor check-in in real-time",
+    "eventSelector": {
+      "label": "Select Event",
+      "placeholder": "Choose an event...",
+      "loading": "Loading events...",
+      "noEvents": "No events available",
+      "selectFirst": "Please select an event first"
+    },
+    "status": {
+      "connected": "Connected",
+      "connecting": "Connecting...",
+      "disconnected": "Disconnected",
+      "loading": "Loading data..."
+    },
+    "event": {
+      "title": "Event Information",
+      "name": "Name",
+      "description": "Description",
+      "startTime": "Start Time",
+      "endTime": "End Time"
+    },
+    "legend": {
+      "title": "Legend"
+    },
+    "seatMap": {
+      "title": "Seat Map"
+    },
+    "reservations": {
+      "title": "Reservations",
+      "count": "Reservations ({{count}})",
+      "user": "User",
+      "seat": "Seat",
+      "status": "Status",
+      "checkedIn": "Checked In",
+      "noShow": "No Show",
+      "cancelled": "Cancelled",
+      "pending": "Pending",
+      "empty": "No reservations available"
+    },
+    "error": {
+      "title": "Error",
+      "message": "An error occurred while loading data"
+    }
+  },
   "seatMap": {
     "seatTitle": "Seat {{seatNumber}} ({{seatRow}})",
     "resetButton": "Reset",
@@ -500,6 +632,7 @@
     "seatLabel": "Seat",
     "viewSeatButton": "View Seat",
     "viewSeatMultipleButton": "View Seats",
+    "showQRCodeButton": "QR Code",
     "cancelButton": "Cancel",
     "showLessButton": "Show Less",
     "showMoreButton": "Show More",
@@ -517,6 +650,19 @@
     "seatsToDelete": "Seats to delete",
     "cancelButton": "Cancel",
     "confirmButton": "Delete"
+  },
+  "qrCodeModal": {
+    "title": "QR Code for Check-In",
+    "description": "Show this QR code during check-in or copy the reservation code",
+    "reservationCode": "Reservation Code",
+    "generatingQRCode": "Generating QR code...",
+    "generationError": "Error generating QR code",
+    "generationErrorDescription": "The QR code could not be generated. Please try again.",
+    "copiedToClipboard": "Copied to clipboard",
+    "codeReady": "The reservation code has been copied",
+    "downloadButton": "Download QR Code",
+    "downloadStarted": "Download started",
+    "qrCodeDownloading": "The QR code is being downloaded"
   },
   "seatMapModal": {
     "yourReservedSeatsTitle": "Your Reserved Seats",
@@ -570,7 +716,8 @@
     "seatsToBlockTitle": "Seats to Block:",
     "cancelButton": "Cancel",
     "blockingButton": "Blocking...",
-    "blockSeatsButton": "Block {{count}} Seat(s)"
+    "blockSeatsButton": "Block {{count}} Seat(s)",
+    "blockSeatButton": "Block Seat"
   },
   "eventFormModal": {
     "createEventTitle": "Create Event",
@@ -586,6 +733,8 @@
     "bookingDeadlineLabel": "Booking Deadline",
     "bookingStartTimeLabel": "Booking Start Time",
     "reminderSendDateLabel": "Reminder Send Date",
+    "supervisorsLabel": "Supervisors",
+    "supervisorsPlaceholder": "Search users to add as supervisors",
     "cancelButton": "Cancel",
     "savingButton": "Saving...",
     "createButton": "Create",
@@ -610,7 +759,6 @@
     "tableHeaderReminderSendDate": "Reminder Send Date",
     "tableHeaderLocation": "Location",
     "tableHeaderActions": "Actions",
-    "tbd": "TBD",
     "noLocation": "No location",
     "paginationLabel": "Events",
     "deleteButtonLabel": "Delete",
@@ -793,6 +941,9 @@
     "manager": "Manager",
     "userManagement": "User Management",
     "admin": "Admin",
+    "supervisor": "Supervisor",
+    "liveview": "Liveview",
+    "checkin": "Check-In",
     "theme": "Theme",
     "light": "Light",
     "dark": "Dark",
@@ -837,13 +988,13 @@
     "editButtonLabel": "Edit"
   },
   "userMultiSelect": {
-    "tagsHint": "Tags (click to select all users with this tag)",
-    "usersSelected": "{{selectedCount}} of {{totalUsers}} users selected",
-    "filtered": " ({{filteredCount}} filtered)",
-    "clearAll": "Deselect All",
-    "selectAll": "Select All",
+    "quickSelectByTags": "Quick select by tags:",
+    "searchPlaceholder": "Search users...",
     "noUsersFound": "No users found",
-    "noUsersAvailable": "No users available"
+    "noUsersAvailable": "No users available",
+    "selectedUsers": "Selected users",
+    "removeAll": "Remove all",
+    "noUsersSelected": "No users selected"
   },
   "pagination-wrapper": {
     "label": "Showing {{fromCount}} to {{toCount}} of {{totalCount}}"
@@ -886,6 +1037,14 @@
       "downloadStarted": "Download started",
       "downloadDescription": "Your seat map is being downloaded",
       "errorTitle": "Error"
+    }
+  },
+  "profile": {
+    "update": {
+      "success": {
+        "title": "Successful",
+        "description": "Profile was successfully updated"
+      }
     }
   }
 }
