@@ -31,11 +31,25 @@ INSERT INTO user_tags (user_id, tags) VALUES (3, 'demouser');
 -- Assign USER role to regular user
 INSERT INTO user_roles (user_id, role) VALUES (3, 'USER');
 
+-- Insert supervisor user
+INSERT INTO users (id, username, email, passwordHash, passwordSalt, firstname, lastname, emailVerified) VALUES (4, 'supervisor', 'supervisor@localhost', '$2a$12$DB8/X1aZ/0I2UzDZdkK/B.haMW2J38ICBe5Che8O37P6a.iNEl2cW', 'Salt', 'Supervisor', 'User', true);
+
+-- Assign supervisor user tags
+INSERT INTO user_tags (user_id, tags) VALUES (4, 'supervisoruser');
+INSERT INTO user_tags (user_id, tags) VALUES (4, 'demouser');
+
+-- Assign USER role to regular user
+INSERT INTO user_roles (user_id, role) VALUES (4, 'SUPERVISOR');
+
+
 -- Insert event location
 INSERT INTO eventlocations (id, name, address, manager_id) VALUES (1, 'City Hall', 'Hauptstraße 1, 12345 Musterstadt', 2);
 
 -- Insert event
 INSERT INTO events (id, name, startTime, endTime, bookingStartTime, bookingDeadline, reminderSent, event_location_id, manager_id) VALUES (1, 'City Band Concert', '2024-12-31 19:00:00', '2024-12-31 21:00:00', '2024-12-12 17:00:00', '2026-12-12 17:00:00', false, 1, 2);
+
+-- Assign supervisor user (id 4) to the event (id 1)
+INSERT INTO event_supervisors (event_id, user_id) VALUES (1, 4);
 
 INSERT INTO eventlocationsMarkers (id, event_location_id, label, xCoordinate, yCoordinate) VALUES
 (1, 1, 'R 1', 6, 1),
