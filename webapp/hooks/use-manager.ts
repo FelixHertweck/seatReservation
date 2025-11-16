@@ -53,7 +53,7 @@ import {
 } from "@/api/@tanstack/react-query.gen";
 import type { EventManagementProps } from "@/components/management/event-management";
 import type { LocationManagementProps } from "@/components/management/location-management";
-import type { ReservationAllowanceManagementProps } from "@/components/management/reservation-allowance-management";
+import type { ReservationAllowanceManagementProps } from "@/components/management/allowance-management";
 import type { ReservationManagementProps } from "@/components/management/reservation-management";
 import type { SeatManagementProps } from "@/components/management/seat-management";
 
@@ -463,6 +463,7 @@ export function useManager(): UseManagerReturn {
     events: {
       allLocations: locations ?? [],
       events: events ?? [],
+      users: user ?? [],
       createEvent: (event: EventRequestDto) =>
         createEventMutation.mutateAsync({ body: event }),
       updateEvent: (id: bigint, event: EventRequestDto) =>

@@ -82,7 +82,10 @@ export function useAdmin() {
         { queryKey: getApiUsersAdminQueryKey() },
         (oldData: UserDto[] | undefined) => {
           return oldData
-            ? oldData.filter((user) => user.id !== variables.path.id)
+            ? oldData.filter(
+                (user) =>
+                  !variables.query?.ids?.includes(user.id ?? BigInt(-1)),
+              )
             : [];
         },
       );
@@ -105,8 +108,8 @@ export function useAdmin() {
     await updateMutation({ body: userData, path: { id } });
   };
 
-  const deleteUser = async (id: bigint) => {
-    await deleteMutation({ path: { id } });
+  const deleteUser = async (ids: bigint[]) => {
+    await deleteMutation({ query: { ids } });
   };
 
   return {
