@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Plus, Edit, Trash2, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -20,6 +21,7 @@ import {
 } from "@/components/ui/table";
 import { SortableTableHead } from "@/components/common/sortable-table-head";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { UserFormModal } from "@/components/admin/user-form-modal";
 import { UserImportModal } from "@/components/admin/user-import-modal";
@@ -34,8 +36,9 @@ export interface UserManagementProps {
   availableRoles: string[];
   createUser: (user: AdminUserCreationDto) => Promise<void>;
   updateUser: (id: bigint, user: AdminUserUpdateDto) => Promise<void>;
-  deleteUser: (id: bigint) => Promise<void>;
+  deleteUser: (ids: bigint[]) => Promise<void>;
   importUsers?: (users: AdminUserCreationDto[]) => Promise<void>;
+  isLoading: boolean;
 }
 
 export function UserManagement({
@@ -45,6 +48,7 @@ export function UserManagement({
   updateUser,
   deleteUser,
   importUsers,
+  isLoading = false,
 }: UserManagementProps) {
   const t = useT();
 
@@ -53,6 +57,7 @@ export function UserManagement({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<bigint>>(new Set());
 
   const { sortedData, sortKey, sortDirection, handleSort } = useSortableData(
     filteredUsers,
@@ -64,17 +69,24 @@ export function UserManagement({
     setFilteredUsers(users);
   }, [users]);
 
+  const applyFilters = useCallback(
+    (searchQuery: string) => {
+      const lowerCaseQuery = searchQuery.toLowerCase();
+      const filtered = users.filter(
+        (user) =>
+          user.username?.toLowerCase().includes(lowerCaseQuery) ||
+          user.firstname?.toLowerCase().includes(lowerCaseQuery) ||
+          user.lastname?.toLowerCase().includes(lowerCaseQuery) ||
+          user.email?.toLowerCase().includes(lowerCaseQuery) ||
+          user.tags?.some((tag) => tag.toLowerCase().includes(lowerCaseQuery)),
+      );
+      setFilteredUsers(filtered);
+    },
+    [users],
+  );
+
   const handleSearch = (query: string) => {
-    const lowerCaseQuery = query.toLowerCase();
-    const filtered = users.filter(
-      (user) =>
-        user.username?.toLowerCase().includes(lowerCaseQuery) ||
-        user.firstname?.toLowerCase().includes(lowerCaseQuery) ||
-        user.lastname?.toLowerCase().includes(lowerCaseQuery) ||
-        user.email?.toLowerCase().includes(lowerCaseQuery) ||
-        user.tags?.some((tag) => tag.toLowerCase().includes(lowerCaseQuery)), // Search by tags
-    );
-    setFilteredUsers(filtered);
+    applyFilters(query);
   };
 
   const handleFilter = () => {
@@ -91,6 +103,7 @@ export function UserManagement({
     setSelectedUser(user);
     setIsCreating(false);
     setIsModalOpen(true);
+    setSelectedIds(new Set());
   };
 
   const handleDeleteUser = async (user: UserDto) => {
@@ -98,7 +111,48 @@ export function UserManagement({
       user.id &&
       confirm(t("userManagement.confirmDelete", { username: user.username }))
     ) {
-      await deleteUser(user.id);
+      await deleteUser([user.id]);
+      setSelectedIds(new Set());
+    }
+  };
+
+  const handleSelectAll = (paginatedData: UserDto[]) => {
+    const newSelectedIds = new Set(selectedIds);
+    const allCurrentSelected = paginatedData.every((user) =>
+      user.id ? selectedIds.has(user.id) : false,
+    );
+
+    if (allCurrentSelected) {
+      setSelectedIds(new Set());
+    } else {
+      paginatedData.forEach((user) => {
+        if (user.id) newSelectedIds.add(user.id);
+      });
+      setSelectedIds(newSelectedIds);
+    }
+  };
+
+  const handleToggleSelect = (id: bigint) => {
+    const newSelectedIds = new Set(selectedIds);
+    if (newSelectedIds.has(id)) {
+      newSelectedIds.delete(id);
+    } else {
+      newSelectedIds.add(id);
+    }
+    setSelectedIds(newSelectedIds);
+  };
+
+  const handleDeleteSelected = async () => {
+    if (
+      selectedIds.size > 0 &&
+      confirm(
+        t("userManagement.confirmDeleteMultiple", {
+          count: selectedIds.size,
+        }),
+      )
+    ) {
+      await deleteUser(Array.from(selectedIds));
+      setSelectedIds(new Set());
     }
   };
 
@@ -126,6 +180,16 @@ export function UserManagement({
             </CardDescription>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            {selectedIds.size > 0 && (
+              <Button
+                variant="destructive"
+                onClick={handleDeleteSelected}
+                className="w-full sm:w-auto"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                {selectedIds.size}
+              </Button>
+            )}
             {importUsers && (
               <Button
                 variant="outline"
@@ -164,16 +228,32 @@ export function UserManagement({
         >
           {(paginatedData) => (
             <>
-              <div className="hidden md:block">
-                <Table className="table-fixed">
+              <div className="hidden md:block overflow-x-auto">
+                <div className="mb-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleSelectAll(paginatedData)}
+                  >
+                    {paginatedData.every((user) =>
+                      user.id ? selectedIds.has(user.id) : false,
+                    )
+                      ? t("userManagement.deselectAll")
+                      : t("userManagement.selectAll")}
+                  </Button>
+                </div>
+                <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-[50px]">
+                        {t("userManagement.tableHeaderSelect")}
+                      </TableHead>
                       <SortableTableHead
                         sortKey="username"
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[12%]"
+                        className="min-w-[100px] max-w-[120px]"
                       >
                         {t("userManagement.tableHeaderUsername")}
                       </SortableTableHead>
@@ -182,7 +262,7 @@ export function UserManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[15%]"
+                        className="min-w-[100px] max-w-[120px]"
                       >
                         {t("userManagement.tableHeaderName")}
                       </SortableTableHead>
@@ -191,14 +271,14 @@ export function UserManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[20%]"
+                        className="min-w-[150px] max-w-[180px]"
                       >
                         {t("userManagement.tableHeaderEmail")}
                       </SortableTableHead>
-                      <TableHead className="w-[15%]">
+                      <TableHead className="min-w-[100px] max-w-[120px]">
                         {t("userManagement.tableHeaderRoles")}
                       </TableHead>
-                      <TableHead className="w-[15%]">
+                      <TableHead className="min-w-[100px] max-w-[120px]">
                         {t("userManagement.tableHeaderTags")}
                       </TableHead>
                       <SortableTableHead
@@ -206,174 +286,248 @@ export function UserManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[10%]"
+                        className="min-w-[100px] max-w-[110px]"
                       >
                         {t("userManagement.tableHeaderVerified")}
                       </SortableTableHead>
-                      <TableHead className="w-[8%]">
+                      <TableHead className="min-w-[70px] w-[80px]">
                         {t("userManagement.tableHeaderActions")}
                       </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {paginatedData.map((user) => (
-                      <TableRow key={user.id?.toString()}>
-                        <TruncatedCell
-                          content={user.username}
-                          className="font-medium w-[12%]"
-                        />
-                        <TruncatedCell
-                          content={`${user.firstname} ${user.lastname}`}
-                          className="w-[15%]"
-                        />
-                        <TruncatedCell
-                          content={user.email}
-                          className="w-[20%]"
-                        />
-                        <TableCell className="w-[15%]">
-                          <div className="flex gap-1 flex-wrap">
-                            {user.roles?.map((role) => (
-                              <Badge key={role} variant="outline">
-                                {role}
+                    {isLoading
+                      ? Array.from({ length: 8 }).map((_, index) => (
+                          <TableRow key={index}>
+                            <TableCell>
+                              <Skeleton className="h-4 w-4" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-4 w-20" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-4 w-24" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-4 w-32" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-4 w-16" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-4 w-16" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-4 w-16" />
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Skeleton className="h-8 w-8" />
+                                <Skeleton className="h-8 w-8" />
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      : paginatedData.map((user) => (
+                          <TableRow key={user.id?.toString()}>
+                            <TableCell>
+                              <Checkbox
+                                checked={
+                                  user.id ? selectedIds.has(user.id) : false
+                                }
+                                onCheckedChange={() =>
+                                  user.id && handleToggleSelect(user.id)
+                                }
+                              />
+                            </TableCell>
+                            <TruncatedCell
+                              content={user.username}
+                              className="font-medium"
+                            />
+                            <TruncatedCell
+                              content={`${user.firstname} ${user.lastname}`}
+                            />
+                            <TruncatedCell content={user.email} />
+                            <TableCell>
+                              <div className="flex gap-1 flex-wrap">
+                                {user.roles?.map((role) => (
+                                  <Badge key={role} variant="outline">
+                                    {role}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-1 flex-wrap">
+                                {user.tags?.map((tag) => (
+                                  <Badge key={tag} variant="secondary">
+                                    {tag}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant={
+                                  user.emailVerified ? "default" : "secondary"
+                                }
+                              >
+                                {user.emailVerified
+                                  ? t("userManagement.verifiedStatus")
+                                  : t("userManagement.pendingStatus")}
                               </Badge>
-                            ))}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-1 flex-wrap">
-                            {user.tags?.map((tag) => (
-                              <Badge key={tag} variant="secondary">
-                                {tag}
-                              </Badge>
-                            ))}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={
-                              user.emailVerified ? "default" : "secondary"
-                            }
-                          >
-                            {user.emailVerified
-                              ? t("userManagement.verifiedStatus")
-                              : t("userManagement.pendingStatus")}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEditUser(user)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => handleDeleteUser(user)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleEditUser(user)}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => handleDeleteUser(user)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
                   </TableBody>
                 </Table>
               </div>
 
               {/* Mobile Card View */}
               <div className="md:hidden space-y-4">
-                {paginatedData.map((user) => (
-                  <Card key={user.id?.toString()}>
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <CardTitle className="text-base">
-                            {user.username}
-                          </CardTitle>
-                          <CardDescription className="text-sm mt-1">
-                            {user.firstname} {user.lastname}
-                          </CardDescription>
-                        </div>
-                        <Badge
-                          variant={user.emailVerified ? "default" : "secondary"}
-                          className="ml-2"
-                        >
-                          {user.emailVerified
-                            ? t("userManagement.verifiedStatus")
-                            : t("userManagement.pendingStatus")}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">
-                          {t("userManagement.tableHeaderEmail")}
-                        </p>
-                        <p className="text-sm break-all">{user.email}</p>
-                      </div>
-
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">
-                          {t("userManagement.tableHeaderRoles")}
-                        </p>
-                        <div className="flex gap-1 flex-wrap">
-                          {user.roles?.map((role) => (
-                            <Badge
-                              key={role}
-                              variant="outline"
-                              className="text-xs"
-                            >
-                              {role}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-
-                      {user.tags && user.tags.length > 0 && (
-                        <div>
-                          <p className="text-xs text-muted-foreground mb-1">
-                            {t("userManagement.tableHeaderTags")}
-                          </p>
-                          <div className="flex gap-1 flex-wrap">
-                            {user.tags.map((tag) => (
+                <div className="mb-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleSelectAll(paginatedData)}
+                  >
+                    {paginatedData.every((user) =>
+                      user.id ? selectedIds.has(user.id) : false,
+                    )
+                      ? t("userManagement.deselectAll")
+                      : t("userManagement.selectAll")}
+                  </Button>
+                </div>
+                {isLoading
+                  ? Array.from({ length: 3 }).map((_, index) => (
+                      <Card key={index}>
+                        <CardHeader className="pb-3">
+                          <Skeleton className="h-5 w-3/4" />
+                          <Skeleton className="h-4 w-full mt-2" />
+                        </CardHeader>
+                        <CardContent>
+                          <Skeleton className="h-4 w-full" />
+                        </CardContent>
+                      </Card>
+                    ))
+                  : paginatedData.map((user) => (
+                      <Card key={user.id?.toString()}>
+                        <CardHeader className="pb-3 flex flex-row items-start space-x-3 space-y-0">
+                          <Checkbox
+                            checked={user.id ? selectedIds.has(user.id) : false}
+                            onCheckedChange={() =>
+                              user.id && handleToggleSelect(user.id)
+                            }
+                            className="mt-1"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <CardTitle className="text-base">
+                                {user.username}
+                              </CardTitle>
                               <Badge
-                                key={tag}
-                                variant="secondary"
+                                variant={
+                                  user.emailVerified ? "default" : "secondary"
+                                }
                                 className="text-xs"
                               >
-                                {tag}
+                                {user.emailVerified
+                                  ? t("userManagement.verifiedStatus")
+                                  : t("userManagement.pendingStatus")}
                               </Badge>
-                            ))}
+                            </div>
+                            {user.firstname && (
+                              <CardDescription className="text-sm mt-1">
+                                {user.firstname} {user.lastname}
+                              </CardDescription>
+                            )}
                           </div>
-                        </div>
-                      )}
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">
+                              {t("userManagement.tableHeaderEmail")}
+                            </p>
+                            <p className="text-sm break-all">{user.email}</p>
+                          </div>
 
-                      <div className="flex gap-2 pt-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1"
-                          onClick={() => handleEditUser(user)}
-                        >
-                          <Edit className="mr-2 h-4 w-4" />
-                          {t("userManagement.editButtonLabel")}
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          className="flex-1"
-                          onClick={() => handleDeleteUser(user)}
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          {t("userManagement.deleteButtonLabel")}
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">
+                              {t("userManagement.tableHeaderRoles")}
+                            </p>
+                            <div className="flex gap-1 flex-wrap">
+                              {user.roles?.map((role) => (
+                                <Badge
+                                  key={role}
+                                  variant="outline"
+                                  className="text-xs"
+                                >
+                                  {role}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+
+                          {user.tags && user.tags.length > 0 && (
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1">
+                                {t("userManagement.tableHeaderTags")}
+                              </p>
+                              <div className="flex gap-1 flex-wrap">
+                                {user.tags.map((tag) => (
+                                  <Badge
+                                    key={tag}
+                                    variant="secondary"
+                                    className="text-xs"
+                                  >
+                                    {tag}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="flex gap-2 pt-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => handleEditUser(user)}
+                            >
+                              <Edit className="mr-2 h-4 w-4" />
+                              {t("userManagement.editButtonLabel")}
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => handleDeleteUser(user)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              {t("userManagement.deleteButtonLabel")}
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
               </div>
             </>
           )}
