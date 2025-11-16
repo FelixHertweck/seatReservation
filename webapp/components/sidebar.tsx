@@ -12,6 +12,8 @@ import {
   Monitor,
   Globe,
   UserLock,
+  Eye,
+  LogIn as CheckInIcon,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -28,6 +30,9 @@ import {
   SidebarMenuItem,
   SidebarRail,
   useSidebar,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
 } from "@/components/ui/sidebar";
 import {
   DropdownMenu,
@@ -77,26 +82,54 @@ export function AppSidebar() {
   }, [pathname, isMobile, setOpenMobile]);
 
   const getMenuItems = () => {
-    const baseItems = [
-      {
+    const baseItems: Array<{
+      title: string;
+      url: string;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      icon: any;
+      badge: string;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      subItems?: Array<{ title: string; url: string; icon: any }>;
+    }> = [];
+    if (user?.roles?.includes("USER")) {
+      baseItems.push({
         title: t("sidebar.events"),
         url: "/events",
         icon: CalendarDays,
         badge: "",
-      },
-      {
+      });
+      baseItems.push({
         title: t("sidebar.reservations"),
         url: "/reservations",
         icon: BookmarkCheck,
         badge: "",
-      },
-      {
-        title: t("sidebar.profile"),
-        url: "/profile",
-        icon: Settings,
-        badge: "",
-      },
-    ];
+      });
+    }
+    baseItems.push({
+      title: t("sidebar.profile"),
+      url: "/profile",
+      icon: Settings,
+      badge: "",
+    });
+
+    if (
+      user?.roles?.includes("SUPERVISOR") ||
+      user?.roles?.includes("MANAGER") ||
+      user?.roles?.includes("ADMIN")
+    ) {
+      baseItems.push({
+        title: t("sidebar.checkin"),
+        url: "/checkin",
+        icon: CheckInIcon,
+        badge: t("sidebar.supervisor"),
+      });
+      baseItems.push({
+        title: t("sidebar.liveview"),
+        url: "/liveview",
+        icon: Eye,
+        badge: t("sidebar.supervisor"),
+      });
+    }
 
     if (user?.roles?.includes("MANAGER") || user?.roles?.includes("ADMIN")) {
       baseItems.push({
@@ -201,14 +234,16 @@ export function AppSidebar() {
           href="/"
           className={`w-full transition-all duration-500 flex items-center justify-center bg-transparent`}
         >
-          <Image
-            src="/logo.png"
-            alt="Logo"
-            width={300}
-            height={100}
-            className="h-auto w-full max-h-[100px] bg-transparent object-contain dark:invert"
-            priority
-          />
+          <div className="relative w-full h-[100px] flex items-center justify-center">
+            <Image
+              src="/logo.png"
+              alt="Logo"
+              fill
+              sizes="(max-width: 768px) 100vw, 300px"
+              className="object-contain dark:invert"
+              priority
+            />
+          </div>
         </Link>
       </SidebarMenu>
       <div className="border-b border-sidebar-border/50" />
@@ -223,30 +258,102 @@ export function AppSidebar() {
               {getMenuItems().map((item, index) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
+                    asChild
                     tooltip={item.title}
-                    className="hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground transition-all duration-300 hover:scale-[1.02] group relative overflow-hidden"
+                    className={`hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground transition-all duration-300 hover:scale-[1.02] group relative overflow-hidden p-0 ${
+                      pathname.includes(item.url)
+                        ? "bg-sidebar-accent/40 text-sidebar-accent-foreground"
+                        : ""
+                    }`}
                     style={{
                       animationDelay: `${index * 100}ms`,
                     }}
-                    onClick={() => handleNavigation(item.url)}
                   >
-                    <div className="flex items-center gap-3 w-full">
-                      <div className="relative">
-                        <item.icon className="group-hover:scale-110 group-hover:rotate-3 transition-all duration-300" />
-                        <div className="absolute inset-0 bg-sidebar-primary/20 rounded-full scale-0 group-hover:scale-150 transition-transform duration-500 opacity-0 group-hover:opacity-100" />
-                      </div>
-                      <span className="font-medium">{item.title}</span>
-                      {item.badge && (
-                        <Badge
-                          variant="secondary"
-                          className="ml-auto text-xs bg-linear-to-r from-sidebar-primary/10 to-sidebar-accent/10 border-sidebar-primary/20 group-hover:scale-105 transition-transform duration-300"
+                    <Link
+                      href={item.url}
+                      onClick={(e) => {
+                        // Verhindere die Standard-Link-Navigation beim normalen Klick
+                        if (e.button === 0 && !e.metaKey && !e.ctrlKey) {
+                          e.preventDefault();
+                          handleNavigation(item.url);
+                        }
+                      }}
+                      onContextMenu={(e) => {
+                        // Erlaube Rechtsklick für neuen Tab
+                        e.stopPropagation();
+                      }}
+                    >
+                      <div className="flex items-center gap-3 w-full px-3 py-2">
+                        <div className="relative">
+                          <item.icon
+                            className={`group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 ${
+                              pathname.includes(item.url) ? "scale-110" : ""
+                            }`}
+                          />
+                          <div
+                            className={`absolute inset-0 bg-sidebar-primary/20 rounded-full scale-0 group-hover:scale-150 transition-transform duration-500 opacity-0 group-hover:opacity-100 ${
+                              pathname.includes(item.url)
+                                ? "scale-125 opacity-100"
+                                : ""
+                            }`}
+                          />
+                        </div>
+                        <span
+                          className={`font-medium ${
+                            pathname.includes(item.url) ? "font-semibold" : ""
+                          }`}
                         >
-                          {item.badge}
-                        </Badge>
-                      )}
-                      <div className="absolute inset-0 bg-linear-to-r from-transparent via-sidebar-primary/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                    </div>
+                          {item.title}
+                        </span>
+                        {item.badge && (
+                          <Badge
+                            variant="secondary"
+                            className={`ml-auto text-xs bg-linear-to-r from-sidebar-primary/10 to-sidebar-accent/10 border-sidebar-primary/20 group-hover:scale-105 transition-transform duration-300 ${
+                              pathname.includes(item.url) ? "scale-110" : ""
+                            }`}
+                          >
+                            {item.badge}
+                          </Badge>
+                        )}
+                        <div className="absolute inset-0 bg-linear-to-r from-transparent via-sidebar-primary/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                      </div>
+                    </Link>
                   </SidebarMenuButton>
+                  {item.subItems && item.subItems.length > 0 && (
+                    <SidebarMenuSub className="ml-0 border-l border-sidebar-border/50 ml-4">
+                      {item.subItems.map((subItem) => (
+                        <SidebarMenuSubItem key={subItem.title}>
+                          <SidebarMenuSubButton
+                            asChild
+                            className="hover:bg-sidebar-accent/50 transition-all duration-300 group p-0"
+                          >
+                            <Link
+                              href={subItem.url}
+                              onClick={(e) => {
+                                // Verhindere die Standard-Link-Navigation beim normalen Klick
+                                if (
+                                  e.button === 0 &&
+                                  !e.metaKey &&
+                                  !e.ctrlKey
+                                ) {
+                                  e.preventDefault();
+                                  handleNavigation(subItem.url);
+                                }
+                              }}
+                              onContextMenu={(e) => {
+                                // Erlaube Rechtsklick für neuen Tab
+                                e.stopPropagation();
+                              }}
+                              className="flex items-center gap-3 w-full px-3 py-2"
+                            >
+                              <subItem.icon className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
+                              <span className="text-sm">{subItem.title}</span>
+                            </Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      ))}
+                    </SidebarMenuSub>
+                  )}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>

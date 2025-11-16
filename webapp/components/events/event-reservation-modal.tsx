@@ -136,46 +136,46 @@ export function EventReservationModal({
             />
           </div>
 
-          {selectedSeats.length > 0 && (
-            <div className="m-0 border-t max-h-15 md:max-h-24 overflow-y-auto">
-              <h4 className="font-medium text-sm md:text-base">
-                {t("eventReservationModal.selectedSeatsTitle")}
-              </h4>
-              <div className="flex flex-wrap gap-1.5 md:gap-2">
-                {selectedSeats.map((seat) => (
-                  <button
-                    key={seat.id?.toString()}
-                    className="px-2 py-1.5 md:px-3 md:py-2 text-sm rounded-md border bg-seatmap border rounded shadow-xs hover:bg-secondary"
-                  >
-                    {seat.seatNumber +
-                      (seat.seatRow ? " (" + seat.seatRow + ")" : "")}
-                  </button>
-                ))}
-              </div>
+          <div className="flex justify-between items-center gap-2 pt-2 border-t">
+            <div className="flex-1 min-w-0">
+              {selectedSeats.length > 0 && (
+                <div className="overflow-x-auto scrollbar-thin">
+                  <div className="flex gap-1.5 md:gap-2 pb-0">
+                    {selectedSeats.map((seat) => (
+                      <button
+                        key={seat.id?.toString()}
+                        className="flex-shrink-0 px-2 py-1.5 md:px-3 md:py-2 text-sm rounded-md border bg-seatmap border rounded shadow-xs hover:bg-secondary"
+                      >
+                        {seat.seatNumber +
+                          (seat.seatRow ? " (" + seat.seatRow + ")" : "")}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-
-          <div className="flex justify-end gap-2 pt-2">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              className="bg-transparent text-sm md:text-base px-3 py-2"
-            >
-              {t("eventReservationModal.cancelButton")}
-            </Button>
-            <Button
-              onClick={handleReserve}
-              disabled={selectedSeats.length === 0 || isLoading}
-              className="text-sm md:text-base px-3 py-2"
-            >
-              {isLoading
-                ? t("eventReservationModal.reservingButton")
-                : selectedSeats.length === 1
-                  ? t("eventReservationModal.reserveSeatButton")
-                  : t("eventReservationModal.reserveSeatsButton", {
-                      count: selectedSeats.length,
-                    })}
-            </Button>
+            <div className="flex gap-2 flex-shrink-0">
+              <Button
+                variant="outline"
+                onClick={onClose}
+                className="bg-transparent text-sm md:text-base px-3 py-2"
+              >
+                {t("eventReservationModal.cancelButton")}
+              </Button>
+              <Button
+                onClick={handleReserve}
+                disabled={selectedSeats.length === 0 || isLoading}
+                className="text-sm md:text-base px-3 py-2"
+              >
+                {isLoading
+                  ? t("eventReservationModal.reservingButton")
+                  : selectedSeats.length === 1
+                    ? t("eventReservationModal.reserveSeatButton")
+                    : t("eventReservationModal.reserveSeatsButton", {
+                        count: selectedSeats.length,
+                      })}
+              </Button>
+            </div>
           </div>
         </div>
       </DialogContent>
