@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.email.resource;
 
 import java.util.Optional;
+import jakarta.annotation.security.PermitAll;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -37,6 +38,7 @@ public class EmailSeatMapResource {
 
     @GET
     @Produces("image/svg+xml")
+    @PermitAll
     public Response getSeatMap(@QueryParam("token") String token) {
         Optional<String> svg = service.getSvgImage(token);
         if (svg.isEmpty()) {

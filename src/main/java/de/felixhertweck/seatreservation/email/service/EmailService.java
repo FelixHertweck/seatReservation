@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import com.google.zxing.WriterException;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.management.service.ReservationService;
 import de.felixhertweck.seatreservation.model.entity.EmailVerification;
@@ -43,6 +44,7 @@ import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
+import de.felixhertweck.seatreservation.utils.QRCodeImage;
 import de.felixhertweck.seatreservation.utils.VerificationCodeGenerator;
 import io.quarkus.logging.Log;
 import io.quarkus.mailer.Mail;
@@ -145,7 +147,7 @@ public class EmailService {
 
         // Replace placeholders with actual values
         htmlContent =
-                htmlContent.replace("{userName}", user.getFirstname() + " " + user.getLastname());
+                htmlContent.replace("{fullName}", user.getFirstname() + " " + user.getLastname());
         htmlContent = htmlContent.replace("{verificationCode}", emailVerification.getToken());
         htmlContent =
                 htmlContent.replace(
@@ -331,8 +333,9 @@ public class EmailService {
 
         String htmlContent = emailContentReservationConfirmation;
 
+        htmlContent = htmlContent.replace("{userName}", user.getUsername());
         htmlContent =
-                htmlContent.replace("{userName}", user.getFirstname() + " " + user.getLastname());
+                htmlContent.replace("{fullName}", user.getFirstname() + " " + user.getLastname());
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
         htmlContent = htmlContent.replace("{eventName}", eventName != null ? eventName : "");
@@ -386,6 +389,13 @@ public class EmailService {
         // Add PNG image as inline attachment
         if (pngImage.length > 0) {
             mail.addInlineAttachment("seatmap.png", pngImage, "image/png", "seatmap-image");
+        }
+
+        String qrCodeContent = generateQrCodeContent(user, event, reservations);
+        byte[] qrCodeImage = generateQrCodeImage(qrCodeContent);
+        // Add QR code image as inline attachment
+        if (qrCodeImage.length > 0) {
+            mail.addInlineAttachment("qrcode.png", qrCodeImage, "image/png", "qrcode-image");
         }
 
         if (emailAddresses.size() > 1) {
@@ -512,8 +522,9 @@ public class EmailService {
 
         String htmlContent = emailContentReservationUpdateConfirmation;
 
+        htmlContent = htmlContent.replace("{userName}", user.getUsername());
         htmlContent =
-                htmlContent.replace("{userName}", user.getFirstname() + " " + user.getLastname());
+                htmlContent.replace("{fullName}", user.getFirstname() + " " + user.getLastname());
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
         htmlContent = htmlContent.replace("{eventName}", eventName != null ? eventName : "");
@@ -567,6 +578,13 @@ public class EmailService {
         // Add PNG image as inline attachment
         if (pngImage.length > 0) {
             mail.addInlineAttachment("seatmap.png", pngImage, "image/png", "seatmap-image");
+        }
+
+        String qrCodeContent = generateQrCodeContent(user, event, activeReservations);
+        byte[] qrCodeImage = generateQrCodeImage(qrCodeContent);
+        // Add QR code image as inline attachment
+        if (qrCodeImage.length > 0) {
+            mail.addInlineAttachment("qrcode.png", qrCodeImage, "image/png", "qrcode-image");
         }
 
         if (emailAddresses.size() > 1) {
@@ -626,7 +644,7 @@ public class EmailService {
 
         // Replace placeholders with actual values
         htmlContent =
-                htmlContent.replace("{userName}", user.getFirstname() + " " + user.getLastname());
+                htmlContent.replace("{fullName}", user.getFirstname() + " " + user.getLastname());
         htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
         LOG.debug("Placeholders replaced in password changed email template.");
 
@@ -702,8 +720,9 @@ public class EmailService {
         LOG.debugf("HTML list of seats generated: %s", seatListHtml.toString());
 
         // Replace placeholders with actual values
+        htmlContent = htmlContent.replace("{userName}", user.getUsername());
         htmlContent =
-                htmlContent.replace("{userName}", user.getFirstname() + " " + user.getLastname());
+                htmlContent.replace("{fullName}", user.getFirstname() + " " + user.getLastname());
         htmlContent = htmlContent.replace("{eventName}", event.getName());
         htmlContent =
                 htmlContent.replace(
@@ -739,6 +758,13 @@ public class EmailService {
         // Add PNG image as inline attachment
         if (pngImage.length > 0) {
             mail.addInlineAttachment("seatmap.png", pngImage, "image/png", "seatmap-image");
+        }
+
+        String qrCodeContent = generateQrCodeContent(user, event, reservations);
+        byte[] qrCodeImage = generateQrCodeImage(qrCodeContent);
+        // Add QR code image as inline attachment
+        if (qrCodeImage.length > 0) {
+            mail.addInlineAttachment("qrcode.png", qrCodeImage, "image/png", "qrcode-image");
         }
 
         mailer.send(mail)
@@ -790,7 +816,7 @@ public class EmailService {
         // Replace placeholders
         htmlContent =
                 htmlContent.replace(
-                        "{userName}", manager.getFirstname() + " " + manager.getLastname());
+                        "{fullName}", manager.getFirstname() + " " + manager.getLastname());
         htmlContent = htmlContent.replace("{eventName}", event.getName());
         htmlContent =
                 htmlContent.replace(
@@ -935,5 +961,43 @@ public class EmailService {
         }
 
         return result.toString();
+    }
+
+    /**
+     * Generates the content string for the QR code.
+     *
+     * @param user The user for whom the QR code is generated.
+     * @param event The event for which the QR code is generated.
+     * @param reservations The list of reservations to include in the QR code content.
+     * @return The formatted QR code content string.
+     */
+    private String generateQrCodeContent(User user, Event event, List<Reservation> reservations) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(user.id.toString());
+        sb.append(";");
+        sb.append(event.id.toString());
+        sb.append(";");
+        reservations.stream()
+                .map(Reservation::getCheckInCode)
+                .forEach(code -> sb.append(code).append(","));
+        sb.deleteCharAt(sb.length() - 1);
+        return sb.toString();
+    }
+
+    /**
+     * Generates a QR code image as a byte array from the given content string.
+     *
+     * @param qrCodeContent The content to encode in the QR code.
+     * @return A byte array representing the QR code image in PNG format.
+     */
+    private byte[] generateQrCodeImage(String qrCodeContent) {
+        byte[] qrCodeImage = new byte[0];
+        try {
+            qrCodeImage = QRCodeImage.generateQrCodeImage(qrCodeContent, 400, 400);
+            LOG.debugf("QR Code image generated with size: %d bytes", qrCodeImage.length);
+        } catch (WriterException | IOException e) {
+            LOG.errorf(e, "Failed to generate QR code for reservation confirmation.");
+        }
+        return qrCodeImage;
     }
 }
