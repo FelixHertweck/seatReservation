@@ -39,7 +39,7 @@ import org.jboss.logging.Logger;
 
 @Path("/api/user/events")
 @Produces(MediaType.APPLICATION_JSON)
-@RolesAllowed({Roles.USER, Roles.MANAGER, Roles.ADMIN})
+@RolesAllowed({Roles.USER})
 public class EventResource {
 
     private static final Logger LOG = Logger.getLogger(EventResource.class);
