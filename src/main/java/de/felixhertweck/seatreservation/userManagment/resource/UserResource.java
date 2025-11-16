@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.userManagment.resource;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import jakarta.annotation.security.RolesAllowed;
@@ -32,6 +33,7 @@ import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.SecurityContext;
 
@@ -44,6 +46,7 @@ import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
+import io.quarkus.security.Authenticated;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.jboss.logging.Logger;
 
@@ -165,10 +168,14 @@ public class UserResource {
             responseCode = "403",
             description = "Forbidden: Only ADMIN role can access this resource")
     @APIResponse(responseCode = "404", description = "Not Found: User with specified ID not found")
-    public void deleteUser(@PathParam("id") Long id) {
-        LOG.debugf("Received DELETE request to /api/users/admin/%d for user deletion.", id);
-        userService.deleteUser(id);
-        LOG.debugf("User with ID %d deleted successfully by admin.", id);
+    public void deleteUser(@QueryParam("ids") List<Long> ids) {
+        LOG.debugf(
+                "Received DELETE request to /api/users/admin/%d for user deletion.",
+                ids != null ? ids : Collections.emptyList());
+        userService.deleteUser(ids);
+        LOG.debugf(
+                "User with ID %d deleted successfully by admin.",
+                ids != null ? ids : Collections.emptyList());
     }
 
     /**
@@ -199,7 +206,7 @@ public class UserResource {
      * @return a list of available role names
      */
     @GET
-    @RolesAllowed({Roles.USER, Roles.MANAGER, Roles.ADMIN})
+    @Authenticated
     @Path("/roles")
     @APIResponse(
             responseCode = "200",
@@ -245,7 +252,7 @@ public class UserResource {
      */
     @PUT
     @Path("/me")
-    @RolesAllowed({Roles.USER, Roles.MANAGER, Roles.ADMIN})
+    @Authenticated
     @APIResponse(responseCode = "200", description = "User profile updated successfully")
     @APIResponse(responseCode = "400", description = "Bad Request: Invalid user data")
     @APIResponse(responseCode = "401", description = "Unauthorized")
@@ -275,7 +282,7 @@ public class UserResource {
      */
     @GET
     @Path("/me")
-    @RolesAllowed({Roles.USER, Roles.ADMIN, Roles.MANAGER})
+    @Authenticated
     @APIResponse(responseCode = "200", description = "Current user profile retrieved successfully")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
