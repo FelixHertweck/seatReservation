@@ -28,6 +28,7 @@ import type {
   EventResponseDto,
   EventLocationResponseDto,
   EventRequestDto,
+  LimitedUserInfoDto,
 } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
@@ -37,6 +38,7 @@ import { formatDateTime } from "@/lib/utils";
 export interface EventManagementProps {
   events: EventResponseDto[];
   allLocations: EventLocationResponseDto[];
+  users?: LimitedUserInfoDto[];
   createEvent: (event: EventRequestDto) => Promise<EventResponseDto>;
   updateEvent: (
     id: bigint,
@@ -51,6 +53,7 @@ export interface EventManagementProps {
 export function EventManagement({
   events,
   allLocations,
+  users = [],
   createEvent,
   updateEvent,
   deleteEvent,
@@ -300,10 +303,10 @@ export function EventManagement({
                       : t("eventManagement.selectAll")}
                   </Button>
                 </div>
-                <Table className="table-fixed">
+                <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[5%]">
+                      <TableHead className="w-[50px]">
                         {t("eventManagement.tableHeaderSelect")}
                       </TableHead>
                       <SortableTableHead
@@ -311,7 +314,7 @@ export function EventManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[15%]"
+                        className="min-w-[130px] max-w-[160px]"
                       >
                         {t("eventManagement.tableHeaderName")}
                       </SortableTableHead>
@@ -320,7 +323,7 @@ export function EventManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[13%]"
+                        className="min-w-[120px] max-w-[150px]"
                       >
                         {t("eventManagement.tableHeaderDescription")}
                       </SortableTableHead>
@@ -329,7 +332,7 @@ export function EventManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[8%]"
+                        className="min-w-[100px] max-w-[110px]"
                       >
                         {t("eventManagement.tableHeaderStartTime")}
                       </SortableTableHead>
@@ -338,7 +341,7 @@ export function EventManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[8%]"
+                        className="min-w-[100px] max-w-[110px]"
                       >
                         {t("eventManagement.tableHeaderEndTime")}
                       </SortableTableHead>
@@ -347,7 +350,7 @@ export function EventManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[8%]"
+                        className="min-w-[100px] max-w-[110px]"
                       >
                         {t("eventManagement.tableHeaderBookingStartTime")}
                       </SortableTableHead>
@@ -356,7 +359,7 @@ export function EventManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[8%]"
+                        className="min-w-[100px] max-w-[110px]"
                       >
                         {t("eventManagement.tableHeaderBookingDeadline")}
                       </SortableTableHead>
@@ -365,11 +368,11 @@ export function EventManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[10%]"
+                        className="min-w-[100px] max-w-[110px]"
                       >
                         {t("eventManagement.tableHeaderReminderSendDate")}
                       </SortableTableHead>
-                      <TableHead className="w-[5%]">
+                      <TableHead className="w-[50px]">
                         <div className="flex items-center justify-center">
                           <Mail className="h-4 w-4" />
                         </div>
@@ -379,11 +382,11 @@ export function EventManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[10%]"
+                        className="min-w-[100px] max-w-[120px]"
                       >
                         {t("eventManagement.tableHeaderLocation")}
                       </SortableTableHead>
-                      <TableHead className="w-[8%]">
+                      <TableHead className="min-w-[70px] w-[80px]">
                         {t("eventManagement.tableHeaderActions")}
                       </TableHead>
                     </TableRow>
@@ -417,6 +420,12 @@ export function EventManagement({
                               <Skeleton className="h-4 w-24" />
                             </TableCell>
                             <TableCell>
+                              <Skeleton className="h-4 w-24" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-4 w-32" />
+                            </TableCell>
+                            <TableCell>
                               <div className="flex gap-2">
                                 <Skeleton className="h-8 w-8" />
                                 <Skeleton className="h-8 w-8" />
@@ -430,7 +439,7 @@ export function EventManagement({
                           );
                           return (
                             <TableRow key={event.id?.toString()}>
-                              <TableCell className="w-[5%]">
+                              <TableCell>
                                 <Checkbox
                                   checked={
                                     event.id ? selectedIds.has(event.id) : false
@@ -442,13 +451,10 @@ export function EventManagement({
                               </TableCell>
                               <TruncatedCell
                                 content={event.name}
-                                className="font-medium w-[10%]"
+                                className="font-medium"
                               />
-                              <TruncatedCell
-                                content={event.description}
-                                className="w-[15%]"
-                              />
-                              <TableCell className="w-[10%]">
+                              <TruncatedCell content={event.description} />
+                              <TableCell>
                                 {(() => {
                                   const formatted = formatDateTime(
                                     event.startTime,
@@ -459,11 +465,11 @@ export function EventManagement({
                                       <span>{formatted.time}</span>
                                     </div>
                                   ) : (
-                                    t("eventManagement.tbd")
+                                    "-"
                                   );
                                 })()}
                               </TableCell>
-                              <TableCell className="w-[10%]">
+                              <TableCell>
                                 {(() => {
                                   const formatted = formatDateTime(
                                     event.endTime,
@@ -474,11 +480,11 @@ export function EventManagement({
                                       <span>{formatted.time}</span>
                                     </div>
                                   ) : (
-                                    t("eventManagement.tbd")
+                                    "-"
                                   );
                                 })()}
                               </TableCell>
-                              <TableCell className="w-[10%]">
+                              <TableCell>
                                 {(() => {
                                   const formatted = formatDateTime(
                                     event.bookingStartTime,
@@ -489,11 +495,11 @@ export function EventManagement({
                                       <span>{formatted.time}</span>
                                     </div>
                                   ) : (
-                                    t("eventManagement.tbd")
+                                    "-"
                                   );
                                 })()}
                               </TableCell>
-                              <TableCell className="w-[10%]">
+                              <TableCell>
                                 {(() => {
                                   const formatted = formatDateTime(
                                     event.bookingDeadline,
@@ -504,11 +510,11 @@ export function EventManagement({
                                       <span>{formatted.time}</span>
                                     </div>
                                   ) : (
-                                    t("eventManagement.tbd")
+                                    "-"
                                   );
                                 })()}
                               </TableCell>
-                              <TableCell className="w-[10%]">
+                              <TableCell>
                                 {(() => {
                                   const formatted = formatDateTime(
                                     event.reminderSendDate,
@@ -523,7 +529,7 @@ export function EventManagement({
                                   );
                                 })()}
                               </TableCell>
-                              <TableCell className="w-[5%]">
+                              <TableCell>
                                 <div className="flex items-center justify-center">
                                   {event.isReminderSent ? (
                                     <Mail className="h-4 w-4 text-green-600" />
@@ -534,7 +540,7 @@ export function EventManagement({
                                   )}
                                 </div>
                               </TableCell>
-                              <TableCell className="w-[10%]">
+                              <TableCell>
                                 {location ? (
                                   <Button
                                     variant="link"
@@ -553,7 +559,7 @@ export function EventManagement({
                                   t("eventManagement.noLocation")
                                 )}
                               </TableCell>
-                              <TableCell className="w-[8%]">
+                              <TableCell>
                                 <div className="flex gap-2">
                                   <Button
                                     variant="outline"
@@ -645,7 +651,7 @@ export function EventManagement({
                                 <p className="text-sm">
                                   {event.startTime
                                     ? new Date(event.startTime).toLocaleString()
-                                    : t("eventManagement.tbd")}
+                                    : "-"}
                                 </p>
                               </div>
                               <div>
@@ -655,7 +661,7 @@ export function EventManagement({
                                 <p className="text-sm">
                                   {event.endTime
                                     ? new Date(event.endTime).toLocaleString()
-                                    : t("eventManagement.tbd")}
+                                    : "-"}
                                 </p>
                               </div>
                               <div>
@@ -669,7 +675,7 @@ export function EventManagement({
                                     ? new Date(
                                         event.bookingStartTime,
                                       ).toLocaleString()
-                                    : t("eventManagement.tbd")}
+                                    : "-"}
                                 </p>
                               </div>
                               <div>
@@ -683,7 +689,7 @@ export function EventManagement({
                                     ? new Date(
                                         event.bookingDeadline,
                                       ).toLocaleString()
-                                    : t("eventManagement.tbd")}
+                                    : "-"}
                                 </p>
                               </div>
                               <div>
@@ -697,7 +703,7 @@ export function EventManagement({
                                     ? new Date(
                                         event.reminderSendDate,
                                       ).toLocaleString()
-                                    : t("eventManagement.tbd")}
+                                    : "-"}
                                 </p>
                               </div>
                             </div>
@@ -756,6 +762,7 @@ export function EventManagement({
           allLocations={allLocations}
           event={selectedEvent}
           isCreating={isCreating}
+          users={users}
           onSubmit={async (eventData) => {
             if (isCreating) {
               await createEvent(eventData);

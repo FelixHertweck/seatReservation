@@ -215,7 +215,6 @@ export function AllowanceFormModal({
                   onSelectionChange={setSelectedUserIds}
                   label=""
                   placeholder={t("allowanceFormModal.searchUserPlaceholder")}
-                  maxHeight="250px"
                 />
               )}
 

@@ -297,7 +297,7 @@ export function ReservationManagement({
               {t("reservationManagement.description")}
             </CardDescription>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <div className="flex flex-col lg:flex-row gap-2 w-full sm:w-auto">
             {selectedIds.size > 0 && (
               <Button
                 variant="destructive"
@@ -488,10 +488,10 @@ export function ReservationManagement({
                       : t("reservationManagement.selectAll")}
                   </Button>
                 </div>
-                <Table className="table-fixed">
+                <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[5%]">
+                      <TableHead className="w-[50px]">
                         {t("reservationManagement.tableHeaderSelect")}
                       </TableHead>
                       <SortableTableHead
@@ -499,7 +499,7 @@ export function ReservationManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[12%]"
+                        className="min-w-[150px]"
                       >
                         {t("reservationManagement.tableHeaderUser")}
                       </SortableTableHead>
@@ -508,7 +508,7 @@ export function ReservationManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[20%]"
+                        className="min-w-[200px]"
                       >
                         {t("reservationManagement.tableHeaderEvent")}
                       </SortableTableHead>
@@ -517,7 +517,7 @@ export function ReservationManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[12%]"
+                        className="min-w-[150px]"
                       >
                         {t("reservationManagement.tableHeaderSeat")}
                       </SortableTableHead>
@@ -526,7 +526,7 @@ export function ReservationManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[10%]"
+                        className="min-w-[100px]"
                       >
                         {t("reservationManagement.tableHeaderStatus")}
                       </SortableTableHead>
@@ -535,11 +535,11 @@ export function ReservationManagement({
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
-                        className="w-[15%]"
+                        className="min-w-[180px]"
                       >
                         {t("reservationManagement.tableHeaderReservedDate")}
                       </SortableTableHead>
-                      <TableHead className="w-[8%]">
+                      <TableHead className="min-w-[100px]">
                         {t("reservationManagement.tableHeaderActions")}
                       </TableHead>
                     </TableRow>
@@ -595,9 +595,8 @@ export function ReservationManagement({
                               </TableCell>
                               <TruncatedCell
                                 content={reservation.user?.username}
-                                className="w-[12%]"
                               />
-                              <TableCell className="w-[20%]">
+                              <TableCell>
                                 {event ? (
                                   <Button
                                     variant="link"
@@ -615,7 +614,7 @@ export function ReservationManagement({
                                   t("reservationManagement.unknownEvent")
                                 )}
                               </TableCell>
-                              <TableCell className="w-[12%]">
+                              <TableCell>
                                 {reservation.seat ? (
                                   <Button
                                     variant="link"

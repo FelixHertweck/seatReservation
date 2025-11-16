@@ -25,7 +25,9 @@ import type {
   EventResponseDto,
   EventLocationResponseDto,
   EventRequestDto,
+  LimitedUserInfoDto,
 } from "@/api";
+import { UserMultiSelect } from "@/components/common/user-multi-select";
 import { useT } from "@/lib/i18n/hooks";
 
 interface EventFormModalProps {
@@ -34,6 +36,7 @@ interface EventFormModalProps {
   isCreating: boolean;
   onSubmit: (eventData: EventRequestDto) => Promise<void>;
   onClose: () => void;
+  users?: LimitedUserInfoDto[];
 }
 
 export function EventFormModal({
@@ -42,6 +45,7 @@ export function EventFormModal({
   isCreating,
   onSubmit,
   onClose,
+  users = [],
 }: EventFormModalProps) {
   const t = useT();
 
@@ -64,6 +68,8 @@ export function EventFormModal({
       ? new Date(event.reminderSendDate).toLocaleString("sv-SE").slice(0, 16)
       : "",
     eventLocationId: event?.eventLocationId?.toString() || "",
+    supervisorIds:
+      event?.supervisorIds?.map((id: bigint) => id.toString()) || [],
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -86,7 +92,13 @@ export function EventFormModal({
           : undefined,
         eventLocationId: BigInt(formData.eventLocationId),
       };
-      await onSubmit(eventData);
+      // Attach supervisors if provided
+      const payload: EventRequestDto = {
+        ...eventData,
+        supervisorIds:
+          formData.supervisorIds?.map((id: string) => BigInt(id)) || [],
+      };
+      await onSubmit(payload);
     } finally {
       setIsLoading(false);
     }
@@ -95,7 +107,7 @@ export function EventFormModal({
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent
-        className="max-w-md"
+        className="max-w-md max-h-[80vh] overflow-y-auto"
         onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
@@ -136,6 +148,20 @@ export function EventFormModal({
               required
             />
           </div>
+
+          <div className="border-t border-gray-200 my-4" />
+          <div className="space-y-2">
+            <UserMultiSelect
+              users={users}
+              selectedUserIds={formData.supervisorIds}
+              onSelectionChange={(sel) =>
+                setFormData((prev) => ({ ...prev, supervisorIds: sel }))
+              }
+              label={t("eventFormModal.supervisorsLabel")}
+              placeholder={t("eventFormModal.supervisorsPlaceholder")}
+            />
+          </div>
+          <div className="border-t border-gray-200 my-4" />
 
           <div className="space-y-2">
             <Label htmlFor="description">
