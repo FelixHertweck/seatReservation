@@ -17,8 +17,8 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useT } from "@/lib/i18n/hooks";
-import { isValidRedirectUrlEncoded } from "@/lib/utils";
 import { ErrorWithResponse } from "@/components/init-query-client";
+import { redirectUser } from "@/lib/redirect-User";
 
 export default function LoginPage() {
   const params = useParams();
@@ -115,12 +115,7 @@ export default function LoginPage() {
   };
 
   const handleContinue = () => {
-    const returnToUrl = searchParams.get("returnTo");
-    router.push(
-      returnToUrl && isValidRedirectUrlEncoded(returnToUrl)
-        ? decodeURIComponent(returnToUrl)
-        : `/${locale}/events`,
-    );
+    redirectUser(router, locale, user, searchParams.get("returnTo"));
   };
 
   const handleLogout = async () => {
