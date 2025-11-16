@@ -49,4 +49,24 @@ public class EventRepository implements PanacheRepository<Event> {
     public Optional<Event> findByName(String name) {
         return find("name", name).firstResultOptional();
     }
+
+    /**
+     * Checks if a user is a supervisor for a specific event.
+     *
+     * @param eventId the event ID
+     * @param userId the user ID
+     * @return true if the user is a supervisor for the event, false otherwise
+     */
+    public boolean isUserSupervisor(Long eventId, Long userId) {
+        if (eventId == null || userId == null) {
+            return false;
+        }
+
+        return find(
+                        "SELECT e FROM Event e JOIN e.supervisors s WHERE e.id = ?1 AND s.id = ?2",
+                        eventId,
+                        userId)
+                .firstResultOptional()
+                .isPresent();
+    }
 }

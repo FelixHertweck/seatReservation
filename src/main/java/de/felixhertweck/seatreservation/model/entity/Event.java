@@ -28,6 +28,9 @@ import java.util.Set;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -62,6 +65,13 @@ public class Event extends PanacheEntity {
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<EmailSeatMapToken> emailSeatMapTokens = new HashSet<>();
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "event_supervisors",
+            joinColumns = @JoinColumn(name = "event_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id"))
+    private Set<User> supervisors = new HashSet<>();
+
     public Event() {}
 
     public Long getId() {
@@ -77,7 +87,8 @@ public class Event extends PanacheEntity {
             Instant bookingStartTime,
             EventLocation location,
             User manager,
-            Instant reminderSendDate) {
+            Instant reminderSendDate,
+            Set<User> supervisors) {
         this.name = name;
         this.description = description;
         this.startTime = startTime;
@@ -88,6 +99,7 @@ public class Event extends PanacheEntity {
         this.manager = manager;
         this.reminderSendDate = reminderSendDate;
         this.reminderSent = false;
+        this.supervisors = supervisors;
     }
 
     public String getName() {
@@ -164,6 +176,10 @@ public class Event extends PanacheEntity {
         this.event_location = event_location;
     }
 
+    public void setUserAllowances(Set<EventUserAllowance> userAllowances) {
+        this.userAllowances = userAllowances;
+    }
+
     public Set<EventUserAllowance> getUserAllowances() {
         return userAllowances;
     }
@@ -190,6 +206,14 @@ public class Event extends PanacheEntity {
 
     public void setEmailSeatMapTokens(Set<EmailSeatMapToken> emailSeatMapTokens) {
         this.emailSeatMapTokens = emailSeatMapTokens;
+    }
+
+    public Set<User> getSupervisors() {
+        return supervisors;
+    }
+
+    public void setSupervisors(Set<User> supervisors) {
+        this.supervisors = supervisors;
     }
 
     @Override
