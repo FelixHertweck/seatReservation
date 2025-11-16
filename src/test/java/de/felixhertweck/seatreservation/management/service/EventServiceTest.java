@@ -80,6 +80,7 @@ public class EventServiceTest {
 
     private User adminUser;
     private User managerUser;
+    private User supervisorUser;
     private User regularUser;
     private EventLocation eventLocation;
     private Event existingEvent;
@@ -119,6 +120,19 @@ public class EventServiceTest {
                         Set.of(Roles.MANAGER),
                         Set.of());
         managerUser.id = 3L;
+        supervisorUser =
+                new User(
+                        "supervisor",
+                        "supervisor@example.com",
+                        true,
+                        false,
+                        "hash",
+                        "salt",
+                        "Event",
+                        "Supervisor",
+                        Set.of(Roles.SUPERVISOR),
+                        Set.of());
+        supervisorUser.id = 4L;
         regularUser =
                 new User(
                         "user",
@@ -146,7 +160,8 @@ public class EventServiceTest {
                         Instant.now().plusSeconds(Duration.ofHours(1).toSeconds()),
                         eventLocation,
                         managerUser,
-                        Instant.now().plusSeconds(Duration.ofHours(13).toSeconds()));
+                        Instant.now().plusSeconds(Duration.ofHours(13).toSeconds()),
+                        Set.of(supervisorUser));
         existingEvent.id = 1L;
     }
 
@@ -177,6 +192,40 @@ public class EventServiceTest {
         assertNotNull(createdEvent);
         assertEquals("New Event", createdEvent.name());
         assertEquals(eventLocation.id, createdEvent.eventLocationId());
+        verify(eventRepository, times(1)).persist(any(Event.class));
+    }
+
+    @Test
+    void createEvent_WithSupervisors_Success() {
+        EventRequestDTO dto = new EventRequestDTO();
+        dto.setName("New Event");
+        dto.setDescription("New Description");
+        dto.setStartTime(Instant.now().plusSeconds(Duration.ofDays(5).toSeconds()));
+        dto.setEndTime(Instant.now().plusSeconds(Duration.ofDays(6).toSeconds()));
+        dto.setBookingStartTime(Instant.now().plusSeconds(Duration.ofDays(3).toSeconds()));
+        dto.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(4).toSeconds()));
+        dto.setEventLocationId(eventLocation.id);
+        dto.setSupervisorIds(Set.of(supervisorUser.id));
+
+        when(eventLocationRepository.findByIdOptional(eventLocation.id))
+                .thenReturn(Optional.of(eventLocation));
+        when(userRepository.findByIdOptional(supervisorUser.id))
+                .thenReturn(Optional.of(supervisorUser));
+        doAnswer(
+                        invocation -> {
+                            Event event = invocation.getArgument(0);
+                            event.id = 11L; // Simulate ID generation
+                            return null;
+                        })
+                .when(eventRepository)
+                .persist(any(Event.class));
+
+        EventResponseDTO createdEvent = eventService.createEvent(dto, managerUser);
+
+        assertNotNull(createdEvent);
+        assertEquals("New Event", createdEvent.name());
+        assertEquals(eventLocation.id, createdEvent.eventLocationId());
+        assertTrue(createdEvent.supervisorIds().contains(supervisorUser.id));
         verify(eventRepository, times(1)).persist(any(Event.class));
     }
 
@@ -218,6 +267,37 @@ public class EventServiceTest {
 
         assertNotNull(updatedEvent);
         assertEquals("Updated Event", updatedEvent.name());
+        verify(eventRepository, times(1)).persist(existingEvent);
+    }
+
+    @Test
+    void updateEvent_SupervisorsUpdated_Success_AsManager() throws EventNotFoundException {
+        // prepare DTO with a different supervisor (regularUser)
+        EventRequestDTO dto = new EventRequestDTO();
+        dto.setName("Updated Event");
+        dto.setDescription("Updated Description");
+        dto.setStartTime(Instant.now().plusSeconds(Duration.ofDays(10).toSeconds()));
+        dto.setEndTime(Instant.now().plusSeconds(Duration.ofDays(11).toSeconds()));
+        dto.setBookingStartTime(Instant.now().plusSeconds(Duration.ofDays(8).toSeconds()));
+        dto.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(9).toSeconds()));
+        dto.setEventLocationId(eventLocation.id);
+        dto.setSupervisorIds(Set.of(regularUser.id));
+
+        when(eventRepository.findByIdOptional(existingEvent.id))
+                .thenReturn(Optional.of(existingEvent));
+        when(eventLocationRepository.findByIdOptional(eventLocation.id))
+                .thenReturn(Optional.of(eventLocation));
+        when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
+
+        EventResponseDTO updatedEvent =
+                eventService.updateEvent(existingEvent.id, dto, managerUser);
+
+        assertNotNull(updatedEvent);
+        assertEquals("Updated Event", updatedEvent.name());
+        // verify that supervisors were updated to the new id
+        assertTrue(updatedEvent.supervisorIds().contains(regularUser.id));
+        // ensure old supervisor is no longer present
+        assertTrue(!updatedEvent.supervisorIds().contains(supervisorUser.id));
         verify(eventRepository, times(1)).persist(existingEvent);
     }
 
@@ -317,7 +397,8 @@ public class EventServiceTest {
                                 Instant.now(),
                                 eventLocation,
                                 regularUser,
-                                Instant.now()));
+                                Instant.now(),
+                                Set.of(supervisorUser)));
         when(eventRepository.listAll()).thenReturn(allEvents);
 
         List<EventResponseDTO> result = eventService.getEventsByCurrentManager(adminUser);
