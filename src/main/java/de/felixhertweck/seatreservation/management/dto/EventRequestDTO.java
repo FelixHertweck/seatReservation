@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.management.dto;
 
 import java.time.Instant;
+import java.util.Set;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
@@ -49,6 +50,8 @@ public class EventRequestDTO {
 
     @NotNull(message = "EventLocation ID must not be null")
     private Long eventLocationId;
+
+    @Nullable private Set<Long> supervisorIds;
 
     public String getName() {
         return name;
@@ -112,5 +115,13 @@ public class EventRequestDTO {
 
     public void setEventLocationId(Long eventLocationId) {
         this.eventLocationId = eventLocationId;
+    }
+
+    public Set<Long> getSupervisorIds() {
+        return supervisorIds;
+    }
+
+    public void setSupervisorIds(Set<Long> supervisorIds) {
+        this.supervisorIds = supervisorIds;
     }
 }
