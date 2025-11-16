@@ -20,7 +20,6 @@
 package de.felixhertweck.seatreservation.security.resource;
 
 import jakarta.annotation.security.PermitAll;
-import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
@@ -42,6 +41,7 @@ import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
 import de.felixhertweck.seatreservation.security.service.AuthService;
 import de.felixhertweck.seatreservation.security.service.TokenService;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
+import io.quarkus.security.Authenticated;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
@@ -170,7 +170,7 @@ public class AuthResource {
      */
     @POST
     @Path("/logout")
-    @RolesAllowed({"USER", "ADMIN", "MANAGER"})
+    @Authenticated
     @APIResponse(
             responseCode = "200",
             description = "Logout successful, JWT and refresh token cookies cleared")
@@ -205,7 +205,7 @@ public class AuthResource {
      */
     @POST
     @Path("/logoutAllDevices")
-    @RolesAllowed({"USER", "ADMIN", "MANAGER"})
+    @Authenticated
     @APIResponse(responseCode = "200", description = "Logout from all devices successful")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
