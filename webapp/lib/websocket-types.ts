@@ -29,24 +29,19 @@ export interface WebsocketUpdateMessage {
 }
 
 /**
- * Union type for all WebSocket messages
- */
-export type WebsocketMessage = WebsocketInitialMessage | WebsocketUpdateMessage;
-
-/**
  * Type guard to check if message is an initial message
  */
 export function isInitialMessage(
-  message: WebsocketMessage,
+  message: unknown,
 ): message is WebsocketInitialMessage {
-  return message.type === "INITIAL";
+  return (message as WebsocketInitialMessage)?.type === "INITIAL";
 }
 
 /**
  * Type guard to check if message is an update message
  */
 export function isUpdateMessage(
-  message: WebsocketMessage,
+  message: unknown,
 ): message is WebsocketUpdateMessage {
-  return message.type === "UPDATE";
+  return (message as WebsocketUpdateMessage)?.type === "UPDATE";
 }
