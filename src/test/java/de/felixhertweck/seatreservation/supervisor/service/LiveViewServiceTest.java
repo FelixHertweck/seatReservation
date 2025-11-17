@@ -50,7 +50,7 @@ public class LiveViewServiceTest {
 
     @InjectMock EventRepository eventRepository;
 
-    private final Long eventId = 1L;
+    private final long eventId = 1L;
 
     @BeforeEach
     public void setUp() {
@@ -79,7 +79,7 @@ public class LiveViewServiceTest {
     void testRegisterConnection_StringEventId_Success() {
         // Should successfully parse valid event ID string and register connection
         String validEventIdStr = "123";
-        Long parsedEventId = 123L;
+        long parsedEventId = 123L;
         WebSocketConnection mockConnection = Mockito.mock(WebSocketConnection.class);
 
         // Mock event and location
