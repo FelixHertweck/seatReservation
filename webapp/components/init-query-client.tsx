@@ -41,6 +41,18 @@ export default function InitQueryClient({
 }) {
   const { triggerLoginRequired, setIsOpen, isOpen } = useLoginRequiredPopup();
 
+  // Helper functions to schedule side-effects outside of render
+  const scheduleToast = (props: Parameters<typeof toast>[0]) => {
+    // Run after the current call stack to avoid React setState-in-render warnings
+    // We use queueMicrotask which runs after the current JS execution, but still
+    // before next macrotask, ensuring quick feedback without violating React rules.
+    queueMicrotask(() => toast(props));
+  };
+
+  const scheduleTriggerLoginRequired = () => {
+    queueMicrotask(() => triggerLoginRequired());
+  };
+
   client.setConfig({
     baseUrl: `/`,
     throwOnError: true,
@@ -75,7 +87,7 @@ export default function InitQueryClient({
             refreshResponse.status,
             refreshResponse.statusText,
           );
-          triggerLoginRequired();
+          scheduleTriggerLoginRequired();
         }
       }
       if (!response.ok) {
@@ -115,7 +127,7 @@ export default function InitQueryClient({
         throwOnError(error) {
           const status = (error as ErrorWithResponse)?.response?.status;
           if (status !== 401) {
-            toast({
+            scheduleToast({
               title: "An error occurred",
               description: error.message || "Please try again.",
               variant: "destructive",
@@ -126,7 +138,7 @@ export default function InitQueryClient({
         },
         retry: (failureCount, error) => {
           if ((error as ErrorWithResponse)?.response?.status === 401) {
-            triggerLoginRequired();
+            scheduleTriggerLoginRequired();
             return false;
           }
           return failureCount < 2;
@@ -137,7 +149,7 @@ export default function InitQueryClient({
         retryDelay: 1000,
         retry: (_failureCount, error) => {
           if ((error as ErrorWithResponse)?.response?.status === 401) {
-            triggerLoginRequired();
+            scheduleTriggerLoginRequired();
           }
           return false;
         },
@@ -174,7 +186,7 @@ export default function InitQueryClient({
             errorDescription = error.message;
           }
 
-          toast({
+          scheduleToast({
             title: errorTitle,
             description: errorDescription,
             variant: "destructive",
