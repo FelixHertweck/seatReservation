@@ -77,14 +77,14 @@ class CheckInServiceTest {
 
     @Test
     void testProcessCheckInByIds_successfulCheckIn() throws CheckInException {
-        Long reservationId1 = 1L;
-        Long reservationId2 = 2L;
-        Long userId = 1L;
+        long reservationId1 = 1L;
+        long reservationId2 = 2L;
+        long userId = 1L;
         User user = new User();
         user.id = userId;
 
         // user already defined above
-        Long eventId = 10L;
+        long eventId = 10L;
         Event event = new Event();
         event.id = eventId;
 
@@ -130,9 +130,9 @@ class CheckInServiceTest {
 
     @Test
     void testProcessCheckInByIds_successfulCancel() throws CheckInException {
-        Long reservationId1 = 1L;
-        Long userId = 1L;
-        Long eventId = 10L;
+        long reservationId1 = 1L;
+        long userId = 1L;
+        long eventId = 10L;
 
         User user = new User();
         user.id = userId;
@@ -172,10 +172,10 @@ class CheckInServiceTest {
 
     @Test
     void testProcessCheckInByIds_mixedCheckInAndCancel() throws CheckInException {
-        Long checkInId = 1L;
-        Long cancelId = 2L;
-        Long userId = 1L;
-        Long eventId = 10L;
+        long checkInId = 1L;
+        long cancelId = 2L;
+        long userId = 1L;
+        long eventId = 10L;
 
         User user = new User();
         user.id = userId;
@@ -223,9 +223,9 @@ class CheckInServiceTest {
 
     @Test
     void testProcessCheckInByIds_reservationNotFound() {
-        Long reservationId = 999L;
-        Long userId = 1L;
-        Long eventId = 10L;
+        long reservationId = 999L;
+        long userId = 1L;
+        long eventId = 10L;
 
         when(reservationRepository.findByIdUserIdAndEventId(reservationId, userId, eventId))
                 .thenReturn(Optional.empty());
@@ -244,8 +244,8 @@ class CheckInServiceTest {
 
     @Test
     void testProcessCheckInByIds_emptyLists() throws CheckInException {
-        Long userId = 1L;
-        Long eventId = 10L;
+        long userId = 1L;
+        long eventId = 10L;
         User user = new User();
         user.id = userId;
 
@@ -263,8 +263,8 @@ class CheckInServiceTest {
     @Test
     void testGetReservationInfos_successfulCheckIn()
             throws UserMismatchException, EventMismatchException, CheckInTokenNotFoundException {
-        Long userId = 1L;
-        Long eventId = 10L;
+        long userId = 1L;
+        long eventId = 10L;
         String token1 = "token1";
         String token2 = "token2";
 
@@ -308,8 +308,8 @@ class CheckInServiceTest {
     @Test
     void testGetReservationInfos_emptyTokenList()
             throws UserMismatchException, EventMismatchException, CheckInTokenNotFoundException {
-        Long userId = 1L;
-        Long eventId = 10L;
+        long userId = 1L;
+        long eventId = 10L;
         User user = new User();
         user.id = userId;
 
@@ -322,7 +322,7 @@ class CheckInServiceTest {
 
     @Test
     void testProcessCheckInByTokens_successfulCancel() throws CheckInException {
-        Long reservationId = 1L;
+        long reservationId = 1L;
 
         User user = new User();
         user.id = 1L;
@@ -343,8 +343,8 @@ class CheckInServiceTest {
         reservation1.setSeat(seat);
         reservation1.setLiveStatus(ReservationLiveStatus.CHECKED_IN);
 
-        Long userId = 1L;
-        Long eventId = 10L;
+        long userId = 1L;
+        long eventId = 10L;
 
         when(reservationRepository.findByIdUserIdAndEventId(reservationId, userId, eventId))
                 .thenReturn(Optional.of(reservation1));
@@ -365,8 +365,8 @@ class CheckInServiceTest {
 
     @Test
     void testGetReservationInfos_userMismatchException() {
-        Long userId = 1L;
-        Long eventId = 10L;
+        long userId = 1L;
+        long eventId = 10L;
         String token1 = "token1";
 
         User otherUser = new User();
@@ -392,8 +392,8 @@ class CheckInServiceTest {
 
     @Test
     void testGetReservationInfos_eventMismatchException() {
-        Long userId = 1L;
-        Long eventId = 10L;
+        long userId = 1L;
+        long eventId = 10L;
         String token1 = "token1";
 
         User user = new User();
@@ -426,8 +426,8 @@ class CheckInServiceTest {
 
     @Test
     void testGetReservationInfos_tokenNotFound() {
-        Long userId = 1L;
-        Long eventId = 10L;
+        long userId = 1L;
+        long eventId = 10L;
         String token1 = "token1";
 
         when(reservationRepository.findByCheckInCode(token1)).thenReturn(Optional.empty());
@@ -442,8 +442,8 @@ class CheckInServiceTest {
     @Test
     void testGetReservationInfos_multipleTokens()
             throws UserMismatchException, EventMismatchException, CheckInTokenNotFoundException {
-        Long userId = 1L;
-        Long eventId = 10L;
+        long userId = 1L;
+        long eventId = 10L;
         String token1 = "token1";
         String token2 = "token2";
 
@@ -485,7 +485,7 @@ class CheckInServiceTest {
 
     @Test
     void testGetUsernamesWithReservations_SupervisorUnauthorized_Throws() {
-        Long eventId = 20L;
+        long eventId = 20L;
         User user = new User();
         user.id = 1L;
         user.setRoles(Set.of(Roles.SUPERVISOR));
@@ -497,7 +497,7 @@ class CheckInServiceTest {
 
     @Test
     void testGetUsernamesWithReservations_AdminAllowed() {
-        Long eventId = 10L;
+        long eventId = 10L;
         User admin = new User();
         admin.id = 2L;
         admin.setRoles(Set.of(Roles.ADMIN));
