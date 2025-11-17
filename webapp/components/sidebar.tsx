@@ -14,6 +14,7 @@ import {
   UserLock,
   Eye,
   LogIn as CheckInIcon,
+  LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -85,11 +86,9 @@ export function AppSidebar() {
     const baseItems: Array<{
       title: string;
       url: string;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      icon: any;
+      icon: LucideIcon;
       badge: string;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      subItems?: Array<{ title: string; url: string; icon: any }>;
+      subItems?: Array<{ title: string; url: string; icon: LucideIcon }>;
     }> = [];
     if (user?.roles?.includes("USER")) {
       baseItems.push({

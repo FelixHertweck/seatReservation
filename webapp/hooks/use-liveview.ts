@@ -5,7 +5,6 @@ import {
   isUpdateMessage,
   WebsocketInitialMessage,
   WebsocketUpdateMessage,
-  type WebsocketMessage,
 } from "@/lib/websocket-types";
 import type {
   SupervisorEventLocationDto,
@@ -70,9 +69,12 @@ export const useLiveView = (
     ...getApiSupervisorCheckinEventsOptions(),
   });
 
-  const handleMessage = useCallback((data: WebsocketMessage) => {
+  const handleMessage = useCallback((data: unknown) => {
+    const dataWithType = data as
+      | WebsocketInitialMessage
+      | WebsocketUpdateMessage;
     try {
-      if (isInitialMessage(data)) {
+      if (isInitialMessage(dataWithType)) {
         const initialData = data as WebsocketInitialMessage;
 
         setLocation(initialData.location);
@@ -81,7 +83,7 @@ export const useLiveView = (
         setError(null);
 
         setIsInitialLoading(false);
-      } else if (isUpdateMessage(data)) {
+      } else if (isUpdateMessage(dataWithType)) {
         const updatedSeatStatus = data as WebsocketUpdateMessage;
         setReservations((prevReservations) => {
           return prevReservations.map((res) => {

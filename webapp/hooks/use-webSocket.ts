@@ -13,8 +13,7 @@ import { useEffect, useRef, useCallback, useState } from "react";
 export const useWebSocket = (
   url: string | null,
   enabled: boolean = true,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onMessage?: (data: any) => void,
+  onMessage?: (data: unknown) => void,
   maxReconnectAttempts: number = 5,
   reconnectDelay: number = 3000,
   // optional callback called when connecting state changes
