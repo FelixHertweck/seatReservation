@@ -272,14 +272,12 @@ export function AppSidebar() {
                     <Link
                       href={item.url}
                       onClick={(e) => {
-                        // Verhindere die Standard-Link-Navigation beim normalen Klick
                         if (e.button === 0 && !e.metaKey && !e.ctrlKey) {
                           e.preventDefault();
                           handleNavigation(item.url);
                         }
                       }}
                       onContextMenu={(e) => {
-                        // Erlaube Rechtsklick für neuen Tab
                         e.stopPropagation();
                       }}
                     >
@@ -330,7 +328,6 @@ export function AppSidebar() {
                             <Link
                               href={subItem.url}
                               onClick={(e) => {
-                                // Verhindere die Standard-Link-Navigation beim normalen Klick
                                 if (
                                   e.button === 0 &&
                                   !e.metaKey &&
@@ -341,7 +338,6 @@ export function AppSidebar() {
                                 }
                               }}
                               onContextMenu={(e) => {
-                                // Erlaube Rechtsklick für neuen Tab
                                 e.stopPropagation();
                               }}
                               className="flex items-center gap-3 w-full px-3 py-2"
