@@ -1,4 +1,4 @@
-import { BouncingDotsLoader } from "@/components/ui/bouncing-dots-loader";
+import { BouncingDotsLoader } from "@/components/custom-ui/bouncing-dots-loader";
 
 export default function Loading() {
   return (

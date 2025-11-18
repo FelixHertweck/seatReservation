@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { BouncingDotsLoader } from "@/components/ui/bouncing-dots-loader";
+import { BouncingDotsLoader } from "@/components/custom-ui/bouncing-dots-loader";
 import { useAuth } from "@/hooks/use-auth";
 import { redirectUser } from "@/lib/redirect-User";
 

@@ -11,9 +11,13 @@ import {
 import { ReservationSelector } from "@/components/checkin/reservation-selector";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ChevronUp, Loader2 } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/custom-ui/tabs";
 import { UsernameSelector } from "@/components/checkin/username-selector";
-// Select component is now extracted into EventSelector for event selection
 import EventSelector from "@/components/common/supervisor/event-selector";
 
 export default function CheckInPage() {

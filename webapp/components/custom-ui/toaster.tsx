@@ -1,17 +1,24 @@
-"use client"
+"use client";
 
-import { useToast } from "@/hooks/use-toast"
-import { Toast, ToastClose, ToastDescription, ToastProvider, ToastTitle, ToastViewport } from "@/components/ui/toast"
+import { useToast } from "@/hooks/use-toast";
+import {
+  Toast,
+  ToastClose,
+  ToastDescription,
+  ToastProvider,
+  ToastTitle,
+  ToastViewport,
+} from "@/components/custom-ui/toast";
 
 interface ToasterProps {
-  disabled?: boolean
+  disabled?: boolean;
 }
 
 export function Toaster({ disabled = false }: ToasterProps) {
-  const { toasts } = useToast()
+  const { toasts } = useToast();
 
   if (disabled) {
-    return null
+    return null;
   }
 
   return (
@@ -28,5 +35,5 @@ export function Toaster({ disabled = false }: ToasterProps) {
       ))}
       <ToastViewport />
     </ToastProvider>
-  )
+  );
 }

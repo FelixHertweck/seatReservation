@@ -4,7 +4,7 @@ import type React from "react";
 import { CookiesProvider } from "react-cookie";
 import InitQueryClient from "./init-query-client";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/custom-ui/toaster";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { clearAllToasts } from "@/hooks/use-toast";

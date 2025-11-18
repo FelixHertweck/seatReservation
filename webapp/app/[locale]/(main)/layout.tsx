@@ -22,8 +22,8 @@ export default async function MainLayout({
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6">
+      <SidebarInset className="transition-[margin] duration-200 ease-linear md:!m-0 md:peer-data-[state=expanded]:!ml-[var(--sidebar-width)] md:peer-data-[state=collapsed]:!ml-[var(--sidebar-width-icon)]">
+        <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6 md:peer-data-[state=collapsed]:px-3 md:peer-data-[state=expanded]:px-6">
           <SidebarTrigger className="hover:scale-110 transition-transform duration-200" />
           <div className="w-full flex-1">
             <h1 className="text-lg font-semibold md:text-xl">
@@ -33,7 +33,9 @@ export default async function MainLayout({
             </h1>
           </div>
         </header>
-        <main className="flex-1 p-4 lg:p-6">{children}</main>
+        <main className="flex-1 p-4 lg:p-6 md:peer-data-[state=collapsed]:p-3 md:peer-data-[state=expanded]:p-6">
+          {children}
+        </main>
         <AppFooter locale={locale} />
       </SidebarInset>
       <LoginRequiredPopup />
