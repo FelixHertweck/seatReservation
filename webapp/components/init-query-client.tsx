@@ -82,7 +82,7 @@ export default function InitQueryClient({
             response = await fetch(input, init);
           }
         } else {
-          console.error(
+          console.warn(
             "Failed to refresh token:",
             refreshResponse.status,
             refreshResponse.statusText,
