@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useT } from "@/lib/i18n/hooks";
+import { sanitizeFileName } from "@/lib/utils/filename";
 import { Download } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "@/hooks/use-toast";
@@ -81,7 +82,8 @@ export function QRCodeModal({
 
     const link = document.createElement("a");
     link.href = qrCodeDataUrl;
-    link.download = `${eventName}-check-in-code.png`;
+    const fileName = `${sanitizeFileName(eventName)}-check-in-code.png`;
+    link.download = fileName;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -94,7 +96,7 @@ export function QRCodeModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent noX={true} className="max-w-md">
         <DialogHeader>
           <DialogTitle>{t("qrCodeModal.title")}</DialogTitle>
           <DialogDescription>{t("qrCodeModal.description")}</DialogDescription>

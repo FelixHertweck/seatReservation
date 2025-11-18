@@ -42,6 +42,7 @@ import type {
 } from "@/api";
 import { customSerializer } from "@/lib/jsonBodySerializer";
 import { useT } from "@/lib/i18n/hooks";
+import { sanitizeFileName } from "@/lib/utils/filename";
 import { useSortableData } from "@/lib/table-sorting";
 
 export interface LocationManagementProps {
@@ -210,7 +211,7 @@ export function LocationManagement({
 
     const link = document.createElement("a");
     link.href = url;
-    link.download = `${location.name?.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_export.json`;
+    link.download = `${sanitizeFileName(location.name)}_export.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
