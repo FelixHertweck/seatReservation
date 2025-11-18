@@ -13,8 +13,6 @@ on:
 
 permissions:
   contents: read
-  packages: write # Erforderlich, um Docker-Images zu pushen
-  id-token: write # Erforderlich für OIDC-Authentifizierung
 
 jobs:
   nextjs-build:
@@ -22,7 +20,7 @@ jobs:
     runs-on: "ubuntu-24.04"
 
     env:
-      NODE_VERSION: '22.18.x' 
+      NODE_VERSION: '22.18.x'
 
     steps:
       - name: Checkout Repo
@@ -54,7 +52,6 @@ jobs:
           path: webapp/node_modules # npm cache files are stored in `~/.npm` on Linux/macOS
           key: ${{ runner.os }}-node_modules-${{ hashFiles('webapp/package.json', 'webapp/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
 
@@ -121,7 +118,7 @@ jobs:
   frontend-docker:
     needs: nextjs-build
     permissions:
-      contents: write
+      contents: read
       packages: write
       id-token: write
     uses: ./.github/workflows/docker.yml
