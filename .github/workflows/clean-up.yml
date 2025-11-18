@@ -7,6 +7,10 @@ on:
       - "v*.*"
       - "v*.*.*"
   workflow_dispatch:
+permissions:
+  contents: read
+  packages: write
+  # Write permissions to packages are required for the GHCR cleanup action
 jobs:
   frontend-docker-cleanup:
     name: frontend docker image cleanup

@@ -12,9 +12,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
-  packages: write
-  id-token: write
+  contents: read
 
 
 jobs:
@@ -27,7 +25,7 @@ jobs:
   backend-docker:
     needs: maven
     permissions:
-      contents: write
+      contents: read
       packages: write
       id-token: write
     uses: ./.github/workflows/docker.yml

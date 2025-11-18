@@ -15,6 +15,9 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: read
+
 jobs:
   maven:
     name: Maven Build & Test

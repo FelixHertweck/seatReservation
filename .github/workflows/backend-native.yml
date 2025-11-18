@@ -7,9 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
-  packages: write
-  id-token: write
+  contents: read
 
 jobs:
   maven-native:
@@ -22,7 +20,7 @@ jobs:
   docker-native:
     needs: maven-native
     permissions:
-      contents: write
+      contents: read
       packages: write
       id-token: write
     uses: ./.github/workflows/docker.yml
