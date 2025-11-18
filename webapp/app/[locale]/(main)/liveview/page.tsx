@@ -6,7 +6,6 @@ import { useT } from "@/lib/i18n/hooks";
 import { Loader2 } from "lucide-react";
 import { SeatMap } from "@/components/common/seat-map";
 import { ReservationList } from "@/components/liveview/reservation-list";
-// Select component is now extracted into EventSelector for event selection
 import EventSelector from "@/components/common/supervisor/event-selector";
 import {
   Accordion,
