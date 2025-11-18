@@ -198,7 +198,7 @@ const EmailVerified = () => {
     <Button
       onClick={() => window.location.reload()}
       className="w-full sm:w-auto"
-      variant="outline-solid"
+      variant="outline"
     >
       <RefreshCw className="mr-2 h-4 w-4" />
       {t("emailVerificationPrompt.reloadPageButton")}
@@ -235,7 +235,7 @@ const EmailVerificationAlreadySent = ({
       <Button
         onClick={handleGoToProfile}
         className="w-full sm:w-auto"
-        variant="outline-solid"
+        variant="outline"
       >
         <User className="mr-2 h-4 w-4" />
         {t("emailVerificationPrompt.goToProfileButton")}
@@ -262,7 +262,7 @@ const EmailVerificationNotSent = ({
       <Button
         onClick={handleGoToProfile}
         className="w-full sm:w-auto"
-        variant="outline-solid"
+        variant="outline"
       >
         <User className="mr-2 h-4 w-4" />
         {t("emailVerificationPrompt.goToProfileButton")}

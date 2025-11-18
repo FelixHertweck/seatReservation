@@ -91,6 +91,7 @@ export function PaginationWrapper<T>({
             <PaginationContent>
               <PaginationItem>
                 <PaginationPrevious
+                  size="default"
                   onClick={() => setSelectedPage(Math.max(1, currentPage - 1))}
                   className={
                     currentPage === 1
@@ -104,6 +105,7 @@ export function PaginationWrapper<T>({
 
               <PaginationItem>
                 <PaginationNext
+                  size="default"
                   onClick={() =>
                     setSelectedPage(Math.min(totalPages, currentPage + 1))
                   }
