@@ -53,6 +53,7 @@ import type {
 } from "@/api";
 import { customSerializer } from "@/lib/jsonBodySerializer";
 import { useT } from "@/lib/i18n/hooks";
+import { sanitizeFileName } from "@/lib/utils/filename";
 import { useSortableData } from "@/lib/table-sorting";
 
 export interface ReservationManagementProps {
@@ -214,10 +215,10 @@ export function ReservationManagement({
 
     if (selectedFormat === "csv") {
       blob = await exportCSV(eventId);
-      fileName = `reservations-${event?.name?.replace(/[^a-z0-9]/gi, "_").toLowerCase() || "event"}-${new Date().toISOString().split("T")[0]}.csv`;
+      fileName = `reservations-${sanitizeFileName(event?.name)}-${new Date().toISOString().split("T")[0]}.csv`;
     } else if (selectedFormat === "pdf") {
       blob = await exportPDF(eventId);
-      fileName = `reservations-${event?.name?.replace(/[^a-z0-9]/gi, "_").toLowerCase() || "event"}-${new Date().toISOString().split("T")[0]}.pdf`;
+      fileName = `reservations-${sanitizeFileName(event?.name)}-${new Date().toISOString().split("T")[0]}.pdf`;
     } else {
       const eventReservations = reservations.filter(
         (r) => r.eventId === eventId,
@@ -226,7 +227,7 @@ export function ReservationManagement({
       blob = new Blob([exportData], {
         type: "application/json",
       });
-      fileName = `reservations-${event?.name?.replace(/[^a-z0-9]/gi, "_").toLowerCase() || "event"}-${new Date().toISOString().split("T")[0]}.json`;
+      fileName = `reservations-${sanitizeFileName(event?.name)}-${new Date().toISOString().split("T")[0]}.json`;
     }
 
     const url = URL.createObjectURL(blob);
