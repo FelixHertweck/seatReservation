@@ -12,6 +12,10 @@ permissions:
 jobs:
   maven-native:
     uses: ./.github/workflows/maven.yml
+    permissions:
+      contents: write
+      security-events: write
+      actions: read  
     with:
       maven-args: "-Pnative -Dquarkus.profile=docker"
       build-artifact-name: quarkus-app-native

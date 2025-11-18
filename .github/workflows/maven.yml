@@ -21,6 +21,10 @@ permissions:
 jobs:
   maven:
     name: Maven Build & Test
+    permissions:
+      contents: write    
+      security-events: write
+      actions: read
     runs-on: ubuntu-24.04
     timeout-minutes: 30
 

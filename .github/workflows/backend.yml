@@ -18,6 +18,10 @@ permissions:
 jobs:
   maven:
     uses: ./.github/workflows/maven.yml
+    permissions:
+      contents: write
+      security-events: write
+      actions: read   
     with:
       build-artifact-name: quarkus-app
       build-artifact-path: target/quarkus-app
