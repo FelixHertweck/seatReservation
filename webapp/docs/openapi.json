@@ -3179,7 +3179,7 @@
         "summary" : "Get Current User",
         "tags" : [ "User Resource" ],
         "security" : [ {
-          "SecurityScheme" : [ "USER", "ADMIN", "MANAGER" ]
+          "SecurityScheme" : [ ]
         } ]
       }
     },
