@@ -1,4 +1,11 @@
 quarkus:
+  datasource:
+    db-kind: postgresql
+    username: ${POSTGRES_USER:quarkus}
+    password: ${POSTGRES_PASSWORD:quarkus}
+    jdbc:
+      url: ${QUARKUS_DATASOURCE_JDBC_URL:jdbc:postgresql://db:5432/seatReservation}
+      
   mailer:
     mock: false
     from: ${MAIL_FROM}

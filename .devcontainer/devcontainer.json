@@ -1,0 +1,44 @@
+{
+  "name": "Quarkus & Next.js",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "21",
+      "installMaven": "true",
+      "installGradle": "false"
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "25"
+    },
+    "ghcr.io/devcontainers/features/git:1.3.4": {},
+    "ghcr.io/devcontainers/features/github-cli:1.0.15": {}
+  },
+
+  // Ports weiterleiten: 8080 (Quarkus), 3000 (Next.js), 5005 (Java Debugger)
+  "forwardPorts": [8080, 3000, 5005],
+
+  // VS Code Anpassungen
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-java-pack",       // Java Essentials
+        "redhat.java",                    // Language Support for Java by Red Hat
+        "vscjava.vscode-java-test",       // Test Runner for Java
+        "redhat.vscode-quarkus",          // Quarkus Tools
+        "dbaeumer.vscode-eslint",         // Linting für JS/TS
+        "esbenp.prettier-vscode",         // Formatting
+        "editorconfig.editorconfig"       // Code Styles
+      ],
+      "settings": {
+        "java.configuration.updateBuildConfiguration": "automatic",
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+
+  // User Mapping (verhindert Permission-Probleme unter Linux)
+  "remoteUser": "vscode"
+}
