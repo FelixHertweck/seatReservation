@@ -4,7 +4,7 @@ quarkus:
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
     jdbc:
-      url: jdbc:postgresql://db:5432/seatReservation
+      url: jdbc:postgresql://db:5432/${POSTGRES_DB:seatReservation}
       
   mailer:
     mock: false

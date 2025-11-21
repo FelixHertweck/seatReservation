@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: quarkus-nextjs-dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ../:/workspace:cached
+      - ~/.m2/repository:/home/vscode/.m2/repository:cached
+    command: sleep infinity
+    environment:
+      - POSTGRES_USER=quarkus
+      - POSTGRES_PASSWORD=quarkus
+      - POSTGRES_DB=jdbc:postgresql://db:5432/seatReservation
+      
+      - MAIL_HOST=smtp4dev
+      - MAIL_PORT=25
+      - MAIL_FROM=mail@example.com
+      - MAIL_USERNAME=
+      - MAIL_PASSWORD=
+      - MAIL_TLS=false
+      - MAIL_START_TLS=DISABLED
+      
+    depends_on:
+      db:
+        condition: service_started
+      mail:
+        condition: service_started
+    networks:
+      - devcontainer-network
+
+  # Dev DB (Postgres 17) and a MailHog service for sviluppo
+  db:
+    image: postgres:17-alpine
+    hostname: db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=seatReservation
+      - POSTGRES_USER=quarkus
+      - POSTGRES_PASSWORD=quarkus
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - devcontainer-network
+
+  mail:
+    image: rnwood/smtp4dev:v3
+    hostname: smtp4dev
+    restart: always
+    ports:
+      # Web interface port
+      - '127.0.0.1:5000:80'
+      # SMTP server port
+      - '127.0.0.1:25:25'
+      # IMAP server port
+      # - '127.0.0.1:143:143'
+      # POP3 server port
+      # - '127.0.0.1:110:110'
+    volumes:
+      # This is where smtp4dev stores the database..
+        - smtp4dev-data:/smtp4dev
+    environment:
+      - ServerOptions__Urls=http://*:80
+      - ServerOptions__HostName=smtp4dev
+      #Specifies the TLS mode to use. None=Off. StartTls=On demand if client supports STARTTLS. ImplicitTls=TLS as soon as connection is established.
+      - ServerOptions__TlsMode=None
+      #Specifies the TLS certificate to use if TLS is enabled/requested. Specify "" to use an auto-generated self-signed certificate (then see console output on first startup)
+      #- ServerOptions__TlsCertificate=
+
+    networks:
+      devcontainer-network:
+        aliases:
+          - smtp4dev
+
+volumes:
+  postgres-data:
+  smtp4dev-data:
+networks:
+  devcontainer-network:
+#    driver: bridge
