@@ -47,6 +47,13 @@ email:
       expiration:
         days: 30
 
+  google:
+    wallet:
+      issuer-id: "3388000000023041841"
+      service-account-email: "seat-reservation-wallet@seatreservation-stadtkapelle.iam.gserviceaccount.com"
+      key:
+        location: keys/privateKey-google-wallet.pem
+
   # Optional BCC address for event notifications to users (leave empty to disable)
   bcc-address: ""
  
@@ -269,6 +276,10 @@ email:
                         <span style="vertical-align: middle;">Already Reserved</span>
                     </div>
                     <a href="{seatmapLink}" class="button">🪑 View Interactive Seat Map</a>
+                    <br>
+                    <a href="{googleWalletLink}" style="display: inline-block; margin-top: 15px;">
+                        <img src="https://developers.google.com/wallet/images/en/add-to-google-wallet-button-content-height-40px.png" alt="Add to Google Wallet" height="40" />
+                    </a>
                 </div>
                 <p>We look forward to seeing you!</p>
                 <p>Sincerely,</p>
@@ -455,6 +466,10 @@ email:
                         <span style="vertical-align: middle;">Already Reserved</span>
                     </div>
                     <a href="{seatmapLink}" class="button">🪑 View Interactive Seat Map</a>
+                    <br>
+                    <a href="{googleWalletLink}" style="display: inline-block; margin-top: 15px;">
+                        <img src="https://developers.google.com/wallet/images/en/add-to-google-wallet-button-content-height-40px.png" alt="Add to Google Wallet" height="40" />
+                    </a>
                 </div>
                 <p style="margin-top: 20px;">We wish you a great time at the event!</p>
                 <p>Best regards</p>
@@ -568,6 +583,10 @@ email:
                         <span style="vertical-align: middle;">Already Reserved</span>
                     </div>
                     <a href="{seatmapLink}" class="button">🪑 View Interactive Seat Map</a>
+                    <br>
+                    <a href="{googleWalletLink}" style="display: inline-block; margin-top: 15px;">
+                        <img src="https://developers.google.com/wallet/images/en/add-to-google-wallet-button-content-height-40px.png" alt="Add to Google Wallet" height="40" />
+                    </a>
                 </div>
                 <p style="margin-top: 20px;">We wish you a great time at the event!</p>
                 <p>Best regards</p>

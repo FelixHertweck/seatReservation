@@ -249,6 +249,16 @@ public class EmailService {
     }
 
     /**
+     * Generates a link to the Google Wallet pass.
+     *
+     * @param token The email seatmap token.
+     * @return The complete Google Wallet link.
+     */
+    private String generateGoogleWalletLink(String token) {
+        return frontendBaseUrl.trim() + "/api/wallet/pass?token=" + token;
+    }
+
+    /**
      * Sends a reservation confirmation email to the user.
      *
      * @param user The user to whom the email will be sent.
@@ -351,6 +361,8 @@ public class EmailService {
         htmlContent = htmlContent.replace("{seatList}", seatListHtml.toString());
         htmlContent = htmlContent.replace("{eventLink}", generateEventLink(event.id));
         htmlContent = htmlContent.replace("{seatmapLink}", seatmapLink);
+        htmlContent =
+                htmlContent.replace("{googleWalletLink}", generateGoogleWalletLink(seatmapToken));
         htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
 
         // Add entrance information
@@ -358,7 +370,8 @@ public class EmailService {
         htmlContent = htmlContent.replace("{entranceInfo}", entranceInfo);
         LOG.debugf("Entrance information added: %s", entranceInfo);
 
-        // Show or hide existing reservations section based on presence of existing seats
+        // Show or hide existing reservations section based on presence of existing
+        // seats
         if (existingSeatNumbers.isEmpty()) {
             htmlContent = htmlContent.replace("{existingHeaderVisible}", "hidden");
             htmlContent = htmlContent.replace("{existingSeatList}", "");
@@ -541,6 +554,8 @@ public class EmailService {
         htmlContent = htmlContent.replace("{deletedSeatList}", deletedSeatListHtml.toString());
         htmlContent = htmlContent.replace("{eventLink}", generateEventLink(event.id));
         htmlContent = htmlContent.replace("{seatmapLink}", seatmapLink);
+        htmlContent =
+                htmlContent.replace("{googleWalletLink}", generateGoogleWalletLink(seatmapToken));
         htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
 
         // Add entrance information for active reservations
@@ -741,6 +756,8 @@ public class EmailService {
         htmlContent = htmlContent.replace("{eventLocation}", event.getEventLocation().getName());
         htmlContent = htmlContent.replace("{seatList}", seatListHtml.toString());
         htmlContent = htmlContent.replace("{seatmapLink}", seatmapLink);
+        htmlContent =
+                htmlContent.replace("{googleWalletLink}", generateGoogleWalletLink(seatmapToken));
         htmlContent = htmlContent.replace("{eventLink}", generateEventLink(event.id));
         htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
 
