@@ -11,9 +11,11 @@ services:
       - ~/.m2/repository:/home/vscode/.m2/repository:cached
     command: sleep infinity
     environment:
+      - QUARKUS_PROFILE=devcontainer
+
       - POSTGRES_USER=quarkus
       - POSTGRES_PASSWORD=quarkus
-      - POSTGRES_DB=jdbc:postgresql://db:5432/seatReservation
+      - POSTGRES_DB=seatReservation
 
       - MAIL_HOST=smtp4dev
       - MAIL_PORT=25
