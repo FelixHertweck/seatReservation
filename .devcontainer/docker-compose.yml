@@ -14,7 +14,7 @@ services:
       - POSTGRES_USER=quarkus
       - POSTGRES_PASSWORD=quarkus
       - POSTGRES_DB=jdbc:postgresql://db:5432/seatReservation
-      
+
       - MAIL_HOST=smtp4dev
       - MAIL_PORT=25
       - MAIL_FROM=mail@example.com
@@ -22,7 +22,7 @@ services:
       - MAIL_PASSWORD=
       - MAIL_TLS=false
       - MAIL_START_TLS=DISABLED
-      
+
     depends_on:
       db:
         condition: service_started
@@ -31,7 +31,6 @@ services:
     networks:
       - devcontainer-network
 
-  # Dev DB (Postgres 17) and a MailHog service for sviluppo
   db:
     image: postgres:17-alpine
     hostname: db
@@ -59,8 +58,8 @@ services:
       # POP3 server port
       # - '127.0.0.1:110:110'
     volumes:
-      # This is where smtp4dev stores the database..
-        - smtp4dev-data:/smtp4dev
+      # This is where smtp4dev stores the database.
+      - smtp4dev-data:/smtp4dev
     environment:
       - ServerOptions__Urls=http://*:80
       - ServerOptions__HostName=smtp4dev
