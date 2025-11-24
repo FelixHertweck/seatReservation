@@ -1,5 +1,9 @@
 import type { MetadataRoute } from "next";
 
+// This route must be static for `next export` / `output: export`.
+// Force Next to treat this route as static and avoid dynamic behavior.
+export const dynamic = "force-static";
+
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "SeatReservation",
