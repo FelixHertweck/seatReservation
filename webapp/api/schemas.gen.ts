@@ -2,7 +2,15 @@
 
 export const AdminUserCreationDtoSchema = {
     type: 'object',
-    required: ['username', 'password', 'firstname', 'lastname', 'sendEmailVerification', 'roles', 'tags'],
+    required: [
+        'username',
+        'password',
+        'firstname',
+        'lastname',
+        'sendEmailVerification',
+        'roles',
+        'tags'
+    ],
     properties: {
         username: {
             type: 'string',
@@ -78,7 +86,14 @@ export const AdminUserUpdateDTOSchema = {
             minItems: 1
         }
     },
-    required: ['emailVerified', 'sendEmailVerification', 'firstname', 'lastname', 'tags', 'roles']
+    required: [
+        'emailVerified',
+        'sendEmailVerification',
+        'firstname',
+        'lastname',
+        'tags',
+        'roles'
+    ]
 } as const;
 
 export const BlockSeatsRequestDTOSchema = {
@@ -100,7 +115,10 @@ export const BlockSeatsRequestDTOSchema = {
 
 export const CheckInInfoRequestDTOSchema = {
     type: 'object',
-    required: ['userId', 'eventId'],
+    required: [
+        'userId',
+        'eventId'
+    ],
     properties: {
         userId: {
             type: 'integer',
@@ -125,18 +143,21 @@ export const CheckInInfoResponseDTOSchema = {
         reservations: {
             type: 'array',
             items: {
-                '$ref': '#/components/schemas/SupervisorReservationResponseDTO'
+                $ref: '#/components/schemas/SupervisorReservationResponseDTO'
             }
         },
         user: {
-            '$ref': '#/components/schemas/LimitedUserInfoDTO'
+            $ref: '#/components/schemas/LimitedUserInfoDTO'
         }
     }
 } as const;
 
 export const CheckInProcessRequestDTOSchema = {
     type: 'object',
-    required: ['userId', 'eventId'],
+    required: [
+        'userId',
+        'eventId'
+    ],
     properties: {
         userId: {
             type: 'integer',
@@ -182,7 +203,11 @@ export const EventLocationMakerDTOSchema = {
 
 export const EventLocationRequestDTOSchema = {
     type: 'object',
-    required: ['name', 'address', 'capacity'],
+    required: [
+        'name',
+        'address',
+        'capacity'
+    ],
     properties: {
         name: {
             type: 'string'
@@ -197,7 +222,7 @@ export const EventLocationRequestDTOSchema = {
         markers: {
             type: 'array',
             items: {
-                '$ref': '#/components/schemas/MakerRequestDTO'
+                $ref: '#/components/schemas/MakerRequestDTO'
             }
         }
     }
@@ -221,7 +246,7 @@ export const EventLocationResponseDTOSchema = {
             format: 'int32'
         },
         manager: {
-            '$ref': '#/components/schemas/LimitedUserInfoDTO'
+            $ref: '#/components/schemas/LimitedUserInfoDTO'
         },
         seatIds: {
             type: 'array',
@@ -233,7 +258,7 @@ export const EventLocationResponseDTOSchema = {
         markers: {
             type: 'array',
             items: {
-                '$ref': '#/components/schemas/EventLocationMakerDTO'
+                $ref: '#/components/schemas/EventLocationMakerDTO'
             }
         }
     }
@@ -241,7 +266,15 @@ export const EventLocationResponseDTOSchema = {
 
 export const EventRequestDTOSchema = {
     type: 'object',
-    required: ['name', 'description', 'startTime', 'endTime', 'bookingDeadline', 'bookingStartTime', 'eventLocationId'],
+    required: [
+        'name',
+        'description',
+        'startTime',
+        'endTime',
+        'bookingDeadline',
+        'bookingStartTime',
+        'eventLocationId'
+    ],
     properties: {
         name: {
             type: 'string'
@@ -250,19 +283,19 @@ export const EventRequestDTOSchema = {
             type: 'string'
         },
         startTime: {
-            '$ref': '#/components/schemas/Instant'
+            $ref: '#/components/schemas/Instant'
         },
         endTime: {
-            '$ref': '#/components/schemas/Instant'
+            $ref: '#/components/schemas/Instant'
         },
         bookingDeadline: {
-            '$ref': '#/components/schemas/Instant'
+            $ref: '#/components/schemas/Instant'
         },
         bookingStartTime: {
-            '$ref': '#/components/schemas/Instant'
+            $ref: '#/components/schemas/Instant'
         },
         reminderSendDate: {
-            '$ref': '#/components/schemas/Instant'
+            $ref: '#/components/schemas/Instant'
         },
         eventLocationId: {
             type: 'integer',
@@ -293,19 +326,19 @@ export const EventResponseDTOSchema = {
             type: 'string'
         },
         startTime: {
-            '$ref': '#/components/schemas/Instant'
+            $ref: '#/components/schemas/Instant'
         },
         endTime: {
-            '$ref': '#/components/schemas/Instant'
+            $ref: '#/components/schemas/Instant'
         },
         bookingDeadline: {
-            '$ref': '#/components/schemas/Instant'
+            $ref: '#/components/schemas/Instant'
         },
         bookingStartTime: {
-            '$ref': '#/components/schemas/Instant'
+            $ref: '#/components/schemas/Instant'
         },
         reminderSendDate: {
-            '$ref': '#/components/schemas/Instant'
+            $ref: '#/components/schemas/Instant'
         },
         isReminderSent: {
             type: 'boolean'
@@ -313,7 +346,7 @@ export const EventResponseDTOSchema = {
         seatStatuses: {
             type: 'array',
             items: {
-                '$ref': '#/components/schemas/SeatStatusDTO'
+                $ref: '#/components/schemas/SeatStatusDTO'
             }
         },
         eventUserAllowancesIds: {
@@ -343,7 +376,12 @@ export const EventResponseDTOSchema = {
 
 export const EventUserAllowanceUpdateDtoSchema = {
     type: 'object',
-    required: ['id', 'eventId', 'userId', 'reservationsAllowedCount'],
+    required: [
+        'id',
+        'eventId',
+        'userId',
+        'reservationsAllowedCount'
+    ],
     properties: {
         id: {
             type: 'integer',
@@ -366,7 +404,11 @@ export const EventUserAllowanceUpdateDtoSchema = {
 
 export const EventUserAllowancesCreateDtoSchema = {
     type: 'object',
-    required: ['eventId', 'userIds', 'reservationsAllowedCount'],
+    required: [
+        'eventId',
+        'userIds',
+        'reservationsAllowedCount'
+    ],
     properties: {
         eventId: {
             type: 'integer',
@@ -412,7 +454,11 @@ export const EventUserAllowancesDtoSchema = {
 
 export const ImportEventLocationDtoSchema = {
     type: 'object',
-    required: ['name', 'address', 'capacity'],
+    required: [
+        'name',
+        'address',
+        'capacity'
+    ],
     properties: {
         name: {
             type: 'string'
@@ -427,13 +473,13 @@ export const ImportEventLocationDtoSchema = {
         seats: {
             type: 'array',
             items: {
-                '$ref': '#/components/schemas/ImportSeatDto'
+                $ref: '#/components/schemas/ImportSeatDto'
             }
         },
         markers: {
             type: 'array',
             items: {
-                '$ref': '#/components/schemas/MakerRequestDTO'
+                $ref: '#/components/schemas/MakerRequestDTO'
             }
         }
     }
@@ -441,7 +487,11 @@ export const ImportEventLocationDtoSchema = {
 
 export const ImportSeatDtoSchema = {
     type: 'object',
-    required: ['seatNumber', 'xCoordinate', 'yCoordinate'],
+    required: [
+        'seatNumber',
+        'xCoordinate',
+        'yCoordinate'
+    ],
     properties: {
         seatNumber: {
             type: 'string'
@@ -463,7 +513,9 @@ export const ImportSeatDtoSchema = {
 export const InstantSchema = {
     type: 'string',
     format: 'date-time',
-    examples: ['2022-03-10T16:15:50Z']
+    examples: [
+        '2022-03-10T16:15:50Z'
+    ]
 } as const;
 
 export const LimitedUserInfoDTOSchema = {
@@ -493,14 +545,17 @@ export const LoginLockedDTOSchema = {
             type: 'string'
         },
         retryAfter: {
-            '$ref': '#/components/schemas/Instant'
+            $ref: '#/components/schemas/Instant'
         }
     }
 } as const;
 
 export const LoginRequestDTOSchema = {
     type: 'object',
-    required: ['username', 'password'],
+    required: [
+        'username',
+        'password'
+    ],
     properties: {
         username: {
             type: 'string',
@@ -515,7 +570,11 @@ export const LoginRequestDTOSchema = {
 
 export const MakerRequestDTOSchema = {
     type: 'object',
-    required: ['label', 'xCoordinate', 'yCoordinate'],
+    required: [
+        'label',
+        'xCoordinate',
+        'yCoordinate'
+    ],
     properties: {
         label: {
             type: 'string'
@@ -533,7 +592,13 @@ export const MakerRequestDTOSchema = {
 
 export const RegisterRequestDTOSchema = {
     type: 'object',
-    required: ['username', 'firstname', 'lastname', 'email', 'password'],
+    required: [
+        'username',
+        'firstname',
+        'lastname',
+        'email',
+        'password'
+    ],
     properties: {
         username: {
             type: 'string',
@@ -570,12 +635,20 @@ export const RegistrationStatusDTOSchema = {
 
 export const ReservationLiveStatusSchema = {
     type: 'string',
-    enum: ['CHECKED_IN', 'CANCELLED', 'NO_SHOW']
+    enum: [
+        'CHECKED_IN',
+        'CANCELLED',
+        'NO_SHOW'
+    ]
 } as const;
 
 export const ReservationRequestDTOSchema = {
     type: 'object',
-    required: ['eventId', 'userId', 'seatIds'],
+    required: [
+        'eventId',
+        'userId',
+        'seatIds'
+    ],
     properties: {
         eventId: {
             type: 'integer',
@@ -607,30 +680,33 @@ export const ReservationResponseDTOSchema = {
             format: 'int64'
         },
         user: {
-            '$ref': '#/components/schemas/UserDTO'
+            $ref: '#/components/schemas/UserDTO'
         },
         eventId: {
             type: 'integer',
             format: 'int64'
         },
         seat: {
-            '$ref': '#/components/schemas/SeatDTO'
+            $ref: '#/components/schemas/SeatDTO'
         },
         reservationDateTime: {
-            '$ref': '#/components/schemas/Instant'
+            $ref: '#/components/schemas/Instant'
         },
         status: {
-            '$ref': '#/components/schemas/ReservationStatus'
+            $ref: '#/components/schemas/ReservationStatus'
         },
         liveStatus: {
-            '$ref': '#/components/schemas/ReservationLiveStatus'
+            $ref: '#/components/schemas/ReservationLiveStatus'
         }
     }
 } as const;
 
 export const ReservationStatusSchema = {
     type: 'string',
-    enum: ['RESERVED', 'BLOCKED']
+    enum: [
+        'RESERVED',
+        'BLOCKED'
+    ]
 } as const;
 
 export const SeatDTOSchema = {
@@ -666,7 +742,13 @@ export const SeatDTOSchema = {
 
 export const SeatRequestDTOSchema = {
     type: 'object',
-    required: ['seatNumber', 'eventLocationId', 'xCoordinate', 'yCoordinate', 'seatRow'],
+    required: [
+        'seatNumber',
+        'eventLocationId',
+        'xCoordinate',
+        'yCoordinate',
+        'seatRow'
+    ],
     properties: {
         seatNumber: {
             type: 'string'
@@ -700,7 +782,7 @@ export const SeatStatusDTOSchema = {
             format: 'int64'
         },
         status: {
-            '$ref': '#/components/schemas/ReservationStatus'
+            $ref: '#/components/schemas/ReservationStatus'
         }
     }
 } as const;
@@ -719,13 +801,13 @@ export const SupervisorEventLocationDTOSchema = {
         seats: {
             type: 'array',
             items: {
-                '$ref': '#/components/schemas/SeatDTO'
+                $ref: '#/components/schemas/SeatDTO'
             }
         },
         markers: {
             type: 'array',
             items: {
-                '$ref': '#/components/schemas/EventLocationMakerDTO'
+                $ref: '#/components/schemas/EventLocationMakerDTO'
             }
         }
     }
@@ -745,10 +827,10 @@ export const SupervisorEventResponseDTOSchema = {
             type: 'string'
         },
         startTime: {
-            '$ref': '#/components/schemas/Instant'
+            $ref: '#/components/schemas/Instant'
         },
         endTime: {
-            '$ref': '#/components/schemas/Instant'
+            $ref: '#/components/schemas/Instant'
         }
     }
 } as const;
@@ -772,19 +854,19 @@ export const SupervisorReservationResponseDTOSchema = {
             format: 'int64'
         },
         seat: {
-            '$ref': '#/components/schemas/SeatDTO'
+            $ref: '#/components/schemas/SeatDTO'
         },
         reservationDateTime: {
-            '$ref': '#/components/schemas/Instant'
+            $ref: '#/components/schemas/Instant'
         },
         status: {
-            '$ref': '#/components/schemas/ReservationStatus'
+            $ref: '#/components/schemas/ReservationStatus'
         },
         liveStatus: {
-            '$ref': '#/components/schemas/ReservationLiveStatus'
+            $ref: '#/components/schemas/ReservationLiveStatus'
         },
         reservationDate: {
-            '$ref': '#/components/schemas/Instant'
+            $ref: '#/components/schemas/Instant'
         }
     }
 } as const;
@@ -802,10 +884,10 @@ export const SupervisorSeatStatusDTOSchema = {
             format: 'int64'
         },
         status: {
-            '$ref': '#/components/schemas/ReservationStatus'
+            $ref: '#/components/schemas/ReservationStatus'
         },
         liveStatus: {
-            '$ref': '#/components/schemas/ReservationLiveStatus'
+            $ref: '#/components/schemas/ReservationLiveStatus'
         }
     }
 } as const;
@@ -870,18 +952,18 @@ export const UserEventLocationResponseDTOSchema = {
             format: 'int32'
         },
         manager: {
-            '$ref': '#/components/schemas/LimitedUserInfoDTO'
+            $ref: '#/components/schemas/LimitedUserInfoDTO'
         },
         seats: {
             type: 'array',
             items: {
-                '$ref': '#/components/schemas/SeatDTO'
+                $ref: '#/components/schemas/SeatDTO'
             }
         },
         markers: {
             type: 'array',
             items: {
-                '$ref': '#/components/schemas/EventLocationMakerDTO'
+                $ref: '#/components/schemas/EventLocationMakerDTO'
             }
         }
     }
@@ -901,21 +983,21 @@ export const UserEventResponseDTOSchema = {
             type: 'string'
         },
         startTime: {
-            '$ref': '#/components/schemas/Instant'
+            $ref: '#/components/schemas/Instant'
         },
         endTime: {
-            '$ref': '#/components/schemas/Instant'
+            $ref: '#/components/schemas/Instant'
         },
         bookingDeadline: {
-            '$ref': '#/components/schemas/Instant'
+            $ref: '#/components/schemas/Instant'
         },
         bookingStartTime: {
-            '$ref': '#/components/schemas/Instant'
+            $ref: '#/components/schemas/Instant'
         },
         seatStatuses: {
             type: 'array',
             items: {
-                '$ref': '#/components/schemas/SeatStatusDTO'
+                $ref: '#/components/schemas/SeatStatusDTO'
             }
         },
         locationId: {
@@ -931,7 +1013,12 @@ export const UserEventResponseDTOSchema = {
 
 export const UserProfileUpdateDTOSchema = {
     type: 'object',
-    required: ['email', 'firstname', 'lastname', 'tags'],
+    required: [
+        'email',
+        'firstname',
+        'lastname',
+        'tags'
+    ],
     properties: {
         email: {
             type: 'string'
@@ -972,10 +1059,10 @@ export const UserReservationResponseDTOSchema = {
             format: 'int64'
         },
         seat: {
-            '$ref': '#/components/schemas/SeatDTO'
+            $ref: '#/components/schemas/SeatDTO'
         },
         reservationDateTime: {
-            '$ref': '#/components/schemas/Instant'
+            $ref: '#/components/schemas/Instant'
         },
         checkInCode: {
             type: 'string'
@@ -985,7 +1072,10 @@ export const UserReservationResponseDTOSchema = {
 
 export const UserReservationsRequestDTOSchema = {
     type: 'object',
-    required: ['eventId', 'seatIds'],
+    required: [
+        'eventId',
+        'seatIds'
+    ],
     properties: {
         eventId: {
             type: 'integer',
@@ -1005,7 +1095,9 @@ export const UserReservationsRequestDTOSchema = {
 
 export const VerifyEmailCodeRequestDtoSchema = {
     type: 'object',
-    required: ['verificationCode'],
+    required: [
+        'verificationCode'
+    ],
     properties: {
         verificationCode: {
             type: 'string',
