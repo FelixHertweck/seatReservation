@@ -197,10 +197,7 @@ export type ReservationResponseDto = {
     liveStatus?: ReservationLiveStatus;
 };
 
-export const ReservationStatus = {
-    RESERVED: 'RESERVED',
-    BLOCKED: 'BLOCKED'
-} as const;
+export const ReservationStatus = { RESERVED: 'RESERVED', BLOCKED: 'BLOCKED' } as const;
 
 export type ReservationStatus = typeof ReservationStatus[keyof typeof ReservationStatus];
 

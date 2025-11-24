@@ -22,1036 +22,644 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
 /**
  * Login
  */
-export const postApiAuthLogin = <ThrowOnError extends boolean = false>(options: Options<PostApiAuthLoginData, ThrowOnError>) => {
-    return (options.client ?? client).post<PostApiAuthLoginResponses, PostApiAuthLoginErrors, ThrowOnError>({
-        url: '/api/auth/login',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const postApiAuthLogin = <ThrowOnError extends boolean = false>(options: Options<PostApiAuthLoginData, ThrowOnError>) => (options.client ?? client).post<PostApiAuthLoginResponses, PostApiAuthLoginErrors, ThrowOnError>({
+    url: '/api/auth/login',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Logout
  */
-export const postApiAuthLogout = <ThrowOnError extends boolean = false>(options?: Options<PostApiAuthLogoutData, ThrowOnError>) => {
-    return (options?.client ?? client).post<PostApiAuthLogoutResponses, PostApiAuthLogoutErrors, ThrowOnError>({
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/auth/logout',
-        ...options
-    });
-};
+export const postApiAuthLogout = <ThrowOnError extends boolean = false>(options?: Options<PostApiAuthLogoutData, ThrowOnError>) => (options?.client ?? client).post<PostApiAuthLogoutResponses, PostApiAuthLogoutErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/auth/logout',
+    ...options
+});
 
 /**
  * Logout All Devices
  */
-export const postApiAuthLogoutAllDevices = <ThrowOnError extends boolean = false>(options?: Options<PostApiAuthLogoutAllDevicesData, ThrowOnError>) => {
-    return (options?.client ?? client).post<PostApiAuthLogoutAllDevicesResponses, PostApiAuthLogoutAllDevicesErrors, ThrowOnError>({
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/auth/logoutAllDevices',
-        ...options
-    });
-};
+export const postApiAuthLogoutAllDevices = <ThrowOnError extends boolean = false>(options?: Options<PostApiAuthLogoutAllDevicesData, ThrowOnError>) => (options?.client ?? client).post<PostApiAuthLogoutAllDevicesResponses, PostApiAuthLogoutAllDevicesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/auth/logoutAllDevices',
+    ...options
+});
 
 /**
  * Refresh Token
  */
-export const postApiAuthRefresh = <ThrowOnError extends boolean = false>(options?: Options<PostApiAuthRefreshData, ThrowOnError>) => {
-    return (options?.client ?? client).post<PostApiAuthRefreshResponses, PostApiAuthRefreshErrors, ThrowOnError>({
-        url: '/api/auth/refresh',
-        ...options
-    });
-};
+export const postApiAuthRefresh = <ThrowOnError extends boolean = false>(options?: Options<PostApiAuthRefreshData, ThrowOnError>) => (options?.client ?? client).post<PostApiAuthRefreshResponses, PostApiAuthRefreshErrors, ThrowOnError>({ url: '/api/auth/refresh', ...options });
 
 /**
  * Register
  */
-export const postApiAuthRegister = <ThrowOnError extends boolean = false>(options: Options<PostApiAuthRegisterData, ThrowOnError>) => {
-    return (options.client ?? client).post<PostApiAuthRegisterResponses, PostApiAuthRegisterErrors, ThrowOnError>({
-        url: '/api/auth/register',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const postApiAuthRegister = <ThrowOnError extends boolean = false>(options: Options<PostApiAuthRegisterData, ThrowOnError>) => (options.client ?? client).post<PostApiAuthRegisterResponses, PostApiAuthRegisterErrors, ThrowOnError>({
+    url: '/api/auth/register',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Get Registration Status
  */
-export const getApiAuthRegistrationStatus = <ThrowOnError extends boolean = false>(options?: Options<GetApiAuthRegistrationStatusData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetApiAuthRegistrationStatusResponses, unknown, ThrowOnError>({
-        url: '/api/auth/registration-status',
-        ...options
-    });
-};
+export const getApiAuthRegistrationStatus = <ThrowOnError extends boolean = false>(options?: Options<GetApiAuthRegistrationStatusData, ThrowOnError>) => (options?.client ?? client).get<GetApiAuthRegistrationStatusResponses, unknown, ThrowOnError>({ url: '/api/auth/registration-status', ...options });
 
 /**
  * Get Seat Map
  */
-export const getApiEmailSeatmap = <ThrowOnError extends boolean = false>(options?: Options<GetApiEmailSeatmapData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetApiEmailSeatmapResponses, unknown, ThrowOnError>({
-        url: '/api/email/seatmap',
-        ...options
-    });
-};
+export const getApiEmailSeatmap = <ThrowOnError extends boolean = false>(options?: Options<GetApiEmailSeatmapData, ThrowOnError>) => (options?.client ?? client).get<GetApiEmailSeatmapResponses, unknown, ThrowOnError>({ url: '/api/email/seatmap', ...options });
 
 /**
  * Delete Event Location
  */
-export const deleteApiManagerEventlocations = <ThrowOnError extends boolean = false>(options?: Options<DeleteApiManagerEventlocationsData, ThrowOnError>) => {
-    return (options?.client ?? client).delete<DeleteApiManagerEventlocationsResponses, DeleteApiManagerEventlocationsErrors, ThrowOnError>({
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/eventlocations',
-        ...options
-    });
-};
+export const deleteApiManagerEventlocations = <ThrowOnError extends boolean = false>(options?: Options<DeleteApiManagerEventlocationsData, ThrowOnError>) => (options?.client ?? client).delete<DeleteApiManagerEventlocationsResponses, DeleteApiManagerEventlocationsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/eventlocations',
+    ...options
+});
 
 /**
  * Get Event Locations By Current Manager
  */
-export const getApiManagerEventlocations = <ThrowOnError extends boolean = false>(options?: Options<GetApiManagerEventlocationsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetApiManagerEventlocationsResponses, GetApiManagerEventlocationsErrors, ThrowOnError>({
-        responseTransformer: getApiManagerEventlocationsResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/eventlocations',
-        ...options
-    });
-};
+export const getApiManagerEventlocations = <ThrowOnError extends boolean = false>(options?: Options<GetApiManagerEventlocationsData, ThrowOnError>) => (options?.client ?? client).get<GetApiManagerEventlocationsResponses, GetApiManagerEventlocationsErrors, ThrowOnError>({
+    responseTransformer: getApiManagerEventlocationsResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/eventlocations',
+    ...options
+});
 
 /**
  * Create Event Location
  */
-export const postApiManagerEventlocations = <ThrowOnError extends boolean = false>(options: Options<PostApiManagerEventlocationsData, ThrowOnError>) => {
-    return (options.client ?? client).post<PostApiManagerEventlocationsResponses, PostApiManagerEventlocationsErrors, ThrowOnError>({
-        responseTransformer: postApiManagerEventlocationsResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/eventlocations',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const postApiManagerEventlocations = <ThrowOnError extends boolean = false>(options: Options<PostApiManagerEventlocationsData, ThrowOnError>) => (options.client ?? client).post<PostApiManagerEventlocationsResponses, PostApiManagerEventlocationsErrors, ThrowOnError>({
+    responseTransformer: postApiManagerEventlocationsResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/eventlocations',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Create Event Location With Seats
  */
-export const postApiManagerEventlocationsImport = <ThrowOnError extends boolean = false>(options: Options<PostApiManagerEventlocationsImportData, ThrowOnError>) => {
-    return (options.client ?? client).post<PostApiManagerEventlocationsImportResponses, PostApiManagerEventlocationsImportErrors, ThrowOnError>({
-        responseTransformer: postApiManagerEventlocationsImportResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/eventlocations/import',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const postApiManagerEventlocationsImport = <ThrowOnError extends boolean = false>(options: Options<PostApiManagerEventlocationsImportData, ThrowOnError>) => (options.client ?? client).post<PostApiManagerEventlocationsImportResponses, PostApiManagerEventlocationsImportErrors, ThrowOnError>({
+    responseTransformer: postApiManagerEventlocationsImportResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/eventlocations/import',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Import Seats To Event Location
  */
-export const postApiManagerEventlocationsImportById = <ThrowOnError extends boolean = false>(options: Options<PostApiManagerEventlocationsImportByIdData, ThrowOnError>) => {
-    return (options.client ?? client).post<PostApiManagerEventlocationsImportByIdResponses, PostApiManagerEventlocationsImportByIdErrors, ThrowOnError>({
-        responseTransformer: postApiManagerEventlocationsImportByIdResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/eventlocations/import/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const postApiManagerEventlocationsImportById = <ThrowOnError extends boolean = false>(options: Options<PostApiManagerEventlocationsImportByIdData, ThrowOnError>) => (options.client ?? client).post<PostApiManagerEventlocationsImportByIdResponses, PostApiManagerEventlocationsImportByIdErrors, ThrowOnError>({
+    responseTransformer: postApiManagerEventlocationsImportByIdResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/eventlocations/import/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Update Event Location
  */
-export const putApiManagerEventlocationsById = <ThrowOnError extends boolean = false>(options: Options<PutApiManagerEventlocationsByIdData, ThrowOnError>) => {
-    return (options.client ?? client).put<PutApiManagerEventlocationsByIdResponses, PutApiManagerEventlocationsByIdErrors, ThrowOnError>({
-        responseTransformer: putApiManagerEventlocationsByIdResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/eventlocations/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const putApiManagerEventlocationsById = <ThrowOnError extends boolean = false>(options: Options<PutApiManagerEventlocationsByIdData, ThrowOnError>) => (options.client ?? client).put<PutApiManagerEventlocationsByIdResponses, PutApiManagerEventlocationsByIdErrors, ThrowOnError>({
+    responseTransformer: putApiManagerEventlocationsByIdResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/eventlocations/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Delete Event
  */
-export const deleteApiManagerEvents = <ThrowOnError extends boolean = false>(options?: Options<DeleteApiManagerEventsData, ThrowOnError>) => {
-    return (options?.client ?? client).delete<DeleteApiManagerEventsResponses, DeleteApiManagerEventsErrors, ThrowOnError>({
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/events',
-        ...options
-    });
-};
+export const deleteApiManagerEvents = <ThrowOnError extends boolean = false>(options?: Options<DeleteApiManagerEventsData, ThrowOnError>) => (options?.client ?? client).delete<DeleteApiManagerEventsResponses, DeleteApiManagerEventsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/events',
+    ...options
+});
 
 /**
  * Get Events By Current Manager
  */
-export const getApiManagerEvents = <ThrowOnError extends boolean = false>(options?: Options<GetApiManagerEventsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetApiManagerEventsResponses, GetApiManagerEventsErrors, ThrowOnError>({
-        responseTransformer: getApiManagerEventsResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/events',
-        ...options
-    });
-};
+export const getApiManagerEvents = <ThrowOnError extends boolean = false>(options?: Options<GetApiManagerEventsData, ThrowOnError>) => (options?.client ?? client).get<GetApiManagerEventsResponses, GetApiManagerEventsErrors, ThrowOnError>({
+    responseTransformer: getApiManagerEventsResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/events',
+    ...options
+});
 
 /**
  * Create Event
  */
-export const postApiManagerEvents = <ThrowOnError extends boolean = false>(options: Options<PostApiManagerEventsData, ThrowOnError>) => {
-    return (options.client ?? client).post<PostApiManagerEventsResponses, PostApiManagerEventsErrors, ThrowOnError>({
-        responseTransformer: postApiManagerEventsResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/events',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const postApiManagerEvents = <ThrowOnError extends boolean = false>(options: Options<PostApiManagerEventsData, ThrowOnError>) => (options.client ?? client).post<PostApiManagerEventsResponses, PostApiManagerEventsErrors, ThrowOnError>({
+    responseTransformer: postApiManagerEventsResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/events',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Get Event By Id
  */
-export const getApiManagerEventsById = <ThrowOnError extends boolean = false>(options: Options<GetApiManagerEventsByIdData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetApiManagerEventsByIdResponses, GetApiManagerEventsByIdErrors, ThrowOnError>({
-        responseTransformer: getApiManagerEventsByIdResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/events/{id}',
-        ...options
-    });
-};
+export const getApiManagerEventsById = <ThrowOnError extends boolean = false>(options: Options<GetApiManagerEventsByIdData, ThrowOnError>) => (options.client ?? client).get<GetApiManagerEventsByIdResponses, GetApiManagerEventsByIdErrors, ThrowOnError>({
+    responseTransformer: getApiManagerEventsByIdResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/events/{id}',
+    ...options
+});
 
 /**
  * Update Event
  */
-export const putApiManagerEventsById = <ThrowOnError extends boolean = false>(options: Options<PutApiManagerEventsByIdData, ThrowOnError>) => {
-    return (options.client ?? client).put<PutApiManagerEventsByIdResponses, PutApiManagerEventsByIdErrors, ThrowOnError>({
-        responseTransformer: putApiManagerEventsByIdResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/events/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const putApiManagerEventsById = <ThrowOnError extends boolean = false>(options: Options<PutApiManagerEventsByIdData, ThrowOnError>) => (options.client ?? client).put<PutApiManagerEventsByIdResponses, PutApiManagerEventsByIdErrors, ThrowOnError>({
+    responseTransformer: putApiManagerEventsByIdResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/events/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Delete Reservation Allowance
  */
-export const deleteApiManagerReservationAllowance = <ThrowOnError extends boolean = false>(options?: Options<DeleteApiManagerReservationAllowanceData, ThrowOnError>) => {
-    return (options?.client ?? client).delete<DeleteApiManagerReservationAllowanceResponses, DeleteApiManagerReservationAllowanceErrors, ThrowOnError>({
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/reservationAllowance',
-        ...options
-    });
-};
+export const deleteApiManagerReservationAllowance = <ThrowOnError extends boolean = false>(options?: Options<DeleteApiManagerReservationAllowanceData, ThrowOnError>) => (options?.client ?? client).delete<DeleteApiManagerReservationAllowanceResponses, DeleteApiManagerReservationAllowanceErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/reservationAllowance',
+    ...options
+});
 
 /**
  * Get Reservation Allowances
  */
-export const getApiManagerReservationAllowance = <ThrowOnError extends boolean = false>(options?: Options<GetApiManagerReservationAllowanceData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetApiManagerReservationAllowanceResponses, GetApiManagerReservationAllowanceErrors, ThrowOnError>({
-        responseTransformer: getApiManagerReservationAllowanceResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/reservationAllowance',
-        ...options
-    });
-};
+export const getApiManagerReservationAllowance = <ThrowOnError extends boolean = false>(options?: Options<GetApiManagerReservationAllowanceData, ThrowOnError>) => (options?.client ?? client).get<GetApiManagerReservationAllowanceResponses, GetApiManagerReservationAllowanceErrors, ThrowOnError>({
+    responseTransformer: getApiManagerReservationAllowanceResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/reservationAllowance',
+    ...options
+});
 
 /**
  * Set Reservations Allowed For User
  */
-export const postApiManagerReservationAllowance = <ThrowOnError extends boolean = false>(options: Options<PostApiManagerReservationAllowanceData, ThrowOnError>) => {
-    return (options.client ?? client).post<PostApiManagerReservationAllowanceResponses, PostApiManagerReservationAllowanceErrors, ThrowOnError>({
-        responseTransformer: postApiManagerReservationAllowanceResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/reservationAllowance',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const postApiManagerReservationAllowance = <ThrowOnError extends boolean = false>(options: Options<PostApiManagerReservationAllowanceData, ThrowOnError>) => (options.client ?? client).post<PostApiManagerReservationAllowanceResponses, PostApiManagerReservationAllowanceErrors, ThrowOnError>({
+    responseTransformer: postApiManagerReservationAllowanceResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/reservationAllowance',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Update Reservation Allowance
  */
-export const putApiManagerReservationAllowance = <ThrowOnError extends boolean = false>(options: Options<PutApiManagerReservationAllowanceData, ThrowOnError>) => {
-    return (options.client ?? client).put<PutApiManagerReservationAllowanceResponses, PutApiManagerReservationAllowanceErrors, ThrowOnError>({
-        responseTransformer: putApiManagerReservationAllowanceResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/reservationAllowance',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const putApiManagerReservationAllowance = <ThrowOnError extends boolean = false>(options: Options<PutApiManagerReservationAllowanceData, ThrowOnError>) => (options.client ?? client).put<PutApiManagerReservationAllowanceResponses, PutApiManagerReservationAllowanceErrors, ThrowOnError>({
+    responseTransformer: putApiManagerReservationAllowanceResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/reservationAllowance',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Get Reservation Allowances By Event Id
  */
-export const getApiManagerReservationAllowanceEventByEventId = <ThrowOnError extends boolean = false>(options: Options<GetApiManagerReservationAllowanceEventByEventIdData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetApiManagerReservationAllowanceEventByEventIdResponses, GetApiManagerReservationAllowanceEventByEventIdErrors, ThrowOnError>({
-        responseTransformer: getApiManagerReservationAllowanceEventByEventIdResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/reservationAllowance/event/{eventId}',
-        ...options
-    });
-};
+export const getApiManagerReservationAllowanceEventByEventId = <ThrowOnError extends boolean = false>(options: Options<GetApiManagerReservationAllowanceEventByEventIdData, ThrowOnError>) => (options.client ?? client).get<GetApiManagerReservationAllowanceEventByEventIdResponses, GetApiManagerReservationAllowanceEventByEventIdErrors, ThrowOnError>({
+    responseTransformer: getApiManagerReservationAllowanceEventByEventIdResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/reservationAllowance/event/{eventId}',
+    ...options
+});
 
 /**
  * Get Reservation Allowance By Id
  */
-export const getApiManagerReservationAllowanceById = <ThrowOnError extends boolean = false>(options: Options<GetApiManagerReservationAllowanceByIdData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetApiManagerReservationAllowanceByIdResponses, GetApiManagerReservationAllowanceByIdErrors, ThrowOnError>({
-        responseTransformer: getApiManagerReservationAllowanceByIdResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/reservationAllowance/{id}',
-        ...options
-    });
-};
+export const getApiManagerReservationAllowanceById = <ThrowOnError extends boolean = false>(options: Options<GetApiManagerReservationAllowanceByIdData, ThrowOnError>) => (options.client ?? client).get<GetApiManagerReservationAllowanceByIdResponses, GetApiManagerReservationAllowanceByIdErrors, ThrowOnError>({
+    responseTransformer: getApiManagerReservationAllowanceByIdResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/reservationAllowance/{id}',
+    ...options
+});
 
 /**
  * Delete Reservation
  */
-export const deleteApiManagerReservations = <ThrowOnError extends boolean = false>(options?: Options<DeleteApiManagerReservationsData, ThrowOnError>) => {
-    return (options?.client ?? client).delete<DeleteApiManagerReservationsResponses, DeleteApiManagerReservationsErrors, ThrowOnError>({
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/reservations',
-        ...options
-    });
-};
+export const deleteApiManagerReservations = <ThrowOnError extends boolean = false>(options?: Options<DeleteApiManagerReservationsData, ThrowOnError>) => (options?.client ?? client).delete<DeleteApiManagerReservationsResponses, DeleteApiManagerReservationsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/reservations',
+    ...options
+});
 
 /**
  * Get All Reservations
  */
-export const getApiManagerReservations = <ThrowOnError extends boolean = false>(options?: Options<GetApiManagerReservationsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetApiManagerReservationsResponses, GetApiManagerReservationsErrors, ThrowOnError>({
-        responseTransformer: getApiManagerReservationsResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/reservations',
-        ...options
-    });
-};
+export const getApiManagerReservations = <ThrowOnError extends boolean = false>(options?: Options<GetApiManagerReservationsData, ThrowOnError>) => (options?.client ?? client).get<GetApiManagerReservationsResponses, GetApiManagerReservationsErrors, ThrowOnError>({
+    responseTransformer: getApiManagerReservationsResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/reservations',
+    ...options
+});
 
 /**
  * Create Reservations
  */
-export const postApiManagerReservations = <ThrowOnError extends boolean = false>(options: Options<PostApiManagerReservationsData, ThrowOnError>) => {
-    return (options.client ?? client).post<PostApiManagerReservationsResponses, PostApiManagerReservationsErrors, ThrowOnError>({
-        responseTransformer: postApiManagerReservationsResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/reservations',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const postApiManagerReservations = <ThrowOnError extends boolean = false>(options: Options<PostApiManagerReservationsData, ThrowOnError>) => (options.client ?? client).post<PostApiManagerReservationsResponses, PostApiManagerReservationsErrors, ThrowOnError>({
+    responseTransformer: postApiManagerReservationsResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/reservations',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Block Seats
  */
-export const postApiManagerReservationsBlock = <ThrowOnError extends boolean = false>(options: Options<PostApiManagerReservationsBlockData, ThrowOnError>) => {
-    return (options.client ?? client).post<PostApiManagerReservationsBlockResponses, PostApiManagerReservationsBlockErrors, ThrowOnError>({
-        responseTransformer: postApiManagerReservationsBlockResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/reservations/block',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const postApiManagerReservationsBlock = <ThrowOnError extends boolean = false>(options: Options<PostApiManagerReservationsBlockData, ThrowOnError>) => (options.client ?? client).post<PostApiManagerReservationsBlockResponses, PostApiManagerReservationsBlockErrors, ThrowOnError>({
+    responseTransformer: postApiManagerReservationsBlockResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/reservations/block',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Get Reservations By Event Id
  */
-export const getApiManagerReservationsEventById = <ThrowOnError extends boolean = false>(options: Options<GetApiManagerReservationsEventByIdData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetApiManagerReservationsEventByIdResponses, GetApiManagerReservationsEventByIdErrors, ThrowOnError>({
-        responseTransformer: getApiManagerReservationsEventByIdResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/reservations/event/{id}',
-        ...options
-    });
-};
+export const getApiManagerReservationsEventById = <ThrowOnError extends boolean = false>(options: Options<GetApiManagerReservationsEventByIdData, ThrowOnError>) => (options.client ?? client).get<GetApiManagerReservationsEventByIdResponses, GetApiManagerReservationsEventByIdErrors, ThrowOnError>({
+    responseTransformer: getApiManagerReservationsEventByIdResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/reservations/event/{id}',
+    ...options
+});
 
 /**
  * Export Reservations To Csv
  */
-export const getApiManagerReservationsExportByEventIdCsv = <ThrowOnError extends boolean = false>(options: Options<GetApiManagerReservationsExportByEventIdCsvData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetApiManagerReservationsExportByEventIdCsvResponses, GetApiManagerReservationsExportByEventIdCsvErrors, ThrowOnError>({
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/reservations/export/{eventId}/csv',
-        ...options
-    });
-};
+export const getApiManagerReservationsExportByEventIdCsv = <ThrowOnError extends boolean = false>(options: Options<GetApiManagerReservationsExportByEventIdCsvData, ThrowOnError>) => (options.client ?? client).get<GetApiManagerReservationsExportByEventIdCsvResponses, GetApiManagerReservationsExportByEventIdCsvErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/reservations/export/{eventId}/csv',
+    ...options
+});
 
 /**
  * Export Reservations To Pdf
  */
-export const getApiManagerReservationsExportByEventIdPdf = <ThrowOnError extends boolean = false>(options: Options<GetApiManagerReservationsExportByEventIdPdfData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetApiManagerReservationsExportByEventIdPdfResponses, GetApiManagerReservationsExportByEventIdPdfErrors, ThrowOnError>({
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/reservations/export/{eventId}/pdf',
-        ...options
-    });
-};
+export const getApiManagerReservationsExportByEventIdPdf = <ThrowOnError extends boolean = false>(options: Options<GetApiManagerReservationsExportByEventIdPdfData, ThrowOnError>) => (options.client ?? client).get<GetApiManagerReservationsExportByEventIdPdfResponses, GetApiManagerReservationsExportByEventIdPdfErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/reservations/export/{eventId}/pdf',
+    ...options
+});
 
 /**
  * Get Reservation By Id
  */
-export const getApiManagerReservationsById = <ThrowOnError extends boolean = false>(options: Options<GetApiManagerReservationsByIdData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetApiManagerReservationsByIdResponses, GetApiManagerReservationsByIdErrors, ThrowOnError>({
-        responseTransformer: getApiManagerReservationsByIdResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/reservations/{id}',
-        ...options
-    });
-};
+export const getApiManagerReservationsById = <ThrowOnError extends boolean = false>(options: Options<GetApiManagerReservationsByIdData, ThrowOnError>) => (options.client ?? client).get<GetApiManagerReservationsByIdResponses, GetApiManagerReservationsByIdErrors, ThrowOnError>({
+    responseTransformer: getApiManagerReservationsByIdResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/reservations/{id}',
+    ...options
+});
 
 /**
  * Delete Manager Seat
  */
-export const deleteApiManagerSeats = <ThrowOnError extends boolean = false>(options?: Options<DeleteApiManagerSeatsData, ThrowOnError>) => {
-    return (options?.client ?? client).delete<DeleteApiManagerSeatsResponses, DeleteApiManagerSeatsErrors, ThrowOnError>({
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/seats',
-        ...options
-    });
-};
+export const deleteApiManagerSeats = <ThrowOnError extends boolean = false>(options?: Options<DeleteApiManagerSeatsData, ThrowOnError>) => (options?.client ?? client).delete<DeleteApiManagerSeatsResponses, DeleteApiManagerSeatsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/seats',
+    ...options
+});
 
 /**
  * Get All Manager Seats
  */
-export const getApiManagerSeats = <ThrowOnError extends boolean = false>(options?: Options<GetApiManagerSeatsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetApiManagerSeatsResponses, GetApiManagerSeatsErrors, ThrowOnError>({
-        responseTransformer: getApiManagerSeatsResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/seats',
-        ...options
-    });
-};
+export const getApiManagerSeats = <ThrowOnError extends boolean = false>(options?: Options<GetApiManagerSeatsData, ThrowOnError>) => (options?.client ?? client).get<GetApiManagerSeatsResponses, GetApiManagerSeatsErrors, ThrowOnError>({
+    responseTransformer: getApiManagerSeatsResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/seats',
+    ...options
+});
 
 /**
  * Create Seat
  */
-export const postApiManagerSeats = <ThrowOnError extends boolean = false>(options: Options<PostApiManagerSeatsData, ThrowOnError>) => {
-    return (options.client ?? client).post<PostApiManagerSeatsResponses, PostApiManagerSeatsErrors, ThrowOnError>({
-        responseTransformer: postApiManagerSeatsResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/seats',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const postApiManagerSeats = <ThrowOnError extends boolean = false>(options: Options<PostApiManagerSeatsData, ThrowOnError>) => (options.client ?? client).post<PostApiManagerSeatsResponses, PostApiManagerSeatsErrors, ThrowOnError>({
+    responseTransformer: postApiManagerSeatsResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/seats',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Get Manager Seat By Id
  */
-export const getApiManagerSeatsById = <ThrowOnError extends boolean = false>(options: Options<GetApiManagerSeatsByIdData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetApiManagerSeatsByIdResponses, GetApiManagerSeatsByIdErrors, ThrowOnError>({
-        responseTransformer: getApiManagerSeatsByIdResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/seats/{id}',
-        ...options
-    });
-};
+export const getApiManagerSeatsById = <ThrowOnError extends boolean = false>(options: Options<GetApiManagerSeatsByIdData, ThrowOnError>) => (options.client ?? client).get<GetApiManagerSeatsByIdResponses, GetApiManagerSeatsByIdErrors, ThrowOnError>({
+    responseTransformer: getApiManagerSeatsByIdResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/seats/{id}',
+    ...options
+});
 
 /**
  * Update Manager Seat
  */
-export const putApiManagerSeatsById = <ThrowOnError extends boolean = false>(options: Options<PutApiManagerSeatsByIdData, ThrowOnError>) => {
-    return (options.client ?? client).put<PutApiManagerSeatsByIdResponses, PutApiManagerSeatsByIdErrors, ThrowOnError>({
-        responseTransformer: putApiManagerSeatsByIdResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/manager/seats/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const putApiManagerSeatsById = <ThrowOnError extends boolean = false>(options: Options<PutApiManagerSeatsByIdData, ThrowOnError>) => (options.client ?? client).put<PutApiManagerSeatsByIdResponses, PutApiManagerSeatsByIdErrors, ThrowOnError>({
+    responseTransformer: putApiManagerSeatsByIdResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/seats/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Get All Events
  */
-export const getApiSupervisorCheckinEvents = <ThrowOnError extends boolean = false>(options?: Options<GetApiSupervisorCheckinEventsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetApiSupervisorCheckinEventsResponses, GetApiSupervisorCheckinEventsErrors, ThrowOnError>({
-        responseTransformer: getApiSupervisorCheckinEventsResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/supervisor/checkin/events',
-        ...options
-    });
-};
+export const getApiSupervisorCheckinEvents = <ThrowOnError extends boolean = false>(options?: Options<GetApiSupervisorCheckinEventsData, ThrowOnError>) => (options?.client ?? client).get<GetApiSupervisorCheckinEventsResponses, GetApiSupervisorCheckinEventsErrors, ThrowOnError>({
+    responseTransformer: getApiSupervisorCheckinEventsResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/supervisor/checkin/events',
+    ...options
+});
 
 /**
  * Get Check In Info
  */
-export const postApiSupervisorCheckinInfo = <ThrowOnError extends boolean = false>(options: Options<PostApiSupervisorCheckinInfoData, ThrowOnError>) => {
-    return (options.client ?? client).post<PostApiSupervisorCheckinInfoResponses, PostApiSupervisorCheckinInfoErrors, ThrowOnError>({
-        responseTransformer: postApiSupervisorCheckinInfoResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/supervisor/checkin/info',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const postApiSupervisorCheckinInfo = <ThrowOnError extends boolean = false>(options: Options<PostApiSupervisorCheckinInfoData, ThrowOnError>) => (options.client ?? client).post<PostApiSupervisorCheckinInfoResponses, PostApiSupervisorCheckinInfoErrors, ThrowOnError>({
+    responseTransformer: postApiSupervisorCheckinInfoResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/supervisor/checkin/info',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Process Check In Info By Username
  */
-export const postApiSupervisorCheckinInfoByUsername = <ThrowOnError extends boolean = false>(options: Options<PostApiSupervisorCheckinInfoByUsernameData, ThrowOnError>) => {
-    return (options.client ?? client).post<PostApiSupervisorCheckinInfoByUsernameResponses, PostApiSupervisorCheckinInfoByUsernameErrors, ThrowOnError>({
-        responseTransformer: postApiSupervisorCheckinInfoByUsernameResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/supervisor/checkin/info/{username}',
-        ...options
-    });
-};
+export const postApiSupervisorCheckinInfoByUsername = <ThrowOnError extends boolean = false>(options: Options<PostApiSupervisorCheckinInfoByUsernameData, ThrowOnError>) => (options.client ?? client).post<PostApiSupervisorCheckinInfoByUsernameResponses, PostApiSupervisorCheckinInfoByUsernameErrors, ThrowOnError>({
+    responseTransformer: postApiSupervisorCheckinInfoByUsernameResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/supervisor/checkin/info/{username}',
+    ...options
+});
 
 /**
  * Process Check In
  */
-export const postApiSupervisorCheckinProcess = <ThrowOnError extends boolean = false>(options: Options<PostApiSupervisorCheckinProcessData, ThrowOnError>) => {
-    return (options.client ?? client).post<PostApiSupervisorCheckinProcessResponses, PostApiSupervisorCheckinProcessErrors, ThrowOnError>({
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/supervisor/checkin/process',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const postApiSupervisorCheckinProcess = <ThrowOnError extends boolean = false>(options: Options<PostApiSupervisorCheckinProcessData, ThrowOnError>) => (options.client ?? client).post<PostApiSupervisorCheckinProcessResponses, PostApiSupervisorCheckinProcessErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/supervisor/checkin/process',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Get Usernames With Reservations
  */
-export const getApiSupervisorCheckinUsernamesByEventId = <ThrowOnError extends boolean = false>(options: Options<GetApiSupervisorCheckinUsernamesByEventIdData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetApiSupervisorCheckinUsernamesByEventIdResponses, GetApiSupervisorCheckinUsernamesByEventIdErrors, ThrowOnError>({
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/supervisor/checkin/usernames/{eventId}',
-        ...options
-    });
-};
+export const getApiSupervisorCheckinUsernamesByEventId = <ThrowOnError extends boolean = false>(options: Options<GetApiSupervisorCheckinUsernamesByEventIdData, ThrowOnError>) => (options.client ?? client).get<GetApiSupervisorCheckinUsernamesByEventIdResponses, GetApiSupervisorCheckinUsernamesByEventIdErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/supervisor/checkin/usernames/{eventId}',
+    ...options
+});
 
 /**
  * Get Events
  */
-export const getApiUserEvents = <ThrowOnError extends boolean = false>(options?: Options<GetApiUserEventsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetApiUserEventsResponses, GetApiUserEventsErrors, ThrowOnError>({
-        responseTransformer: getApiUserEventsResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/user/events',
-        ...options
-    });
-};
+export const getApiUserEvents = <ThrowOnError extends boolean = false>(options?: Options<GetApiUserEventsData, ThrowOnError>) => (options?.client ?? client).get<GetApiUserEventsResponses, GetApiUserEventsErrors, ThrowOnError>({
+    responseTransformer: getApiUserEventsResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/user/events',
+    ...options
+});
 
 /**
  * Get Locations
  */
-export const getApiUserLocations = <ThrowOnError extends boolean = false>(options?: Options<GetApiUserLocationsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetApiUserLocationsResponses, GetApiUserLocationsErrors, ThrowOnError>({
-        responseTransformer: getApiUserLocationsResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/user/locations',
-        ...options
-    });
-};
+export const getApiUserLocations = <ThrowOnError extends boolean = false>(options?: Options<GetApiUserLocationsData, ThrowOnError>) => (options?.client ?? client).get<GetApiUserLocationsResponses, GetApiUserLocationsErrors, ThrowOnError>({
+    responseTransformer: getApiUserLocationsResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/user/locations',
+    ...options
+});
 
 /**
  * Resend email confirmation
  *
  * Resends the email confirmation for the authenticated user and extends the token's lifetime.
  */
-export const postApiUserResendEmailConfirmation = <ThrowOnError extends boolean = false>(options?: Options<PostApiUserResendEmailConfirmationData, ThrowOnError>) => {
-    return (options?.client ?? client).post<PostApiUserResendEmailConfirmationResponses, PostApiUserResendEmailConfirmationErrors, ThrowOnError>({
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/user/resend-email-confirmation',
-        ...options
-    });
-};
+export const postApiUserResendEmailConfirmation = <ThrowOnError extends boolean = false>(options?: Options<PostApiUserResendEmailConfirmationData, ThrowOnError>) => (options?.client ?? client).post<PostApiUserResendEmailConfirmationResponses, PostApiUserResendEmailConfirmationErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/user/resend-email-confirmation',
+    ...options
+});
 
 /**
  * Delete Reservation
  */
-export const deleteApiUserReservations = <ThrowOnError extends boolean = false>(options?: Options<DeleteApiUserReservationsData, ThrowOnError>) => {
-    return (options?.client ?? client).delete<DeleteApiUserReservationsResponses, DeleteApiUserReservationsErrors, ThrowOnError>({
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/user/reservations',
-        ...options
-    });
-};
+export const deleteApiUserReservations = <ThrowOnError extends boolean = false>(options?: Options<DeleteApiUserReservationsData, ThrowOnError>) => (options?.client ?? client).delete<DeleteApiUserReservationsResponses, DeleteApiUserReservationsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/user/reservations',
+    ...options
+});
 
 /**
  * Get My Reservations
  */
-export const getApiUserReservations = <ThrowOnError extends boolean = false>(options?: Options<GetApiUserReservationsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetApiUserReservationsResponses, GetApiUserReservationsErrors, ThrowOnError>({
-        responseTransformer: getApiUserReservationsResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/user/reservations',
-        ...options
-    });
-};
+export const getApiUserReservations = <ThrowOnError extends boolean = false>(options?: Options<GetApiUserReservationsData, ThrowOnError>) => (options?.client ?? client).get<GetApiUserReservationsResponses, GetApiUserReservationsErrors, ThrowOnError>({
+    responseTransformer: getApiUserReservationsResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/user/reservations',
+    ...options
+});
 
 /**
  * Create Reservation
  */
-export const postApiUserReservations = <ThrowOnError extends boolean = false>(options: Options<PostApiUserReservationsData, ThrowOnError>) => {
-    return (options.client ?? client).post<PostApiUserReservationsResponses, PostApiUserReservationsErrors, ThrowOnError>({
-        responseTransformer: postApiUserReservationsResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/user/reservations',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const postApiUserReservations = <ThrowOnError extends boolean = false>(options: Options<PostApiUserReservationsData, ThrowOnError>) => (options.client ?? client).post<PostApiUserReservationsResponses, PostApiUserReservationsErrors, ThrowOnError>({
+    responseTransformer: postApiUserReservationsResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/user/reservations',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Get My Reservation By Id
  */
-export const getApiUserReservationsById = <ThrowOnError extends boolean = false>(options: Options<GetApiUserReservationsByIdData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetApiUserReservationsByIdResponses, GetApiUserReservationsByIdErrors, ThrowOnError>({
-        responseTransformer: getApiUserReservationsByIdResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/user/reservations/{id}',
-        ...options
-    });
-};
+export const getApiUserReservationsById = <ThrowOnError extends boolean = false>(options: Options<GetApiUserReservationsByIdData, ThrowOnError>) => (options.client ?? client).get<GetApiUserReservationsByIdResponses, GetApiUserReservationsByIdErrors, ThrowOnError>({
+    responseTransformer: getApiUserReservationsByIdResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/user/reservations/{id}',
+    ...options
+});
 
 /**
  * Verify email with 6-digit code
  *
  * Verifies a user's email address using a 6-digit verification code
  */
-export const postApiUserVerifyEmailCode = <ThrowOnError extends boolean = false>(options: Options<PostApiUserVerifyEmailCodeData, ThrowOnError>) => {
-    return (options.client ?? client).post<PostApiUserVerifyEmailCodeResponses, PostApiUserVerifyEmailCodeErrors, ThrowOnError>({
-        url: '/api/user/verify-email-code',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const postApiUserVerifyEmailCode = <ThrowOnError extends boolean = false>(options: Options<PostApiUserVerifyEmailCodeData, ThrowOnError>) => (options.client ?? client).post<PostApiUserVerifyEmailCodeResponses, PostApiUserVerifyEmailCodeErrors, ThrowOnError>({
+    url: '/api/user/verify-email-code',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Get All Users As Admin
  */
-export const getApiUsersAdmin = <ThrowOnError extends boolean = false>(options?: Options<GetApiUsersAdminData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetApiUsersAdminResponses, GetApiUsersAdminErrors, ThrowOnError>({
-        responseTransformer: getApiUsersAdminResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/users/admin',
-        ...options
-    });
-};
+export const getApiUsersAdmin = <ThrowOnError extends boolean = false>(options?: Options<GetApiUsersAdminData, ThrowOnError>) => (options?.client ?? client).get<GetApiUsersAdminResponses, GetApiUsersAdminErrors, ThrowOnError>({
+    responseTransformer: getApiUsersAdminResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/users/admin',
+    ...options
+});
 
 /**
  * Create User
  */
-export const postApiUsersAdmin = <ThrowOnError extends boolean = false>(options: Options<PostApiUsersAdminData, ThrowOnError>) => {
-    return (options.client ?? client).post<PostApiUsersAdminResponses, PostApiUsersAdminErrors, ThrowOnError>({
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/users/admin',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const postApiUsersAdmin = <ThrowOnError extends boolean = false>(options: Options<PostApiUsersAdminData, ThrowOnError>) => (options.client ?? client).post<PostApiUsersAdminResponses, PostApiUsersAdminErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/users/admin',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Import Users
  */
-export const postApiUsersAdminImport = <ThrowOnError extends boolean = false>(options: Options<PostApiUsersAdminImportData, ThrowOnError>) => {
-    return (options.client ?? client).post<PostApiUsersAdminImportResponses, PostApiUsersAdminImportErrors, ThrowOnError>({
-        responseTransformer: postApiUsersAdminImportResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/users/admin/import',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const postApiUsersAdminImport = <ThrowOnError extends boolean = false>(options: Options<PostApiUsersAdminImportData, ThrowOnError>) => (options.client ?? client).post<PostApiUsersAdminImportResponses, PostApiUsersAdminImportErrors, ThrowOnError>({
+    responseTransformer: postApiUsersAdminImportResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/users/admin/import',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Delete User
  */
-export const deleteApiUsersAdminById = <ThrowOnError extends boolean = false>(options?: Options<DeleteApiUsersAdminByIdData, ThrowOnError>) => {
-    return (options?.client ?? client).delete<DeleteApiUsersAdminByIdResponses, DeleteApiUsersAdminByIdErrors, ThrowOnError>({
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/users/admin/{id}',
-        ...options
-    });
-};
+export const deleteApiUsersAdminById = <ThrowOnError extends boolean = false>(options?: Options<DeleteApiUsersAdminByIdData, ThrowOnError>) => (options?.client ?? client).delete<DeleteApiUsersAdminByIdResponses, DeleteApiUsersAdminByIdErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/users/admin/{id}',
+    ...options
+});
 
 /**
  * Update User
  */
-export const putApiUsersAdminById = <ThrowOnError extends boolean = false>(options: Options<PutApiUsersAdminByIdData, ThrowOnError>) => {
-    return (options.client ?? client).put<PutApiUsersAdminByIdResponses, PutApiUsersAdminByIdErrors, ThrowOnError>({
-        responseTransformer: putApiUsersAdminByIdResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/users/admin/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const putApiUsersAdminById = <ThrowOnError extends boolean = false>(options: Options<PutApiUsersAdminByIdData, ThrowOnError>) => (options.client ?? client).put<PutApiUsersAdminByIdResponses, PutApiUsersAdminByIdErrors, ThrowOnError>({
+    responseTransformer: putApiUsersAdminByIdResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/users/admin/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Get All Users
  */
-export const getApiUsersManager = <ThrowOnError extends boolean = false>(options?: Options<GetApiUsersManagerData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetApiUsersManagerResponses, GetApiUsersManagerErrors, ThrowOnError>({
-        responseTransformer: getApiUsersManagerResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/users/manager',
-        ...options
-    });
-};
+export const getApiUsersManager = <ThrowOnError extends boolean = false>(options?: Options<GetApiUsersManagerData, ThrowOnError>) => (options?.client ?? client).get<GetApiUsersManagerResponses, GetApiUsersManagerErrors, ThrowOnError>({
+    responseTransformer: getApiUsersManagerResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/users/manager',
+    ...options
+});
 
 /**
  * Get Current User
  */
-export const getApiUsersMe = <ThrowOnError extends boolean = false>(options?: Options<GetApiUsersMeData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetApiUsersMeResponses, GetApiUsersMeErrors, ThrowOnError>({
-        responseTransformer: getApiUsersMeResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/users/me',
-        ...options
-    });
-};
+export const getApiUsersMe = <ThrowOnError extends boolean = false>(options?: Options<GetApiUsersMeData, ThrowOnError>) => (options?.client ?? client).get<GetApiUsersMeResponses, GetApiUsersMeErrors, ThrowOnError>({
+    responseTransformer: getApiUsersMeResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/users/me',
+    ...options
+});
 
 /**
  * Update Current User Profile
  */
-export const putApiUsersMe = <ThrowOnError extends boolean = false>(options: Options<PutApiUsersMeData, ThrowOnError>) => {
-    return (options.client ?? client).put<PutApiUsersMeResponses, PutApiUsersMeErrors, ThrowOnError>({
-        responseTransformer: putApiUsersMeResponseTransformer,
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/users/me',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const putApiUsersMe = <ThrowOnError extends boolean = false>(options: Options<PutApiUsersMeData, ThrowOnError>) => (options.client ?? client).put<PutApiUsersMeResponses, PutApiUsersMeErrors, ThrowOnError>({
+    responseTransformer: putApiUsersMeResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/users/me',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Available Roles
  */
-export const getApiUsersRoles = <ThrowOnError extends boolean = false>(options?: Options<GetApiUsersRolesData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetApiUsersRolesResponses, GetApiUsersRolesErrors, ThrowOnError>({
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/users/roles',
-        ...options
-    });
-};
+export const getApiUsersRoles = <ThrowOnError extends boolean = false>(options?: Options<GetApiUsersRolesData, ThrowOnError>) => (options?.client ?? client).get<GetApiUsersRolesResponses, GetApiUsersRolesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/users/roles',
+    ...options
+});

@@ -4,7 +4,7 @@ import { type DefaultError, queryOptions, type UseMutationOptions } from '@tanst
 
 import { client } from '../client.gen';
 import { deleteApiManagerEventlocations, deleteApiManagerEvents, deleteApiManagerReservationAllowance, deleteApiManagerReservations, deleteApiManagerSeats, deleteApiUserReservations, deleteApiUsersAdminById, getApiAuthRegistrationStatus, getApiEmailSeatmap, getApiManagerEventlocations, getApiManagerEvents, getApiManagerEventsById, getApiManagerReservationAllowance, getApiManagerReservationAllowanceById, getApiManagerReservationAllowanceEventByEventId, getApiManagerReservations, getApiManagerReservationsById, getApiManagerReservationsEventById, getApiManagerReservationsExportByEventIdCsv, getApiManagerReservationsExportByEventIdPdf, getApiManagerSeats, getApiManagerSeatsById, getApiSupervisorCheckinEvents, getApiSupervisorCheckinUsernamesByEventId, getApiUserEvents, getApiUserLocations, getApiUserReservations, getApiUserReservationsById, getApiUsersAdmin, getApiUsersManager, getApiUsersMe, getApiUsersRoles, type Options, postApiAuthLogin, postApiAuthLogout, postApiAuthLogoutAllDevices, postApiAuthRefresh, postApiAuthRegister, postApiManagerEventlocations, postApiManagerEventlocationsImport, postApiManagerEventlocationsImportById, postApiManagerEvents, postApiManagerReservationAllowance, postApiManagerReservations, postApiManagerReservationsBlock, postApiManagerSeats, postApiSupervisorCheckinInfo, postApiSupervisorCheckinInfoByUsername, postApiSupervisorCheckinProcess, postApiUserResendEmailConfirmation, postApiUserReservations, postApiUsersAdmin, postApiUsersAdminImport, postApiUserVerifyEmailCode, putApiManagerEventlocationsById, putApiManagerEventsById, putApiManagerReservationAllowance, putApiManagerSeatsById, putApiUsersAdminById, putApiUsersMe } from '../sdk.gen';
-import type { DeleteApiManagerEventlocationsData, DeleteApiManagerEventlocationsResponse, DeleteApiManagerEventsData, DeleteApiManagerEventsResponse, DeleteApiManagerReservationAllowanceData, DeleteApiManagerReservationAllowanceResponse, DeleteApiManagerReservationsData, DeleteApiManagerReservationsResponse, DeleteApiManagerSeatsData, DeleteApiManagerSeatsResponse, DeleteApiUserReservationsData, DeleteApiUserReservationsResponse, DeleteApiUsersAdminByIdData, DeleteApiUsersAdminByIdResponse, GetApiAuthRegistrationStatusData, GetApiEmailSeatmapData, GetApiManagerEventlocationsData, GetApiManagerEventsByIdData, GetApiManagerEventsData, GetApiManagerReservationAllowanceByIdData, GetApiManagerReservationAllowanceData, GetApiManagerReservationAllowanceEventByEventIdData, GetApiManagerReservationsByIdData, GetApiManagerReservationsData, GetApiManagerReservationsEventByIdData, GetApiManagerReservationsExportByEventIdCsvData, GetApiManagerReservationsExportByEventIdPdfData, GetApiManagerSeatsByIdData, GetApiManagerSeatsData, GetApiSupervisorCheckinEventsData, GetApiSupervisorCheckinUsernamesByEventIdData, GetApiUserEventsData, GetApiUserLocationsData, GetApiUserReservationsByIdData, GetApiUserReservationsData, GetApiUsersAdminData, GetApiUsersManagerData, GetApiUsersMeData, GetApiUsersRolesData, PostApiAuthLoginData, PostApiAuthLoginError, PostApiAuthLogoutAllDevicesData, PostApiAuthLogoutData, PostApiAuthRefreshData, PostApiAuthRegisterData, PostApiManagerEventlocationsData, PostApiManagerEventlocationsImportByIdData, PostApiManagerEventlocationsImportByIdResponse, PostApiManagerEventlocationsImportData, PostApiManagerEventlocationsImportResponse, PostApiManagerEventlocationsResponse, PostApiManagerEventsData, PostApiManagerEventsResponse, PostApiManagerReservationAllowanceData, PostApiManagerReservationAllowanceResponse, PostApiManagerReservationsBlockData, PostApiManagerReservationsBlockResponse, PostApiManagerReservationsData, PostApiManagerReservationsResponse, PostApiManagerSeatsData, PostApiManagerSeatsResponse, PostApiSupervisorCheckinInfoByUsernameData, PostApiSupervisorCheckinInfoByUsernameResponse, PostApiSupervisorCheckinInfoData, PostApiSupervisorCheckinInfoResponse, PostApiSupervisorCheckinProcessData, PostApiSupervisorCheckinProcessResponse, PostApiUserResendEmailConfirmationData, PostApiUserResendEmailConfirmationResponse, PostApiUserReservationsData, PostApiUserReservationsResponse, PostApiUsersAdminData, PostApiUsersAdminImportData, PostApiUsersAdminImportResponse, PostApiUserVerifyEmailCodeData, PutApiManagerEventlocationsByIdData, PutApiManagerEventlocationsByIdResponse, PutApiManagerEventsByIdData, PutApiManagerEventsByIdResponse, PutApiManagerReservationAllowanceData, PutApiManagerReservationAllowanceResponse, PutApiManagerSeatsByIdData, PutApiManagerSeatsByIdResponse, PutApiUsersAdminByIdData, PutApiUsersAdminByIdResponse, PutApiUsersMeData, PutApiUsersMeResponse } from '../types.gen';
+import type { DeleteApiManagerEventlocationsData, DeleteApiManagerEventlocationsResponse, DeleteApiManagerEventsData, DeleteApiManagerEventsResponse, DeleteApiManagerReservationAllowanceData, DeleteApiManagerReservationAllowanceResponse, DeleteApiManagerReservationsData, DeleteApiManagerReservationsResponse, DeleteApiManagerSeatsData, DeleteApiManagerSeatsResponse, DeleteApiUserReservationsData, DeleteApiUserReservationsResponse, DeleteApiUsersAdminByIdData, DeleteApiUsersAdminByIdResponse, GetApiAuthRegistrationStatusData, GetApiAuthRegistrationStatusResponse, GetApiEmailSeatmapData, GetApiEmailSeatmapResponse, GetApiManagerEventlocationsData, GetApiManagerEventlocationsResponse, GetApiManagerEventsByIdData, GetApiManagerEventsByIdResponse, GetApiManagerEventsData, GetApiManagerEventsResponse, GetApiManagerReservationAllowanceByIdData, GetApiManagerReservationAllowanceByIdResponse, GetApiManagerReservationAllowanceData, GetApiManagerReservationAllowanceEventByEventIdData, GetApiManagerReservationAllowanceEventByEventIdResponse, GetApiManagerReservationAllowanceResponse, GetApiManagerReservationsByIdData, GetApiManagerReservationsByIdResponse, GetApiManagerReservationsData, GetApiManagerReservationsEventByIdData, GetApiManagerReservationsEventByIdResponse, GetApiManagerReservationsExportByEventIdCsvData, GetApiManagerReservationsExportByEventIdPdfData, GetApiManagerReservationsExportByEventIdPdfResponse, GetApiManagerReservationsResponse, GetApiManagerSeatsByIdData, GetApiManagerSeatsByIdResponse, GetApiManagerSeatsData, GetApiManagerSeatsResponse, GetApiSupervisorCheckinEventsData, GetApiSupervisorCheckinEventsResponse, GetApiSupervisorCheckinUsernamesByEventIdData, GetApiSupervisorCheckinUsernamesByEventIdResponse, GetApiUserEventsData, GetApiUserEventsResponse, GetApiUserLocationsData, GetApiUserLocationsResponse, GetApiUserReservationsByIdData, GetApiUserReservationsByIdResponse, GetApiUserReservationsData, GetApiUserReservationsResponse, GetApiUsersAdminData, GetApiUsersAdminResponse, GetApiUsersManagerData, GetApiUsersManagerResponse, GetApiUsersMeData, GetApiUsersMeResponse, GetApiUsersRolesData, GetApiUsersRolesResponse, PostApiAuthLoginData, PostApiAuthLoginError, PostApiAuthLogoutAllDevicesData, PostApiAuthLogoutData, PostApiAuthRefreshData, PostApiAuthRegisterData, PostApiManagerEventlocationsData, PostApiManagerEventlocationsImportByIdData, PostApiManagerEventlocationsImportByIdResponse, PostApiManagerEventlocationsImportData, PostApiManagerEventlocationsImportResponse, PostApiManagerEventlocationsResponse, PostApiManagerEventsData, PostApiManagerEventsResponse, PostApiManagerReservationAllowanceData, PostApiManagerReservationAllowanceResponse, PostApiManagerReservationsBlockData, PostApiManagerReservationsBlockResponse, PostApiManagerReservationsData, PostApiManagerReservationsResponse, PostApiManagerSeatsData, PostApiManagerSeatsResponse, PostApiSupervisorCheckinInfoByUsernameData, PostApiSupervisorCheckinInfoByUsernameResponse, PostApiSupervisorCheckinInfoData, PostApiSupervisorCheckinInfoResponse, PostApiSupervisorCheckinProcessData, PostApiSupervisorCheckinProcessResponse, PostApiUserResendEmailConfirmationData, PostApiUserResendEmailConfirmationResponse, PostApiUserReservationsData, PostApiUserReservationsResponse, PostApiUsersAdminData, PostApiUsersAdminImportData, PostApiUsersAdminImportResponse, PostApiUserVerifyEmailCodeData, PutApiManagerEventlocationsByIdData, PutApiManagerEventlocationsByIdResponse, PutApiManagerEventsByIdData, PutApiManagerEventsByIdResponse, PutApiManagerReservationAllowanceData, PutApiManagerReservationAllowanceResponse, PutApiManagerSeatsByIdData, PutApiManagerSeatsByIdResponse, PutApiUsersAdminByIdData, PutApiUsersAdminByIdResponse, PutApiUsersMeData, PutApiUsersMeResponse } from '../types.gen';
 
 /**
  * Login
@@ -121,9 +121,7 @@ const createQueryKey = <TOptions extends Options>(id: string, options?: TOptions
     if (options?.query) {
         params.query = options.query;
     }
-    return [
-        params
-    ];
+    return [params];
 };
 
 export const getApiAuthRegistrationStatusQueryKey = (options?: Options<GetApiAuthRegistrationStatusData>) => createQueryKey('getApiAuthRegistrationStatus', options);
@@ -131,40 +129,36 @@ export const getApiAuthRegistrationStatusQueryKey = (options?: Options<GetApiAut
 /**
  * Get Registration Status
  */
-export const getApiAuthRegistrationStatusOptions = (options?: Options<GetApiAuthRegistrationStatusData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getApiAuthRegistrationStatus({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getApiAuthRegistrationStatusQueryKey(options)
-    });
-};
+export const getApiAuthRegistrationStatusOptions = (options?: Options<GetApiAuthRegistrationStatusData>) => queryOptions<GetApiAuthRegistrationStatusResponse, DefaultError, GetApiAuthRegistrationStatusResponse, ReturnType<typeof getApiAuthRegistrationStatusQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getApiAuthRegistrationStatus({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getApiAuthRegistrationStatusQueryKey(options)
+});
 
 export const getApiEmailSeatmapQueryKey = (options?: Options<GetApiEmailSeatmapData>) => createQueryKey('getApiEmailSeatmap', options);
 
 /**
  * Get Seat Map
  */
-export const getApiEmailSeatmapOptions = (options?: Options<GetApiEmailSeatmapData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getApiEmailSeatmap({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getApiEmailSeatmapQueryKey(options)
-    });
-};
+export const getApiEmailSeatmapOptions = (options?: Options<GetApiEmailSeatmapData>) => queryOptions<GetApiEmailSeatmapResponse, DefaultError, GetApiEmailSeatmapResponse, ReturnType<typeof getApiEmailSeatmapQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getApiEmailSeatmap({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getApiEmailSeatmapQueryKey(options)
+});
 
 /**
  * Delete Event Location
@@ -188,20 +182,18 @@ export const getApiManagerEventlocationsQueryKey = (options?: Options<GetApiMana
 /**
  * Get Event Locations By Current Manager
  */
-export const getApiManagerEventlocationsOptions = (options?: Options<GetApiManagerEventlocationsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getApiManagerEventlocations({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getApiManagerEventlocationsQueryKey(options)
-    });
-};
+export const getApiManagerEventlocationsOptions = (options?: Options<GetApiManagerEventlocationsData>) => queryOptions<GetApiManagerEventlocationsResponse, DefaultError, GetApiManagerEventlocationsResponse, ReturnType<typeof getApiManagerEventlocationsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getApiManagerEventlocations({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getApiManagerEventlocationsQueryKey(options)
+});
 
 /**
  * Create Event Location
@@ -293,20 +285,18 @@ export const getApiManagerEventsQueryKey = (options?: Options<GetApiManagerEvent
 /**
  * Get Events By Current Manager
  */
-export const getApiManagerEventsOptions = (options?: Options<GetApiManagerEventsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getApiManagerEvents({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getApiManagerEventsQueryKey(options)
-    });
-};
+export const getApiManagerEventsOptions = (options?: Options<GetApiManagerEventsData>) => queryOptions<GetApiManagerEventsResponse, DefaultError, GetApiManagerEventsResponse, ReturnType<typeof getApiManagerEventsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getApiManagerEvents({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getApiManagerEventsQueryKey(options)
+});
 
 /**
  * Create Event
@@ -330,20 +320,18 @@ export const getApiManagerEventsByIdQueryKey = (options: Options<GetApiManagerEv
 /**
  * Get Event By Id
  */
-export const getApiManagerEventsByIdOptions = (options: Options<GetApiManagerEventsByIdData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getApiManagerEventsById({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getApiManagerEventsByIdQueryKey(options)
-    });
-};
+export const getApiManagerEventsByIdOptions = (options: Options<GetApiManagerEventsByIdData>) => queryOptions<GetApiManagerEventsByIdResponse, DefaultError, GetApiManagerEventsByIdResponse, ReturnType<typeof getApiManagerEventsByIdQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getApiManagerEventsById({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getApiManagerEventsByIdQueryKey(options)
+});
 
 /**
  * Update Event
@@ -384,20 +372,18 @@ export const getApiManagerReservationAllowanceQueryKey = (options?: Options<GetA
 /**
  * Get Reservation Allowances
  */
-export const getApiManagerReservationAllowanceOptions = (options?: Options<GetApiManagerReservationAllowanceData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getApiManagerReservationAllowance({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getApiManagerReservationAllowanceQueryKey(options)
-    });
-};
+export const getApiManagerReservationAllowanceOptions = (options?: Options<GetApiManagerReservationAllowanceData>) => queryOptions<GetApiManagerReservationAllowanceResponse, DefaultError, GetApiManagerReservationAllowanceResponse, ReturnType<typeof getApiManagerReservationAllowanceQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getApiManagerReservationAllowance({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getApiManagerReservationAllowanceQueryKey(options)
+});
 
 /**
  * Set Reservations Allowed For User
@@ -438,40 +424,36 @@ export const getApiManagerReservationAllowanceEventByEventIdQueryKey = (options:
 /**
  * Get Reservation Allowances By Event Id
  */
-export const getApiManagerReservationAllowanceEventByEventIdOptions = (options: Options<GetApiManagerReservationAllowanceEventByEventIdData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getApiManagerReservationAllowanceEventByEventId({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getApiManagerReservationAllowanceEventByEventIdQueryKey(options)
-    });
-};
+export const getApiManagerReservationAllowanceEventByEventIdOptions = (options: Options<GetApiManagerReservationAllowanceEventByEventIdData>) => queryOptions<GetApiManagerReservationAllowanceEventByEventIdResponse, DefaultError, GetApiManagerReservationAllowanceEventByEventIdResponse, ReturnType<typeof getApiManagerReservationAllowanceEventByEventIdQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getApiManagerReservationAllowanceEventByEventId({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getApiManagerReservationAllowanceEventByEventIdQueryKey(options)
+});
 
 export const getApiManagerReservationAllowanceByIdQueryKey = (options: Options<GetApiManagerReservationAllowanceByIdData>) => createQueryKey('getApiManagerReservationAllowanceById', options);
 
 /**
  * Get Reservation Allowance By Id
  */
-export const getApiManagerReservationAllowanceByIdOptions = (options: Options<GetApiManagerReservationAllowanceByIdData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getApiManagerReservationAllowanceById({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getApiManagerReservationAllowanceByIdQueryKey(options)
-    });
-};
+export const getApiManagerReservationAllowanceByIdOptions = (options: Options<GetApiManagerReservationAllowanceByIdData>) => queryOptions<GetApiManagerReservationAllowanceByIdResponse, DefaultError, GetApiManagerReservationAllowanceByIdResponse, ReturnType<typeof getApiManagerReservationAllowanceByIdQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getApiManagerReservationAllowanceById({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getApiManagerReservationAllowanceByIdQueryKey(options)
+});
 
 /**
  * Delete Reservation
@@ -495,20 +477,18 @@ export const getApiManagerReservationsQueryKey = (options?: Options<GetApiManage
 /**
  * Get All Reservations
  */
-export const getApiManagerReservationsOptions = (options?: Options<GetApiManagerReservationsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getApiManagerReservations({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getApiManagerReservationsQueryKey(options)
-    });
-};
+export const getApiManagerReservationsOptions = (options?: Options<GetApiManagerReservationsData>) => queryOptions<GetApiManagerReservationsResponse, DefaultError, GetApiManagerReservationsResponse, ReturnType<typeof getApiManagerReservationsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getApiManagerReservations({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getApiManagerReservationsQueryKey(options)
+});
 
 /**
  * Create Reservations
@@ -549,80 +529,72 @@ export const getApiManagerReservationsEventByIdQueryKey = (options: Options<GetA
 /**
  * Get Reservations By Event Id
  */
-export const getApiManagerReservationsEventByIdOptions = (options: Options<GetApiManagerReservationsEventByIdData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getApiManagerReservationsEventById({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getApiManagerReservationsEventByIdQueryKey(options)
-    });
-};
+export const getApiManagerReservationsEventByIdOptions = (options: Options<GetApiManagerReservationsEventByIdData>) => queryOptions<GetApiManagerReservationsEventByIdResponse, DefaultError, GetApiManagerReservationsEventByIdResponse, ReturnType<typeof getApiManagerReservationsEventByIdQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getApiManagerReservationsEventById({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getApiManagerReservationsEventByIdQueryKey(options)
+});
 
 export const getApiManagerReservationsExportByEventIdCsvQueryKey = (options: Options<GetApiManagerReservationsExportByEventIdCsvData>) => createQueryKey('getApiManagerReservationsExportByEventIdCsv', options);
 
 /**
  * Export Reservations To Csv
  */
-export const getApiManagerReservationsExportByEventIdCsvOptions = (options: Options<GetApiManagerReservationsExportByEventIdCsvData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getApiManagerReservationsExportByEventIdCsv({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getApiManagerReservationsExportByEventIdCsvQueryKey(options)
-    });
-};
+export const getApiManagerReservationsExportByEventIdCsvOptions = (options: Options<GetApiManagerReservationsExportByEventIdCsvData>) => queryOptions<unknown, DefaultError, unknown, ReturnType<typeof getApiManagerReservationsExportByEventIdCsvQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getApiManagerReservationsExportByEventIdCsv({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getApiManagerReservationsExportByEventIdCsvQueryKey(options)
+});
 
 export const getApiManagerReservationsExportByEventIdPdfQueryKey = (options: Options<GetApiManagerReservationsExportByEventIdPdfData>) => createQueryKey('getApiManagerReservationsExportByEventIdPdf', options);
 
 /**
  * Export Reservations To Pdf
  */
-export const getApiManagerReservationsExportByEventIdPdfOptions = (options: Options<GetApiManagerReservationsExportByEventIdPdfData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getApiManagerReservationsExportByEventIdPdf({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getApiManagerReservationsExportByEventIdPdfQueryKey(options)
-    });
-};
+export const getApiManagerReservationsExportByEventIdPdfOptions = (options: Options<GetApiManagerReservationsExportByEventIdPdfData>) => queryOptions<GetApiManagerReservationsExportByEventIdPdfResponse, DefaultError, GetApiManagerReservationsExportByEventIdPdfResponse, ReturnType<typeof getApiManagerReservationsExportByEventIdPdfQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getApiManagerReservationsExportByEventIdPdf({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getApiManagerReservationsExportByEventIdPdfQueryKey(options)
+});
 
 export const getApiManagerReservationsByIdQueryKey = (options: Options<GetApiManagerReservationsByIdData>) => createQueryKey('getApiManagerReservationsById', options);
 
 /**
  * Get Reservation By Id
  */
-export const getApiManagerReservationsByIdOptions = (options: Options<GetApiManagerReservationsByIdData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getApiManagerReservationsById({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getApiManagerReservationsByIdQueryKey(options)
-    });
-};
+export const getApiManagerReservationsByIdOptions = (options: Options<GetApiManagerReservationsByIdData>) => queryOptions<GetApiManagerReservationsByIdResponse, DefaultError, GetApiManagerReservationsByIdResponse, ReturnType<typeof getApiManagerReservationsByIdQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getApiManagerReservationsById({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getApiManagerReservationsByIdQueryKey(options)
+});
 
 /**
  * Delete Manager Seat
@@ -646,20 +618,18 @@ export const getApiManagerSeatsQueryKey = (options?: Options<GetApiManagerSeatsD
 /**
  * Get All Manager Seats
  */
-export const getApiManagerSeatsOptions = (options?: Options<GetApiManagerSeatsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getApiManagerSeats({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getApiManagerSeatsQueryKey(options)
-    });
-};
+export const getApiManagerSeatsOptions = (options?: Options<GetApiManagerSeatsData>) => queryOptions<GetApiManagerSeatsResponse, DefaultError, GetApiManagerSeatsResponse, ReturnType<typeof getApiManagerSeatsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getApiManagerSeats({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getApiManagerSeatsQueryKey(options)
+});
 
 /**
  * Create Seat
@@ -683,20 +653,18 @@ export const getApiManagerSeatsByIdQueryKey = (options: Options<GetApiManagerSea
 /**
  * Get Manager Seat By Id
  */
-export const getApiManagerSeatsByIdOptions = (options: Options<GetApiManagerSeatsByIdData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getApiManagerSeatsById({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getApiManagerSeatsByIdQueryKey(options)
-    });
-};
+export const getApiManagerSeatsByIdOptions = (options: Options<GetApiManagerSeatsByIdData>) => queryOptions<GetApiManagerSeatsByIdResponse, DefaultError, GetApiManagerSeatsByIdResponse, ReturnType<typeof getApiManagerSeatsByIdQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getApiManagerSeatsById({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getApiManagerSeatsByIdQueryKey(options)
+});
 
 /**
  * Update Manager Seat
@@ -720,20 +688,18 @@ export const getApiSupervisorCheckinEventsQueryKey = (options?: Options<GetApiSu
 /**
  * Get All Events
  */
-export const getApiSupervisorCheckinEventsOptions = (options?: Options<GetApiSupervisorCheckinEventsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getApiSupervisorCheckinEvents({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getApiSupervisorCheckinEventsQueryKey(options)
-    });
-};
+export const getApiSupervisorCheckinEventsOptions = (options?: Options<GetApiSupervisorCheckinEventsData>) => queryOptions<GetApiSupervisorCheckinEventsResponse, DefaultError, GetApiSupervisorCheckinEventsResponse, ReturnType<typeof getApiSupervisorCheckinEventsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getApiSupervisorCheckinEvents({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getApiSupervisorCheckinEventsQueryKey(options)
+});
 
 /**
  * Get Check In Info
@@ -791,60 +757,54 @@ export const getApiSupervisorCheckinUsernamesByEventIdQueryKey = (options: Optio
 /**
  * Get Usernames With Reservations
  */
-export const getApiSupervisorCheckinUsernamesByEventIdOptions = (options: Options<GetApiSupervisorCheckinUsernamesByEventIdData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getApiSupervisorCheckinUsernamesByEventId({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getApiSupervisorCheckinUsernamesByEventIdQueryKey(options)
-    });
-};
+export const getApiSupervisorCheckinUsernamesByEventIdOptions = (options: Options<GetApiSupervisorCheckinUsernamesByEventIdData>) => queryOptions<GetApiSupervisorCheckinUsernamesByEventIdResponse, DefaultError, GetApiSupervisorCheckinUsernamesByEventIdResponse, ReturnType<typeof getApiSupervisorCheckinUsernamesByEventIdQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getApiSupervisorCheckinUsernamesByEventId({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getApiSupervisorCheckinUsernamesByEventIdQueryKey(options)
+});
 
 export const getApiUserEventsQueryKey = (options?: Options<GetApiUserEventsData>) => createQueryKey('getApiUserEvents', options);
 
 /**
  * Get Events
  */
-export const getApiUserEventsOptions = (options?: Options<GetApiUserEventsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getApiUserEvents({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getApiUserEventsQueryKey(options)
-    });
-};
+export const getApiUserEventsOptions = (options?: Options<GetApiUserEventsData>) => queryOptions<GetApiUserEventsResponse, DefaultError, GetApiUserEventsResponse, ReturnType<typeof getApiUserEventsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getApiUserEvents({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getApiUserEventsQueryKey(options)
+});
 
 export const getApiUserLocationsQueryKey = (options?: Options<GetApiUserLocationsData>) => createQueryKey('getApiUserLocations', options);
 
 /**
  * Get Locations
  */
-export const getApiUserLocationsOptions = (options?: Options<GetApiUserLocationsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getApiUserLocations({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getApiUserLocationsQueryKey(options)
-    });
-};
+export const getApiUserLocationsOptions = (options?: Options<GetApiUserLocationsData>) => queryOptions<GetApiUserLocationsResponse, DefaultError, GetApiUserLocationsResponse, ReturnType<typeof getApiUserLocationsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getApiUserLocations({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getApiUserLocationsQueryKey(options)
+});
 
 /**
  * Resend email confirmation
@@ -887,20 +847,18 @@ export const getApiUserReservationsQueryKey = (options?: Options<GetApiUserReser
 /**
  * Get My Reservations
  */
-export const getApiUserReservationsOptions = (options?: Options<GetApiUserReservationsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getApiUserReservations({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getApiUserReservationsQueryKey(options)
-    });
-};
+export const getApiUserReservationsOptions = (options?: Options<GetApiUserReservationsData>) => queryOptions<GetApiUserReservationsResponse, DefaultError, GetApiUserReservationsResponse, ReturnType<typeof getApiUserReservationsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getApiUserReservations({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getApiUserReservationsQueryKey(options)
+});
 
 /**
  * Create Reservation
@@ -924,20 +882,18 @@ export const getApiUserReservationsByIdQueryKey = (options: Options<GetApiUserRe
 /**
  * Get My Reservation By Id
  */
-export const getApiUserReservationsByIdOptions = (options: Options<GetApiUserReservationsByIdData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getApiUserReservationsById({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getApiUserReservationsByIdQueryKey(options)
-    });
-};
+export const getApiUserReservationsByIdOptions = (options: Options<GetApiUserReservationsByIdData>) => queryOptions<GetApiUserReservationsByIdResponse, DefaultError, GetApiUserReservationsByIdResponse, ReturnType<typeof getApiUserReservationsByIdQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getApiUserReservationsById({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getApiUserReservationsByIdQueryKey(options)
+});
 
 /**
  * Verify email with 6-digit code
@@ -963,20 +919,18 @@ export const getApiUsersAdminQueryKey = (options?: Options<GetApiUsersAdminData>
 /**
  * Get All Users As Admin
  */
-export const getApiUsersAdminOptions = (options?: Options<GetApiUsersAdminData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getApiUsersAdmin({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getApiUsersAdminQueryKey(options)
-    });
-};
+export const getApiUsersAdminOptions = (options?: Options<GetApiUsersAdminData>) => queryOptions<GetApiUsersAdminResponse, DefaultError, GetApiUsersAdminResponse, ReturnType<typeof getApiUsersAdminQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getApiUsersAdmin({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getApiUsersAdminQueryKey(options)
+});
 
 /**
  * Create User
@@ -1051,40 +1005,36 @@ export const getApiUsersManagerQueryKey = (options?: Options<GetApiUsersManagerD
 /**
  * Get All Users
  */
-export const getApiUsersManagerOptions = (options?: Options<GetApiUsersManagerData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getApiUsersManager({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getApiUsersManagerQueryKey(options)
-    });
-};
+export const getApiUsersManagerOptions = (options?: Options<GetApiUsersManagerData>) => queryOptions<GetApiUsersManagerResponse, DefaultError, GetApiUsersManagerResponse, ReturnType<typeof getApiUsersManagerQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getApiUsersManager({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getApiUsersManagerQueryKey(options)
+});
 
 export const getApiUsersMeQueryKey = (options?: Options<GetApiUsersMeData>) => createQueryKey('getApiUsersMe', options);
 
 /**
  * Get Current User
  */
-export const getApiUsersMeOptions = (options?: Options<GetApiUsersMeData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getApiUsersMe({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getApiUsersMeQueryKey(options)
-    });
-};
+export const getApiUsersMeOptions = (options?: Options<GetApiUsersMeData>) => queryOptions<GetApiUsersMeResponse, DefaultError, GetApiUsersMeResponse, ReturnType<typeof getApiUsersMeQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getApiUsersMe({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getApiUsersMeQueryKey(options)
+});
 
 /**
  * Update Current User Profile
@@ -1108,17 +1058,15 @@ export const getApiUsersRolesQueryKey = (options?: Options<GetApiUsersRolesData>
 /**
  * Available Roles
  */
-export const getApiUsersRolesOptions = (options?: Options<GetApiUsersRolesData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getApiUsersRoles({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getApiUsersRolesQueryKey(options)
-    });
-};
+export const getApiUsersRolesOptions = (options?: Options<GetApiUsersRolesData>) => queryOptions<GetApiUsersRolesResponse, DefaultError, GetApiUsersRolesResponse, ReturnType<typeof getApiUsersRolesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getApiUsersRoles({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getApiUsersRolesQueryKey(options)
+});
