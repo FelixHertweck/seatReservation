@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { UserMultiSelect } from "@/components/common/user-multi-select";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useT } from "@/lib/i18n/hooks";
 
 import type {
@@ -78,10 +78,8 @@ export function AllowanceFormModal({
 
   const handleSubmit = async () => {
     if (!selectedEventId || !allowedReservations) {
-      toast({
-        title: t("allowanceFormModal.validationErrorTitle"),
+      toast.error(t("allowanceFormModal.validationErrorTitle"), {
         description: t("allowanceFormModal.validationErrorDescription"),
-        variant: "destructive",
       });
       return;
     }
@@ -93,10 +91,8 @@ export function AllowanceFormModal({
 
       if (isCreating) {
         if (selectedUserIds.length === 0) {
-          toast({
-            title: t("allowanceFormModal.validationErrorTitle"),
+          toast.error(t("allowanceFormModal.validationErrorTitle"), {
             description: t("allowanceFormModal.selectAtLeastOneUser"),
-            variant: "destructive",
           });
           return;
         }
@@ -106,16 +102,10 @@ export function AllowanceFormModal({
           reservationsAllowedCount: reservations,
         };
         await onSubmit(allowanceData);
-        toast({
-          title: t("allowanceFormModal.successTitle"),
-          description: t("allowanceFormModal.allowanceCreatedSuccess"),
-        });
       } else {
         if (!allowance?.id || selectedUserIds.length !== 1) {
-          toast({
-            title: t("allowanceFormModal.validationErrorTitle"),
+          toast.error(t("allowanceFormModal.validationErrorTitle"), {
             description: t("allowanceFormModal.selectExactlyOneUser"),
-            variant: "destructive",
           });
           return;
         }
@@ -126,19 +116,10 @@ export function AllowanceFormModal({
           reservationsAllowedCount: reservations,
         };
         await onSubmit(allowanceData);
-        toast({
-          title: t("allowanceFormModal.successTitle"),
-          description: t("allowanceFormModal.allowanceUpdatedSuccess"),
-        });
       }
       onClose();
     } catch (error) {
       console.error("Failed to submit allowance:", error);
-      toast({
-        title: t("allowanceFormModal.submissionErrorTitle"),
-        description: t("allowanceFormModal.submissionErrorDescription"),
-        variant: "destructive",
-      });
     } finally {
       setIsLoading(false);
     }

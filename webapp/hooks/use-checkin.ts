@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useT } from "@/lib/i18n/hooks";
 import {
   postApiSupervisorCheckinInfoMutation,
@@ -86,92 +86,65 @@ export function useCheckin(): UseCheckinReturn {
   // POST endpoint: Fetch check-in info
   const checkInInfoMutation = useMutation({
     ...postApiSupervisorCheckinInfoMutation(),
-    onError: async (error) => {
-      const errorWithType = error as ErrorWithResponse;
-      const errorMessage =
-        errorWithType?.response?.data?.message || t("checkin.error.default");
-      toast({
-        title: t("checkin.error.title"),
-        description: errorMessage,
-        variant: "destructive",
-      });
-    },
   });
 
   const fetchCheckInInfo = async (
     checkinInfoRequest: CheckInInfoRequestDto,
   ) => {
-    try {
-      const result = await checkInInfoMutation.mutateAsync({
-        body: checkinInfoRequest,
-      });
-      return result;
-    } catch (error) {
-      console.error("Check-In info error:", error);
-      return undefined;
-    }
+    const request = checkInInfoMutation.mutateAsync({
+      body: checkinInfoRequest,
+    });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: () => t("checkin.info.success.title"),
+      error: (error: ErrorWithResponse) => ({
+        message: t("checkin.info.error.title"),
+        description: error.response?.description ?? t("checkin.error.default"),
+      }),
+    });
+    return request;
   };
 
   // POST endpoint: Fetch check-in info by username
   const checkInInfoByUsernameMutation = useMutation({
     ...postApiSupervisorCheckinInfoByUsernameMutation(),
-    onError: async (error) => {
-      const errorWithType = error as ErrorWithResponse;
-      const errorMessage =
-        errorWithType?.response?.data?.message || t("checkin.error.default");
-      toast({
-        title: t("checkin.error.title"),
-        description: errorMessage,
-        variant: "destructive",
-      });
-    },
   });
 
   const fetchCheckInInfoByUsername = async (username: string) => {
-    try {
-      const result = await checkInInfoByUsernameMutation.mutateAsync({
-        path: {
-          username,
-        },
-      });
-      return result;
-    } catch (error) {
-      console.error("Check-In info by username error:", error);
-      return undefined;
-    }
+    const request = checkInInfoByUsernameMutation.mutateAsync({
+      path: {
+        username,
+      },
+    });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: () => t("checkin.info.success.title"),
+      error: (error: ErrorWithResponse) => ({
+        message: t("checkin.info.error.title"),
+        description: error.response?.description ?? t("checkin.error.default"),
+      }),
+    });
+    return request;
   };
 
   // POST endpoint: Process check-in
   const checkInMutation = useMutation({
     ...postApiSupervisorCheckinProcessMutation(),
-    onSuccess: async () => {
-      toast({
-        title: t("checkin.success.title"),
-        description: t("checkin.success.description"),
-      });
-    },
-    onError: async (error) => {
-      const errorWithType = error as ErrorWithResponse;
-      const errorMessage =
-        errorWithType?.response?.data?.message || t("checkin.error.default");
-      toast({
-        title: t("checkin.error.title"),
-        description: errorMessage,
-        variant: "destructive",
-      });
-    },
   });
 
   const performCheckIn = async (checkInData: CheckInProcessRequestDto) => {
-    try {
-      const result = await checkInMutation.mutateAsync({
-        body: checkInData,
-      });
-      return result;
-    } catch (error) {
-      console.error("Check-In error:", error);
-      return undefined;
-    }
+    const request = checkInMutation.mutateAsync({
+      body: checkInData,
+    });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: t("checkin.perform.success.title"),
+      error: (error: ErrorWithResponse) => ({
+        message: t("checkin.perform.error.title"),
+        description: error.response?.description ?? t("checkin.error.default"),
+      }),
+    });
+    return request;
   };
 
   const isLoadingAll =

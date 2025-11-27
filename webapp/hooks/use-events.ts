@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useT } from "@/lib/i18n/hooks";
 import {
   getApiUserEventsOptions,
@@ -44,18 +43,6 @@ export function useEvents(): UseEventsReturn {
 
   const createReservationMutation = useMutation({
     ...postApiUserReservationsMutation(),
-    onSuccess: (data) => {
-      queryClient.setQueriesData(
-        { queryKey: getApiUserReservationsQueryKey() },
-        (oldData: UserReservationResponseDto[] | undefined) => {
-          return oldData ? [...oldData, ...data] : [...data];
-        },
-      );
-      toast({
-        title: t("reservation.create.success.title"),
-        description: t("reservation.create.success.description"),
-      });
-    },
   });
 
   const createReservation = async (
@@ -66,16 +53,28 @@ export function useEvents(): UseEventsReturn {
       eventId,
       seatIds,
     };
-    return createReservationMutation.mutateAsync({
+    const request = createReservationMutation.mutateAsync({
       body: data,
     });
-  };
 
-  useEffect(() => {
-    if (createReservationMutation.isSuccess) {
-      queryClient.invalidateQueries({ queryKey: getApiUserEventsQueryKey() });
-    }
-  }, [createReservationMutation.isSuccess, queryClient]);
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: (resultData) => {
+        queryClient.setQueriesData(
+          { queryKey: getApiUserReservationsQueryKey() },
+          (oldData: UserReservationResponseDto[] | undefined) => {
+            return oldData ? [...oldData, ...resultData] : [...resultData];
+          },
+        );
+        queryClient.invalidateQueries({
+          queryKey: getApiUserEventsQueryKey(),
+        });
+        return t("reservation.create.success.title");
+      },
+      error: t("reservation.create.error.title"),
+    });
+    return request;
+  };
 
   const getEventById = (eventId: bigint) => {
     return queryClient.fetchQuery({

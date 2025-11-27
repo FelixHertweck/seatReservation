@@ -21,7 +21,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useT } from "@/lib/i18n/hooks";
-import { toast } from "@/hooks/use-toast";
 import { ErrorWithResponse } from "@/components/init-query-client";
 import { redirectUser } from "@/lib/redirect-User";
 
@@ -93,15 +92,7 @@ export default function VerifyEmailPage() {
   };
 
   const handleResendCode = async () => {
-    try {
-      await resendConfirmation();
-      toast({
-        title: t("emailVerification.confirmationEmailResentTitle"),
-        description: t("emailVerification.confirmationEmailResentDescription"),
-      });
-    } catch (error) {
-      console.error("Failed to resend confirmation:", error);
-    }
+    await resendConfirmation();
   };
 
   if (isLoggedIn && !user?.email) {

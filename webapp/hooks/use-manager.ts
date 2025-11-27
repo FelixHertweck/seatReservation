@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useT } from "@/lib/i18n/hooks";
 import {
   type EventResponseDto,
@@ -56,6 +56,7 @@ import type { LocationManagementProps } from "@/components/management/location-m
 import type { ReservationAllowanceManagementProps } from "@/components/management/allowance-management";
 import type { ReservationManagementProps } from "@/components/management/reservation-management";
 import type { SeatManagementProps } from "@/components/management/seat-management";
+import { ErrorWithResponse } from "@/components/init-query-client";
 
 interface UseManagerReturn {
   isLoading: boolean;
@@ -64,10 +65,6 @@ interface UseManagerReturn {
   seats: SeatManagementProps;
   reservations: ReservationManagementProps;
   reservationAllowance: ReservationAllowanceManagementProps;
-}
-
-function createIdsSet(query: { ids?: bigint[] } | undefined): Set<bigint> {
-  return new Set(query?.ids ?? []);
 }
 
 export function useManager(): UseManagerReturn {
@@ -98,10 +95,6 @@ export function useManager(): UseManagerReturn {
           return oldData ? [...oldData, data] : [data];
         },
       );
-      toast({
-        title: t("manager.event.create.success.title"),
-        description: t("manager.event.create.success.description"),
-      });
     },
   });
 
@@ -116,10 +109,6 @@ export function useManager(): UseManagerReturn {
             : [data];
         },
       );
-      toast({
-        title: t("manager.event.update.success.title"),
-        description: t("manager.event.update.success.description"),
-      });
     },
   });
 
@@ -135,10 +124,6 @@ export function useManager(): UseManagerReturn {
             : [];
         },
       );
-      toast({
-        title: t("manager.event.delete.success.title"),
-        description: t("manager.event.delete.success.description"),
-      });
     },
   });
 
@@ -156,10 +141,6 @@ export function useManager(): UseManagerReturn {
           return oldData ? [...oldData, data] : [data];
         },
       );
-      toast({
-        title: t("manager.location.create.success.title"),
-        description: t("manager.location.create.success.description"),
-      });
     },
   });
 
@@ -176,10 +157,6 @@ export function useManager(): UseManagerReturn {
             : [data];
         },
       );
-      toast({
-        title: t("manager.location.update.success.title"),
-        description: t("manager.location.update.success.description"),
-      });
     },
   });
 
@@ -197,10 +174,6 @@ export function useManager(): UseManagerReturn {
             : [];
         },
       );
-      toast({
-        title: t("manager.location.delete.success.title"),
-        description: t("manager.location.delete.success.description"),
-      });
     },
   });
 
@@ -213,10 +186,6 @@ export function useManager(): UseManagerReturn {
           return oldData ? [...oldData, data] : [data];
         },
       );
-      toast({
-        title: t("manager.location.importWithSeats.success.title"),
-        description: t("manager.location.importWithSeats.success.description"),
-      });
     },
   });
 
@@ -233,10 +202,6 @@ export function useManager(): UseManagerReturn {
             : [data];
         },
       );
-      toast({
-        title: t("manager.location.importSeats.success.title"),
-        description: t("manager.location.importSeats.success.description"),
-      });
     },
   });
 
@@ -255,10 +220,6 @@ export function useManager(): UseManagerReturn {
         },
       );
       eventsRefetch();
-      toast({
-        title: t("manager.seat.create.success.title"),
-        description: t("manager.seat.create.success.description"),
-      });
     },
   });
 
@@ -273,10 +234,6 @@ export function useManager(): UseManagerReturn {
             : [data];
         },
       );
-      toast({
-        title: t("manager.seat.update.success.title"),
-        description: t("manager.seat.update.success.description"),
-      });
     },
   });
 
@@ -292,10 +249,6 @@ export function useManager(): UseManagerReturn {
             : [];
         },
       );
-      toast({
-        title: t("manager.seat.delete.success.title"),
-        description: t("manager.seat.delete.success.description"),
-      });
     },
   });
 
@@ -314,10 +267,6 @@ export function useManager(): UseManagerReturn {
         },
       );
       eventsRefetch();
-      toast({
-        title: t("manager.reservation.create.success.title"),
-        description: t("manager.reservation.create.success.description"),
-      });
     },
   });
 
@@ -335,10 +284,6 @@ export function useManager(): UseManagerReturn {
             : [];
         },
       );
-      toast({
-        title: t("manager.reservation.delete.success.title"),
-        description: t("manager.reservation.delete.success.description"),
-      });
     },
   });
 
@@ -352,10 +297,6 @@ export function useManager(): UseManagerReturn {
         },
       );
       eventsRefetch();
-      toast({
-        title: t("manager.reservation.blockSeats.success.title"),
-        description: t("manager.reservation.blockSeats.success.description"),
-      });
     },
   });
 
@@ -376,12 +317,6 @@ export function useManager(): UseManagerReturn {
           return oldData ? [...oldData, ...data] : [...data];
         },
       );
-      toast({
-        title: t("manager.reservationAllowance.create.success.title"),
-        description: t(
-          "manager.reservationAllowance.create.success.description",
-        ),
-      });
     },
   });
 
@@ -398,12 +333,6 @@ export function useManager(): UseManagerReturn {
             : [data];
         },
       );
-      toast({
-        title: t("manager.reservationAllowance.update.success.title"),
-        description: t(
-          "manager.reservationAllowance.update.success.description",
-        ),
-      });
     },
   });
 
@@ -421,12 +350,6 @@ export function useManager(): UseManagerReturn {
             : [];
         },
       );
-      toast({
-        title: t("manager.reservationAllowance.delete.success.title"),
-        description: t(
-          "manager.reservationAllowance.delete.success.description",
-        ),
-      });
     },
   });
 
@@ -450,6 +373,264 @@ export function useManager(): UseManagerReturn {
     });
   };
 
+  const handleCreateEvent = async (event: EventRequestDto) => {
+    const request = createEventMutation.mutateAsync({ body: event });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: t("manager.event.create.success.title"),
+
+      error: (error: ErrorWithResponse) => ({
+        message: t("manager.event.create.error.title"),
+        description: error.response?.description ?? t("common.error.default"),
+      }),
+    });
+    return request;
+  };
+
+  const handleUpdateEvent = async (id: bigint, event: EventRequestDto) => {
+    const request = updateEventMutation.mutateAsync({
+      path: { id },
+      body: event,
+    });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: t("manager.event.update.success.title"),
+      error: (error: ErrorWithResponse) => ({
+        message: t("manager.event.update.error.title"),
+        description: error.response?.description ?? t("common.error.default"),
+      }),
+    });
+    return request;
+  };
+
+  const handleDeleteEvent = async (ids: bigint[]) => {
+    const request = deleteEventMutation.mutateAsync({ query: { ids } });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: t("manager.event.delete.success.title"),
+      error: (error: ErrorWithResponse) => ({
+        message: t("manager.event.delete.error.title"),
+        description: error.response?.description ?? t("common.error.default"),
+      }),
+    });
+    return request;
+  };
+
+  const handleCreateLocation = async (location: EventLocationRequestDto) => {
+    const request = createLocationMutation.mutateAsync({ body: location });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: t("manager.location.create.success.title"),
+      error: (error: ErrorWithResponse) => ({
+        message: t("manager.location.create.error.title"),
+        description: error.response?.description ?? t("common.error.default"),
+      }),
+    });
+    return request;
+  };
+
+  const handleUpdateLocation = async (
+    id: bigint,
+    location: EventLocationRequestDto,
+  ) => {
+    const request = updateLocationMutation.mutateAsync({
+      path: { id },
+      body: location,
+    });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: t("manager.location.update.success.title"),
+      error: (error: ErrorWithResponse) => ({
+        message: t("manager.location.update.error.title"),
+        description: error.response?.description ?? t("common.error.default"),
+      }),
+    });
+    return request;
+  };
+
+  const handleDeleteLocation = async (ids: bigint[]) => {
+    const request = deleteLocationMutation.mutateAsync({ query: { ids } });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: t("manager.location.delete.success.title"),
+      error: (error: ErrorWithResponse) => ({
+        message: t("manager.location.delete.error.title"),
+        description: error.response?.description ?? t("common.error.default"),
+      }),
+    });
+    return request;
+  };
+
+  const handleImportLocationWithSeats = async (
+    location: ImportEventLocationDto,
+  ) => {
+    const request = importLocationWithSeatsMutation.mutateAsync({
+      body: location,
+    });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: t("manager.location.importWithSeats.success.title"),
+      error: (error: ErrorWithResponse) => ({
+        message: t("manager.location.importWithSeats.error.title"),
+        description: error.response?.description ?? t("common.error.default"),
+      }),
+    });
+    return request;
+  };
+
+  const handleImportSeats = async (
+    seatsToImport: ImportSeatDto[],
+    locationId: string,
+  ) => {
+    const request = importSeatsMutation.mutateAsync({
+      body: seatsToImport,
+      path: { id: BigInt(locationId) },
+    });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: t("manager.location.importSeats.success.title"),
+      error: (error: ErrorWithResponse) => ({
+        message: t("manager.location.importSeats.error.title"),
+        description: error.response?.description ?? t("common.error.default"),
+      }),
+    });
+    return request;
+  };
+
+  const handleCreateSeat = async (seat: SeatRequestDto) => {
+    const request = createSeatMutation.mutateAsync({ body: seat });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: t("manager.seat.create.success.title"),
+      error: (error: ErrorWithResponse) => ({
+        message: t("manager.seat.create.error.title"),
+        description: error.response?.description ?? t("common.error.default"),
+      }),
+    });
+    return request;
+  };
+
+  const handleUpdateSeat = async (id: bigint, seat: SeatRequestDto) => {
+    const request = updateSeatMutation.mutateAsync({
+      path: { id },
+      body: seat,
+    });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: t("manager.seat.update.success.title"),
+      error: (error: ErrorWithResponse) => ({
+        message: t("manager.seat.update.error.title"),
+        description: error.response?.description ?? t("common.error.default"),
+      }),
+    });
+    return request;
+  };
+
+  const handleDeleteSeat = async (ids: bigint[]) => {
+    const request = deleteSeatMutation.mutateAsync({ query: { ids } });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: t("manager.seat.delete.success.title"),
+      error: (error: ErrorWithResponse) => ({
+        message: t("manager.seat.delete.error.title"),
+        description: error.response?.description ?? t("common.error.default"),
+      }),
+    });
+    return request;
+  };
+
+  const handleCreateReservation = async (
+    reservation: ReservationRequestDto,
+  ) => {
+    const request = createReservationMutation.mutateAsync({
+      body: reservation,
+    });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: t("manager.reservation.create.success.title"),
+      error: (error: ErrorWithResponse) => ({
+        message: t("manager.reservation.create.error.title"),
+        description: error.response?.description ?? t("common.error.default"),
+      }),
+    });
+    return request;
+  };
+
+  const handleDeleteReservation = async (ids: bigint[]) => {
+    const request = deleteReservationMutation.mutateAsync({ query: { ids } });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: t("manager.reservation.delete.success.title"),
+      error: (error: ErrorWithResponse) => ({
+        message: t("manager.reservation.delete.error.title"),
+        description: error.response?.description ?? t("common.error.default"),
+      }),
+    });
+    return request;
+  };
+
+  const handleBlockSeats = async (seatsToBlock: BlockSeatsRequestDto) => {
+    const request = blockSeatsMutation.mutateAsync({ body: seatsToBlock });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: t("manager.reservation.blockSeats.success.title"),
+      error: (error: ErrorWithResponse) => ({
+        message: t("manager.reservation.blockSeats.error.title"),
+        description: error.response?.description ?? t("common.error.default"),
+      }),
+    });
+    return request;
+  };
+
+  const handleCreateReservationAllowance = async (
+    allowance: EventUserAllowancesCreateDto,
+  ) => {
+    const request = createReservationAllowanceMutation.mutateAsync({
+      body: allowance,
+    });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: t("manager.reservationAllowance.create.success.title"),
+      error: (error: ErrorWithResponse) => ({
+        message: t("manager.reservationAllowance.create.error.title"),
+        description: error.response?.description ?? t("common.error.default"),
+      }),
+    });
+    return request;
+  };
+
+  const handleUpdateReservationAllowance = async (
+    allowance: EventUserAllowanceUpdateDto,
+  ) => {
+    const request = updateReservationAllowanceMutation.mutateAsync({
+      body: allowance,
+    });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: t("manager.reservationAllowance.update.success.title"),
+      error: (error: ErrorWithResponse) => ({
+        message: t("manager.reservationAllowance.update.error.title"),
+        description: error.response?.description ?? t("common.error.default"),
+      }),
+    });
+    return request;
+  };
+
+  const handleDeleteReservationAllowance = async (ids: bigint[]) => {
+    const request = deleteReservationAllowanceMutation.mutateAsync({
+      query: { ids },
+    });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: t("manager.reservationAllowance.delete.success.title"),
+      error: (error: ErrorWithResponse) => ({
+        message: t("manager.reservationAllowance.delete.error.title"),
+        description: error.response?.description ?? t("common.error.default"),
+      }),
+    });
+    return request;
+  };
+
   const isLoading =
     eventsIsLoading ||
     locationsIsLoading ||
@@ -464,39 +645,25 @@ export function useManager(): UseManagerReturn {
       allLocations: locations ?? [],
       events: events ?? [],
       users: user ?? [],
-      createEvent: (event: EventRequestDto) =>
-        createEventMutation.mutateAsync({ body: event }),
-      updateEvent: (id: bigint, event: EventRequestDto) =>
-        updateEventMutation.mutateAsync({ path: { id }, body: event }),
-      deleteEvent: (ids: bigint[]) =>
-        deleteEventMutation.mutateAsync({ query: { ids } }),
+      createEvent: handleCreateEvent,
+      updateEvent: handleUpdateEvent,
+      deleteEvent: handleDeleteEvent,
     },
     locations: {
       locations: locations ?? [],
       seats: seats ?? [],
-      createLocation: (location: EventLocationRequestDto) =>
-        createLocationMutation.mutateAsync({ body: location }),
-      updateLocation: (id: bigint, location: EventLocationRequestDto) =>
-        updateLocationMutation.mutateAsync({ path: { id }, body: location }),
-      deleteLocation: (ids: bigint[]) =>
-        deleteLocationMutation.mutateAsync({ query: { ids } }),
-      importLocationWithSeats: (location: ImportEventLocationDto) =>
-        importLocationWithSeatsMutation.mutateAsync({ body: location }),
-      importSeats: (seats: ImportSeatDto[], locationId: string) =>
-        importSeatsMutation.mutateAsync({
-          body: seats,
-          path: { id: BigInt(locationId) },
-        }),
+      createLocation: handleCreateLocation,
+      updateLocation: handleUpdateLocation,
+      deleteLocation: handleDeleteLocation,
+      importLocationWithSeats: handleImportLocationWithSeats,
+      importSeats: handleImportSeats,
     },
     seats: {
       locations: locations ?? [],
       seats: seats ?? [],
-      createSeat: (seat: SeatRequestDto) =>
-        createSeatMutation.mutateAsync({ body: seat }),
-      updateSeat: (id: bigint, seat: SeatRequestDto) =>
-        updateSeatMutation.mutateAsync({ path: { id }, body: seat }),
-      deleteSeat: (ids: bigint[]) =>
-        deleteSeatMutation.mutateAsync({ query: { ids } }),
+      createSeat: handleCreateSeat,
+      updateSeat: handleUpdateSeat,
+      deleteSeat: handleDeleteSeat,
     },
     reservations: {
       users: user ?? [],
@@ -506,23 +673,21 @@ export function useManager(): UseManagerReturn {
       reservations: reservations ?? [],
       exportCSV: exportReservationsToCsv,
       exportPDF: exportReservationsToPDF,
-      createReservation: (reservation: ReservationRequestDto) =>
-        createReservationMutation.mutateAsync({ body: reservation }),
-      deleteReservation: (ids: bigint[]) =>
-        deleteReservationMutation.mutateAsync({ query: { ids } }),
-      blockSeats: (seats: BlockSeatsRequestDto) =>
-        blockSeatsMutation.mutateAsync({ body: seats }),
+      createReservation: handleCreateReservation,
+      deleteReservation: handleDeleteReservation,
+      blockSeats: handleBlockSeats,
     },
     reservationAllowance: {
       events: events ?? [],
       users: user ?? [],
       allowances: reservationAllowance ?? [],
-      createReservationAllowance: (allowance: EventUserAllowancesCreateDto) =>
-        createReservationAllowanceMutation.mutateAsync({ body: allowance }),
-      updateReservationAllowance: (allowance: EventUserAllowanceUpdateDto) =>
-        updateReservationAllowanceMutation.mutateAsync({ body: allowance }),
-      deleteReservationAllowance: (ids: bigint[]) =>
-        deleteReservationAllowanceMutation.mutateAsync({ query: { ids } }),
+      createReservationAllowance: handleCreateReservationAllowance,
+      updateReservationAllowance: handleUpdateReservationAllowance,
+      deleteReservationAllowance: handleDeleteReservationAllowance,
     },
   };
+}
+
+function createIdsSet(query: { ids?: bigint[] } | undefined): Set<bigint> {
+  return new Set(query?.ids ?? []);
 }

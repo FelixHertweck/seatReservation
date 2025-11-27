@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useT } from "@/lib/i18n/hooks";
 import {
   getApiUsersAdminOptions,
@@ -13,8 +13,10 @@ import {
   postApiUsersAdminImportMutation,
 } from "@/api/@tanstack/react-query.gen";
 import type { AdminUserCreationDto, AdminUserUpdateDto, UserDto } from "@/api";
+import { UserManagementProps } from "@/components/admin/user-management";
+import { ErrorWithResponse } from "@/components/init-query-client";
 
-export function useAdmin() {
+export function useAdmin(): UserManagementProps {
   const t = useT();
   const queryClient = useQueryClient();
 
@@ -27,89 +29,111 @@ export function useAdmin() {
 
   const { mutateAsync: createMutation } = useMutation({
     ...postApiUsersAdminMutation(),
-    onSuccess: async (data) => {
-      queryClient.setQueriesData(
-        { queryKey: getApiUsersAdminQueryKey() },
-        (oldData: UserDto[] | undefined) => {
-          return oldData ? [...oldData, data] : [data];
-        },
-      );
-      toast({
-        title: t("admin.user.create.success.title"),
-        description: t("admin.user.create.success.description"),
-      });
-    },
   });
 
   const { mutateAsync: importMutation } = useMutation({
     ...postApiUsersAdminImportMutation(),
-    onSuccess: async (data) => {
-      queryClient.setQueriesData(
-        { queryKey: getApiUsersAdminQueryKey() },
-        (oldData: UserDto[] | undefined) => {
-          return oldData ? [...oldData, ...data] : [...data];
-        },
-      );
-      toast({
-        title: t("admin.user.import.success.title"),
-        description: t("admin.user.import.success.description"),
-      });
-    },
   });
 
   const { mutateAsync: updateMutation } = useMutation({
     ...putApiUsersAdminByIdMutation(),
-    onSuccess: async (data) => {
-      queryClient.setQueriesData(
-        { queryKey: getApiUsersAdminQueryKey() },
-        (oldData: UserDto[] | undefined) => {
-          return oldData
-            ? oldData.map((user) => (user.id === data.id ? data : user))
-            : [data];
-        },
-      );
-      toast({
-        title: t("admin.user.update.success.title"),
-        description: t("admin.user.update.success.description"),
-      });
-    },
   });
 
   const { mutateAsync: deleteMutation } = useMutation({
     ...deleteApiUsersAdminByIdMutation(),
-    onSuccess: async (_, variables) => {
-      queryClient.setQueriesData(
-        { queryKey: getApiUsersAdminQueryKey() },
-        (oldData: UserDto[] | undefined) => {
-          return oldData
-            ? oldData.filter(
-                (user) =>
-                  !variables.query?.ids?.includes(user.id ?? BigInt(-1)),
-              )
-            : [];
-        },
-      );
-      toast({
-        title: t("admin.user.delete.success.title"),
-        description: t("admin.user.delete.success.description"),
-      });
-    },
   });
 
-  const createUser = async (userData: AdminUserCreationDto) => {
-    await createMutation({ body: userData });
+  const createUser = async (userData: AdminUserCreationDto): Promise<void> => {
+    const request = createMutation({ body: userData });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: (data) => {
+        queryClient.setQueriesData(
+          { queryKey: getApiUsersAdminQueryKey() },
+          (oldData: UserDto[] | undefined) => {
+            return oldData ? [...oldData, data] : [data];
+          },
+        );
+        return t("admin.user.create.success.title");
+      },
+      error: (error: ErrorWithResponse) => ({
+        message: t("admin.user.create.error.title"),
+        description:
+          error.response?.description ?? t("admin.user.create.error.default"),
+      }),
+    });
   };
 
-  const importUsers = async (userData: AdminUserCreationDto[]) => {
-    await importMutation({ body: userData });
+  const importUsers = async (
+    userData: AdminUserCreationDto[],
+  ): Promise<void> => {
+    const request = importMutation({ body: userData });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: (data) => {
+        queryClient.setQueriesData(
+          { queryKey: getApiUsersAdminQueryKey() },
+          (oldData: UserDto[] | undefined) => {
+            return oldData ? [...oldData, ...data] : [...data];
+          },
+        );
+        return t("admin.user.import.success.title");
+      },
+      error: (error: ErrorWithResponse) => ({
+        message: t("admin.user.import.error.title"),
+        description:
+          error.response?.description ?? t("admin.user.import.error.default"),
+      }),
+    });
   };
 
-  const updateUser = async (id: bigint, userData: AdminUserUpdateDto) => {
-    await updateMutation({ body: userData, path: { id } });
+  const updateUser = async (
+    id: bigint,
+    userData: AdminUserUpdateDto,
+  ): Promise<void> => {
+    const request = updateMutation({ body: userData, path: { id } });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: (data) => {
+        queryClient.setQueriesData(
+          { queryKey: getApiUsersAdminQueryKey() },
+          (oldData: UserDto[] | undefined) => {
+            return oldData
+              ? oldData.map((user) => (user.id === data.id ? data : user))
+              : [data];
+          },
+        );
+        return t("admin.user.update.success.title");
+      },
+      error: (error: ErrorWithResponse) => ({
+        message: t("admin.user.update.error.title"),
+        description:
+          error.response?.description ?? t("admin.user.update.error.default"),
+      }),
+    });
   };
 
-  const deleteUser = async (ids: bigint[]) => {
-    await deleteMutation({ query: { ids } });
+  const deleteUser = async (ids: bigint[]): Promise<void> => {
+    const request = deleteMutation({ query: { ids } });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: () => {
+        queryClient.setQueriesData(
+          { queryKey: getApiUsersAdminQueryKey() },
+          (oldData: UserDto[] | undefined) => {
+            return oldData
+              ? oldData.filter((user) => !ids.includes(user.id ?? BigInt(-1)))
+              : [];
+          },
+        );
+        return t("admin.user.delete.success.title");
+      },
+      error: (error: ErrorWithResponse) => ({
+        message: t("admin.user.delete.error.title"),
+        description:
+          error.response?.description ?? t("admin.user.delete.error.default"),
+      }),
+    });
   };
 
   return {

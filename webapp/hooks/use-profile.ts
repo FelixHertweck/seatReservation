@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import {
   getApiUsersMeOptions,
   putApiUsersMeMutation,
@@ -11,6 +10,7 @@ import {
   postApiUserResendEmailConfirmationMutation,
 } from "@/api/@tanstack/react-query.gen";
 import type { UserDto, UserProfileUpdateDto } from "@/api";
+import { ErrorWithResponse } from "@/components/init-query-client";
 
 export function useProfile() {
   const queryClient = useQueryClient();
@@ -22,24 +22,29 @@ export function useProfile() {
 
   const updateMutation = useMutation({
     ...putApiUsersMeMutation(),
-    onSuccess: async (data) => {
+    onSuccess: (data) => {
       queryClient.setQueriesData({ queryKey: getApiUsersMeQueryKey() }, () => {
         return data;
       });
-      toast({
-        title: t("profile.update.success.title"),
-        description: t("profile.update.success.description"),
-      });
+      queryClient.invalidateQueries({ queryKey: getApiUsersMeQueryKey() });
     },
   });
 
   const updateProfile = async (
     updateData: UserProfileUpdateDto,
   ): Promise<UserDto | undefined> => {
-    const result = await updateMutation.mutateAsync({
+    const request = updateMutation.mutateAsync({
       body: updateData,
     });
-    return result;
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: t("profile.update.success.title"),
+      error: (error: ErrorWithResponse) => ({
+        message: t("profile.update.error.title"),
+        description: error.response?.description ?? t("common.error.default"),
+      }),
+    });
+    return request;
   };
 
   const resendConfirmationMutation = useMutation({
@@ -47,14 +52,17 @@ export function useProfile() {
   });
 
   const resendConfirmation = async (): Promise<void> => {
-    await resendConfirmationMutation.mutateAsync({});
+    const request = resendConfirmationMutation.mutateAsync({});
+    toast.promise(request, {
+      loading: t("emailVerification.resendingConfirmationEmail"),
+      success: t("email.confirmationEmailSentTitle"),
+      error: (error: ErrorWithResponse) => ({
+        message: t("emailVerification.resendConfirmationEmailFailed"),
+        description: error.response?.description ?? t("common.error.default"),
+      }),
+    });
+    return request;
   };
-
-  useEffect(() => {
-    if (updateMutation.isSuccess) {
-      queryClient.invalidateQueries({ queryKey: getApiUsersMeQueryKey() });
-    }
-  }, [updateMutation.isSuccess, queryClient]);
 
   return {
     user,

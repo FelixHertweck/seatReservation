@@ -3,7 +3,6 @@
 import type React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { client } from "@/api/client.gen";
-import { toast } from "@/hooks/use-toast";
 import { useLoginRequiredPopup } from "@/hooks/use-login-popup";
 import { getRefreshTokenExpiration } from "@/lib/refreshTokenExpirationCookie";
 
@@ -11,7 +10,8 @@ export interface ErrorWithResponse extends Error {
   response?: {
     status: number;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data?: any;
+    rawData: any;
+    description: string;
   };
 }
 
@@ -40,14 +40,6 @@ export default function InitQueryClient({
   children: React.ReactNode;
 }) {
   const { triggerLoginRequired, setIsOpen, isOpen } = useLoginRequiredPopup();
-
-  // Helper functions to schedule side-effects outside of render
-  const scheduleToast = (props: Parameters<typeof toast>[0]) => {
-    // Run after the current call stack to avoid React setState-in-render warnings
-    // We use queueMicrotask which runs after the current JS execution, but still
-    // before next macrotask, ensuring quick feedback without violating React rules.
-    queueMicrotask(() => toast(props));
-  };
 
   const scheduleTriggerLoginRequired = () => {
     queueMicrotask(() => triggerLoginRequired());
@@ -91,23 +83,13 @@ export default function InitQueryClient({
         }
       }
       if (!response.ok) {
-        const error = new Error(response.statusText) as ErrorWithResponse;
-        error.response = { ...response, status: response.status };
-
-        // Try to parse error response body as JSON
-        try {
-          const errorBody = await response.text();
-          if (errorBody) {
-            try {
-              error.response.data = JSON.parse(errorBody);
-            } catch {
-              error.response.data = { message: errorBody };
-            }
-          }
-        } catch {
-          console.error("Failed to parse error response body as JSON");
-        }
-
+        const error = new Error() as ErrorWithResponse;
+        const body = await response.text();
+        error.response = {
+          status: response.status,
+          rawData: body,
+          description: errorDescriptionConverter(body),
+        };
         throw error;
       }
       if (isOpen) {
@@ -127,11 +109,6 @@ export default function InitQueryClient({
         throwOnError(error) {
           const status = (error as ErrorWithResponse)?.response?.status;
           if (status !== 401) {
-            scheduleToast({
-              title: "An error occurred",
-              description: error.message || "Please try again.",
-              variant: "destructive",
-            });
             return false;
           }
           return true;
@@ -153,45 +130,6 @@ export default function InitQueryClient({
           }
           return false;
         },
-        onError: (error: Error) => {
-          const errorResponse = (error as ErrorWithResponse)?.response;
-          const responseData = errorResponse?.data;
-
-          // Handle different error formats
-          let errorTitle = "An error occurred";
-          let errorDescription = "Please try again.";
-
-          if (responseData) {
-            // Handle Constraint Violations format
-            if (responseData.violations && responseData.violations.length > 0) {
-              errorTitle = responseData.title || "Constraint Violation";
-              errorDescription = responseData.violations
-                .map((violation: ViolationError) => violation.message)
-                .join(", ");
-            }
-            // Handle simple error format
-            else if (responseData.error) {
-              errorTitle = "Error";
-              errorDescription = responseData.error;
-            }
-            // Handle message format
-            else if (responseData.message) {
-              errorTitle = "Error";
-              errorDescription = responseData.message;
-            }
-          }
-
-          // Fallback to error message
-          if (errorDescription === "Please try again." && error.message) {
-            errorDescription = error.message;
-          }
-
-          scheduleToast({
-            title: errorTitle,
-            description: errorDescription,
-            variant: "destructive",
-          });
-        },
       },
     },
   });
@@ -201,7 +139,37 @@ export default function InitQueryClient({
   );
 }
 
-interface ViolationError {
-  field: string;
-  message: string;
-}
+const errorDescriptionConverter = (response: string) => {
+  // response is the raw response.text()
+  if (!response) return response;
+
+  try {
+    const parsed = JSON.parse(response);
+
+    // If it's a string
+    if (typeof parsed === "string") return parsed;
+
+    // Pattern 1: { message: "..." }
+    if (typeof parsed?.message === "string") {
+      return parsed.message;
+    }
+
+    // Pattern 2: Constraint Violation
+    // {"title":"Constraint Violation","status":400,"violations":[{...}]}
+    if (Array.isArray(parsed?.violations)) {
+      const messages = parsed.violations
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .map((v: any) =>
+          typeof v?.message === "string" ? v.message : undefined,
+        )
+        .filter(Boolean) as string[];
+      if (messages.length > 0) return messages.join(", ");
+    }
+
+    // Fallback
+    return "Unknown error. Please try again.";
+  } catch {
+    // Not JSON, just return raw body
+    return "Unknown error. Please try again.";
+  }
+};

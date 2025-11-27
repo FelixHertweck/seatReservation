@@ -15,7 +15,7 @@ import { SeatMapModal } from "@/components/reservations/reservation-modal";
 import { ReservationCard } from "@/components/reservations/reservation-card";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter, useSearchParams } from "next/navigation";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface SelectedReservation {
   reservation: UserReservationResponseDto;
@@ -49,10 +49,8 @@ export default function EventsPage() {
       } else {
         router.replace("/reservations");
         setTimeout(() => {
-          toast({
-            title: t("reservationsPage.noReservationsFoundTitle"),
+          toast.error(t("reservationsPage.noReservationsFoundTitle"), {
             description: t("reservationsPage.noReservationsFoundDescription"),
-            variant: "destructive",
           });
         }, 500);
         return "";
