@@ -472,7 +472,6 @@ const EmailSubButtons = ({
                 setTimeout(() => {
                   router.push(`/${locale}/verify`);
                 }, 700);
-                return t("profilePage.confirmationEmailTitle");
               });
             }}
           >
