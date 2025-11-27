@@ -17,7 +17,7 @@ import {
   Loader2,
   Languages,
 } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { getApiEmailSeatmap } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import {
@@ -86,10 +86,8 @@ export default function EmailSeatmapPage() {
             ? err.message
             : t("emailSeatmap.error.failedToLoad");
         setError(errorMessage);
-        toast({
-          title: t("emailSeatmap.toast.errorTitle"),
+        toast.error(t("emailSeatmap.toast.errorTitle"), {
           description: errorMessage,
-          variant: "destructive",
         });
       } finally {
         setIsLoading(false);
@@ -126,8 +124,7 @@ export default function EmailSeatmapPage() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    toast({
-      title: t("emailSeatmap.toast.downloadStarted"),
+    toast.success(t("emailSeatmap.toast.downloadStarted"), {
       description: t("emailSeatmap.toast.downloadDescription"),
     });
   };

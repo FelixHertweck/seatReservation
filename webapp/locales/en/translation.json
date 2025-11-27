@@ -10,11 +10,6 @@
   "validation": {
     "usernameHint": "3-64 characters: letters, numbers, dots, underscores, hyphens"
   },
-  "error": {
-    "title": "Error",
-    "dataLoadFailed": "Failed to load data. Please try again.",
-    "anErrorOccurred": "An error occurred: "
-  },
   "notFound": {
     "title": "Page not found",
     "description": "The requested page could not be found.",
@@ -28,12 +23,18 @@
     "success": {
       "title": "Logout successful",
       "description": "You have been successfully logged out."
+    },
+    "error": {
+      "title": "Logout failed"
     }
   },
   "logoutAll": {
     "success": {
       "title": "Logout from all devices successful",
       "description": "You have been successfully logged out from all devices."
+    },
+    "error": {
+      "title": "Logout from all devices failed"
     }
   },
   "login": {
@@ -74,6 +75,10 @@
       "title": "Registration successful",
       "description": "Your account has been successfully created."
     },
+    "error": {
+      "title": "Registration failed",
+      "description": "An error occurred during registration. Please try again."
+    },
     "createAccountTitle": "Create account",
     "enterInfo": "Enter your information to create your account",
     "firstName": "First name",
@@ -110,24 +115,40 @@
         "success": {
           "title": "User Created",
           "description": "The user has been successfully created."
+        },
+        "error": {
+          "title": "User Creation Failed",
+          "default": "An error occurred while creating the user. Please try again."
         }
       },
       "import": {
         "success": {
           "title": "Users Imported",
           "description": "The users have been successfully imported."
+        },
+        "error": {
+          "title": "User Import Failed",
+          "default": "An error occurred while importing users. Please check the data and try again."
         }
       },
       "update": {
         "success": {
           "title": "User Updated",
           "description": "The user has been successfully updated."
+        },
+        "error": {
+          "title": "User Update Failed",
+          "default": "An error occurred while updating the user. Please try again."
         }
       },
       "delete": {
         "success": {
           "title": "User Deleted",
           "description": "The user has been successfully deleted."
+        },
+        "error": {
+          "title": "User Deletion Failed",
+          "default": "An error occurred while deleting the user(s). Please try again."
         }
       }
     }
@@ -167,18 +188,27 @@
         "success": {
           "title": "Event Created",
           "description": "The event has been successfully created."
+        },
+        "error": {
+          "title": "Event Creation Failed"
         }
       },
       "update": {
         "success": {
           "title": "Event Updated",
           "description": "The event has been successfully updated."
+        },
+        "error": {
+          "title": "Event Update Failed"
         }
       },
       "delete": {
         "success": {
           "title": "Event Deleted",
           "description": "The event has been successfully deleted."
+        },
+        "error": {
+          "title": "Event Deletion Failed"
         }
       }
     },
@@ -187,30 +217,45 @@
         "success": {
           "title": "Location Created",
           "description": "The location has been successfully created."
+        },
+        "error": {
+          "title": "Location Creation Failed"
         }
       },
       "update": {
         "success": {
           "title": "Location Updated",
           "description": "The location has been successfully updated."
+        },
+        "error": {
+          "title": "Location Update Failed"
         }
       },
       "delete": {
         "success": {
           "title": "Location Deleted",
           "description": "The location has been successfully deleted."
+        },
+        "error": {
+          "title": "Location Deletion Failed"
         }
       },
       "importWithSeats": {
         "success": {
           "title": "Location with Seats Imported",
           "description": "The location and its seats have been successfully imported."
+        },
+        "error": {
+          "title": "Location with Seats Import Failed"
         }
       },
       "importSeats": {
         "success": {
           "title": "Seats Imported",
           "description": "The seats have been successfully imported."
+        },
+        "error": {
+          "title": "Seats Import Failed"
         }
       }
     },
@@ -219,18 +264,27 @@
         "success": {
           "title": "Seat Created",
           "description": "The seat has been successfully created."
+        },
+        "error": {
+          "title": "Seat Creation Failed"
         }
       },
       "update": {
         "success": {
           "title": "Seat Updated",
           "description": "The seat has been successfully updated."
+        },
+        "error": {
+          "title": "Seat Update Failed"
         }
       },
       "delete": {
         "success": {
           "title": "Seat Deleted",
           "description": "The seat has been successfully deleted."
+        },
+        "error": {
+          "title": "Seat Deletion Failed"
         }
       }
     },
@@ -239,18 +293,27 @@
         "success": {
           "title": "Reservation Created",
           "description": "The reservation has been successfully created."
+        },
+        "error": {
+          "title": "Reservation Creation Failed"
         }
       },
       "delete": {
         "success": {
           "title": "Reservation Deleted",
           "description": "The reservation has been successfully deleted."
+        },
+        "error": {
+          "title": "Reservation Deletion Failed"
         }
       },
       "blockSeats": {
         "success": {
           "title": "Seats Blocked",
           "description": "The selected seats have been successfully blocked."
+        },
+        "error": {
+          "title": "Seat Blocking Failed"
         }
       }
     },
@@ -259,18 +322,27 @@
         "success": {
           "title": "Allowance Created",
           "description": "The reservation allowance has been successfully created."
+        },
+        "error": {
+          "title": "Allowance Creation Failed"
         }
       },
       "update": {
         "success": {
           "title": "Allowance Updated",
           "description": "The reservation allowance has been successfully updated."
+        },
+        "error": {
+          "title": "Allowance Update Failed"
         }
       },
       "delete": {
         "success": {
           "title": "Allowance Deleted",
           "description": "The reservation allowance has been successfully deleted."
+        },
+        "error": {
+          "title": "Allowance Deletion Failed"
         }
       }
     }
@@ -302,6 +374,7 @@
     "addTagPlaceholder": "Add new tag",
     "addButton": "Add",
     "saveChangesButton": "Save Changes",
+    "noSaveChangesButton": "No changes to save",
     "passwordSectionTitle": "Change Password",
     "changePassword": "Change Password",
     "cancelPasswordUpdate": "Cancel",
@@ -409,6 +482,14 @@
   },
   "emailVerification": {
     "title": "Email Verification",
+    "success": {
+      "title": "Email Verified",
+      "description": "Your email address has been successfully verified."
+    },
+    "error": {
+      "title": "Email Verification Failed",
+      "description": "An error occurred while verifying your email address."
+    },
     "enterCode": "Enter the 6-digit verification code sent to",
     "codeLabel": "Verification Code",
     "codeHint": "Enter the 6-digit code from your email",
@@ -426,7 +507,9 @@
     "confirmationEmailResentDescription": "A new confirmation email has been sent to your address.",
     "noEmailTitle": "No Email Address",
     "noEmailDescription": "You must first add an email address to your profile before you can verify it.",
-    "goToProfile": "Go to Profile"
+    "goToProfile": "Go to Profile",
+    "resendingConfirmationEmail": "Resending confirmation email...",
+    "resendConfirmationEmailFailed": "Failed to resend confirmation email."
   },
   "emailVerificationPrompt": {
     "title": "Email Verification Required",
@@ -462,7 +545,10 @@
   "common": {
     "cancel": "Cancel",
     "confirm": "Confirm",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "error": {
+      "default": "An error occurred. Please try again."
+    }
   },
   "checkin": {
     "title": "Check-In",
@@ -471,11 +557,34 @@
       "title": "Check-In Successful",
       "description": "The check-in has been processed successfully."
     },
+    "info": {
+      "success": {
+        "title": "Check-In information loaded",
+        "description": "Check-in information was retrieved successfully."
+      },
+      "error": {
+        "title": "Failed to load check-in information",
+        "description": "Unable to fetch the check-in information. Please try again."
+      }
+    },
+    "perform": {
+      "success": {
+        "title": "Check-In completed",
+        "description": "The check-in has been performed successfully."
+      },
+      "error": {
+        "title": "Failed to perform check-in",
+        "description": "An error occurred while processing the check-in. Please try again."
+      }
+    },
     "error": {
       "title": "Check-In Error",
       "default": "An error occurred during check-in. Please try again.",
       "noCheckInInfo": "No check-in information available.",
-      "scanningFailed": "Error scanning QR code."
+      "scanningFailed": "Error scanning QR code.",
+      "getInfoFailed": "Failed to get check-in info.",
+      "getInfoByUsernameFailed": "Failed to get check-in info by username.",
+      "processFailed": "Check-in process failed."
     },
     "eventSelector": {
       "label": "Select Event",
@@ -612,12 +721,18 @@
       "success": {
         "title": "Reservation Deleted",
         "description": "Your reservation has been successfully deleted."
+      },
+      "error": {
+        "title": "Reservation Deletion Failed"
       }
     },
     "create": {
       "success": {
         "title": "Reservation Created",
         "description": "Your reservation has been successfully created."
+      },
+      "error": {
+        "title": "Reservation Creation Failed"
       }
     }
   },
@@ -1042,8 +1157,10 @@
   "profile": {
     "update": {
       "success": {
-        "title": "Successful",
-        "description": "Profile was successfully updated"
+        "title": "Profile was successfully updated"
+      },
+      "error": {
+        "title": "Profile Update Failed"
       }
     }
   }

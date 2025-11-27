@@ -13,7 +13,7 @@ import { useT } from "@/lib/i18n/hooks";
 import { sanitizeFileName } from "@/lib/utils/filename";
 import { Download } from "lucide-react";
 import { useEffect, useState } from "react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import QRCode from "qrcode";
 import type { UserReservationResponseDto } from "@/api";
 import Image from "next/image";
@@ -66,10 +66,8 @@ export function QRCodeModal({
         setQrCodeDataUrl(dataUrl);
       } catch (error) {
         console.error("Error generating QR code:", error);
-        toast({
-          title: t("qrCodeModal.generationError"),
+        toast.error(t("qrCodeModal.generationError"), {
           description: t("qrCodeModal.generationErrorDescription"),
-          variant: "destructive",
         });
       }
     };
@@ -88,8 +86,7 @@ export function QRCodeModal({
     link.click();
     document.body.removeChild(link);
 
-    toast({
-      title: t("qrCodeModal.downloadStarted"),
+    toast.success(t("qrCodeModal.downloadStarted"), {
       description: t("qrCodeModal.qrCodeDownloading"),
     });
   };

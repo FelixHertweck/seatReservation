@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useT } from "@/lib/i18n/hooks";
 import {
   getApiAuthRegistrationStatusOptions,
@@ -16,9 +16,9 @@ import {
 } from "@/api/@tanstack/react-query.gen";
 import {
   Instant,
+  LoginLockedDto,
   type RegisterRequestDto,
   type RegistrationStatusDto,
-  type VerifyEmailCodeRequestDto,
 } from "@/api";
 import { ErrorWithResponse } from "@/components/init-query-client";
 import { useState } from "react";
@@ -43,29 +43,6 @@ export function useAuth() {
 
   const { mutateAsync: loginMutation } = useMutation({
     ...postApiAuthLoginMutation(),
-    onError: (error) => {
-      const errorWithType = error as ErrorWithResponse;
-      const errorResponse = errorWithType.response;
-      const status = errorResponse?.status;
-      if (status === 429) {
-        setRetryAfter(errorResponse?.data?.retryAfter ?? null);
-        toast({
-          title: t("login.error.title"),
-          description: t("login.error.tooManyAttemptsDescription"),
-          variant: "destructive",
-        });
-      }
-      // Only show toast for non-401 errors, let 401s be handled by the component
-      else if (status !== 401) {
-        toast({
-          title: t("login.error.title"),
-          description:
-            (error as ErrorWithResponse).message ||
-            t("login.error.description"),
-          variant: "destructive",
-        });
-      }
-    },
   });
 
   const login = async (
@@ -73,11 +50,42 @@ export function useAuth() {
     password: string,
     returnToUrl?: string | null,
   ) => {
-    await loginMutation({ body: { username, password } });
-    setRetryAfter(null);
-    await queryClient.invalidateQueries();
-    await refetchUser();
-    redirectUser(router, locale, user, returnToUrl);
+    const request = loginMutation({ body: { username, password } });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: async () => {
+        setRetryAfter(null);
+        await queryClient.invalidateQueries();
+        await refetchUser();
+        redirectUser(router, locale, user, returnToUrl);
+        return t("login.success.title");
+      },
+      error: (error: ErrorWithResponse) => {
+        const status = error.response?.status;
+        if (status === 429) {
+          try {
+            // parse json
+            const parsed: LoginLockedDto = JSON.parse(error.response?.rawData);
+            if (parsed?.retryAfter) {
+              setRetryAfter(parsed.retryAfter);
+            }
+          } catch (error) {
+            console.log(
+              "Failed to parse retryAfter from error response: ",
+              error,
+            );
+          }
+          return t("login.error.tooManyAttemptsDescription");
+        }
+        // Only show toast for non-401 errors, let 401s be handled by the component
+        else if (status !== 401) {
+          return t("login.error.description");
+        }
+        return t("common.error.default"); // Fallback
+      },
+    });
+
+    return request;
   };
 
   const { mutateAsync: registerMutation } = useMutation({
@@ -88,58 +96,86 @@ export function useAuth() {
     userData: RegisterRequestDto,
     returnToUrl?: string | null,
   ) => {
-    await registerMutation({ body: userData });
-    await queryClient.invalidateQueries();
-    await refetchUser();
-    redirectUser(router, locale, user, returnToUrl);
+    const request = registerMutation({ body: userData });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: async () => {
+        await queryClient.invalidateQueries();
+        await refetchUser();
+        redirectUser(router, locale, user, returnToUrl);
+        return t("register.success.title");
+      },
+      error: (error: ErrorWithResponse) => ({
+        message: t("register.error.title"),
+        description: error.response?.description ?? t("common.error.default"),
+      }),
+    });
+    return request;
   };
 
   const { mutateAsync: logoutMutation } = useMutation({
     ...postApiAuthLogoutMutation(),
-    onSuccess: async () => {
-      toast({
-        title: t("logout.success.title"),
-        description: t("logout.success.description"),
-      });
-    },
   });
 
   const logout = async () => {
-    await logoutMutation({});
-    router.push(`/${locale}/`);
-    router.refresh();
+    const request = logoutMutation({});
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: () => {
+        router.push(`/${locale}/`);
+        router.refresh();
+        return t("logout.success.title");
+      },
+      error: (error: ErrorWithResponse) => ({
+        message: t("logout.error.title"),
+        description: error.response?.description ?? t("common.error.default"),
+      }),
+    });
+
+    return request;
   };
 
   const { mutateAsync: logoutAllMutation } = useMutation({
     ...postApiAuthLogoutAllDevicesMutation(),
-    onSuccess: async () => {
-      toast({
-        title: t("logoutAll.success.title"),
-        description: t("logoutAll.success.description"),
-      });
-    },
   });
 
   const logoutAll = async () => {
-    await logoutAllMutation({});
-    router.push(`/${locale}/`);
-    router.refresh();
+    const request = logoutAllMutation({});
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: () => {
+        router.push(`/${locale}/`);
+        router.refresh();
+
+        return t("logoutAll.success.title");
+      },
+      error: (error: ErrorWithResponse) => ({
+        message: t("logoutAll.error.title"),
+        description: error.response?.description ?? t("common.error.default"),
+      }),
+    });
+    return request;
   };
 
   const { mutateAsync: verifyEmailMutation } = useMutation({
     ...postApiUserVerifyEmailCodeMutation(),
-    onSuccess: async () => {
-      await refetchUser();
-    },
   });
 
   const verifyEmail = async (code: string, returnToUrl?: string | null) => {
-    const verificationDto: VerifyEmailCodeRequestDto = {
-      verificationCode: code,
-    };
-    await verifyEmailMutation({ body: verificationDto });
-    await queryClient.invalidateQueries();
-    redirectUser(router, locale, user, returnToUrl);
+    const request = verifyEmailMutation({ body: { verificationCode: code } });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: async () => {
+        await queryClient.invalidateQueries();
+        redirectUser(router, locale, user, returnToUrl);
+        return t("emailVerification.success.title");
+      },
+      error: (error: ErrorWithResponse) => ({
+        message: t("emailVerification.error.title"),
+        description: error.response?.description ?? t("common.error.default"),
+      }),
+    });
+    return request;
   };
 
   const resendConfirmationMutation = useMutation({
@@ -147,11 +183,16 @@ export function useAuth() {
   });
 
   const resendConfirmation = async (): Promise<void> => {
-    await resendConfirmationMutation.mutateAsync({});
-    toast({
-      title: t("email.confirmationEmailSentTitle"),
-      description: t("email.confirmationEmailSentDescription"),
+    const request = resendConfirmationMutation.mutateAsync({});
+    toast.promise(request, {
+      loading: t("emailVerification.resendingConfirmationEmail"),
+      success: t("email.confirmationEmailSentTitle"),
+      error: (error: ErrorWithResponse) => ({
+        message: t("emailVerification.resendConfirmationEmailFailed"),
+        description: error.response?.description ?? t("common.error.default"),
+      }),
     });
+    return request;
   };
 
   const {

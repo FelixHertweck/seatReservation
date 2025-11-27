@@ -10,7 +10,7 @@ import {
   CardDescription,
   CardHeader,
 } from "@/components/ui/card";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Camera, CameraOff, Loader2, QrCode } from "lucide-react";
 
 interface QrCodeScannerProps {
@@ -63,10 +63,7 @@ export function QrCodeScanner({
       }
     } catch (error) {
       console.error("Error accessing camera:", error);
-      toast({
-        title: t("checkin.qrScanner.cameraError"),
-        variant: "destructive",
-      });
+      toast.error(t("checkin.qrScanner.cameraError"));
       setIsCameraLoading(false);
     }
   };

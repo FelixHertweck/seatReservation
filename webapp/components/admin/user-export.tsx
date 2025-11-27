@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Download } from "lucide-react";
 import { useAdmin } from "@/hooks/use-admin";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { customSerializer } from "@/lib/jsonBodySerializer";
 import { useT } from "@/lib/i18n/hooks";
 
@@ -21,10 +21,8 @@ export function UserExport() {
 
   const handleExport = () => {
     if (!users || users.length === 0) {
-      toast({
-        title: t("userExport.noUsersToExportTitle"),
+      toast.error(t("userExport.noUsersToExportTitle"), {
         description: t("userExport.noUsersToExportDescription"),
-        variant: "destructive",
       });
       return;
     }
@@ -42,16 +40,13 @@ export function UserExport() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      toast({
-        title: t("userExport.exportSuccessTitle"),
+      toast.success(t("userExport.exportSuccessTitle"), {
         description: t("userExport.exportSuccessDescription"),
       });
     } catch (error) {
       console.error(t("userExport.exportErrorLog"), error);
-      toast({
-        title: t("userExport.exportFailedTitle"),
+      toast.error(t("userExport.exportFailedTitle"), {
         description: t("userExport.exportFailedDescription"),
-        variant: "destructive",
       });
     }
   };

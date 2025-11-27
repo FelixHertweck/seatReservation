@@ -11,10 +11,9 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { X } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import type { UserProfileUpdateDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
-import { useAuth } from "@/hooks/use-auth";
 import { useProfileUnsavedChanges } from "@/hooks/use-profile-unsaved-changes";
 import { useRouter, useParams } from "next/navigation";
 
@@ -32,7 +31,6 @@ export default function ProfilePage() {
   const locale = params.locale as string;
 
   const { user, updateProfile, isLoading } = useProfile();
-  const { isLoggedIn: isAuthenticated } = useAuth();
 
   const initialFormData: FormData = {
     firstname: user?.firstname || "",
@@ -122,20 +120,10 @@ export default function ProfilePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isAuthenticated) {
-      toast({
-        title: t("profilePage.authRequiredTitle"),
-        description: t("profilePage.authRequiredDescription"),
-        variant: "destructive",
-      });
-      return;
-    }
 
     if (showPasswordSection && !isPasswordUpdateValid) {
-      toast({
-        title: t("profilePage.passwordValidationErrorTitle"),
+      toast.error(t("profilePage.passwordValidationErrorTitle"), {
         description: t("profilePage.passwordValidationErrorDescription"),
-        variant: "destructive",
       });
       return;
     }
@@ -146,11 +134,6 @@ export default function ProfilePage() {
     };
 
     await updateProfile(updatedProfile);
-    console.log("Profile updated successfully");
-    toast({
-      title: t("profilePage.profileUpdatedTitle"),
-      description: t("profilePage.profileUpdatedDescription"),
-    });
 
     setOriginalFormData(formData);
     setHasUnsavedChanges(false);
@@ -162,8 +145,7 @@ export default function ProfilePage() {
     }
 
     if (formData.email !== originalEmail) {
-      toast({
-        title: t("email.confirmationEmailSentTitle"),
+      toast.info(t("email.confirmationEmailSentTitle"), {
         description: t("email.confirmationEmailSentDescription"),
       });
       setOriginalEmail(formData.email);
@@ -409,6 +391,12 @@ export default function ProfilePage() {
                     ? "bg-primary hover:bg-primary/90 text-primary-foreground"
                     : "bg-muted hover:bg-muted/80 text-muted-foreground"
                 }`}
+                aria-label={
+                  !hasUnsavedChanges
+                    ? t("profilePage.noSaveChangesButton")
+                    : t("profilePage.saveChangesButton")
+                }
+                disabled={!hasUnsavedChanges}
               >
                 {t("profilePage.saveChangesButton")}
               </Button>
@@ -450,14 +438,8 @@ const EmailSubButtons = ({
             type="button"
             className="text-xs"
             size={"sm"}
-            onClick={async () => {
-              await resendConfirmation();
-              toast({
-                title: t("profilePage.confirmationEmailResentTitle"),
-                description: t(
-                  "profilePage.confirmationEmailResentDescription",
-                ),
-              });
+            onClick={() => {
+              resendConfirmation();
             }}
           >
             {t("profilePage.resendButton")}
@@ -485,15 +467,12 @@ const EmailSubButtons = ({
             type="button"
             className="text-xs"
             size={"sm"}
-            onClick={async () => {
-              await resendConfirmation();
-              toast({
-                title: t("profilePage.confirmationEmailTitle"),
-                description: t("profilePage.confirmationEmailDescription"),
+            onClick={() => {
+              resendConfirmation().then(() => {
+                setTimeout(() => {
+                  router.push(`/${locale}/verify`);
+                }, 700);
               });
-              setTimeout(() => {
-                router.push(`/${locale}/verify`);
-              }, 700);
             }}
           >
             {t("profilePage.sendConfirmationEmailButton")}

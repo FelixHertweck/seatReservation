@@ -10,11 +10,6 @@
   "validation": {
     "usernameHint": "3-64 Zeichen: Buchstaben, Zahlen, Punkte, Unterstriche, Bindestriche"
   },
-  "error": {
-    "title": "Fehler",
-    "dataLoadFailed": "Daten konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
-    "anErrorOccurred": "Ein Fehler ist aufgetreten: "
-  },
   "notFound": {
     "title": "Seite nicht gefunden",
     "description": "Die angeforderte Seite konnte nicht gefunden werden.",
@@ -28,12 +23,18 @@
     "success": {
       "title": "Logout erfolgreich",
       "description": "Sie wurden erfolgreich abgemeldet."
+    },
+    "error": {
+      "title": "Logout fehlgeschlagen"
     }
   },
   "logoutAll": {
     "success": {
       "title": "Logout von allen Geräten erfolgreich",
       "description": "Sie wurden erfolgreich von allen Geräten abgemeldet."
+    },
+    "error": {
+      "title": "Logout von allen Geräten fehlgeschlagen"
     }
   },
   "login": {
@@ -74,6 +75,10 @@
       "title": "Registrierung erfolgreich",
       "description": "Ihr Konto wurde erfolgreich erstellt."
     },
+    "error": {
+      "title": "Registrierung fehlgeschlagen",
+      "description": "Bei der Registrierung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
+    },
     "createAccountTitle": "Konto erstellen",
     "enterInfo": "Geben Sie Ihre Informationen ein, um Ihr Konto zu erstellen",
     "firstName": "Vorname",
@@ -110,24 +115,40 @@
         "success": {
           "title": "Benutzer erstellt",
           "description": "Der Benutzer wurde erfolgreich erstellt."
+        },
+        "error": {
+          "title": "Benutzererstellung fehlgeschlagen",
+          "default": "Beim Erstellen des Benutzers ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
         }
       },
       "import": {
         "success": {
           "title": "Benutzer importiert",
           "description": "Die Benutzer wurden erfolgreich importiert."
+        },
+        "error": {
+          "title": "Benutzerimport fehlgeschlagen",
+          "default": "Beim Importieren der Benutzer ist ein Fehler aufgetreten. Bitte prüfen Sie die Daten und versuchen Sie es erneut."
         }
       },
       "update": {
         "success": {
           "title": "Benutzer aktualisiert",
           "description": "Der Benutzer wurde erfolgreich aktualisiert."
+        },
+        "error": {
+          "title": "Benutzeraktualisierung fehlgeschlagen",
+          "default": "Beim Aktualisieren des Benutzers ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
         }
       },
       "delete": {
         "success": {
           "title": "Benutzer gelöscht",
           "description": "Der Benutzer wurde erfolgreich gelöscht."
+        },
+        "error": {
+          "title": "Benutzerlöschung fehlgeschlagen",
+          "default": "Beim Löschen des/der Benutzer ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
         }
       }
     }
@@ -167,18 +188,27 @@
         "success": {
           "title": "Veranstaltung erstellt",
           "description": "Die Veranstaltung wurde erfolgreich erstellt."
+        },
+        "error": {
+          "title": "Veranstaltungserstellung fehlgeschlagen"
         }
       },
       "update": {
         "success": {
           "title": "Veranstaltung aktualisiert",
           "description": "Die Veranstaltung wurde erfolgreich aktualisiert."
+        },
+        "error": {
+          "title": "Veranstaltungsaktualisierung fehlgeschlagen"
         }
       },
       "delete": {
         "success": {
           "title": "Veranstaltung gelöscht",
           "description": "Die Veranstaltung wurde erfolgreich gelöscht."
+        },
+        "error": {
+          "title": "Veranstaltungslöschung fehlgeschlagen"
         }
       }
     },
@@ -187,30 +217,45 @@
         "success": {
           "title": "Standort erstellt",
           "description": "Der Standort wurde erfolgreich erstellt."
+        },
+        "error": {
+          "title": "Standorterstellung fehlgeschlagen"
         }
       },
       "update": {
         "success": {
           "title": "Standort aktualisiert",
           "description": "Der Standort wurde erfolgreich aktualisiert."
+        },
+        "error": {
+          "title": "Standortaktualisierung fehlgeschlagen"
         }
       },
       "delete": {
         "success": {
           "title": "Standort gelöscht",
           "description": "Der Standort wurde erfolgreich gelöscht."
+        },
+        "error": {
+          "title": "Standortlöschung fehlgeschlagen"
         }
       },
       "importWithSeats": {
         "success": {
           "title": "Standort mit Plätzen importiert",
           "description": "Der Standort und die zugehörigen Plätze wurden erfolgreich importiert."
+        },
+        "error": {
+          "title": "Import von Standort mit Plätzen fehlgeschlagen"
         }
       },
       "importSeats": {
         "success": {
           "title": "Plätze importiert",
           "description": "Die Plätze wurden erfolgreich importiert."
+        },
+        "error": {
+          "title": "Import von Plätzen fehlgeschlagen"
         }
       }
     },
@@ -219,18 +264,27 @@
         "success": {
           "title": "Platz erstellt",
           "description": "Der Platz wurde erfolgreich erstellt."
+        },
+        "error": {
+          "title": "Platzerstellung fehlgeschlagen"
         }
       },
       "update": {
         "success": {
           "title": "Platz aktualisiert",
           "description": "Der Platz wurde erfolgreich aktualisiert."
+        },
+        "error": {
+          "title": "Platzaktualisierung fehlgeschlagen"
         }
       },
       "delete": {
         "success": {
           "title": "Platz gelöscht",
           "description": "Der Platz wurde erfolgreich gelöscht."
+        },
+        "error": {
+          "title": "Platzlöschung fehlgeschlagen"
         }
       }
     },
@@ -239,18 +293,27 @@
         "success": {
           "title": "Reservierung erstellt",
           "description": "Die Reservierung wurde erfolgreich erstellt."
+        },
+        "error": {
+          "title": "Reservierungserstellung fehlgeschlagen"
         }
       },
       "delete": {
         "success": {
           "title": "Reservierung gelöscht",
           "description": "Die Reservierung wurde erfolgreich gelöscht."
+        },
+        "error": {
+          "title": "Reservierungslöschung fehlgeschlagen"
         }
       },
       "blockSeats": {
         "success": {
           "title": "Plätze blockiert",
           "description": "Die ausgewählten Plätze wurden erfolgreich blockiert."
+        },
+        "error": {
+          "title": "Blockieren von Plätzen fehlgeschlagen"
         }
       }
     },
@@ -259,18 +322,27 @@
         "success": {
           "title": "Kontingent erstellt",
           "description": "Das Reservierungskontingent wurde erfolgreich erstellt."
+        },
+        "error": {
+          "title": "Kontingenterstellung fehlgeschlagen"
         }
       },
       "update": {
         "success": {
           "title": "Kontingent aktualisiert",
           "description": "Das Reservierungskontingent wurde erfolgreich aktualisiert."
+        },
+        "error": {
+          "title": "Kontingentaktualisierung fehlgeschlagen"
         }
       },
       "delete": {
         "success": {
           "title": "Kontingent gelöscht",
           "description": "Das Reservierungskontingent wurde erfolgreich gelöscht."
+        },
+        "error": {
+          "title": "Kontingentlöschung fehlgeschlagen"
         }
       }
     }
@@ -302,6 +374,7 @@
     "addTagPlaceholder": "Neuen Tag hinzufügen",
     "addButton": "Hinzufügen",
     "saveChangesButton": "Änderungen speichern",
+    "noSaveChangesButton": "Keine Änderungen zum Speichern",
     "passwordSectionTitle": "Passwort ändern",
     "changePassword": "Passwort ändern",
     "cancelPasswordUpdate": "Abbrechen",
@@ -409,6 +482,14 @@
   },
   "emailVerification": {
     "title": "E-Mail-Verifizierung",
+    "success": {
+      "title": "E-Mail verifiziert",
+      "description": "Ihre E-Mail-Adresse wurde erfolgreich verifiziert."
+    },
+    "error": {
+      "title": "E-Mail-Verifizierung fehlgeschlagen",
+      "description": "Bei der Verifizierung Ihrer E-Mail-Adresse ist ein Fehler aufgetreten."
+    },
     "enterCode": "Geben Sie den 6-stelligen Verifizierungscode ein, der an",
     "codeLabel": "Verifizierungscode",
     "codeHint": "Geben Sie den 6-stelligen Code aus Ihrer E-Mail ein",
@@ -426,7 +507,9 @@
     "confirmationEmailResentDescription": "Eine neue Bestätigungs-E-Mail wurde an Ihre Adresse gesendet.",
     "noEmailTitle": "Keine E-Mail-Adresse",
     "noEmailDescription": "Sie müssen zuerst eine E-Mail-Adresse in Ihrem Profil hinterlegen, bevor Sie sie verifizieren können.",
-    "goToProfile": "Zum Profil"
+    "goToProfile": "Zum Profil",
+    "resendingConfirmationEmail": "Bestätigungs-E-Mail wird erneut gesendet...",
+    "resendConfirmationEmailFailed": "Fehler beim erneuten Senden der Bestätigungs-E-Mail."
   },
   "emailVerificationPrompt": {
     "title": "E-Mail-Verifizierung erforderlich",
@@ -495,12 +578,18 @@
       "success": {
         "title": "Reservierung gelöscht",
         "description": "Ihre Reservierung wurde erfolgreich gelöscht."
+      },
+      "error": {
+        "title": "Reservierungslöschung fehlgeschlagen"
       }
     },
     "create": {
       "success": {
         "title": "Reservierung erstellt",
         "description": "Ihre Reservierung wurde erfolgreich erstellt."
+      },
+      "error": {
+        "title": "Reservierungserstellung fehlgeschlagen"
       }
     }
   },
@@ -925,7 +1014,10 @@
   "common": {
     "cancel": "Abbrechen",
     "confirm": "Bestätigen",
-    "loading": "Wird geladen..."
+    "loading": "Wird geladen...",
+    "error": {
+      "default": "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
+    }
   },
   "checkin": {
     "title": "Check-In",
@@ -934,11 +1026,34 @@
       "title": "Check-In erfolgreich",
       "description": "Der Check-In wurde erfolgreich verarbeitet."
     },
+    "info": {
+      "success": {
+        "title": "Check-In-Informationen geladen",
+        "description": "Die Check-In-Informationen wurden erfolgreich abgerufen."
+      },
+      "error": {
+        "title": "Abrufen der Check-In-Informationen fehlgeschlagen",
+        "description": "Die Check-In-Informationen konnten nicht abgerufen werden. Bitte versuchen Sie es erneut."
+      }
+    },
+    "perform": {
+      "success": {
+        "title": "Check-In abgeschlossen",
+        "description": "Der Check-In wurde erfolgreich durchgeführt."
+      },
+      "error": {
+        "title": "Check-In fehlgeschlagen",
+        "description": "Beim Verarbeiten des Check-Ins ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
+      }
+    },
     "error": {
       "title": "Check-In Fehler",
       "default": "Bei der Verarbeitung des Check-In ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
       "noCheckInInfo": "Keine Check-In Informationen verfügbar.",
-      "scanningFailed": "Fehler beim Scannen des QR-Codes."
+      "scanningFailed": "Fehler beim Scannen des QR-Codes.",
+      "getInfoFailed": "Abrufen der Check-In Informationen fehlgeschlagen.",
+      "getInfoByUsernameFailed": "Abrufen der Check-In Informationen nach Benutzername fehlgeschlagen.",
+      "processFailed": "Check-In Prozess fehlgeschlagen."
     },
     "eventSelector": {
       "label": "Event auswählen",
@@ -1042,8 +1157,10 @@
   "profile": {
     "update": {
       "success": {
-        "title": "Erfolgreich",
-        "description": "Profil wurde erfolgreich aktualisiert"
+        "title": "Profil wurde erfolgreich aktualisiert"
+      },
+      "error": {
+        "title": "Profilaktualisierung fehlgeschlagen"
       }
     }
   }
