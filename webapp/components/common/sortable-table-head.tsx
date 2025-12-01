@@ -4,8 +4,7 @@ import { cn } from "@/lib/utils";
 
 export type SortDirection = "asc" | "desc" | null;
 
-interface SortableTableHeadProps
-  extends React.ThHTMLAttributes<HTMLTableCellElement> {
+interface SortableTableHeadProps extends React.ThHTMLAttributes<HTMLTableCellElement> {
   sortKey?: string;
   currentSortKey?: string | null;
   currentSortDirection?: SortDirection;
