@@ -2,6 +2,13 @@
 
 import type { GetApiManagerEventlocationsResponse, GetApiManagerEventsByIdResponse, GetApiManagerEventsResponse, GetApiManagerReservationAllowanceByIdResponse, GetApiManagerReservationAllowanceEventByEventIdResponse, GetApiManagerReservationAllowanceResponse, GetApiManagerReservationsByIdResponse, GetApiManagerReservationsEventByIdResponse, GetApiManagerReservationsResponse, GetApiManagerSeatsByIdResponse, GetApiManagerSeatsResponse, GetApiSupervisorCheckinEventsResponse, GetApiUserEventsResponse, GetApiUserLocationsResponse, GetApiUserReservationsByIdResponse, GetApiUserReservationsResponse, GetApiUsersAdminResponse, GetApiUsersManagerResponse, GetApiUsersMeResponse, PostApiManagerEventlocationsImportByIdResponse, PostApiManagerEventlocationsImportResponse, PostApiManagerEventlocationsResponse, PostApiManagerEventsResponse, PostApiManagerReservationAllowanceResponse, PostApiManagerReservationsBlockResponse, PostApiManagerReservationsResponse, PostApiManagerSeatsResponse, PostApiSupervisorCheckinInfoByUsernameResponse, PostApiSupervisorCheckinInfoResponse, PostApiUserReservationsResponse, PostApiUsersAdminImportResponse, PutApiManagerEventlocationsByIdResponse, PutApiManagerEventsByIdResponse, PutApiManagerReservationAllowanceResponse, PutApiManagerSeatsByIdResponse, PutApiUsersAdminByIdResponse, PutApiUsersMeResponse } from './types.gen';
 
+const limitedUserInfoDtoSchemaResponseTransformer = (data: any) => {
+    if (data.id) {
+        data.id = BigInt(data.id.toString());
+    }
+    return data;
+};
+
 const eventLocationResponseDtoSchemaResponseTransformer = (data: any) => {
     if (data.id) {
         data.id = BigInt(data.id.toString());
@@ -14,13 +21,6 @@ const eventLocationResponseDtoSchemaResponseTransformer = (data: any) => {
             BigInt(item.toString());
             return item;
         });
-    }
-    return data;
-};
-
-const limitedUserInfoDtoSchemaResponseTransformer = (data: any) => {
-    if (data.id) {
-        data.id = BigInt(data.id.toString());
     }
     return data;
 };
@@ -47,6 +47,18 @@ export const postApiManagerEventlocationsImportByIdResponseTransformer = async (
 
 export const putApiManagerEventlocationsByIdResponseTransformer = async (data: any): Promise<PutApiManagerEventlocationsByIdResponse> => {
     data = eventLocationResponseDtoSchemaResponseTransformer(data);
+    return data;
+};
+
+const instantSchemaResponseTransformer = (data: any) => {
+    data = new Date(data);
+    return data;
+};
+
+const seatStatusDtoSchemaResponseTransformer = (data: any) => {
+    if (data.seatId) {
+        data.seatId = BigInt(data.seatId.toString());
+    }
     return data;
 };
 
@@ -89,18 +101,6 @@ const eventResponseDtoSchemaResponseTransformer = (data: any) => {
             BigInt(item.toString());
             return item;
         });
-    }
-    return data;
-};
-
-const instantSchemaResponseTransformer = (data: any) => {
-    data = new Date(data);
-    return data;
-};
-
-const seatStatusDtoSchemaResponseTransformer = (data: any) => {
-    if (data.seatId) {
-        data.seatId = BigInt(data.seatId.toString());
     }
     return data;
 };
@@ -163,6 +163,23 @@ export const getApiManagerReservationAllowanceByIdResponseTransformer = async (d
     return data;
 };
 
+const userDtoSchemaResponseTransformer = (data: any) => {
+    if (data.id) {
+        data.id = BigInt(data.id.toString());
+    }
+    return data;
+};
+
+const seatDtoSchemaResponseTransformer = (data: any) => {
+    if (data.id) {
+        data.id = BigInt(data.id.toString());
+    }
+    if (data.locationId) {
+        data.locationId = BigInt(data.locationId.toString());
+    }
+    return data;
+};
+
 const reservationResponseDtoSchemaResponseTransformer = (data: any) => {
     if (data.id) {
         data.id = BigInt(data.id.toString());
@@ -178,23 +195,6 @@ const reservationResponseDtoSchemaResponseTransformer = (data: any) => {
     }
     if (data.reservationDateTime) {
         data.reservationDateTime = instantSchemaResponseTransformer(data.reservationDateTime);
-    }
-    return data;
-};
-
-const userDtoSchemaResponseTransformer = (data: any) => {
-    if (data.id) {
-        data.id = BigInt(data.id.toString());
-    }
-    return data;
-};
-
-const seatDtoSchemaResponseTransformer = (data: any) => {
-    if (data.id) {
-        data.id = BigInt(data.id.toString());
-    }
-    if (data.locationId) {
-        data.locationId = BigInt(data.locationId.toString());
     }
     return data;
 };
@@ -262,16 +262,6 @@ export const getApiSupervisorCheckinEventsResponseTransformer = async (data: any
     return data;
 };
 
-const checkInInfoResponseDtoSchemaResponseTransformer = (data: any) => {
-    if (data.reservations) {
-        data.reservations = data.reservations.map((item: any) => supervisorReservationResponseDtoSchemaResponseTransformer(item));
-    }
-    if (data.user) {
-        data.user = limitedUserInfoDtoSchemaResponseTransformer(data.user);
-    }
-    return data;
-};
-
 const supervisorReservationResponseDtoSchemaResponseTransformer = (data: any) => {
     if (data.id) {
         data.id = BigInt(data.id.toString());
@@ -290,6 +280,16 @@ const supervisorReservationResponseDtoSchemaResponseTransformer = (data: any) =>
     }
     if (data.reservationDate) {
         data.reservationDate = instantSchemaResponseTransformer(data.reservationDate);
+    }
+    return data;
+};
+
+const checkInInfoResponseDtoSchemaResponseTransformer = (data: any) => {
+    if (data.reservations) {
+        data.reservations = data.reservations.map((item: any) => supervisorReservationResponseDtoSchemaResponseTransformer(item));
+    }
+    if (data.user) {
+        data.user = limitedUserInfoDtoSchemaResponseTransformer(data.user);
     }
     return data;
 };
