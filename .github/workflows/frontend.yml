@@ -94,7 +94,7 @@ jobs:
               npm run build:static
 
       - name: Upload build static artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: frontend-build-static
           path: webapp/out
@@ -105,7 +105,7 @@ jobs:
               npm run build
 
       - name: Upload build standalone artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: frontend-build-standalone
           include-hidden-files: true
