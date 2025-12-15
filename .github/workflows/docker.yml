@@ -53,7 +53,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Download packaged application
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: ${{ inputs.build-artifact-name }}
           path: ${{ inputs.build-artifact-path }}
