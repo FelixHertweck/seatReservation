@@ -21,7 +21,7 @@
     <skipITs>true</skipITs>
     <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/jacoco-report/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     <mockito.version>5.20.0</mockito.version>
-    <owasp-java-html-sanitizer.version>20240325.1</owasp-java-html-sanitizer.version>
+    <owasp-java-html-sanitizer.version>20260102.1</owasp-java-html-sanitizer.version>
     <com.google.zxing.version>3.5.4</com.google.zxing.version>
   </properties>
 
