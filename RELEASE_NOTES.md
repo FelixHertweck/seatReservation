@@ -1,3 +1,95 @@
+# Release 0.0.8
+
+This release introduces comprehensive supervisor and check-in functionality with QR codes, Progressive Web App (PWA) support, enhanced notification system with improved toasts, user management improvements, and various refactorings and security enhancements.
+
+## New Features
+- **Supervisor & Check-In**: Added complete supervisor functionality including check-in codes generation, QR code support, and live reservation status tracking.
+- **Live View**: Implemented live view functionality to display real-time reservation status with WebSocket support.
+- **PWA Support**: Added manifest file for Progressive Web App support, enabling offline functionality and app-like experience.
+- **User Management**: Enhanced user deletion with bulk delete support via IDs query parameter; added user list exposure to manager UI.
+- **Allowance Management**: New dedicated allowance management interface for supervisors and managers.
+- **Registration Control**: Added ability to enable/disable user registration at the application level.
+- **Refresh Token**: Implemented refresh token functionality allowing users to logout from all devices simultaneously.
+- **QR Code in Emails**: Integrated QR code generation into email service for reservation check-ins.
+- **Email Enhancements**: Replaced SVG with PNG in email seatmaps for better compatibility and added interactive webview support.
+- **Seat Entrance Field**: Added entrance field to seat management for better seat identification and organization.
+- **Sortable Tables**: Implemented sortable tables with truncation feature in management UI.
+- **Enter Key Handling**: Added Enter key handling for form submission in modals.
+- **Username Validation**: Added username validation hint with tooltip and info icon.
+
+## Fixes
+- **DevContainer Setup**: Fixed devcontainer configuration with proper application-devcontainer.yaml and corrected JDBC URL format.
+- **Security**: Updated authentication to use Quarkus SecurityIdentity and restricted EventResource & EventLocationResource to USER role.
+- **Reservation Code**: Corrected update endpoint authorization to allow only USER role.
+- **Email Service**: Transitioned to ReactiveMailer with improved error handling and removed unnecessary transactional annotations from scheduled methods.
+- **Token Management**: Delete refresh token from database on logout to prevent unauthorized access.
+- **CSV Export**: Updated line terminator to CRLF for RFC compliance.
+- **JWT Exceptions**: Enhanced GlobalExceptionHandler to manage JWT invalid exceptions by removing cookies.
+- **Allowance Count**: Fixed restoration of allowance count on manager reservation deletion.
+- **Exception Handling**: Replaced generic IllegalArgumentException with VerificationCodeNotFoundException and moved ReservationNotFoundException to common.exception package.
+- **Email Notifications**: Removed BCC from event reminder emails.
+- **Manifest Route**: Ensured manifest route is treated as static for static build.
+- **Email Address Skip**: Moved null/empty email address skip log from WARN to DEBUG.
+
+## Refactored
+- **Sidebar**: Renamed and refactored to show icons when closed; moved custom-ui components out of ui folder to avoid shadcn conflicts.
+- **Component Library**: Updated components to latest shadcn version with improved accessibility and layout adjustments.
+- **Type Safety**: Replaced 'any' type with 'unknown' and specific types throughout codebase.
+- **Package Structure**: Renamed 'ressource' to 'resource' to fix typo in management package.
+- **Token Refresh**: Improved toast scheduling and trigger login handling in InitQueryClient with better error logging (console.warn instead of console.error).
+- **Authentication**: Centralized redirect logic with redirectUser utility and updated auth hooks/pages accordingly.
+- **Tests**: Updated test files to align with check-in and reservation changes; replaced Long with primitive long for event IDs.
+- **User Update Process**: Refactored user and admin update process for better consistency.
+- **Import Process**: Improved CSV format configuration to avoid deprecated methods.
+- **Toast Notifications**: Replaced custom toast implementation with shadcn Sonner toast and improved logging with toast.promise.
+- **OpenAPI Client**: Updated generated OpenAPI API client/types for check-in & supervisor endpoints.
+
+## Style
+- **UI/UX**: Updated profile & reservations layouts; enhanced responsive widths in management UI.
+- **Components**: Minor accessibility and layout adjustments across webapp components.
+- **Management UI**: Adapted management UI for new fields and user list support.
+
+## Build
+- **Dependencies**: Bumped quarkus.platform.version from 3.28.2 to 3.31.1.
+- **Dependencies**: Bumped postgres from 17-alpine to 18-alpine.
+- **Dependencies**: Bumped prom/prometheus from v3.6.0 to v3.9.1.
+- **Dependencies**: Bumped grafana/grafana from 12.0 to 12.3.
+- **Dependencies**: Bumped @types/node from 24.10.0 to 25.1.0 in /webapp.
+- **Dependencies**: Bumped @hey-api/openapi-ts from 0.86.1 to 0.90.10 in /webapp.
+- **Dependencies**: Bumped i18next from 25.5.2 to 25.8.0 in /webapp.
+- **Dependencies**: Bumped lucide-react from 0.546.0 to 0.563.0 in /webapp.
+- **Dependencies**: Bumped next from 15.5.0 to 16.1.1 in /webapp.
+- **Dependencies**: Bumped node from 24-alpine to 25-alpine in /webapp.
+- **Dependencies**: Bumped react-hook-form from 7.64.0 to 7.66.0 in /webapp.
+- **Dependencies**: Bumped react-i18next from 16.0.0 to 16.5.0 in /webapp.
+- **Dependencies**: Bumped prettier from 3.6.2 to 3.8.1 in /webapp.
+- **Dependencies**: Bumped eslint from 9.37.0 to 9.39.0 in /webapp.
+- **Dependencies**: Bumped com.googlecode.owasp-java-html-sanitizer for improved security.
+- **Dependencies**: Bumped ubi9/openjdk-21 from 1.23 to 1.24 in /src/main/docker.
+- **Dependencies**: Bumped io.quarkiverse.openpdf:quarkus-openpdf.
+- **Dependencies**: Bumped org.apache.xmlgraphics batik libraries (codec and transcoder).
+- **Dependencies**: Bumped com.google.zxing.version from 3.5.3 to 3.5.4 for QR code support.
+- **Dependencies**: Bumped tailwind-merge from 3.3.1 to 3.4.0 in /webapp.
+- **Dependencies**: Bumped org.codehaus.mojo:exec-maven-plugin and license-maven-plugin.
+- **Dependencies**: Bumped com.diffplug.spotless:spotless-maven-plugin.
+- **Dependencies**: Bumped org.jacoco:jacoco-maven-plugin from 0.8.13 to 0.8.14.
+- **Dependencies**: Bumped actions dependencies (checkout, upload-artifact, download-artifact, setup-node, sigstore/cosign-installer).
+- **Dependencies**: Added ZXing, websockets and jsr310 dependencies for check-in and QR code support.
+- **Dependencies**: Added sanitizeFileName utility for safe file downloads.
+- **Dependabot Configuration**: Added docker-compose support to dependabot configuration.
+- **Workflow Permissions**: Updated permissions in workflow files for cleanup and build processes.
+
+## Additional Changes
+- **Email Reminders**: Implemented configurable reminder email send date per event with programmatic scheduling.
+- **Documentation**: Updated OpenAPI specification and generated TypeScript types for new check-in and supervisor endpoints.
+- **Internationalization**: Added check-in & liveview translations and misc translation improvements.
+- **API Documentation**: Added @ApiResponse annotations and missing javadoc.
+- **Configuration**: Updated application.yaml and import data; improved configuration setup for different environments including devcontainer support.
+- **Bug Fixes**: Enhanced error handling and response body validation in email tests.
+- **Scheduled Tasks**: Implemented scheduled cleanup for expired email verifications and refresh tokens.
+
+---
+
 # Release 0.0.7
 
 This release focuses on improving the user experience by enhancing deletion functionalities, fixing several bugs related to event and reservation management, and refining the overall UI responsiveness.
