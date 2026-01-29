@@ -140,7 +140,7 @@ services:
 
 
   grafana:
-    image: grafana/grafana:12.0
+    image: grafana/grafana:12.3
 
     volumes:
       - grafana_data:/var/lib/grafana
