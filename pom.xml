@@ -17,7 +17,7 @@
     <quarkus.platform.version>3.31.1</quarkus.platform.version>
     <surefire-plugin.version>3.5.4</surefire-plugin.version>
     <spotless.version>3.2.1</spotless.version>
-    <license-plugin.version>2.7.0</license-plugin.version>
+    <license-plugin.version>2.7.1</license-plugin.version>
     <skipITs>true</skipITs>
     <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/jacoco-report/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     <mockito.version>5.20.0</mockito.version>
