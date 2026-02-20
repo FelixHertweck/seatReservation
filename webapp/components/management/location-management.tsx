@@ -2,29 +2,29 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
-  Plus,
-  Edit,
-  Trash2,
-  ExternalLink,
-  FileText,
-  Download,
+	Plus,
+	Edit,
+	Trash2,
+	ExternalLink,
+	FileText,
+	Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
 } from "@/components/ui/card";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
 } from "@/components/ui/table";
 import { SortableTableHead } from "@/components/common/sortable-table-head";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -34,11 +34,11 @@ import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
 import { TruncatedCell } from "@/components/common/truncated-cell";
 import type {
-  EventLocationResponseDto,
-  EventLocationRequestDto,
-  ImportEventLocationDto,
-  ImportSeatDto,
-  SeatDto,
+	EventLocationResponseDto,
+	EventLocationRequestDto,
+	ImportEventLocationDto,
+	ImportSeatDto,
+	SeatDto,
 } from "@/api";
 import { customSerializer } from "@/lib/jsonBodySerializer";
 import { useT } from "@/lib/i18n/hooks";
@@ -46,667 +46,667 @@ import { sanitizeFileName } from "@/lib/utils/filename";
 import { useSortableData } from "@/lib/table-sorting";
 
 export interface LocationManagementProps {
-  locations: EventLocationResponseDto[];
-  seats: SeatDto[];
-  createLocation: (
-    location: EventLocationRequestDto,
-  ) => Promise<EventLocationResponseDto>;
-  updateLocation: (
-    id: bigint,
-    location: EventLocationRequestDto,
-  ) => Promise<EventLocationResponseDto>;
-  deleteLocation: (ids: bigint[]) => Promise<unknown>;
-  importLocationWithSeats: (
-    data: ImportEventLocationDto,
-  ) => Promise<EventLocationResponseDto>;
-  importSeats: (
-    seats: ImportSeatDto[],
-    locationId: string,
-  ) => Promise<EventLocationResponseDto>;
-  onNavigateToSeats?: (locationId: bigint) => void;
-  initialFilter?: Record<string, string>;
-  isLoading?: boolean;
+	locations: EventLocationResponseDto[];
+	seats: SeatDto[];
+	createLocation: (
+		location: EventLocationRequestDto,
+	) => Promise<EventLocationResponseDto>;
+	updateLocation: (
+		id: bigint,
+		location: EventLocationRequestDto,
+	) => Promise<EventLocationResponseDto>;
+	deleteLocation: (ids: bigint[]) => Promise<unknown>;
+	importLocationWithSeats: (
+		data: ImportEventLocationDto,
+	) => Promise<EventLocationResponseDto>;
+	importSeats: (
+		seats: ImportSeatDto[],
+		locationId: string,
+	) => Promise<EventLocationResponseDto>;
+	onNavigateToSeats?: (locationId: bigint) => void;
+	initialFilter?: Record<string, string>;
+	isLoading?: boolean;
 }
 
 export function LocationManagement({
-  locations,
-  createLocation,
-  updateLocation,
-  deleteLocation,
-  importLocationWithSeats,
-  importSeats,
-  seats: seatDtos,
-  onNavigateToSeats,
-  initialFilter = {},
-  isLoading = false,
+	locations,
+	createLocation,
+	updateLocation,
+	deleteLocation,
+	importLocationWithSeats,
+	importSeats,
+	seats: seatDtos,
+	onNavigateToSeats,
+	initialFilter = {},
+	isLoading = false,
 }: LocationManagementProps) {
-  const t = useT();
+	const t = useT();
 
-  const [filteredLocations, setFilteredLocations] = useState(locations);
-  const [selectedLocation, setSelectedLocation] =
-    useState<EventLocationResponseDto | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  const [isCreating, setIsCreating] = useState(false);
-  const [currentFilters, setCurrentFilters] =
-    useState<Record<string, string>>(initialFilter);
-  const [selectedIds, setSelectedIds] = useState<Set<bigint>>(new Set());
+	const [filteredLocations, setFilteredLocations] = useState(locations);
+	const [selectedLocation, setSelectedLocation] =
+		useState<EventLocationResponseDto | null>(null);
+	const [isModalOpen, setIsModalOpen] = useState(false);
+	const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+	const [isCreating, setIsCreating] = useState(false);
+	const [currentFilters, setCurrentFilters] =
+		useState<Record<string, string>>(initialFilter);
+	const [selectedIds, setSelectedIds] = useState<Set<bigint>>(new Set());
 
-  const { sortedData, sortKey, sortDirection, handleSort } = useSortableData(
-    filteredLocations,
-    "id",
-    "asc",
-  );
+	const { sortedData, sortKey, sortDirection, handleSort } = useSortableData(
+		filteredLocations,
+		"id",
+		"asc",
+	);
 
-  useEffect(() => {
-    setCurrentFilters(initialFilter);
-  }, [initialFilter]);
+	useEffect(() => {
+		setCurrentFilters(initialFilter);
+	}, [initialFilter]);
 
-  const applyFilters = useCallback(
-    (searchQuery: string, filters: Record<string, string>) => {
-      let filtered = locations;
+	const applyFilters = useCallback(
+		(searchQuery: string, filters: Record<string, string>) => {
+			let filtered = locations;
 
-      // Apply search
-      if (searchQuery) {
-        filtered = filtered.filter(
-          (location) =>
-            location.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            location.address?.toLowerCase().includes(searchQuery.toLowerCase()),
-        );
-      }
+			// Apply search
+			if (searchQuery) {
+				filtered = filtered.filter(
+					(location) =>
+						location.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+						location.address?.toLowerCase().includes(searchQuery.toLowerCase()),
+				);
+			}
 
-      // Apply filters
-      if (filters.locationId) {
-        filtered = filtered.filter(
-          (location) => location.id?.toString() === filters.locationId,
-        );
-      }
+			// Apply filters
+			if (filters.locationId) {
+				filtered = filtered.filter(
+					(location) => location.id?.toString() === filters.locationId,
+				);
+			}
 
-      setFilteredLocations(filtered);
-    },
-    [locations],
-  );
+			setFilteredLocations(filtered);
+		},
+		[locations],
+	);
 
-  useEffect(() => {
-    applyFilters("", currentFilters);
-  }, [locations, currentFilters, applyFilters]);
+	useEffect(() => {
+		applyFilters("", currentFilters);
+	}, [locations, currentFilters, applyFilters]);
 
-  const handleSearch = (query: string) => {
-    applyFilters(query, currentFilters);
-  };
+	const handleSearch = (query: string) => {
+		applyFilters(query, currentFilters);
+	};
 
-  const handleFilter = (filters: Record<string, unknown>) => {
-    const stringFilters = Object.fromEntries(
-      Object.entries(filters).map(([key, value]) => [key, String(value)]),
-    );
-    setCurrentFilters(stringFilters);
-    applyFilters("", stringFilters);
-  };
+	const handleFilter = (filters: Record<string, unknown>) => {
+		const stringFilters = Object.fromEntries(
+			Object.entries(filters).map(([key, value]) => [key, String(value)]),
+		);
+		setCurrentFilters(stringFilters);
+		applyFilters("", stringFilters);
+	};
 
-  const handleCreateLocation = () => {
-    setSelectedLocation(null);
-    setIsCreating(true);
-    setIsModalOpen(true);
-  };
+	const handleCreateLocation = () => {
+		setSelectedLocation(null);
+		setIsCreating(true);
+		setIsModalOpen(true);
+	};
 
-  const handleImportLocation = () => {
-    setIsImportModalOpen(true);
-  };
+	const handleImportLocation = () => {
+		setIsImportModalOpen(true);
+	};
 
-  const handleEditLocation = (location: EventLocationResponseDto) => {
-    setSelectedLocation(location);
-    setIsCreating(false);
-    setIsModalOpen(true);
-    setSelectedIds(new Set());
-  };
+	const handleEditLocation = (location: EventLocationResponseDto) => {
+		setSelectedLocation(location);
+		setIsCreating(false);
+		setIsModalOpen(true);
+		setSelectedIds(new Set());
+	};
 
-  const handleDeleteLocation = async (location: EventLocationResponseDto) => {
-    if (
-      location.id !== undefined &&
-      confirm(
-        t("locationManagement.confirmDelete", { locationName: location.name }),
-      )
-    ) {
-      await deleteLocation([location.id]);
-      setSelectedIds(new Set());
-    }
-  };
+	const handleDeleteLocation = async (location: EventLocationResponseDto) => {
+		if (
+			location.id !== undefined &&
+			confirm(
+				t("locationManagement.confirmDelete", { locationName: location.name }),
+			)
+		) {
+			await deleteLocation([location.id]);
+			setSelectedIds(new Set());
+		}
+	};
 
-  const handleSeatsClick = (locationId: bigint) => {
-    if (onNavigateToSeats) {
-      onNavigateToSeats(locationId);
-    }
-  };
+	const handleSeatsClick = (locationId: bigint) => {
+		if (onNavigateToSeats) {
+			onNavigateToSeats(locationId);
+		}
+	};
 
-  const handleImportSeats = async (
-    seats: ImportSeatDto[],
-    locationId: string,
-  ) => {
-    if (importSeats) {
-      await importSeats(seats, locationId);
-    }
-  };
+	const handleImportSeats = async (
+		seats: ImportSeatDto[],
+		locationId: string,
+	) => {
+		if (importSeats) {
+			await importSeats(seats, locationId);
+		}
+	};
 
-  const handleExportLocation = async (location: EventLocationResponseDto) => {
-    const { seatIds, ...locationWithoutSeatIds } = location;
+	const handleExportLocation = async (location: EventLocationResponseDto) => {
+		const { seatIds, ...locationWithoutSeatIds } = location;
 
-    let seats: SeatDto[] = [];
-    if (seatIds && seatIds.length > 0) {
-      seats = seatIds
-        .map((seatId) => {
-          return seatDtos.find((seat) => seat.id === BigInt(seatId));
-        })
-        .filter((seat): seat is SeatDto => seat !== undefined);
-    }
-    console.log("seats to export", seats);
+		let seats: SeatDto[] = [];
+		if (seatIds && seatIds.length > 0) {
+			seats = seatIds
+				.map((seatId) => {
+					return seatDtos.find((seat) => seat.id === BigInt(seatId));
+				})
+				.filter((seat): seat is SeatDto => seat !== undefined);
+		}
+		console.log("seats to export", seats);
 
-    const exportData = {
-      ...locationWithoutSeatIds,
-      seats: seats.map(({ ...seat }) => seat),
-    };
+		const exportData = {
+			...locationWithoutSeatIds,
+			seats: seats.map(({ ...seat }) => seat),
+		};
 
-    const dataStr = customSerializer.json(exportData);
-    const dataBlob = new Blob([dataStr], { type: "application/json" });
-    const url = URL.createObjectURL(dataBlob);
+		const dataStr = customSerializer.json(exportData);
+		const dataBlob = new Blob([dataStr], { type: "application/json" });
+		const url = URL.createObjectURL(dataBlob);
 
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `${sanitizeFileName(location.name)}_export.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
+		const link = document.createElement("a");
+		link.href = url;
+		link.download = `${sanitizeFileName(location.name)}_export.json`;
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+		URL.revokeObjectURL(url);
+	};
 
-  const handleSelectAll = (paginatedData: EventLocationResponseDto[]) => {
-    const newSelectedIds = new Set(selectedIds);
-    const allSelected = paginatedData.every((location) =>
-      location.id ? selectedIds.has(location.id) : false,
-    );
+	const handleSelectAll = (paginatedData: EventLocationResponseDto[]) => {
+		const newSelectedIds = new Set(selectedIds);
+		const allSelected = paginatedData.every((location) =>
+			location.id ? selectedIds.has(location.id) : false,
+		);
 
-    if (allSelected) {
-      paginatedData.forEach((location) => {
-        if (location.id) newSelectedIds.delete(location.id);
-      });
-    } else {
-      paginatedData.forEach((location) => {
-        if (location.id) newSelectedIds.add(location.id);
-      });
-    }
+		if (allSelected) {
+			paginatedData.forEach((location) => {
+				if (location.id) newSelectedIds.delete(location.id);
+			});
+		} else {
+			paginatedData.forEach((location) => {
+				if (location.id) newSelectedIds.add(location.id);
+			});
+		}
 
-    setSelectedIds(newSelectedIds);
-  };
+		setSelectedIds(newSelectedIds);
+	};
 
-  const handleToggleSelect = (id: bigint) => {
-    const newSelectedIds = new Set(selectedIds);
-    if (newSelectedIds.has(id)) {
-      newSelectedIds.delete(id);
-    } else {
-      newSelectedIds.add(id);
-    }
-    setSelectedIds(newSelectedIds);
-  };
+	const handleToggleSelect = (id: bigint) => {
+		const newSelectedIds = new Set(selectedIds);
+		if (newSelectedIds.has(id)) {
+			newSelectedIds.delete(id);
+		} else {
+			newSelectedIds.add(id);
+		}
+		setSelectedIds(newSelectedIds);
+	};
 
-  const handleDeleteSelected = async () => {
-    if (
-      selectedIds.size > 0 &&
-      confirm(
-        t("locationManagement.confirmDeleteMultiple", {
-          count: selectedIds.size,
-        }),
-      )
-    ) {
-      await deleteLocation(Array.from(selectedIds));
-      setSelectedIds(new Set());
-    }
-  };
+	const handleDeleteSelected = async () => {
+		if (
+			selectedIds.size > 0 &&
+			confirm(
+				t("locationManagement.confirmDeleteMultiple", {
+					count: selectedIds.size,
+				}),
+			)
+		) {
+			await deleteLocation(Array.from(selectedIds));
+			setSelectedIds(new Set());
+		}
+	};
 
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0 flex-1">
-            <CardTitle className="text-xl sm:text-2xl">
-              {t("locationManagement.title")}
-            </CardTitle>
-            <CardDescription className="text-sm">
-              {t("locationManagement.description")}
-            </CardDescription>
-          </div>
-          <div className="flex flex-col md:flex-row gap-2 w-full sm:w-auto shrink-0">
-            {selectedIds.size > 0 && (
-              <Button
-                variant="destructive"
-                onClick={handleDeleteSelected}
-                className="w-full sm:w-auto"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                {selectedIds.size}
-              </Button>
-            )}
-            <Button
-              variant="outline"
-              onClick={handleImportLocation}
-              className="w-full sm:w-auto bg-transparent"
-            >
-              <FileText className="mr-2 h-4 w-4" />
-              <span className="hidden sm:inline">
-                {t("locationManagement.importJsonButton")}
-              </span>
-            </Button>
-            <Button onClick={handleCreateLocation} className="w-full sm:w-auto">
-              <Plus className="mr-2 h-4 w-4" />
-              {t("locationManagement.addLocationButton")}
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
+	return (
+		<Card>
+			<CardHeader>
+				<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+					<div className="min-w-0 flex-1">
+						<CardTitle className="text-xl sm:text-2xl">
+							{t("locationManagement.title")}
+						</CardTitle>
+						<CardDescription className="text-sm">
+							{t("locationManagement.description")}
+						</CardDescription>
+					</div>
+					<div className="flex flex-col md:flex-row gap-2 w-full sm:w-auto shrink-0">
+						{selectedIds.size > 0 && (
+							<Button
+								variant="destructive"
+								onClick={handleDeleteSelected}
+								className="w-full sm:w-auto"
+							>
+								<Trash2 className="mr-2 h-4 w-4" />
+								{selectedIds.size}
+							</Button>
+						)}
+						<Button
+							variant="outline"
+							onClick={handleImportLocation}
+							className="w-full sm:w-auto bg-transparent"
+						>
+							<FileText className="mr-2 h-4 w-4" />
+							<span className="hidden sm:inline">
+								{t("locationManagement.importJsonButton")}
+							</span>
+						</Button>
+						<Button onClick={handleCreateLocation} className="w-full sm:w-auto">
+							<Plus className="mr-2 h-4 w-4" />
+							{t("locationManagement.addLocationButton")}
+						</Button>
+					</div>
+				</div>
+			</CardHeader>
 
-      <CardContent>
-        <div className="space-y-4">
-          <SearchAndFilter
-            onSearch={handleSearch}
-            onFilter={handleFilter}
-            filterOptions={[
-              {
-                key: "locationId",
-                label: t("locationManagement.locationFilterLabel"),
-                type: "select",
-                options: locations.map((loc) => ({
-                  value: loc.id?.toString() || "",
-                  label: loc.name || "",
-                })),
-              },
-            ]}
-            initialFilters={currentFilters}
-          />
+			<CardContent>
+				<div className="space-y-4">
+					<SearchAndFilter
+						onSearch={handleSearch}
+						onFilter={handleFilter}
+						filterOptions={[
+							{
+								key: "locationId",
+								label: t("locationManagement.locationFilterLabel"),
+								type: "select",
+								options: locations.map((loc) => ({
+									value: loc.id?.toString() || "",
+									label: loc.name || "",
+								})),
+							},
+						]}
+						initialFilters={currentFilters}
+					/>
 
-          <PaginationWrapper
-            data={sortedData}
-            itemsPerPage={100}
-            paginationLabel={t("locationManagement.paginationLabel")}
-          >
-            {(paginatedData) => (
-              <>
-                <div className="hidden md:block overflow-x-auto">
-                  <div className="mb-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleSelectAll(paginatedData)}
-                    >
-                      {paginatedData.every((location) =>
-                        location.id ? selectedIds.has(location.id) : false,
-                      )
-                        ? t("locationManagement.deselectAll")
-                        : t("locationManagement.selectAll")}
-                    </Button>
-                  </div>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-[50px]">
-                          {t("locationManagement.tableHeaderSelect")}
-                        </TableHead>
-                        <SortableTableHead
-                          sortKey="name"
-                          currentSortKey={sortKey}
-                          currentSortDirection={sortDirection}
-                          onSort={handleSort}
-                          className="min-w-[150px] max-w-[250px]"
-                        >
-                          {t("locationManagement.tableHeaderName")}
-                        </SortableTableHead>
-                        <SortableTableHead
-                          sortKey="address"
-                          currentSortKey={sortKey}
-                          currentSortDirection={sortDirection}
-                          onSort={handleSort}
-                          className="min-w-[200px] max-w-[300px]"
-                        >
-                          {t("locationManagement.tableHeaderAddress")}
-                        </SortableTableHead>
-                        <SortableTableHead
-                          sortKey="capacity"
-                          currentSortKey={sortKey}
-                          currentSortDirection={sortDirection}
-                          onSort={handleSort}
-                          className="min-w-[100px] max-w-[150px]"
-                        >
-                          {t("locationManagement.tableHeaderCapacity")}
-                        </SortableTableHead>
-                        <SortableTableHead
-                          sortKey="managerName"
-                          currentSortKey={sortKey}
-                          currentSortDirection={sortDirection}
-                          onSort={handleSort}
-                          className="min-w-[100px] max-w-[180px]"
-                        >
-                          {t("locationManagement.tableHeaderManager")}
-                        </SortableTableHead>
-                        <SortableTableHead
-                          sortKey="marker"
-                          currentSortKey={sortKey}
-                          currentSortDirection={sortDirection}
-                          onSort={handleSort}
-                          className="min-w-[150px] max-w-[250px]"
-                        >
-                          {t("locationManagement.tableHeaderMarker")}
-                        </SortableTableHead>
-                        <TableHead className="min-w-[120px] max-w-[180px]">
-                          {t("locationManagement.tableHeaderSeats")}
-                        </TableHead>
-                        <TableHead className="min-w-[120px] max-w-[180px]">
-                          {t("locationManagement.tableHeaderActions")}
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {isLoading
-                        ? Array.from({ length: 8 }).map((_, index) => (
-                            <TableRow key={index}>
-                              <TableCell>
-                                <Skeleton className="h-4 w-4" />
-                              </TableCell>
-                              <TableCell>
-                                <Skeleton className="h-4 w-32" />
-                              </TableCell>
-                              <TableCell>
-                                <Skeleton className="h-4 w-48" />
-                              </TableCell>
-                              <TableCell>
-                                <Skeleton className="h-4 w-16" />
-                              </TableCell>
-                              <TableCell>
-                                <Skeleton className="h-4 w-24" />
-                              </TableCell>
-                              <TableCell>
-                                <Skeleton className="h-4 w-40" />
-                              </TableCell>
-                              <TableCell>
-                                <Skeleton className="h-4 w-20" />
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex gap-2">
-                                  <Skeleton className="h-8 w-8" />
-                                  <Skeleton className="h-8 w-8" />
-                                  <Skeleton className="h-8 w-8" />
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))
-                        : paginatedData.map((location) => {
-                            const seatCount = location.seatIds?.length || 0;
-                            const markersDisplay =
-                              location.markers && location.markers.length > 0
-                                ? location.markers
-                                    .map(
-                                      (marker) =>
-                                        `${marker.label} (${marker.xCoordinate}, ${marker.yCoordinate})`,
-                                    )
-                                    .join(", ")
-                                : "-";
+					<PaginationWrapper
+						data={sortedData}
+						itemsPerPage={100}
+						paginationLabel={t("locationManagement.paginationLabel")}
+					>
+						{(paginatedData) => (
+							<>
+								<div className="hidden md:block overflow-x-auto">
+									<div className="mb-2">
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() => handleSelectAll(paginatedData)}
+										>
+											{paginatedData.every((location) =>
+												location.id ? selectedIds.has(location.id) : false,
+											)
+												? t("locationManagement.deselectAll")
+												: t("locationManagement.selectAll")}
+										</Button>
+									</div>
+									<Table>
+										<TableHeader>
+											<TableRow>
+												<TableHead className="w-[50px]">
+													{t("locationManagement.tableHeaderSelect")}
+												</TableHead>
+												<SortableTableHead
+													sortKey="name"
+													currentSortKey={sortKey}
+													currentSortDirection={sortDirection}
+													onSort={handleSort}
+													className="min-w-[150px] max-w-[250px]"
+												>
+													{t("locationManagement.tableHeaderName")}
+												</SortableTableHead>
+												<SortableTableHead
+													sortKey="address"
+													currentSortKey={sortKey}
+													currentSortDirection={sortDirection}
+													onSort={handleSort}
+													className="min-w-[200px] max-w-[300px]"
+												>
+													{t("locationManagement.tableHeaderAddress")}
+												</SortableTableHead>
+												<SortableTableHead
+													sortKey="capacity"
+													currentSortKey={sortKey}
+													currentSortDirection={sortDirection}
+													onSort={handleSort}
+													className="min-w-[100px] max-w-[150px]"
+												>
+													{t("locationManagement.tableHeaderCapacity")}
+												</SortableTableHead>
+												<SortableTableHead
+													sortKey="managerName"
+													currentSortKey={sortKey}
+													currentSortDirection={sortDirection}
+													onSort={handleSort}
+													className="min-w-[100px] max-w-[180px]"
+												>
+													{t("locationManagement.tableHeaderManager")}
+												</SortableTableHead>
+												<SortableTableHead
+													sortKey="marker"
+													currentSortKey={sortKey}
+													currentSortDirection={sortDirection}
+													onSort={handleSort}
+													className="min-w-[150px] max-w-[250px]"
+												>
+													{t("locationManagement.tableHeaderMarker")}
+												</SortableTableHead>
+												<TableHead className="min-w-[120px] max-w-[180px]">
+													{t("locationManagement.tableHeaderSeats")}
+												</TableHead>
+												<TableHead className="min-w-[120px] max-w-[180px]">
+													{t("locationManagement.tableHeaderActions")}
+												</TableHead>
+											</TableRow>
+										</TableHeader>
+										<TableBody>
+											{isLoading
+												? Array.from({ length: 8 }).map((_, index) => (
+														<TableRow key={index}>
+															<TableCell>
+																<Skeleton className="h-4 w-4" />
+															</TableCell>
+															<TableCell>
+																<Skeleton className="h-4 w-32" />
+															</TableCell>
+															<TableCell>
+																<Skeleton className="h-4 w-48" />
+															</TableCell>
+															<TableCell>
+																<Skeleton className="h-4 w-16" />
+															</TableCell>
+															<TableCell>
+																<Skeleton className="h-4 w-24" />
+															</TableCell>
+															<TableCell>
+																<Skeleton className="h-4 w-40" />
+															</TableCell>
+															<TableCell>
+																<Skeleton className="h-4 w-20" />
+															</TableCell>
+															<TableCell>
+																<div className="flex gap-2">
+																	<Skeleton className="h-8 w-8" />
+																	<Skeleton className="h-8 w-8" />
+																	<Skeleton className="h-8 w-8" />
+																</div>
+															</TableCell>
+														</TableRow>
+													))
+												: paginatedData.map((location) => {
+														const seatCount = location.seatIds?.length || 0;
+														const markersDisplay =
+															location.markers && location.markers.length > 0
+																? location.markers
+																		.map(
+																			(marker) =>
+																				`${marker.label} (${marker.xCoordinate}, ${marker.yCoordinate})`,
+																		)
+																		.join(", ")
+																: "-";
 
-                            return (
-                              <TableRow key={location.id?.toString()}>
-                                <TableCell>
-                                  <Checkbox
-                                    checked={
-                                      location.id
-                                        ? selectedIds.has(location.id)
-                                        : false
-                                    }
-                                    onCheckedChange={() =>
-                                      location.id &&
-                                      handleToggleSelect(location.id)
-                                    }
-                                  />
-                                </TableCell>
-                                <TruncatedCell
-                                  content={location.name}
-                                  className="font-medium"
-                                />
-                                <TruncatedCell content={location.address} />
-                                <TableCell>{location.capacity}</TableCell>
-                                <TruncatedCell
-                                  content={location.manager?.username}
-                                />
-                                <TruncatedCell content={markersDisplay} />
-                                <TableCell>
-                                  {seatCount > 0 ? (
-                                    <Button
-                                      variant="link"
-                                      className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
-                                      onClick={() =>
-                                        location.id &&
-                                        handleSeatsClick(location.id)
-                                      }
-                                    >
-                                      {t("locationManagement.seatsCount", {
-                                        count: seatCount,
-                                      })}
-                                      <ExternalLink className="ml-1 h-3 w-3" />
-                                    </Button>
-                                  ) : (
-                                    t("locationManagement.noSeats")
-                                  )}
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex gap-2">
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() =>
-                                        handleExportLocation(location)
-                                      }
-                                      title={t(
-                                        "locationManagement.exportAsJsonTitle",
-                                      )}
-                                    >
-                                      <Download className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() =>
-                                        handleEditLocation(location)
-                                      }
-                                    >
-                                      <Edit className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                      variant="destructive"
-                                      size="sm"
-                                      onClick={() =>
-                                        handleDeleteLocation(location)
-                                      }
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })}
-                    </TableBody>
-                  </Table>
-                </div>
+														return (
+															<TableRow key={location.id?.toString()}>
+																<TableCell>
+																	<Checkbox
+																		checked={
+																			location.id
+																				? selectedIds.has(location.id)
+																				: false
+																		}
+																		onCheckedChange={() =>
+																			location.id &&
+																			handleToggleSelect(location.id)
+																		}
+																	/>
+																</TableCell>
+																<TruncatedCell
+																	content={location.name}
+																	className="font-medium"
+																/>
+																<TruncatedCell content={location.address} />
+																<TableCell>{location.capacity}</TableCell>
+																<TruncatedCell
+																	content={location.manager?.username}
+																/>
+																<TruncatedCell content={markersDisplay} />
+																<TableCell>
+																	{seatCount > 0 ? (
+																		<Button
+																			variant="link"
+																			className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+																			onClick={() =>
+																				location.id &&
+																				handleSeatsClick(location.id)
+																			}
+																		>
+																			{t("locationManagement.seatsCount", {
+																				count: seatCount,
+																			})}
+																			<ExternalLink className="ml-1 h-3 w-3" />
+																		</Button>
+																	) : (
+																		t("locationManagement.noSeats")
+																	)}
+																</TableCell>
+																<TableCell>
+																	<div className="flex gap-2">
+																		<Button
+																			variant="outline"
+																			size="sm"
+																			onClick={() =>
+																				handleExportLocation(location)
+																			}
+																			title={t(
+																				"locationManagement.exportAsJsonTitle",
+																			)}
+																		>
+																			<Download className="h-4 w-4" />
+																		</Button>
+																		<Button
+																			variant="outline"
+																			size="sm"
+																			onClick={() =>
+																				handleEditLocation(location)
+																			}
+																		>
+																			<Edit className="h-4 w-4" />
+																		</Button>
+																		<Button
+																			variant="destructive"
+																			size="sm"
+																			onClick={() =>
+																				handleDeleteLocation(location)
+																			}
+																		>
+																			<Trash2 className="h-4 w-4" />
+																		</Button>
+																	</div>
+																</TableCell>
+															</TableRow>
+														);
+													})}
+										</TableBody>
+									</Table>
+								</div>
 
-                <div className="md:hidden space-y-4">
-                  {isLoading
-                    ? Array.from({ length: 3 }).map((_, index) => (
-                        <Card key={index}>
-                          <CardHeader className="pb-3">
-                            <Skeleton className="h-5 w-3/4" />
-                            <Skeleton className="h-4 w-full mt-2" />
-                          </CardHeader>
-                          <CardContent>
-                            <Skeleton className="h-4 w-full" />
-                          </CardContent>
-                        </Card>
-                      ))
-                    : paginatedData.map((location) => {
-                        const seatCount = location.seatIds?.length || 0;
-                        const markersDisplay =
-                          location.markers && location.markers.length > 0
-                            ? location.markers
-                                .map(
-                                  (marker) =>
-                                    `${marker.label} (${marker.xCoordinate}, ${marker.yCoordinate})`,
-                                )
-                                .join(", ")
-                            : "-";
+								<div className="md:hidden space-y-4">
+									{isLoading
+										? Array.from({ length: 3 }).map((_, index) => (
+												<Card key={index}>
+													<CardHeader className="pb-3">
+														<Skeleton className="h-5 w-3/4" />
+														<Skeleton className="h-4 w-full mt-2" />
+													</CardHeader>
+													<CardContent>
+														<Skeleton className="h-4 w-full" />
+													</CardContent>
+												</Card>
+											))
+										: paginatedData.map((location) => {
+												const seatCount = location.seatIds?.length || 0;
+												const markersDisplay =
+													location.markers && location.markers.length > 0
+														? location.markers
+																.map(
+																	(marker) =>
+																		`${marker.label} (${marker.xCoordinate}, ${marker.yCoordinate})`,
+																)
+																.join(", ")
+														: "-";
 
-                        return (
-                          <Card
-                            key={location.id?.toString()}
-                            className="overflow-hidden"
-                          >
-                            <CardHeader className="pb-3 flex flex-row items-start space-x-3 space-y-0">
-                              <Checkbox
-                                checked={
-                                  location.id
-                                    ? selectedIds.has(location.id)
-                                    : false
-                                }
-                                onCheckedChange={() =>
-                                  location.id && handleToggleSelect(location.id)
-                                }
-                                className="mt-1"
-                              />
-                              <div className="flex-1 min-w-0">
-                                <CardTitle className="text-base break-words">
-                                  {location.name}
-                                </CardTitle>
-                                {location.address && (
-                                  <CardDescription className="text-sm mt-1 break-words">
-                                    {location.address}
-                                  </CardDescription>
-                                )}
-                              </div>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                              <div className="grid grid-cols-2 gap-3 text-sm">
-                                <div className="min-w-0">
-                                  <p className="text-xs text-muted-foreground mb-1">
-                                    {t(
-                                      "locationManagement.tableHeaderCapacity",
-                                    )}
-                                  </p>
-                                  <p className="text-sm truncate">
-                                    {location.capacity}
-                                  </p>
-                                </div>
-                                <div className="min-w-0">
-                                  <p className="text-xs text-muted-foreground mb-1">
-                                    {t("locationManagement.tableHeaderManager")}
-                                  </p>
-                                  <p className="text-sm truncate">
-                                    {location.manager?.username || "-"}
-                                  </p>
-                                </div>
-                              </div>
+												return (
+													<Card
+														key={location.id?.toString()}
+														className="overflow-hidden"
+													>
+														<CardHeader className="pb-3 flex flex-row items-start space-x-3 space-y-0">
+															<Checkbox
+																checked={
+																	location.id
+																		? selectedIds.has(location.id)
+																		: false
+																}
+																onCheckedChange={() =>
+																	location.id && handleToggleSelect(location.id)
+																}
+																className="mt-1"
+															/>
+															<div className="flex-1 min-w-0">
+																<CardTitle className="text-base break-words">
+																	{location.name}
+																</CardTitle>
+																{location.address && (
+																	<CardDescription className="text-sm mt-1 break-words">
+																		{location.address}
+																	</CardDescription>
+																)}
+															</div>
+														</CardHeader>
+														<CardContent className="space-y-3">
+															<div className="grid grid-cols-2 gap-3 text-sm">
+																<div className="min-w-0">
+																	<p className="text-xs text-muted-foreground mb-1">
+																		{t(
+																			"locationManagement.tableHeaderCapacity",
+																		)}
+																	</p>
+																	<p className="text-sm truncate">
+																		{location.capacity}
+																	</p>
+																</div>
+																<div className="min-w-0">
+																	<p className="text-xs text-muted-foreground mb-1">
+																		{t("locationManagement.tableHeaderManager")}
+																	</p>
+																	<p className="text-sm truncate">
+																		{location.manager?.username || "-"}
+																	</p>
+																</div>
+															</div>
 
-                              {location.markers &&
-                                location.markers.length > 0 && (
-                                  <div className="min-w-0">
-                                    <p className="text-xs text-muted-foreground mb-1">
-                                      {t(
-                                        "locationManagement.tableHeaderMarker",
-                                      )}
-                                    </p>
-                                    <p className="text-sm break-words line-clamp-1">
-                                      {markersDisplay}
-                                    </p>
-                                  </div>
-                                )}
+															{location.markers &&
+																location.markers.length > 0 && (
+																	<div className="min-w-0">
+																		<p className="text-xs text-muted-foreground mb-1">
+																			{t(
+																				"locationManagement.tableHeaderMarker",
+																			)}
+																		</p>
+																		<p className="text-sm break-words line-clamp-1">
+																			{markersDisplay}
+																		</p>
+																	</div>
+																)}
 
-                              {seatCount > 0 && (
-                                <div className="min-w-0">
-                                  <p className="text-xs text-muted-foreground mb-1">
-                                    {t("locationManagement.tableHeaderSeats")}
-                                  </p>
-                                  <Button
-                                    variant="link"
-                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800 text-sm"
-                                    onClick={() =>
-                                      location.id &&
-                                      handleSeatsClick(location.id)
-                                    }
-                                  >
-                                    {t("locationManagement.seatsCount", {
-                                      count: seatCount,
-                                    })}
-                                    <ExternalLink className="ml-1 h-3 w-3" />
-                                  </Button>
-                                </div>
-                              )}
+															{seatCount > 0 && (
+																<div className="min-w-0">
+																	<p className="text-xs text-muted-foreground mb-1">
+																		{t("locationManagement.tableHeaderSeats")}
+																	</p>
+																	<Button
+																		variant="link"
+																		className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800 text-sm"
+																		onClick={() =>
+																			location.id &&
+																			handleSeatsClick(location.id)
+																		}
+																	>
+																		{t("locationManagement.seatsCount", {
+																			count: seatCount,
+																		})}
+																		<ExternalLink className="ml-1 h-3 w-3" />
+																	</Button>
+																</div>
+															)}
 
-                              <div className="flex gap-2 pt-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="flex-1 bg-transparent"
-                                  onClick={() => handleEditLocation(location)}
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="flex-1"
-                                  onClick={() => handleExportLocation(location)}
-                                  title={t(
-                                    "locationManagement.exportAsJsonTitle",
-                                  )}
-                                >
-                                  <Download className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="destructive"
-                                  size="sm"
-                                  className="flex-1"
-                                  onClick={() => handleDeleteLocation(location)}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        );
-                      })}
-                </div>
-              </>
-            )}
-          </PaginationWrapper>
-        </div>
-      </CardContent>
+															<div className="flex gap-2 pt-2">
+																<Button
+																	variant="outline"
+																	size="sm"
+																	className="flex-1 bg-transparent"
+																	onClick={() => handleEditLocation(location)}
+																>
+																	<Edit className="h-4 w-4" />
+																</Button>
+																<Button
+																	variant="outline"
+																	size="sm"
+																	className="flex-1"
+																	onClick={() => handleExportLocation(location)}
+																	title={t(
+																		"locationManagement.exportAsJsonTitle",
+																	)}
+																>
+																	<Download className="h-4 w-4" />
+																</Button>
+																<Button
+																	variant="destructive"
+																	size="sm"
+																	className="flex-1"
+																	onClick={() => handleDeleteLocation(location)}
+																>
+																	<Trash2 className="h-4 w-4" />
+																</Button>
+															</div>
+														</CardContent>
+													</Card>
+												);
+											})}
+								</div>
+							</>
+						)}
+					</PaginationWrapper>
+				</div>
+			</CardContent>
 
-      {isModalOpen && (
-        <LocationFormModal
-          location={selectedLocation}
-          isCreating={isCreating}
-          onSubmit={async (locationData) => {
-            if (isCreating) {
-              await createLocation(locationData);
-            } else if (selectedLocation?.id !== undefined) {
-              await updateLocation(BigInt(selectedLocation.id), locationData);
-            }
-            setIsModalOpen(false);
-          }}
-          onClose={() => setIsModalOpen(false)}
-        />
-      )}
+			{isModalOpen && (
+				<LocationFormModal
+					location={selectedLocation}
+					isCreating={isCreating}
+					onSubmit={async (locationData) => {
+						if (isCreating) {
+							await createLocation(locationData);
+						} else if (selectedLocation?.id !== undefined) {
+							await updateLocation(BigInt(selectedLocation.id), locationData);
+						}
+						setIsModalOpen(false);
+					}}
+					onClose={() => setIsModalOpen(false)}
+				/>
+			)}
 
-      {isImportModalOpen && (
-        <LocationImportModal
-          isOpen={isImportModalOpen}
-          onClose={() => setIsImportModalOpen(false)}
-          locations={locations}
-          onImportLocation={importLocationWithSeats}
-          onImportSeats={handleImportSeats}
-        />
-      )}
-    </Card>
-  );
+			{isImportModalOpen && (
+				<LocationImportModal
+					isOpen={isImportModalOpen}
+					onClose={() => setIsImportModalOpen(false)}
+					locations={locations}
+					onImportLocation={importLocationWithSeats}
+					onImportSeats={handleImportSeats}
+				/>
+			)}
+		</Card>
+	);
 }

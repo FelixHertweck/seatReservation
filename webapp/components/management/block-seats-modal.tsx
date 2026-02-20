@@ -4,224 +4,224 @@ import type React from "react";
 
 import { useState } from "react";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { SeatMap } from "@/components/common/seat-map";
 import type {
-  BlockSeatsRequestDto,
-  EventResponseDto,
-  EventLocationResponseDto,
-  SeatDto,
-  SeatStatusDto,
+	BlockSeatsRequestDto,
+	EventResponseDto,
+	EventLocationResponseDto,
+	SeatDto,
+	SeatStatusDto,
 } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 
 interface BlockSeatsModalProps {
-  events: EventResponseDto[];
-  seats: SeatDto[];
-  locations: EventLocationResponseDto[];
-  onSubmit: (blockData: BlockSeatsRequestDto) => Promise<void>;
-  onClose: () => void;
+	events: EventResponseDto[];
+	seats: SeatDto[];
+	locations: EventLocationResponseDto[];
+	onSubmit: (blockData: BlockSeatsRequestDto) => Promise<void>;
+	onClose: () => void;
 }
 
 export function BlockSeatsModal({
-  events,
-  seats,
-  locations,
-  onSubmit,
-  onClose,
+	events,
+	seats,
+	locations,
+	onSubmit,
+	onClose,
 }: BlockSeatsModalProps) {
-  const t = useT();
+	const t = useT();
 
-  const [formData, setFormData] = useState({
-    eventId: "",
-    seatIds: [] as string[],
-  });
-  const [selectedSeats, setSelectedSeats] = useState<SeatDto[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+	const [formData, setFormData] = useState({
+		eventId: "",
+		seatIds: [] as string[],
+	});
+	const [selectedSeats, setSelectedSeats] = useState<SeatDto[]>([]);
+	const [isLoading, setIsLoading] = useState(false);
 
-  const selectedEvent = events?.find(
-    (loc) => loc.id?.toString() === formData.eventId,
-  );
-  const eventLocation = locations.find(
-    (loc) => loc.id === selectedEvent?.eventLocationId,
-  );
-  const availableSeats: SeatDto[] = seats.filter(
-    (seat) => seat.locationId === eventLocation?.id,
-  );
-  const availableSeatStatuses: SeatStatusDto[] =
-    selectedEvent?.seatStatuses ?? [];
+	const selectedEvent = events?.find(
+		(loc) => loc.id?.toString() === formData.eventId,
+	);
+	const eventLocation = locations.find(
+		(loc) => loc.id === selectedEvent?.eventLocationId,
+	);
+	const availableSeats: SeatDto[] = seats.filter(
+		(seat) => seat.locationId === eventLocation?.id,
+	);
+	const availableSeatStatuses: SeatStatusDto[] =
+		selectedEvent?.seatStatuses ?? [];
 
-  const handleSubmit = async (e?: React.FormEvent | React.KeyboardEvent) => {
-    if (e) {
-      e.preventDefault();
-    }
-    if (!formData.eventId) return;
+	const handleSubmit = async (e?: React.FormEvent | React.KeyboardEvent) => {
+		if (e) {
+			e.preventDefault();
+		}
+		if (!formData.eventId) return;
 
-    setIsLoading(true);
+		setIsLoading(true);
 
-    try {
-      const blockData: BlockSeatsRequestDto = {
-        eventId: BigInt(selectedEvent?.id || 0),
-        seatIds: selectedSeats.map((seat) => seat.id!),
-      };
-      await onSubmit(blockData);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+		try {
+			const blockData: BlockSeatsRequestDto = {
+				eventId: BigInt(selectedEvent?.id || 0),
+				seatIds: selectedSeats.map((seat) => seat.id!),
+			};
+			await onSubmit(blockData);
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
-  const handleSeatSelect = (seat: SeatDto) => {
-    setSelectedSeats((prev) => {
-      const isSelected = prev.some((s) => s.id === seat.id);
-      if (isSelected) {
-        return prev.filter((s) => s.id !== seat.id);
-      } else {
-        return [...prev, seat];
-      }
-    });
-  };
+	const handleSeatSelect = (seat: SeatDto) => {
+		setSelectedSeats((prev) => {
+			const isSelected = prev.some((s) => s.id === seat.id);
+			if (isSelected) {
+				return prev.filter((s) => s.id !== seat.id);
+			} else {
+				return [...prev, seat];
+			}
+		});
+	};
 
-  const handleEventChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, eventId: value }));
-    setSelectedSeats([]);
-  };
+	const handleEventChange = (value: string) => {
+		setFormData((prev) => ({ ...prev, eventId: value }));
+		setSelectedSeats([]);
+	};
 
-  return (
-    <Dialog open onOpenChange={onClose}>
-      <DialogContent
-        className="max-w-6xl max-h-[90vh] h-[85vh] flex flex-col"
-        onInteractOutside={(e) => e.preventDefault()}
-      >
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold">
-            {t("blockSeatsModal.title")}
-          </DialogTitle>
-          <DialogDescription>
-            {t("blockSeatsModal.description")}
-          </DialogDescription>
-        </DialogHeader>
+	return (
+		<Dialog open onOpenChange={onClose}>
+			<DialogContent
+				className="max-w-6xl max-h-[90vh] h-[85vh] flex flex-col"
+				onInteractOutside={(e) => e.preventDefault()}
+			>
+				<DialogHeader>
+					<DialogTitle className="text-xl font-bold">
+						{t("blockSeatsModal.title")}
+					</DialogTitle>
+					<DialogDescription>
+						{t("blockSeatsModal.description")}
+					</DialogDescription>
+				</DialogHeader>
 
-        <form
-          onSubmit={handleSubmit}
-          className="flex-1 flex flex-col space-y-4 min-h-0"
-        >
-          <div className="space-y-2">
-            <Label htmlFor="event">{t("blockSeatsModal.eventLabel")} *</Label>
-            <Select
-              value={formData.eventId}
-              onValueChange={handleEventChange}
-              required
-            >
-              <SelectTrigger>
-                <SelectValue
-                  placeholder={t("blockSeatsModal.selectEventPlaceholder")}
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {events?.map((event) => (
-                  <SelectItem
-                    key={event.id?.toString()}
-                    value={event.id?.toString() ?? "unknown"}
-                  >
-                    {event.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+				<form
+					onSubmit={handleSubmit}
+					className="flex-1 flex flex-col space-y-4 min-h-0"
+				>
+					<div className="space-y-2">
+						<Label htmlFor="event">{t("blockSeatsModal.eventLabel")} *</Label>
+						<Select
+							value={formData.eventId}
+							onValueChange={handleEventChange}
+							required
+						>
+							<SelectTrigger>
+								<SelectValue
+									placeholder={t("blockSeatsModal.selectEventPlaceholder")}
+								/>
+							</SelectTrigger>
+							<SelectContent>
+								{events?.map((event) => (
+									<SelectItem
+										key={event.id?.toString()}
+										value={event.id?.toString() ?? "unknown"}
+									>
+										{event.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
 
-          <div className="flex gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-green-500 dark:bg-green-400 rounded"></div>
-              <span>{t("blockSeatsModal.available")}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-blue-500 dark:bg-blue-400 rounded"></div>
-              <span>{t("blockSeatsModal.selectedToBlock")}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-red-500 dark:bg-red-400 rounded"></div>
-              <span>{t("blockSeatsModal.reserved")}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-gray-500 dark:bg-gray-400 rounded"></div>
-              <span>{t("blockSeatsModal.alreadyBlocked")}</span>
-            </div>
-          </div>
+					<div className="flex gap-4 text-sm">
+						<div className="flex items-center gap-2">
+							<div className="w-4 h-4 bg-green-500 dark:bg-green-400 rounded"></div>
+							<span>{t("blockSeatsModal.available")}</span>
+						</div>
+						<div className="flex items-center gap-2">
+							<div className="w-4 h-4 bg-blue-500 dark:bg-blue-400 rounded"></div>
+							<span>{t("blockSeatsModal.selectedToBlock")}</span>
+						</div>
+						<div className="flex items-center gap-2">
+							<div className="w-4 h-4 bg-red-500 dark:bg-red-400 rounded"></div>
+							<span>{t("blockSeatsModal.reserved")}</span>
+						</div>
+						<div className="flex items-center gap-2">
+							<div className="w-4 h-4 bg-gray-500 dark:bg-gray-400 rounded"></div>
+							<span>{t("blockSeatsModal.alreadyBlocked")}</span>
+						</div>
+					</div>
 
-          {formData.eventId && availableSeats.length > 0 && (
-            <div className="flex-1 min-h-0">
-              <SeatMap
-                seats={availableSeats}
-                seatStatuses={availableSeatStatuses}
-                markers={eventLocation?.markers ?? []}
-                selectedSeats={selectedSeats}
-                onSeatSelect={handleSeatSelect}
-              />
-            </div>
-          )}
+					{formData.eventId && availableSeats.length > 0 && (
+						<div className="flex-1 min-h-0">
+							<SeatMap
+								seats={availableSeats}
+								seatStatuses={availableSeatStatuses}
+								markers={eventLocation?.markers ?? []}
+								selectedSeats={selectedSeats}
+								onSeatSelect={handleSeatSelect}
+							/>
+						</div>
+					)}
 
-          {selectedSeats.length > 0 && (
-            <div className="space-y-2">
-              <h4 className="font-medium">
-                {t("blockSeatsModal.seatsToBlockTitle")}
-              </h4>
-              <div className="flex flex-wrap gap-2 max-h-10 overflow-y-auto">
-                {selectedSeats.map((seat) => (
-                  <Badge
-                    key={seat.id?.toString()}
-                    variant="outline"
-                    className="bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-700"
-                  >
-                    {seat.seatNumber +
-                      (seat.seatRow ? " (" + seat.seatRow + ")" : "")}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
+					{selectedSeats.length > 0 && (
+						<div className="space-y-2">
+							<h4 className="font-medium">
+								{t("blockSeatsModal.seatsToBlockTitle")}
+							</h4>
+							<div className="flex flex-wrap gap-2 max-h-10 overflow-y-auto">
+								{selectedSeats.map((seat) => (
+									<Badge
+										key={seat.id?.toString()}
+										variant="outline"
+										className="bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-700"
+									>
+										{seat.seatNumber +
+											(seat.seatRow ? " (" + seat.seatRow + ")" : "")}
+									</Badge>
+								))}
+							</div>
+						</div>
+					)}
 
-          <div className="flex justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              className="bg-transparent"
-            >
-              {t("blockSeatsModal.cancelButton")}
-            </Button>
-            <Button
-              type="submit"
-              disabled={
-                isLoading || selectedSeats.length === 0 || !formData.eventId
-              }
-            >
-              {isLoading
-                ? t("blockSeatsModal.blockingButton")
-                : selectedSeats.length === 1
-                  ? t("blockSeatsModal.blockSeatButton")
-                  : t("blockSeatsModal.blockSeatsButton", {
-                      count: selectedSeats.length,
-                    })}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
+					<div className="flex justify-end gap-2">
+						<Button
+							type="button"
+							variant="outline"
+							onClick={onClose}
+							className="bg-transparent"
+						>
+							{t("blockSeatsModal.cancelButton")}
+						</Button>
+						<Button
+							type="submit"
+							disabled={
+								isLoading || selectedSeats.length === 0 || !formData.eventId
+							}
+						>
+							{isLoading
+								? t("blockSeatsModal.blockingButton")
+								: selectedSeats.length === 1
+									? t("blockSeatsModal.blockSeatButton")
+									: t("blockSeatsModal.blockSeatsButton", {
+											count: selectedSeats.length,
+										})}
+						</Button>
+					</div>
+				</form>
+			</DialogContent>
+		</Dialog>
+	);
 }
