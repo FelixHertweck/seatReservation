@@ -78,15 +78,10 @@ jobs:
       - name: Check for changes of api client
         run: git diff --exit-code -- webapp/api/
 
-      - name: Run ESLint
+      - name: Run Biome (code formatter and linter)
         run: |
               cd webapp
-              npm run lint:check
-
-      - name: Run Prettier
-        run: |
-              cd webapp
-              npm run format:check
+              npm run biome:ci
 
       - name: Build static
         run: |
