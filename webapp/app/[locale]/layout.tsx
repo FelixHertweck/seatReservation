@@ -3,14 +3,14 @@ import { languages } from "@/lib/i18n/config";
 import { ClientProviders } from "@/components/client-providers";
 
 export async function generateStaticParams() {
-  return languages.map((locale) => ({ locale }));
+	return languages.map((locale) => ({ locale }));
 }
 
 export default async function LocaleLayout({
-  children,
+	children,
 }: {
-  children: React.ReactNode;
-  params: Promise<{ locale: string }>;
+	children: React.ReactNode;
+	params: Promise<{ locale: string }>;
 }) {
-  return <ClientProviders>{children}</ClientProviders>;
+	return <ClientProviders>{children}</ClientProviders>;
 }

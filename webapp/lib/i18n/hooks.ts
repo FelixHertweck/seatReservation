@@ -4,9 +4,9 @@ import { useTranslation } from "./client";
 import { useParams } from "next/navigation";
 
 export function useT() {
-  const params = useParams();
-  const locale = params.locale as string;
-  const { t } = useTranslation(locale);
+	const params = useParams();
+	const locale = params.locale as string;
+	const { t } = useTranslation(locale);
 
-  return t;
+	return t;
 }

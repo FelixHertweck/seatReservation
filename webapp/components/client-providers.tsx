@@ -9,23 +9,23 @@ import { ProfileUnsavedChangesProvider } from "@/hooks/use-profile-unsaved-chang
 import { Toaster } from "./ui/sonner";
 
 export function ClientProviders({ children }: { children: React.ReactNode }) {
-  return (
-    <CookiesProvider>
-      <LoginRequiredPopupProvider>
-        <ProfileUnsavedChangesProvider>
-          <InitQueryClient>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
-              {children}
-              <Toaster />
-            </ThemeProvider>
-          </InitQueryClient>
-        </ProfileUnsavedChangesProvider>
-      </LoginRequiredPopupProvider>
-    </CookiesProvider>
-  );
+	return (
+		<CookiesProvider>
+			<LoginRequiredPopupProvider>
+				<ProfileUnsavedChangesProvider>
+					<InitQueryClient>
+						<ThemeProvider
+							attribute="class"
+							defaultTheme="system"
+							enableSystem
+							disableTransitionOnChange
+						>
+							{children}
+							<Toaster />
+						</ThemeProvider>
+					</InitQueryClient>
+				</ProfileUnsavedChangesProvider>
+			</LoginRequiredPopupProvider>
+		</CookiesProvider>
+	);
 }

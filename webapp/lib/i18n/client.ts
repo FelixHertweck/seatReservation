@@ -3,8 +3,8 @@
 import { useEffect } from "react";
 import i18next from "i18next";
 import {
-  initReactI18next,
-  useTranslation as useTranslationOrg,
+	initReactI18next,
+	useTranslation as useTranslationOrg,
 } from "react-i18next";
 import { useCookies } from "react-cookie";
 import resourcesToBackend from "i18next-resources-to-backend";
@@ -15,43 +15,43 @@ const runsOnServerSide = typeof window === "undefined";
 
 // Initialize i18next for client side
 i18next
-  .use(initReactI18next)
-  .use(LanguageDetector)
-  .use(
-    resourcesToBackend(
-      (language: string, namespace: string) =>
-        import(`../../locales/${language}/${namespace}.json`),
-    ),
-  )
-  .init({
-    ...getOptions(),
-    lng: runsOnServerSide ? undefined : "en", // Start with fallback on client
-    detection: {
-      order: ["path", "htmlTag", "cookie", "navigator"],
-    },
-    preload: runsOnServerSide ? languages : [],
-  });
+	.use(initReactI18next)
+	.use(LanguageDetector)
+	.use(
+		resourcesToBackend(
+			(language: string, namespace: string) =>
+				import(`../../locales/${language}/${namespace}.json`),
+		),
+	)
+	.init({
+		...getOptions(),
+		lng: runsOnServerSide ? undefined : "en", // Start with fallback on client
+		detection: {
+			order: ["path", "htmlTag", "cookie", "navigator"],
+		},
+		preload: runsOnServerSide ? languages : [],
+	});
 
 export function useTranslation(
-  lng: string,
-  ns = "translation",
-  options: { keyPrefix?: string } = {},
+	lng: string,
+	ns = "translation",
+	options: { keyPrefix?: string } = {},
 ) {
-  const [cookies, setCookie] = useCookies([cookieName]);
-  const ret = useTranslationOrg(ns, options);
-  const { i18n } = ret;
+	const [cookies, setCookie] = useCookies([cookieName]);
+	const ret = useTranslationOrg(ns, options);
+	const { i18n } = ret;
 
-  useEffect(() => {
-    if (lng && i18n.resolvedLanguage !== lng) {
-      i18n.changeLanguage(lng);
-    }
-  }, [lng, i18n]);
+	useEffect(() => {
+		if (lng && i18n.resolvedLanguage !== lng) {
+			i18n.changeLanguage(lng);
+		}
+	}, [lng, i18n]);
 
-  useEffect(() => {
-    if (cookies.i18next !== lng) {
-      setCookie(cookieName, lng, { path: "/" });
-    }
-  }, [lng, cookies.i18next, setCookie]);
+	useEffect(() => {
+		if (cookies.i18next !== lng) {
+			setCookie(cookieName, lng, { path: "/" });
+		}
+	}, [lng, cookies.i18next, setCookie]);
 
-  return ret;
+	return ret;
 }

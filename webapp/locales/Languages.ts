@@ -8,28 +8,28 @@ import translationEN from "./en/translation.json";
 import translationDE from "./de/translation.json";
 
 export const LanguageLabels = new Map([
-  ["en", "English"],
-  ["de", "Deutsch"],
+	["en", "English"],
+	["de", "Deutsch"],
 ]);
 
 const resources = {
-  en: {
-    translation: translationEN,
-  },
-  de: {
-    translation: translationDE,
-  },
+	en: {
+		translation: translationEN,
+	},
+	de: {
+		translation: translationDE,
+	},
 };
 
 export function initI18N() {
-  void i18n
-    .use(LanguageDetector)
-    .use(initReactI18next)
-    .init({
-      resources,
-      fallbackLng: "en",
-      interpolation: {
-        escapeValue: false,
-      },
-    });
+	void i18n
+		.use(LanguageDetector)
+		.use(initReactI18next)
+		.init({
+			resources,
+			fallbackLng: "en",
+			interpolation: {
+				escapeValue: false,
+			},
+		});
 }

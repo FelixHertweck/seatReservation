@@ -4,57 +4,57 @@ import { detectLanguageFromHeader } from "./lib/i18n/language-detector";
 import { fallbackLng, languages, cookieName } from "./lib/i18n/config";
 
 export function proxy(request: NextRequest) {
-  if (request.nextUrl.pathname.startsWith("/api/")) {
-    return NextResponse.next();
-  }
+	if (request.nextUrl.pathname.startsWith("/api/")) {
+		return NextResponse.next();
+	}
 
-  // Check if there is any supported locale in the pathname
-  const pathname = request.nextUrl.pathname;
-  const pathnameIsMissingLocale = languages.every(
-    (locale) =>
-      !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`,
-  );
+	// Check if there is any supported locale in the pathname
+	const pathname = request.nextUrl.pathname;
+	const pathnameIsMissingLocale = languages.every(
+		(locale) =>
+			!pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`,
+	);
 
-  // Redirect if there is no locale
-  if (pathnameIsMissingLocale) {
-    const locale = getLocale(request);
+	// Redirect if there is no locale
+	if (pathnameIsMissingLocale) {
+		const locale = getLocale(request);
 
-    const redirectUrl = new URL(
-      `/${locale}${pathname.startsWith("/") ? "" : "/"}${pathname}`,
-      request.url,
-    );
+		const redirectUrl = new URL(
+			`/${locale}${pathname.startsWith("/") ? "" : "/"}${pathname}`,
+			request.url,
+		);
 
-    // Copy all search parameters from the original request
-    request.nextUrl.searchParams.forEach((value, key) => {
-      redirectUrl.searchParams.set(key, value);
-    });
+		// Copy all search parameters from the original request
+		request.nextUrl.searchParams.forEach((value, key) => {
+			redirectUrl.searchParams.set(key, value);
+		});
 
-    return NextResponse.redirect(redirectUrl);
-  }
+		return NextResponse.redirect(redirectUrl);
+	}
 }
 
 function getLocale(request: NextRequest): string {
-  // Try to get language from cookie first
-  const cookieLng = request.cookies.get(cookieName)?.value;
-  if (cookieLng && languages.includes(cookieLng)) {
-    return cookieLng;
-  }
+	// Try to get language from cookie first
+	const cookieLng = request.cookies.get(cookieName)?.value;
+	if (cookieLng && languages.includes(cookieLng)) {
+		return cookieLng;
+	}
 
-  // Try to get language from Accept-Language header
-  const acceptLng = request.headers.get("Accept-Language");
-  if (acceptLng) {
-    const detectedLng = detectLanguageFromHeader(acceptLng, languages);
-    if (detectedLng) {
-      return detectedLng;
-    }
-  }
+	// Try to get language from Accept-Language header
+	const acceptLng = request.headers.get("Accept-Language");
+	if (acceptLng) {
+		const detectedLng = detectLanguageFromHeader(acceptLng, languages);
+		if (detectedLng) {
+			return detectedLng;
+		}
+	}
 
-  return fallbackLng;
+	return fallbackLng;
 }
 
 export const config = {
-  // Matcher ignoring `/_next/`, `/api/`, and all static assets
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|api|.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp|webmanifest|xml|txt)$).*)",
-  ],
+	// Matcher ignoring `/_next/`, `/api/`, and all static assets
+	matcher: [
+		"/((?!_next/static|_next/image|favicon.ico|api|.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp|webmanifest|xml|txt)$).*)",
+	],
 };

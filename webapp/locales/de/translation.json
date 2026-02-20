@@ -1,1167 +1,1167 @@
 {
-  "seatStatus": {
-    "available": "Verfügbar",
-    "reserved": "Reserviert",
-    "blocked": "Blockiert",
-    "checkedIn": "Eingecheckt",
-    "noShow": "Nicht erschienen",
-    "cancelled": "Storniert"
-  },
-  "validation": {
-    "usernameHint": "3-64 Zeichen: Buchstaben, Zahlen, Punkte, Unterstriche, Bindestriche"
-  },
-  "notFound": {
-    "title": "Seite nicht gefunden",
-    "description": "Die angeforderte Seite konnte nicht gefunden werden.",
-    "backToHome": "Zur Startseite"
-  },
-  "email": {
-    "confirmationEmailSentTitle": "Bestätigungs-E-Mail gesendet",
-    "confirmationEmailSentDescription": "Eine Bestätigungs-E-Mail wurde an Ihre Adresse gesendet. Bitte bestätigen Sie diese!"
-  },
-  "logout": {
-    "success": {
-      "title": "Logout erfolgreich",
-      "description": "Sie wurden erfolgreich abgemeldet."
-    },
-    "error": {
-      "title": "Logout fehlgeschlagen"
-    }
-  },
-  "logoutAll": {
-    "success": {
-      "title": "Logout von allen Geräten erfolgreich",
-      "description": "Sie wurden erfolgreich von allen Geräten abgemeldet."
-    },
-    "error": {
-      "title": "Logout von allen Geräten fehlgeschlagen"
-    }
-  },
-  "login": {
-    "logoutButton": "Abmelden",
-    "success": {
-      "title": "Anmeldung erfolgreich",
-      "description": "Sie wurden erfolgreich angemeldet."
-    },
-    "welcomeBack": "Willkommen zurück!",
-    "alreadyLoggedIn": "Sie sind bereits angemeldet.",
-    "continueWithUser": "Mit angemeldetem Benutzer fortfahren ({{username}})",
-    "logout": {
-      "success": {
-        "title": "Abmeldung erfolgreich",
-        "description": "Sie wurden erfolgreich abgemeldet."
-      }
-    },
-    "signIn": "Anmelden",
-    "enterCredentials": "Geben Sie Ihre Anmeldedaten ein, um auf Ihr Konto zuzugreifen",
-    "username": "Benutzername",
-    "enterUsername": "Geben Sie Ihren Benutzernamen ein",
-    "password": "Passwort",
-    "enterPassword": "Geben Sie Ihr Passwort ein",
-    "signingIn": "Melde mich an...",
-    "signInButton": "Anmelden",
-    "noAccount": "Sie haben noch kein Konto? ",
-    "register": "Registrieren",
-    "error": {
-      "invalidCredentials": "Ungültiger Benutzername oder Passwort.",
-      "title": "Anmeldefehler",
-      "description": "Beim Anmelden ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
-      "accountLocked": "Konto gesperrt bis {{time}} ({{duration}})",
-      "tooManyAttemptsDescription": "Zu viele fehlgeschlagene Anmeldeversuche. Ihr Konto wurde vorübergehend gesperrt."
-    }
-  },
-  "register": {
-    "success": {
-      "title": "Registrierung erfolgreich",
-      "description": "Ihr Konto wurde erfolgreich erstellt."
-    },
-    "error": {
-      "title": "Registrierung fehlgeschlagen",
-      "description": "Bei der Registrierung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
-    },
-    "createAccountTitle": "Konto erstellen",
-    "enterInfo": "Geben Sie Ihre Informationen ein, um Ihr Konto zu erstellen",
-    "firstName": "Vorname",
-    "firstNamePlaceholder": "Max",
-    "lastName": "Nachname",
-    "lastNamePlaceholder": "Mustermann",
-    "username": "Benutzername",
-    "usernamePlaceholder": "maxmustermann",
-    "email": "E-Mail",
-    "emailPlaceholder": "max@example.com",
-    "password": "Passwort",
-    "passwordTooShort": "Passwort muss mindestens 8 Zeichen lang sein",
-    "creatingAccount": "Konto wird erstellt...",
-    "createAccountButton": "Konto erstellen",
-    "alreadyHaveAccount": "Sie haben bereits ein Konto? ",
-    "signIn": "Anmelden",
-    "registrationDisabled": {
-      "title": "Registrierung deaktiviert",
-      "description": "Eine Registrierung ist derzeit nicht verfügbar."
-    }
-  },
-  "mainLayout": {
-    "eventManagementTitle": "Event-Verwaltung"
-  },
-  "adminPage": {
-    "dashboardTitle": "Admin-Dashboard",
-    "dashboardDescription": "Benutzer und Systemeinstellungen verwalten",
-    "userManagementTab": "Benutzerverwaltung",
-    "exportDataTab": "Daten exportieren"
-  },
-  "admin": {
-    "user": {
-      "create": {
-        "success": {
-          "title": "Benutzer erstellt",
-          "description": "Der Benutzer wurde erfolgreich erstellt."
-        },
-        "error": {
-          "title": "Benutzererstellung fehlgeschlagen",
-          "default": "Beim Erstellen des Benutzers ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
-        }
-      },
-      "import": {
-        "success": {
-          "title": "Benutzer importiert",
-          "description": "Die Benutzer wurden erfolgreich importiert."
-        },
-        "error": {
-          "title": "Benutzerimport fehlgeschlagen",
-          "default": "Beim Importieren der Benutzer ist ein Fehler aufgetreten. Bitte prüfen Sie die Daten und versuchen Sie es erneut."
-        }
-      },
-      "update": {
-        "success": {
-          "title": "Benutzer aktualisiert",
-          "description": "Der Benutzer wurde erfolgreich aktualisiert."
-        },
-        "error": {
-          "title": "Benutzeraktualisierung fehlgeschlagen",
-          "default": "Beim Aktualisieren des Benutzers ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
-        }
-      },
-      "delete": {
-        "success": {
-          "title": "Benutzer gelöscht",
-          "description": "Der Benutzer wurde erfolgreich gelöscht."
-        },
-        "error": {
-          "title": "Benutzerlöschung fehlgeschlagen",
-          "default": "Beim Löschen des/der Benutzer ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
-        }
-      }
-    }
-  },
-  "eventsPage": {
-    "title": "Veranstaltungen",
-    "description": "Veranstaltungen durchsuchen und Plätze reservieren",
-    "filterByEventPlaceholder": "Nach Veranstaltung filtern",
-    "allEventsFilter": "Alle Veranstaltungen",
-    "noEventsAvailable": "Derzeit sind keine Veranstaltungen verfügbar.",
-    "tryAgain": "Bitte versuchen Sie es später erneut.",
-    "noEventsMatchSearch": "Keine Veranstaltungen entsprechen Ihrer Suche.",
-    "checkSearch": "Bitte überprüfen Sie Ihre Suchkriterien."
-  },
-  "reservationsPage": {
-    "title": "Meine Reservierungen",
-    "description": "Ihre aktuellen und vergangenen Reservierungen anzeigen",
-    "noReservationsYet": "Sie haben noch keine Reservierungen.",
-    "switchToAvailableEvents": "Wechseln Sie zu \"Veranstaltungen\", um Ihre erste Reservierung vorzunehmen!",
-    "noReservationsMatchSearch": "Keine Reservierungen entsprechen Ihrer Suche.",
-    "checkSearch": "Bitte überprüfen Sie Ihre Suchkriterien.",
-    "noReservationsFoundTitle": "Keine Reservierungen gefunden",
-    "noReservationsFoundDescription": "Es wurden keine Reservierungen mit der angefragten URL gefunden."
-  },
-  "managerPage": {
-    "dashboardTitle": "Manager-Dashboard",
-    "dashboardDescription": "Verwalten Sie Veranstaltungen, Standorte, Plätze und Reservierungen",
-    "eventsTab": "Veranstaltungen",
-    "locationsTab": "Standorte",
-    "seatsTab": "Plätze",
-    "reservationsTab": "Reservierungen",
-    "allowancesTab": "Kontingente"
-  },
-  "manager": {
-    "event": {
-      "create": {
-        "success": {
-          "title": "Veranstaltung erstellt",
-          "description": "Die Veranstaltung wurde erfolgreich erstellt."
-        },
-        "error": {
-          "title": "Veranstaltungserstellung fehlgeschlagen"
-        }
-      },
-      "update": {
-        "success": {
-          "title": "Veranstaltung aktualisiert",
-          "description": "Die Veranstaltung wurde erfolgreich aktualisiert."
-        },
-        "error": {
-          "title": "Veranstaltungsaktualisierung fehlgeschlagen"
-        }
-      },
-      "delete": {
-        "success": {
-          "title": "Veranstaltung gelöscht",
-          "description": "Die Veranstaltung wurde erfolgreich gelöscht."
-        },
-        "error": {
-          "title": "Veranstaltungslöschung fehlgeschlagen"
-        }
-      }
-    },
-    "location": {
-      "create": {
-        "success": {
-          "title": "Standort erstellt",
-          "description": "Der Standort wurde erfolgreich erstellt."
-        },
-        "error": {
-          "title": "Standorterstellung fehlgeschlagen"
-        }
-      },
-      "update": {
-        "success": {
-          "title": "Standort aktualisiert",
-          "description": "Der Standort wurde erfolgreich aktualisiert."
-        },
-        "error": {
-          "title": "Standortaktualisierung fehlgeschlagen"
-        }
-      },
-      "delete": {
-        "success": {
-          "title": "Standort gelöscht",
-          "description": "Der Standort wurde erfolgreich gelöscht."
-        },
-        "error": {
-          "title": "Standortlöschung fehlgeschlagen"
-        }
-      },
-      "importWithSeats": {
-        "success": {
-          "title": "Standort mit Plätzen importiert",
-          "description": "Der Standort und die zugehörigen Plätze wurden erfolgreich importiert."
-        },
-        "error": {
-          "title": "Import von Standort mit Plätzen fehlgeschlagen"
-        }
-      },
-      "importSeats": {
-        "success": {
-          "title": "Plätze importiert",
-          "description": "Die Plätze wurden erfolgreich importiert."
-        },
-        "error": {
-          "title": "Import von Plätzen fehlgeschlagen"
-        }
-      }
-    },
-    "seat": {
-      "create": {
-        "success": {
-          "title": "Platz erstellt",
-          "description": "Der Platz wurde erfolgreich erstellt."
-        },
-        "error": {
-          "title": "Platzerstellung fehlgeschlagen"
-        }
-      },
-      "update": {
-        "success": {
-          "title": "Platz aktualisiert",
-          "description": "Der Platz wurde erfolgreich aktualisiert."
-        },
-        "error": {
-          "title": "Platzaktualisierung fehlgeschlagen"
-        }
-      },
-      "delete": {
-        "success": {
-          "title": "Platz gelöscht",
-          "description": "Der Platz wurde erfolgreich gelöscht."
-        },
-        "error": {
-          "title": "Platzlöschung fehlgeschlagen"
-        }
-      }
-    },
-    "reservation": {
-      "create": {
-        "success": {
-          "title": "Reservierung erstellt",
-          "description": "Die Reservierung wurde erfolgreich erstellt."
-        },
-        "error": {
-          "title": "Reservierungserstellung fehlgeschlagen"
-        }
-      },
-      "delete": {
-        "success": {
-          "title": "Reservierung gelöscht",
-          "description": "Die Reservierung wurde erfolgreich gelöscht."
-        },
-        "error": {
-          "title": "Reservierungslöschung fehlgeschlagen"
-        }
-      },
-      "blockSeats": {
-        "success": {
-          "title": "Plätze blockiert",
-          "description": "Die ausgewählten Plätze wurden erfolgreich blockiert."
-        },
-        "error": {
-          "title": "Blockieren von Plätzen fehlgeschlagen"
-        }
-      }
-    },
-    "reservationAllowance": {
-      "create": {
-        "success": {
-          "title": "Kontingent erstellt",
-          "description": "Das Reservierungskontingent wurde erfolgreich erstellt."
-        },
-        "error": {
-          "title": "Kontingenterstellung fehlgeschlagen"
-        }
-      },
-      "update": {
-        "success": {
-          "title": "Kontingent aktualisiert",
-          "description": "Das Reservierungskontingent wurde erfolgreich aktualisiert."
-        },
-        "error": {
-          "title": "Kontingentaktualisierung fehlgeschlagen"
-        }
-      },
-      "delete": {
-        "success": {
-          "title": "Kontingent gelöscht",
-          "description": "Das Reservierungskontingent wurde erfolgreich gelöscht."
-        },
-        "error": {
-          "title": "Kontingentlöschung fehlgeschlagen"
-        }
-      }
-    }
-  },
-  "profilePage": {
-    "update": {
-      "success": {
-        "title": "Profil aktualisiert",
-        "description": "Ihr Profil wurde erfolgreich aktualisiert."
-      }
-    },
-    "authRequiredTitle": "Authentifizierung erforderlich",
-    "authRequiredDescription": "Bitte melden Sie sich an, um Ihr Profil zu aktualisieren.",
-    "profileUpdatedTitle": "Profil aktualisiert",
-    "profileUpdatedDescription": "Ihr Profil wurde erfolgreich aktualisiert.",
-    "profileSettingsTitle": "Profileinstellungen",
-    "profileSettingsDescription": "Aktualisieren Sie Ihre persönlichen Daten, Ihr Passwort und Ihre Tags.",
-    "usernameLabel": "Benutzername",
-    "firstNameLabel": "Vorname",
-    "lastNameLabel": "Nachname",
-    "emailLabel": "E-Mail",
-    "verifiedBadge": "Verifiziert",
-    "notVerifiedBadge": "Nicht verifiziert",
-    "confirmationEmailInfo": "Eine Bestätigungs-E-Mail wurde gesendet und muss über den Link bestätigt werden.",
-    "confirmationEmailResentTitle": "Bestätigungs-E-Mail erneut gesendet",
-    "confirmationEmailResentDescription": "Eine neue Bestätigungs-E-Mail wurde an Ihre Adresse gesendet.",
-    "resendButton": "Erneut senden",
-    "tagsLabel": "Tags",
-    "addTagPlaceholder": "Neuen Tag hinzufügen",
-    "addButton": "Hinzufügen",
-    "saveChangesButton": "Änderungen speichern",
-    "noSaveChangesButton": "Keine Änderungen zum Speichern",
-    "passwordSectionTitle": "Passwort ändern",
-    "changePassword": "Passwort ändern",
-    "cancelPasswordUpdate": "Abbrechen",
-    "newPasswordLabel": "Neues Passwort",
-    "newPasswordPlaceholder": "Geben Sie Ihr neues Passwort ein",
-    "confirmPasswordLabel": "Passwort bestätigen",
-    "confirmPasswordPlaceholder": "Bestätigen Sie Ihr neues Passwort",
-    "passwordTooShort": "Passwort muss mindestens 8 Zeichen lang sein",
-    "passwordsDoNotMatch": "Die Passwörter stimmen nicht überein",
-    "verifyEmailButton": "Verifikationscode eingeben",
-    "passwordValidationErrorTitle": "Validierungsfehler",
-    "passwordValidationErrorDescription": "Bitte stellen Sie sicher, dass alle Passwortfelder korrekt ausgefüllt sind.",
-    "noConfirmationEmailSentInfo": "Es wurde noch keine Bestätigungs-E-Mail gesendet. Klicken Sie auf \"Bestätigungs-E-Mail senden\", um eine zu erhalten.",
-    "confirmationEmailTitle": "Bestätigungs-E-Mail gesendet",
-    "confirmationEmailDescription": "Bitte überprüfen Sie Ihren Posteingang und klicken Sie auf den Bestätigungslink.",
-    "sendConfirmationEmailButton": "Bestätigungs-E-Mail senden"
-  },
-  "startPage": {
-    "eventManagerTitle": "Sitzplatz Reservierung",
-    "signInButton": "Anmelden",
-    "getStartedButton": "Loslegen",
-    "registerButton": "Registrieren",
-    "heroTitle": "SeatReservation",
-    "heroDescription": "Greifen Sie auf Ihre Veranstaltungen, Reservierungen und Verwaltungstools zu. Melden Sie sich an oder registrieren Sie sich, um zu beginnen.",
-    "footerDescription": "Die umfassendste Sitzplatz Reservierungs-Plattform für moderne Organisationen.",
-    "githubProjectLink": "GitHub-Projekt",
-    "copyright": "© 2025 SeatReservation. Alle Rechte vorbehalten."
-  },
-  "userExport": {
-    "noUsersToExportTitle": "Keine Benutzer zum Exportieren",
-    "noUsersToExportDescription": "Es sind keine Benutzerdaten verfügbar, die exportiert werden könnten.",
-    "exportSuccessTitle": "Export erfolgreich",
-    "exportSuccessDescription": "Benutzerdaten erfolgreich als users.json exportiert.",
-    "exportErrorLog": "Fehler beim Exportieren der Benutzerdaten:",
-    "exportFailedTitle": "Export fehlgeschlagen",
-    "exportFailedDescription": "Beim Exportieren der Benutzerdaten ist ein Fehler aufgetreten.",
-    "exportDataTitle": "Benutzerdaten exportieren",
-    "exportDataDescription": "Alle Benutzerdaten als JSON-Datei exportieren.",
-    "loadingUsers": "Benutzer werden geladen...",
-    "exportUsersAsJson": "Benutzer als JSON exportieren",
-    "noUsersFoundToExport": "Keine Benutzer zum Exportieren gefunden."
-  },
-  "userFormModal": {
-    "addNewUserTitle": "Neuen Benutzer hinzufügen",
-    "editUserTitle": "Benutzer bearbeiten",
-    "usernameLabel": "Benutzername",
-    "passwordLabel": "Passwort",
-    "passwordTooShort": "Passwort muss mindestens 8 Zeichen lang sein",
-    "firstNameLabel": "Vorname",
-    "lastNameLabel": "Nachname",
-    "emailLabel": "E-Mail",
-    "verifiedLabel": "Verifiziert",
-    "sendEmailVerificationLabel": "E-Mail-Verifizierung senden",
-    "rolesLabel": "Rollen",
-    "tagsLabel": "Tags",
-    "addTagPlaceholder": "Neuen Tag hinzufügen",
-    "addButton": "Hinzufügen",
-    "cancelButton": "Abbrechen",
-    "createUserButton": "Benutzer erstellen",
-    "createUserButtonLoading": "Erstelle...",
-    "saveChangesButton": "Änderungen speichern",
-    "saveChangesButtonLoading": "Speichere...",
-    "passwordPlaceholder": "Neues Passwort",
-    "passwordUpdatePlaceholder": "Passwort aktualisieren",
-    "passwordUpdateHint": "Das Passwort muss mindestens 8 Zeichen lang sein",
-    "sendEmailVerificationDesc": "Verifizierungs-E-Mail wird an den Benutzer gesendet"
-  },
-  "userManagement": {
-    "confirmDelete": "Sind Sie sicher, dass Sie {{username}} löschen möchten?",
-    "confirmDeleteMultiple": "Sind Sie sicher, dass Sie {{count}} Benutzer löschen möchten?",
-    "title": "Benutzerverwaltung",
-    "description": "Systembenutzer und deren Rollen verwalten",
-    "addUserButton": "Benutzer hinzufügen",
-    "importJsonButton": "JSON importieren",
-    "selectAll": "Alle auswählen",
-    "deselectAll": "Alle abwählen",
-    "tableHeaderSelect": "Auswahl",
-    "tableHeaderUsername": "Benutzername",
-    "tableHeaderName": "Name",
-    "tableHeaderEmail": "E-Mail",
-    "tableHeaderRoles": "Rollen",
-    "tableHeaderTags": "Tags",
-    "tableHeaderVerified": "Verifiziert",
-    "tableHeaderActions": "Aktionen",
-    "verifiedStatus": "Verifiziert",
-    "pendingStatus": "Ausstehend",
-    "paginationLabel": "Benutzer",
-    "deleteButtonLabel": "Löschen",
-    "editButtonLabel": "Bearbeiten"
-  },
-  "userImportModal": {
-    "importUserDataTitle": "Benutzerdaten importieren",
-    "importUserDataDescription": "Mehrere Benutzer im JSON-Format importieren",
-    "availableRolesLabel": "Verfügbare Rollen",
-    "jsonDataLabel": "JSON-Daten (Benutzer-Array)",
-    "pasteUsersJsonPlaceholder": "Benutzer-Array-JSON-Daten hier einfügen...",
-    "cancelButton": "Abbrechen",
-    "importUsersButton": "Benutzer importieren",
-    "importingButton": "Importiere...",
-    "importDataButton": "Daten importieren",
-    "usersDataArrayError": "Benutzerdaten müssen ein Array sein",
-    "userDataValidationError": "Jeder Benutzer muss username, password, firstname, lastname und roles haben",
-    "invalidRoleError": "Ungültige Rolle gefunden. Verfügbare Rollen sind: ADMIN, MANAGER, USER",
-    "invalidJsonOrDataStructureError": "Ungültiges JSON-Format oder Datenstruktur"
-  },
-  "emailVerification": {
-    "title": "E-Mail-Verifizierung",
-    "success": {
-      "title": "E-Mail verifiziert",
-      "description": "Ihre E-Mail-Adresse wurde erfolgreich verifiziert."
-    },
-    "error": {
-      "title": "E-Mail-Verifizierung fehlgeschlagen",
-      "description": "Bei der Verifizierung Ihrer E-Mail-Adresse ist ein Fehler aufgetreten."
-    },
-    "enterCode": "Geben Sie den 6-stelligen Verifizierungscode ein, der an",
-    "codeLabel": "Verifizierungscode",
-    "codeHint": "Geben Sie den 6-stelligen Code aus Ihrer E-Mail ein",
-    "verifying": "Verifiziere...",
-    "verifyButton": "E-Mail verifizieren",
-    "invalidCodeLength": "Der Verifizierungscode muss 6 Stellen haben",
-    "invalidCode": "Ungültiger Verifizierungscode. Bitte versuchen Sie es erneut.",
-    "verificationFailed": "Verifizierung fehlgeschlagen. Bitte versuchen Sie es später erneut.",
-    "resendCode": "Code erneut senden",
-    "backToProfile": "Zurück zum Profil",
-    "alreadyVerified": "E-Mail bereits verifiziert",
-    "continueButton": "Fortfahren",
-    "emailAlreadyVerifiedInfo": "Sie können fortfahren, da Ihre E-Mail bereits verifiziert wurde.",
-    "confirmationEmailResentTitle": "Bestätigungs-E-Mail erneut gesendet",
-    "confirmationEmailResentDescription": "Eine neue Bestätigungs-E-Mail wurde an Ihre Adresse gesendet.",
-    "noEmailTitle": "Keine E-Mail-Adresse",
-    "noEmailDescription": "Sie müssen zuerst eine E-Mail-Adresse in Ihrem Profil hinterlegen, bevor Sie sie verifizieren können.",
-    "goToProfile": "Zum Profil",
-    "resendingConfirmationEmail": "Bestätigungs-E-Mail wird erneut gesendet...",
-    "resendConfirmationEmailFailed": "Fehler beim erneuten Senden der Bestätigungs-E-Mail."
-  },
-  "emailVerificationPrompt": {
-    "title": "E-Mail-Verifizierung erforderlich",
-    "emailSentTo": "Eine Bestätigungs-E-Mail wurde an ",
-    "clickLinkToConfirm": " gesendet. Bitte klicken Sie auf den Link in der E-Mail, um Ihre Adresse zu bestätigen und fortzufahren.",
-    "reloadInfo": "Falls Sie die Email bereits bestätigt haben, laden Sie die Seite neu.",
-    "ifEmailIncorrect": "Wenn diese E-Mail-Adresse falsch oder noch nicht angekommen ist, können Sie sie auf Ihrer ",
-    "profilePageLink": "Profilseite",
-    "changeIt": " ändern.",
-    "noEmailRegistered": "Für Ihr Konto ist keine E-Mail-Adresse registriert. Bitte fügen Sie eine E-Mail-Adresse hinzu und bestätigen Sie diese, um fortzufahren.",
-    "goToProfileButton": "Zum Profil",
-    "goToVerifyButton": "Zur Verifizierung",
-    "emailAlreadyVerifiedInfo": "Ihre E-Mail wurde bereits bestätigt. Bitte laden Sie die Seite neu, um die Änderungen zu sehen.",
-    "reloadPageButton": "Seite neu laden",
-    "emailRegistered1": "Für ihr Benutzeraccount wurde ",
-    "emailRegistered2": " als Email-Adresse registiert.",
-    "clickToSendConfirmation": "Klicken Sie auf Email-Verification senden um eine Bestätigungsemail zu erhalten und ihre Email zu bestätigen",
-    "sendVerificationMail": "Bestätigungs-E-Mail senden"
-  },
-  "loginRequiredPopup": {
-    "title": "Anmeldung erforderlich",
-    "description": "Sie müssen angemeldet sein, um auf diese Seite zugreifen zu können.",
-    "loginButton": "Anmelden"
-  },
-  "searchAndFilter": {
-    "searchPlaceholder": "Suchen...",
-    "filtersButton": "Filter",
-    "selectPlaceholder": "Wählen Sie {{label}}",
-    "enterPlaceholder": "Geben Sie {{label}} ein",
-    "activeFiltersLabel": "Aktive Filter:",
-    "clearAllButton": "Alle löschen"
-  },
-  "seatMap": {
-    "seatTitle": "Platz {{seatNumber}} ({{seatRow}})",
-    "resetButton": "Zurücksetzen",
-    "stageText": "BÜHNE"
-  },
-  "eventCard": {
-    "statusAvailable": "Verfügbar",
-    "statusNotAvailable": "Nicht verfügbar",
-    "tbd": "TBD",
-    "timeTbd": "Uhrzeit TBD",
-    "locationTbd": "Ort TBD",
-    "seatsAvailable": "{{count}} Plätze verfügbar",
-    "bookingUntil": "Buchung bis",
-    "reserveSeatsButton": "Plätze reservieren",
-    "notAvailableButton": "Nicht verfügbar",
-    "bookingOpenOnButtonWithDate": "Buchung öffnet am {{date}} um {{time}}"
-  },
-  "eventReservationModal": {
-    "title": "Plätze reservieren - {{eventName}}",
-    "description": "Wählen Sie Ihre Plätze für diese Veranstaltung aus. Verfügbar: {{availableSeats}}",
-    "available": "Verfügbar",
-    "selected": "Ausgewählt",
-    "myReserved": "Meine Reserviert",
-    "reserved": "Reserviert",
-    "blocked": "Blockiert",
-    "selectedSeatsTitle": "Ausgewählte Plätze:",
-    "cancelButton": "Abbrechen",
-    "reservingButton": "Reserviere...",
-    "reserveSeatsButton": "Reserviere {{count}} Plätze",
-    "reserveSeatButton": "Reserviere den Platz"
-  },
-  "reservation": {
-    "delete": {
-      "success": {
-        "title": "Reservierung gelöscht",
-        "description": "Ihre Reservierung wurde erfolgreich gelöscht."
-      },
-      "error": {
-        "title": "Reservierungslöschung fehlgeschlagen"
-      }
-    },
-    "create": {
-      "success": {
-        "title": "Reservierung erstellt",
-        "description": "Ihre Reservierung wurde erfolgreich erstellt."
-      },
-      "error": {
-        "title": "Reservierungserstellung fehlgeschlagen"
-      }
-    }
-  },
-  "reservationCard": {
-    "seatBadge": "Platz {{seatNumber}}",
-    "reservedOn": "Reserviert am",
-    "unknownDate": "Unbekanntes Datum",
-    "locationLabel": "Ort",
-    "unknownLocation": "Unbekannt",
-    "positionLabel": "Position",
-    "rowLabel": "Reihe",
-    "seatLabel": "Platz",
-    "viewSeatButton": "Platz ansehen",
-    "viewSeatMultipleButton": "Plätze ansehen",
-    "showQRCodeButton": "QR-Code",
-    "cancelButton": "Abbrechen",
-    "showLessButton": "Weniger anzeigen",
-    "showMoreButton": "Mehr anzeigen",
-    "seatSingular": "Platz",
-    "seatPlural": "Plätze",
-    "bookingUntil": "Buchung bis",
-    "unknownEvent": "Unbekannte Veranstaltung",
-    "selectAll": "Alle auswählen"
-  },
-  "reservationDeleteModal": {
-    "title": "Reservierung löschen",
-    "titleMultiple": "{{count}} Reservierungen löschen",
-    "description": "Möchten Sie die Reservierung für Platz {{seatNumber}} wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
-    "descriptionMultiple": "Möchten Sie wirklich {{count}} Reservierungen löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
-    "seatsToDelete": "Zu löschende Plätze",
-    "cancelButton": "Abbrechen",
-    "confirmButton": "Löschen"
-  },
-  "qrCodeModal": {
-    "title": "QR-Code für Check-In",
-    "description": "Zeigen Sie diesen QR-Code beim Check-In vor oder kopieren Sie den Reservierungscode",
-    "reservationCode": "Reservierungscode",
-    "generatingQRCode": "QR-Code wird generiert...",
-    "generationError": "Fehler beim Generieren des QR-Codes",
-    "generationErrorDescription": "Der QR-Code konnte nicht generiert werden. Bitte versuchen Sie es erneut.",
-    "copiedToClipboard": "In Zwischenablage kopiert",
-    "codeReady": "Der Reservierungscode wurde kopiert",
-    "downloadButton": "QR-Code herunterladen",
-    "downloadStarted": "Download gestartet",
-    "qrCodeDownloading": "Der QR-Code wird heruntergeladen"
-  },
-  "seatMapModal": {
-    "yourReservedSeatsTitle": "Ihre reservierten Plätze",
-    "yourReservedSeatTitle": "Ihr reservierter Platz",
-    "loadingSeatMap": "Sitzplan wird geladen...",
-    "multipleSeatsReserved": "Sie haben {{count}} Plätze für diese Veranstaltung reserviert",
-    "singleSeatReserved": "Platz {{seatNumber}} - Position ({{x}}, {{y}})",
-    "loadingText": "Wird geladen...",
-    "yourReservedSeatsSectionTitle": "Ihre reservierten Plätze",
-    "seatNumberButton": "Platz {{seatNumber}}",
-    "noSeatsReserved": "Keine Plätze reserviert"
-  },
-  "allowanceFormModal": {
-    "validationErrorTitle": "Validierungsfehler",
-    "validationErrorDescription": "Bitte wählen Sie eine Veranstaltung aus und geben Sie die erlaubten Reservierungen ein.",
-    "selectAtLeastOneUser": "Bitte wählen Sie mindestens einen Benutzer zur Erstellung aus.",
-    "successTitle": "Erfolg",
-    "allowanceCreatedSuccess": "Kontingent(e) erfolgreich erstellt.",
-    "selectExactlyOneUser": "Ungültiger Status für die Aktualisierung. Bitte wählen Sie genau einen Benutzer aus.",
-    "allowanceUpdatedSuccess": "Kontingent erfolgreich aktualisiert.",
-    "submissionErrorTitle": "Übermittlungsfehler",
-    "submissionErrorDescription": "Kontingent konnte nicht übermittelt werden. Bitte versuchen Sie es erneut.",
-    "addNewAllowanceTitle": "Neues Kontingent hinzufügen",
-    "editAllowanceTitle": "Kontingent bearbeiten",
-    "eventLabel": "Veranstaltung",
-    "selectEventPlaceholder": "Veranstaltung auswählen",
-    "usersLabel": "Benutzer",
-    "usersSelected": "{{count}} Benutzer ausgewählt",
-    "selectUsersPlaceholder": "Benutzer auswählen...",
-    "filterByTagPlaceholder": "Nach Tag filtern",
-    "clearTagSelectionAriaLabel": "Tag-Auswahl löschen",
-    "searchUserPlaceholder": "Benutzer suchen...",
-    "noUserFound": "Kein Benutzer gefunden.",
-    "clearAllButton": "Alle löschen",
-    "selectedUserLabel": "Ausgewählter Benutzer:",
-    "allowedReservationsLabel": "Erlaubte Reservierungen",
-    "cancelButton": "Abbrechen",
-    "submittingButton": "Wird übermittelt...",
-    "createAllowanceButton": "Kontingent erstellen",
-    "saveChangesButton": "Änderungen speichern"
-  },
-  "blockSeatsModal": {
-    "title": "Plätze blockieren",
-    "description": "Wählen Sie Plätze zum Blockieren aus und verhindern Sie Reservierungen",
-    "eventLabel": "Event",
-    "selectEventPlaceholder": "Event auswählen",
-    "available": "Verfügbar",
-    "selectedToBlock": "Zum Blockieren ausgewählt",
-    "reserved": "Reserviert",
-    "alreadyBlocked": "Bereits blockiert",
-    "seatsToBlockTitle": "Zu blockierende Plätze:",
-    "cancelButton": "Abbrechen",
-    "blockingButton": "Blockiere...",
-    "blockSeatsButton": "Blockiere {{count}} Plätze",
-    "blockSeatButton": "Blockiere diesen Platz"
-  },
-  "eventFormModal": {
-    "createEventTitle": "Veranstaltung erstellen",
-    "editEventTitle": "Veranstaltung bearbeiten",
-    "addEventDescription": "Eine neue Veranstaltung zum System hinzufügen",
-    "updateEventDescription": "Veranstaltungsinformationen aktualisieren",
-    "eventNameLabel": "Veranstaltungsname",
-    "descriptionLabel": "Beschreibung",
-    "locationLabel": "Ort",
-    "selectLocationPlaceholder": "Ort auswählen",
-    "startTimeLabel": "Startzeit",
-    "endTimeLabel": "Endzeit",
-    "bookingDeadlineLabel": "Buchungsfrist",
-    "bookingStartTimeLabel": "Buchungs-Startzeit",
-    "reminderSendDateLabel": "Erinnerungs-Email Datum",
-    "supervisorsLabel": "Betreuer",
-    "supervisorsPlaceholder": "Benutzer auswählen...",
-    "cancelButton": "Abbrechen",
-    "savingButton": "Speichern...",
-    "createButton": "Erstellen",
-    "updateButton": "Aktualisieren"
-  },
-  "eventManagement": {
-    "confirmDelete": "Sind Sie sicher, dass Sie {{eventName}} löschen möchten?",
-    "confirmDeleteMultiple": "Sind Sie sicher, dass Sie {{count}} Veranstaltungen löschen möchten?",
-    "title": "Veranstaltungsverwaltung",
-    "description": "Veranstaltungen erstellen und verwalten",
-    "addEventButton": "Veranstaltung hinzufügen",
-    "selectAll": "Alle auswählen",
-    "deselectAll": "Alle abwählen",
-    "locationFilterLabel": "Ort",
-    "tableHeaderSelect": "Auswahl",
-    "tableHeaderName": "Name",
-    "tableHeaderDescription": "Beschreibung",
-    "tableHeaderStartTime": "Startzeit",
-    "tableHeaderEndTime": "Endzeit",
-    "tableHeaderBookingDeadline": "Buchungsfrist",
-    "tableHeaderBookingStartTime": "Buchungs-Startzeit",
-    "tableHeaderReminderSendDate": "Versanddatum der Erinnerung",
-    "tableHeaderLocation": "Ort",
-    "tableHeaderActions": "Aktionen",
-    "noLocation": "Kein Ort",
-    "paginationLabel": "Events",
-    "deleteButtonLabel": "Löschen",
-    "editButtonLabel": "Bearbeiten",
-    "reminderStatusFilterLabel": "Erinnerungsstatus",
-    "reminderStatusScheduled": "Geplant",
-    "reminderStatusSent": "Gesendet",
-    "reminderStatusNotScheduled": "Nicht geplant"
-  },
-  "locationFormModal": {
-    "createLocationTitle": "Standort erstellen",
-    "editLocationTitle": "Standort bearbeiten",
-    "addLocationDescription": "Einen neuen Veranstaltungsort hinzufügen",
-    "updateLocationDescription": "Standortinformationen aktualisieren",
-    "locationNameLabel": "Standortname",
-    "addressLabel": "Adresse",
-    "capacityLabel": "Kapazität",
-    "cancelButton": "Abbrechen",
-    "savingButton": "Speichern...",
-    "createButton": "Erstellen",
-    "updateButton": "Aktualisieren",
-    "addMarkerButton": "Marker hinzufügen",
-    "markerLabel": "Marker",
-    "xCoordinateLabel": "X-Koordinate",
-    "yCoordinateLabel": "Y-Koordinate"
-  },
-  "locationImportModal": {
-    "importLocationDataTitle": "Standortdaten importieren",
-    "importLocationDataDescription": "Standort- oder Platzdaten im JSON-Format importieren",
-    "importTypeLabel": "Importtyp",
-    "newLocationWithSeatsOption": "Neuer Standort mit Plätzen",
-    "addSeatsToExistingLocationOption": "Plätze zu bestehendem Standort hinzufügen",
-    "selectLocationLabel": "Standort auswählen",
-    "chooseLocationPlaceholder": "Standort auswählen...",
-    "jsonDataLabel": "JSON-Daten",
-    "locationWithSeatsJsonHint": " (Standort mit Plätzen)",
-    "seatsArrayJsonHint": " (Plätze-Array)",
-    "pasteLocationJsonPlaceholder": "Standort-JSON-Daten hier einfügen...",
-    "pasteSeatsJsonPlaceholder": "Plätze-Array-JSON-Daten hier einfügen...",
-    "cancelButton": "Abbrechen",
-    "importingButton": "Importiere...",
-    "importDataButton": "Daten importieren",
-    "locationDataValidationError": "Standortdaten müssen Name, Adresse und Kapazität enthalten",
-    "selectLocationForSeatsError": "Bitte wählen Sie einen Standort für die Plätze aus",
-    "seatsDataArrayError": "Platzdaten müssen ein Array sein",
-    "seatDataValidationError": "Jeder Platz muss seatNumber, xCoordinate und yCoordinate haben",
-    "invalidJsonOrDataStructureError": "Ungültiges JSON-Format oder Datenstruktur"
-  },
-  "locationManagement": {
-    "confirmDelete": "Sind Sie sicher, dass Sie {{locationName}} löschen möchten?",
-    "confirmDeleteMultiple": "Sind Sie sicher, dass Sie {{count}} Standorte löschen möchten?",
-    "title": "Standortverwaltung",
-    "description": "Veranstaltungsorte erstellen und verwalten",
-    "importJsonButton": "JSON importieren",
-    "addLocationButton": "Standort hinzufügen",
-    "selectAll": "Alle auswählen",
-    "deselectAll": "Alle abwählen",
-    "locationFilterLabel": "Standort",
-    "tableHeaderSelect": "Auswahl",
-    "tableHeaderName": "Name",
-    "tableHeaderAddress": "Adresse",
-    "tableHeaderCapacity": "Kapazität",
-    "tableHeaderManager": "Manager",
-    "tableHeaderMarker": "Marker",
-    "tableHeaderSeats": "Plätze",
-    "tableHeaderActions": "Aktionen",
-    "seatsCount": "{{count}} Plätze",
-    "noSeats": "0 Plätze",
-    "exportAsJsonTitle": "Als JSON exportieren",
-    "paginationLabel": "Standorte",
-    "deleteButtonLabel": "Löschen",
-    "editButtonLabel": "Bearbeiten"
-  },
-  "reservationAllowanceManagement": {
-    "confirmDelete": "Sind Sie sicher, dass Sie dieses Kontingent löschen möchten?",
-    "confirmDeleteMultiple": "Sind Sie sicher, dass Sie {{count}} Kontingente löschen möchten?",
-    "title": "Reservierungskontingent-Verwaltung",
-    "description": "Benutzerreservierungskontingente für Veranstaltungen verwalten",
-    "addAllowanceButton": "Kontingent hinzufügen",
-    "selectAll": "Alle auswählen",
-    "deselectAll": "Alle abwählen",
-    "eventFilterLabel": "Veranstaltung",
-    "tableHeaderSelect": "Auswahl",
-    "tableHeaderEvent": "Veranstaltung",
-    "tableHeaderUser": "Benutzer",
-    "tableHeaderAllowedReservations": "Erlaubte Reservierungen",
-    "tableHeaderActions": "Aktionen",
-    "unknownEvent": "Unbekannte Veranstaltung",
-    "unknownUser": "Unbekannter Benutzer",
-    "paginationLabel": "Kontingente",
-    "deleteButtonLabel": "Löschen",
-    "editButtonLabel": "Bearbeiten"
-  },
-  "reservationFormModal": {
-    "createReservationTitle": "Reservierung erstellen",
-    "createReservationDescription": "Eine neue Reservierung für mehrere Plätze erstellen",
-    "availableStatus": "Verfügbar",
-    "selectedStatus": "Ausgewählt",
-    "reservedStatus": "Reserviert",
-    "userReservedStatus": "Benutzer reserviert",
-    "blockedStatus": "Blockiert",
-    "selectEventToViewSeats": "Bitte wählen Sie eine Veranstaltung aus, um Plätze anzuzeigen",
-    "noSeatsAvailableForEvent": "Keine Plätze für diese Veranstaltung verfügbar",
-    "eventLabel": "Veranstaltung",
-    "selectEventPlaceholder": "Veranstaltung auswählen",
-    "userLabel": "Benutzer",
-    "filterUsersPlaceholder": "Benutzer filtern...",
-    "selectUserPlaceholder": "Benutzer auswählen",
-    "selectedSeatsTitle": "Ausgewählte Plätze",
-    "seatSelected": "1 Platz ausgewählt",
-    "multipleSeatsSelected": "{{count}} Plätze ausgewählt",
-    "deductAllowanceLabel": "Vom Benutzerkontingent abziehen",
-    "validationError": "Bitte wählen Sie eine Veranstaltung, einen Benutzer und mindestens einen Platz aus",
-    "cancelButton": "Abbrechen",
-    "creatingButton": "Erstelle...",
-    "createButton": "Erstellen"
-  },
-  "reservationManagement": {
-    "title": "Reservierungsverwaltung",
-    "description": "Veranstaltungsreservierungen verwalten und Plätze blockieren",
-    "exportReservationsButton": "Reservierungen exportieren",
-    "exportEventReservationsTitle": "Veranstaltungsreservierungen exportieren",
-    "exportEventReservationsDescription": "Wählen Sie eine Veranstaltung aus, um alle Reservierungen als JSON zu exportieren.",
-    "selectEventLabel": "Veranstaltung auswählen",
-    "chooseEventToExportPlaceholder": "Veranstaltung zum Exportieren auswählen",
-    "chooseFormatToExportPlaceholder": "Format zum Exportieren auswählen",
-    "cancelButton": "Abbrechen",
-    "blockSeatsButton": "Plätze blockieren",
-    "addReservationButton": "Reservierung hinzufügen",
-    "confirmDeleteMultiple": "Sind Sie sicher, dass Sie {{count}} Reservierungen löschen möchten?",
-    "selectAll": "Alle auswählen",
-    "deselectAll": "Alle abwählen",
-    "eventFilterLabel": "Veranstaltung",
-    "statusFilterLabel": "Status",
-    "tableHeaderSelect": "Auswahl",
-    "tableHeaderUser": "Benutzer",
-    "tableHeaderEvent": "Veranstaltung",
-    "tableHeaderSeat": "Platz",
-    "tableHeaderStatus": "Status",
-    "tableHeaderReservedDate": "Reservierungsdatum",
-    "tableHeaderActions": "Aktionen",
-    "confirmDelete": "Sind Sie sicher, dass Sie diese Reservierung löschen möchten?",
-    "unknownEvent": "Unbekannte Veranstaltung",
-    "unknownSeat": "Unbekannter Platz",
-    "unknownDate": "Unbekannt",
-    "statusReserved": "Reserviert",
-    "statusBlocked": "Blockiert",
-    "paginationLabel": "Reservierungen",
-    "selectFormatLabel": "Format auswählen",
-    "csvOption": "CSV",
-    "jsonOption": "JSON",
-    "pdfOption": "PDF",
-    "exportCsvButton": "CSV exportieren",
-    "exportJsonButton": "JSON exportieren",
-    "exportPdfButton": "PDF exportieren",
-    "deleteButtonLabel": "Löschen"
-  },
-  "seatFormModal": {
-    "createSeatTitle": "Platz erstellen",
-    "editSeatTitle": "Platz bearbeiten",
-    "addSeatDescription": "Einen neuen Platz zu einem Standort hinzufügen",
-    "updateSeatDescription": "Platzinformationen aktualisieren",
-    "seatNumberLabel": "Platznummer",
-    "locationLabel": "Standort",
-    "rowLabel": "Reihe",
-    "selectLocationPlaceholder": "Standort auswählen",
-    "xCoordinateLabel": "X-Koordinate",
-    "yCoordinateLabel": "Y-Koordinate",
-    "cancelButton": "Abbrechen",
-    "savingButton": "Speichern...",
-    "createButton": "Erstellen",
-    "updateButton": "Aktualisieren",
-    "entrance": "Eingang"
-  },
-  "sidebar": {
-    "navigation": "Navigation",
-    "events": "Veranstaltungen",
-    "reservations": "Reservierungen",
-    "profile": "Profil",
-    "manager": "Manager",
-    "userManagement": "Benutzer-Verwaltung",
-    "admin": "Admin",
-    "supervisor": "Supervisor",
-    "liveview": "Liveview",
-    "checkin": "Check-In",
-    "theme": "Theme",
-    "light": "Hell",
-    "dark": "Dunkel",
-    "system": "System",
-    "language": "Sprache",
-    "english": "Englisch",
-    "german": "Deutsch",
-    "logout": "Abmelden",
-    "logoutAll": "Von allen Geräten abmelden",
-    "login": "Anmelden",
-    "unsavedChangesTitle": "Ungespeicherte Änderungen",
-    "unsavedChangesDescription": "Sie haben ungespeicherte Änderungen auf dieser Seite. Was möchten Sie tun?",
-    "cancel": "Abbrechen",
-    "discardChanges": "Änderungen verwerfen",
-    "saveAndContinue": "Speichern & Fortfahren"
-  },
-  "seatManagement": {
-    "title": "Sitzplatzverwaltung",
-    "description": "Sitzplätze für Standorte erstellen und verwalten",
-    "addSeatButton": "Sitzplatz hinzufügen",
-    "confirmDeleteMultiple": "Sind Sie sicher, dass Sie {{count}} Sitzplätze löschen möchten?",
-    "selectAll": "Alle auswählen",
-    "deselectAll": "Alle abwählen",
-    "filter": {
-      "locationLabel": "Standort",
-      "entranceLabel": "Eingang"
-    },
-    "table": {
-      "selectHeader": "Auswahl",
-      "seatNumberHeader": "Sitzplatznummer",
-      "seatRowHeader": "Reihe",
-      "locationHeader": "Standort",
-      "positionHeader": "Position",
-      "actionsHeader": "Aktionen",
-      "entranceHeader": "Eingang"
-    },
-    "unknownLocation": "Unbekannter Standort",
-    "statusAvailable": "Verfügbar",
-    "confirmDelete": "Sind Sie sicher, dass Sie Sitzplatz {{seatNumber}} löschen möchten?",
-    "paginationLabel": "Sitzplätze",
-    "deleteButtonLabel": "Löschen",
-    "editButtonLabel": "Bearbeiten"
-  },
-  "userMultiSelect": {
-    "quickSelectByTags": "Schnellauswahl nach Tags:",
-    "searchPlaceholder": "Benutzer suchen...",
-    "noUsersFound": "Keine Benutzer gefunden",
-    "noUsersAvailable": "Keine Benutzer verfügbar",
-    "selectedUsers": "Ausgewählte Benutzer",
-    "removeAll": "Alle entfernen",
-    "noUsersSelected": "Keine Benutzer ausgewählt"
-  },
-  "pagination-wrapper": {
-    "label": "Zeige {{fromCount}} bis {{toCount}} von {{totalCount}}"
-  },
-  "footer": {
-    "allRightsReserved": "Alle Rechte vorbehalten.",
-    "legalNotice": "Impressum",
-    "privacyPolicy": "Datenschutzerklärung"
-  },
-  "emailSeatmap": {
-    "title": "Ihre Sitzplatzkarte",
-    "subtitle": "Zeigen Sie Ihre reservierten Sitzplätze an",
-    "stage": "Bühne",
-    "loading": {
-      "title": "Ihre Sitzplatzkarte wird geladen...",
-      "subtitle": "Bitte warten Sie einen Moment"
-    },
-    "error": {
-      "title": "Fehler",
-      "failedToLoad": "Sitzplatzkarte konnte nicht geladen werden",
-      "invalidToken": "Der Token ist möglicherweise ungültig oder abgelaufen. Bitte überprüfen Sie Ihre E-Mail für einen neuen Link.",
-      "noToken": "Kein Token angegeben"
-    },
-    "controls": {
-      "zoomOut": "Herauszoomen",
-      "zoomIn": "Hineinzoomen",
-      "reset": "Ansicht zurücksetzen",
-      "download": "Sitzplatzkarte herunterladen"
-    },
-    "legend": {
-      "yourSeats": "Ihre reservierten Sitzplätze",
-      "otherSeats": "Andere reservierte Sitzplätze",
-      "availableSeats": "Verfügbare Sitzplätze"
-    },
-    "instructions": {
-      "desktop": "Mausrad zum Zoomen verwenden • Ziehen zum Verschieben • Klicken Sie auf die Schaltflächen zum Zoomen",
-      "mobile": "Ziehen zum Verschieben • Klicken Sie auf die Schaltflächen zum Zoomen"
-    },
-    "toast": {
-      "downloadStarted": "Download gestartet",
-      "downloadDescription": "Ihre Sitzplatzkarte wird heruntergeladen",
-      "errorTitle": "Fehler"
-    }
-  },
-  "common": {
-    "cancel": "Abbrechen",
-    "confirm": "Bestätigen",
-    "loading": "Wird geladen...",
-    "error": {
-      "default": "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
-    }
-  },
-  "checkin": {
-    "title": "Check-In",
-    "description": "Verarbeiten Sie Event-Check-Ins über QR-Code-Scannen oder Benutzerauswahl.",
-    "success": {
-      "title": "Check-In erfolgreich",
-      "description": "Der Check-In wurde erfolgreich verarbeitet."
-    },
-    "info": {
-      "success": {
-        "title": "Check-In-Informationen geladen",
-        "description": "Die Check-In-Informationen wurden erfolgreich abgerufen."
-      },
-      "error": {
-        "title": "Abrufen der Check-In-Informationen fehlgeschlagen",
-        "description": "Die Check-In-Informationen konnten nicht abgerufen werden. Bitte versuchen Sie es erneut."
-      }
-    },
-    "perform": {
-      "success": {
-        "title": "Check-In abgeschlossen",
-        "description": "Der Check-In wurde erfolgreich durchgeführt."
-      },
-      "error": {
-        "title": "Check-In fehlgeschlagen",
-        "description": "Beim Verarbeiten des Check-Ins ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
-      }
-    },
-    "error": {
-      "title": "Check-In Fehler",
-      "default": "Bei der Verarbeitung des Check-In ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
-      "noCheckInInfo": "Keine Check-In Informationen verfügbar.",
-      "scanningFailed": "Fehler beim Scannen des QR-Codes.",
-      "getInfoFailed": "Abrufen der Check-In Informationen fehlgeschlagen.",
-      "getInfoByUsernameFailed": "Abrufen der Check-In Informationen nach Benutzername fehlgeschlagen.",
-      "processFailed": "Check-In Prozess fehlgeschlagen."
-    },
-    "eventSelector": {
-      "label": "Event auswählen",
-      "placeholder": "Wähle ein Event...",
-      "loading": "Events werden geladen...",
-      "noEvents": "Keine Veranstaltungen verfügbar",
-      "selectFirst": "Bitte wähle zuerst ein Event aus, um mit dem Check-In fortzufahren."
-    },
-    "qrScanner": {
-      "title": "QR-Code Scanner",
-      "description": "Richten Sie Ihre Kamera auf einen QR-Code",
-      "startCamera": "Kamera starten",
-      "stopCamera": "Kamera stoppen",
-      "cameraError": "Fehler beim Zugriff auf die Kamera. Bitte überprüfen Sie die Berechtigung.",
-      "noCamera": "Keine Kamera verfügbar.",
-      "reservationsOpen": "Reservierungen geöffnet",
-      "loadingCamera": "Lade QR-Code-Scanner..."
-    },
-    "tabs": {
-      "qrScanner": "QR-Code Scanner",
-      "userSelection": "Benutzerauswahl"
-    },
-    "usernameSelector": {
-      "title": "Benutzer auswählen",
-      "selectUser": "Benutzer auswählen...",
-      "searchUser": "Benutzer suchen...",
-      "noUserFound": "Kein Benutzer gefunden.",
-      "loadingUsers": "Benutzer werden geladen...",
-      "fetchReservations": "Reservierungen abrufen"
-    },
-    "reservations": {
-      "title": "Reservierungen",
-      "user": "Benutzername",
-      "name": "Name",
-      "email": "Email",
-      "selectReservations": "Wählen Sie Reservierungen aus",
-      "noReservations": "Keine Reservierungen vorhanden.",
-      "checkInCount": "Check-Ins: {{count}}",
-      "cancelledCount": "Stornierungen: {{count}}",
-      "selectAll": "Alle auswählen",
-      "deselectAll": "Alle abwählen",
-      "loading": "Lade Reservierungen...",
-      "event": "Event",
-      "seat": "Platz",
-      "openDrawer": "Reservierungsübersicht öffnen"
-    },
-    "actions": {
-      "submit": "Check-In durchführen",
-      "cancel": "Abbrechen",
-      "scan": "Scannen",
-      "close": "Schließen",
-      "processing": "Verarbeite..."
-    }
-  },
-  "liveview": {
-    "title": "Live View",
-    "description": "Überwachen Sie Check-In in Echtzeit",
-    "eventSelector": {
-      "label": "Event auswählen",
-      "placeholder": "Wähle ein Event...",
-      "loading": "Events werden geladen...",
-      "noEvents": "Keine Veranstaltungen verfügbar",
-      "selectFirst": "Bitte wähle zuerst ein Event aus"
-    },
-    "status": {
-      "connected": "Verbunden",
-      "connecting": "Verbindung wird hergestellt...",
-      "disconnected": "Nicht verbunden",
-      "loading": "Daten werden geladen..."
-    },
-    "event": {
-      "title": "Event Informationen",
-      "name": "Name",
-      "description": "Beschreibung",
-      "startTime": "Startzeit",
-      "endTime": "Endzeit"
-    },
-    "legend": {
-      "title": "Legende"
-    },
-    "seatMap": {
-      "title": "Sitzplan"
-    },
-    "reservations": {
-      "title": "Reservierungen",
-      "count": "Reservierungen ({{count}})",
-      "user": "Benutzer",
-      "seat": "Platz",
-      "status": "Status",
-      "checkedIn": "Eingecheckt",
-      "noShow": "Nicht erschienen",
-      "cancelled": "Storniert",
-      "pending": "Ausstehend",
-      "empty": "Keine Reservierungen vorhanden"
-    },
-    "error": {
-      "title": "Fehler",
-      "message": "Ein Fehler ist beim Laden der Daten aufgetreten"
-    }
-  },
-  "profile": {
-    "update": {
-      "success": {
-        "title": "Profil wurde erfolgreich aktualisiert"
-      },
-      "error": {
-        "title": "Profilaktualisierung fehlgeschlagen"
-      }
-    }
-  }
+	"seatStatus": {
+		"available": "Verfügbar",
+		"reserved": "Reserviert",
+		"blocked": "Blockiert",
+		"checkedIn": "Eingecheckt",
+		"noShow": "Nicht erschienen",
+		"cancelled": "Storniert"
+	},
+	"validation": {
+		"usernameHint": "3-64 Zeichen: Buchstaben, Zahlen, Punkte, Unterstriche, Bindestriche"
+	},
+	"notFound": {
+		"title": "Seite nicht gefunden",
+		"description": "Die angeforderte Seite konnte nicht gefunden werden.",
+		"backToHome": "Zur Startseite"
+	},
+	"email": {
+		"confirmationEmailSentTitle": "Bestätigungs-E-Mail gesendet",
+		"confirmationEmailSentDescription": "Eine Bestätigungs-E-Mail wurde an Ihre Adresse gesendet. Bitte bestätigen Sie diese!"
+	},
+	"logout": {
+		"success": {
+			"title": "Logout erfolgreich",
+			"description": "Sie wurden erfolgreich abgemeldet."
+		},
+		"error": {
+			"title": "Logout fehlgeschlagen"
+		}
+	},
+	"logoutAll": {
+		"success": {
+			"title": "Logout von allen Geräten erfolgreich",
+			"description": "Sie wurden erfolgreich von allen Geräten abgemeldet."
+		},
+		"error": {
+			"title": "Logout von allen Geräten fehlgeschlagen"
+		}
+	},
+	"login": {
+		"logoutButton": "Abmelden",
+		"success": {
+			"title": "Anmeldung erfolgreich",
+			"description": "Sie wurden erfolgreich angemeldet."
+		},
+		"welcomeBack": "Willkommen zurück!",
+		"alreadyLoggedIn": "Sie sind bereits angemeldet.",
+		"continueWithUser": "Mit angemeldetem Benutzer fortfahren ({{username}})",
+		"logout": {
+			"success": {
+				"title": "Abmeldung erfolgreich",
+				"description": "Sie wurden erfolgreich abgemeldet."
+			}
+		},
+		"signIn": "Anmelden",
+		"enterCredentials": "Geben Sie Ihre Anmeldedaten ein, um auf Ihr Konto zuzugreifen",
+		"username": "Benutzername",
+		"enterUsername": "Geben Sie Ihren Benutzernamen ein",
+		"password": "Passwort",
+		"enterPassword": "Geben Sie Ihr Passwort ein",
+		"signingIn": "Melde mich an...",
+		"signInButton": "Anmelden",
+		"noAccount": "Sie haben noch kein Konto? ",
+		"register": "Registrieren",
+		"error": {
+			"invalidCredentials": "Ungültiger Benutzername oder Passwort.",
+			"title": "Anmeldefehler",
+			"description": "Beim Anmelden ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+			"accountLocked": "Konto gesperrt bis {{time}} ({{duration}})",
+			"tooManyAttemptsDescription": "Zu viele fehlgeschlagene Anmeldeversuche. Ihr Konto wurde vorübergehend gesperrt."
+		}
+	},
+	"register": {
+		"success": {
+			"title": "Registrierung erfolgreich",
+			"description": "Ihr Konto wurde erfolgreich erstellt."
+		},
+		"error": {
+			"title": "Registrierung fehlgeschlagen",
+			"description": "Bei der Registrierung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
+		},
+		"createAccountTitle": "Konto erstellen",
+		"enterInfo": "Geben Sie Ihre Informationen ein, um Ihr Konto zu erstellen",
+		"firstName": "Vorname",
+		"firstNamePlaceholder": "Max",
+		"lastName": "Nachname",
+		"lastNamePlaceholder": "Mustermann",
+		"username": "Benutzername",
+		"usernamePlaceholder": "maxmustermann",
+		"email": "E-Mail",
+		"emailPlaceholder": "max@example.com",
+		"password": "Passwort",
+		"passwordTooShort": "Passwort muss mindestens 8 Zeichen lang sein",
+		"creatingAccount": "Konto wird erstellt...",
+		"createAccountButton": "Konto erstellen",
+		"alreadyHaveAccount": "Sie haben bereits ein Konto? ",
+		"signIn": "Anmelden",
+		"registrationDisabled": {
+			"title": "Registrierung deaktiviert",
+			"description": "Eine Registrierung ist derzeit nicht verfügbar."
+		}
+	},
+	"mainLayout": {
+		"eventManagementTitle": "Event-Verwaltung"
+	},
+	"adminPage": {
+		"dashboardTitle": "Admin-Dashboard",
+		"dashboardDescription": "Benutzer und Systemeinstellungen verwalten",
+		"userManagementTab": "Benutzerverwaltung",
+		"exportDataTab": "Daten exportieren"
+	},
+	"admin": {
+		"user": {
+			"create": {
+				"success": {
+					"title": "Benutzer erstellt",
+					"description": "Der Benutzer wurde erfolgreich erstellt."
+				},
+				"error": {
+					"title": "Benutzererstellung fehlgeschlagen",
+					"default": "Beim Erstellen des Benutzers ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
+				}
+			},
+			"import": {
+				"success": {
+					"title": "Benutzer importiert",
+					"description": "Die Benutzer wurden erfolgreich importiert."
+				},
+				"error": {
+					"title": "Benutzerimport fehlgeschlagen",
+					"default": "Beim Importieren der Benutzer ist ein Fehler aufgetreten. Bitte prüfen Sie die Daten und versuchen Sie es erneut."
+				}
+			},
+			"update": {
+				"success": {
+					"title": "Benutzer aktualisiert",
+					"description": "Der Benutzer wurde erfolgreich aktualisiert."
+				},
+				"error": {
+					"title": "Benutzeraktualisierung fehlgeschlagen",
+					"default": "Beim Aktualisieren des Benutzers ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
+				}
+			},
+			"delete": {
+				"success": {
+					"title": "Benutzer gelöscht",
+					"description": "Der Benutzer wurde erfolgreich gelöscht."
+				},
+				"error": {
+					"title": "Benutzerlöschung fehlgeschlagen",
+					"default": "Beim Löschen des/der Benutzer ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
+				}
+			}
+		}
+	},
+	"eventsPage": {
+		"title": "Veranstaltungen",
+		"description": "Veranstaltungen durchsuchen und Plätze reservieren",
+		"filterByEventPlaceholder": "Nach Veranstaltung filtern",
+		"allEventsFilter": "Alle Veranstaltungen",
+		"noEventsAvailable": "Derzeit sind keine Veranstaltungen verfügbar.",
+		"tryAgain": "Bitte versuchen Sie es später erneut.",
+		"noEventsMatchSearch": "Keine Veranstaltungen entsprechen Ihrer Suche.",
+		"checkSearch": "Bitte überprüfen Sie Ihre Suchkriterien."
+	},
+	"reservationsPage": {
+		"title": "Meine Reservierungen",
+		"description": "Ihre aktuellen und vergangenen Reservierungen anzeigen",
+		"noReservationsYet": "Sie haben noch keine Reservierungen.",
+		"switchToAvailableEvents": "Wechseln Sie zu \"Veranstaltungen\", um Ihre erste Reservierung vorzunehmen!",
+		"noReservationsMatchSearch": "Keine Reservierungen entsprechen Ihrer Suche.",
+		"checkSearch": "Bitte überprüfen Sie Ihre Suchkriterien.",
+		"noReservationsFoundTitle": "Keine Reservierungen gefunden",
+		"noReservationsFoundDescription": "Es wurden keine Reservierungen mit der angefragten URL gefunden."
+	},
+	"managerPage": {
+		"dashboardTitle": "Manager-Dashboard",
+		"dashboardDescription": "Verwalten Sie Veranstaltungen, Standorte, Plätze und Reservierungen",
+		"eventsTab": "Veranstaltungen",
+		"locationsTab": "Standorte",
+		"seatsTab": "Plätze",
+		"reservationsTab": "Reservierungen",
+		"allowancesTab": "Kontingente"
+	},
+	"manager": {
+		"event": {
+			"create": {
+				"success": {
+					"title": "Veranstaltung erstellt",
+					"description": "Die Veranstaltung wurde erfolgreich erstellt."
+				},
+				"error": {
+					"title": "Veranstaltungserstellung fehlgeschlagen"
+				}
+			},
+			"update": {
+				"success": {
+					"title": "Veranstaltung aktualisiert",
+					"description": "Die Veranstaltung wurde erfolgreich aktualisiert."
+				},
+				"error": {
+					"title": "Veranstaltungsaktualisierung fehlgeschlagen"
+				}
+			},
+			"delete": {
+				"success": {
+					"title": "Veranstaltung gelöscht",
+					"description": "Die Veranstaltung wurde erfolgreich gelöscht."
+				},
+				"error": {
+					"title": "Veranstaltungslöschung fehlgeschlagen"
+				}
+			}
+		},
+		"location": {
+			"create": {
+				"success": {
+					"title": "Standort erstellt",
+					"description": "Der Standort wurde erfolgreich erstellt."
+				},
+				"error": {
+					"title": "Standorterstellung fehlgeschlagen"
+				}
+			},
+			"update": {
+				"success": {
+					"title": "Standort aktualisiert",
+					"description": "Der Standort wurde erfolgreich aktualisiert."
+				},
+				"error": {
+					"title": "Standortaktualisierung fehlgeschlagen"
+				}
+			},
+			"delete": {
+				"success": {
+					"title": "Standort gelöscht",
+					"description": "Der Standort wurde erfolgreich gelöscht."
+				},
+				"error": {
+					"title": "Standortlöschung fehlgeschlagen"
+				}
+			},
+			"importWithSeats": {
+				"success": {
+					"title": "Standort mit Plätzen importiert",
+					"description": "Der Standort und die zugehörigen Plätze wurden erfolgreich importiert."
+				},
+				"error": {
+					"title": "Import von Standort mit Plätzen fehlgeschlagen"
+				}
+			},
+			"importSeats": {
+				"success": {
+					"title": "Plätze importiert",
+					"description": "Die Plätze wurden erfolgreich importiert."
+				},
+				"error": {
+					"title": "Import von Plätzen fehlgeschlagen"
+				}
+			}
+		},
+		"seat": {
+			"create": {
+				"success": {
+					"title": "Platz erstellt",
+					"description": "Der Platz wurde erfolgreich erstellt."
+				},
+				"error": {
+					"title": "Platzerstellung fehlgeschlagen"
+				}
+			},
+			"update": {
+				"success": {
+					"title": "Platz aktualisiert",
+					"description": "Der Platz wurde erfolgreich aktualisiert."
+				},
+				"error": {
+					"title": "Platzaktualisierung fehlgeschlagen"
+				}
+			},
+			"delete": {
+				"success": {
+					"title": "Platz gelöscht",
+					"description": "Der Platz wurde erfolgreich gelöscht."
+				},
+				"error": {
+					"title": "Platzlöschung fehlgeschlagen"
+				}
+			}
+		},
+		"reservation": {
+			"create": {
+				"success": {
+					"title": "Reservierung erstellt",
+					"description": "Die Reservierung wurde erfolgreich erstellt."
+				},
+				"error": {
+					"title": "Reservierungserstellung fehlgeschlagen"
+				}
+			},
+			"delete": {
+				"success": {
+					"title": "Reservierung gelöscht",
+					"description": "Die Reservierung wurde erfolgreich gelöscht."
+				},
+				"error": {
+					"title": "Reservierungslöschung fehlgeschlagen"
+				}
+			},
+			"blockSeats": {
+				"success": {
+					"title": "Plätze blockiert",
+					"description": "Die ausgewählten Plätze wurden erfolgreich blockiert."
+				},
+				"error": {
+					"title": "Blockieren von Plätzen fehlgeschlagen"
+				}
+			}
+		},
+		"reservationAllowance": {
+			"create": {
+				"success": {
+					"title": "Kontingent erstellt",
+					"description": "Das Reservierungskontingent wurde erfolgreich erstellt."
+				},
+				"error": {
+					"title": "Kontingenterstellung fehlgeschlagen"
+				}
+			},
+			"update": {
+				"success": {
+					"title": "Kontingent aktualisiert",
+					"description": "Das Reservierungskontingent wurde erfolgreich aktualisiert."
+				},
+				"error": {
+					"title": "Kontingentaktualisierung fehlgeschlagen"
+				}
+			},
+			"delete": {
+				"success": {
+					"title": "Kontingent gelöscht",
+					"description": "Das Reservierungskontingent wurde erfolgreich gelöscht."
+				},
+				"error": {
+					"title": "Kontingentlöschung fehlgeschlagen"
+				}
+			}
+		}
+	},
+	"profilePage": {
+		"update": {
+			"success": {
+				"title": "Profil aktualisiert",
+				"description": "Ihr Profil wurde erfolgreich aktualisiert."
+			}
+		},
+		"authRequiredTitle": "Authentifizierung erforderlich",
+		"authRequiredDescription": "Bitte melden Sie sich an, um Ihr Profil zu aktualisieren.",
+		"profileUpdatedTitle": "Profil aktualisiert",
+		"profileUpdatedDescription": "Ihr Profil wurde erfolgreich aktualisiert.",
+		"profileSettingsTitle": "Profileinstellungen",
+		"profileSettingsDescription": "Aktualisieren Sie Ihre persönlichen Daten, Ihr Passwort und Ihre Tags.",
+		"usernameLabel": "Benutzername",
+		"firstNameLabel": "Vorname",
+		"lastNameLabel": "Nachname",
+		"emailLabel": "E-Mail",
+		"verifiedBadge": "Verifiziert",
+		"notVerifiedBadge": "Nicht verifiziert",
+		"confirmationEmailInfo": "Eine Bestätigungs-E-Mail wurde gesendet und muss über den Link bestätigt werden.",
+		"confirmationEmailResentTitle": "Bestätigungs-E-Mail erneut gesendet",
+		"confirmationEmailResentDescription": "Eine neue Bestätigungs-E-Mail wurde an Ihre Adresse gesendet.",
+		"resendButton": "Erneut senden",
+		"tagsLabel": "Tags",
+		"addTagPlaceholder": "Neuen Tag hinzufügen",
+		"addButton": "Hinzufügen",
+		"saveChangesButton": "Änderungen speichern",
+		"noSaveChangesButton": "Keine Änderungen zum Speichern",
+		"passwordSectionTitle": "Passwort ändern",
+		"changePassword": "Passwort ändern",
+		"cancelPasswordUpdate": "Abbrechen",
+		"newPasswordLabel": "Neues Passwort",
+		"newPasswordPlaceholder": "Geben Sie Ihr neues Passwort ein",
+		"confirmPasswordLabel": "Passwort bestätigen",
+		"confirmPasswordPlaceholder": "Bestätigen Sie Ihr neues Passwort",
+		"passwordTooShort": "Passwort muss mindestens 8 Zeichen lang sein",
+		"passwordsDoNotMatch": "Die Passwörter stimmen nicht überein",
+		"verifyEmailButton": "Verifikationscode eingeben",
+		"passwordValidationErrorTitle": "Validierungsfehler",
+		"passwordValidationErrorDescription": "Bitte stellen Sie sicher, dass alle Passwortfelder korrekt ausgefüllt sind.",
+		"noConfirmationEmailSentInfo": "Es wurde noch keine Bestätigungs-E-Mail gesendet. Klicken Sie auf \"Bestätigungs-E-Mail senden\", um eine zu erhalten.",
+		"confirmationEmailTitle": "Bestätigungs-E-Mail gesendet",
+		"confirmationEmailDescription": "Bitte überprüfen Sie Ihren Posteingang und klicken Sie auf den Bestätigungslink.",
+		"sendConfirmationEmailButton": "Bestätigungs-E-Mail senden"
+	},
+	"startPage": {
+		"eventManagerTitle": "Sitzplatz Reservierung",
+		"signInButton": "Anmelden",
+		"getStartedButton": "Loslegen",
+		"registerButton": "Registrieren",
+		"heroTitle": "SeatReservation",
+		"heroDescription": "Greifen Sie auf Ihre Veranstaltungen, Reservierungen und Verwaltungstools zu. Melden Sie sich an oder registrieren Sie sich, um zu beginnen.",
+		"footerDescription": "Die umfassendste Sitzplatz Reservierungs-Plattform für moderne Organisationen.",
+		"githubProjectLink": "GitHub-Projekt",
+		"copyright": "© 2025 SeatReservation. Alle Rechte vorbehalten."
+	},
+	"userExport": {
+		"noUsersToExportTitle": "Keine Benutzer zum Exportieren",
+		"noUsersToExportDescription": "Es sind keine Benutzerdaten verfügbar, die exportiert werden könnten.",
+		"exportSuccessTitle": "Export erfolgreich",
+		"exportSuccessDescription": "Benutzerdaten erfolgreich als users.json exportiert.",
+		"exportErrorLog": "Fehler beim Exportieren der Benutzerdaten:",
+		"exportFailedTitle": "Export fehlgeschlagen",
+		"exportFailedDescription": "Beim Exportieren der Benutzerdaten ist ein Fehler aufgetreten.",
+		"exportDataTitle": "Benutzerdaten exportieren",
+		"exportDataDescription": "Alle Benutzerdaten als JSON-Datei exportieren.",
+		"loadingUsers": "Benutzer werden geladen...",
+		"exportUsersAsJson": "Benutzer als JSON exportieren",
+		"noUsersFoundToExport": "Keine Benutzer zum Exportieren gefunden."
+	},
+	"userFormModal": {
+		"addNewUserTitle": "Neuen Benutzer hinzufügen",
+		"editUserTitle": "Benutzer bearbeiten",
+		"usernameLabel": "Benutzername",
+		"passwordLabel": "Passwort",
+		"passwordTooShort": "Passwort muss mindestens 8 Zeichen lang sein",
+		"firstNameLabel": "Vorname",
+		"lastNameLabel": "Nachname",
+		"emailLabel": "E-Mail",
+		"verifiedLabel": "Verifiziert",
+		"sendEmailVerificationLabel": "E-Mail-Verifizierung senden",
+		"rolesLabel": "Rollen",
+		"tagsLabel": "Tags",
+		"addTagPlaceholder": "Neuen Tag hinzufügen",
+		"addButton": "Hinzufügen",
+		"cancelButton": "Abbrechen",
+		"createUserButton": "Benutzer erstellen",
+		"createUserButtonLoading": "Erstelle...",
+		"saveChangesButton": "Änderungen speichern",
+		"saveChangesButtonLoading": "Speichere...",
+		"passwordPlaceholder": "Neues Passwort",
+		"passwordUpdatePlaceholder": "Passwort aktualisieren",
+		"passwordUpdateHint": "Das Passwort muss mindestens 8 Zeichen lang sein",
+		"sendEmailVerificationDesc": "Verifizierungs-E-Mail wird an den Benutzer gesendet"
+	},
+	"userManagement": {
+		"confirmDelete": "Sind Sie sicher, dass Sie {{username}} löschen möchten?",
+		"confirmDeleteMultiple": "Sind Sie sicher, dass Sie {{count}} Benutzer löschen möchten?",
+		"title": "Benutzerverwaltung",
+		"description": "Systembenutzer und deren Rollen verwalten",
+		"addUserButton": "Benutzer hinzufügen",
+		"importJsonButton": "JSON importieren",
+		"selectAll": "Alle auswählen",
+		"deselectAll": "Alle abwählen",
+		"tableHeaderSelect": "Auswahl",
+		"tableHeaderUsername": "Benutzername",
+		"tableHeaderName": "Name",
+		"tableHeaderEmail": "E-Mail",
+		"tableHeaderRoles": "Rollen",
+		"tableHeaderTags": "Tags",
+		"tableHeaderVerified": "Verifiziert",
+		"tableHeaderActions": "Aktionen",
+		"verifiedStatus": "Verifiziert",
+		"pendingStatus": "Ausstehend",
+		"paginationLabel": "Benutzer",
+		"deleteButtonLabel": "Löschen",
+		"editButtonLabel": "Bearbeiten"
+	},
+	"userImportModal": {
+		"importUserDataTitle": "Benutzerdaten importieren",
+		"importUserDataDescription": "Mehrere Benutzer im JSON-Format importieren",
+		"availableRolesLabel": "Verfügbare Rollen",
+		"jsonDataLabel": "JSON-Daten (Benutzer-Array)",
+		"pasteUsersJsonPlaceholder": "Benutzer-Array-JSON-Daten hier einfügen...",
+		"cancelButton": "Abbrechen",
+		"importUsersButton": "Benutzer importieren",
+		"importingButton": "Importiere...",
+		"importDataButton": "Daten importieren",
+		"usersDataArrayError": "Benutzerdaten müssen ein Array sein",
+		"userDataValidationError": "Jeder Benutzer muss username, password, firstname, lastname und roles haben",
+		"invalidRoleError": "Ungültige Rolle gefunden. Verfügbare Rollen sind: ADMIN, MANAGER, USER",
+		"invalidJsonOrDataStructureError": "Ungültiges JSON-Format oder Datenstruktur"
+	},
+	"emailVerification": {
+		"title": "E-Mail-Verifizierung",
+		"success": {
+			"title": "E-Mail verifiziert",
+			"description": "Ihre E-Mail-Adresse wurde erfolgreich verifiziert."
+		},
+		"error": {
+			"title": "E-Mail-Verifizierung fehlgeschlagen",
+			"description": "Bei der Verifizierung Ihrer E-Mail-Adresse ist ein Fehler aufgetreten."
+		},
+		"enterCode": "Geben Sie den 6-stelligen Verifizierungscode ein, der an",
+		"codeLabel": "Verifizierungscode",
+		"codeHint": "Geben Sie den 6-stelligen Code aus Ihrer E-Mail ein",
+		"verifying": "Verifiziere...",
+		"verifyButton": "E-Mail verifizieren",
+		"invalidCodeLength": "Der Verifizierungscode muss 6 Stellen haben",
+		"invalidCode": "Ungültiger Verifizierungscode. Bitte versuchen Sie es erneut.",
+		"verificationFailed": "Verifizierung fehlgeschlagen. Bitte versuchen Sie es später erneut.",
+		"resendCode": "Code erneut senden",
+		"backToProfile": "Zurück zum Profil",
+		"alreadyVerified": "E-Mail bereits verifiziert",
+		"continueButton": "Fortfahren",
+		"emailAlreadyVerifiedInfo": "Sie können fortfahren, da Ihre E-Mail bereits verifiziert wurde.",
+		"confirmationEmailResentTitle": "Bestätigungs-E-Mail erneut gesendet",
+		"confirmationEmailResentDescription": "Eine neue Bestätigungs-E-Mail wurde an Ihre Adresse gesendet.",
+		"noEmailTitle": "Keine E-Mail-Adresse",
+		"noEmailDescription": "Sie müssen zuerst eine E-Mail-Adresse in Ihrem Profil hinterlegen, bevor Sie sie verifizieren können.",
+		"goToProfile": "Zum Profil",
+		"resendingConfirmationEmail": "Bestätigungs-E-Mail wird erneut gesendet...",
+		"resendConfirmationEmailFailed": "Fehler beim erneuten Senden der Bestätigungs-E-Mail."
+	},
+	"emailVerificationPrompt": {
+		"title": "E-Mail-Verifizierung erforderlich",
+		"emailSentTo": "Eine Bestätigungs-E-Mail wurde an ",
+		"clickLinkToConfirm": " gesendet. Bitte klicken Sie auf den Link in der E-Mail, um Ihre Adresse zu bestätigen und fortzufahren.",
+		"reloadInfo": "Falls Sie die Email bereits bestätigt haben, laden Sie die Seite neu.",
+		"ifEmailIncorrect": "Wenn diese E-Mail-Adresse falsch oder noch nicht angekommen ist, können Sie sie auf Ihrer ",
+		"profilePageLink": "Profilseite",
+		"changeIt": " ändern.",
+		"noEmailRegistered": "Für Ihr Konto ist keine E-Mail-Adresse registriert. Bitte fügen Sie eine E-Mail-Adresse hinzu und bestätigen Sie diese, um fortzufahren.",
+		"goToProfileButton": "Zum Profil",
+		"goToVerifyButton": "Zur Verifizierung",
+		"emailAlreadyVerifiedInfo": "Ihre E-Mail wurde bereits bestätigt. Bitte laden Sie die Seite neu, um die Änderungen zu sehen.",
+		"reloadPageButton": "Seite neu laden",
+		"emailRegistered1": "Für ihr Benutzeraccount wurde ",
+		"emailRegistered2": " als Email-Adresse registiert.",
+		"clickToSendConfirmation": "Klicken Sie auf Email-Verification senden um eine Bestätigungsemail zu erhalten und ihre Email zu bestätigen",
+		"sendVerificationMail": "Bestätigungs-E-Mail senden"
+	},
+	"loginRequiredPopup": {
+		"title": "Anmeldung erforderlich",
+		"description": "Sie müssen angemeldet sein, um auf diese Seite zugreifen zu können.",
+		"loginButton": "Anmelden"
+	},
+	"searchAndFilter": {
+		"searchPlaceholder": "Suchen...",
+		"filtersButton": "Filter",
+		"selectPlaceholder": "Wählen Sie {{label}}",
+		"enterPlaceholder": "Geben Sie {{label}} ein",
+		"activeFiltersLabel": "Aktive Filter:",
+		"clearAllButton": "Alle löschen"
+	},
+	"seatMap": {
+		"seatTitle": "Platz {{seatNumber}} ({{seatRow}})",
+		"resetButton": "Zurücksetzen",
+		"stageText": "BÜHNE"
+	},
+	"eventCard": {
+		"statusAvailable": "Verfügbar",
+		"statusNotAvailable": "Nicht verfügbar",
+		"tbd": "TBD",
+		"timeTbd": "Uhrzeit TBD",
+		"locationTbd": "Ort TBD",
+		"seatsAvailable": "{{count}} Plätze verfügbar",
+		"bookingUntil": "Buchung bis",
+		"reserveSeatsButton": "Plätze reservieren",
+		"notAvailableButton": "Nicht verfügbar",
+		"bookingOpenOnButtonWithDate": "Buchung öffnet am {{date}} um {{time}}"
+	},
+	"eventReservationModal": {
+		"title": "Plätze reservieren - {{eventName}}",
+		"description": "Wählen Sie Ihre Plätze für diese Veranstaltung aus. Verfügbar: {{availableSeats}}",
+		"available": "Verfügbar",
+		"selected": "Ausgewählt",
+		"myReserved": "Meine Reserviert",
+		"reserved": "Reserviert",
+		"blocked": "Blockiert",
+		"selectedSeatsTitle": "Ausgewählte Plätze:",
+		"cancelButton": "Abbrechen",
+		"reservingButton": "Reserviere...",
+		"reserveSeatsButton": "Reserviere {{count}} Plätze",
+		"reserveSeatButton": "Reserviere den Platz"
+	},
+	"reservation": {
+		"delete": {
+			"success": {
+				"title": "Reservierung gelöscht",
+				"description": "Ihre Reservierung wurde erfolgreich gelöscht."
+			},
+			"error": {
+				"title": "Reservierungslöschung fehlgeschlagen"
+			}
+		},
+		"create": {
+			"success": {
+				"title": "Reservierung erstellt",
+				"description": "Ihre Reservierung wurde erfolgreich erstellt."
+			},
+			"error": {
+				"title": "Reservierungserstellung fehlgeschlagen"
+			}
+		}
+	},
+	"reservationCard": {
+		"seatBadge": "Platz {{seatNumber}}",
+		"reservedOn": "Reserviert am",
+		"unknownDate": "Unbekanntes Datum",
+		"locationLabel": "Ort",
+		"unknownLocation": "Unbekannt",
+		"positionLabel": "Position",
+		"rowLabel": "Reihe",
+		"seatLabel": "Platz",
+		"viewSeatButton": "Platz ansehen",
+		"viewSeatMultipleButton": "Plätze ansehen",
+		"showQRCodeButton": "QR-Code",
+		"cancelButton": "Abbrechen",
+		"showLessButton": "Weniger anzeigen",
+		"showMoreButton": "Mehr anzeigen",
+		"seatSingular": "Platz",
+		"seatPlural": "Plätze",
+		"bookingUntil": "Buchung bis",
+		"unknownEvent": "Unbekannte Veranstaltung",
+		"selectAll": "Alle auswählen"
+	},
+	"reservationDeleteModal": {
+		"title": "Reservierung löschen",
+		"titleMultiple": "{{count}} Reservierungen löschen",
+		"description": "Möchten Sie die Reservierung für Platz {{seatNumber}} wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+		"descriptionMultiple": "Möchten Sie wirklich {{count}} Reservierungen löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+		"seatsToDelete": "Zu löschende Plätze",
+		"cancelButton": "Abbrechen",
+		"confirmButton": "Löschen"
+	},
+	"qrCodeModal": {
+		"title": "QR-Code für Check-In",
+		"description": "Zeigen Sie diesen QR-Code beim Check-In vor oder kopieren Sie den Reservierungscode",
+		"reservationCode": "Reservierungscode",
+		"generatingQRCode": "QR-Code wird generiert...",
+		"generationError": "Fehler beim Generieren des QR-Codes",
+		"generationErrorDescription": "Der QR-Code konnte nicht generiert werden. Bitte versuchen Sie es erneut.",
+		"copiedToClipboard": "In Zwischenablage kopiert",
+		"codeReady": "Der Reservierungscode wurde kopiert",
+		"downloadButton": "QR-Code herunterladen",
+		"downloadStarted": "Download gestartet",
+		"qrCodeDownloading": "Der QR-Code wird heruntergeladen"
+	},
+	"seatMapModal": {
+		"yourReservedSeatsTitle": "Ihre reservierten Plätze",
+		"yourReservedSeatTitle": "Ihr reservierter Platz",
+		"loadingSeatMap": "Sitzplan wird geladen...",
+		"multipleSeatsReserved": "Sie haben {{count}} Plätze für diese Veranstaltung reserviert",
+		"singleSeatReserved": "Platz {{seatNumber}} - Position ({{x}}, {{y}})",
+		"loadingText": "Wird geladen...",
+		"yourReservedSeatsSectionTitle": "Ihre reservierten Plätze",
+		"seatNumberButton": "Platz {{seatNumber}}",
+		"noSeatsReserved": "Keine Plätze reserviert"
+	},
+	"allowanceFormModal": {
+		"validationErrorTitle": "Validierungsfehler",
+		"validationErrorDescription": "Bitte wählen Sie eine Veranstaltung aus und geben Sie die erlaubten Reservierungen ein.",
+		"selectAtLeastOneUser": "Bitte wählen Sie mindestens einen Benutzer zur Erstellung aus.",
+		"successTitle": "Erfolg",
+		"allowanceCreatedSuccess": "Kontingent(e) erfolgreich erstellt.",
+		"selectExactlyOneUser": "Ungültiger Status für die Aktualisierung. Bitte wählen Sie genau einen Benutzer aus.",
+		"allowanceUpdatedSuccess": "Kontingent erfolgreich aktualisiert.",
+		"submissionErrorTitle": "Übermittlungsfehler",
+		"submissionErrorDescription": "Kontingent konnte nicht übermittelt werden. Bitte versuchen Sie es erneut.",
+		"addNewAllowanceTitle": "Neues Kontingent hinzufügen",
+		"editAllowanceTitle": "Kontingent bearbeiten",
+		"eventLabel": "Veranstaltung",
+		"selectEventPlaceholder": "Veranstaltung auswählen",
+		"usersLabel": "Benutzer",
+		"usersSelected": "{{count}} Benutzer ausgewählt",
+		"selectUsersPlaceholder": "Benutzer auswählen...",
+		"filterByTagPlaceholder": "Nach Tag filtern",
+		"clearTagSelectionAriaLabel": "Tag-Auswahl löschen",
+		"searchUserPlaceholder": "Benutzer suchen...",
+		"noUserFound": "Kein Benutzer gefunden.",
+		"clearAllButton": "Alle löschen",
+		"selectedUserLabel": "Ausgewählter Benutzer:",
+		"allowedReservationsLabel": "Erlaubte Reservierungen",
+		"cancelButton": "Abbrechen",
+		"submittingButton": "Wird übermittelt...",
+		"createAllowanceButton": "Kontingent erstellen",
+		"saveChangesButton": "Änderungen speichern"
+	},
+	"blockSeatsModal": {
+		"title": "Plätze blockieren",
+		"description": "Wählen Sie Plätze zum Blockieren aus und verhindern Sie Reservierungen",
+		"eventLabel": "Event",
+		"selectEventPlaceholder": "Event auswählen",
+		"available": "Verfügbar",
+		"selectedToBlock": "Zum Blockieren ausgewählt",
+		"reserved": "Reserviert",
+		"alreadyBlocked": "Bereits blockiert",
+		"seatsToBlockTitle": "Zu blockierende Plätze:",
+		"cancelButton": "Abbrechen",
+		"blockingButton": "Blockiere...",
+		"blockSeatsButton": "Blockiere {{count}} Plätze",
+		"blockSeatButton": "Blockiere diesen Platz"
+	},
+	"eventFormModal": {
+		"createEventTitle": "Veranstaltung erstellen",
+		"editEventTitle": "Veranstaltung bearbeiten",
+		"addEventDescription": "Eine neue Veranstaltung zum System hinzufügen",
+		"updateEventDescription": "Veranstaltungsinformationen aktualisieren",
+		"eventNameLabel": "Veranstaltungsname",
+		"descriptionLabel": "Beschreibung",
+		"locationLabel": "Ort",
+		"selectLocationPlaceholder": "Ort auswählen",
+		"startTimeLabel": "Startzeit",
+		"endTimeLabel": "Endzeit",
+		"bookingDeadlineLabel": "Buchungsfrist",
+		"bookingStartTimeLabel": "Buchungs-Startzeit",
+		"reminderSendDateLabel": "Erinnerungs-Email Datum",
+		"supervisorsLabel": "Betreuer",
+		"supervisorsPlaceholder": "Benutzer auswählen...",
+		"cancelButton": "Abbrechen",
+		"savingButton": "Speichern...",
+		"createButton": "Erstellen",
+		"updateButton": "Aktualisieren"
+	},
+	"eventManagement": {
+		"confirmDelete": "Sind Sie sicher, dass Sie {{eventName}} löschen möchten?",
+		"confirmDeleteMultiple": "Sind Sie sicher, dass Sie {{count}} Veranstaltungen löschen möchten?",
+		"title": "Veranstaltungsverwaltung",
+		"description": "Veranstaltungen erstellen und verwalten",
+		"addEventButton": "Veranstaltung hinzufügen",
+		"selectAll": "Alle auswählen",
+		"deselectAll": "Alle abwählen",
+		"locationFilterLabel": "Ort",
+		"tableHeaderSelect": "Auswahl",
+		"tableHeaderName": "Name",
+		"tableHeaderDescription": "Beschreibung",
+		"tableHeaderStartTime": "Startzeit",
+		"tableHeaderEndTime": "Endzeit",
+		"tableHeaderBookingDeadline": "Buchungsfrist",
+		"tableHeaderBookingStartTime": "Buchungs-Startzeit",
+		"tableHeaderReminderSendDate": "Versanddatum der Erinnerung",
+		"tableHeaderLocation": "Ort",
+		"tableHeaderActions": "Aktionen",
+		"noLocation": "Kein Ort",
+		"paginationLabel": "Events",
+		"deleteButtonLabel": "Löschen",
+		"editButtonLabel": "Bearbeiten",
+		"reminderStatusFilterLabel": "Erinnerungsstatus",
+		"reminderStatusScheduled": "Geplant",
+		"reminderStatusSent": "Gesendet",
+		"reminderStatusNotScheduled": "Nicht geplant"
+	},
+	"locationFormModal": {
+		"createLocationTitle": "Standort erstellen",
+		"editLocationTitle": "Standort bearbeiten",
+		"addLocationDescription": "Einen neuen Veranstaltungsort hinzufügen",
+		"updateLocationDescription": "Standortinformationen aktualisieren",
+		"locationNameLabel": "Standortname",
+		"addressLabel": "Adresse",
+		"capacityLabel": "Kapazität",
+		"cancelButton": "Abbrechen",
+		"savingButton": "Speichern...",
+		"createButton": "Erstellen",
+		"updateButton": "Aktualisieren",
+		"addMarkerButton": "Marker hinzufügen",
+		"markerLabel": "Marker",
+		"xCoordinateLabel": "X-Koordinate",
+		"yCoordinateLabel": "Y-Koordinate"
+	},
+	"locationImportModal": {
+		"importLocationDataTitle": "Standortdaten importieren",
+		"importLocationDataDescription": "Standort- oder Platzdaten im JSON-Format importieren",
+		"importTypeLabel": "Importtyp",
+		"newLocationWithSeatsOption": "Neuer Standort mit Plätzen",
+		"addSeatsToExistingLocationOption": "Plätze zu bestehendem Standort hinzufügen",
+		"selectLocationLabel": "Standort auswählen",
+		"chooseLocationPlaceholder": "Standort auswählen...",
+		"jsonDataLabel": "JSON-Daten",
+		"locationWithSeatsJsonHint": " (Standort mit Plätzen)",
+		"seatsArrayJsonHint": " (Plätze-Array)",
+		"pasteLocationJsonPlaceholder": "Standort-JSON-Daten hier einfügen...",
+		"pasteSeatsJsonPlaceholder": "Plätze-Array-JSON-Daten hier einfügen...",
+		"cancelButton": "Abbrechen",
+		"importingButton": "Importiere...",
+		"importDataButton": "Daten importieren",
+		"locationDataValidationError": "Standortdaten müssen Name, Adresse und Kapazität enthalten",
+		"selectLocationForSeatsError": "Bitte wählen Sie einen Standort für die Plätze aus",
+		"seatsDataArrayError": "Platzdaten müssen ein Array sein",
+		"seatDataValidationError": "Jeder Platz muss seatNumber, xCoordinate und yCoordinate haben",
+		"invalidJsonOrDataStructureError": "Ungültiges JSON-Format oder Datenstruktur"
+	},
+	"locationManagement": {
+		"confirmDelete": "Sind Sie sicher, dass Sie {{locationName}} löschen möchten?",
+		"confirmDeleteMultiple": "Sind Sie sicher, dass Sie {{count}} Standorte löschen möchten?",
+		"title": "Standortverwaltung",
+		"description": "Veranstaltungsorte erstellen und verwalten",
+		"importJsonButton": "JSON importieren",
+		"addLocationButton": "Standort hinzufügen",
+		"selectAll": "Alle auswählen",
+		"deselectAll": "Alle abwählen",
+		"locationFilterLabel": "Standort",
+		"tableHeaderSelect": "Auswahl",
+		"tableHeaderName": "Name",
+		"tableHeaderAddress": "Adresse",
+		"tableHeaderCapacity": "Kapazität",
+		"tableHeaderManager": "Manager",
+		"tableHeaderMarker": "Marker",
+		"tableHeaderSeats": "Plätze",
+		"tableHeaderActions": "Aktionen",
+		"seatsCount": "{{count}} Plätze",
+		"noSeats": "0 Plätze",
+		"exportAsJsonTitle": "Als JSON exportieren",
+		"paginationLabel": "Standorte",
+		"deleteButtonLabel": "Löschen",
+		"editButtonLabel": "Bearbeiten"
+	},
+	"reservationAllowanceManagement": {
+		"confirmDelete": "Sind Sie sicher, dass Sie dieses Kontingent löschen möchten?",
+		"confirmDeleteMultiple": "Sind Sie sicher, dass Sie {{count}} Kontingente löschen möchten?",
+		"title": "Reservierungskontingent-Verwaltung",
+		"description": "Benutzerreservierungskontingente für Veranstaltungen verwalten",
+		"addAllowanceButton": "Kontingent hinzufügen",
+		"selectAll": "Alle auswählen",
+		"deselectAll": "Alle abwählen",
+		"eventFilterLabel": "Veranstaltung",
+		"tableHeaderSelect": "Auswahl",
+		"tableHeaderEvent": "Veranstaltung",
+		"tableHeaderUser": "Benutzer",
+		"tableHeaderAllowedReservations": "Erlaubte Reservierungen",
+		"tableHeaderActions": "Aktionen",
+		"unknownEvent": "Unbekannte Veranstaltung",
+		"unknownUser": "Unbekannter Benutzer",
+		"paginationLabel": "Kontingente",
+		"deleteButtonLabel": "Löschen",
+		"editButtonLabel": "Bearbeiten"
+	},
+	"reservationFormModal": {
+		"createReservationTitle": "Reservierung erstellen",
+		"createReservationDescription": "Eine neue Reservierung für mehrere Plätze erstellen",
+		"availableStatus": "Verfügbar",
+		"selectedStatus": "Ausgewählt",
+		"reservedStatus": "Reserviert",
+		"userReservedStatus": "Benutzer reserviert",
+		"blockedStatus": "Blockiert",
+		"selectEventToViewSeats": "Bitte wählen Sie eine Veranstaltung aus, um Plätze anzuzeigen",
+		"noSeatsAvailableForEvent": "Keine Plätze für diese Veranstaltung verfügbar",
+		"eventLabel": "Veranstaltung",
+		"selectEventPlaceholder": "Veranstaltung auswählen",
+		"userLabel": "Benutzer",
+		"filterUsersPlaceholder": "Benutzer filtern...",
+		"selectUserPlaceholder": "Benutzer auswählen",
+		"selectedSeatsTitle": "Ausgewählte Plätze",
+		"seatSelected": "1 Platz ausgewählt",
+		"multipleSeatsSelected": "{{count}} Plätze ausgewählt",
+		"deductAllowanceLabel": "Vom Benutzerkontingent abziehen",
+		"validationError": "Bitte wählen Sie eine Veranstaltung, einen Benutzer und mindestens einen Platz aus",
+		"cancelButton": "Abbrechen",
+		"creatingButton": "Erstelle...",
+		"createButton": "Erstellen"
+	},
+	"reservationManagement": {
+		"title": "Reservierungsverwaltung",
+		"description": "Veranstaltungsreservierungen verwalten und Plätze blockieren",
+		"exportReservationsButton": "Reservierungen exportieren",
+		"exportEventReservationsTitle": "Veranstaltungsreservierungen exportieren",
+		"exportEventReservationsDescription": "Wählen Sie eine Veranstaltung aus, um alle Reservierungen als JSON zu exportieren.",
+		"selectEventLabel": "Veranstaltung auswählen",
+		"chooseEventToExportPlaceholder": "Veranstaltung zum Exportieren auswählen",
+		"chooseFormatToExportPlaceholder": "Format zum Exportieren auswählen",
+		"cancelButton": "Abbrechen",
+		"blockSeatsButton": "Plätze blockieren",
+		"addReservationButton": "Reservierung hinzufügen",
+		"confirmDeleteMultiple": "Sind Sie sicher, dass Sie {{count}} Reservierungen löschen möchten?",
+		"selectAll": "Alle auswählen",
+		"deselectAll": "Alle abwählen",
+		"eventFilterLabel": "Veranstaltung",
+		"statusFilterLabel": "Status",
+		"tableHeaderSelect": "Auswahl",
+		"tableHeaderUser": "Benutzer",
+		"tableHeaderEvent": "Veranstaltung",
+		"tableHeaderSeat": "Platz",
+		"tableHeaderStatus": "Status",
+		"tableHeaderReservedDate": "Reservierungsdatum",
+		"tableHeaderActions": "Aktionen",
+		"confirmDelete": "Sind Sie sicher, dass Sie diese Reservierung löschen möchten?",
+		"unknownEvent": "Unbekannte Veranstaltung",
+		"unknownSeat": "Unbekannter Platz",
+		"unknownDate": "Unbekannt",
+		"statusReserved": "Reserviert",
+		"statusBlocked": "Blockiert",
+		"paginationLabel": "Reservierungen",
+		"selectFormatLabel": "Format auswählen",
+		"csvOption": "CSV",
+		"jsonOption": "JSON",
+		"pdfOption": "PDF",
+		"exportCsvButton": "CSV exportieren",
+		"exportJsonButton": "JSON exportieren",
+		"exportPdfButton": "PDF exportieren",
+		"deleteButtonLabel": "Löschen"
+	},
+	"seatFormModal": {
+		"createSeatTitle": "Platz erstellen",
+		"editSeatTitle": "Platz bearbeiten",
+		"addSeatDescription": "Einen neuen Platz zu einem Standort hinzufügen",
+		"updateSeatDescription": "Platzinformationen aktualisieren",
+		"seatNumberLabel": "Platznummer",
+		"locationLabel": "Standort",
+		"rowLabel": "Reihe",
+		"selectLocationPlaceholder": "Standort auswählen",
+		"xCoordinateLabel": "X-Koordinate",
+		"yCoordinateLabel": "Y-Koordinate",
+		"cancelButton": "Abbrechen",
+		"savingButton": "Speichern...",
+		"createButton": "Erstellen",
+		"updateButton": "Aktualisieren",
+		"entrance": "Eingang"
+	},
+	"sidebar": {
+		"navigation": "Navigation",
+		"events": "Veranstaltungen",
+		"reservations": "Reservierungen",
+		"profile": "Profil",
+		"manager": "Manager",
+		"userManagement": "Benutzer-Verwaltung",
+		"admin": "Admin",
+		"supervisor": "Supervisor",
+		"liveview": "Liveview",
+		"checkin": "Check-In",
+		"theme": "Theme",
+		"light": "Hell",
+		"dark": "Dunkel",
+		"system": "System",
+		"language": "Sprache",
+		"english": "Englisch",
+		"german": "Deutsch",
+		"logout": "Abmelden",
+		"logoutAll": "Von allen Geräten abmelden",
+		"login": "Anmelden",
+		"unsavedChangesTitle": "Ungespeicherte Änderungen",
+		"unsavedChangesDescription": "Sie haben ungespeicherte Änderungen auf dieser Seite. Was möchten Sie tun?",
+		"cancel": "Abbrechen",
+		"discardChanges": "Änderungen verwerfen",
+		"saveAndContinue": "Speichern & Fortfahren"
+	},
+	"seatManagement": {
+		"title": "Sitzplatzverwaltung",
+		"description": "Sitzplätze für Standorte erstellen und verwalten",
+		"addSeatButton": "Sitzplatz hinzufügen",
+		"confirmDeleteMultiple": "Sind Sie sicher, dass Sie {{count}} Sitzplätze löschen möchten?",
+		"selectAll": "Alle auswählen",
+		"deselectAll": "Alle abwählen",
+		"filter": {
+			"locationLabel": "Standort",
+			"entranceLabel": "Eingang"
+		},
+		"table": {
+			"selectHeader": "Auswahl",
+			"seatNumberHeader": "Sitzplatznummer",
+			"seatRowHeader": "Reihe",
+			"locationHeader": "Standort",
+			"positionHeader": "Position",
+			"actionsHeader": "Aktionen",
+			"entranceHeader": "Eingang"
+		},
+		"unknownLocation": "Unbekannter Standort",
+		"statusAvailable": "Verfügbar",
+		"confirmDelete": "Sind Sie sicher, dass Sie Sitzplatz {{seatNumber}} löschen möchten?",
+		"paginationLabel": "Sitzplätze",
+		"deleteButtonLabel": "Löschen",
+		"editButtonLabel": "Bearbeiten"
+	},
+	"userMultiSelect": {
+		"quickSelectByTags": "Schnellauswahl nach Tags:",
+		"searchPlaceholder": "Benutzer suchen...",
+		"noUsersFound": "Keine Benutzer gefunden",
+		"noUsersAvailable": "Keine Benutzer verfügbar",
+		"selectedUsers": "Ausgewählte Benutzer",
+		"removeAll": "Alle entfernen",
+		"noUsersSelected": "Keine Benutzer ausgewählt"
+	},
+	"pagination-wrapper": {
+		"label": "Zeige {{fromCount}} bis {{toCount}} von {{totalCount}}"
+	},
+	"footer": {
+		"allRightsReserved": "Alle Rechte vorbehalten.",
+		"legalNotice": "Impressum",
+		"privacyPolicy": "Datenschutzerklärung"
+	},
+	"emailSeatmap": {
+		"title": "Ihre Sitzplatzkarte",
+		"subtitle": "Zeigen Sie Ihre reservierten Sitzplätze an",
+		"stage": "Bühne",
+		"loading": {
+			"title": "Ihre Sitzplatzkarte wird geladen...",
+			"subtitle": "Bitte warten Sie einen Moment"
+		},
+		"error": {
+			"title": "Fehler",
+			"failedToLoad": "Sitzplatzkarte konnte nicht geladen werden",
+			"invalidToken": "Der Token ist möglicherweise ungültig oder abgelaufen. Bitte überprüfen Sie Ihre E-Mail für einen neuen Link.",
+			"noToken": "Kein Token angegeben"
+		},
+		"controls": {
+			"zoomOut": "Herauszoomen",
+			"zoomIn": "Hineinzoomen",
+			"reset": "Ansicht zurücksetzen",
+			"download": "Sitzplatzkarte herunterladen"
+		},
+		"legend": {
+			"yourSeats": "Ihre reservierten Sitzplätze",
+			"otherSeats": "Andere reservierte Sitzplätze",
+			"availableSeats": "Verfügbare Sitzplätze"
+		},
+		"instructions": {
+			"desktop": "Mausrad zum Zoomen verwenden • Ziehen zum Verschieben • Klicken Sie auf die Schaltflächen zum Zoomen",
+			"mobile": "Ziehen zum Verschieben • Klicken Sie auf die Schaltflächen zum Zoomen"
+		},
+		"toast": {
+			"downloadStarted": "Download gestartet",
+			"downloadDescription": "Ihre Sitzplatzkarte wird heruntergeladen",
+			"errorTitle": "Fehler"
+		}
+	},
+	"common": {
+		"cancel": "Abbrechen",
+		"confirm": "Bestätigen",
+		"loading": "Wird geladen...",
+		"error": {
+			"default": "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
+		}
+	},
+	"checkin": {
+		"title": "Check-In",
+		"description": "Verarbeiten Sie Event-Check-Ins über QR-Code-Scannen oder Benutzerauswahl.",
+		"success": {
+			"title": "Check-In erfolgreich",
+			"description": "Der Check-In wurde erfolgreich verarbeitet."
+		},
+		"info": {
+			"success": {
+				"title": "Check-In-Informationen geladen",
+				"description": "Die Check-In-Informationen wurden erfolgreich abgerufen."
+			},
+			"error": {
+				"title": "Abrufen der Check-In-Informationen fehlgeschlagen",
+				"description": "Die Check-In-Informationen konnten nicht abgerufen werden. Bitte versuchen Sie es erneut."
+			}
+		},
+		"perform": {
+			"success": {
+				"title": "Check-In abgeschlossen",
+				"description": "Der Check-In wurde erfolgreich durchgeführt."
+			},
+			"error": {
+				"title": "Check-In fehlgeschlagen",
+				"description": "Beim Verarbeiten des Check-Ins ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
+			}
+		},
+		"error": {
+			"title": "Check-In Fehler",
+			"default": "Bei der Verarbeitung des Check-In ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+			"noCheckInInfo": "Keine Check-In Informationen verfügbar.",
+			"scanningFailed": "Fehler beim Scannen des QR-Codes.",
+			"getInfoFailed": "Abrufen der Check-In Informationen fehlgeschlagen.",
+			"getInfoByUsernameFailed": "Abrufen der Check-In Informationen nach Benutzername fehlgeschlagen.",
+			"processFailed": "Check-In Prozess fehlgeschlagen."
+		},
+		"eventSelector": {
+			"label": "Event auswählen",
+			"placeholder": "Wähle ein Event...",
+			"loading": "Events werden geladen...",
+			"noEvents": "Keine Veranstaltungen verfügbar",
+			"selectFirst": "Bitte wähle zuerst ein Event aus, um mit dem Check-In fortzufahren."
+		},
+		"qrScanner": {
+			"title": "QR-Code Scanner",
+			"description": "Richten Sie Ihre Kamera auf einen QR-Code",
+			"startCamera": "Kamera starten",
+			"stopCamera": "Kamera stoppen",
+			"cameraError": "Fehler beim Zugriff auf die Kamera. Bitte überprüfen Sie die Berechtigung.",
+			"noCamera": "Keine Kamera verfügbar.",
+			"reservationsOpen": "Reservierungen geöffnet",
+			"loadingCamera": "Lade QR-Code-Scanner..."
+		},
+		"tabs": {
+			"qrScanner": "QR-Code Scanner",
+			"userSelection": "Benutzerauswahl"
+		},
+		"usernameSelector": {
+			"title": "Benutzer auswählen",
+			"selectUser": "Benutzer auswählen...",
+			"searchUser": "Benutzer suchen...",
+			"noUserFound": "Kein Benutzer gefunden.",
+			"loadingUsers": "Benutzer werden geladen...",
+			"fetchReservations": "Reservierungen abrufen"
+		},
+		"reservations": {
+			"title": "Reservierungen",
+			"user": "Benutzername",
+			"name": "Name",
+			"email": "Email",
+			"selectReservations": "Wählen Sie Reservierungen aus",
+			"noReservations": "Keine Reservierungen vorhanden.",
+			"checkInCount": "Check-Ins: {{count}}",
+			"cancelledCount": "Stornierungen: {{count}}",
+			"selectAll": "Alle auswählen",
+			"deselectAll": "Alle abwählen",
+			"loading": "Lade Reservierungen...",
+			"event": "Event",
+			"seat": "Platz",
+			"openDrawer": "Reservierungsübersicht öffnen"
+		},
+		"actions": {
+			"submit": "Check-In durchführen",
+			"cancel": "Abbrechen",
+			"scan": "Scannen",
+			"close": "Schließen",
+			"processing": "Verarbeite..."
+		}
+	},
+	"liveview": {
+		"title": "Live View",
+		"description": "Überwachen Sie Check-In in Echtzeit",
+		"eventSelector": {
+			"label": "Event auswählen",
+			"placeholder": "Wähle ein Event...",
+			"loading": "Events werden geladen...",
+			"noEvents": "Keine Veranstaltungen verfügbar",
+			"selectFirst": "Bitte wähle zuerst ein Event aus"
+		},
+		"status": {
+			"connected": "Verbunden",
+			"connecting": "Verbindung wird hergestellt...",
+			"disconnected": "Nicht verbunden",
+			"loading": "Daten werden geladen..."
+		},
+		"event": {
+			"title": "Event Informationen",
+			"name": "Name",
+			"description": "Beschreibung",
+			"startTime": "Startzeit",
+			"endTime": "Endzeit"
+		},
+		"legend": {
+			"title": "Legende"
+		},
+		"seatMap": {
+			"title": "Sitzplan"
+		},
+		"reservations": {
+			"title": "Reservierungen",
+			"count": "Reservierungen ({{count}})",
+			"user": "Benutzer",
+			"seat": "Platz",
+			"status": "Status",
+			"checkedIn": "Eingecheckt",
+			"noShow": "Nicht erschienen",
+			"cancelled": "Storniert",
+			"pending": "Ausstehend",
+			"empty": "Keine Reservierungen vorhanden"
+		},
+		"error": {
+			"title": "Fehler",
+			"message": "Ein Fehler ist beim Laden der Daten aufgetreten"
+		}
+	},
+	"profile": {
+		"update": {
+			"success": {
+				"title": "Profil wurde erfolgreich aktualisiert"
+			},
+			"error": {
+				"title": "Profilaktualisierung fehlgeschlagen"
+			}
+		}
+	}
 }
