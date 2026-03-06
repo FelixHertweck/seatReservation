@@ -1,0 +1,313 @@
+seat-reservation
+Copyright 2026 Felix Hertweck
+
+This software is distributed under the Apache License, Version 2.0.
+See the LICENSE file for the full license text.
+https://www.apache.org/licenses/LICENSE-2.0
+
+========================================================================
+THIRD-PARTY DEPENDENCIES
+========================================================================
+
+This product includes software developed by third parties.
+The dependency data for this notice was generated via:
+  mvn license:add-third-party
+  cd webapp && npx license-checker --json --production
+
+This notice groups dependencies by license family and summarizes entries
+with identical licenses.
+
+------------------------------------------------------------------------
+Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+------------------------------------------------------------------------
+
+  - brotli4j (com.aayushatharva.brotli4j:*:1.16.0)
+  - cron-utils (com.cronutils:cron-utils:9.2.1)
+  - ClassMate (com.fasterxml:classmate:1.7.1)
+  - Jackson (com.fasterxml.jackson.*:*:2.21.x)
+  - Caffeine cache (com.github.ben-manes.caffeine:caffeine:3.2.3)
+  - Gson (com.google.code.gson:gson:2.13.2)
+  - error-prone annotations (com.google.errorprone:error_prone_annotations:2.47.0)
+  - Guava InternalFutureFailureAccess (com.google.guava:failureaccess:1.0.1)
+  - Guava (com.google.guava:guava:33.5.0-jre)
+  - Google Guice (com.google.inject:guice:5.1.0)
+  - ZXing (com.google.zxing:*:3.5.4)
+  - OWASP Java HTML Sanitizer (com.googlecode.owasp-java-html-sanitizer:*:20260102.1)
+  - Apache Commons CLI (commons-cli:commons-cli:1.11.0)
+  - Apache Commons Codec (commons-codec:commons-codec:1.21.0)
+  - Apache Commons IO (commons-io:commons-io:2.21.0)
+  - Apache Commons Logging (commons-logging:commons-logging:1.3.0)
+  - Agroal (io.agroal:*:3.0)
+  - Micrometer (io.micrometer:*:1.16.3)
+  - Netty (io.netty:*:4.1.130.Final)
+  - OpenTelemetry Java (io.opentelemetry:*:1.57.0)
+  - OpenTelemetry Instrumentation (io.opentelemetry.instrumentation:*:2.23.0)
+  - OpenTelemetry Semantic Conventions (io.opentelemetry.semconv:*:1.37.0)
+  - Prometheus Java Simpleclient (io.prometheus:*:0.16.0)
+  - Quarkus OpenPDF Runtime (io.quarkiverse.openpdf:quarkus-openpdf:3.3.2)
+  - Quarkus - FS Util (io.quarkus:quarkus-fs-util:1.3.0)
+  - Quarkus (io.quarkus:*:3.32.1)
+  - ArC (io.quarkus.arc:*:3.32.1)
+  - Gizmo (io.quarkus.gizmo:*:1.10.1 / 2.1.1)
+  - Undertow (io.quarkus.http:*:5.4.0)
+  - Qute Core (io.quarkus.qute:qute-core:3.32.1)
+  - RESTEasy Reactive (io.quarkus.resteasy.reactive:*:3.32.1)
+  - Quarkus Security API (io.quarkus.security:quarkus-security:2.3.2)
+  - Quarkus Vert.x Utils (io.quarkus.vertx.utils:*:3.32.1)
+  - REST Assured (io.rest-assured:*:5.5.6)
+  - Jandex (io.smallrye:jandex*:3.5.3)
+  - SmallRye Context Propagation (io.smallrye:smallrye-context-propagation*:2.3.0)
+  - SmallRye Fault Tolerance Vert.x (io.smallrye:smallrye-fault-tolerance-vertx:6.10.0)
+  - SmallRye Health (io.smallrye:smallrye-health*:4.3.0)
+  - SmallRye JWT (io.smallrye:smallrye-jwt*:4.6.3)
+  - SmallRye OpenAPI (io.smallrye:smallrye-open-api-*:4.2.4)
+  - SmallRye BeanBag (io.smallrye.beanbag:*:1.6.1)
+  - SmallRye Certificate Generator (io.smallrye.certs:*:0.9.2)
+  - SmallRye Common (io.smallrye.common:*:2.16.0)
+  - SmallRye Config (io.smallrye.config:*:3.16.0)
+  - SmallRye Mutiny (io.smallrye.reactive:mutiny*:3.1.1 / 1.1.1)
+  - SmallRye Mutiny Vert.x (io.smallrye.reactive:smallrye-mutiny-vertx*:3.21.5)
+  - SmallRye Mutiny Code Generator (io.smallrye.reactive:vertx-mutiny-generator:3.21.5)
+  - SmallRye Reactive Converters (io.smallrye.reactive:smallrye-reactive-converter*:3.0.3)
+  - CDI APIs (jakarta.enterprise:*:4.1.0)
+  - Jakarta Dependency Injection (jakarta.inject:jakarta.inject-api:2.0.1)
+  - Jakarta Validation API (jakarta.validation:jakarta.validation-api:3.1.1)
+  - javax.inject (javax.inject:javax.inject:1)
+  - Byte Buddy (net.bytebuddy:*:1.17.8)
+  - Aesh (org.aesh:*:2.8.2 / 2.6)
+  - Apache Commons Compress (org.apache.commons:commons-compress:1.28.0)
+  - Apache Commons CSV (org.apache.commons:commons-csv:1.14.1)
+  - Apache Commons Lang (org.apache.commons:commons-lang3:3.20.0)
+  - Apache Groovy (org.apache.groovy:groovy*:4.0.22)
+  - Apache HttpComponents (org.apache.httpcomponents:*:4.5.14 / 4.4.16)
+  - Apache Maven (org.apache.maven:*:3.9.12 / 4.0.0-alpha-7)
+  - Apache Maven Resolver (org.apache.maven.resolver:*:1.9.25)
+  - Apache Maven Shared Utils (org.apache.maven.shared:maven-shared-utils:3.4.2)
+  - Apache Maven Wagon (org.apache.maven.wagon:*:3.5.3)
+  - Apache Batik (org.apache.xmlgraphics:batik-*:1.19)
+  - Apache XML Graphics Commons (org.apache.xmlgraphics:xmlgraphics-commons:2.11)
+  - apiguardian-api (org.apiguardian:apiguardian-api:1.1.2)
+  - jose4j (org.bitbucket.b_c:jose4j:0.9.6)
+  - TagSoup (org.ccil.cowan.tagsoup:tagsoup:1.2.1)
+  - Plexus (org.codehaus.plexus:*:various)
+  - Angus Activation Registries (org.eclipse.angus:angus-activation:2.0.3)
+  - MicroProfile APIs (org.eclipse.microprofile.*:*:various)
+  - jansi (org.fusesource.jansi:jansi:2.4.0)
+  - Hibernate ORM (org.hibernate.orm:hibernate-core:7.2.4.Final)
+  - Hibernate ORM GraalVM (org.hibernate.orm:hibernate-graalvm:7.2.4.Final)
+  - Hibernate Validator (org.hibernate.validator:hibernate-validator:9.1.0.Final)
+  - Local-only Hibernate Cache (org.hibernate.local-cache:quarkus-local-cache:0.5.0)
+  - Hibernate Models (org.hibernate.models:hibernate-models:1.0.1)
+  - JBoss Invocation API (org.jboss.invocation:jboss-invocation:2.0.0.Final)
+  - JBoss Logging (org.jboss.logging:*:various)
+  - JBoss Log Manager (org.jboss.logmanager:jboss-logmanager:3.2.1.Final)
+  - Narayana (org.jboss.narayana.*:*:7.3.3.Final)
+  - SLF4J JBoss Log Manager (org.jboss.slf4j:slf4j-jboss-logmanager:2.0.2.Final)
+  - JBoss Threads (org.jboss.threads:jboss-threads:3.9.2)
+  - jcommander (org.jcommander:jcommander:1.85)
+  - JCTools (org.jctools:jctools-core:4.0.5)
+  - JSpecify (org.jspecify:jspecify:1.0.0)
+  - Objenesis (org.objenesis:objenesis:3.3)
+  - opentest4j (org.opentest4j:opentest4j:1.3.0)
+  - SnakeYAML (org.yaml:snakeyaml:2.5)
+  - wildfly-common (org.wildfly.common:wildfly-common:2.0.1)
+  - WildFly Elytron (org.wildfly.security:wildfly-elytron-*:2.8.3.Final)
+  - XML Commons External Components XML APIs (xml-apis:*:1.4.01 / 1.3.04)
+  - @img/sharp-linux-x64 (@img/sharp-linux-x64:0.34.4)
+  - @img/sharp-linuxmusl-x64 (@img/sharp-linuxmusl-x64:0.34.4)
+  - SWC Helpers (@swc/helpers:0.5.15)
+  - baseline-browser-mapping (baseline-browser-mapping:2.8.22)
+  - class-variance-authority (class-variance-authority:0.7.1)
+  - detect-libc (detect-libc:2.1.2)
+  - jsqr (jsqr:1.4.0)
+  - sharp (sharp:0.34.4)
+  - TypeScript (typescript:5.9.2)
+
+------------------------------------------------------------------------
+MIT License
+https://opensource.org/licenses/MIT
+------------------------------------------------------------------------
+
+  - mockito-core (org.mockito:mockito-core:5.21.0)
+  - mockito-junit-jupiter (org.mockito:mockito-junit-jupiter:5.21.0)
+  - SLF4J API Module (org.slf4j:slf4j-api:2.0.17)
+  - Babel Runtime (@babel/runtime:7.28.4)
+  - Floating UI (@floating-ui/*:various)
+  - Hey API (@hey-api/*:various)
+  - @img/colour (@img/colour:1.0.0)
+  - JSON Schema Ref Parser utilities (@jsdevtools/ono:7.1.3)
+  - Next.js (next:16.1.5, @next/*:16.1.5, next-themes:0.4.6)
+  - Radix UI (@radix-ui/*:various)
+  - TanStack Query (@tanstack/query-core:5.90.2, @tanstack/react-query:5.90.2)
+  - TypeScript type stubs (@types/hoist-non-react-statics:3.3.7, @types/json-schema:7.0.15, @types/react:19.2.2, @types/react-dom:19.2.2)
+  - React (react:19.2.0, react-dom:19.2.0, react-is:16.13.1, scheduler:0.27.0)
+  - react-cookie (react-cookie:8.0.1, universal-cookie:8.0.1)
+  - react-i18next (react-i18next:16.5.0)
+  - i18next (i18next:25.8.0, i18next-browser-languagedetector:8.2.0, i18next-resources-to-backend:1.2.1)
+  - React scroll management (react-remove-scroll:2.7.1, react-remove-scroll-bar:2.3.8, react-style-singleton:2.2.3, use-sidecar:1.1.3, use-callback-ref:1.3.3, get-nonce:1.0.1, aria-hidden:1.2.6)
+  - use-sync-external-store (use-sync-external-store:1.6.0)
+  - input-otp (input-otp:1.4.2)
+  - sonner (sonner:2.0.7)
+  - vaul (vaul:1.1.2)
+  - QR code / image utilities (qrcode:1.5.4, pngjs:5.0.0, dijkstrajs:1.0.3)
+  - Tailwind utilities (tailwind-merge:3.4.0, clsx:2.1.1)
+  - PostCSS (postcss:8.4.31)
+  - styled-jsx (styled-jsx:5.1.6)
+  - csstype (csstype:3.1.3)
+  - js-yaml (js-yaml:4.1.1)
+  - lodash (lodash:4.17.23)
+  - nanoid (nanoid:3.3.11)
+  - chokidar (chokidar:5.0.0, readdirp:5.0.0)
+  - unjs tooling (c12:3.3.3, citty:0.1.6 / 0.2.0, confbox:0.2.2, consola:3.4.2, defu:6.1.4, destr:2.0.5, giget:2.0.0, jiti:2.6.1, nypm:0.6.4, ohash:2.0.11, pathe:2.0.3, perfect-debounce:2.1.0, pkg-types:2.3.0, rc9:2.1.2, exsolve:1.0.8, node-fetch-native:1.6.7, tinyexec:1.0.2)
+  - cross-spawn (cross-spawn:7.0.6)
+  - cookie (cookie:1.0.2)
+  - commander (commander:14.0.2)
+  - open (open:11.0.0, bundle-name:4.1.0, default-browser:5.4.0, default-browser-id:5.0.1, define-lazy-prop:3.0.0, is-docker:3.0.0, is-in-ssh:1.0.0, is-inside-container:1.0.0, is-wsl:3.1.0, run-applescript:7.1.0, detect-node-es:1.1.0, powershell-utils:0.1.0, wsl-utils:0.3.1)
+  - p-limit / p-locate (p-limit:2.3.0, p-locate:4.1.0, p-try:2.2.0, find-up:4.1.0, locate-path:5.0.0, path-exists:4.0.0)
+  - ansi utilities (ansi-colors:4.1.3, ansi-regex:5.0.1, ansi-styles:4.3.0, strip-ansi:6.0.1, string-width:4.2.3, wrap-ansi:6.2.0, is-fullwidth-code-point:3.0.0, emoji-regex:8.0.0)
+  - color utilities (color-convert:2.0.1, color-name:1.1.4)
+  - yargs (yargs:15.4.1, require-directory:2.1.1, decamelize:1.2.0, camelcase:5.3.1)
+  - cli utilities (path-key:3.1.1, shebang-command:2.0.0, shebang-regex@3.0.0, client-only:0.0.1, void-elements:3.1.0, html-parse-stringify:3.0.1)
+
+------------------------------------------------------------------------
+BSD Licenses
+------------------------------------------------------------------------
+
+BSD-3-Clause:
+  - Java Advanced Imaging I/O Tools (com.github.jai-imageio:jai-imageio-core:1.4.0)
+  - ANTLR 4 Runtime (org.antlr:antlr4-runtime:4.13.2)
+  - Hamcrest (org.hamcrest:hamcrest:2.2)
+  - ASM (org.ow2.asm:asm*:9.9.1)
+  - hoist-non-react-statics (hoist-non-react-statics:3.3.2)
+  - source-map-js (source-map-js:1.2.1)
+
+BSD-2-Clause:
+  - crac (org.crac:crac:1.5.0)
+  - HdrHistogram (org.hdrhistogram:HdrHistogram:2.2.2)
+  - PostgreSQL JDBC Driver (org.postgresql:postgresql:42.7.10)
+  - dotenv (dotenv:17.2.3)
+
+------------------------------------------------------------------------
+Eclipse Public License v2.0 (EPL-2.0) / Eclipse Distribution License v1.0 (EDL-1.0)
+https://www.eclipse.org/legal/epl-2.0/
+https://www.eclipse.org/org/documents/edl-v10.php
+------------------------------------------------------------------------
+
+EPL-2.0:
+  - JaCoCo (org.jacoco:*:0.8.14)
+  - JUnit Jupiter (org.junit.jupiter:*:6.0.3)
+  - JUnit Platform (org.junit.platform:*:6.0.3)
+  - Eclipse Sisu (org.eclipse.sisu:*:0.9.0.M4)
+
+EPL-2.0 / Apache-2.0 (dual):
+  - Vert.x (io.vertx:*:4.5.25)
+
+EDL-1.0:
+  - Jakarta Activation API (jakarta.activation:jakarta.activation-api:2.1.4)
+  - Jakarta XML Binding API (jakarta.xml.bind:jakarta.xml.bind-api:4.0.5)
+  - JAXB Core (org.glassfish.jaxb:jaxb-core:4.0.6)
+  - JAXB Runtime (org.glassfish.jaxb:jaxb-runtime:4.0.6)
+  - TXW2 Runtime (org.glassfish.jaxb:txw2:4.0.6)
+  - istack-commons-runtime (com.sun.istack:istack-commons-runtime:4.1.2)
+
+EPL-2.0 / GPL-2.0-with-Classpath-Exception (dual):
+  - Jakarta Annotations API (jakarta.annotation:jakarta.annotation-api:3.0.0)
+  - Jakarta Expression Language API (jakarta.el:jakarta.el-api:6.0.1)
+  - Jakarta Interceptors (jakarta.interceptor:jakarta.interceptor-api:2.2.0)
+  - Jakarta JSON Processing API (jakarta.json:jakarta.json-api:2.1.3)
+  - Jakarta Persistence API (jakarta.persistence:jakarta.persistence-api:3.2.0)
+  - jakarta.resource API (jakarta.resource:jakarta.resource-api:2.1.0)
+  - Jakarta Servlet (jakarta.servlet:jakarta.servlet-api:6.0.0)
+  - jakarta.transaction API (jakarta.transaction:jakarta.transaction-api:2.0.1)
+  - Jakarta RESTful WS API (jakarta.ws.rs:jakarta.ws.rs-api:3.1.0)
+  - Eclipse Parsson (org.eclipse.parsson:parsson:1.1.7)
+  - Eclipse Expressly (org.glassfish.expressly:expressly:6.0.0)
+
+------------------------------------------------------------------------
+GNU General Public License v2.0 with Classpath Exception (GPL-2.0-CE)
+https://openjdk.org/legal/gplv2+ce.html
+------------------------------------------------------------------------
+
+  - JDK Classfile API backport (io.smallrye.classfile:jdk-classfile-backport:26)
+  - javax.annotation API (javax.annotation:javax.annotation-api:1.3.2) -- CDDL + GPL-2.0-CE
+
+------------------------------------------------------------------------
+GNU Lesser General Public License v2.1 / Mozilla Public License v2.0 (dual)
+https://www.gnu.org/licenses/lgpl-2.1.html
+https://www.mozilla.org/en-US/MPL/2.0/
+------------------------------------------------------------------------
+
+  - OpenPDF (com.github.librepdf:openpdf:2.2.4)
+    This project uses OpenPDF under the Mozilla Public License 2.0 (MPL 2.0).
+
+------------------------------------------------------------------------
+GNU Lesser General Public License v3.0 or later (LGPL-3.0-or-later)
+https://www.gnu.org/licenses/lgpl-3.0.html
+------------------------------------------------------------------------
+
+  - sharp-libvips Linux x64 (@img/sharp-libvips-linux-x64:1.2.3)
+  - sharp-libvips Linux musl x64 (@img/sharp-libvips-linuxmusl-x64:1.2.3)
+
+------------------------------------------------------------------------
+Bouncy Castle Licence (MIT-like)
+https://www.bouncycastle.org/licence.html
+------------------------------------------------------------------------
+
+  - Bouncy Castle PKIX (org.bouncycastle:bcpkix-jdk18on:1.83)
+  - Bouncy Castle Provider (org.bouncycastle:bcprov-jdk18on:1.83)
+  - Bouncy Castle ASN.1 Utilities (org.bouncycastle:bcutil-jdk18on:1.83)
+
+------------------------------------------------------------------------
+Universal Permissive License v1.0 (UPL-1.0)
+https://oss.oracle.com/licenses/upl/
+------------------------------------------------------------------------
+
+  - GraalVM SDK Nativeimage (org.graalvm.sdk:nativeimage:23.1.2)
+  - GraalVM SDK Word (org.graalvm.sdk:word:23.1.2)
+
+------------------------------------------------------------------------
+ISC License
+https://opensource.org/licenses/ISC
+------------------------------------------------------------------------
+
+  - cliui (cliui:6.0.0)
+  - color-support (color-support:1.1.3)
+  - get-caller-file (get-caller-file:2.0.5)
+  - isexe (isexe:2.0.0)
+  - lucide-react (lucide-react:0.564.0)
+  - picocolors (picocolors:1.1.1)
+  - require-main-filename (require-main-filename:2.0.0)
+  - semver (semver:7.7.3)
+  - set-blocking (set-blocking:2.0.0)
+  - which-module (which-module:2.0.1)
+  - which (which:2.0.2)
+  - y18n (y18n:4.0.3)
+  - yargs-parser (yargs-parser:18.1.3)
+
+------------------------------------------------------------------------
+Python Software Foundation License 2.0
+https://opensource.org/license/python-2-0
+------------------------------------------------------------------------
+
+  - argparse (argparse:2.0.1)
+
+------------------------------------------------------------------------
+Creative Commons Attribution 4.0 International (CC-BY-4.0)
+https://creativecommons.org/licenses/by/4.0/
+------------------------------------------------------------------------
+
+  - caniuse-lite (caniuse-lite:1.0.30001751)
+
+------------------------------------------------------------------------
+Public Domain / MIT-0 / CC0 / 0BSD
+------------------------------------------------------------------------
+
+  - AOP Alliance (aopalliance:aopalliance:1.0) -- Public Domain
+  - JBoss Transaction SPI (org.jboss:jboss-transaction-spi:8.0.0.Final) -- Public Domain
+  - HdrHistogram (org.hdrhistogram:HdrHistogram:2.2.2) -- CC0 / BSD-2-Clause
+  - LatencyUtils (org.latencyutils:LatencyUtils:2.0.3) -- CC0
+  - reactive-streams (org.reactivestreams:reactive-streams:1.0.4) -- MIT-0
+  - tslib (tslib:2.8.1) -- 0BSD
+
+========================================================================
