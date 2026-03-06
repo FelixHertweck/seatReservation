@@ -20,7 +20,8 @@ jobs:
     runs-on: "ubuntu-24.04"
 
     env:
-      NODE_VERSION: '22.18.x'
+      # default fallback in case .nvmrc is missing
+      NODE_VERSION: '24.x.x'
 
     steps:
       - name: Checkout Repo
@@ -29,6 +30,9 @@ jobs:
       - name: Set up NodeJS
         uses: actions/setup-node@v6
         with:
+          # prefer node-version-file over manual env read
+          node-version-file: webapp/.nvmrc
+          # fallback to env if file missing
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Set up Maven Cache
