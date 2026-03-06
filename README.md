@@ -195,6 +195,17 @@ You can then execute your native executable with: `./target/security-jpa-quickst
 
 To learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
 
+### 
+```shell script
+# Spotless checks and formatting for the backend
+mvn spotless:check
+mvn spotless:apply
+
+# License checks and generation for the backend
+mvn license:check-file-header
+mvn license:update-file-header
+```
+
 ## Frontend (Next.js)
 
 The frontend is located in the `webapp/` directory.
@@ -222,3 +233,20 @@ From the `webapp/` directory, you can run the following scripts:
 -   **`npm run generate:openapi-file`**: Generates the OpenAPI file from the backend.
 -   **`npm run generate:api-client`**: Generates the API client based on the OpenAPI file.
 -   **`npm run generate:api`**: Executes `generate:openapi-file` and `generate:api-client`.
+
+
+## License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+### Check licenses of dependencies:
+
+
+```shell script
+# Backend
+mvn license:add-third-party
+
+# Frontend
+cd webapp/
+npx license-checker --json --production
+npx license-checker --onlyAllow "MIT;Apache-2.0;BSD-3-Clause"
+```
