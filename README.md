@@ -195,15 +195,15 @@ You can then execute your native executable with: `./target/security-jpa-quickst
 
 To learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
 
-### 
+### Backend code quality checks
 ```shell script
 # Spotless checks and formatting for the backend
-mvn spotless:check
-mvn spotless:apply
+./mvnw spotless:check
+./mvnw spotless:apply
 
 # License checks and generation for the backend
-mvn license:check-file-header
-mvn license:update-file-header
+./mvnw license:check-file-header
+./mvnw license:update-file-header
 ```
 
 ## Frontend (Next.js)
