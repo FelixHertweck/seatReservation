@@ -46,12 +46,12 @@ public class EmailSeatMapTokenRepository implements PanacheRepository<EmailSeatM
      * @return Optional containing the token if found
      */
     public Optional<EmailSeatMapToken> findByToken(String token) {
-        LOG.debugf("Finding EmailSeatMapToken by token: %s", token);
+        LOG.debugf("Finding EmailSeatMapToken by token: [HIDDEN]", "HIDDEN");
         Optional<EmailSeatMapToken> result = find("token", token).firstResultOptional();
         if (result.isPresent()) {
-            LOG.debugf("EmailSeatMapToken found for token: %s", token);
+            LOG.debugf("EmailSeatMapToken found for token: [HIDDEN]", "HIDDEN");
         } else {
-            LOG.debugf("No EmailSeatMapToken found for token: %s", token);
+            LOG.debugf("No EmailSeatMapToken found for token: [HIDDEN]", "HIDDEN");
         }
         return result;
     }

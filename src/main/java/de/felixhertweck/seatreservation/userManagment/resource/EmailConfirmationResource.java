@@ -75,7 +75,7 @@ public class EmailConfirmationResource {
                 "Received POST request to /api/user/resend-email-confirmation for user: %s",
                 username);
         userService.resendEmailConfirmation(username);
-        LOG.infof("Email confirmation resent successfully for user: %s", username);
+        LOG.infof("Email confirmation resent successfully for user ID: [HIDDEN]", "HIDDEN");
         return Response.noContent().build();
     }
 
@@ -101,7 +101,7 @@ public class EmailConfirmationResource {
     public Response verifyEmailWithCode(@Valid VerifyEmailCodeRequestDto request) {
         LOG.debugf("Received POST request to /api/user/verify-email-code with code");
         String email = userService.verifyEmailWithCode(request.getVerificationCode());
-        LOG.debugf("Email verified successfully: %s", email);
+        LOG.debugf("Email verified successfully: %s", "HIDDEN");
         return Response.ok()
                 .entity(new VerifyEmailCodeResponseDto("Email verified successfully", email))
                 .build();

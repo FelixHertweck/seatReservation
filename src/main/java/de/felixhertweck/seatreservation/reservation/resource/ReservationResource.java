@@ -78,13 +78,11 @@ public class ReservationResource {
     public List<UserReservationResponseDTO> getMyReservations() {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.debugf(
-                "Received GET request to /api/user/reservations for user: %s",
-                currentUser.getUsername());
+                "Received GET request to /api/user/reservations for user ID: %d", currentUser.id);
         List<UserReservationResponseDTO> reservations =
                 reservationService.findReservationsByUser(currentUser);
         LOG.debugf(
-                "Returning %d reservations for user: %s",
-                reservations.size(), currentUser.getUsername());
+                "Returning %d reservations for user ID: %d", reservations.size(), currentUser.id);
         return reservations;
     }
 
@@ -104,11 +102,11 @@ public class ReservationResource {
     public UserReservationResponseDTO getMyReservationById(@PathParam("id") Long id) {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.debugf(
-                "Received GET request to /api/user/reservations/%d for user: %s",
-                id, currentUser.getUsername());
+                "Received GET request to /api/user/reservations/%d for user ID: %d",
+                id, currentUser.id);
         UserReservationResponseDTO reservation =
                 reservationService.findReservationByIdForUser(id, currentUser);
-        LOG.debugf("Returning reservation with ID %d for user: %s", id, currentUser.getUsername());
+        LOG.debugf("Returning reservation with ID %d for user ID: %d", id, currentUser.id);
         return reservation;
     }
 
@@ -137,13 +135,12 @@ public class ReservationResource {
             @Valid UserReservationsRequestDTO dto) {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.debugf(
-                "Received POST request to /api/user/reservations for user: %s",
-                currentUser.getUsername());
+                "Received POST request to /api/user/reservations for user ID: %d", currentUser.id);
         List<UserReservationResponseDTO> createdReservations =
                 reservationService.createReservationForUser(dto, currentUser);
         LOG.debugf(
-                "Created %d reservations for user: %s",
-                createdReservations.size(), currentUser.getUsername());
+                "Created %d reservations for user ID: %d",
+                createdReservations.size(), currentUser.id);
         return createdReservations;
     }
 
@@ -167,11 +164,11 @@ public class ReservationResource {
                     IOException {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.debugf(
-                "Received DELETE request to /api/user/reservations with IDs: %s for user: %s",
-                ids != null ? ids : Collections.emptyList(), currentUser.getUsername());
+                "Received DELETE request to /api/user/reservations with IDs: %s for user ID: %d",
+                ids != null ? ids : Collections.emptyList(), currentUser.id);
         reservationService.deleteReservationForUser(ids, currentUser);
         LOG.debugf(
-                "Reservations with IDs %s deleted successfully for user: %s",
-                ids != null ? ids : Collections.emptyList(), currentUser.getUsername());
+                "Reservations with IDs %s deleted successfully for user ID: %d",
+                ids != null ? ids : Collections.emptyList(), currentUser.id);
     }
 }

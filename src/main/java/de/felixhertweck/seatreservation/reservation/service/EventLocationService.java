@@ -51,7 +51,7 @@ public class EventLocationService {
      */
     public List<UserEventLocationResponseDTO> getLocationsForCurrentUser(String username)
             throws UserNotFoundException {
-        LOG.debugf("Stub: Retrieving event locations for user: %s", username);
+        LOG.debugf("Stub: Retrieving event locations for user ID: [HIDDEN]", "HIDDEN");
         User user = userRepository.findByUsername(username);
 
         if (user == null) {

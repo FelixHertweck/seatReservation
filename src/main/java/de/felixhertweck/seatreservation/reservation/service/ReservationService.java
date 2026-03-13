@@ -70,11 +70,9 @@ public class ReservationService {
      * @return a list of user reservation response DTOs
      */
     public List<UserReservationResponseDTO> findReservationsByUser(User currentUser) {
-        LOG.debugf("Attempting to find reservations for user: %s", currentUser.getUsername());
+        LOG.debugf("Attempting to find reservations for user ID: %d", currentUser.id);
         List<Reservation> reservations = reservationRepository.findByUser(currentUser);
-        LOG.debugf(
-                "Found %d reservations for user: %s",
-                reservations.size(), currentUser.getUsername());
+        LOG.debugf("Found %d reservations for user ID: %d", reservations.size(), currentUser.id);
         return reservations.stream().map(UserReservationResponseDTO::new).toList();
     }
 
@@ -90,27 +88,25 @@ public class ReservationService {
      */
     public UserReservationResponseDTO findReservationByIdForUser(Long id, User currentUser)
             throws ReservationNotFoundException, SecurityException {
-        LOG.debugf(
-                "Attempting to find reservation with ID %d for user: %s",
-                id, currentUser.getUsername());
+        LOG.debugf("Attempting to find reservation with ID %d for user ID: %d", id, currentUser.id);
         Reservation reservation =
                 reservationRepository
                         .findByIdOptional(id)
                         .orElseThrow(
                                 () -> {
                                     LOG.warnf(
-                                            "Reservation with ID %d not found for user %s.",
-                                            id, currentUser.getUsername());
+                                            "Reservation with ID %d not found for user ID: %d.",
+                                            id, currentUser.id);
                                     return new ReservationNotFoundException(
                                             "Reservation not found");
                                 });
         if (!reservation.getUser().equals(currentUser)) {
             LOG.warnf(
-                    "User %s attempted to access reservation %d which belongs to user %s.",
-                    currentUser.getUsername(), id, reservation.getUser().getUsername());
+                    "user ID: %d attempted to access reservation %d which belongs to user ID: %d.",
+                    currentUser.id, id, reservation.getUser().id);
             throw new SecurityException("You are not allowed to access this reservation");
         }
-        LOG.debugf("Reservation with ID %d found for user %s.", id, currentUser.getUsername());
+        LOG.debugf("Reservation with ID %d found for user ID: %d.", id, currentUser.id);
         return new UserReservationResponseDTO(reservation);
     }
 
@@ -137,24 +133,24 @@ public class ReservationService {
             UserReservationsRequestDTO dto, User currentUser)
             throws NoSeatsAvailableException, EventBookingClosedException {
         LOG.debugf(
-                "Attempting to create reservation for user %s for event ID %d with %d seats.",
-                currentUser.getUsername(), dto.getEventId(), dto.getSeatIds().size());
+                "Attempting to create reservation for user ID: %d for event ID %d with %d seats.",
+                currentUser.id, dto.getEventId(), (Integer) dto.getSeatIds().size());
         LOG.debugf("ReservationsRequestDTO: %s", dto.toString());
 
         if (currentUser.getEmail() == null
                 || currentUser.getEmail().trim().isEmpty()
                 || !currentUser.isEmailVerified()) {
             LOG.warnf(
-                    "User %s attempted to create reservation without a verified email.",
-                    currentUser.getUsername());
+                    "user ID: %d attempted to create reservation without a verified email.",
+                    currentUser.id);
             throw new IllegalStateException(
                     "User must have a verified email address to create a reservation.");
         }
 
         if (dto.getSeatIds() == null || dto.getSeatIds().isEmpty()) {
             LOG.warnf(
-                    "User %s attempted to create reservation with no seats selected.",
-                    currentUser.getUsername());
+                    "user ID: %d attempted to create reservation with no seats selected.",
+                    currentUser.id);
             throw new IllegalArgumentException("At least one seat must be selected");
         }
 
@@ -167,10 +163,10 @@ public class ReservationService {
                                     LOG.warnf(
                                             "Event with ID %d not found for reservation creation by"
                                                     + " user %s.",
-                                            dto.getEventId(), currentUser.getUsername());
+                                            dto.getEventId(), currentUser.id);
                                     return new EventNotFoundException("Event or Seat not found");
                                 });
-        LOG.debugf("Event %s (ID: %d) found for reservation.", event.getName(), event.id);
+        LOG.debugf("Event ID: %d found for reservation.", event.id);
 
         // Validate the seatIds, ensure they exist
         List<Seat> seats =
@@ -185,8 +181,7 @@ public class ReservationService {
                                                                     "Seat with ID %d not found for"
                                                                         + " reservation creation by"
                                                                         + " user %s.",
-                                                                    seatId,
-                                                                    currentUser.getUsername());
+                                                                    seatId, currentUser.id);
                                                             return new EventNotFoundException(
                                                                     "Minimum one seat not"
                                                                             + " found");
@@ -204,24 +199,24 @@ public class ReservationService {
                         .orElseThrow(
                                 () -> {
                                     LOG.warnf(
-                                            "User %s has no allowance for event %s (ID: %d).",
-                                            currentUser.getUsername(), event.getName(), event.id);
+                                            "user ID: %d has no allowance for event ID: %d.",
+                                            currentUser.id, event.id);
                                     return new EventNotFoundException(
                                             "You are not allowed to reserve seats for this"
                                                     + " event");
                                 });
         LOG.debugf(
-                "User %s has allowance for event %s. Allowed: %d, Requested: %d",
-                currentUser.getUsername(),
-                event.getName(),
+                "user ID: %d has allowance for event ID: %d. Allowed: %d, Requested: %d",
+                currentUser.id,
+                event.id,
                 eventUserAllowance.getReservationsAllowedCount(),
                 seats.size());
 
         if (eventUserAllowance.getReservationsAllowedCount() < seats.size()) {
             LOG.warnf(
-                    "User %s exceeded reservation limit for event %s (ID: %d). Allowed: %d,"
+                    "user ID: %d exceeded reservation limit for event %s (ID: %d). Allowed: %d,"
                             + " Requested: %d",
-                    currentUser.getUsername(),
+                    currentUser.id,
                     event.getName(),
                     event.id,
                     eventUserAllowance.getReservationsAllowedCount(),
@@ -241,17 +236,17 @@ public class ReservationService {
                     event.getName(), event.id, event.getBookingStartTime(), reservationTime);
             throw new EventBookingClosedException("Event is not yet bookable");
         }
-        LOG.debugf("Event %s (ID: %d) booking has started.", event.getName(), event.id);
+        LOG.debugf("Event ID: %d booking has started.", event.id);
 
         // Check if the event is still bookable
         if (event.getBookingDeadline() != null
                 && reservationTime.isAfter(event.getBookingDeadline())) {
             LOG.warnf(
-                    "Event %s (ID: %d) booking deadline passed. Deadline: %s, Current time: %s",
-                    event.getName(), event.id, event.getBookingDeadline(), reservationTime);
+                    "Event ID: %d booking deadline passed. Deadline: %s, Current time: %s",
+                    event.id, event.getBookingDeadline(), reservationTime);
             throw new EventBookingClosedException("Event is no longer bookable");
         }
-        LOG.debugf("Event %s (ID: %d) is still bookable.", event.getName(), event.id);
+        LOG.debugf("Event ID: %d is still bookable.", event.id);
 
         // Check if seats are already reserved
         List<Reservation> existingReservations = reservationRepository.findByEventId(event.id);
@@ -264,9 +259,7 @@ public class ReservationService {
                                             && (r.getStatus() == ReservationStatus.RESERVED
                                                     || r.getStatus()
                                                             == ReservationStatus.BLOCKED))) {
-                LOG.warnf(
-                        "Seat %s (ID: %d) is already reserved for event %s (ID: %d).",
-                        seat.getSeatNumber(), seat.id, event.getName(), event.id);
+                LOG.warnf("Seat ID: %d is already reserved for event ID: %d.", seat.id, event.id);
                 throw new SeatAlreadyReservedException("One or more seats are already reserved");
             }
             String checkInCode = CodeGenerator.generateRandomCode();
@@ -278,37 +271,38 @@ public class ReservationService {
                             reservationTime,
                             ReservationStatus.RESERVED,
                             checkInCode));
-            LOG.debugf(
-                    "Prepared new reservation for seat %s (ID: %d).",
-                    seat.getSeatNumber(), seat.id);
+            LOG.debugf("Prepared new reservation for seat ID: %d.", seat.id);
         }
 
         // Persist the new reservations
         reservationRepository.persistAll(newReservations);
+        LOG.infof(
+                "Persisted %d new reservations for user ID: %d and event ID: %d.",
+                newReservations.size(), currentUser.id, event.id);
         LOG.debugf(
-                "Persisted %d new reservations for user %s and event %s (ID: %d).",
-                newReservations.size(), currentUser.getUsername(), event.getName(), event.id);
+                "Persisted %d new reservations for user ID: %d and event ID: %d.",
+                newReservations.size(), currentUser.id, event.id);
 
         // Update the user's allowance
         eventUserAllowance.setReservationsAllowedCount(
                 eventUserAllowance.getReservationsAllowedCount() - seats.size());
         eventUserAllowanceRepository.persist(eventUserAllowance);
         LOG.infof(
-                "Updated reservation allowance for user %s and event %s (ID: %d). New allowance:"
-                        + " %d",
-                currentUser.getUsername(),
+                "Updated reservation allowance for user ID: %d and event %s (ID: %d). New"
+                        + " allowance: %d",
+                currentUser.id,
                 event.getName(),
                 event.id,
                 eventUserAllowance.getReservationsAllowedCount());
 
         try {
             LOG.debugf(
-                    "Attempting to send reservation confirmation email to %s.",
-                    currentUser.getEmail());
+                    "Attempting to send reservation confirmation email to user ID: %d.",
+                    currentUser.id);
             emailService.sendReservationConfirmation(currentUser, newReservations);
             LOG.debugf(
-                    "Reservation confirmation email sent to %s for user %s.",
-                    currentUser.getEmail(), currentUser.getUsername());
+                    "Reservation confirmation email sent to %s for user ID: %d.",
+                    currentUser.id, currentUser.id);
         } catch (IOException | PersistenceException | IllegalStateException e) {
             // Log the exception, but don't let it fail the transaction
             LOG.error("Failed to send reservation confirmation email", e);
@@ -340,12 +334,10 @@ public class ReservationService {
                     SecurityException,
                     IllegalArgumentException {
         LOG.debugf(
-                "Attempting to delete reservations with IDs %s for user: %s",
-                ids != null ? ids : Collections.emptyList(), currentUser.getUsername());
+                "Attempting to delete reservations with IDs %s for user ID: %d",
+                ids != null ? ids : Collections.emptyList(), currentUser.id);
         if (ids == null || ids.isEmpty()) {
-            LOG.warnf(
-                    "No reservation IDs provided for deletion by user: %s",
-                    currentUser.getUsername());
+            LOG.warnf("No reservation IDs provided for deletion by user ID: %d", currentUser.id);
             throw new IllegalArgumentException(
                     "At least one reservation ID must be provided for deletion");
         }
@@ -360,25 +352,22 @@ public class ReservationService {
                                         LOG.warnf(
                                                 "Reservation with ID %d not found for deletion by"
                                                         + " user %s.",
-                                                id, currentUser.getUsername());
+                                                id, currentUser.id);
                                         return new ReservationNotFoundException(
                                                 "Reservation not found");
                                     });
             if (!uncheckedReservation.getUser().equals(currentUser)) {
                 LOG.warnf(
-                        "User %s attempted to delete reservation %d which belongs to user %s.",
-                        currentUser.getUsername(),
-                        id,
-                        uncheckedReservation.getUser().getUsername());
+                        "user ID: %d attempted to delete reservation %d which belongs to user ID:"
+                                + " %d.",
+                        currentUser.id, id, uncheckedReservation.getUser().id);
                 throw new SecurityException("You are not allowed to delete this reservation");
             }
             reservations.add(uncheckedReservation);
         }
 
         if (reservations.isEmpty()) {
-            LOG.warnf(
-                    "No valid reservations found for deletion by user: %s",
-                    currentUser.getUsername());
+            LOG.warnf("No valid reservations found for deletion by user ID: %d", currentUser.id);
             throw new IllegalArgumentException("No valid reservations found for deletion");
         }
 
@@ -391,7 +380,7 @@ public class ReservationService {
                 LOG.warnf(
                         "No reservations found for event ID %d during deletion process for user"
                                 + " %s.",
-                        entry.getKey(), currentUser.getUsername());
+                        entry.getKey(), currentUser.id);
                 continue;
             }
             // Update allowance count for each event
@@ -404,9 +393,9 @@ public class ReservationService {
                                                 + entry.getValue().size());
                                 eventUserAllowanceRepository.persist(eventUserAllowance);
                                 LOG.infof(
-                                        "Updated reservation allowance for user %s and event ID %d."
-                                                + " New allowance: %d",
-                                        currentUser.getUsername(),
+                                        "Updated reservation allowance for user ID: %d and event ID"
+                                                + " %d. New allowance: %d",
+                                        currentUser.id,
                                         entry.getKey(),
                                         eventUserAllowance.getReservationsAllowedCount());
                             });
@@ -416,9 +405,12 @@ public class ReservationService {
                     .forEach(
                             reservation -> {
                                 reservationRepository.delete(reservation);
+                                LOG.infof(
+                                        "Deleted reservation with ID %d for user ID: %d.",
+                                        reservation.id, currentUser.id);
                                 LOG.debugf(
-                                        "Deleted reservation with ID %d for user %s.",
-                                        reservation.id, currentUser.getUsername());
+                                        "Deleted reservation with ID %d for user ID: %d.",
+                                        reservation.id, currentUser.id);
                             });
 
             // Send email update confirmation for each event
@@ -430,16 +422,16 @@ public class ReservationService {
                         currentUser, entry.getValue(), activeReservations);
             } catch (IOException e) {
                 LOG.errorf(
-                        "Failed to send reservation update confirmation for user %s (ID: %d) and"
-                                + " reservations %s.",
-                        currentUser.getUsername(), currentUser.getId(), entry.getValue());
+                        "Failed to send reservation update confirmation for user ID: %d (ID: %d)"
+                                + " and reservations %s.",
+                        currentUser.id, currentUser.getId(), entry.getValue());
                 return;
             }
 
             LOG.debugf(
-                    "Sent reservation update confirmation for user %s (ID: %d) and reservations"
+                    "Sent reservation update confirmation for user ID: %d (ID: %d) and reservations"
                             + " %s.",
-                    currentUser.getUsername(), currentUser.getId(), entry.getValue());
+                    currentUser.id, currentUser.getId(), entry.getValue());
         }
     }
 }

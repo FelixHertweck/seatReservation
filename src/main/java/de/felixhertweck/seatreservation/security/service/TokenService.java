@@ -76,7 +76,7 @@ public class TokenService {
     public String generateToken(User user) {
         LOG.debugf(
                 "User ID: %d, Roles: %s, Email: %s, Expiration: %d minutes",
-                user.id, user.getRoles(), user.getEmail(), expirationMinutes);
+                user.id, user.getRoles(), user.id, expirationMinutes);
 
         String token =
                 Jwt.upn(user.getUsername())
@@ -85,7 +85,7 @@ public class TokenService {
                         .issuedAt(Instant.now())
                         .expiresIn(Duration.ofMinutes(expirationMinutes))
                         .sign();
-        LOG.debugf("JWT token generated successfully for user: %s", user.getUsername());
+        LOG.debugf("JWT token generated successfully for user ID: %d", user.id);
         return token;
     }
 
@@ -276,7 +276,7 @@ public class TokenService {
     @Transactional
     public void logoutAllDevices(User user) {
         refreshTokenRepository.deleteAllByUser(user);
-        LOG.debugf("All refresh tokens for user %s have been deleted.", user.getUsername());
+        LOG.debugf("All refresh tokens for user ID: %d have been deleted.", user.id);
     }
 
     /**
