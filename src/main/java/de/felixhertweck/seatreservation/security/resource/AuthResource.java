@@ -95,7 +95,7 @@ public class AuthResource {
                             + " attempts",
             content = @Content(schema = @Schema(implementation = LoginLockedDTO.class)))
     public Response login(@Valid LoginRequestDTO loginRequest) throws JwtInvalidException {
-        LOG.debugf("Received login request for username: %s", loginRequest.getUsername());
+        LOG.debugf("Received login request for username: [HIDDEN]");
         LOG.debugf("LoginRequestDTO: %s", loginRequest.toString());
         User user =
                 authService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
@@ -111,8 +111,8 @@ public class AuthResource {
                 tokenService.createStatusCookie(refreshToken, "refreshToken_expiration");
 
         LOG.debugf(
-                "User %s logged in successfully. JWT and refresh token cookies set.",
-                loginRequest.getUsername());
+                "user ID: %d logged in successfully. JWT and refresh token cookies set.", user.id);
+        LOG.infof("User ID: %d logged in successfully.", user.id);
         return Response.ok()
                 .cookie(jwtAccessCookie)
                 .cookie(refreshTokenCookie)
@@ -136,7 +136,7 @@ public class AuthResource {
             responseCode = "409",
             description = "Conflict: User with this username already exists")
     public Response register(@Valid RegisterRequestDTO registerRequest) {
-        LOG.debugf("Received registration request for username: %s", registerRequest.getUsername());
+        LOG.debugf("Received registration request for username: [HIDDEN]");
         LOG.debugf("RegisterRequestDTO: %s", registerRequest.toString());
 
         User user = authService.register(registerRequest);
@@ -152,8 +152,7 @@ public class AuthResource {
                 tokenService.createStatusCookie(refreshToken, "refreshToken_expiration");
 
         LOG.debugf(
-                "User %s registered successfully. JWT and refresh token cookies set.",
-                registerRequest.getUsername());
+                "user ID: %d registered successfully. JWT and refresh token cookies set.", user.id);
 
         return Response.ok()
                 .cookie(jwtAccessCookie)
@@ -190,7 +189,8 @@ public class AuthResource {
         NewCookie refreshTokenExpirationCookie =
                 tokenService.createNewNullCookie("refreshToken_expiration", false);
 
-        LOG.debugf("User logged out successfully. JWT and refresh token cookies cleared.");
+        LOG.infof("User ID: %d logged out successfully.", currentUser.id);
+        LOG.debugf("User ID: %d logged out successfully. JWT and refresh token cookies cleared.");
         return Response.ok()
                 .cookie(jwtAccessCookie)
                 .cookie(refreshTokenCookie)
@@ -223,9 +223,9 @@ public class AuthResource {
                 tokenService.createNewNullCookie("refreshToken_expiration", false);
 
         LOG.debugf(
-                "User %s logged out from all devices successfully. JWT and refresh token cookies"
-                        + " cleared.",
-                currentUser.getUsername());
+                "user ID: %d logged out from all devices successfully. JWT and refresh token"
+                        + " cookies cleared.",
+                currentUser.id);
 
         return Response.ok()
                 .cookie(jwtAccessCookie)
@@ -269,8 +269,9 @@ public class AuthResource {
                 tokenService.createStatusCookie(newRefreshToken, "refreshToken_expiration");
 
         LOG.debugf(
-                "Token refreshed successfully for user: %s. New JWT and refresh token cookies set.",
-                user.getUsername());
+                "Token refreshed successfully for user ID: %d. New JWT and refresh token cookies"
+                        + " set.",
+                user.id);
         return Response.ok()
                 .cookie(jwtAccessCookie)
                 .cookie(refreshTokenCookie)

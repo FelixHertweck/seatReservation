@@ -238,13 +238,13 @@ public class ReservationResource {
     public Response exportReservationsToCsv(@PathParam("eventId") Long eventId) {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.debugf(
-                "Received GET request to /api/manager/reservations/export/%d/csv for user: %s",
-                eventId, currentUser.getUsername());
+                "Received GET request to /api/manager/reservations/export/%d/csv for user ID: %d",
+                eventId, currentUser.id);
         try {
             byte[] csvData = reservationService.exportReservationsToCsv(eventId, currentUser);
             LOG.debugf(
-                    "Successfully exported CSV for event ID %d for user: %s",
-                    eventId, currentUser.getUsername());
+                    "Successfully exported CSV for event ID %d for user ID: %d",
+                    eventId, currentUser.id);
             return Response.ok(csvData)
                     .header(
                             "Content-Disposition",
@@ -252,21 +252,18 @@ public class ReservationResource {
                     .build();
         } catch (SecurityException e) {
             LOG.warnf(
-                    "User %s (ID: %d) attempted unauthorized CSV export for event ID %d: %s",
-                    currentUser.getUsername(), currentUser.getId(), eventId, e.getMessage());
+                    "user ID: %d (ID: %d) attempted unauthorized CSV export for event ID %d: %s",
+                    currentUser.id, currentUser.getId(), eventId, e.getMessage());
             return Response.status(Response.Status.FORBIDDEN).entity(e.getMessage()).build();
         } catch (EventNotFoundException e) {
             LOG.warnf(
-                    "Event ID %d not found for CSV export requested by user %s (ID: %d): %s",
-                    eventId, currentUser.getUsername(), currentUser.getId(), e.getMessage());
+                    "Event ID %d not found for CSV export requested by user ID: %d (ID: %d): %s",
+                    eventId, currentUser.id, currentUser.getId(), e.getMessage());
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         } catch (Exception e) {
             LOG.errorf(
-                    e,
-                    "Failed to export CSV for event ID %d for user %s (ID: %d)",
-                    eventId,
-                    currentUser.getUsername(),
-                    currentUser.getId());
+                    "Failed to export CSV for event ID %d for user ID: %d (ID: %d)",
+                    eventId, currentUser.id, currentUser.getId());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity("Internal server error during CSV export")
                     .build();
@@ -288,13 +285,13 @@ public class ReservationResource {
     public Response exportReservationsToPdf(@PathParam("eventId") Long eventId) {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.debugf(
-                "Received GET request to /api/manager/reservations/export/%d/pdf for user: %s",
-                eventId, currentUser.getUsername());
+                "Received GET request to /api/manager/reservations/export/%d/pdf for user ID: %d",
+                eventId, currentUser.id);
         try {
             byte[] pdfData = reservationService.exportReservationsToPdf(eventId, currentUser);
             LOG.debugf(
-                    "Successfully exported PDF for event ID %d for user: %s",
-                    eventId, currentUser.getUsername());
+                    "Successfully exported PDF for event ID %d for user ID: %d",
+                    eventId, currentUser.id);
             return Response.ok(pdfData)
                     .header(
                             "Content-Disposition",
@@ -302,21 +299,18 @@ public class ReservationResource {
                     .build();
         } catch (SecurityException e) {
             LOG.warnf(
-                    "User %s (ID: %d) attempted unauthorized PDF export for event ID %d: %s",
-                    currentUser.getUsername(), currentUser.getId(), eventId, e.getMessage());
+                    "user ID: %d (ID: %d) attempted unauthorized PDF export for event ID %d: %s",
+                    currentUser.id, currentUser.getId(), eventId, e.getMessage());
             return Response.status(Response.Status.FORBIDDEN).entity(e.getMessage()).build();
         } catch (EventNotFoundException e) {
             LOG.warnf(
-                    "Event ID %d not found for PDF export requested by user %s (ID: %d): %s",
-                    eventId, currentUser.getUsername(), currentUser.getId(), e.getMessage());
+                    "Event ID %d not found for PDF export requested by user ID: %d (ID: %d): %s",
+                    eventId, currentUser.id, currentUser.getId(), e.getMessage());
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         } catch (Exception e) {
             LOG.errorf(
-                    e,
-                    "Failed to export CSV for event ID %d for user %s (ID: %d)",
-                    eventId,
-                    currentUser.getUsername(),
-                    currentUser.getId());
+                    "Failed to export CSV for event ID %d for user ID: %d (ID: %d)",
+                    eventId, currentUser.id, currentUser.getId());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity("Internal server error during CSV export")
                     .build();

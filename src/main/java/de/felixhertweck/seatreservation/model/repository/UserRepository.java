@@ -39,7 +39,7 @@ public class UserRepository implements PanacheRepository<User> {
      * @return the user entity or null if not found
      */
     public User findByUsername(String username) {
-        LOG.debugf("Finding user by username: %s", username);
+        LOG.debugf("Finding user by username: [HIDDEN]", "HIDDEN");
         User user = find("username", username).firstResult();
         if (user != null) {
             LOG.debugf("User %s found.", username);
@@ -56,7 +56,7 @@ public class UserRepository implements PanacheRepository<User> {
      * @return Optional user entity
      */
     public Optional<User> findByUsernameOptional(String username) {
-        LOG.debugf("Finding user by username (optional): %s", username);
+        LOG.debugf("Finding user by username: [HIDDEN]", "HIDDEN");
         Optional<User> user = find("username", username).firstResultOptional();
         if (user.isPresent()) {
             LOG.debugf("User %s found (optional).", username);
@@ -73,7 +73,7 @@ public class UserRepository implements PanacheRepository<User> {
      * @return the user entity or null if not found
      */
     public User findByEmail(String email) {
-        LOG.debugf("Finding user by email: %s", email);
+        LOG.debugf("Finding user by email: [HIDDEN]", "HIDDEN");
         User user = find("email", email).firstResult();
         if (user != null) {
             LOG.debugf("User %s found.", email);
@@ -90,9 +90,9 @@ public class UserRepository implements PanacheRepository<User> {
      * @return a list of users with the specified email address
      */
     public List<User> findAllByEmail(String email) {
-        LOG.debugf("Finding all users by email: %s", email);
+        LOG.debugf("Finding all users by email: [HIDDEN]", "HIDDEN");
         List<User> users = list("email", email);
-        LOG.debugf("Found %d users with email %s.", users.size(), email);
+        LOG.debugf("Found %d users with email [HIDDEN].", "HIDDEN");
         return users;
     }
 }
