@@ -152,6 +152,7 @@ export type LoginLockedDto = {
 export type LoginRequestDto = {
     username: string;
     password: string;
+    altchaPayload: string;
 };
 
 export type MakerRequestDto = {
@@ -166,6 +167,7 @@ export type RegisterRequestDto = {
     lastname: string;
     email: string;
     password: string;
+    altchaPayload: string;
 };
 
 export type RegistrationStatusDto = {
@@ -324,6 +326,20 @@ export type UserReservationsRequestDto = {
 
 export type VerifyEmailCodeRequestDto = {
     verificationCode: string;
+};
+
+export type GetApiAuthAltchaChallengeData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/auth/altcha-challenge';
+};
+
+export type GetApiAuthAltchaChallengeResponses = {
+    /**
+     * Altcha challenge retrieved successfully
+     */
+    200: unknown;
 };
 
 export type PostApiAuthLoginData = {

@@ -483,13 +483,17 @@
       },
       "LoginRequestDTO" : {
         "type" : "object",
-        "required" : [ "username", "password" ],
+        "required" : [ "username", "password", "altchaPayload" ],
         "properties" : {
           "username" : {
             "type" : "string",
             "pattern" : "\\S"
           },
           "password" : {
+            "type" : "string",
+            "pattern" : "\\S"
+          },
+          "altchaPayload" : {
             "type" : "string",
             "pattern" : "\\S"
           }
@@ -514,7 +518,7 @@
       },
       "RegisterRequestDTO" : {
         "type" : "object",
-        "required" : [ "username", "firstname", "lastname", "email", "password" ],
+        "required" : [ "username", "firstname", "lastname", "email", "password", "altchaPayload" ],
         "properties" : {
           "username" : {
             "type" : "string",
@@ -536,6 +540,10 @@
             "type" : "string",
             "pattern" : "\\S",
             "minLength" : 8
+          },
+          "altchaPayload" : {
+            "type" : "string",
+            "pattern" : "\\S"
           }
         }
       },
@@ -986,6 +994,22 @@
     }
   },
   "paths" : {
+    "/api/auth/altcha-challenge" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "Altcha challenge retrieved successfully",
+            "content" : {
+              "application/json" : {
+                "schema" : { }
+              }
+            }
+          }
+        },
+        "summary" : "Get Altcha Challenge",
+        "tags" : [ "Auth Resource" ]
+      }
+    },
     "/api/auth/login" : {
       "post" : {
         "requestBody" : {

@@ -554,7 +554,8 @@ export const LoginRequestDTOSchema = {
     type: 'object',
     required: [
         'username',
-        'password'
+        'password',
+        'altchaPayload'
     ],
     properties: {
         username: {
@@ -562,6 +563,10 @@ export const LoginRequestDTOSchema = {
             pattern: '\\S'
         },
         password: {
+            type: 'string',
+            pattern: '\\S'
+        },
+        altchaPayload: {
             type: 'string',
             pattern: '\\S'
         }
@@ -597,7 +602,8 @@ export const RegisterRequestDTOSchema = {
         'firstname',
         'lastname',
         'email',
-        'password'
+        'password',
+        'altchaPayload'
     ],
     properties: {
         username: {
@@ -620,6 +626,10 @@ export const RegisterRequestDTOSchema = {
             type: 'string',
             pattern: '\\S',
             minLength: 8
+        },
+        altchaPayload: {
+            type: 'string',
+            pattern: '\\S'
         }
     }
 } as const;
