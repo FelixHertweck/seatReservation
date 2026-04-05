@@ -60,6 +60,10 @@ public class AltchaService {
                     "challenge", challenge,
                     "salt", salt,
                     "signature", signature);
+        } catch (NoSuchAlgorithmException e) {
+            LOG.error("Failed to create Altcha challenge (algorithm not found)", e);
+            throw new RuntimeException(
+                    "Could not create Altcha challenge due to missing SHA-256 algorithm", e);
         } catch (Exception e) {
             LOG.error("Failed to create Altcha challenge", e);
             throw new RuntimeException("Could not create Altcha challenge", e);

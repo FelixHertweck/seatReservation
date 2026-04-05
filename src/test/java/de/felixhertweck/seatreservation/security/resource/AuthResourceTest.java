@@ -59,6 +59,7 @@ public class AuthResourceTest {
     @InjectMock AuthService authService;
     @InjectMock TokenService tokenService;
     @InjectMock UserSecurityContext userSecurityContext;
+    @InjectMock de.felixhertweck.seatreservation.security.service.AltchaService altchaService;
 
     @Inject UserRepository userRepository;
 
@@ -88,6 +89,9 @@ public class AuthResourceTest {
         // Create a mock User object
         User mockUser = Mockito.mock(User.class);
         Mockito.when(mockUser.getUsername()).thenReturn(username);
+
+        // Mock Altcha validation
+        Mockito.when(altchaService.verifyPayload(Mockito.anyString())).thenReturn(true);
 
         // Mock the authenticate method to return the mock User
         Mockito.when(authService.authenticate(username, password)).thenReturn(mockUser);
@@ -157,12 +161,14 @@ public class AuthResourceTest {
         String password = "wrongpassword";
         String errorMessage = String.format("Failed to authenticate user: %s", username);
 
+        Mockito.when(altchaService.verifyPayload(Mockito.anyString())).thenReturn(true);
         Mockito.when(authService.authenticate(username, password))
                 .thenThrow(new AuthenticationFailedException(errorMessage));
 
         LoginRequestDTO loginRequest = new LoginRequestDTO();
         loginRequest.setUsername(username);
         loginRequest.setPassword(password);
+        loginRequest.setAltchaPayload("dummyPayload");
 
         given().contentType(MediaType.APPLICATION_JSON)
                 .body(loginRequest)
@@ -217,6 +223,10 @@ public class AuthResourceTest {
         registerRequest.setLastname("User");
         registerRequest.setEmail("newuser@example.com");
         registerRequest.setPassword("securepassword");
+        registerRequest.setAltchaPayload("dummyPayload");
+
+        // Mock Altcha validation
+        Mockito.when(altchaService.verifyPayload(Mockito.anyString())).thenReturn(true);
 
         // Create a mock User object
         User mockUser = Mockito.mock(User.class);
@@ -281,6 +291,9 @@ public class AuthResourceTest {
         registerRequest.setLastname("User");
         registerRequest.setEmail("existinguser@example.com");
         registerRequest.setPassword("securepassword");
+        registerRequest.setAltchaPayload("dummyPayload");
+
+        Mockito.when(altchaService.verifyPayload(Mockito.anyString())).thenReturn(true);
 
         String errorMessage = "User with username existinguser already exists.";
         Mockito.doThrow(new DuplicateUserException(errorMessage))
@@ -711,6 +724,9 @@ public class AuthResourceTest {
         request.setFirstname("John");
         request.setLastname("Doe");
         request.setEmail("john@example.com");
+        request.setAltchaPayload("dummyPayload");
+
+        Mockito.when(altchaService.verifyPayload(Mockito.anyString())).thenReturn(true);
 
         // Mock the authService.register to throw RegistrationDisabledException
         Mockito.doThrow(
