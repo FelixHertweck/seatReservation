@@ -2,11 +2,15 @@ version: '3.8'
 
 services:
   nginx:
-    image: nginx:1.29
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
     ports:
       - "80:80"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - /var/log/nginx:/var/log/nginx
+      - crowdsec_config:/etc/crowdsec:ro
     depends_on:
       frontend:
         condition: service_healthy
@@ -115,6 +119,19 @@ services:
       start_period: 5s
 
 
+  crowdsec:
+    image: crowdsecurity/crowdsec:latest
+    environment:
+      - COLLECTIONS=crowdsecurity/nginx
+    volumes:
+      - crowdsec_data:/var/lib/crowdsec/data
+      - crowdsec_config:/etc/crowdsec
+      # Share NGINX logs with CrowdSec
+      - /var/log/nginx:/var/log/nginx:ro
+    networks:
+      - app-network
+    restart: unless-stopped
+
   prometheus:
     image: prom/prometheus:v3.11.0
     volumes:
@@ -179,3 +196,5 @@ volumes:
   db_data:
   prometheus_data:
   grafana_data:
+  crowdsec_data:
+  crowdsec_config:

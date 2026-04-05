@@ -34,6 +34,17 @@ public class LoginRequestDTO {
     @NoHtmlSanitize
     private String password;
 
+    @NotBlank(message = "Altcha payload is missing")
+    private String altchaPayload;
+
+    public String getAltchaPayload() {
+        return altchaPayload;
+    }
+
+    public void setAltchaPayload(String altchaPayload) {
+        this.altchaPayload = altchaPayload;
+    }
+
     public String getUsername() {
         return username;
     }

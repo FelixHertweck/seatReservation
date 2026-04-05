@@ -38,6 +38,7 @@ import de.felixhertweck.seatreservation.security.dto.LoginRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.RegistrationStatusDTO;
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
+import de.felixhertweck.seatreservation.security.service.AltchaService;
 import de.felixhertweck.seatreservation.security.service.AuthService;
 import de.felixhertweck.seatreservation.security.service.TokenService;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
@@ -61,6 +62,21 @@ public class AuthResource {
     @Inject AuthService authService;
     @Inject TokenService tokenService;
     @Inject UserSecurityContext userSecurityContext;
+    @Inject AltchaService altchaService;
+
+    /**
+     * Retrieves an Altcha challenge for proof-of-work validation.
+     *
+     * @return Response containing the Altcha challenge payload
+     */
+    @GET
+    @Path("/altcha-challenge")
+    @PermitAll
+    @APIResponse(responseCode = "200", description = "Altcha challenge retrieved successfully")
+    public Response getAltchaChallenge() {
+        LOG.debugf("Received request to get Altcha challenge");
+        return Response.ok(altchaService.createChallenge()).build();
+    }
 
     /**
      * Gets the current registration status.
@@ -97,6 +113,12 @@ public class AuthResource {
     public Response login(@Valid LoginRequestDTO loginRequest) throws JwtInvalidException {
         LOG.debugf("Received login request for username: %s", loginRequest.getUsername());
         LOG.debugf("LoginRequestDTO: %s", loginRequest.toString());
+
+        if (!altchaService.verifyPayload(loginRequest.getAltchaPayload())) {
+            LOG.warnf("Invalid Altcha payload for user: %s", loginRequest.getUsername());
+            return Response.status(Response.Status.BAD_REQUEST).entity("Invalid CAPTCHA").build();
+        }
+
         User user =
                 authService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
 
@@ -138,6 +160,13 @@ public class AuthResource {
     public Response register(@Valid RegisterRequestDTO registerRequest) {
         LOG.debugf("Received registration request for username: %s", registerRequest.getUsername());
         LOG.debugf("RegisterRequestDTO: %s", registerRequest.toString());
+
+        if (!altchaService.verifyPayload(registerRequest.getAltchaPayload())) {
+            LOG.warnf(
+                    "Invalid Altcha payload for registration attempt: %s",
+                    registerRequest.getUsername());
+            return Response.status(Response.Status.BAD_REQUEST).entity("Invalid CAPTCHA").build();
+        }
 
         User user = authService.register(registerRequest);
 
