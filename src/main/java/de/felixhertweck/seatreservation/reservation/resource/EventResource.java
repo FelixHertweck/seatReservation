@@ -65,7 +65,7 @@ public class EventResource {
     @APIResponse(responseCode = "404", description = "Not Found: User not found")
     public List<UserEventResponseDTO> getEvents() {
         String username = securityIdentity.getPrincipal().getName();
-        LOG.debugf("Received GET request to /api/user/events for user ID: [HIDDEN]", "HIDDEN");
+        LOG.debug("Received GET request to /api/user/events.");
         List<UserEventResponseDTO> events = eventService.getEventsForCurrentUser(username);
         LOG.debugf("Returning %d events for user: %s", events.size(), username);
         return events;

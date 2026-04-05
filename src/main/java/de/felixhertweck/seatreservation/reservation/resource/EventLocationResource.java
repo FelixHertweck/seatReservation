@@ -64,7 +64,7 @@ public class EventLocationResource {
     @APIResponse(responseCode = "404", description = "Not Found: User not found")
     public List<UserEventLocationResponseDTO> getLocations() {
         String username = securityIdentity.getPrincipal().getName();
-        LOG.debugf("Received GET request to /api/user/locations for user ID: [HIDDEN]", "HIDDEN");
+        LOG.debug("Received GET request to /api/user/locations.");
         List<UserEventLocationResponseDTO> locations =
                 eventLocationService.getLocationsForCurrentUser(username);
         LOG.debugf("Returning %d locations for user: %s", locations.size(), username);

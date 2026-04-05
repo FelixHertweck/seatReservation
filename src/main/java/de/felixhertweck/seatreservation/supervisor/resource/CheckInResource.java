@@ -200,11 +200,11 @@ public class CheckInResource {
     @APIResponse(responseCode = "404", description = "User or Reservation not found")
     public CheckInInfoResponseDTO processCheckInInfoByUsername(
             @PathParam("username") String username) {
-        LOG.debugf("Received check-in info request for username [HIDDEN].", "HIDDEN");
+        LOG.debug("Received check-in info request.");
         User currentUser = userSecurityContext.getCurrentUser();
         CheckInInfoResponseDTO responseDto =
                 checkInService.getReservationInfosByUsername(currentUser, username);
-        LOG.debugf("Check-in info request for username [HIDDEN] processed successfully.", "HIDDEN");
+        LOG.debug("Check-in info request processed successfully.");
         return responseDto;
     }
 }

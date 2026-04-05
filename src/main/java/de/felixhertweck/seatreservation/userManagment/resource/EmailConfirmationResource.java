@@ -75,7 +75,7 @@ public class EmailConfirmationResource {
                 "Received POST request to /api/user/resend-email-confirmation for user: %s",
                 username);
         userService.resendEmailConfirmation(username);
-        LOG.infof("Email confirmation resent successfully for user ID: [HIDDEN]", "HIDDEN");
+        LOG.info("Email confirmation resent successfully.");
         return Response.noContent().build();
     }
 

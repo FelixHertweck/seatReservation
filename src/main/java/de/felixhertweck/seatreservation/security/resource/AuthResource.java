@@ -95,7 +95,7 @@ public class AuthResource {
                             + " attempts",
             content = @Content(schema = @Schema(implementation = LoginLockedDTO.class)))
     public Response login(@Valid LoginRequestDTO loginRequest) throws JwtInvalidException {
-        LOG.debugf("Received login request for username: [HIDDEN]");
+        LOG.debug("Received login request.");
         LOG.debugf("LoginRequestDTO: %s", loginRequest.toString());
         User user =
                 authService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
@@ -136,7 +136,7 @@ public class AuthResource {
             responseCode = "409",
             description = "Conflict: User with this username already exists")
     public Response register(@Valid RegisterRequestDTO registerRequest) {
-        LOG.debugf("Received registration request for username: [HIDDEN]");
+        LOG.debug("Received registration request.");
         LOG.debugf("RegisterRequestDTO: %s", registerRequest.toString());
 
         User user = authService.register(registerRequest);

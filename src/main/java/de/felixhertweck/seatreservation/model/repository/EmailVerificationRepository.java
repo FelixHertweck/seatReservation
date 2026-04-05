@@ -88,12 +88,12 @@ public class EmailVerificationRepository implements PanacheRepository<EmailVerif
      * @return EmailVerification entity or null if not found
      */
     public EmailVerification findByToken(String token) {
-        LOG.debugf("Finding EmailVerification by token: [HIDDEN]", "HIDDEN");
+        LOG.debug("Finding EmailVerification by token.");
         EmailVerification result = find("token", token).firstResult();
         if (result != null) {
-            LOG.debugf("EmailVerification found for token: [HIDDEN]", "HIDDEN");
+            LOG.debug("EmailVerification found for token.");
         } else {
-            LOG.debugf("No EmailVerification found for token: [HIDDEN]", "HIDDEN");
+            LOG.debug("No EmailVerification found for token.");
         }
         return result;
     }
