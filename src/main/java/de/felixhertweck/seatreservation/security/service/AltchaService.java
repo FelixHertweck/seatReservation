@@ -51,8 +51,7 @@ public class AltchaService {
             String salt = Hex.encodeHexString(saltBytes);
 
             int number = random.nextInt(10000) + 1000;
-            String challenge =
-                    Hex.encodeHexString(sha256((salt + number).getBytes(StandardCharsets.UTF_8)));
+            String challenge = generateExpectedChallenge(salt, number);
             String signature = createHmac(challenge);
 
             return Map.of(
@@ -64,9 +63,6 @@ public class AltchaService {
             LOG.error("Failed to create Altcha challenge (algorithm not found)", e);
             throw new RuntimeException(
                     "Could not create Altcha challenge due to missing SHA-256 algorithm", e);
-        } catch (Exception e) {
-            LOG.error("Failed to create Altcha challenge", e);
-            throw new RuntimeException("Could not create Altcha challenge", e);
         }
     }
 
@@ -99,8 +95,7 @@ public class AltchaService {
             }
 
             // Verify the challenge
-            String expectedChallenge =
-                    Hex.encodeHexString(sha256((salt + number).getBytes(StandardCharsets.UTF_8)));
+            String expectedChallenge = generateExpectedChallenge(salt, number);
             if (!expectedChallenge.equals(challenge)) {
                 return false;
             }
@@ -112,16 +107,22 @@ public class AltchaService {
         }
     }
 
-    private byte[] sha256(byte[] data) throws NoSuchAlgorithmException {
+    private String generateExpectedChallenge(String salt, int number)
+            throws NoSuchAlgorithmException {
+        byte[] data = (salt + number).getBytes(StandardCharsets.UTF_8);
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        return digest.digest(data);
+        return Hex.encodeHexString(digest.digest(data));
     }
 
-    private String createHmac(String data) throws Exception {
-        Mac mac = Mac.getInstance("HmacSHA256");
-        SecretKeySpec secretKeySpec =
-                new SecretKeySpec(hmacKey.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
-        mac.init(secretKeySpec);
-        return Hex.encodeHexString(mac.doFinal(data.getBytes(StandardCharsets.UTF_8)));
+    private String createHmac(String data) {
+        try {
+            Mac mac = Mac.getInstance("HmacSHA256");
+            SecretKeySpec secretKeySpec =
+                    new SecretKeySpec(hmacKey.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+            mac.init(secretKeySpec);
+            return Hex.encodeHexString(mac.doFinal(data.getBytes(StandardCharsets.UTF_8)));
+        } catch (Exception e) {
+            throw new RuntimeException("Error generating HMAC signature", e);
+        }
     }
 }
