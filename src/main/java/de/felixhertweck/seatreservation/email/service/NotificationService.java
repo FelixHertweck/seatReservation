@@ -276,8 +276,10 @@ public class NotificationService {
                         emailService.sendEventReminder(user, data.event, userReservations);
                     } catch (Exception e) {
                         LOG.errorf(
-                                "Error sending reminder email to user ID: %d for event ID: %d: %s",
-                                user.id, data.event.id, e.getMessage());
+                                e,
+                                "Error sending reminder email to user ID: %d for event ID: %d",
+                                user.id,
+                                data.event.id);
                     }
                 });
     }
@@ -356,9 +358,9 @@ public class NotificationService {
                 }
             } catch (EventNotFoundException | SecurityException | IOException e) {
                 LOG.errorf(
-                        "Unexpected error during CSV generation or email preparation for event %s:"
-                                + " %s",
-                        event.getName(), e.getMessage());
+                        e,
+                        "Unexpected error during CSV generation or email preparation for event %s",
+                        event.getName());
             }
         }
         LOG.info("Finished scheduled CSV export task for event managers.");

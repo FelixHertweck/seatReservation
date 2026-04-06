@@ -56,7 +56,7 @@ public class EventLocationService {
 
         if (user == null) {
             LOG.warn("User not found.");
-            throw new UserNotFoundException("User not found: " + username);
+            throw new UserNotFoundException("User not found");
         }
         LOG.debugf("User %s found. Retrieving event allowances.", username);
 

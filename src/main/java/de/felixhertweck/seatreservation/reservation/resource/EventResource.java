@@ -67,7 +67,7 @@ public class EventResource {
         String username = securityIdentity.getPrincipal().getName();
         LOG.debug("Received GET request to /api/user/events.");
         List<UserEventResponseDTO> events = eventService.getEventsForCurrentUser(username);
-        LOG.debugf("Returning %d events for user: %s", events.size(), username);
+        LOG.debugf("Returning %d events.", events.size());
         return events;
     }
 }

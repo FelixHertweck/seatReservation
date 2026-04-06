@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.management.resource;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -36,7 +37,6 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.management.dto.BlockSeatsRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.ReservationRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.ReservationResponseDTO;
@@ -235,39 +235,20 @@ public class ReservationResource {
     @APIResponse(responseCode = "404", description = "Not Found - Event not found")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(responseCode = "500", description = "Internal Server Error during CSV export")
-    public Response exportReservationsToCsv(@PathParam("eventId") Long eventId) {
+    public Response exportReservationsToCsv(@PathParam("eventId") Long eventId) throws IOException {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.debugf(
                 "Received GET request to /api/manager/reservations/export/%d/csv for user ID: %d",
                 eventId, currentUser.id);
-        try {
-            byte[] csvData = reservationService.exportReservationsToCsv(eventId, currentUser);
-            LOG.debugf(
-                    "Successfully exported CSV for event ID %d for user ID: %d",
-                    eventId, currentUser.id);
-            return Response.ok(csvData)
-                    .header(
-                            "Content-Disposition",
-                            "attachment; filename=\"reservations_event_" + eventId + ".csv\"")
-                    .build();
-        } catch (SecurityException e) {
-            LOG.warnf(
-                    "user ID: %d (ID: %d) attempted unauthorized CSV export for event ID %d: %s",
-                    currentUser.id, currentUser.getId(), eventId, e.getMessage());
-            return Response.status(Response.Status.FORBIDDEN).entity(e.getMessage()).build();
-        } catch (EventNotFoundException e) {
-            LOG.warnf(
-                    "Event ID %d not found for CSV export requested by user ID: %d (ID: %d): %s",
-                    eventId, currentUser.id, currentUser.getId(), e.getMessage());
-            return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
-        } catch (Exception e) {
-            LOG.errorf(
-                    "Failed to export CSV for event ID %d for user ID: %d (ID: %d)",
-                    eventId, currentUser.id, currentUser.getId());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Internal server error during CSV export")
-                    .build();
-        }
+        byte[] csvData = reservationService.exportReservationsToCsv(eventId, currentUser);
+        LOG.debugf(
+                "Successfully exported CSV for event ID %d for user ID: %d",
+                eventId, currentUser.id);
+        return Response.ok(csvData)
+                .header(
+                        "Content-Disposition",
+                        "attachment; filename=\"reservations_event_" + eventId + ".csv\"")
+                .build();
     }
 
     @GET
@@ -282,38 +263,19 @@ public class ReservationResource {
     @APIResponse(responseCode = "404", description = "Not Found - Event not found")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(responseCode = "500", description = "Internal Server Error during PDF export")
-    public Response exportReservationsToPdf(@PathParam("eventId") Long eventId) {
+    public Response exportReservationsToPdf(@PathParam("eventId") Long eventId) throws IOException {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.debugf(
                 "Received GET request to /api/manager/reservations/export/%d/pdf for user ID: %d",
                 eventId, currentUser.id);
-        try {
-            byte[] pdfData = reservationService.exportReservationsToPdf(eventId, currentUser);
-            LOG.debugf(
-                    "Successfully exported PDF for event ID %d for user ID: %d",
-                    eventId, currentUser.id);
-            return Response.ok(pdfData)
-                    .header(
-                            "Content-Disposition",
-                            "attachment; filename=\"reservations_event_" + eventId + ".pdf\"")
-                    .build();
-        } catch (SecurityException e) {
-            LOG.warnf(
-                    "user ID: %d (ID: %d) attempted unauthorized PDF export for event ID %d: %s",
-                    currentUser.id, currentUser.getId(), eventId, e.getMessage());
-            return Response.status(Response.Status.FORBIDDEN).entity(e.getMessage()).build();
-        } catch (EventNotFoundException e) {
-            LOG.warnf(
-                    "Event ID %d not found for PDF export requested by user ID: %d (ID: %d): %s",
-                    eventId, currentUser.id, currentUser.getId(), e.getMessage());
-            return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
-        } catch (Exception e) {
-            LOG.errorf(
-                    "Failed to export CSV for event ID %d for user ID: %d (ID: %d)",
-                    eventId, currentUser.id, currentUser.getId());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Internal server error during CSV export")
-                    .build();
-        }
+        byte[] pdfData = reservationService.exportReservationsToPdf(eventId, currentUser);
+        LOG.debugf(
+                "Successfully exported PDF for event ID %d for user ID: %d",
+                eventId, currentUser.id);
+        return Response.ok(pdfData)
+                .header(
+                        "Content-Disposition",
+                        "attachment; filename=\"reservations_event_" + eventId + ".pdf\"")
+                .build();
     }
 }

@@ -461,9 +461,13 @@ public class ReservationService {
                             reservations.size());
                 } catch (IOException e) {
                     LOG.errorf(
+                            e,
                             "Failed to send reservation deletion confirmation for"
                                     + " user ID: %d (ID: %d) and event ID: %d (ID: %d).",
-                            user.id, user.getId(), event.id, event.getId());
+                            user.id,
+                            user.getId(),
+                            event.id,
+                            event.getId());
                 }
             }
         }

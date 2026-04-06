@@ -92,7 +92,7 @@ public class UserRepository implements PanacheRepository<User> {
     public List<User> findAllByEmail(String email) {
         LOG.debug("Finding all users by email.");
         List<User> users = list("email", email);
-        LOG.debug("Found %d users with specified email.");
+        LOG.debugf("Found %d users with specified email.", users.size());
         return users;
     }
 }

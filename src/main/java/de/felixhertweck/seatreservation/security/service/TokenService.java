@@ -75,8 +75,8 @@ public class TokenService {
      */
     public String generateToken(User user) {
         LOG.debugf(
-                "User ID: %d, Roles: %s, Email: %s, Expiration: %d minutes",
-                user.id, user.getRoles(), user.id, expirationMinutes);
+                "User ID: %d, Roles: %s, Email: [HIDDEN], Expiration: %d minutes",
+                (Object) user.id, user.getRoles(), (Object) expirationMinutes);
 
         String token =
                 Jwt.upn(user.getUsername())
@@ -132,16 +132,13 @@ public class TokenService {
 
         refreshToken.persist();
 
-        String refreshTokenJwt =
-                Jwt.upn(user.getUsername())
-                        .claim("token_type", "refresh")
-                        .claim("token_id", refreshToken.id.toString())
-                        .claim("token_value", tokenValue)
-                        .issuedAt(Instant.now())
-                        .expiresIn(Duration.ofDays(refreshExpirationDays))
-                        .sign();
-
-        return refreshTokenJwt;
+        return Jwt.upn(user.getUsername())
+                .claim("token_type", "refresh")
+                .claim("token_id", refreshToken.id.toString())
+                .claim("token_value", tokenValue)
+                .issuedAt(Instant.now())
+                .expiresIn(Duration.ofDays(refreshExpirationDays))
+                .sign();
     }
 
     /**

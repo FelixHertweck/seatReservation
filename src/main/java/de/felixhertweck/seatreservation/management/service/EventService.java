@@ -105,13 +105,9 @@ public class EventService {
         eventRepository.persist(event);
         LOG.infof("Event ID: %d created successfully.", event.getId());
         LOG.debugf(
-                "Event '%s' (ID: %d) created successfully by manager: %s (ID: %d) and assigned"
-                        + " supervisors: %s",
-                event.getName(),
-                event.getId(),
-                manager.id,
-                manager.getId(),
-                supervisors.stream().map(User::getUsername).collect(Collectors.joining(", ")));
+                "Event '%s' (ID: %d) created successfully by manager: %s (ID: %d) with %d"
+                        + " assigned supervisors",
+                event.getName(), event.getId(), manager.id, manager.getId(), supervisors.size());
 
         // Schedule reminder if reminder date is set
         if (event.getReminderSendDate() != null) {
@@ -177,24 +173,13 @@ public class EventService {
 
         Set<User> supervisors = getSupervisorsFromIds(dto.getSupervisorIds());
 
-        // Prepare supervisor display strings to avoid mismatched printf placeholders
-        String oldSupervisors =
-                event.getSupervisors() == null
-                        ? ""
-                        : event.getSupervisors().stream()
-                                .map(User::getUsername)
-                                .collect(Collectors.joining(", "));
-        String newSupervisors =
-                supervisors == null
-                        ? ""
-                        : supervisors.stream()
-                                .map(User::getUsername)
-                                .collect(Collectors.joining(", "));
+        int oldSupervisorCount = event.getSupervisors() == null ? 0 : event.getSupervisors().size();
+        int newSupervisorCount = supervisors == null ? 0 : supervisors.size();
 
         LOG.debugf(
                 "Updating event ID %d: name='%s' -> '%s', description='%s' -> '%s', startTime='%s'"
                         + " -> '%s', endTime='%s' -> '%s', bookingDeadline='%s' -> '%s',"
-                        + " eventLocationId='%d' -> '%d' , supervisors='%s' -> '%s'",
+                        + " eventLocationId='%d' -> '%d' , supervisors=%d -> %d",
                 id,
                 event.getName(),
                 dto.getName(),
@@ -208,8 +193,8 @@ public class EventService {
                 dto.getBookingDeadline(),
                 event.getEventLocation().getId(),
                 dto.getEventLocationId(),
-                oldSupervisors,
-                newSupervisors);
+                oldSupervisorCount,
+                newSupervisorCount);
 
         event.setName(dto.getName());
         event.setDescription(dto.getDescription());

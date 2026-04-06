@@ -54,7 +54,8 @@ public class LiveViewResource {
     public void onOpen(WebSocketConnection connection, @PathParam("eventId") String eventIdStr) {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.debugf(
-                "WebSocket connection opened for event %s by user ID: %d", eventIdStr, currentUser);
+                "WebSocket connection opened for event %s by user ID: %d",
+                eventIdStr, currentUser.getId());
 
         // Register the connection with username for authorization checks
         webSocketService.registerConnection(eventIdStr, connection, currentUser.getUsername());
@@ -72,7 +73,8 @@ public class LiveViewResource {
     public void onClose(WebSocketConnection connection, @PathParam("eventId") String eventIdStr) {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.infof(
-                "WebSocket connection closed for event %s by user ID: %d", eventIdStr, currentUser);
+                "WebSocket connection closed for event %s by user ID: %d",
+                eventIdStr, currentUser.getId());
 
         // Unregister the connection with username for authorization checks
         webSocketService.unregisterConnection(eventIdStr, connection, currentUser.getUsername());
