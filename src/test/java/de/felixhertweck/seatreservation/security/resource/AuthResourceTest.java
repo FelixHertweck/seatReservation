@@ -90,7 +90,8 @@ public class AuthResourceTest {
         Mockito.when(mockUser.getUsername()).thenReturn(username);
 
         // Mock the authenticate method to return the mock User
-        Mockito.when(authService.authenticate(username, password)).thenReturn(mockUser);
+        Mockito.when(authService.authenticate(username, password, "validCapToken"))
+                .thenReturn(mockUser);
 
         // Mock token generation
         Mockito.when(tokenService.generateToken(mockUser)).thenReturn(token);
@@ -99,6 +100,7 @@ public class AuthResourceTest {
         LoginRequestDTO loginRequest = new LoginRequestDTO();
         loginRequest.setUsername(username);
         loginRequest.setPassword(password);
+        loginRequest.setCapToken("validCapToken");
 
         // Mock the NewCookie creation
         NewCookie mockedCookie =
@@ -157,12 +159,13 @@ public class AuthResourceTest {
         String password = "wrongpassword";
         String errorMessage = String.format("Failed to authenticate user: %s", username);
 
-        Mockito.when(authService.authenticate(username, password))
+        Mockito.when(authService.authenticate(username, password, "validCapToken"))
                 .thenThrow(new AuthenticationFailedException(errorMessage));
 
         LoginRequestDTO loginRequest = new LoginRequestDTO();
         loginRequest.setUsername(username);
         loginRequest.setPassword(password);
+        loginRequest.setCapToken("validCapToken");
 
         given().contentType(MediaType.APPLICATION_JSON)
                 .body(loginRequest)

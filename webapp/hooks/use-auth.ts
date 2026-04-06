@@ -48,9 +48,10 @@ export function useAuth() {
   const login = async (
     username: string,
     password: string,
+    capToken: string,
     returnToUrl?: string | null,
   ) => {
-    const request = loginMutation({ body: { username, password } });
+    const request = loginMutation({ body: { username, password, capToken } });
     toast.promise(request, {
       loading: t("common.loading"),
       success: async () => {
@@ -76,6 +77,8 @@ export function useAuth() {
             );
           }
           return t("login.error.tooManyAttemptsDescription");
+        } else if (status === 403) {
+          return t("login.error.capVerificationFailed");
         }
         // Only show toast for non-401 errors, let 401s be handled by the component
         else if (status !== 401) {

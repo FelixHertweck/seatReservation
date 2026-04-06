@@ -67,7 +67,10 @@
       "title": "Login Error",
       "description": "An error occurred while logging in. Please try again.",
       "accountLocked": "Account locked until {{time}} ({{duration}})",
-      "tooManyAttemptsDescription": "Too many failed login attempts. Your account has been temporarily locked."
+      "tooManyAttemptsDescription": "Too many failed login attempts. Your account has been temporarily locked.",
+      "capRequired": "Please verify that you are human by solving the CAPTCHA.",
+      "capVerificationFailed": "CAPTCHA verification failed. Please solve the CAPTCHA and try again.",
+      "loginFailed": "Login failed"
     }
   },
   "register": {

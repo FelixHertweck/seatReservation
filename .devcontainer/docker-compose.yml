@@ -25,10 +25,15 @@ services:
       - MAIL_TLS=false
       - MAIL_START_TLS=DISABLED
 
+      - CAP_SITE_KEY=test_site_key
+      - CAP_SECRET_KEY=test_secret_key
+
     depends_on:
       db:
         condition: service_started
       mail:
+        condition: service_started
+      cap:
         condition: service_started
     networks:
       - devcontainer-network
@@ -74,6 +79,32 @@ services:
       devcontainer-network:
         aliases:
           - smtp4dev
+
+  valkey:
+    image: valkey/valkey:7.2-alpine
+    hostname: valkey
+    restart: unless-stopped
+    networks:
+      devcontainer-network:
+        aliases:
+          - valkey
+
+  cap:
+    image: tiago2/cap:2.2.1
+    hostname: cap
+    restart: unless-stopped
+    environment:
+      - REDIS_HOST=valkey
+      - REDIS_PORT=6379
+    ports:
+      - '127.0.0.1:3001:3000'
+    depends_on:
+      valkey:
+        condition: service_started
+    networks:
+      devcontainer-network:
+        aliases:
+          - cap
 
 volumes:
   postgres-data:

@@ -37,6 +37,7 @@ import de.felixhertweck.seatreservation.security.dto.LoginLockedDTO;
 import de.felixhertweck.seatreservation.security.dto.LoginRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.RegistrationStatusDTO;
+import de.felixhertweck.seatreservation.security.exceptions.CapVerificationException;
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
 import de.felixhertweck.seatreservation.security.service.AuthService;
 import de.felixhertweck.seatreservation.security.service.TokenService;
@@ -79,26 +80,33 @@ public class AuthResource {
     /**
      * Authenticates a user and returns JWT and refresh token cookies.
      *
-     * @param loginRequest the login credentials
+     * @param loginRequest the login credentials (including CAP token)
      * @return Response with JWT and refresh token cookies
      * @throws JwtInvalidException if JWT generation fails
+     * @throws CapVerificationException if CAP verification fails
      */
     @POST
     @Path("/login")
     @PermitAll
     @APIResponse(responseCode = "200", description = "Login successful, JWT cookie set")
     @APIResponse(responseCode = "401", description = "Unauthorized: Invalid credentials")
+    @APIResponse(responseCode = "403", description = "Forbidden: CAP verification failed")
     @APIResponse(
             responseCode = "429",
             description =
                     "Too Many Requests: Account temporarily locked due to too many failed login"
                             + " attempts",
             content = @Content(schema = @Schema(implementation = LoginLockedDTO.class)))
-    public Response login(@Valid LoginRequestDTO loginRequest) throws JwtInvalidException {
+    public Response login(@Valid LoginRequestDTO loginRequest)
+            throws JwtInvalidException, CapVerificationException {
         LOG.debugf("Received login request for username: %s", loginRequest.getUsername());
         LOG.debugf("LoginRequestDTO: %s", loginRequest.toString());
+
         User user =
-                authService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
+                authService.authenticate(
+                        loginRequest.getUsername(),
+                        loginRequest.getPassword(),
+                        loginRequest.getCapToken());
 
         String accessToken = tokenService.generateToken(user);
         NewCookie jwtAccessCookie = tokenService.createNewJwtCookie(accessToken, "jwt");

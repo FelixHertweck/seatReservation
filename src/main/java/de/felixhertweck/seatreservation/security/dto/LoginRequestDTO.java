@@ -34,6 +34,9 @@ public class LoginRequestDTO {
     @NoHtmlSanitize
     private String password;
 
+    @NotBlank(message = "CAP token must not be blank")
+    private String capToken;
+
     public String getUsername() {
         return username;
     }
@@ -42,11 +45,19 @@ public class LoginRequestDTO {
         return password;
     }
 
+    public String getCapToken() {
+        return capToken;
+    }
+
     public void setUsername(String username) {
         this.username = username;
     }
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public void setCapToken(String capToken) {
+        this.capToken = capToken;
     }
 }

@@ -67,7 +67,10 @@
       "title": "Anmeldefehler",
       "description": "Beim Anmelden ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
       "accountLocked": "Konto gesperrt bis {{time}} ({{duration}})",
-      "tooManyAttemptsDescription": "Zu viele fehlgeschlagene Anmeldeversuche. Ihr Konto wurde vorübergehend gesperrt."
+      "tooManyAttemptsDescription": "Zu viele fehlgeschlagene Anmeldeversuche. Ihr Konto wurde vorübergehend gesperrt.",
+      "capRequired": "Bitte verifizieren Sie, dass Sie ein Mensch sind, indem Sie das CAPTCHA lösen.",
+      "capVerificationFailed": "CAPTCHA-Verifikation fehlgeschlagen. Bitte lösen Sie das CAPTCHA und versuchen Sie es erneut.",
+      "loginFailed": "Anmeldung fehlgeschlagen"
     }
   },
   "register": {

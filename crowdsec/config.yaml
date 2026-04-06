@@ -1,0 +1,67 @@
+# CrowdSec Agent Configuration
+# https://docs.crowdsec.net/docs/getting-started/
+
+# Global settings
+common:
+  log_level: info
+  log_media: file
+  log_dir: /var/log/crowdsec
+  working_dir: /var/lib/crowdsec
+
+# Enable WAL for data persistence
+file_dump:
+  enabled: true
+  dir: /var/lib/crowdsec/data
+
+# Acquisition sources
+acquisition:
+  -
+    filename: /var/log/nginx/access.log
+    labels:
+      type: nginx_access
+    poll_without_inode_change: true
+
+# Parser configuration
+parsers:
+  -
+    name: crowdsecurity/nginx
+
+# Scenarios (threats detection)
+scenarios:
+  -
+    name: crowdsecurity/http-bad-user-agent
+  -
+    name: crowdsecurity/http-probing
+  -
+    name: crowdsecurity/http-sql-injection-attempt
+  -
+    name: crowdsecurity/http-xss-attempt
+  -
+    name: crowdsecurity/admin-access
+  -
+    name: crowdsecurity/login-attempt-multi-failure
+  -
+    name: crowdsecurity/http-sensitive-files
+  -
+    name: crowdsecurity/http-shellshock
+
+# Bouncers
+bouncers:
+  -
+    name: nginx-bouncer
+    api_key: change_me_with_real_bouncer_key
+    type: nginx
+
+# Local API
+local_api_server:
+  listen_uri: 0.0.0.0:8080
+  log_level: info
+
+# Database (use sqlite)
+db_config:
+  type: sqlite
+  db_path: /var/lib/crowdsec/data/crowdsec.db
+
+# Output to agents
+agent:
+  log_level: info

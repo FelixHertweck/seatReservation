@@ -152,6 +152,7 @@ export type LoginLockedDto = {
 export type LoginRequestDto = {
     username: string;
     password: string;
+    capToken: string;
 };
 
 export type MakerRequestDto = {
@@ -342,6 +343,10 @@ export type PostApiAuthLoginErrors = {
      * Unauthorized: Invalid credentials
      */
     401: unknown;
+    /**
+     * Forbidden: CAP verification failed
+     */
+    403: unknown;
     /**
      * Too Many Requests: Account temporarily locked due to too many failed login attempts
      */

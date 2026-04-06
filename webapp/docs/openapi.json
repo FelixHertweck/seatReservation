@@ -483,13 +483,17 @@
       },
       "LoginRequestDTO" : {
         "type" : "object",
-        "required" : [ "username", "password" ],
+        "required" : [ "username", "password", "capToken" ],
         "properties" : {
           "username" : {
             "type" : "string",
             "pattern" : "\\S"
           },
           "password" : {
+            "type" : "string",
+            "pattern" : "\\S"
+          },
+          "capToken" : {
             "type" : "string",
             "pattern" : "\\S"
           }
@@ -1009,6 +1013,9 @@
           },
           "401" : {
             "description" : "Unauthorized: Invalid credentials"
+          },
+          "403" : {
+            "description" : "Forbidden: CAP verification failed"
           },
           "429" : {
             "description" : "Too Many Requests: Account temporarily locked due to too many failed login attempts",
