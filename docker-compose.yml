@@ -228,6 +228,48 @@ services:
         condition: service_healthy
     
     restart: unless-stopped
+
+  # ============================================
+  # CAPTCHA: CAP Proof-of-Work CAPTCHA
+  # ============================================
+  cap-valkey:
+    image: valkey/valkey:9.0.3-alpine3.23
+    container_name: cap-valkey
+    volumes:
+      - cap_valkey_data:/data
+    command: valkey-server --save 60 1 --loglevel warning --maxmemory-policy noeviction
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - app-network
+    restart: unless-stopped
+
+
+  cap:
+    image: tiago2/cap:2.2.1
+    container_name: cap
+    environment:
+      ADMIN_KEY: "${CAP_ADMIN_KEY:-change_me_to_secure_password}"
+      REDIS_URL: redis://cap-valkey:6379
+    ports:
+      - "${CAP_PORT:-3001}:3000"
+    depends_on:
+      cap-valkey:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+
 networks:
   app-network:
     external: false
@@ -236,3 +278,7 @@ volumes:
   db_data:
   prometheus_data:
   grafana_data:
+  crowdsec_data:
+  crowdsec_etc:
+  nginx_logs:
+  cap_valkey_data:

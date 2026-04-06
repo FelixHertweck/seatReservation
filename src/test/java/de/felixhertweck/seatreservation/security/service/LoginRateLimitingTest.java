@@ -50,16 +50,21 @@ public class LoginRateLimitingTest {
 
     @InjectMock LoginAttemptRepository loginAttemptRepository;
 
+    @InjectMock CapVerifierService capVerifierService;
+
     AuthService authService;
 
     @BeforeEach
     void setUp() {
-        Mockito.reset(userRepository, loginAttemptRepository);
+        Mockito.reset(userRepository, loginAttemptRepository, capVerifierService);
         authService = new AuthService();
         authService.userRepository = userRepository;
         authService.loginAttemptRepository = loginAttemptRepository;
+        authService.capVerifierService = capVerifierService;
         authService.maxFailedAttempts = 5;
         authService.lockoutDurationSeconds = 300;
+        // Mock CapVerifierService to always return true
+        when(capVerifierService.verifyToken(anyString())).thenReturn(true);
     }
 
     @Test
@@ -78,7 +83,7 @@ public class LoginRateLimitingTest {
                 .thenReturn(0L);
         when(userRepository.findByUsername(username)).thenReturn(user);
 
-        User authenticatedUser = authService.authenticate(username, password);
+        User authenticatedUser = authService.authenticate(username, password, "validCapToken");
 
         assertNotNull(authenticatedUser);
         assertEquals(username, authenticatedUser.getUsername());
@@ -104,7 +109,7 @@ public class LoginRateLimitingTest {
 
         assertThrows(
                 AuthenticationFailedException.class,
-                () -> authService.authenticate(username, wrongPassword));
+                () -> authService.authenticate(username, wrongPassword, "validCapToken"));
 
         verify(loginAttemptRepository, times(1)).recordAttempt(any(User.class), Mockito.eq(false));
     }
@@ -120,7 +125,7 @@ public class LoginRateLimitingTest {
         AccountLockedException thrown =
                 assertThrows(
                         AccountLockedException.class,
-                        () -> authService.authenticate(username, password));
+                        () -> authService.authenticate(username, password, "validCapToken"));
 
         assertNotNull(thrown.getMessage());
         assertNotNull(thrown.getRetryAfter());
@@ -147,7 +152,7 @@ public class LoginRateLimitingTest {
                 .thenReturn(4L);
         when(userRepository.findByUsername(username)).thenReturn(user);
 
-        User authenticatedUser = authService.authenticate(username, password);
+        User authenticatedUser = authService.authenticate(username, password, "validCapToken");
 
         assertNotNull(authenticatedUser);
         verify(loginAttemptRepository, times(1)).recordAttempt(any(User.class), Mockito.eq(true));
@@ -162,7 +167,8 @@ public class LoginRateLimitingTest {
                 .thenReturn(5L);
 
         assertThrows(
-                AccountLockedException.class, () -> authService.authenticate(username, password));
+                AccountLockedException.class,
+                () -> authService.authenticate(username, password, "validCapToken"));
     }
 
     @Test
@@ -174,7 +180,8 @@ public class LoginRateLimitingTest {
                 .thenReturn(10L);
 
         assertThrows(
-                AccountLockedException.class, () -> authService.authenticate(username, password));
+                AccountLockedException.class,
+                () -> authService.authenticate(username, password, "validCapToken"));
     }
 
     @Test
@@ -188,7 +195,7 @@ public class LoginRateLimitingTest {
 
         assertThrows(
                 AuthenticationFailedException.class,
-                () -> authService.authenticate(username, password));
+                () -> authService.authenticate(username, password, "validCapToken"));
 
         verify(loginAttemptRepository, times(1)).recordAttempt(username, false);
     }
@@ -206,7 +213,7 @@ public class LoginRateLimitingTest {
         AccountLockedException thrown =
                 assertThrows(
                         AccountLockedException.class,
-                        () -> authService.authenticate(username, password));
+                        () -> authService.authenticate(username, password, "validCapToken"));
 
         assertNotNull(thrown.getRetryAfter());
         Instant retryAfter = thrown.getRetryAfter();
@@ -234,7 +241,7 @@ public class LoginRateLimitingTest {
                 .thenReturn(2L);
         when(userRepository.findByUsername(username)).thenReturn(user);
 
-        User authenticatedUser = authService.authenticate(username, password);
+        User authenticatedUser = authService.authenticate(username, password, "validCapToken");
 
         assertNotNull(authenticatedUser);
     }

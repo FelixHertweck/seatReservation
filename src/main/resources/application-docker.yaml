@@ -23,6 +23,18 @@ quarkus:
 jwt:
   cookie:
     secure: ${SSL_ENABLED:true} 
+    
+# CAP CAPTCHA Configuration
+cap:
+  # URL of the CAP server (used for token verification)
+  api:
+    url: http://cap:3000
+  # CAP Site Key (same as in frontend)
+  site:
+    key: ${CAP_SITE_KEY:default_site_key}
+  # CAP Secret Key (for server-side verification)
+  secret:
+    key: ${CAP_SECRET_KEY:default_secret_key}
 
 email:  
   frontend-base-url: ${APP_URL} # Change in case provide frontend on different URL

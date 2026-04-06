@@ -34,6 +34,7 @@ import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
 import de.felixhertweck.seatreservation.security.exceptions.AccountLockedException;
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
+import de.felixhertweck.seatreservation.security.exceptions.CapVerificationException;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
 import io.quarkus.elytron.security.common.BcryptUtil;
@@ -50,6 +51,8 @@ public class AuthService {
     @Inject UserService userService;
 
     @Inject LoginAttemptRepository loginAttemptRepository;
+
+    @Inject CapVerifierService capVerifierService;
 
     @ConfigProperty(name = "registration.enabled", defaultValue = "true")
     boolean registrationEnabled;
@@ -70,18 +73,27 @@ public class AuthService {
     }
 
     /**
-     * Authenticates a user with the given username and password.
+     * Authenticates a user with the given username, password, and CAP token.
      *
      * @param username the username of the user
      * @param password the password of the user
+     * @param capToken the CAP CAPTCHA token for verification
      * @return the authenticated User if authentication is successful
+     * @throws CapVerificationException if CAP token verification fails
      * @throws AuthenticationFailedException if authentication fails
      * @throws AccountLockedException if the account is temporarily locked due to too many failed
      *     attempts
      */
-    public User authenticate(String username, String password)
-            throws AuthenticationFailedException, AccountLockedException {
+    public User authenticate(String username, String password, String capToken)
+            throws CapVerificationException, AuthenticationFailedException, AccountLockedException {
         LOG.debugf("Attempting to authenticate user with username: %s", username);
+
+        // Verify CAP CAPTCHA token first
+        if (!capVerifierService.verifyToken(capToken)) {
+            LOG.warnf("CAP verification failed for user: %s", username);
+            throw new CapVerificationException(
+                    "CAPTCHA verification failed. Please solve the CAPTCHA and try again.");
+        }
 
         // Check if account is locked due to failed login attempts
         checkAccountLockout(username);

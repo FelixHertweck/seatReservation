@@ -26,3 +26,11 @@ jwt:
 
 email:  
   frontend-base-url: http://localhost:3000
+
+cap:
+  api:
+    url: http://cap:3000
+  site:
+    key: ${CAP_SITE_KEY:default_site_key}
+  secret:
+    key: ${CAP_SECRET_KEY:default_secret_key}

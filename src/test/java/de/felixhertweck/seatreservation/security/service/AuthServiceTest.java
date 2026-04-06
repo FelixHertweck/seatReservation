@@ -52,20 +52,25 @@ public class AuthServiceTest {
 
     @InjectMock LoginAttemptRepository loginAttemptRepository;
 
+    @InjectMock CapVerifierService capVerifierService;
+
     AuthService authService;
 
     @BeforeEach
     void setUp() {
-        Mockito.reset(userRepository, tokenService, loginAttemptRepository);
+        Mockito.reset(userRepository, tokenService, loginAttemptRepository, capVerifierService);
         authService = new AuthService();
         authService.userRepository = userRepository;
         authService.loginAttemptRepository = loginAttemptRepository;
+        authService.capVerifierService = capVerifierService;
         authService.maxFailedAttempts = 5;
         authService.lockoutDurationSeconds = 300;
 
         // Mock loginAttemptRepository to return 0 failed attempts by default
         when(loginAttemptRepository.countFailedAttempts(anyString(), any(Instant.class)))
                 .thenReturn(0L);
+        // Mock CapVerifierService to always return true
+        when(capVerifierService.verifyToken(anyString())).thenReturn(true);
     }
 
     @Test
@@ -82,7 +87,7 @@ public class AuthServiceTest {
 
         when(userRepository.findByUsername(username)).thenReturn(user);
 
-        User authenticatedUser = authService.authenticate(username, password);
+        User authenticatedUser = authService.authenticate(username, password, "validCapToken");
 
         assertNotNull(authenticatedUser);
         assertEquals(username, authenticatedUser.getUsername());
@@ -98,7 +103,7 @@ public class AuthServiceTest {
         AuthenticationFailedException thrown =
                 assertThrows(
                         AuthenticationFailedException.class,
-                        () -> authService.authenticate(username, password),
+                        () -> authService.authenticate(username, password, "validCapToken"),
                         "Expected AuthenticationFailedException for user not found");
 
         assertTrue(thrown.getMessage().contains("Failed to authenticate user: " + username));
@@ -122,7 +127,7 @@ public class AuthServiceTest {
         AuthenticationFailedException thrown =
                 assertThrows(
                         AuthenticationFailedException.class,
-                        () -> authService.authenticate(username, wrongPassword),
+                        () -> authService.authenticate(username, wrongPassword, "validCapToken"),
                         "Expected AuthenticationFailedException for wrong password");
 
         assertTrue(thrown.getMessage().contains("Failed to authenticate user: " + username));
@@ -145,7 +150,7 @@ public class AuthServiceTest {
         AuthenticationFailedException thrown =
                 assertThrows(
                         AuthenticationFailedException.class,
-                        () -> authService.authenticate(username, password),
+                        () -> authService.authenticate(username, password, "validCapToken"),
                         "Expected AuthenticationFailedException for empty password");
 
         assertTrue(thrown.getMessage().contains("Failed to authenticate user: " + username));
@@ -167,7 +172,7 @@ public class AuthServiceTest {
         // Should throw RuntimeException when BcryptUtil fails to parse invalid hash
         assertThrows(
                 RuntimeException.class,
-                () -> authService.authenticate(username, password),
+                () -> authService.authenticate(username, password, "validCapToken"),
                 "Expected RuntimeException for invalid hash format");
     }
 
@@ -185,7 +190,7 @@ public class AuthServiceTest {
 
         when(userRepository.findByUsername(username)).thenReturn(user);
 
-        User authenticatedUser = authService.authenticate(username, password);
+        User authenticatedUser = authService.authenticate(username, password, "validCapToken");
 
         assertNotNull(authenticatedUser);
         assertEquals(username, authenticatedUser.getUsername());

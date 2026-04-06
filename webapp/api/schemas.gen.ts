@@ -554,7 +554,8 @@ export const LoginRequestDTOSchema = {
     type: 'object',
     required: [
         'username',
-        'password'
+        'password',
+        'capToken'
     ],
     properties: {
         username: {
@@ -562,6 +563,10 @@ export const LoginRequestDTOSchema = {
             pattern: '\\S'
         },
         password: {
+            type: 'string',
+            pattern: '\\S'
+        },
+        capToken: {
             type: 'string',
             pattern: '\\S'
         }

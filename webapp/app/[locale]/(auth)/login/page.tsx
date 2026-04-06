@@ -1,6 +1,7 @@
 "use client";
 
 import type React from "react";
+import "@pitininja/cap-react-widget/dist/index.css";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -19,6 +20,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useT } from "@/lib/i18n/hooks";
 import { ErrorWithResponse } from "@/components/init-query-client";
 import { redirectUser } from "@/lib/redirect-User";
+import { CapWidget } from "@pitininja/cap-react-widget";
 
 export default function LoginPage() {
   const params = useParams();
@@ -30,11 +32,14 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isLoadingForm, setIsLoadingForm] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [capToken, setCapToken] = useState<string | null>(null);
   const { user, isLoggedIn, login, logout, retryAfter } = useAuth();
   const router = useRouter();
   const [currentlyLoggingIn, setCurrentlyLoggingIn] = useState(false);
   const [remainingTime, setRemainingTime] = useState<number>(0);
   const [isRetryAfterActive, setIsRetryAfterActive] = useState(false);
+
+  const capApiEndpoint = "/cap";
 
   useEffect(() => {
     if (!retryAfter) {
@@ -94,20 +99,51 @@ export default function LoginPage() {
     return "";
   };
 
+  const handleCapSolve = (token: string) => {
+    setCapToken(token);
+    // Auto-submit the form after CAP is solved
+    const form = document.querySelector("form");
+    if (form) {
+      form.dispatchEvent(
+        new Event("submit", { bubbles: true, cancelable: true }),
+      );
+    }
+  };
+
+  const handleCapError = (message: string) => {
+    setLoginError(message || t("login.error.capRequired"));
+    setCapToken(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check if CAP token is available
+    if (!capToken) {
+      // CAP widget will provide the token through the solve event
+      // and auto-submit the form, so we return early
+      setLoginError(t("login.error.capRequired"));
+      return;
+    }
+
     setIsLoadingForm(true);
     setLoginError(null);
     try {
       setCurrentlyLoggingIn(true);
       const returnToUrl = searchParams.get("returnTo");
 
-      await login(username.trim(), password, returnToUrl);
+      await login(username.trim(), password, capToken, returnToUrl);
       setCurrentlyLoggingIn(false);
     } catch (error) {
       if ((error as ErrorWithResponse).response?.status === 401) {
         setLoginError(t("login.error.invalidCredentials"));
+      } else if ((error as ErrorWithResponse).response?.status === 403) {
+        setLoginError(t("login.error.capVerificationFailed"));
+      } else {
+        setLoginError(t("login.error.loginFailed"));
       }
+      // Reset CAP token on error so user must solve it again
+      setCapToken(null);
       setCurrentlyLoggingIn(false);
     } finally {
       setIsLoadingForm(false);
@@ -192,6 +228,15 @@ export default function LoginPage() {
                 required
               />
             </div>
+            {capApiEndpoint && (
+              <div className="space-y-2">
+                <CapWidget
+                  endpoint={capApiEndpoint}
+                  onSolve={handleCapSolve}
+                  onError={handleCapError}
+                />
+              </div>
+            )}
             <Button
               type="submit"
               className="w-full"

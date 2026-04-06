@@ -44,5 +44,6 @@ updates:
     open-pull-requests-limit: 20
     directories:
       - "/"
+      - ".devcontainer"
     schedule:
       interval: "weekly"
