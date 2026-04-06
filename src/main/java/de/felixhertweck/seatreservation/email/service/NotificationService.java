@@ -87,9 +87,7 @@ public class NotificationService {
      */
     public void scheduleEventReminder(Event event) {
         if (event.getReminderSendDate() == null) {
-            LOG.debugf(
-                    "No reminder date set for event %s (ID: %d), skipping",
-                    event.getName(), event.id);
+            LOG.debugf("No reminder date set for event ID: %d, skipping", event.id);
             return;
         }
 
@@ -101,16 +99,16 @@ public class NotificationService {
 
         if (reminderTime.isBefore(now)) {
             LOG.warnf(
-                    "Reminder date %s for event %s (ID: %d) is in the past, skipping",
-                    reminderTime, event.getName(), event.id);
+                    "Reminder date %s for event ID: %d is in the past, skipping",
+                    reminderTime, event.id);
             return;
         }
 
         long delaySeconds = Duration.between(now, reminderTime).getSeconds();
 
         LOG.infof(
-                "Scheduling reminder for event %s (ID: %d) at %s (in %d seconds)",
-                event.getName(), event.id, reminderTime, delaySeconds);
+                "Scheduling reminder for event ID: %d at %s (in %d seconds)",
+                event.id, reminderTime, delaySeconds);
 
         String jobId = "reminder-event-" + event.id;
         // Schedule the reminder job as a one-time task
@@ -152,8 +150,8 @@ public class NotificationService {
             // Check if there are no reservations
             if (data.reservations.isEmpty()) {
                 LOG.debugf(
-                        "No reservations for event %s, marking reminder as sent",
-                        data.event.getName());
+                        "No reservations for event ID: %d, marking reminder as sent",
+                        data.event.id);
                 self.markReminderComplete(eventId);
                 cancelEventReminder(eventId);
                 return;
@@ -195,15 +193,13 @@ public class NotificationService {
 
         // Skip if reminder already sent
         if (event.isReminderSent()) {
-            LOG.debugf(
-                    "Skipping event %s (ID: %d) - reminder already sent",
-                    event.getName(), event.id);
+            LOG.debugf("Skipping event ID: %d - reminder already sent", event.id);
             return null;
         }
 
         LOG.debugf("Processing event: %s (ID: %d)", event.getName(), event.id);
         List<Reservation> reservations = reservationService.findByEvent(event);
-        LOG.debugf("Found %d reservations for event %s.", reservations.size(), event.getName());
+        LOG.debugf("Found %d reservations for event ID: %d.", reservations.size(), event.id);
 
         // Return early if no reservations, but let the orchestration method handle marking as sent
         if (reservations.isEmpty()) {
@@ -268,23 +264,22 @@ public class NotificationService {
                 data.reservations.stream().collect(Collectors.groupingBy(Reservation::getUser));
 
         LOG.debugf(
-                "Sending reminders to %d users for event %s",
-                reservationsByUser.size(), data.event.getName());
+                "Sending reminders to %d users for event ID: %d",
+                reservationsByUser.size(), data.event.id);
 
         reservationsByUser.forEach(
                 (user, userReservations) -> {
                     try {
                         LOG.debugf(
                                 "Sending reminder to user: %s for event: %s",
-                                user.getEmail(), data.event.getName());
+                                user.id, data.event.getName());
                         emailService.sendEventReminder(user, data.event, userReservations);
                     } catch (Exception e) {
                         LOG.errorf(
                                 e,
-                                "Error sending reminder email to %s for event %s: %s",
-                                user.getEmail(),
-                                data.event.getName(),
-                                e.getMessage());
+                                "Error sending reminder email to user ID: %d for event ID: %d",
+                                user.id,
+                                data.event.id);
                     }
                 });
     }
@@ -356,7 +351,7 @@ public class NotificationService {
                 if (manager != null) {
                     LOG.debugf(
                             "Sending CSV export to manager: %s for event: %s",
-                            manager.getEmail(), event.getName());
+                            manager.id, event.getName());
                     emailService.sendEventReservationsCsvToManager(manager, event);
                 } else {
                     LOG.warnf("No manager found for event: %s (ID: %d)", event.getName(), event.id);
@@ -364,10 +359,8 @@ public class NotificationService {
             } catch (EventNotFoundException | SecurityException | IOException e) {
                 LOG.errorf(
                         e,
-                        "Unexpected error during CSV generation or email preparation for event %s:"
-                                + " %s",
-                        event.getName(),
-                        e.getMessage());
+                        "Unexpected error during CSV generation or email preparation for event %s",
+                        event.getName());
             }
         }
         LOG.info("Finished scheduled CSV export task for event managers.");

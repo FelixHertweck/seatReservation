@@ -70,7 +70,7 @@ public class EventService {
             throws IllegalArgumentException {
         LOG.debugf(
                 "Attempting to create event with name: %s for manager: %s (ID: %d)",
-                dto.getName(), manager.getUsername(), manager.getId());
+                dto.getName(), manager.id, manager.getId());
         EventLocation location =
                 eventLocationRepository
                         .findByIdOptional(dto.getEventLocationId())
@@ -103,15 +103,11 @@ public class EventService {
                         dto.getReminderSendDate(),
                         supervisors);
         eventRepository.persist(event);
-        LOG.infof("Event '%s' (ID: %d) created successfully.", event.getName(), event.getId());
+        LOG.infof("Event ID: %d created successfully.", event.getId());
         LOG.debugf(
-                "Event '%s' (ID: %d) created successfully by manager: %s (ID: %d) and assigned"
-                        + " supervisors: %s",
-                event.getName(),
-                event.getId(),
-                manager.getUsername(),
-                manager.getId(),
-                supervisors.stream().map(User::getUsername).collect(Collectors.joining(", ")));
+                "Event '%s' (ID: %d) created successfully by manager: %s (ID: %d) with %d"
+                        + " assigned supervisors",
+                event.getName(), event.getId(), manager.id, manager.getId(), supervisors.size());
 
         // Schedule reminder if reminder date is set
         if (event.getReminderSendDate() != null) {
@@ -136,7 +132,7 @@ public class EventService {
             throws EventNotFoundException, IllegalArgumentException {
         LOG.debugf(
                 "Attempting to update event with ID: %d for manager: %s (ID: %d)",
-                id, manager.getUsername(), manager.getId());
+                id, manager.id, manager.getId());
         Event event =
                 eventRepository
                         .findByIdOptional(id)
@@ -145,7 +141,7 @@ public class EventService {
                                     LOG.warnf(
                                             "Event with ID %d not found for update by manager: %s"
                                                     + " (ID: %d)",
-                                            id, manager.getUsername(), manager.getId());
+                                            id, manager.id, manager.getId());
                                     return new EventNotFoundException(
                                             "Event with id " + id + " not found");
                                 });
@@ -154,8 +150,8 @@ public class EventService {
         // or if the user has the ADMIN role.
         if (!event.getManager().equals(manager) && !manager.getRoles().contains(Roles.ADMIN)) {
             LOG.warnf(
-                    "User %s (ID: %d) is not authorized to update event with ID %d.",
-                    manager.getUsername(), manager.getId(), id);
+                    "user ID: %d (ID: %d) is not authorized to update event with ID %d.",
+                    manager.id, manager.getId(), id);
             throw new SecurityException("User is not the manager of this event");
         }
 
@@ -177,24 +173,13 @@ public class EventService {
 
         Set<User> supervisors = getSupervisorsFromIds(dto.getSupervisorIds());
 
-        // Prepare supervisor display strings to avoid mismatched printf placeholders
-        String oldSupervisors =
-                event.getSupervisors() == null
-                        ? ""
-                        : event.getSupervisors().stream()
-                                .map(User::getUsername)
-                                .collect(Collectors.joining(", "));
-        String newSupervisors =
-                supervisors == null
-                        ? ""
-                        : supervisors.stream()
-                                .map(User::getUsername)
-                                .collect(Collectors.joining(", "));
+        int oldSupervisorCount = event.getSupervisors() == null ? 0 : event.getSupervisors().size();
+        int newSupervisorCount = supervisors == null ? 0 : supervisors.size();
 
         LOG.debugf(
                 "Updating event ID %d: name='%s' -> '%s', description='%s' -> '%s', startTime='%s'"
                         + " -> '%s', endTime='%s' -> '%s', bookingDeadline='%s' -> '%s',"
-                        + " eventLocationId='%d' -> '%d' , supervisors='%s' -> '%s'",
+                        + " eventLocationId='%d' -> '%d' , supervisors=%d -> %d",
                 id,
                 event.getName(),
                 dto.getName(),
@@ -208,8 +193,8 @@ public class EventService {
                 dto.getBookingDeadline(),
                 event.getEventLocation().getId(),
                 dto.getEventLocationId(),
-                oldSupervisors,
-                newSupervisors);
+                oldSupervisorCount,
+                newSupervisorCount);
 
         event.setName(dto.getName());
         event.setDescription(dto.getDescription());
@@ -225,7 +210,7 @@ public class EventService {
         LOG.infof("Event '%s' (ID: %d) updated successfully", event.getName(), event.getId());
         LOG.debugf(
                 "Event '%s' (ID: %d) updated successfully by manager: %s (ID: %d)",
-                event.getName(), event.getId(), manager.getUsername(), manager.getId());
+                event.getName(), event.getId(), manager.id, manager.getId());
 
         // Reschedule reminder when event is updated
         if (event.getReminderSendDate() != null) {
@@ -303,7 +288,7 @@ public class EventService {
     public List<EventResponseDTO> getEventsByCurrentManager(User manager) {
         LOG.debugf(
                 "Attempting to retrieve events for manager: %s (ID: %d)",
-                manager.getUsername(), manager.getId());
+                manager.id, manager.getId());
         List<Event> events;
         // Access control: If the user is an ADMIN, all Events are returned.
         // Otherwise, only Events belonging to this manager are returned.
@@ -334,14 +319,14 @@ public class EventService {
             throws EventNotFoundException, SecurityException, IllegalArgumentException {
         if (ids == null || ids.isEmpty()) {
             LOG.warnf(
-                    "No events to delete for user: %s (ID: %d)",
-                    currentUser.getUsername(), currentUser.getId());
+                    "No events to delete for user ID: %d (ID: %d)",
+                    currentUser.id, currentUser.getId());
             throw new IllegalArgumentException("No event IDs provided for deletion.");
         }
 
         LOG.debugf(
-                "Attempting to delete events with IDs: %s for user: %s (ID: %d)",
-                ids, currentUser.getUsername(), currentUser.getId());
+                "Attempting to delete events with IDs: %s for user ID: %d (ID: %d)",
+                ids, currentUser.id, currentUser.getId());
 
         for (Long id : ids) {
 
@@ -353,7 +338,7 @@ public class EventService {
                                         LOG.warnf(
                                                 "Event with ID %d not found for deletion by user:"
                                                         + " %s (ID: %d)",
-                                                id, currentUser.getUsername(), currentUser.getId());
+                                                id, currentUser.id, currentUser.getId());
                                         return new EventNotFoundException(
                                                 "Event with id " + id + " not found");
                                     });
@@ -361,15 +346,15 @@ public class EventService {
             if (!event.getManager().equals(currentUser)
                     && !currentUser.getRoles().contains(Roles.ADMIN)) {
                 LOG.warnf(
-                        "User %s (ID: %d) is not authorized to delete event with ID %d.",
-                        currentUser.getUsername(), currentUser.getId(), id);
+                        "user ID: %d (ID: %d) is not authorized to delete event with ID %d.",
+                        currentUser.id, currentUser.getId(), id);
                 throw new SecurityException("User is not authorized to delete this event");
             }
 
             eventRepository.delete(event);
             LOG.debugf(
-                    "Event '%s' (ID: %d) deleted successfully by user: %s (ID: %d)",
-                    event.getName(), event.getId(), currentUser.getUsername(), currentUser.getId());
+                    "Event '%s' (ID: %d) deleted successfully by user ID: %d (ID: %d)",
+                    event.getName(), event.getId(), currentUser.id, currentUser.getId());
         }
         LOG.infof("Events '%s' deleted successfully", ids);
     }
@@ -411,17 +396,17 @@ public class EventService {
             throws EventNotFoundException, SecurityException {
         LOG.debugf(
                 "Attempting to retrieve event with ID: %d for manager: %s (ID: %d)",
-                id, manager.getUsername(), manager.getId());
+                id, manager.id, manager.getId());
         Event event = getEventById(id);
         if (!event.getManager().equals(manager) && !manager.getRoles().contains(Roles.ADMIN)) {
             LOG.warnf(
-                    "User %s (ID: %d) is not authorized to view event with ID %d.",
-                    manager.getUsername(), manager.getId(), id);
+                    "user ID: %d (ID: %d) is not authorized to view event with ID %d.",
+                    manager.id, manager.getId(), id);
             throw new SecurityException("User is not authorized to view this event");
         }
         LOG.debugf(
                 "Successfully retrieved event with ID %d for manager: %s (ID: %d)",
-                id, manager.getUsername(), manager.getId());
+                id, manager.id, manager.getId());
         return new EventResponseDTO(event);
     }
 

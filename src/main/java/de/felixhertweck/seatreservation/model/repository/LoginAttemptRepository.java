@@ -41,7 +41,7 @@ public class LoginAttemptRepository implements PanacheRepository<LoginAttempt> {
      * @return the number of failed login attempts
      */
     public long countFailedAttempts(String username, Instant since) {
-        LOG.debugf("Counting failed login attempts for username: %s since: %s", username, since);
+        LOG.debugf("Counting failed login attempts since: %s", since);
         return count("username = ?1 and successful = false and attemptTime >= ?2", username, since);
     }
 
@@ -65,8 +65,7 @@ public class LoginAttemptRepository implements PanacheRepository<LoginAttempt> {
      */
     @Transactional
     public void recordAttempt(String username, boolean successful) {
-        LOG.debugf(
-                "Recording login attempt for username: %s, successful: %s", username, successful);
+        LOG.debugf("Recording login attempt, successful: %s", successful);
         LoginAttempt attempt = new LoginAttempt(username, Instant.now(), successful);
         persist(attempt);
     }
@@ -94,9 +93,7 @@ public class LoginAttemptRepository implements PanacheRepository<LoginAttempt> {
      * @return the timestamp of the oldest failed attempt, or null if none found
      */
     public Instant getOldestFailedAttemptTime(String username, Instant since) {
-        LOG.debugf(
-                "Getting oldest failed login attempt time for username: %s since: %s",
-                username, since);
+        LOG.debugf("Getting oldest failed login attempt time since: %s", since);
         return find(
                         "username = ?1 and successful = false and attemptTime >= ?2 order by"
                                 + " attemptTime asc",

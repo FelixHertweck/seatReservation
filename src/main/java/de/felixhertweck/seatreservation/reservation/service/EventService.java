@@ -46,12 +46,12 @@ public class EventService {
     @Transactional
     public List<UserEventResponseDTO> getEventsForCurrentUser(String username)
             throws UserNotFoundException {
-        LOG.debugf("Attempting to retrieve events for current user: %s", username);
+        LOG.debug("Attempting to retrieve events for current user.");
         User user = userRepository.findByUsername(username);
 
         if (user == null) {
-            LOG.warnf("User not found: %s", username);
-            throw new UserNotFoundException("User not found: " + username);
+            LOG.warn("User not found.");
+            throw new UserNotFoundException("User not found");
         }
         LOG.debugf("User %s found. Retrieving event allowances.", username);
 

@@ -290,13 +290,12 @@ public class CheckInService {
     @Transactional
     public CheckInInfoResponseDTO getReservationInfosByUsername(User currentUser, String username)
             throws ReservationNotFoundException {
-        LOG.debugf("Getting reservation infos for username %s.", username);
+        LOG.debug("Getting reservation infos for user.");
 
         User user = userRepository.findByUsername(username);
         if (user == null) {
-            LOG.warnf("User with username %s not found.", username);
-            throw new ReservationNotFoundException(
-                    String.format("User with username %s not found.", username));
+            LOG.warn("User with specified username not found.");
+            throw new ReservationNotFoundException("User with specified username not found.");
         }
 
         List<Reservation> reservations = reservationRepository.findByUser(user);

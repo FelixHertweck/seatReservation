@@ -61,10 +61,7 @@ public class SeatService {
         LOG.debugf(
                 "Attempting to create seat with number: %s for event location ID: %d by manager: %s"
                         + " (ID: %d)",
-                dto.getSeatNumber(),
-                dto.getEventLocationId(),
-                manager.getUsername(),
-                manager.getId());
+                dto.getSeatNumber(), dto.getEventLocationId(), manager.id, manager.getId());
         EventLocation eventLocation =
                 eventLocationRepository
                         .findByIdOptional(dto.getEventLocationId())
@@ -83,7 +80,7 @@ public class SeatService {
                 && !manager.getRoles().contains(Roles.ADMIN)) {
             LOG.warnf(
                     "Manager %s (ID: %d) does not own EventLocation with ID %d.",
-                    manager.getUsername(), manager.getId(), eventLocation.getId());
+                    manager.id, manager.getId(), eventLocation.getId());
             throw new SecurityException("Manager does not own this EventLocation");
         }
 
@@ -117,12 +114,12 @@ public class SeatService {
                         dto.getEntrance());
         seatRepository.persist(seat);
         LOG.infof(
-                "Seat %s created successfully for event location ID %d",
-                seat.getSeatNumber(), eventLocation.getId());
+                "Seat ID: %d created successfully for event location ID %d",
+                seat.id, eventLocation.getId());
         LOG.debugf(
                 "Seat with ID %d created successfully for event location ID %d by manager: %s (ID:"
                         + " %d)",
-                seat.id, eventLocation.getId(), manager.getUsername(), manager.getId());
+                seat.id, eventLocation.getId(), manager.id, manager.getId());
         return new SeatDTO(seat);
     }
 
@@ -136,7 +133,7 @@ public class SeatService {
     public List<SeatDTO> findAllSeatsForManager(User manager) {
         LOG.debugf(
                 "Attempting to retrieve all seats for manager: %s (ID: %d)",
-                manager.getUsername(), manager.getId());
+                manager.id, manager.getId());
         if (manager.getRoles().contains(Roles.ADMIN)) {
             LOG.debug("User is ADMIN, listing all seats.");
             return seatRepository.listAll().stream().map(SeatDTO::new).collect(Collectors.toList());
@@ -154,7 +151,7 @@ public class SeatService {
                         .collect(Collectors.toList());
         LOG.debugf(
                 "Retrieved %d seats for manager: %s (ID: %d)",
-                result.size(), manager.getUsername(), manager.getId());
+                result.size(), manager.id, manager.getId());
         return result;
     }
 
@@ -172,11 +169,11 @@ public class SeatService {
             throws SeatNotFoundException, SecurityException {
         LOG.debugf(
                 "Attempting to retrieve seat with ID: %d for manager: %s (ID: %d)",
-                id, manager.getUsername(), manager.getId());
+                id, manager.id, manager.getId());
         Seat seat = findSeatEntityById(id, manager); // This already checks for ownership
         LOG.debugf(
                 "Successfully retrieved seat with ID %d for manager: %s (ID: %d)",
-                id, manager.getUsername(), manager.getId());
+                id, manager.id, manager.getId());
         return new SeatDTO(seat);
     }
 
@@ -196,7 +193,7 @@ public class SeatService {
             throws SeatNotFoundException, SecurityException, IllegalArgumentException {
         LOG.debugf(
                 "Attempting to update seat with ID: %d for manager: %s (ID: %d)",
-                id, manager.getUsername(), manager.getId());
+                id, manager.id, manager.getId());
         Seat seat = findSeatEntityById(id, manager);
 
         EventLocation newEventLocation =
@@ -218,7 +215,7 @@ public class SeatService {
             LOG.warnf(
                     "Manager %s (ID: %d) does not own the new EventLocation with ID %d for seat"
                             + " update.",
-                    manager.getUsername(), manager.getId(), newEventLocation.getId());
+                    manager.id, manager.getId(), newEventLocation.getId());
             throw new SecurityException("Manager does not own the new EventLocation");
         }
 
@@ -262,10 +259,10 @@ public class SeatService {
 
         seatRepository.persist(seat);
 
-        LOG.infof("Seat %s updated successfully", seat.getSeatNumber());
+        LOG.infof("Seat ID: %d updated successfully", seat.id);
         LOG.debugf(
                 "Seat with ID %d updated successfully by manager: %s (ID: %d)",
-                id, manager.getUsername(), manager.getId());
+                id, manager.id, manager.getId());
         return new SeatDTO(seat);
     }
 
@@ -284,21 +281,21 @@ public class SeatService {
         if (ids == null || ids.isEmpty()) {
             LOG.warnf(
                     "No seat IDs provided for deletion by manager: %s (ID: %d)",
-                    manager.getUsername(), manager.getId());
+                    manager.id, manager.getId());
             throw new IllegalArgumentException("No seat IDs provided for deletion");
         }
 
         LOG.debugf(
                 "Attempting to delete seats with IDs: %s for manager: %s (ID: %d)",
-                ids, manager.getUsername(), manager.getId());
+                ids, manager.id, manager.getId());
         for (Long id : ids) {
             Seat seat = findSeatEntityById(id, manager); // This already checks for ownership
             seatRepository.delete(seat);
-            LOG.infof("Seat %s deleted successfully", seat.getSeatNumber());
+            LOG.infof("Seat ID: %d deleted successfully", seat.id);
         }
         LOG.debugf(
                 "Seats with IDs %s deleted successfully by manager: %s (ID: %d)",
-                ids, manager.getUsername(), manager.getId());
+                ids, manager.id, manager.getId());
     }
 
     /**
@@ -314,8 +311,8 @@ public class SeatService {
     public Seat findSeatEntityById(Long id, User currentUser)
             throws SeatNotFoundException, SecurityException {
         LOG.debugf(
-                "Attempting to find seat entity by ID: %d for user: %s (ID: %d)",
-                id, currentUser.getUsername(), currentUser.getId());
+                "Attempting to find seat entity by ID: %d for user ID: %d (ID: %d)",
+                id, currentUser.id, currentUser.getId());
         // Check if user has access to linked location
         Seat seat =
                 seatRepository
@@ -323,8 +320,8 @@ public class SeatService {
                         .orElseThrow(
                                 () -> {
                                     LOG.warnf(
-                                            "Seat with ID %d not found for user: %s (ID: %d)",
-                                            id, currentUser.getUsername(), currentUser.getId());
+                                            "Seat with ID %d not found for user ID: %d (ID: %d)",
+                                            id, currentUser.id, currentUser.getId());
                                     return new SeatNotFoundException(
                                             "Seat with id " + id + " not found");
                                 });
@@ -336,13 +333,13 @@ public class SeatService {
 
         if (!seat.getLocation().getManager().getId().equals(currentUser.getId())) {
             LOG.warnf(
-                    "User %s (ID: %d) does not have permission to access seat ID %d.",
-                    currentUser.getUsername(), currentUser.getId(), id);
+                    "user ID: %d (ID: %d) does not have permission to access seat ID %d.",
+                    currentUser.id, currentUser.getId(), id);
             throw new SecurityException("You do not have permission to access this seat");
         }
         LOG.debugf(
-                "User %s (ID: %d) has permission to access seat ID %d.",
-                currentUser.getUsername(), currentUser.getId(), id);
+                "user ID: %d (ID: %d) has permission to access seat ID %d.",
+                currentUser.id, currentUser.getId(), id);
         return seat;
     }
 }

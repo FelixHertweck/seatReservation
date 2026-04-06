@@ -75,8 +75,8 @@ public class TokenService {
      */
     public String generateToken(User user) {
         LOG.debugf(
-                "User ID: %d, Roles: %s, Email: %s, Expiration: %d minutes",
-                user.id, user.getRoles(), user.getEmail(), expirationMinutes);
+                "User ID: %d, Roles: %s, Email: [HIDDEN], Expiration: %d minutes",
+                (Object) user.id, user.getRoles(), (Object) expirationMinutes);
 
         String token =
                 Jwt.upn(user.getUsername())
@@ -85,7 +85,7 @@ public class TokenService {
                         .issuedAt(Instant.now())
                         .expiresIn(Duration.ofMinutes(expirationMinutes))
                         .sign();
-        LOG.debugf("JWT token generated successfully for user: %s", user.getUsername());
+        LOG.debugf("JWT token generated successfully for user ID: %d", user.id);
         return token;
     }
 
@@ -132,16 +132,13 @@ public class TokenService {
 
         refreshToken.persist();
 
-        String refreshTokenJwt =
-                Jwt.upn(user.getUsername())
-                        .claim("token_type", "refresh")
-                        .claim("token_id", refreshToken.id.toString())
-                        .claim("token_value", tokenValue)
-                        .issuedAt(Instant.now())
-                        .expiresIn(Duration.ofDays(refreshExpirationDays))
-                        .sign();
-
-        return refreshTokenJwt;
+        return Jwt.upn(user.getUsername())
+                .claim("token_type", "refresh")
+                .claim("token_id", refreshToken.id.toString())
+                .claim("token_value", tokenValue)
+                .issuedAt(Instant.now())
+                .expiresIn(Duration.ofDays(refreshExpirationDays))
+                .sign();
     }
 
     /**
@@ -276,7 +273,7 @@ public class TokenService {
     @Transactional
     public void logoutAllDevices(User user) {
         refreshTokenRepository.deleteAllByUser(user);
-        LOG.debugf("All refresh tokens for user %s have been deleted.", user.getUsername());
+        LOG.debugf("All refresh tokens for user ID: %d have been deleted.", user.id);
     }
 
     /**

@@ -83,7 +83,7 @@ public class EmailSeatMapService {
                         user, event, token, expirationTime, now, newReservedSeatNumbers);
         tokenRepository.persist(emailSeatMapToken);
 
-        LOG.debugf("Created EmailSeatMapToken: %s", token);
+        LOG.debug("Created EmailSeatMapToken.");
         return token;
     }
 
@@ -122,14 +122,14 @@ public class EmailSeatMapService {
 
         Optional<EmailSeatMapToken> emailSeatMapTokenOptional = tokenRepository.findByToken(token);
         if (emailSeatMapTokenOptional.isEmpty()) {
-            LOG.debugf("No EmailSeatMapToken found for token %s", token);
+            LOG.debug("No EmailSeatMapToken found.");
             return Optional.empty();
         }
 
         EmailSeatMapToken emailSeatMapToken = emailSeatMapTokenOptional.get();
         if (emailSeatMapToken.getExpirationTime() != null
                 && emailSeatMapToken.getExpirationTime().isBefore(Instant.now())) {
-            LOG.debugf("EmailSeatMapToken expired for token %s", token);
+            LOG.debug("EmailSeatMapToken expired.");
             return Optional.empty();
         }
 
