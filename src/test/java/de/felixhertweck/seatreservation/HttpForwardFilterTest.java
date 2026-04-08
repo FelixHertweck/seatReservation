@@ -19,24 +19,25 @@
  */
 package de.felixhertweck.seatreservation;
 
-import jakarta.inject.Inject;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@QuarkusTest
+@ExtendWith(MockitoExtension.class)
 public class HttpForwardFilterTest {
 
-    @Inject private HttpForwardFilter filter;
+    @InjectMocks private HttpForwardFilter filter;
 
     @Mock private HttpServletRequest request;
 
@@ -91,7 +92,6 @@ public class HttpForwardFilterTest {
     @Test
     void doFilter_NoForwardForNon404Status() throws Exception {
         Mockito.when(response.getStatus()).thenReturn(200);
-        Mockito.when(request.getRequestURI()).thenReturn("/some-path");
 
         filter.doFilter(request, response, chain);
 
