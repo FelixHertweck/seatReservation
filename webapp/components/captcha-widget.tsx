@@ -3,7 +3,11 @@
 import { useEffect, useState } from "react";
 
 export function CaptchaWidget() {
-  const [siteKey, setSiteKey] = useState("your_site_key");
+  const [siteKey] = useState(() => {
+    // Optionally fetch site key from env if passed through Next.js
+    const envSiteKey = process.env.NEXT_PUBLIC_CAP_SITE_KEY;
+    return envSiteKey || "your_site_key";
+  });
 
   useEffect(() => {
     // Add event listener to capture the captcha token
@@ -21,17 +25,9 @@ export function CaptchaWidget() {
     };
   }, []);
 
-  useEffect(() => {
-    // Optionally fetch site key from env if passed through Next.js
-    const envSiteKey = process.env.NEXT_PUBLIC_CAP_SITE_KEY;
-    if (envSiteKey) {
-      setSiteKey(envSiteKey);
-    }
-  }, []);
-
   return (
     <div className="flex justify-center my-4">
-      {/* @ts-ignore */}
+      {/* @ts-expect-error Types for cap-widget are not natively available */}
       <cap-widget data-cap-api-endpoint={`/captcha/${siteKey}/`}></cap-widget>
     </div>
   );
