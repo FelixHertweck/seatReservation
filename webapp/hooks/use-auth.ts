@@ -51,7 +51,9 @@ export function useAuth() {
     returnToUrl?: string | null,
   ) => {
     const captchaToken = window.sessionStorage.getItem("captchaToken") || "";
-    const request = loginMutation({ body: { username, password, captchaToken } });
+    const request = loginMutation({
+      body: { username, password, captchaToken },
+    });
     toast.promise(request, {
       loading: t("common.loading"),
       success: async () => {
