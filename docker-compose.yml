@@ -169,7 +169,38 @@ services:
       retries: 3
       start_period: 60s
     restart: unless-stopped
-    
+
+  cap:
+    image: tiago2/cap:latest
+    environment:
+      ADMIN_KEY: ${CAP_ADMIN_KEY:-admin}
+      REDIS_URL: redis://valkey:6379
+    depends_on:
+      valkey:
+        condition: service_healthy
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://0.0.0.0:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped
+
+  valkey:
+    image: valkey/valkey:8-alpine
+    volumes:
+      - valkey-data:/data
+    command: valkey-server --save 60 1 --loglevel warning --maxmemory-policy noeviction
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - app-network
+    restart: unless-stopped
 
 networks:
   app-network:
@@ -179,3 +210,4 @@ volumes:
   db_data:
   prometheus_data:
   grafana_data:
+  valkey-data:

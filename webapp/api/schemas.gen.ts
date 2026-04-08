@@ -564,6 +564,9 @@ export const LoginRequestDTOSchema = {
         password: {
             type: 'string',
             pattern: '\\S'
+        },
+        captchaToken: {
+            type: 'string'
         }
     }
 } as const;
@@ -620,6 +623,9 @@ export const RegisterRequestDTOSchema = {
             type: 'string',
             pattern: '\\S',
             minLength: 8
+        },
+        captchaToken: {
+            type: 'string'
         }
     }
 } as const;

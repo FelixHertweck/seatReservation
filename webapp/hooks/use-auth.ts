@@ -50,7 +50,8 @@ export function useAuth() {
     password: string,
     returnToUrl?: string | null,
   ) => {
-    const request = loginMutation({ body: { username, password } });
+    const captchaToken = window.sessionStorage.getItem("captchaToken") || "";
+    const request = loginMutation({ body: { username, password, captchaToken } });
     toast.promise(request, {
       loading: t("common.loading"),
       success: async () => {
@@ -96,7 +97,8 @@ export function useAuth() {
     userData: RegisterRequestDto,
     returnToUrl?: string | null,
   ) => {
-    const request = registerMutation({ body: userData });
+    const captchaToken = window.sessionStorage.getItem("captchaToken") || "";
+    const request = registerMutation({ body: { ...userData, captchaToken } });
     toast.promise(request, {
       loading: t("common.loading"),
       success: async () => {

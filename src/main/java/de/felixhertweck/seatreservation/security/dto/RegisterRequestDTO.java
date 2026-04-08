@@ -54,6 +54,16 @@ public class RegisterRequestDTO {
     @NoHtmlSanitize
     private String password;
 
+    @NoHtmlSanitize private String captchaToken;
+
+    public String getCaptchaToken() {
+        return captchaToken;
+    }
+
+    public void setCaptchaToken(String captchaToken) {
+        this.captchaToken = captchaToken;
+    }
+
     public String getUsername() {
         return username;
     }

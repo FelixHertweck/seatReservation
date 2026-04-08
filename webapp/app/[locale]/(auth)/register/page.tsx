@@ -25,6 +25,7 @@ import type { RegisterRequestDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { InputWithLoading } from "@/components/common/input-with-loading";
 import { TFunction } from "i18next";
+import { CaptchaWidget } from "@/components/captcha-widget";
 
 export default function RegisterPage() {
   const t = useT();
@@ -162,6 +163,9 @@ export default function RegisterPage() {
                 </p>
               )}
             </div>
+
+            <CaptchaWidget />
+
             <Button
               type="submit"
               className="w-full"
