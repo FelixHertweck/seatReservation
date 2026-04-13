@@ -198,7 +198,6 @@ export function LocationManagement({
         })
         .filter((seat): seat is SeatDto => seat !== undefined);
     }
-    console.log("seats to export", seats);
 
     const exportData = {
       ...locationWithoutSeatIds,
