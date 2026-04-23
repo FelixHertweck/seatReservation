@@ -19,6 +19,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useT } from "@/lib/i18n/hooks";
 import { ErrorWithResponse } from "@/components/init-query-client";
 import { redirectUser } from "@/lib/redirect-User";
+import { CaptchaWidget } from "@/components/captcha-widget";
 
 export default function LoginPage() {
   const params = useParams();
@@ -192,6 +193,9 @@ export default function LoginPage() {
                 required
               />
             </div>
+
+            <CaptchaWidget />
+
             <Button
               type="submit"
               className="w-full"

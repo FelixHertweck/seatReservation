@@ -72,6 +72,12 @@ export default async function RootLayout({
   // that may occur due to language or theme differences between server and client rendering.
   return (
     <html lang={lng} suppressHydrationWarning>
+      <head>
+        <script
+          src="https://cdn.jsdelivr.net/npm/@cap.js/widget@0.1.39"
+          async
+        ></script>
+      </head>
       <body>{children}</body>
     </html>
   );

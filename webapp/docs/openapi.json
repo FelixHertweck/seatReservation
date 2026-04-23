@@ -492,6 +492,9 @@
           "password" : {
             "type" : "string",
             "pattern" : "\\S"
+          },
+          "captchaToken" : {
+            "type" : "string"
           }
         }
       },
@@ -536,6 +539,9 @@
             "type" : "string",
             "pattern" : "\\S",
             "minLength" : 8
+          },
+          "captchaToken" : {
+            "type" : "string"
           }
         }
       },

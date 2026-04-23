@@ -34,6 +34,8 @@ public class LoginRequestDTO {
     @NoHtmlSanitize
     private String password;
 
+    @NoHtmlSanitize private String captchaToken;
+
     public String getUsername() {
         return username;
     }
@@ -48,5 +50,13 @@ public class LoginRequestDTO {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getCaptchaToken() {
+        return captchaToken;
+    }
+
+    public void setCaptchaToken(String captchaToken) {
+        this.captchaToken = captchaToken;
     }
 }

@@ -152,6 +152,7 @@ export type LoginLockedDto = {
 export type LoginRequestDto = {
     username: string;
     password: string;
+    captchaToken?: string;
 };
 
 export type MakerRequestDto = {
@@ -166,6 +167,7 @@ export type RegisterRequestDto = {
     lastname: string;
     email: string;
     password: string;
+    captchaToken?: string;
 };
 
 export type RegistrationStatusDto = {

@@ -39,6 +39,7 @@ import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.RegistrationStatusDTO;
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
 import de.felixhertweck.seatreservation.security.service.AuthService;
+import de.felixhertweck.seatreservation.security.service.CaptchaService;
 import de.felixhertweck.seatreservation.security.service.TokenService;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import io.quarkus.security.Authenticated;
@@ -61,6 +62,7 @@ public class AuthResource {
     @Inject AuthService authService;
     @Inject TokenService tokenService;
     @Inject UserSecurityContext userSecurityContext;
+    @Inject CaptchaService captchaService;
 
     /**
      * Gets the current registration status.
@@ -97,6 +99,10 @@ public class AuthResource {
     public Response login(@Valid LoginRequestDTO loginRequest) throws JwtInvalidException {
         LOG.debug("Received login request.");
         LOG.debugf("LoginRequestDTO: %s", loginRequest.toString());
+
+        // Verify Captcha token
+        captchaService.verifyCaptcha(loginRequest.getCaptchaToken());
+
         User user =
                 authService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
 
@@ -138,6 +144,9 @@ public class AuthResource {
     public Response register(@Valid RegisterRequestDTO registerRequest) {
         LOG.debug("Received registration request.");
         LOG.debugf("RegisterRequestDTO: %s", registerRequest.toString());
+
+        // Verify Captcha token
+        captchaService.verifyCaptcha(registerRequest.getCaptchaToken());
 
         User user = authService.register(registerRequest);
 
