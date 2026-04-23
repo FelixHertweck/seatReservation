@@ -305,12 +305,6 @@ public class User extends PanacheEntity {
                 + ", lastname='"
                 + lastname
                 + '\''
-                + ", passwordHash='"
-                + passwordHash
-                + '\''
-                + ", passwordSalt='"
-                + passwordSalt
-                + '\''
                 + ", email='"
                 + email
                 + '\''

@@ -227,10 +227,22 @@ class UserTest {
         user.setEmail("test@example.com");
         user.setFirstname("John");
         user.setLastname("Doe");
+        user.setPasswordHash("$2a$10$hashedPassword");
+        user.setPasswordSalt("randomSalt");
 
         String toString = user.toString();
         assertNotNull(toString);
         assertTrue(toString.contains("testuser"));
+        assertFalse(
+                toString.contains("passwordHash"),
+                "toString should not contain sensitive passwordHash");
+        assertFalse(
+                toString.contains("passwordSalt"),
+                "toString should not contain sensitive passwordSalt");
+        assertFalse(
+                toString.contains("$2a$10$hashedPassword"),
+                "toString should not contain the actual password hash");
+        assertFalse(toString.contains("randomSalt"), "toString should not contain the actual salt");
     }
 
     @Test
