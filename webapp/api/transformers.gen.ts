@@ -17,10 +17,7 @@ const eventLocationResponseDtoSchemaResponseTransformer = (data: any) => {
         data.manager = limitedUserInfoDtoSchemaResponseTransformer(data.manager);
     }
     if (data.seatIds) {
-        data.seatIds = data.seatIds.map((item: any) => {
-            BigInt(item.toString());
-            return item;
-        });
+        data.seatIds = data.seatIds.map((item: any) => BigInt(item.toString()));
     }
     return data;
 };
@@ -85,10 +82,7 @@ const eventResponseDtoSchemaResponseTransformer = (data: any) => {
         data.seatStatuses = data.seatStatuses.map((item: any) => seatStatusDtoSchemaResponseTransformer(item));
     }
     if (data.eventUserAllowancesIds) {
-        data.eventUserAllowancesIds = data.eventUserAllowancesIds.map((item: any) => {
-            BigInt(item.toString());
-            return item;
-        });
+        data.eventUserAllowancesIds = data.eventUserAllowancesIds.map((item: any) => BigInt(item.toString()));
     }
     if (data.eventLocationId) {
         data.eventLocationId = BigInt(data.eventLocationId.toString());
@@ -97,10 +91,7 @@ const eventResponseDtoSchemaResponseTransformer = (data: any) => {
         data.managerId = BigInt(data.managerId.toString());
     }
     if (data.supervisorIds) {
-        data.supervisorIds = data.supervisorIds.map((item: any) => {
-            BigInt(item.toString());
-            return item;
-        });
+        data.supervisorIds = data.supervisorIds.map((item: any) => BigInt(item.toString()));
     }
     return data;
 };
