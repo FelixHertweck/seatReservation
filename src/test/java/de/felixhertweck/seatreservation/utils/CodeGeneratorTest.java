@@ -19,11 +19,12 @@
  */
 package de.felixhertweck.seatreservation.utils;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
-import java.util.HashSet;
-import java.util.Set;
 
 class CodeGeneratorTest {
 
@@ -48,8 +49,9 @@ class CodeGeneratorTest {
     @Test
     void generateRandomCode_ContainsOnlyAllowedCharacters() {
         String code = CodeGenerator.generateRandomCode();
-        assertTrue(code.matches("^[A-Z0-9]{4}$"),
-            "Generated code should only contain uppercase letters and digits, got: " + code);
+        assertTrue(
+                code.matches("^[A-Z0-9]{4}$"),
+                "Generated code should only contain uppercase letters and digits, got: " + code);
     }
 
     @Test
@@ -63,7 +65,11 @@ class CodeGeneratorTest {
         // With 36^4 = 1,679,616 possible combinations,
         // the probability of collisions in 1000 samples is very low.
         // We expect almost all to be unique.
-        assertTrue(codes.size() > 990,
-            "Expected high uniqueness, but got only " + codes.size() + " unique codes out of " + iterations);
+        assertTrue(
+                codes.size() > 990,
+                "Expected high uniqueness, but got only "
+                        + codes.size()
+                        + " unique codes out of "
+                        + iterations);
     }
 }
