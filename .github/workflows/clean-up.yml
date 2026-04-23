@@ -1,16 +1,11 @@
 name: Daily Image Cleanup
 on:
-  push:
-    branches: [ "main" ]
-    paths-ignore: [ "**/*.md" ]
-    tags:
-      - "v*.*"
-      - "v*.*.*"
+  # Runs daily at 2:00 AM
+  schedule:
+    - cron: '0 2 * * *'
+  # Run manually
   workflow_dispatch:
-permissions:
-  contents: read
-  packages: write
-  # Write permissions to packages are required for the GHCR cleanup action
+    
 jobs:
   delete-untagged-packages:
     name: Delete Untagged Package Versions
