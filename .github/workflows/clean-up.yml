@@ -12,20 +12,27 @@ permissions:
   packages: write
   # Write permissions to packages are required for the GHCR cleanup action
 jobs:
-  frontend-docker-cleanup:
-    name: frontend docker image cleanup
+  delete-untagged-packages:
+    name: Delete Untagged Package Versions
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
+
     steps:
-      - uses: dataaxiom/ghcr-cleanup-action@v1
+      - name: Frontend delete untagged versions
+        uses: actions/delete-package-versions@v5
         with:
-          packages: 'seatreservation-frontend'
-          keep-n-untagged: 3
-  
-  backend-docker-cleanup:
-    name: backend docker image cleanup
-    runs-on: ubuntu-latest
-    steps:
-      - uses: dataaxiom/ghcr-cleanup-action@v1
+          package-name: 'seatreservation-frontend'
+          package-type: 'container'
+          min-versions-to-keep: 5
+          delete-only-untagged-versions: 'true'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Backend delete untagged versions
+        uses: actions/delete-package-versions@v5
         with:
-          packages: 'seatreservation-backend'
-          keep-n-untagged: 3
+          package-name: 'seatreservation-backend'
+          package-type: 'container'
+          min-versions-to-keep: 5
+          delete-only-untagged-versions: 'true'
+          token: ${{ secrets.GITHUB_TOKEN }}
