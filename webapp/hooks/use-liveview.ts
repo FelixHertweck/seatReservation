@@ -71,8 +71,7 @@ export const useLiveView = (
 
   const handleMessage = useCallback((data: unknown) => {
     const dataWithType = data as
-      | WebsocketInitialMessage
-      | WebsocketUpdateMessage;
+      WebsocketInitialMessage | WebsocketUpdateMessage;
     try {
       if (isInitialMessage(dataWithType)) {
         const initialData = data as WebsocketInitialMessage;
