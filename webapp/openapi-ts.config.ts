@@ -3,7 +3,7 @@ import { defineConfig } from "@hey-api/openapi-ts";
 export default defineConfig({
   input: "./docs/openapi.json",
   output: {
-    postProcess: ["eslint", "prettier"],
+    postProcess: ["prettier"],
     path: "./api",
   },
   plugins: [
