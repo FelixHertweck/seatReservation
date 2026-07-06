@@ -39,7 +39,7 @@ jobs:
           cache-dependency-path: webapp/package-lock.json
 
       - name: Set up Maven Cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -54,7 +54,7 @@ jobs:
 
       - name: Cache Next.js build
         id: nextjs-cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ${{ github.workspace }}/webapp/.next/cache
           key: ${{ runner.os }}-nextjs-${{ hashFiles('webapp/package-lock.json') }}-${{ hashFiles('webapp/**/*.js', 'webapp/**/*.jsx', 'webapp/**/*.ts', 'webapp/**/*.tsx') }}
