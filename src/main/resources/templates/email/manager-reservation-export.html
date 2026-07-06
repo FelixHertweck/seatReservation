@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Reservation Overview</title>
+      <style>
+          body {
+              font-family: Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              background-color: #f4f4f4;
+              margin: 0;
+              padding: 20px;
+          }
+          .container {
+              max-width: 600px;
+              margin: 0 auto;
+              background: #fff;
+              padding: 30px;
+              border-radius: 8px;
+              box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          }
+          h1 {
+              color: #0056b3;
+          }
+          .footer {
+              margin-top: 20px;
+              font-size: 0.8em;
+              color: #777;
+              text-align: center;
+          }
+      </style>
+  </head>
+  <body>
+      <div class="container">
+          <h1>Reservation Overview</h1>
+          <p>Hello {fullName},</p>
+          <p>Attached you will find the current reservations for your event <strong>"{eventName}"</strong>.</p>
+          <p><strong>Event Details:</strong></p>
+          <ul>
+              <li><strong>Date:</strong> {eventDate}</li>
+              <li><strong>Time:</strong> {eventTime}</li>
+              <li><strong>Location:</strong> {eventLocation}</li>
+          </ul>
+          <p>Please find the reservation details in the attached CSV file.</p>
+          <div class="footer">
+              <p>&copy; {currentYear} Seat Reservation. All rights reserved.</p>
+          </div>
+      </div>
+  </body>
+</html>

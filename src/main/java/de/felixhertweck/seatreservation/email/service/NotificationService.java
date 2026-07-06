@@ -28,11 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.control.ActivateRequestContext;
 import jakarta.inject.Inject;
@@ -63,22 +59,8 @@ public class NotificationService {
 
     @Inject NotificationService self;
 
-    private ExecutorService executorService;
-
     /** Cache of scheduled job IDs to avoid expensive lookups */
     private final Set<String> scheduledJobIds = ConcurrentHashMap.newKeySet();
-
-    @PostConstruct
-    @SuppressWarnings("unused")
-    void init() {
-        executorService = Executors.newThreadPerTaskExecutor(Executors.defaultThreadFactory());
-    }
-
-    @PreDestroy
-    @SuppressWarnings("unused")
-    void destroy() {
-        executorService.shutdown();
-    }
 
     /**
      * Schedules a reminder job for the given event.
@@ -118,10 +100,9 @@ public class NotificationService {
                 .newJob(jobId)
                 .setInterval("365d") // Set a long interval to satisfy the scheduler requirement
                 .setDelayed(delaySeconds + "s") // Set the delay until first execution
-                .setTask(
-                        executionContext -> {
-                            executorService.execute(() -> self.sendReminderForEvent(event.id));
-                        })
+                // Sending is now just a fast enqueue into the email outbox, so the task can run
+                // directly on the scheduler worker without an extra thread pool.
+                .setTask(executionContext -> self.sendReminderForEvent(event.id))
                 .schedule();
 
         // Add to cache for efficient lookups

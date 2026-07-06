@@ -41,6 +41,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import de.felixhertweck.seatreservation.email.queue.EmailDispatcher;
 import de.felixhertweck.seatreservation.email.service.EmailSeatMapService;
 import de.felixhertweck.seatreservation.email.service.EmailService;
 import de.felixhertweck.seatreservation.model.entity.EmailVerification;
@@ -68,6 +69,8 @@ class EmailServiceTest {
     @InjectMock EmailSeatMapService emailSeatMapService;
 
     @Inject EmailService emailService;
+
+    @Inject EmailDispatcher emailDispatcher;
 
     @BeforeEach
     @SuppressWarnings("unused")
@@ -135,6 +138,7 @@ class EmailServiceTest {
                         Instant.now().plusSeconds(Duration.ofMinutes(60).toSeconds()));
 
         emailService.sendEmailConfirmation(user, emailVerification);
+        emailDispatcher.drainQueue();
 
         verify(emailVerificationRepository, never()).persist(any(EmailVerification.class));
 
@@ -233,6 +237,7 @@ class EmailServiceTest {
         when(emailSeatMapService.getPngImage(anyString())).thenReturn(Optional.of(new byte[0]));
 
         emailService.sendEventReminder(user, event, reservations);
+        emailDispatcher.drainQueue();
 
         List<Mail> sentMails = mailbox.getMailsSentTo(user.getEmail());
         assertEquals(1, sentMails.size());
@@ -277,6 +282,7 @@ class EmailServiceTest {
         // Note: MockMailbox doesn't throw IOException, so this test verifies normal behavior
         // In a real scenario, you might want to test error handling differently
         emailService.sendEventReminder(user, event, reservations);
+        emailDispatcher.drainQueue();
 
         List<Mail> sentMails = mailbox.getMailsSentTo(user.getEmail());
         assertEquals(1, sentMails.size());
