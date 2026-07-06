@@ -324,4 +324,34 @@ class EventLocationServiceTest {
         assertEquals(1, result.size());
         assertTrue(result.stream().anyMatch(dto -> dto.id().equals(locationA.id)));
     }
+
+    @Test
+    void getLocationsForCurrentUser_GroupsSeatsIntoAreas() {
+        // Location A has two seats sharing an area, exposed via the allowance
+        var seat1 = new Seat("S1", "Row 1", locationA);
+        seat1.id = 1L;
+        seat1.setArea("Parkett");
+        var seat2 = new Seat("S2", "Row 1", locationA);
+        seat2.id = 2L;
+        seat2.setArea("Parkett");
+        locationA.setSeats(List.of(seat1, seat2));
+
+        var allowance = new EventUserAllowance();
+        allowance.setUser(user);
+        allowance.setEvent(eventA);
+        allowance.setReservationsAllowedCount(3);
+
+        when(userRepository.findByUsername("testuser")).thenReturn(user);
+        when(eventUserAllowanceRepository.findByUser(user)).thenReturn(List.of(allowance));
+        user.setReservations(Collections.emptySet());
+
+        List<UserEventLocationResponseDTO> result =
+                eventLocationService.getLocationsForCurrentUser("testuser");
+
+        assertEquals(1, result.size());
+        UserEventLocationResponseDTO locationDto = result.getFirst();
+        assertEquals(1, locationDto.areas().size());
+        assertEquals("Parkett", locationDto.areas().getFirst().name());
+        assertEquals(2, locationDto.areas().getFirst().seatIds().size());
+    }
 }

@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.supervisor.dto;
 
 import java.util.List;
 
+import de.felixhertweck.seatreservation.common.dto.AreaDTO;
 import de.felixhertweck.seatreservation.common.dto.EventLocationMakerDTO;
 import de.felixhertweck.seatreservation.common.dto.SeatDTO;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
@@ -30,12 +31,17 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 @RegisterForReflection
 @Schema(description = "Event location details for supervisor view")
 public record SupervisorEventLocationDTO(
-        Long id, String name, List<SeatDTO> seats, List<EventLocationMakerDTO> markers) {
+        Long id,
+        String name,
+        List<SeatDTO> seats,
+        List<EventLocationMakerDTO> markers,
+        List<AreaDTO> areas) {
     public SupervisorEventLocationDTO(EventLocation eventLocation) {
         this(
                 eventLocation.getId(),
                 eventLocation.getName(),
                 eventLocation.getSeats().stream().map(SeatDTO::new).toList(),
-                eventLocation.getMarkers().stream().map(EventLocationMakerDTO::new).toList());
+                eventLocation.getMarkers().stream().map(EventLocationMakerDTO::new).toList(),
+                AreaDTO.fromSeats(eventLocation.getSeats()));
     }
 }
