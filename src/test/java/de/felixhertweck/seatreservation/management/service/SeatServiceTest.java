@@ -135,7 +135,8 @@ public class SeatServiceTest {
 
     @Test
     void createSeat_Success_AsManager() {
-        SeatRequestDTO dto = new SeatRequestDTO("B2", "Row 1", eventLocation.id, 2, 2, "A");
+        SeatRequestDTO dto =
+                new SeatRequestDTO("B2", "Row 1", eventLocation.id, 2, 2, "A", "Parkett");
         when(eventLocationRepository.findByIdOptional(eventLocation.id))
                 .thenReturn(Optional.of(eventLocation));
         doAnswer(
@@ -156,12 +157,14 @@ public class SeatServiceTest {
         assertEquals(2, createdSeat.xCoordinate());
         assertEquals(2, createdSeat.yCoordinate());
         assertEquals("A", createdSeat.entrance());
+        assertEquals("Parkett", createdSeat.area());
         verify(seatRepository, times(1)).persist(any(Seat.class));
     }
 
     @Test
     void createSeat_Success_AsAdmin() {
-        SeatRequestDTO dto = new SeatRequestDTO("C3", "Row 1", eventLocation.id, 3, 3, "A");
+        SeatRequestDTO dto =
+                new SeatRequestDTO("C3", "Row 1", eventLocation.id, 3, 3, "A", "Balkon");
 
         when(eventLocationRepository.findByIdOptional(eventLocation.id))
                 .thenReturn(Optional.of(eventLocation));
@@ -232,7 +235,8 @@ public class SeatServiceTest {
         EventLocation otherLocation = new EventLocation("Hall 2", "Addr 2", regularUser, 50);
         otherLocation.id = 2L; // Assign an ID for consistency
         List<Seat> allSeats =
-                Arrays.asList(existingSeat, new Seat("C1", otherLocation, "1", 3, 3, "A"));
+                Arrays.asList(
+                        existingSeat, new Seat("C1", otherLocation, "1", 3, 3, "A", "Parkett"));
         when(seatRepository.listAll()).thenReturn(allSeats);
         List<SeatDTO> result = seatService.findAllSeatsForManager(adminUser);
 
@@ -246,7 +250,7 @@ public class SeatServiceTest {
         EventLocation otherLocation =
                 new EventLocation("Other Hall", "Other Address", regularUser, 50);
         otherLocation.id = 2L;
-        Seat otherSeat = new Seat("X1", otherLocation, "1", 1, 1, "B");
+        Seat otherSeat = new Seat("X1", otherLocation, "1", 1, 1, "B", "Balkon");
         otherSeat.id = 2L;
 
         List<Seat> managerSeats = Collections.singletonList(existingSeat);
@@ -337,6 +341,7 @@ public class SeatServiceTest {
         dto.setyCoordinate(10);
         dto.setSeatRow("Row 2");
         dto.setEntrance("B");
+        dto.setArea("Balkon");
 
         when(seatRepository.findByIdOptional(existingSeat.id))
                 .thenReturn(Optional.of(existingSeat));
@@ -351,6 +356,7 @@ public class SeatServiceTest {
         assertEquals(10, updatedSeat.yCoordinate());
         assertEquals("Row 2", updatedSeat.seatRow());
         assertEquals("B", updatedSeat.entrance());
+        assertEquals("Balkon", updatedSeat.area());
         verify(seatRepository, times(1)).persist(existingSeat);
     }
 

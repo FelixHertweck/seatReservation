@@ -49,6 +49,8 @@ public class Seat extends PanacheEntity {
 
     private String entrance;
 
+    private String area;
+
     public Seat() {}
 
     public Seat(String seatNumber, String seatRow, EventLocation location) {
@@ -63,13 +65,15 @@ public class Seat extends PanacheEntity {
             String seatRow,
             int xCoordinate,
             int yCoordinate,
-            String entrance) {
+            String entrance,
+            String area) {
         this.seatNumber = seatNumber;
         this.location = location;
         this.seatRow = seatRow;
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
         this.entrance = entrance;
+        this.area = area;
     }
 
     public String getSeatNumber() {
@@ -124,6 +128,14 @@ public class Seat extends PanacheEntity {
         this.entrance = entrance;
     }
 
+    public String getArea() {
+        return area;
+    }
+
+    public void setArea(String area) {
+        this.area = area;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -137,7 +149,8 @@ public class Seat extends PanacheEntity {
                 && Objects.equals(seatNumber, that.seatNumber)
                 && Objects.equals(location, that.location)
                 && Objects.equals(seatRow, that.seatRow)
-                && Objects.equals(entrance, that.entrance);
+                && Objects.equals(entrance, that.entrance)
+                && Objects.equals(area, that.area);
     }
 
     @Override
@@ -145,7 +158,8 @@ public class Seat extends PanacheEntity {
         if (id != null) {
             return Objects.hash(id);
         }
-        return Objects.hash(seatNumber, location, xCoordinate, yCoordinate, seatRow, entrance);
+        return Objects.hash(
+                seatNumber, location, xCoordinate, yCoordinate, seatRow, entrance, area);
     }
 
     @Override
@@ -165,6 +179,9 @@ public class Seat extends PanacheEntity {
                 + '\''
                 + ", entrance='"
                 + entrance
+                + '\''
+                + ", area='"
+                + area
                 + '\''
                 + ", id="
                 + id

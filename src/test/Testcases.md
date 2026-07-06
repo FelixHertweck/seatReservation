@@ -595,6 +595,7 @@ This is an overview of the test cases for the application.
 | `findSeatByIdForManager_ForbiddenException` | Attempts to retrieve a seat for which there is no permission. |
 | `updateSeat_Success_AsManager` | Successfully updates an existing seat as a manager. |
 | `updateSeat_EntranceAndRowUpdate_Success` | Successfully updates seat row and entrance fields for an existing seat. |
+| `AreaDTOTest.fromSeats_*` | Groups seats by their area value into AreaDTOs (ignoring seats without an area) so areas can be rendered as an overlay on the seat map. |
 | `updateSeat_Success_AsAdmin` | Successfully updates an existing seat as an admin. |
 | `updateSeat_NotFound` | Attempts to update a non-existent seat. |
 | `updateSeat_InvalidInput` | Attempts to update a seat with invalid data. |

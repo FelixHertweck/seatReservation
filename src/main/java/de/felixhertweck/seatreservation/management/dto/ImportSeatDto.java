@@ -36,6 +36,10 @@ public class ImportSeatDto {
 
     private String seatRow;
 
+    private String entrance;
+
+    private String area;
+
     public ImportSeatDto() {
         // Default constructor for serialization/deserialization
     }
@@ -45,6 +49,21 @@ public class ImportSeatDto {
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
         this.seatRow = seatRow;
+    }
+
+    public ImportSeatDto(
+            String seatNumber,
+            int xCoordinate,
+            int yCoordinate,
+            String seatRow,
+            String entrance,
+            String area) {
+        this.seatNumber = seatNumber;
+        this.xCoordinate = xCoordinate;
+        this.yCoordinate = yCoordinate;
+        this.seatRow = seatRow;
+        this.entrance = entrance;
+        this.area = area;
     }
 
     public String getSeatNumber() {
@@ -77,5 +96,21 @@ public class ImportSeatDto {
 
     public void setSeatRow(String seatRow) {
         this.seatRow = seatRow;
+    }
+
+    public String getEntrance() {
+        return entrance;
+    }
+
+    public void setEntrance(String entrance) {
+        this.entrance = entrance;
+    }
+
+    public String getArea() {
+        return area;
+    }
+
+    public void setArea(String area) {
+        this.area = area;
     }
 }

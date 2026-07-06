@@ -351,12 +351,16 @@ public class EventLocationServiceTest {
         seat1.setxCoordinate(1);
         seat1.setyCoordinate(1);
         seat1.setSeatRow("Row A");
+        seat1.setEntrance("Main");
+        seat1.setArea("Parkett");
 
         ImportSeatDto seat2 = new ImportSeatDto();
         seat2.setSeatNumber("A2");
         seat2.setxCoordinate(1);
         seat2.setyCoordinate(2);
         seat2.setSeatRow("Row A");
+        seat2.setEntrance("Main");
+        seat2.setArea("Parkett");
 
         dto.setSeats(List.of(seat1, seat2));
 
@@ -391,14 +395,22 @@ public class EventLocationServiceTest {
         assertEquals(2, persistedLocation.getSeats().size());
         assertEquals("A1", persistedLocation.getSeats().get(0).getSeatNumber());
         assertEquals("A2", persistedLocation.getSeats().get(1).getSeatNumber());
+        assertEquals("Main", persistedLocation.getSeats().get(0).getEntrance());
+        assertEquals("Parkett", persistedLocation.getSeats().get(0).getArea());
+        assertEquals("Parkett", persistedLocation.getSeats().get(1).getArea());
+
+        // Seats sharing an area are grouped into a single AreaDTO on the response
+        assertEquals(1, result.areas().size());
+        assertEquals("Parkett", result.areas().get(0).name());
+        assertEquals(2, result.areas().get(0).seats().size());
     }
 
     @Test
     void importSeatsToEventLocation_Success() {
         // Arrange
         Set<ImportSeatDto> seats = new HashSet<>();
-        seats.add(new ImportSeatDto("B1", 2, 1, "Row 1"));
-        seats.add(new ImportSeatDto("B2", 2, 2, "Row 1"));
+        seats.add(new ImportSeatDto("B1", 2, 1, "Row 1", "Main", "Parkett"));
+        seats.add(new ImportSeatDto("B2", 2, 2, "Row 1", "Main", "Parkett"));
 
         when(eventLocationRepository.findByIdOptional(existingLocation.id))
                 .thenReturn(Optional.of(existingLocation));
@@ -422,6 +434,21 @@ public class EventLocationServiceTest {
         assertEquals(2, result.seatIds().size());
         verify(eventLocationRepository, times(1)).findByIdOptional(existingLocation.id);
         verify(seatRepository, times(2)).persist(any(Seat.class));
+
+        // Entrance and area must be copied onto the persisted seats, not just coordinates
+        ArgumentCaptor<Seat> seatCaptor = ArgumentCaptor.forClass(Seat.class);
+        verify(seatRepository, times(2)).persist(seatCaptor.capture());
+        assertTrue(
+                seatCaptor.getAllValues().stream()
+                        .allMatch(
+                                seat ->
+                                        "Main".equals(seat.getEntrance())
+                                                && "Parkett".equals(seat.getArea())));
+
+        // Seats sharing an area are grouped into a single AreaDTO on the response
+        assertEquals(1, result.areas().size());
+        assertEquals("Parkett", result.areas().get(0).name());
+        assertEquals(2, result.areas().get(0).seatIds().size());
     }
 
     @Test

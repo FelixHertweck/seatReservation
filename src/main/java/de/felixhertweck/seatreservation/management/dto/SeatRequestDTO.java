@@ -43,6 +43,8 @@ public class SeatRequestDTO {
 
     @Nullable private String entrance;
 
+    @Nullable private String area;
+
     public SeatRequestDTO() {
         // Default constructor for serialization/deserialization
     }
@@ -53,13 +55,15 @@ public class SeatRequestDTO {
             Long eventLocationId,
             int xCoordinate,
             int yCoordinate,
-            String entrance) {
+            String entrance,
+            String area) {
         this.seatNumber = seatNumber;
         this.eventLocationId = eventLocationId;
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
         this.seatRow = seatRow;
         this.entrance = entrance;
+        this.area = area;
     }
 
     public String getSeatNumber() {
@@ -108,5 +112,13 @@ public class SeatRequestDTO {
 
     public void setEntrance(String entrance) {
         this.entrance = entrance;
+    }
+
+    public String getArea() {
+        return area;
+    }
+
+    public void setArea(String area) {
+        this.area = area;
     }
 }

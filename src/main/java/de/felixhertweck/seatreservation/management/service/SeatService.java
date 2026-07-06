@@ -111,7 +111,8 @@ public class SeatService {
                         dto.getSeatRow(),
                         dto.getxCoordinate(),
                         dto.getyCoordinate(),
-                        dto.getEntrance());
+                        dto.getEntrance(),
+                        dto.getArea());
         seatRepository.persist(seat);
         LOG.infof(
                 "Seat ID: %d created successfully for event location ID %d",
@@ -235,7 +236,7 @@ public class SeatService {
         LOG.debugf(
                 "Updating seat ID %d: seatNumber='%s' -> '%s', location ID='%d' -> '%d',"
                         + " xCoordinate='%d' -> '%d', yCoordinate='%d' -> '%d',"
-                        + " seatRow='%s' -> '%s', entrance='%s' -> '%s'",
+                        + " seatRow='%s' -> '%s', entrance='%s' -> '%s', area='%s' -> '%s'",
                 id,
                 seat.getSeatNumber(),
                 dto.getSeatNumber(),
@@ -248,7 +249,9 @@ public class SeatService {
                 seat.getSeatRow(),
                 dto.getSeatRow(),
                 seat.getEntrance(),
-                dto.getEntrance());
+                dto.getEntrance(),
+                seat.getArea(),
+                dto.getArea());
 
         seat.setSeatNumber(dto.getSeatNumber());
         seat.setLocation(newEventLocation);
@@ -256,6 +259,7 @@ public class SeatService {
         seat.setyCoordinate(dto.getyCoordinate());
         seat.setSeatRow(dto.getSeatRow());
         seat.setEntrance(dto.getEntrance());
+        seat.setArea(dto.getArea());
 
         seatRepository.persist(seat);
 
