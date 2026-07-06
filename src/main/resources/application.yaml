@@ -65,6 +65,12 @@ email:
   # Template for entrance information text
   entrance-info-template: "Please use entrance {entrance} for seats {seats}"
 
+  # Optional external directory holding email template overrides (leave empty to use the
+  # bundled templates). Files there mirror the bundled layout, e.g.
+  # <dir>/email/reservation-confirmation.html, and are picked up on application start.
+  template:
+    override-dir: ""
+
   header:
     confirmation: "Please Confirm Your Email Address"
     password-changed: "Your Password Has Been Changed"
