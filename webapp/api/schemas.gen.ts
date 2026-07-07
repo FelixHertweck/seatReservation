@@ -1125,6 +1125,20 @@ export const WebAuthnCredentialDTOSchema = {
     }
 } as const;
 
+export const WebAuthnCredentialUpdateDTOSchema = {
+    type: 'object',
+    required: [
+        'label'
+    ],
+    properties: {
+        label: {
+            type: 'string',
+            pattern: '\\S',
+            maxLength: 64
+        }
+    }
+} as const;
+
 export const WebAuthnRegistrationStartDTOSchema = {
     type: 'object',
     required: [

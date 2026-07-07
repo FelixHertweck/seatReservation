@@ -25,6 +25,7 @@ import jakarta.ws.rs.core.MediaType;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.notNullValue;
 
 import de.felixhertweck.seatreservation.security.dto.WebAuthnRegistrationStartDTO;
@@ -44,6 +45,10 @@ import org.junit.jupiter.api.Test;
 class WebAuthnFlowTest {
 
     @TestHTTPResource URL url;
+
+    private static final String CHROME_ON_WINDOWS_UA =
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)"
+                    + " Chrome/125.0.0.0 Safari/537.36";
 
     private static String extractChallenge(String optionsJson) {
         return new JsonObject(optionsJson).getString("challenge");
@@ -129,6 +134,7 @@ class WebAuthnFlowTest {
         JsonObject secondAttestation =
                 secondAuthenticator.makeRegistrationJson(extractChallenge(addOptions));
         given().filter(loginCookies)
+                .header("User-Agent", CHROME_ON_WINDOWS_UA)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(secondAttestation.encode())
                 .when()
@@ -136,7 +142,7 @@ class WebAuthnFlowTest {
                 .then()
                 .statusCode(200);
 
-        // 6. Both passkeys are listed.
+        // 6. Both passkeys are listed; the second got a sensible default name from the User-Agent.
         List<Integer> ids =
                 given().filter(loginCookies)
                         .when()
@@ -144,9 +150,25 @@ class WebAuthnFlowTest {
                         .then()
                         .statusCode(200)
                         .body("size()", equalTo(2))
+                        .body("label", hasItem("Chrome on Windows"))
                         .extract()
                         .jsonPath()
                         .getList("id");
+
+        // 6b. A passkey can be renamed, and the new label is reflected in the listing.
+        given().filter(loginCookies)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new JsonObject().put("label", "My work laptop").encode())
+                .when()
+                .put("/api/auth/webauthn/credentials/" + ids.get(0))
+                .then()
+                .statusCode(200);
+        given().filter(loginCookies)
+                .when()
+                .get("/api/auth/webauthn/credentials")
+                .then()
+                .statusCode(200)
+                .body("find { it.id == " + ids.get(0) + " }.label", equalTo("My work laptop"));
 
         // 7. Deleting one succeeds; deleting the last of a password-less account is refused (409).
         given().filter(loginCookies)
@@ -216,5 +238,30 @@ class WebAuthnFlowTest {
         dto.setFirstname("Ada");
         dto.setLastname("Lovelace");
         org.junit.jupiter.api.Assertions.assertEquals("Ada Lovelace", dto.getDisplayName());
+    }
+
+    @Test
+    void defaultDeviceLabel_derivesBrowserAndOs() {
+        org.junit.jupiter.api.Assertions.assertEquals(
+                "Chrome on Windows", WebAuthnResource.defaultDeviceLabel(CHROME_ON_WINDOWS_UA));
+        org.junit.jupiter.api.Assertions.assertEquals(
+                "Safari on iPhone",
+                WebAuthnResource.defaultDeviceLabel(
+                        "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)"
+                            + " AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148"
+                            + " Safari/604.1"));
+        org.junit.jupiter.api.Assertions.assertEquals(
+                "Firefox on Linux",
+                WebAuthnResource.defaultDeviceLabel(
+                        "Mozilla/5.0 (X11; Linux x86_64; rv:125.0) Gecko/20100101 Firefox/125.0"));
+        // Edge must win over the "Chrome" token it also carries.
+        org.junit.jupiter.api.Assertions.assertEquals(
+                "Edge on Windows",
+                WebAuthnResource.defaultDeviceLabel(
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like"
+                                + " Gecko) Chrome/125.0.0.0 Safari/537.36 Edg/125.0.0.0"));
+        // Unrecognisable agents fall back to null so the client shows a generic label.
+        org.junit.jupiter.api.Assertions.assertNull(WebAuthnResource.defaultDeviceLabel(null));
+        org.junit.jupiter.api.Assertions.assertNull(WebAuthnResource.defaultDeviceLabel("   "));
     }
 }

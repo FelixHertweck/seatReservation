@@ -125,11 +125,31 @@ public class WebAuthnService {
      *
      * @param user the owner
      * @param record the verified credential produced by the WebAuthn ceremony
+     * @param label an optional user-facing name for the passkey (a sensible default)
      */
     @Transactional
-    public void addCredentialToUser(User user, WebAuthnCredentialRecord record) {
-        persistCredential(user, record);
+    public void addCredentialToUser(User user, WebAuthnCredentialRecord record, String label) {
+        persistCredential(user, record, label);
         LOG.infof("Registered new passkey for user ID: %d", user.id);
+    }
+
+    /**
+     * Renames one of the user's passkeys.
+     *
+     * @param user the owner
+     * @param credentialId the entity id of the passkey to rename
+     * @param label the new label
+     * @return true if a passkey was renamed, false if none matched the user
+     */
+    @Transactional
+    public boolean renameCredential(User user, Long credentialId, String label) {
+        WebAuthnCredential credential = webAuthnCredentialRepository.findById(credentialId);
+        if (credential == null || !credential.getUser().id.equals(user.id)) {
+            return false;
+        }
+        credential.setLabel(label);
+        LOG.infof("Renamed passkey %d for user ID: %d", credentialId, user.id);
+        return true;
     }
 
     /**
@@ -138,11 +158,14 @@ public class WebAuthnService {
      *
      * @param registration the account details (username required, password optional)
      * @param record the verified credential produced by the WebAuthn ceremony
+     * @param label an optional user-facing name for the passkey (a sensible default)
      * @return the newly created user
      */
     @Transactional
     public User createUserWithCredential(
-            WebAuthnRegistrationStartDTO registration, WebAuthnCredentialRecord record)
+            WebAuthnRegistrationStartDTO registration,
+            WebAuthnCredentialRecord record,
+            String label)
             throws DuplicateUserException, InvalidUserException, RegistrationDisabledException {
         if (!authService.isRegistrationEnabled()) {
             throw new RegistrationDisabledException("User registration is currently disabled");
@@ -168,7 +191,7 @@ public class WebAuthnService {
                     "User not found after creation: " + registration.getUsername());
         }
 
-        persistCredential(user, record);
+        persistCredential(user, record, label);
         LOG.infof("Created passkey account for user ID: %d", user.id);
         return user;
     }
@@ -179,8 +202,9 @@ public class WebAuthnService {
         loginAttemptRepository.recordAttempt(user, true);
     }
 
-    private void persistCredential(User user, WebAuthnCredentialRecord record) {
+    private void persistCredential(User user, WebAuthnCredentialRecord record, String label) {
         RequiredPersistedData data = record.getRequiredPersistedData();
+        String trimmedLabel = label != null && !label.isBlank() ? label.trim() : null;
         WebAuthnCredential credential =
                 new WebAuthnCredential(
                         data.credentialId(),
@@ -189,7 +213,7 @@ public class WebAuthnService {
                         data.publicKeyAlgorithm(),
                         data.counter(),
                         data.aaguid(),
-                        null,
+                        trimmedLabel,
                         Instant.now());
         webAuthnCredentialRepository.persist(credential);
     }

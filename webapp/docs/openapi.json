@@ -993,6 +993,17 @@
           }
         }
       },
+      "WebAuthnCredentialUpdateDTO" : {
+        "type" : "object",
+        "required" : [ "label" ],
+        "properties" : {
+          "label" : {
+            "type" : "string",
+            "pattern" : "\\S",
+            "maxLength" : 64
+          }
+        }
+      },
       "WebAuthnRegistrationStartDTO" : {
         "type" : "object",
         "required" : [ "username" ],
@@ -1250,6 +1261,54 @@
       }
     },
     "/api/auth/webauthn/credentials/{id}" : {
+      "put" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/WebAuthnCredentialUpdateDTO"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Passkey renamed",
+            "content" : {
+              "application/json" : {
+                "schema" : { }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Passkey not found"
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          },
+          "400" : {
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "Rename Credential",
+        "tags" : [ "Web Authn Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ ]
+        } ]
+      },
       "delete" : {
         "parameters" : [ {
           "name" : "id",
@@ -1340,6 +1399,13 @@
     },
     "/api/auth/webauthn/register" : {
       "post" : {
+        "parameters" : [ {
+          "name" : "User-Agent",
+          "in" : "header",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -1378,6 +1444,13 @@
     },
     "/api/auth/webauthn/register-new" : {
       "post" : {
+        "parameters" : [ {
+          "name" : "User-Agent",
+          "in" : "header",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
         "requestBody" : {
           "content" : {
             "application/json" : {

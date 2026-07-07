@@ -333,6 +333,10 @@ export type WebAuthnCredentialDto = {
     lastUsedAt?: Instant;
 };
 
+export type WebAuthnCredentialUpdateDto = {
+    label: string;
+};
+
 export type WebAuthnRegistrationStartDto = {
     username: string;
     firstname?: string;
@@ -558,6 +562,41 @@ export type DeleteApiAuthWebauthnCredentialsByIdResponses = {
 
 export type DeleteApiAuthWebauthnCredentialsByIdResponse = DeleteApiAuthWebauthnCredentialsByIdResponses[keyof DeleteApiAuthWebauthnCredentialsByIdResponses];
 
+export type PutApiAuthWebauthnCredentialsByIdData = {
+    body: WebAuthnCredentialUpdateDto;
+    path: {
+        id: bigint;
+    };
+    query?: never;
+    url: '/api/auth/webauthn/credentials/{id}';
+};
+
+export type PutApiAuthWebauthnCredentialsByIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: unknown;
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+    /**
+     * Passkey not found
+     */
+    404: unknown;
+};
+
+export type PutApiAuthWebauthnCredentialsByIdResponses = {
+    /**
+     * Passkey renamed
+     */
+    200: unknown;
+};
+
 export type PostApiAuthWebauthnLoginData = {
     body: string;
     path?: never;
@@ -599,6 +638,9 @@ export type PostApiAuthWebauthnLoginOptionsResponse = PostApiAuthWebauthnLoginOp
 
 export type PostApiAuthWebauthnRegisterData = {
     body: string;
+    headers?: {
+        'User-Agent'?: string;
+    };
     path?: never;
     query?: never;
     url: '/api/auth/webauthn/register';
@@ -628,6 +670,9 @@ export type PostApiAuthWebauthnRegisterResponses = {
 
 export type PostApiAuthWebauthnRegisterNewData = {
     body: string;
+    headers?: {
+        'User-Agent'?: string;
+    };
     path?: never;
     query?: never;
     url: '/api/auth/webauthn/register-new';

@@ -19,6 +19,7 @@ import {
   postApiAuthWebauthnRegisterNewOptions,
   postApiAuthWebauthnRegisterNew,
   deleteApiAuthWebauthnCredentialsById,
+  putApiAuthWebauthnCredentialsById,
   type WebAuthnRegistrationStartDto,
 } from "@/api";
 import { ErrorWithResponse } from "@/components/init-query-client";
@@ -175,12 +176,34 @@ export function useWebAuthn() {
     }
   };
 
+  const renameCredential = async (id: bigint, label: string) => {
+    try {
+      await putApiAuthWebauthnCredentialsById({
+        path: { id },
+        body: { label },
+      });
+      await queryClient.invalidateQueries({
+        queryKey: getApiAuthWebauthnCredentialsQueryKey(),
+      });
+      toast.success(t("webauthn.manage.renameSuccess"));
+    } catch (error) {
+      const status = (error as ErrorWithResponse).response?.status;
+      if (status === 404) {
+        toast.error(t("webauthn.manage.deleteNotFound"));
+      } else {
+        toast.error(t("webauthn.error.generic"));
+      }
+      throw error;
+    }
+  };
+
   return {
     isSupported,
     loginWithPasskey,
     registerNewWithPasskey,
     addPasskey,
     deleteCredential,
+    renameCredential,
   };
 }
 

@@ -29,7 +29,9 @@ import jakarta.validation.Validator;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.HeaderParam;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -44,6 +46,7 @@ import de.felixhertweck.seatreservation.common.exception.RegistrationDisabledExc
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.security.dto.WebAuthnCredentialDTO;
+import de.felixhertweck.seatreservation.security.dto.WebAuthnCredentialUpdateDTO;
 import de.felixhertweck.seatreservation.security.dto.WebAuthnRegistrationStartDTO;
 import de.felixhertweck.seatreservation.security.dto.WebAuthnStatusDTO;
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
@@ -119,7 +122,8 @@ public class WebAuthnResource {
     /**
      * Verifies and stores a new passkey for the currently authenticated account.
      *
-     * @param credential the browser's attestation response
+     * @param body the browser's attestation response
+     * @param userAgent the caller's User-Agent, used to derive a sensible default passkey name
      * @return 200 on success
      */
     @POST
@@ -127,12 +131,12 @@ public class WebAuthnResource {
     @Authenticated
     @APIResponse(responseCode = "200", description = "Passkey registered")
     @APIResponse(responseCode = "400", description = "Invalid attestation")
-    public Response register(String body) {
+    public Response register(String body, @HeaderParam("User-Agent") String userAgent) {
         User user = userSecurityContext.getCurrentUser();
         RoutingContext ctx = currentVertxRequest.getCurrent();
         WebAuthnCredentialRecord record =
                 verifyRegistration(user.getUsername(), parseWebAuthnPayload(body), ctx);
-        webAuthnService.addCredentialToUser(user, record);
+        webAuthnService.addCredentialToUser(user, record, defaultDeviceLabel(userAgent));
         return Response.ok().build();
     }
 
@@ -170,6 +174,7 @@ public class WebAuthnResource {
      * Verifies a new passkey, creates the account (password optional), and logs the user in.
      *
      * @param body the account details plus the browser's attestation response
+     * @param userAgent the caller's User-Agent, used to derive a sensible default passkey name
      * @return 200 with JWT and refresh-token cookies set
      */
     @POST
@@ -179,7 +184,8 @@ public class WebAuthnResource {
     @APIResponse(responseCode = "400", description = "Invalid attestation")
     @APIResponse(responseCode = "403", description = "Registration is disabled")
     @APIResponse(responseCode = "409", description = "Username already exists")
-    public Response registerNew(String body) throws JwtInvalidException {
+    public Response registerNew(String body, @HeaderParam("User-Agent") String userAgent)
+            throws JwtInvalidException {
         JsonObject root = parseWebAuthnPayload(body);
         JsonObject registrationJson = root.getJsonObject("registration");
         if (registrationJson == null) {
@@ -208,7 +214,9 @@ public class WebAuthnResource {
         RoutingContext ctx = currentVertxRequest.getCurrent();
         WebAuthnCredentialRecord record =
                 verifyRegistration(registration.getUsername(), credential, ctx);
-        User user = webAuthnService.createUserWithCredential(registration, record);
+        User user =
+                webAuthnService.createUserWithCredential(
+                        registration, record, defaultDeviceLabel(userAgent));
         LOG.infof("Passkey account created and logged in: user ID %d", user.id);
         return buildAuthCookieResponse(user);
     }
@@ -307,6 +315,28 @@ public class WebAuthnResource {
     }
 
     /**
+     * Renames one of the current user's passkeys.
+     *
+     * @param id the entity id of the passkey
+     * @param update the new label
+     * @return 200 on success, 404 if not found
+     */
+    @PUT
+    @Path("/credentials/{id}")
+    @Authenticated
+    @APIResponse(responseCode = "200", description = "Passkey renamed")
+    @APIResponse(responseCode = "404", description = "Passkey not found")
+    public Response renameCredential(
+            @PathParam("id") Long id, @Valid WebAuthnCredentialUpdateDTO update) {
+        User user = userSecurityContext.getCurrentUser();
+        boolean renamed = webAuthnService.renameCredential(user, id, update.getLabel());
+        if (!renamed) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        return Response.ok().build();
+    }
+
+    /**
      * Reports which authentication methods the current user has, so the client can prompt the user
      * to create a passkey when none exists.
      *
@@ -362,6 +392,69 @@ public class WebAuthnResource {
                 .cookie(refreshTokenCookie)
                 .cookie(refreshTokenExpirationCookie)
                 .build();
+    }
+
+    /**
+     * Derives a sensible default passkey name from the caller's User-Agent, e.g. "Chrome on
+     * Windows". Falls back to whichever of browser/OS could be detected, or {@code null} when
+     * neither can be, so the client shows a generic label. The vocabulary is fixed, so a spoofed
+     * User-Agent cannot inject arbitrary text.
+     */
+    static String defaultDeviceLabel(String userAgent) {
+        if (userAgent == null || userAgent.isBlank()) {
+            return null;
+        }
+        String browser = detectBrowser(userAgent);
+        String os = detectOs(userAgent);
+        if (browser != null && os != null) {
+            return browser + " on " + os;
+        }
+        if (browser != null) {
+            return browser;
+        }
+        return os;
+    }
+
+    private static String detectBrowser(String ua) {
+        // Order matters: Edge/Opera UAs also contain "Chrome"; Chrome's UA also contains "Safari".
+        if (ua.contains("Edg")) {
+            return "Edge";
+        }
+        if (ua.contains("OPR") || ua.contains("Opera")) {
+            return "Opera";
+        }
+        if (ua.contains("Firefox")) {
+            return "Firefox";
+        }
+        if (ua.contains("Chrome")) {
+            return "Chrome";
+        }
+        if (ua.contains("Safari")) {
+            return "Safari";
+        }
+        return null;
+    }
+
+    private static String detectOs(String ua) {
+        if (ua.contains("Windows")) {
+            return "Windows";
+        }
+        if (ua.contains("iPhone")) {
+            return "iPhone";
+        }
+        if (ua.contains("iPad")) {
+            return "iPad";
+        }
+        if (ua.contains("Mac OS X") || ua.contains("Macintosh")) {
+            return "macOS";
+        }
+        if (ua.contains("Android")) {
+            return "Android";
+        }
+        if (ua.contains("Linux")) {
+            return "Linux";
+        }
+        return null;
     }
 
     private static String displayName(User user) {

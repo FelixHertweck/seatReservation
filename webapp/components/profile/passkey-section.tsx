@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { KeyRound, Plus, Trash2 } from "lucide-react";
+import { Check, KeyRound, Pencil, Plus, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -26,13 +27,17 @@ import type { WebAuthnCredentialDto } from "@/api";
  */
 export function PasskeySection() {
   const t = useT();
-  const { isSupported, addPasskey, deleteCredential } = useWebAuthn();
+  const { isSupported, addPasskey, deleteCredential, renameCredential } =
+    useWebAuthn();
   const { status, credentials, isCredentialsLoading } = useWebAuthnStatus();
 
   const [isAdding, setIsAdding] = useState(false);
   const [pendingDelete, setPendingDelete] =
     useState<WebAuthnCredentialDto | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [editingId, setEditingId] = useState<bigint | null>(null);
+  const [editValue, setEditValue] = useState("");
+  const [isRenaming, setIsRenaming] = useState(false);
 
   const handleAdd = async () => {
     setIsAdding(true);
@@ -58,6 +63,30 @@ export function PasskeySection() {
     }
   };
 
+  const startEditing = (credential: WebAuthnCredentialDto) => {
+    if (credential.id === undefined) return;
+    setEditingId(credential.id);
+    setEditValue(credential.label ?? "");
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditValue("");
+  };
+
+  const handleConfirmRename = async () => {
+    if (editingId === null || !editValue.trim()) return;
+    setIsRenaming(true);
+    try {
+      await renameCredential(editingId, editValue.trim());
+      cancelEditing();
+    } catch {
+      // Errors are surfaced via toast inside the hook.
+    } finally {
+      setIsRenaming(false);
+    }
+  };
+
   const formatDate = (value?: Date) =>
     value ? new Date(value).toLocaleDateString() : "—";
 
@@ -76,42 +105,101 @@ export function PasskeySection() {
 
   const credentialList = hasPasskey ? (
     <ul className="space-y-2">
-      {credentials?.map((credential) => (
-        <li
-          key={String(credential.id)}
-          className="flex items-center justify-between rounded-lg border bg-muted/30 p-3"
-        >
-          <div className="flex items-center gap-3">
-            <KeyRound className="h-5 w-5 text-muted-foreground" />
-            <div>
-              <p className="text-sm font-medium">
-                {credential.label || t("webauthn.manage.unnamedPasskey")}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {t("webauthn.manage.createdOn", {
-                  date: formatDate(credential.createdAt),
-                })}
-                {credential.lastUsedAt
-                  ? " · " +
-                    t("webauthn.manage.lastUsed", {
-                      date: formatDate(credential.lastUsedAt),
-                    })
-                  : ""}
-              </p>
-            </div>
-          </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="text-destructive hover:text-destructive"
-            onClick={() => setPendingDelete(credential)}
-            aria-label={t("webauthn.manage.deleteButton")}
+      {credentials?.map((credential) => {
+        const isEditing =
+          credential.id !== undefined && editingId === credential.id;
+        return (
+          <li
+            key={String(credential.id)}
+            className="flex items-center justify-between rounded-lg border bg-muted/30 p-3"
           >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </li>
-      ))}
+            <div className="flex flex-1 items-center gap-3">
+              <KeyRound className="h-5 w-5 shrink-0 text-muted-foreground" />
+              {isEditing ? (
+                <Input
+                  autoFocus
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleConfirmRename();
+                    } else if (e.key === "Escape") {
+                      cancelEditing();
+                    }
+                  }}
+                  maxLength={64}
+                  className="h-8"
+                  disabled={isRenaming}
+                />
+              ) : (
+                <div>
+                  <p className="text-sm font-medium">
+                    {credential.label || t("webauthn.manage.unnamedPasskey")}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("webauthn.manage.createdOn", {
+                      date: formatDate(credential.createdAt),
+                    })}
+                    {credential.lastUsedAt
+                      ? " · " +
+                        t("webauthn.manage.lastUsed", {
+                          date: formatDate(credential.lastUsedAt),
+                        })
+                      : ""}
+                  </p>
+                </div>
+              )}
+            </div>
+            {isEditing ? (
+              <div className="flex shrink-0 items-center gap-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleConfirmRename}
+                  disabled={isRenaming || !editValue.trim()}
+                  aria-label={t("webauthn.manage.saveRename")}
+                >
+                  <Check className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={cancelEditing}
+                  disabled={isRenaming}
+                  aria-label={t("webauthn.manage.cancel")}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex shrink-0 items-center gap-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => startEditing(credential)}
+                  aria-label={t("webauthn.manage.renameButton")}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive hover:text-destructive"
+                  onClick={() => setPendingDelete(credential)}
+                  aria-label={t("webauthn.manage.deleteButton")}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </li>
+        );
+      })}
     </ul>
   ) : (
     <div className="rounded-lg border border-dashed bg-muted/30 p-4 text-center">
