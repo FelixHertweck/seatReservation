@@ -84,6 +84,9 @@ public class User extends PanacheEntity {
     private Set<RefreshToken> refreshTokens = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<WebAuthnCredential> webAuthnCredentials = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<EmailSeatMapToken> emailSeatMapTokens = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -230,6 +233,14 @@ public class User extends PanacheEntity {
 
     public void setRefreshTokens(Set<RefreshToken> refreshTokens) {
         this.refreshTokens = refreshTokens;
+    }
+
+    public Set<WebAuthnCredential> getWebAuthnCredentials() {
+        return webAuthnCredentials;
+    }
+
+    public void setWebAuthnCredentials(Set<WebAuthnCredential> webAuthnCredentials) {
+        this.webAuthnCredentials = webAuthnCredentials;
     }
 
     public Set<EmailSeatMapToken> getEmailSeatMapTokens() {

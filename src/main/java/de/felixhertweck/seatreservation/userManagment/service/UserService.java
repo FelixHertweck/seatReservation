@@ -99,6 +99,27 @@ public class UserService {
     public UserDTO createUser(
             UserCreationDTO userCreationDTO, Set<String> roles, boolean sendEmailVerification)
             throws InvalidUserException, DuplicateUserException {
+        return createUser(userCreationDTO, roles, sendEmailVerification, false);
+    }
+
+    /**
+     * Creates a new user.
+     *
+     * @param userCreationDTO the data for the new user
+     * @param roles the roles to assign
+     * @param sendEmailVerification whether to send an email verification
+     * @param allowNoPassword when {@code true}, the user may be created without a password (e.g. a
+     *     passkey-only account); the stored password hash is {@code null} and password login is
+     *     unavailable for this user until a password is set
+     * @return the created user
+     */
+    @Transactional
+    public UserDTO createUser(
+            UserCreationDTO userCreationDTO,
+            Set<String> roles,
+            boolean sendEmailVerification,
+            boolean allowNoPassword)
+            throws InvalidUserException, DuplicateUserException {
         if (userCreationDTO == null) {
             LOG.warn("UserCreationDTO is null during user creation.");
             throw new InvalidUserException("User creation data cannot be null.");
@@ -111,8 +132,10 @@ public class UserService {
             LOG.warn("Username is empty or null during user creation.");
             throw new InvalidUserException("Username cannot be empty.");
         }
-        if (userCreationDTO.getPassword() == null
-                || userCreationDTO.getPassword().trim().isEmpty()) {
+        boolean passwordProvided =
+                userCreationDTO.getPassword() != null
+                        && !userCreationDTO.getPassword().trim().isEmpty();
+        if (!passwordProvided && !allowNoPassword) {
             LOG.warn("Password is empty or null during user creation.");
             throw new InvalidUserException("Password cannot be empty.");
         }
@@ -131,8 +154,16 @@ public class UserService {
             LOG.debugf("User email set to: %s", email);
         }
 
-        String salt = generateSalt();
-        String passwordHash = BcryptUtil.bcryptHash(userCreationDTO.getPassword() + salt);
+        String salt = null;
+        String passwordHash = null;
+        if (passwordProvided) {
+            salt = generateSalt();
+            passwordHash = BcryptUtil.bcryptHash(userCreationDTO.getPassword() + salt);
+        } else {
+            LOG.debugf(
+                    "Creating user %s without a password (passkey-only account).",
+                    userCreationDTO.getUsername());
+        }
 
         User user =
                 new User(

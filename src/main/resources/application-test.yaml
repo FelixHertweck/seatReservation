@@ -8,6 +8,10 @@ quarkus:
     mock: true
   hibernate-orm:
     sql-load-script: import-test.sql
+  webauthn:
+    relying-party:
+      id: localhost
+    origins: http://localhost:8081
 
 email:
   redirect-url: http://localhost:8081
