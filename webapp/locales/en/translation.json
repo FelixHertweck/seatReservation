@@ -68,7 +68,8 @@
       "description": "An error occurred while logging in. Please try again.",
       "accountLocked": "Account locked until {{time}} ({{duration}})",
       "tooManyAttemptsDescription": "Too many failed login attempts. Your account has been temporarily locked."
-    }
+    },
+    "or": "or"
   },
   "register": {
     "success": {
@@ -98,7 +99,10 @@
     "registrationDisabled": {
       "title": "Registration Disabled",
       "description": "Registration is currently not available."
-    }
+    },
+    "passwordOptional": "(optional)",
+    "passkeyHint": "Leave empty to sign up with a passkey instead.",
+    "createAccountWithPasskey": "Sign up with a passkey"
   },
   "mainLayout": {
     "eventManagementTitle": "Event Management"
@@ -1162,6 +1166,43 @@
       "error": {
         "title": "Profile Update Failed"
       }
+    }
+  },
+  "webauthn": {
+    "login": {
+      "button": "Sign in with a passkey",
+      "signingIn": "Waiting for passkey…",
+      "success": "Signed in with your passkey."
+    },
+    "register": {
+      "success": "Account created with your passkey."
+    },
+    "error": {
+      "invalidCredential": "That passkey could not be verified. Please try again.",
+      "registrationDisabled": "Registration is currently disabled.",
+      "usernameTaken": "This username is already taken.",
+      "generic": "Something went wrong with the passkey. Please try again."
+    },
+    "manage": {
+      "title": "Passkeys",
+      "description": "Sign in without a password using a passkey on this device.",
+      "unsupported": "Your browser does not support passkeys.",
+      "addButton": "Add passkey",
+      "adding": "Waiting for passkey…",
+      "addSuccess": "Passkey added.",
+      "unnamedPasskey": "Passkey",
+      "createdOn": "Added {{date}}",
+      "lastUsed": "last used {{date}}",
+      "deleteButton": "Remove",
+      "deleteSuccess": "Passkey removed.",
+      "deleteLastError": "You can't remove your last passkey while your account has no password.",
+      "deleteNotFound": "This passkey no longer exists.",
+      "deleteConfirmTitle": "Remove passkey?",
+      "deleteConfirmDescription": "\"{{name}}\" will no longer be able to sign in to your account.",
+      "cancel": "Cancel",
+      "emptyTitle": "No passkeys yet",
+      "emptyDescription": "Add a passkey to sign in faster and without a password.",
+      "emptyDescriptionNoPassword": "Add another passkey so you don't lose access to your account."
     }
   }
 }

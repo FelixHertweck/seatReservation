@@ -17,6 +17,7 @@
     "generate:api": "npm-run-all generate:openapi-file generate:api-client"
   },
   "dependencies": {
+    "@github/webauthn-json": "^2.1.1",
     "@hey-api/openapi-ts": "0.99.0",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "^1.1.15",

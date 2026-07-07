@@ -16,6 +16,7 @@ import type { UserProfileUpdateDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { useProfileUnsavedChanges } from "@/hooks/use-profile-unsaved-changes";
 import { useRouter, useParams } from "next/navigation";
+import { PasskeySection } from "@/components/profile/passkey-section";
 
 interface FormData {
   firstname: string;
@@ -322,6 +323,8 @@ export default function ProfilePage() {
                 </div>
               )}
             </div>
+
+            <PasskeySection />
 
             <div>
               <Label htmlFor="tags" className="pb-2">
