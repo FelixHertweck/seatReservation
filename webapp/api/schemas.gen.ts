@@ -1105,3 +1105,63 @@ export const VerifyEmailCodeRequestDtoSchema = {
         }
     }
 } as const;
+
+export const WebAuthnCredentialDTOSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            type: 'integer',
+            format: 'int64'
+        },
+        label: {
+            type: 'string'
+        },
+        createdAt: {
+            $ref: '#/components/schemas/Instant'
+        },
+        lastUsedAt: {
+            $ref: '#/components/schemas/Instant'
+        }
+    }
+} as const;
+
+export const WebAuthnRegistrationStartDTOSchema = {
+    type: 'object',
+    required: [
+        'username'
+    ],
+    properties: {
+        username: {
+            type: 'string',
+            pattern: '^[a-zA-Z0-9._-]{3,64}$'
+        },
+        firstname: {
+            type: 'string'
+        },
+        lastname: {
+            type: 'string'
+        },
+        email: {
+            type: 'string'
+        },
+        password: {
+            type: 'string',
+            minLength: 8
+        },
+        displayName: {
+            type: 'string'
+        }
+    }
+} as const;
+
+export const WebAuthnStatusDTOSchema = {
+    type: 'object',
+    properties: {
+        hasPasskey: {
+            type: 'boolean'
+        },
+        hasPassword: {
+            type: 'boolean'
+        }
+    }
+} as const;
