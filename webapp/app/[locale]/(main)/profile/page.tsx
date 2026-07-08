@@ -119,6 +119,24 @@ export default function ProfilePage() {
     ? isPasswordValid && doPasswordsMatch
     : true;
 
+  const handlePasswordUpdate = async () => {
+    if (!isPasswordValid || !doPasswordsMatch) {
+      toast.error(t("profilePage.passwordValidationErrorTitle"), {
+        description: t("profilePage.passwordValidationErrorDescription"),
+      });
+      return;
+    }
+
+    await updateProfile({
+      ...originalFormData,
+      password: newPassword,
+    });
+
+    setNewPassword("");
+    setConfirmPassword("");
+    setShowPasswordSection(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -320,6 +338,14 @@ export default function ProfilePage() {
                       </p>
                     )}
                   </div>
+                  <Button
+                    type="button"
+                    className="w-full"
+                    onClick={handlePasswordUpdate}
+                    disabled={!isPasswordValid || !doPasswordsMatch}
+                  >
+                    {t("profilePage.savePasswordButton")}
+                  </Button>
                 </div>
               )}
             </div>

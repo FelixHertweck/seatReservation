@@ -382,6 +382,7 @@
     "passwordSectionTitle": "Passwort ändern",
     "changePassword": "Passwort ändern",
     "cancelPasswordUpdate": "Abbrechen",
+    "savePasswordButton": "Passwort speichern",
     "newPasswordLabel": "Neues Passwort",
     "newPasswordPlaceholder": "Geben Sie Ihr neues Passwort ein",
     "confirmPasswordLabel": "Passwort bestätigen",
