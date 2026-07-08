@@ -1,20 +1,12 @@
 "use client";
 
-import {
-  create,
-  get,
-  supported,
-  type CredentialCreationOptionsJSON,
-  type CredentialRequestOptionsJSON,
-} from "@github/webauthn-json";
-
 /**
  * Thin wrapper around the browser WebAuthn API for our passkey flows.
  *
  * The backend ceremony endpoints speak the standard WebAuthn JSON convention
- * (base64url-encoded fields). `@github/webauthn-json` handles the
- * ArrayBuffer <-> base64url conversion in exactly that format, so here we only
- * deal with the JSON strings that our SDK returns / expects:
+ * (base64url-encoded fields). `PublicKeyCredential`'s native JSON methods
+ * handle the ArrayBuffer <-> base64url conversion in exactly that format, so
+ * here we only deal with the JSON strings that our SDK returns / expects:
  *  - the "options" endpoints return the creation/request options as a JSON string
  *  - the finish endpoints (register, register-new, login) take the
  *    resulting credential as a raw JSON string
@@ -30,7 +22,10 @@ export class PasskeyCeremonyCancelledError extends Error {
 
 /** True when the current browser exposes the WebAuthn platform API. */
 export function isPasskeySupported(): boolean {
-  return typeof globalThis.window !== "undefined" && supported();
+  return (
+    typeof globalThis.window !== "undefined" &&
+    !!globalThis.PublicKeyCredential?.parseCreationOptionsFromJSON
+  );
 }
 
 function isCancellation(error: unknown): boolean {
@@ -56,11 +51,15 @@ function parseOptions<T>(options: unknown): T {
  * @returns the credential as a JSON string ready to POST to the finish endpoint
  */
 export async function createCredential(options: unknown): Promise<string> {
+  const optionsJSON =
+    parseOptions<PublicKeyCredentialCreationOptionsJSON>(options);
   const publicKey =
-    parseOptions<CredentialCreationOptionsJSON["publicKey"]>(options);
+    PublicKeyCredential.parseCreationOptionsFromJSON(optionsJSON);
   try {
-    const credential = await create({ publicKey });
-    return JSON.stringify(credential);
+    const credential = (await navigator.credentials.create({
+      publicKey,
+    })) as PublicKeyCredential;
+    return JSON.stringify(credential.toJSON());
   } catch (error) {
     if (isCancellation(error)) {
       throw new PasskeyCeremonyCancelledError();
@@ -76,11 +75,15 @@ export async function createCredential(options: unknown): Promise<string> {
  * @returns the assertion as a JSON string ready to POST to the login endpoint
  */
 export async function getAssertion(options: unknown): Promise<string> {
+  const optionsJSON =
+    parseOptions<PublicKeyCredentialRequestOptionsJSON>(options);
   const publicKey =
-    parseOptions<CredentialRequestOptionsJSON["publicKey"]>(options);
+    PublicKeyCredential.parseRequestOptionsFromJSON(optionsJSON);
   try {
-    const assertion = await get({ publicKey });
-    return JSON.stringify(assertion);
+    const assertion = (await navigator.credentials.get({
+      publicKey,
+    })) as PublicKeyCredential;
+    return JSON.stringify(assertion.toJSON());
   } catch (error) {
     if (isCancellation(error)) {
       throw new PasskeyCeremonyCancelledError();
