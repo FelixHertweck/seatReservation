@@ -248,6 +248,36 @@ public class TokenService {
     }
 
     /**
+     * Issues a fresh JWT and refresh token for the given user, bundled as the three auth cookies
+     * (access token, refresh token, refresh token expiration). Used by every login/registration
+     * flow (password, passkey, ...) so that the cookie contract stays identical regardless of how
+     * the user authenticated. Building the actual HTTP {@code Response} is left to the caller,
+     * since that is a REST-resource concern rather than a token-service one.
+     *
+     * @param user the user to issue tokens for
+     * @return the jwt, refreshToken and refreshToken_expiration cookies to attach to the response
+     */
+    public AuthCookies issueAuthCookies(User user) throws JwtInvalidException {
+        String accessToken = generateToken(user);
+        NewCookie jwtAccessCookie = createNewJwtCookie(accessToken, "jwt");
+
+        String refreshToken = generateRefreshToken(user);
+        NewCookie refreshTokenCookie = createNewRefreshTokenCookie(refreshToken, "refreshToken");
+
+        NewCookie refreshTokenExpirationCookie =
+                createStatusCookie(refreshToken, "refreshToken_expiration");
+
+        return new AuthCookies(jwtAccessCookie, refreshTokenCookie, refreshTokenExpirationCookie);
+    }
+
+    /**
+     * The three cookies that make up an authenticated session, as issued by {@link
+     * #issueAuthCookies}.
+     */
+    public record AuthCookies(
+            NewCookie jwt, NewCookie refreshToken, NewCookie refreshTokenExpiration) {}
+
+    /**
      * Extracts the expiration time from the given JWT token.
      *
      * @param token the JWT token

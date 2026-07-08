@@ -37,7 +37,6 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -218,7 +217,7 @@ public class WebAuthnResource {
                 webAuthnService.createUserWithCredential(
                         registration, record, defaultDeviceLabel(userAgent));
         LOG.infof("Passkey account created and logged in: user ID %d", user.id);
-        return buildAuthCookieResponse(user);
+        return authCookieResponse(user);
     }
 
     /**
@@ -275,7 +274,7 @@ public class WebAuthnResource {
         }
         webAuthnService.recordSuccessfulLogin(user);
         LOG.infof("User ID: %d logged in successfully via passkey.", user.id);
-        return buildAuthCookieResponse(user);
+        return authCookieResponse(user);
     }
 
     /**
@@ -361,6 +360,19 @@ public class WebAuthnResource {
     }
 
     /**
+     * Issues fresh auth cookies for the given user and wraps them in the standard 200 response, so
+     * that passkey logins get the exact same cookie contract as password logins.
+     */
+    private Response authCookieResponse(User user) throws JwtInvalidException {
+        TokenService.AuthCookies cookies = tokenService.issueAuthCookies(user);
+        return Response.ok()
+                .cookie(cookies.jwt())
+                .cookie(cookies.refreshToken())
+                .cookie(cookies.refreshTokenExpiration())
+                .build();
+    }
+
+    /**
      * Parses a raw WebAuthn JSON payload using a plain mapper so that the machine-generated
      * base64url ceremony data is preserved verbatim (the application-wide ObjectMapper would
      * XSS-escape it).
@@ -374,24 +386,6 @@ public class WebAuthnResource {
         } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
             throw new IllegalArgumentException("Invalid JSON body", e);
         }
-    }
-
-    private Response buildAuthCookieResponse(User user) throws JwtInvalidException {
-        String accessToken = tokenService.generateToken(user);
-        NewCookie jwtAccessCookie = tokenService.createNewJwtCookie(accessToken, "jwt");
-
-        String refreshToken = tokenService.generateRefreshToken(user);
-        NewCookie refreshTokenCookie =
-                tokenService.createNewRefreshTokenCookie(refreshToken, "refreshToken");
-
-        NewCookie refreshTokenExpirationCookie =
-                tokenService.createStatusCookie(refreshToken, "refreshToken_expiration");
-
-        return Response.ok()
-                .cookie(jwtAccessCookie)
-                .cookie(refreshTokenCookie)
-                .cookie(refreshTokenExpirationCookie)
-                .build();
     }
 
     /**

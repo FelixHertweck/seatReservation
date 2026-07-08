@@ -100,24 +100,10 @@ public class AuthResource {
         User user =
                 authService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
 
-        String accessToken = tokenService.generateToken(user);
-        NewCookie jwtAccessCookie = tokenService.createNewJwtCookie(accessToken, "jwt");
-
-        String refreshToken = tokenService.generateRefreshToken(user);
-        NewCookie refreshTokenCookie =
-                tokenService.createNewRefreshTokenCookie(refreshToken, "refreshToken");
-
-        NewCookie refreshTokenExpirationCookie =
-                tokenService.createStatusCookie(refreshToken, "refreshToken_expiration");
-
         LOG.debugf(
                 "user ID: %d logged in successfully. JWT and refresh token cookies set.", user.id);
         LOG.infof("User ID: %d logged in successfully.", user.id);
-        return Response.ok()
-                .cookie(jwtAccessCookie)
-                .cookie(refreshTokenCookie)
-                .cookie(refreshTokenExpirationCookie)
-                .build();
+        return authCookieResponse(user);
     }
 
     /**
@@ -141,24 +127,10 @@ public class AuthResource {
 
         User user = authService.register(registerRequest);
 
-        String accessToken = tokenService.generateToken(user);
-        NewCookie jwtAccessCookie = tokenService.createNewJwtCookie(accessToken, "jwt");
-
-        String refreshToken = tokenService.generateRefreshToken(user);
-        NewCookie refreshTokenCookie =
-                tokenService.createNewRefreshTokenCookie(refreshToken, "refreshToken");
-
-        NewCookie refreshTokenExpirationCookie =
-                tokenService.createStatusCookie(refreshToken, "refreshToken_expiration");
-
         LOG.debugf(
                 "user ID: %d registered successfully. JWT and refresh token cookies set.", user.id);
 
-        return Response.ok()
-                .cookie(jwtAccessCookie)
-                .cookie(refreshTokenCookie)
-                .cookie(refreshTokenExpirationCookie)
-                .build();
+        return authCookieResponse(user);
     }
 
     /**
@@ -258,24 +230,25 @@ public class AuthResource {
 
         User user = tokenService.validateRefreshToken(refreshToken);
 
-        String newAccessToken = tokenService.generateToken(user);
-        NewCookie jwtAccessCookie = tokenService.createNewJwtCookie(newAccessToken, "jwt");
-
-        String newRefreshToken = tokenService.generateRefreshToken(user);
-        NewCookie refreshTokenCookie =
-                tokenService.createNewRefreshTokenCookie(newRefreshToken, "refreshToken");
-
-        NewCookie refreshTokenExpirationCookie =
-                tokenService.createStatusCookie(newRefreshToken, "refreshToken_expiration");
-
         LOG.debugf(
                 "Token refreshed successfully for user ID: %d. New JWT and refresh token cookies"
                         + " set.",
                 user.id);
+        return authCookieResponse(user);
+    }
+
+    /**
+     * Issues fresh auth cookies for the given user and wraps them in the standard 200 response.
+     *
+     * @param user the user to issue tokens for
+     * @return a 200 Response with the jwt, refreshToken and refreshToken_expiration cookies set
+     */
+    private Response authCookieResponse(User user) throws JwtInvalidException {
+        TokenService.AuthCookies cookies = tokenService.issueAuthCookies(user);
         return Response.ok()
-                .cookie(jwtAccessCookie)
-                .cookie(refreshTokenCookie)
-                .cookie(refreshTokenExpirationCookie)
+                .cookie(cookies.jwt())
+                .cookie(cookies.refreshToken())
+                .cookie(cookies.refreshTokenExpiration())
                 .build();
     }
 }

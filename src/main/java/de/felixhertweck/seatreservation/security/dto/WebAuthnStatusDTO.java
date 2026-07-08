@@ -26,31 +26,4 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
  * whether to prompt the user to create a passkey.
  */
 @RegisterForReflection
-public class WebAuthnStatusDTO {
-
-    private boolean hasPasskey;
-    private boolean hasPassword;
-
-    public WebAuthnStatusDTO() {}
-
-    public WebAuthnStatusDTO(boolean hasPasskey, boolean hasPassword) {
-        this.hasPasskey = hasPasskey;
-        this.hasPassword = hasPassword;
-    }
-
-    public boolean isHasPasskey() {
-        return hasPasskey;
-    }
-
-    public void setHasPasskey(boolean hasPasskey) {
-        this.hasPasskey = hasPasskey;
-    }
-
-    public boolean isHasPassword() {
-        return hasPassword;
-    }
-
-    public void setHasPassword(boolean hasPassword) {
-        this.hasPassword = hasPassword;
-    }
-}
+public record WebAuthnStatusDTO(boolean hasPasskey, boolean hasPassword) {}

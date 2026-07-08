@@ -26,51 +26,13 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 
 /** Management view of a registered passkey. Never exposes the public key or credential id. */
 @RegisterForReflection
-public class WebAuthnCredentialDTO {
-
-    private Long id;
-    private String label;
-    private Instant createdAt;
-    private Instant lastUsedAt;
-
-    public WebAuthnCredentialDTO() {}
+public record WebAuthnCredentialDTO(Long id, String label, Instant createdAt, Instant lastUsedAt) {
 
     public WebAuthnCredentialDTO(WebAuthnCredential credential) {
-        this.id = credential.id;
-        this.label = credential.getLabel();
-        this.createdAt = credential.getCreatedAt();
-        this.lastUsedAt = credential.getLastUsedAt();
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getLabel() {
-        return label;
-    }
-
-    public void setLabel(String label) {
-        this.label = label;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Instant getLastUsedAt() {
-        return lastUsedAt;
-    }
-
-    public void setLastUsedAt(Instant lastUsedAt) {
-        this.lastUsedAt = lastUsedAt;
+        this(
+                credential.id,
+                credential.getLabel(),
+                credential.getCreatedAt(),
+                credential.getLastUsedAt());
     }
 }
