@@ -5,7 +5,14 @@ import { Check, KeyRound, Pencil, Plus, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -103,7 +110,7 @@ export function PasskeySection() {
 
   const hasPasskey = (credentials?.length ?? 0) > 0;
 
-  const credentialList = hasPasskey ? (
+  const credentialList = (
     <ul className="space-y-2">
       {credentials?.map((credential) => {
         const isEditing =
@@ -201,51 +208,68 @@ export function PasskeySection() {
         );
       })}
     </ul>
-  ) : (
-    <div className="rounded-lg border border-dashed bg-muted/30 p-4 text-center">
-      <KeyRound className="mx-auto mb-2 h-6 w-6 text-muted-foreground" />
-      <p className="text-sm font-medium">{t("webauthn.manage.emptyTitle")}</p>
-      <p className="mt-1 text-sm text-muted-foreground">
-        {status?.hasPassword === false
-          ? t("webauthn.manage.emptyDescriptionNoPassword")
-          : t("webauthn.manage.emptyDescription")}
-      </p>
-    </div>
   );
+
+  const isExpandable = !isCredentialsLoading && hasPasskey;
 
   return (
     <div className="border-t pt-4">
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <Label className="text-base font-medium">
-            {t("webauthn.manage.title")}
-          </Label>
-          <p className="text-sm text-muted-foreground">
-            {t("webauthn.manage.description")}
-          </p>
-        </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={handleAdd}
-          disabled={isAdding}
-        >
-          <Plus className="mr-1 h-4 w-4" />
-          {isAdding
-            ? t("webauthn.manage.adding")
-            : t("webauthn.manage.addButton")}
-        </Button>
-      </div>
+      <Accordion type="single" collapsible>
+        <AccordionItem value="passkeys" className="border-none">
+          <div className="flex items-center gap-2">
+            <AccordionTrigger
+              className="flex-1 py-0 hover:no-underline disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:no-underline"
+              disabled={!isExpandable}
+            >
+              <div className="flex flex-col items-start gap-0.5 text-left">
+                <span className="flex items-center gap-2 text-base font-medium">
+                  {t("webauthn.manage.title")}
+                  {isCredentialsLoading ? (
+                    <Skeleton className="h-5 w-6 rounded-full" />
+                  ) : (
+                    hasPasskey && (
+                      <Badge variant="secondary">{credentials?.length}</Badge>
+                    )
+                  )}
+                </span>
+                <span className="text-sm font-normal text-muted-foreground">
+                  {!isCredentialsLoading && !hasPasskey
+                    ? status?.hasPassword === false
+                      ? t("webauthn.manage.emptyDescriptionNoPassword")
+                      : t("webauthn.manage.emptyDescription")
+                    : t("webauthn.manage.description")}
+                </span>
+              </div>
+            </AccordionTrigger>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="shrink-0"
+              onClick={handleAdd}
+              disabled={isAdding}
+            >
+              <Plus className="mr-1 h-4 w-4" />
+              {isAdding
+                ? t("webauthn.manage.adding")
+                : t("webauthn.manage.addButton")}
+            </Button>
+          </div>
 
-      {isCredentialsLoading ? (
-        <div className="space-y-2">
-          <Skeleton className="h-14 w-full" />
-          <Skeleton className="h-14 w-full" />
-        </div>
-      ) : (
-        credentialList
-      )}
+          <AccordionContent>
+            <div className="max-h-32 space-y-2 overflow-y-auto pt-2 pr-1">
+              {isCredentialsLoading ? (
+                <>
+                  <Skeleton className="h-14 w-full" />
+                  <Skeleton className="h-14 w-full" />
+                </>
+              ) : (
+                credentialList
+              )}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
 
       <AlertDialog
         open={pendingDelete !== null}

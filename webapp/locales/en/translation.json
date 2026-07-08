@@ -1200,7 +1200,6 @@
       "deleteConfirmTitle": "Remove passkey?",
       "deleteConfirmDescription": "\"{{name}}\" will no longer be able to sign in to your account.",
       "cancel": "Cancel",
-      "emptyTitle": "No passkeys yet",
       "emptyDescription": "Add a passkey to sign in faster and without a password.",
       "emptyDescriptionNoPassword": "Add another passkey so you don't lose access to your account.",
       "renameButton": "Rename",

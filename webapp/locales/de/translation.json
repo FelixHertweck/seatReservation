@@ -1200,7 +1200,6 @@
       "deleteConfirmTitle": "Passkey entfernen?",
       "deleteConfirmDescription": "„{{name}}“ kann sich dann nicht mehr in deinem Konto anmelden.",
       "cancel": "Abbrechen",
-      "emptyTitle": "Noch keine Passkeys",
       "emptyDescription": "Füge einen Passkey hinzu, um dich schneller und ohne Passwort anzumelden.",
       "emptyDescriptionNoPassword": "Füge einen weiteren Passkey hinzu, damit du den Zugriff auf dein Konto nicht verlierst.",
       "renameButton": "Umbenennen",
