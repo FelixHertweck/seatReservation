@@ -1006,27 +1006,23 @@
       },
       "WebAuthnRegistrationStartDTO" : {
         "type" : "object",
-        "required" : [ "username" ],
+        "required" : [ "username", "firstname", "lastname", "email" ],
         "properties" : {
           "username" : {
             "type" : "string",
             "pattern" : "^[a-zA-Z0-9._-]{3,64}$"
           },
           "firstname" : {
-            "type" : "string"
+            "type" : "string",
+            "pattern" : "\\S"
           },
           "lastname" : {
-            "type" : "string"
+            "type" : "string",
+            "pattern" : "\\S"
           },
           "email" : {
-            "type" : "string"
-          },
-          "password" : {
             "type" : "string",
-            "minLength" : 8
-          },
-          "displayName" : {
-            "type" : "string"
+            "pattern" : "\\S"
           }
         }
       },

@@ -59,12 +59,18 @@ class WebAuthnFlowTest {
         WebAuthnHardware authenticator = new WebAuthnHardware(url);
         String username = "passkey_lifecycle";
         CookieFilter registrationCookies = new CookieFilter();
+        JsonObject registrationDetails =
+                new JsonObject()
+                        .put("username", username)
+                        .put("firstname", "Ada")
+                        .put("lastname", "Lovelace")
+                        .put("email", username + "@example.com");
 
         // 1. Obtain creation options for a brand-new passkey-only account.
         String registerOptions =
                 given().filter(registrationCookies)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .body(new JsonObject().put("username", username).encode())
+                        .body(registrationDetails.encode())
                         .when()
                         .post("/api/auth/webauthn/register-new/options")
                         .then()
@@ -77,7 +83,7 @@ class WebAuthnFlowTest {
         // 2. Complete registration: creates the account and logs in (JWT cookie set).
         JsonObject registerBody =
                 new JsonObject()
-                        .put("registration", new JsonObject().put("username", username))
+                        .put("registration", registrationDetails)
                         .put("credential", attestation);
         given().filter(registrationCookies)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -187,7 +193,13 @@ class WebAuthnFlowTest {
     void registerNewOptions_duplicateUsername_conflict() {
         // 'admin' is seeded in import-test.sql.
         given().contentType(MediaType.APPLICATION_JSON)
-                .body(new JsonObject().put("username", "admin").encode())
+                .body(
+                        new JsonObject()
+                                .put("username", "admin")
+                                .put("firstname", "Ada")
+                                .put("lastname", "Lovelace")
+                                .put("email", "admin-duplicate@example.com")
+                                .encode())
                 .when()
                 .post("/api/auth/webauthn/register-new/options")
                 .then()

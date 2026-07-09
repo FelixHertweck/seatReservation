@@ -19,72 +19,19 @@
  */
 package de.felixhertweck.seatreservation.security.dto;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
-public class RegisterRequestDTO {
-
-    @NotBlank(message = "Username must not be blank")
-    @Pattern(
-            regexp = "^[a-zA-Z0-9._-]{3,64}$",
-            message =
-                    "Username must be 3-32 characters long and contain only letters, numbers, dots,"
-                            + " underscores and hyphens")
-    private String username;
-
-    @NotBlank(message = "Firstname must not be blank")
-    private String firstname;
-
-    @NotBlank(message = "Lastname must not be blank")
-    private String lastname;
-
-    @NotBlank(message = "Email must not be blank")
-    @NoHtmlSanitize
-    @Email(message = "Invalid email format")
-    private String email;
+public class RegisterRequestDTO extends RegistrationDetailsDTO {
 
     @NotBlank(message = "Password must not be blank")
     @Size(min = 8, message = "Password must be at least 8 characters long")
     @NoHtmlSanitize
     private String password;
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getFirstname() {
-        return firstname;
-    }
-
-    public void setFirstname(String firstname) {
-        this.firstname = firstname;
-    }
-
-    public String getLastname() {
-        return lastname;
-    }
-
-    public void setLastname(String lastname) {
-        this.lastname = lastname;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
 
     public String getPassword() {
         return password;
@@ -98,16 +45,16 @@ public class RegisterRequestDTO {
     public String toString() {
         return "RegisterRequestDTO{"
                 + "username='"
-                + username
+                + getUsername()
                 + '\''
                 + ", firstname='"
-                + firstname
+                + getFirstname()
                 + '\''
                 + ", lastname='"
-                + lastname
+                + getLastname()
                 + '\''
                 + ", email='"
-                + email
+                + getEmail()
                 + '\''
                 + '}';
     }

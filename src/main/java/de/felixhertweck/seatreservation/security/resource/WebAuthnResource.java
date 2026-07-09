@@ -143,7 +143,7 @@ public class WebAuthnResource {
      * Returns creation options for registering a brand-new passkey-only account. Fails early if
      * registration is disabled or the username is taken.
      *
-     * @param registration the desired account details (username required)
+     * @param registration the desired account details (username, name and email required)
      * @return the WebAuthn {@code PublicKeyCredentialCreationOptions} as JSON
      */
     @POST
@@ -170,7 +170,7 @@ public class WebAuthnResource {
     }
 
     /**
-     * Verifies a new passkey, creates the account (password optional), and logs the user in.
+     * Verifies a new passkey, creates the account (no password), and logs the user in.
      *
      * @param body the account details plus the browser's attestation response
      * @param userAgent the caller's User-Agent, used to derive a sensible default passkey name

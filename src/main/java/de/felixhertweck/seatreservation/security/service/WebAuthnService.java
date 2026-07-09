@@ -154,9 +154,10 @@ public class WebAuthnService {
 
     /**
      * Creates a brand-new account from a passkey registration and persists its first credential,
-     * all in a single transaction. A password is optional.
+     * all in a single transaction. The passkey is the account's only credential; no password is
+     * set.
      *
-     * @param registration the account details (username required, password optional)
+     * @param registration the account details (username, name and email required)
      * @param record the verified credential produced by the WebAuthn ceremony
      * @param label an optional user-facing name for the passkey (a sensible default)
      * @return the newly created user
@@ -171,19 +172,16 @@ public class WebAuthnService {
             throw new RegistrationDisabledException("User registration is currently disabled");
         }
 
-        boolean hasEmail = registration.getEmail() != null && !registration.getEmail().isBlank();
-
         UserCreationDTO userCreationDTO =
                 new UserCreationDTO(
                         registration.getUsername(),
-                        hasEmail ? registration.getEmail() : null,
-                        registration.getPassword(),
+                        registration.getEmail(),
+                        null,
                         registration.getFirstname(),
                         registration.getLastname(),
                         Set.of());
 
-        // sendEmailVerification only makes sense when an email address was supplied.
-        userService.createUser(userCreationDTO, Set.of(Roles.USER), hasEmail, true);
+        userService.createUser(userCreationDTO, Set.of(Roles.USER), true, true);
 
         User user = userRepository.findByUsername(registration.getUsername());
         if (user == null) {

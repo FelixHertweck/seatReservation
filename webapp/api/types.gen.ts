@@ -339,11 +339,9 @@ export type WebAuthnCredentialUpdateDto = {
 
 export type WebAuthnRegistrationStartDto = {
     username: string;
-    firstname?: string;
-    lastname?: string;
-    email?: string;
-    password?: string;
-    displayName?: string;
+    firstname: string;
+    lastname: string;
+    email: string;
 };
 
 export type WebAuthnStatusDto = {

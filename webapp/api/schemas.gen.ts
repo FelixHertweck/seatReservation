@@ -1142,7 +1142,10 @@ export const WebAuthnCredentialUpdateDTOSchema = {
 export const WebAuthnRegistrationStartDTOSchema = {
     type: 'object',
     required: [
-        'username'
+        'username',
+        'firstname',
+        'lastname',
+        'email'
     ],
     properties: {
         username: {
@@ -1150,20 +1153,16 @@ export const WebAuthnRegistrationStartDTOSchema = {
             pattern: '^[a-zA-Z0-9._-]{3,64}$'
         },
         firstname: {
-            type: 'string'
+            type: 'string',
+            pattern: '\\S'
         },
         lastname: {
-            type: 'string'
+            type: 'string',
+            pattern: '\\S'
         },
         email: {
-            type: 'string'
-        },
-        password: {
             type: 'string',
-            minLength: 8
-        },
-        displayName: {
-            type: 'string'
+            pattern: '\\S'
         }
     }
 } as const;
