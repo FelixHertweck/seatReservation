@@ -124,6 +124,7 @@ export default function LoginPage() {
     try {
       setCurrentlyLoggingIn(true);
       await loginWithPasskey(username.trim(), searchParams.get("returnTo"));
+      setCurrentlyLoggingIn(false);
     } catch {
       // Errors are surfaced via toast inside the hook; keep the form usable.
       setCurrentlyLoggingIn(false);

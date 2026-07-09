@@ -107,7 +107,8 @@ export function useWebAuthn() {
 
   /**
    * Creates a brand-new, passkey-only account and logs in. Password is not
-   * required; the backend accepts optional profile fields.
+   * required, but the backend still requires username, firstname, lastname,
+   * and email.
    */
   const registerNewWithPasskey = async (
     registration: WebAuthnRegistrationStartDto,

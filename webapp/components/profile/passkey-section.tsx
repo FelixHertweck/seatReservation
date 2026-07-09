@@ -112,12 +112,12 @@ export function PasskeySection() {
 
   const credentialList = (
     <ul className="space-y-2">
-      {credentials?.map((credential) => {
+      {credentials?.map((credential, index) => {
         const isEditing =
           credential.id !== undefined && editingId === credential.id;
         return (
           <li
-            key={String(credential.id)}
+            key={credential.id !== undefined ? String(credential.id) : index}
             className="flex items-center justify-between rounded-lg border bg-muted/30 p-3"
           >
             <div className="flex flex-1 items-center gap-3">
