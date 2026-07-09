@@ -24,7 +24,8 @@ export class PasskeyCeremonyCancelledError extends Error {
 export function isPasskeySupported(): boolean {
   return (
     typeof globalThis.window !== "undefined" &&
-    !!globalThis.PublicKeyCredential?.parseCreationOptionsFromJSON
+    !!globalThis.PublicKeyCredential?.parseCreationOptionsFromJSON &&
+    !!globalThis.PublicKeyCredential?.parseRequestOptionsFromJSON
   );
 }
 

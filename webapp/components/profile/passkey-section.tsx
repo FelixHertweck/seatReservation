@@ -36,7 +36,8 @@ export function PasskeySection() {
   const t = useT();
   const { isSupported, addPasskey, deleteCredential, renameCredential } =
     useWebAuthn();
-  const { status, credentials, isCredentialsLoading } = useWebAuthnStatus();
+  const { status, credentials, isCredentialsLoading } =
+    useWebAuthnStatus(isSupported);
 
   const [isAdding, setIsAdding] = useState(false);
   const [pendingDelete, setPendingDelete] =

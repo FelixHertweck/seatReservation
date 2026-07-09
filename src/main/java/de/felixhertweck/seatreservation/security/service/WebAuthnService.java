@@ -107,6 +107,9 @@ public class WebAuthnService {
      */
     @Transactional
     public boolean deleteCredential(User user, Long credentialId) {
+        if (!webAuthnCredentialRepository.existsByIdAndUser(credentialId, user)) {
+            return false;
+        }
         boolean hasPassword = user.getPasswordHash() != null;
         if (!hasPassword && webAuthnCredentialRepository.countByUser(user) <= 1) {
             throw new LastCredentialException(

@@ -208,10 +208,14 @@ export function useWebAuthn() {
   };
 }
 
-/** Status + credential list for the signed-in user's passkey management UI. */
-export function useWebAuthnStatus() {
+/**
+ * Status + credential list for the signed-in user's passkey management UI.
+ * @param enabled set to false to skip both queries, e.g. when the browser doesn't support passkeys
+ */
+export function useWebAuthnStatus(enabled = true) {
   const { data: status, isLoading: isStatusLoading } = useQuery({
     ...getApiAuthWebauthnStatusOptions(),
+    enabled,
   });
 
   const {
@@ -220,6 +224,7 @@ export function useWebAuthnStatus() {
     isSuccess: isCredentialsSuccess,
   } = useQuery({
     ...getApiAuthWebauthnCredentialsOptions(),
+    enabled,
   });
 
   return {

@@ -69,4 +69,15 @@ public class WebAuthnCredentialRepository implements PanacheRepository<WebAuthnC
     public boolean deleteWithIdAndUser(Long id, User user) {
         return delete("id = ?1 and user = ?2", id, user) > 0;
     }
+
+    /**
+     * Check whether a WebAuthn credential with the given ID belongs to the given user.
+     *
+     * @param id the ID of the credential to check
+     * @param user the user who should own the credential
+     * @return true if such a credential exists
+     */
+    public boolean existsByIdAndUser(Long id, User user) {
+        return count("id = ?1 and user = ?2", id, user) > 0;
+    }
 }

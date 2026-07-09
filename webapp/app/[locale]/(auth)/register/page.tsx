@@ -45,8 +45,9 @@ export default function RegisterPage() {
   const isPasswordTooShort =
     formData.password.length > 0 && formData.password.length < 8;
 
-  // No password entered => create a passkey-only account instead.
-  const usePasskey = formData.password.length === 0;
+  // No password entered => create a passkey-only account instead (only
+  // possible when the browser actually supports passkeys).
+  const usePasskey = formData.password.length === 0 && isPasskeySupported;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

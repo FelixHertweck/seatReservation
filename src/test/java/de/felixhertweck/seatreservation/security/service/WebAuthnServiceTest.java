@@ -145,6 +145,15 @@ class WebAuthnServiceTest {
 
     @Test
     @TestTransaction
+    void deleteCredential_unknownIdOnPasskeyOnlyAccount_returnsFalseInsteadOfThrowing() {
+        User user = persistUser("service_delete_unknown_passkeyonly", null);
+        persistCredential(user); // account's only credential, but not the one being deleted
+
+        assertFalse(webAuthnService.deleteCredential(user, -1L));
+    }
+
+    @Test
+    @TestTransaction
     void deleteCredential_lastCredentialWithoutPassword_throws() {
         User user = persistUser("service_delete_last_nopw", null);
         WebAuthnCredential credential = persistCredential(user);
