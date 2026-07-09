@@ -68,7 +68,8 @@
       "description": "Beim Anmelden ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
       "accountLocked": "Konto gesperrt bis {{time}} ({{duration}})",
       "tooManyAttemptsDescription": "Zu viele fehlgeschlagene Anmeldeversuche. Ihr Konto wurde vorübergehend gesperrt."
-    }
+    },
+    "or": "oder"
   },
   "register": {
     "success": {
@@ -98,7 +99,10 @@
     "registrationDisabled": {
       "title": "Registrierung deaktiviert",
       "description": "Eine Registrierung ist derzeit nicht verfügbar."
-    }
+    },
+    "passwordOptional": "(optional)",
+    "passkeyHint": "Leer lassen, um sich stattdessen mit einem Passkey zu registrieren.",
+    "createAccountWithPasskey": "Mit Passkey registrieren"
   },
   "mainLayout": {
     "eventManagementTitle": "Event-Verwaltung"
@@ -378,6 +382,7 @@
     "passwordSectionTitle": "Passwort ändern",
     "changePassword": "Passwort ändern",
     "cancelPasswordUpdate": "Abbrechen",
+    "savePasswordButton": "Passwort speichern",
     "newPasswordLabel": "Neues Passwort",
     "newPasswordPlaceholder": "Geben Sie Ihr neues Passwort ein",
     "confirmPasswordLabel": "Passwort bestätigen",
@@ -1162,6 +1167,45 @@
       "error": {
         "title": "Profilaktualisierung fehlgeschlagen"
       }
+    }
+  },
+  "webauthn": {
+    "login": {
+      "button": "Mit Passkey anmelden",
+      "signingIn": "Warte auf Passkey…",
+      "success": "Mit deinem Passkey angemeldet."
+    },
+    "register": {
+      "success": "Konto mit deinem Passkey erstellt."
+    },
+    "error": {
+      "invalidCredential": "Dieser Passkey konnte nicht überprüft werden. Bitte versuche es erneut.",
+      "registrationDisabled": "Die Registrierung ist derzeit deaktiviert.",
+      "usernameTaken": "Dieser Benutzername ist bereits vergeben.",
+      "generic": "Beim Passkey ist etwas schiefgelaufen. Bitte versuche es erneut."
+    },
+    "manage": {
+      "title": "Passkeys",
+      "description": "Melde dich ohne Passwort mit einem Passkey auf diesem Gerät an.",
+      "unsupported": "Dein Browser unterstützt keine Passkeys.",
+      "addButton": "Passkey hinzufügen",
+      "adding": "Warte auf Passkey…",
+      "addSuccess": "Passkey hinzugefügt.",
+      "unnamedPasskey": "Passkey",
+      "createdOn": "Hinzugefügt am {{date}}",
+      "lastUsed": "zuletzt verwendet {{date}}",
+      "deleteButton": "Entfernen",
+      "deleteSuccess": "Passkey entfernt.",
+      "deleteLastError": "Du kannst deinen letzten Passkey nicht entfernen, solange dein Konto kein Passwort hat.",
+      "deleteNotFound": "Dieser Passkey existiert nicht mehr.",
+      "deleteConfirmTitle": "Passkey entfernen?",
+      "deleteConfirmDescription": "„{{name}}“ kann sich dann nicht mehr in deinem Konto anmelden.",
+      "cancel": "Abbrechen",
+      "emptyDescription": "Füge einen Passkey hinzu, um dich schneller und ohne Passwort anzumelden.",
+      "emptyDescriptionNoPassword": "Füge einen weiteren Passkey hinzu, damit du den Zugriff auf dein Konto nicht verlierst.",
+      "renameButton": "Umbenennen",
+      "saveRename": "Speichern",
+      "renameSuccess": "Passkey umbenannt."
     }
   }
 }

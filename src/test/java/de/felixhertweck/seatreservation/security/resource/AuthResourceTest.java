@@ -92,15 +92,11 @@ public class AuthResourceTest {
         // Mock the authenticate method to return the mock User
         Mockito.when(authService.authenticate(username, password)).thenReturn(mockUser);
 
-        // Mock token generation
-        Mockito.when(tokenService.generateToken(mockUser)).thenReturn(token);
-        Mockito.when(tokenService.generateRefreshToken(mockUser)).thenReturn("refreshToken123");
-
         LoginRequestDTO loginRequest = new LoginRequestDTO();
         loginRequest.setUsername(username);
         loginRequest.setPassword(password);
 
-        // Mock the NewCookie creation
+        // AuthResource delegates all token/cookie issuance to this single TokenService call.
         NewCookie mockedCookie =
                 new NewCookie.Builder("jwt")
                         .value(token)
@@ -109,8 +105,6 @@ public class AuthResourceTest {
                         .httpOnly(true)
                         .secure(true)
                         .build();
-        Mockito.when(tokenService.createNewJwtCookie(token, "jwt")).thenReturn(mockedCookie);
-
         NewCookie mockedRefreshCookie =
                 new NewCookie.Builder("refreshToken")
                         .value("refreshToken123")
@@ -119,9 +113,6 @@ public class AuthResourceTest {
                         .httpOnly(true)
                         .secure(true)
                         .build();
-        Mockito.when(tokenService.createNewRefreshTokenCookie("refreshToken123", "refreshToken"))
-                .thenReturn(mockedRefreshCookie);
-
         NewCookie mockedRefreshTokenExpirationCookie =
                 new NewCookie.Builder("refreshToken_expiration")
                         .value("expirationValue123")
@@ -130,11 +121,12 @@ public class AuthResourceTest {
                         .httpOnly(false)
                         .secure(true)
                         .build();
-        Mockito.when(tokenService.createStatusCookie("refreshToken123", "refreshToken_expiration"))
-                .thenReturn(mockedRefreshTokenExpirationCookie);
-
-        Mockito.when(tokenService.getExpirationMinutes())
-                .thenReturn(60L); // Mock the expirationMinutes for 60 minutes
+        Mockito.when(tokenService.issueAuthCookies(mockUser))
+                .thenReturn(
+                        new TokenService.AuthCookies(
+                                mockedCookie,
+                                mockedRefreshCookie,
+                                mockedRefreshTokenExpirationCookie));
 
         io.restassured.response.Response response =
                 given().contentType(MediaType.APPLICATION_JSON)
@@ -226,43 +218,17 @@ public class AuthResourceTest {
         Mockito.when(authService.register(Mockito.any(RegisterRequestDTO.class)))
                 .thenReturn(mockUser);
 
-        // Mock token generation
-        Mockito.when(tokenService.generateToken(mockUser)).thenReturn("accessToken123");
-        Mockito.when(tokenService.generateRefreshToken(mockUser)).thenReturn("refreshToken123");
-
-        // Mock cookie creation
-        NewCookie mockedAccessCookie =
-                new NewCookie.Builder("jwt")
-                        .value("accessToken123")
-                        .path("/")
-                        .maxAge(60 * 60)
-                        .httpOnly(true)
-                        .secure(true)
-                        .build();
-        Mockito.when(tokenService.createNewJwtCookie("accessToken123", "jwt"))
-                .thenReturn(mockedAccessCookie);
-
-        NewCookie mockedRefreshCookie =
-                new NewCookie.Builder("refreshToken")
-                        .value("refreshToken123")
-                        .path("/")
-                        .maxAge(60 * 60)
-                        .httpOnly(true)
-                        .secure(true)
-                        .build();
-        Mockito.when(tokenService.createNewRefreshTokenCookie("refreshToken123", "refreshToken"))
-                .thenReturn(mockedRefreshCookie);
-
-        NewCookie mockedRefreshTokenExpirationCookie =
-                new NewCookie.Builder("refreshToken_expiration")
-                        .value("expirationValue123")
-                        .path("/")
-                        .maxAge(60 * 60)
-                        .httpOnly(false)
-                        .secure(true)
-                        .build();
-        Mockito.when(tokenService.createStatusCookie("refreshToken123", "refreshToken_expiration"))
-                .thenReturn(mockedRefreshTokenExpirationCookie);
+        // AuthResource delegates all token/cookie issuance to this single TokenService call.
+        Mockito.when(tokenService.issueAuthCookies(mockUser))
+                .thenReturn(
+                        new TokenService.AuthCookies(
+                                new NewCookie.Builder("jwt").value("accessToken123").build(),
+                                new NewCookie.Builder("refreshToken")
+                                        .value("refreshToken123")
+                                        .build(),
+                                new NewCookie.Builder("refreshToken_expiration")
+                                        .value("expirationValue123")
+                                        .build()));
 
         given().contentType(MediaType.APPLICATION_JSON)
                 .body(registerRequest)
@@ -337,10 +303,8 @@ public class AuthResourceTest {
 
         // Mock token service methods
         Mockito.when(tokenService.validateRefreshToken(refreshToken)).thenReturn(testUser);
-        Mockito.when(tokenService.generateToken(testUser)).thenReturn(newJwtToken);
-        Mockito.when(tokenService.generateRefreshToken(testUser)).thenReturn(newRefreshToken);
 
-        // Mock cookie creation
+        // AuthResource delegates all token/cookie issuance to this single TokenService call.
         NewCookie mockedJwtCookie =
                 new NewCookie.Builder("jwt")
                         .value(newJwtToken)
@@ -349,9 +313,6 @@ public class AuthResourceTest {
                         .httpOnly(true)
                         .secure(true)
                         .build();
-        Mockito.when(tokenService.createNewJwtCookie(newJwtToken, "jwt"))
-                .thenReturn(mockedJwtCookie);
-
         NewCookie mockedRefreshCookie =
                 new NewCookie.Builder("refreshToken")
                         .value(newRefreshToken)
@@ -360,9 +321,6 @@ public class AuthResourceTest {
                         .httpOnly(true)
                         .secure(true)
                         .build();
-        Mockito.when(tokenService.createNewRefreshTokenCookie(newRefreshToken, "refreshToken"))
-                .thenReturn(mockedRefreshCookie);
-
         NewCookie mockedExpirationCookie =
                 new NewCookie.Builder("refreshToken_expiration")
                         .value("expirationValue")
@@ -371,8 +329,10 @@ public class AuthResourceTest {
                         .httpOnly(false)
                         .secure(true)
                         .build();
-        Mockito.when(tokenService.createStatusCookie(newRefreshToken, "refreshToken_expiration"))
-                .thenReturn(mockedExpirationCookie);
+        Mockito.when(tokenService.issueAuthCookies(testUser))
+                .thenReturn(
+                        new TokenService.AuthCookies(
+                                mockedJwtCookie, mockedRefreshCookie, mockedExpirationCookie));
 
         io.restassured.response.Response response =
                 given().cookie("refreshToken", refreshToken)

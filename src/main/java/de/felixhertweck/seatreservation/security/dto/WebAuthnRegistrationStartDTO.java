@@ -19,31 +19,18 @@
  */
 package de.felixhertweck.seatreservation.security.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-
-import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
+/**
+ * Account details for creating a brand-new account via a passkey. The passkey is the only
+ * credential created here; a password can be added later from the account's profile settings.
+ */
 @RegisterForReflection
-public class RegisterRequestDTO extends RegistrationDetailsDTO {
-
-    @NotBlank(message = "Password must not be blank")
-    @Size(min = 8, message = "Password must be at least 8 characters long")
-    @NoHtmlSanitize
-    private String password;
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
+public class WebAuthnRegistrationStartDTO extends RegistrationDetailsDTO {
 
     @Override
     public String toString() {
-        return "RegisterRequestDTO{"
+        return "WebAuthnRegistrationStartDTO{"
                 + "username='"
                 + getUsername()
                 + '\''

@@ -326,6 +326,29 @@ export type VerifyEmailCodeRequestDto = {
     verificationCode: string;
 };
 
+export type WebAuthnCredentialDto = {
+    id?: bigint;
+    label?: string;
+    createdAt?: Instant;
+    lastUsedAt?: Instant;
+};
+
+export type WebAuthnCredentialUpdateDto = {
+    label: string;
+};
+
+export type WebAuthnRegistrationStartDto = {
+    username: string;
+    firstname: string;
+    lastname: string;
+    email: string;
+};
+
+export type WebAuthnStatusDto = {
+    hasPasskey?: boolean;
+    hasPassword?: boolean;
+};
+
 export type PostApiAuthLoginData = {
     body: LoginRequestDto;
     path?: never;
@@ -472,6 +495,293 @@ export type GetApiAuthRegistrationStatusResponses = {
 };
 
 export type GetApiAuthRegistrationStatusResponse = GetApiAuthRegistrationStatusResponses[keyof GetApiAuthRegistrationStatusResponses];
+
+export type GetApiAuthWebauthnCredentialsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/auth/webauthn/credentials';
+};
+
+export type GetApiAuthWebauthnCredentialsErrors = {
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type GetApiAuthWebauthnCredentialsResponses = {
+    /**
+     * Passkeys listed
+     */
+    200: Array<WebAuthnCredentialDto>;
+};
+
+export type GetApiAuthWebauthnCredentialsResponse = GetApiAuthWebauthnCredentialsResponses[keyof GetApiAuthWebauthnCredentialsResponses];
+
+export type DeleteApiAuthWebauthnCredentialsByIdData = {
+    body?: never;
+    path: {
+        id: bigint;
+    };
+    query?: never;
+    url: '/api/auth/webauthn/credentials/{id}';
+};
+
+export type DeleteApiAuthWebauthnCredentialsByIdErrors = {
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+    /**
+     * Passkey not found
+     */
+    404: unknown;
+    /**
+     * Cannot delete the last passkey of a password-less account
+     */
+    409: unknown;
+};
+
+export type DeleteApiAuthWebauthnCredentialsByIdResponses = {
+    /**
+     * Passkey deleted
+     */
+    204: void;
+};
+
+export type DeleteApiAuthWebauthnCredentialsByIdResponse = DeleteApiAuthWebauthnCredentialsByIdResponses[keyof DeleteApiAuthWebauthnCredentialsByIdResponses];
+
+export type PutApiAuthWebauthnCredentialsByIdData = {
+    body: WebAuthnCredentialUpdateDto;
+    path: {
+        id: bigint;
+    };
+    query?: never;
+    url: '/api/auth/webauthn/credentials/{id}';
+};
+
+export type PutApiAuthWebauthnCredentialsByIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: unknown;
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+    /**
+     * Passkey not found
+     */
+    404: unknown;
+};
+
+export type PutApiAuthWebauthnCredentialsByIdResponses = {
+    /**
+     * Passkey renamed
+     */
+    200: unknown;
+};
+
+export type PostApiAuthWebauthnLoginData = {
+    body: string;
+    path?: never;
+    query?: never;
+    url: '/api/auth/webauthn/login';
+};
+
+export type PostApiAuthWebauthnLoginErrors = {
+    /**
+     * Invalid assertion
+     */
+    401: unknown;
+};
+
+export type PostApiAuthWebauthnLoginResponses = {
+    /**
+     * Login successful, JWT cookie set
+     */
+    200: unknown;
+};
+
+export type PostApiAuthWebauthnLoginOptionsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        username?: string;
+    };
+    url: '/api/auth/webauthn/login/options';
+};
+
+export type PostApiAuthWebauthnLoginOptionsResponses = {
+    /**
+     * Login options created
+     */
+    200: string;
+};
+
+export type PostApiAuthWebauthnLoginOptionsResponse = PostApiAuthWebauthnLoginOptionsResponses[keyof PostApiAuthWebauthnLoginOptionsResponses];
+
+export type PostApiAuthWebauthnRegisterData = {
+    body: string;
+    headers?: {
+        'User-Agent'?: string;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/auth/webauthn/register';
+};
+
+export type PostApiAuthWebauthnRegisterErrors = {
+    /**
+     * Invalid attestation
+     */
+    400: unknown;
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type PostApiAuthWebauthnRegisterResponses = {
+    /**
+     * Passkey registered
+     */
+    200: unknown;
+};
+
+export type PostApiAuthWebauthnRegisterNewData = {
+    body: string;
+    headers?: {
+        'User-Agent'?: string;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/auth/webauthn/register-new';
+};
+
+export type PostApiAuthWebauthnRegisterNewErrors = {
+    /**
+     * Invalid attestation
+     */
+    400: unknown;
+    /**
+     * Registration is disabled
+     */
+    403: unknown;
+    /**
+     * Username already exists
+     */
+    409: unknown;
+};
+
+export type PostApiAuthWebauthnRegisterNewResponses = {
+    /**
+     * Account created, JWT cookie set
+     */
+    200: unknown;
+};
+
+export type PostApiAuthWebauthnRegisterNewOptionsData = {
+    body: WebAuthnRegistrationStartDto;
+    path?: never;
+    query?: never;
+    url: '/api/auth/webauthn/register-new/options';
+};
+
+export type PostApiAuthWebauthnRegisterNewOptionsErrors = {
+    /**
+     * Bad Request
+     */
+    400: unknown;
+    /**
+     * Registration is disabled
+     */
+    403: unknown;
+    /**
+     * Username already exists
+     */
+    409: unknown;
+};
+
+export type PostApiAuthWebauthnRegisterNewOptionsResponses = {
+    /**
+     * Registration options created
+     */
+    200: string;
+};
+
+export type PostApiAuthWebauthnRegisterNewOptionsResponse = PostApiAuthWebauthnRegisterNewOptionsResponses[keyof PostApiAuthWebauthnRegisterNewOptionsResponses];
+
+export type PostApiAuthWebauthnRegisterOptionsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/auth/webauthn/register/options';
+};
+
+export type PostApiAuthWebauthnRegisterOptionsErrors = {
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type PostApiAuthWebauthnRegisterOptionsResponses = {
+    /**
+     * Registration options created
+     */
+    200: string;
+};
+
+export type PostApiAuthWebauthnRegisterOptionsResponse = PostApiAuthWebauthnRegisterOptionsResponses[keyof PostApiAuthWebauthnRegisterOptionsResponses];
+
+export type GetApiAuthWebauthnStatusData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/auth/webauthn/status';
+};
+
+export type GetApiAuthWebauthnStatusErrors = {
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type GetApiAuthWebauthnStatusResponses = {
+    /**
+     * Status retrieved
+     */
+    200: WebAuthnStatusDto;
+};
+
+export type GetApiAuthWebauthnStatusResponse = GetApiAuthWebauthnStatusResponses[keyof GetApiAuthWebauthnStatusResponses];
 
 export type GetApiEmailSeatmapData = {
     body?: never;

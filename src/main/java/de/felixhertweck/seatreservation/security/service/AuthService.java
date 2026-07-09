@@ -99,6 +99,18 @@ public class AuthService {
             loginAttemptRepository.recordAttempt(username, false);
             throw new AuthenticationFailedException("Failed to authenticate user: " + username);
         }
+        if (user.getPasswordHash() == null) {
+            LOG.warnf(
+                    "Authentication failed for username %s: passkey-only account without password.",
+                    username);
+
+            // Perform password hash comparison with random hash to mitigate timing attacks and
+            // avoid leaking that this account has no password set.
+            BcryptUtil.matches(password, randomPasswordHash);
+
+            loginAttemptRepository.recordAttempt(user, false);
+            throw new AuthenticationFailedException("Failed to authenticate user: " + username);
+        }
         if (passwordMatches(password, user.getPasswordSalt(), user.getPasswordHash())) {
             LOG.infof("User %s authenticated successfully.", user.getUsername());
             loginAttemptRepository.recordAttempt(user, true);
@@ -153,6 +165,10 @@ public class AuthService {
     }
 
     public boolean passwordMatches(String password, String passwordSalt, String storedHash) {
+        // Passkey-only accounts have no stored password hash and can never match.
+        if (storedHash == null) {
+            return false;
+        }
         // Combine the provided password with the stored salt before hashing for comparison
         return BcryptUtil.matches(password + passwordSalt, storedHash);
     }

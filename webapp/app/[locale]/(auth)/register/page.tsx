@@ -19,9 +19,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Info } from "lucide-react";
+import { Info, KeyRound } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import type { RegisterRequestDto } from "@/api";
+import { useWebAuthn } from "@/hooks/use-webauthn";
+import type { RegisterRequestDto, WebAuthnRegistrationStartDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { InputWithLoading } from "@/components/common/input-with-loading";
 import { TFunction } from "i18next";
@@ -38,22 +39,40 @@ export default function RegisterPage() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const { register, registrationStatus } = useAuth();
+  const { isSupported: isPasskeySupported, registerNewWithPasskey } =
+    useWebAuthn();
 
   const isPasswordTooShort =
     formData.password.length > 0 && formData.password.length < 8;
+
+  // No password entered => create a passkey-only account instead (only
+  // possible when the browser actually supports passkeys).
+  const usePasskey = formData.password.length === 0 && isPasskeySupported;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const userData: RegisterRequestDto = {
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-        firstname: formData.firstname,
-        lastname: formData.lastname,
-      };
-      await register(userData);
+      if (usePasskey) {
+        const registration: WebAuthnRegistrationStartDto = {
+          username: formData.username,
+          email: formData.email,
+          firstname: formData.firstname,
+          lastname: formData.lastname,
+        };
+        await registerNewWithPasskey(registration);
+      } else {
+        const userData: RegisterRequestDto = {
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+          firstname: formData.firstname,
+          lastname: formData.lastname,
+        };
+        await register(userData);
+      }
+    } catch {
+      // Passkey ceremony errors are surfaced via toast inside the hook.
     } finally {
       setIsLoading(false);
     }
@@ -146,7 +165,14 @@ export default function RegisterPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">{t("register.password")}</Label>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="password">{t("register.password")}</Label>
+                {isPasskeySupported && (
+                  <span className="text-xs text-muted-foreground">
+                    {t("register.passwordOptional")}
+                  </span>
+                )}
+              </div>
               <InputWithLoading
                 id="password"
                 type="password"
@@ -154,11 +180,18 @@ export default function RegisterPage() {
                 onChange={(e) => handleInputChange("password", e.target.value)}
                 disabled={registrationStatus.isLoading || isDisabled}
                 loading={registrationStatus.isLoading}
-                required
+                required={!isPasskeySupported}
+                autoComplete="new-password"
               />
               {isPasswordTooShort && (
                 <p className="text-sm text-destructive">
                   {t("register.passwordTooShort")}
+                </p>
+              )}
+              {usePasskey && isPasskeySupported && (
+                <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <KeyRound className="h-3.5 w-3.5" />
+                  {t("register.passkeyHint")}
                 </p>
               )}
             </div>
@@ -167,7 +200,12 @@ export default function RegisterPage() {
               className="w-full"
               disabled={isLoading || isDisabled || isPasswordTooShort}
             >
-              {ButtonLabel(t, isLoading, isDisabled)}
+              {ButtonLabel(
+                t,
+                isLoading,
+                isDisabled,
+                usePasskey && isPasskeySupported,
+              )}
             </Button>
           </form>
           {isDisabled && (
@@ -191,10 +229,12 @@ const ButtonLabel = (
   t: TFunction<string, string>,
   isLoading: boolean,
   isDisabled: boolean,
+  usePasskey: boolean,
 ) => {
   if (isDisabled) {
     return t("register.registrationDisabled.title");
   }
   if (isLoading) return t("register.creatingAccount");
+  if (usePasskey) return t("register.createAccountWithPasskey");
   return t("register.createAccountButton");
 };

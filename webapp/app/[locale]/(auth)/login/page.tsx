@@ -15,10 +15,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
+import { useWebAuthn } from "@/hooks/use-webauthn";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useT } from "@/lib/i18n/hooks";
 import { ErrorWithResponse } from "@/components/init-query-client";
 import { redirectUser } from "@/lib/redirect-User";
+import { KeyRound } from "lucide-react";
 
 export default function LoginPage() {
   const params = useParams();
@@ -31,6 +33,8 @@ export default function LoginPage() {
   const [isLoadingForm, setIsLoadingForm] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
   const { user, isLoggedIn, login, logout, retryAfter } = useAuth();
+  const { isSupported: isPasskeySupported, loginWithPasskey } = useWebAuthn();
+  const [isPasskeyLoading, setIsPasskeyLoading] = useState(false);
   const router = useRouter();
   const [currentlyLoggingIn, setCurrentlyLoggingIn] = useState(false);
   const [remainingTime, setRemainingTime] = useState<number>(0);
@@ -111,6 +115,21 @@ export default function LoginPage() {
       setCurrentlyLoggingIn(false);
     } finally {
       setIsLoadingForm(false);
+    }
+  };
+
+  const handlePasskeyLogin = async () => {
+    setIsPasskeyLoading(true);
+    setLoginError(null);
+    try {
+      setCurrentlyLoggingIn(true);
+      await loginWithPasskey(username.trim(), searchParams.get("returnTo"));
+      setCurrentlyLoggingIn(false);
+    } catch {
+      // Errors are surfaced via toast inside the hook; keep the form usable.
+      setCurrentlyLoggingIn(false);
+    } finally {
+      setIsPasskeyLoading(false);
     }
   };
 
@@ -207,6 +226,32 @@ export default function LoginPage() {
                     : t("login.signInButton")}
             </Button>
           </form>
+          {isPasskeySupported && (
+            <>
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    {t("login.or")}
+                  </span>
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={handlePasskeyLogin}
+                disabled={isPasskeyLoading || isRetryAfterActive}
+              >
+                <KeyRound className="mr-2 h-4 w-4" />
+                {isPasskeyLoading
+                  ? t("webauthn.login.signingIn")
+                  : t("webauthn.login.button")}
+              </Button>
+            </>
+          )}
           <div className="mt-4 text-center text-sm">
             {t("login.noAccount")}
             <Link href="/register" className="text-primary hover:underline">

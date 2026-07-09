@@ -16,6 +16,7 @@ import type { UserProfileUpdateDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { useProfileUnsavedChanges } from "@/hooks/use-profile-unsaved-changes";
 import { useRouter, useParams } from "next/navigation";
+import { PasskeySection } from "@/components/profile/passkey-section";
 
 interface FormData {
   firstname: string;
@@ -117,6 +118,24 @@ export default function ProfilePage() {
   const isPasswordUpdateValid = showPasswordSection
     ? isPasswordValid && doPasswordsMatch
     : true;
+
+  const handlePasswordUpdate = async () => {
+    if (!isPasswordValid || !doPasswordsMatch) {
+      toast.error(t("profilePage.passwordValidationErrorTitle"), {
+        description: t("profilePage.passwordValidationErrorDescription"),
+      });
+      return;
+    }
+
+    await updateProfile({
+      ...originalFormData,
+      password: newPassword,
+    });
+
+    setNewPassword("");
+    setConfirmPassword("");
+    setShowPasswordSection(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -319,9 +338,19 @@ export default function ProfilePage() {
                       </p>
                     )}
                   </div>
+                  <Button
+                    type="button"
+                    className="w-full"
+                    onClick={handlePasswordUpdate}
+                    disabled={!isPasswordValid || !doPasswordsMatch}
+                  >
+                    {t("profilePage.savePasswordButton")}
+                  </Button>
                 </div>
               )}
             </div>
+
+            <PasskeySection />
 
             <div>
               <Label htmlFor="tags" className="pb-2">
