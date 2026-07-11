@@ -117,7 +117,8 @@ public class ExternalEmailTemplateLocator implements TemplateLocator {
 
     /**
      * Resolves the template id to a file inside the override directory, appending the {@code .html}
-     * suffix when needed and rejecting any path that would escape the directory (path traversal).
+     * suffix when needed and rejecting any path that would escape the directory (path traversal),
+     * including via a symlink.
      *
      * @param id the requested template id (already known to start with {@code email/})
      * @return the resolved file path, or {@code null} if it would escape the override directory
@@ -129,6 +130,26 @@ public class ExternalEmailTemplateLocator implements TemplateLocator {
         if (!resolved.startsWith(base)) {
             LOG.warnf("Rejected email template override outside override directory: %s", id);
             return null;
+        }
+
+        // The prefix check above only guards the literal path; resolve symlinks (on the file and on
+        // any parent directory) and re-check containment so an override directory containing a
+        // symlink to an outside location cannot be used to read arbitrary files.
+        if (Files.exists(resolved)) {
+            try {
+                Path realBase = base.toRealPath();
+                Path realResolved = resolved.toRealPath();
+                if (!realResolved.startsWith(realBase)) {
+                    LOG.warnf(
+                            "Rejected email template override outside override directory (symlink"
+                                    + " escape): %s",
+                            id);
+                    return null;
+                }
+            } catch (Exception e) {
+                LOG.warnf(e, "Failed to resolve real path for email template override: %s", id);
+                return null;
+            }
         }
         return resolved;
     }

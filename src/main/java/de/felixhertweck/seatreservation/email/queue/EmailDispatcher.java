@@ -46,9 +46,10 @@ import org.jboss.logging.Logger;
  *
  * <p>SMTP I/O happens <em>outside</em> any database transaction: claiming, loading and status
  * updates each run in their own short transaction so a slow mail server never holds a database
- * connection open. {@link ConcurrentExecution#SKIP} guarantees a single active drain per instance,
- * which together with the claim step (flipping messages to {@link EmailStatus#SENDING}) prevents
- * double delivery.
+ * connection open. {@link ConcurrentExecution#SKIP} prevents overlapping drains within a single
+ * instance, and the claim step itself ({@link OutboundEmailRepository#claimDue}, an atomic {@code
+ * UPDATE ... FOR UPDATE SKIP LOCKED}) prevents double delivery even when multiple clustered
+ * instances drain concurrently.
  */
 @ApplicationScoped
 public class EmailDispatcher {
@@ -106,7 +107,8 @@ public class EmailDispatcher {
 
     /**
      * Atomically claims up to {@code limit} due messages by flipping them to {@link
-     * EmailStatus#SENDING}, so a concurrent or overlapping drain cannot pick them up again.
+     * EmailStatus#SENDING}, so a concurrent or overlapping drain (including one running in another
+     * clustered instance) cannot pick them up again.
      *
      * @param limit the maximum number of messages to claim
      * @return the ids of the claimed messages
@@ -122,12 +124,7 @@ public class EmailDispatcher {
             LOG.warnf("Requeued %d stale SENDING email(s) for retry", requeued);
         }
 
-        List<OutboundEmail> due = outboundEmailRepository.findDue(now, limit);
-        for (OutboundEmail email : due) {
-            email.setStatus(EmailStatus.SENDING);
-            email.setUpdatedAt(now);
-        }
-        return due.stream().map(email -> email.id).toList();
+        return outboundEmailRepository.claimDue(now, limit);
     }
 
     /**

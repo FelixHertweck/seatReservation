@@ -27,7 +27,6 @@ import de.felixhertweck.seatreservation.model.entity.EmailStatus;
 import de.felixhertweck.seatreservation.model.entity.OutboundEmail;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.quarkus.panache.common.Page;
-import io.quarkus.panache.common.Sort;
 
 /**
  * Repository for the transactional email outbox ({@link OutboundEmail}). Provides the queries used
@@ -37,21 +36,37 @@ import io.quarkus.panache.common.Sort;
 public class OutboundEmailRepository implements PanacheRepository<OutboundEmail> {
 
     /**
-     * Finds due messages ready to be sent, oldest first. A message is due when it is still {@link
-     * EmailStatus#PENDING} and its next attempt time is not in the future.
+     * Atomically claims up to {@code limit} due messages by flipping them from {@link
+     * EmailStatus#PENDING} to {@link EmailStatus#SENDING} in a single {@code UPDATE ... FOR UPDATE
+     * SKIP LOCKED} statement.
+     *
+     * <p>Unlike a separate select-then-update, this holds row locks for the claimed rows only for
+     * the duration of the statement itself, so two dispatchers draining concurrently (whether
+     * threads in the same instance or separate clustered instances) cannot both claim the same
+     * message: the second claimer's subquery skips rows already locked by the first.
      *
      * @param now the reference point in time
-     * @param maxResults the maximum number of messages to return
-     * @return the due messages, ordered by their scheduled attempt time
+     * @param limit the maximum number of messages to claim
+     * @return the ids of the claimed messages, oldest scheduled attempt first
      */
-    public List<OutboundEmail> findDue(Instant now, int maxResults) {
-        return find(
-                        "status = ?1 and nextAttemptAt <= ?2",
-                        Sort.by("nextAttemptAt").ascending(),
-                        EmailStatus.PENDING,
-                        now)
-                .page(Page.ofSize(maxResults))
-                .list();
+    @SuppressWarnings("unchecked")
+    public List<Long> claimDue(Instant now, int limit) {
+        List<Number> ids =
+                getEntityManager()
+                        .createNativeQuery(
+                                "UPDATE outbound_emails SET status = 'SENDING', updated_at = ?1 "
+                                        + "WHERE id IN ("
+                                        + "  SELECT id FROM outbound_emails"
+                                        + "  WHERE status = 'PENDING' AND next_attempt_at <= ?1"
+                                        + "  ORDER BY next_attempt_at ASC"
+                                        + "  LIMIT ?2"
+                                        + "  FOR UPDATE SKIP LOCKED"
+                                        + ") "
+                                        + "RETURNING id")
+                        .setParameter(1, now)
+                        .setParameter(2, limit)
+                        .getResultList();
+        return ids.stream().map(Number::longValue).toList();
     }
 
     /**
@@ -80,24 +95,36 @@ public class OutboundEmailRepository implements PanacheRepository<OutboundEmail>
         return count("status", status);
     }
 
+    /** Number of messages removed per round-trip by {@link #deleteFinishedBefore(Instant)}. */
+    private static final int DELETE_BATCH_SIZE = 500;
+
     /**
      * Deletes terminal messages (sent or permanently failed) that were last updated before the
      * given cutoff.
      *
      * <p>Messages are removed entity-by-entity (rather than via a bulk delete) so Hibernate
      * cascades the removal to each message's attachments and recipient collection tables, avoiding
-     * orphaned rows and foreign-key violations.
+     * orphaned rows and foreign-key violations. They are fetched and deleted in bounded batches
+     * rather than all at once, so a large backlog (e.g. after a prolonged SMTP outage) doesn't pull
+     * the entire set into memory in one go.
      *
      * @param cutoff messages updated before this instant are removed
      * @return the number of deleted rows
      */
     public long deleteFinishedBefore(Instant cutoff) {
-        List<OutboundEmail> finished =
-                list(
-                        "status in ?1 and updatedAt < ?2",
-                        List.of(EmailStatus.SENT, EmailStatus.FAILED),
-                        cutoff);
-        finished.forEach(this::delete);
-        return finished.size();
+        long totalDeleted = 0;
+        List<OutboundEmail> batch;
+        do {
+            batch =
+                    find(
+                                    "status in ?1 and updatedAt < ?2",
+                                    List.of(EmailStatus.SENT, EmailStatus.FAILED),
+                                    cutoff)
+                            .page(Page.ofSize(DELETE_BATCH_SIZE))
+                            .list();
+            batch.forEach(this::delete);
+            totalDeleted += batch.size();
+        } while (batch.size() == DELETE_BATCH_SIZE);
+        return totalDeleted;
     }
 }
