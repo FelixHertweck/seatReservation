@@ -106,7 +106,9 @@ public class OutboundEmailRepository implements PanacheRepository<OutboundEmail>
      * cascades the removal to each message's attachments and recipient collection tables, avoiding
      * orphaned rows and foreign-key violations. They are fetched and deleted in bounded batches
      * rather than all at once, so a large backlog (e.g. after a prolonged SMTP outage) doesn't pull
-     * the entire set into memory in one go.
+     * the entire set into memory in one go. The persistence context is flushed and cleared after
+     * each batch so removed (and previously loaded) entities don't keep accumulating in it for the
+     * duration of the whole cleanup run.
      *
      * @param cutoff messages updated before this instant are removed
      * @return the number of deleted rows
@@ -123,6 +125,8 @@ public class OutboundEmailRepository implements PanacheRepository<OutboundEmail>
                             .page(Page.ofSize(DELETE_BATCH_SIZE))
                             .list();
             batch.forEach(this::delete);
+            getEntityManager().flush();
+            getEntityManager().clear();
             totalDeleted += batch.size();
         } while (batch.size() == DELETE_BATCH_SIZE);
         return totalDeleted;

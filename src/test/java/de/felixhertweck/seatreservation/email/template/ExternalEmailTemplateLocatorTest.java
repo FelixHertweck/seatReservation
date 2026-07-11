@@ -109,6 +109,9 @@ class ExternalEmailTemplateLocatorTest {
 
     @Test
     void hasHigherPriorityThanDefaultLocator() {
-        assertTrue(new ExternalEmailTemplateLocator(overrideDir).getPriority() > 1);
+        // io.quarkus.qute.WithPriority#DEFAULT_PRIORITY (used by the bundled classpath locator) is
+        // 1; assert the exact value so a change that weakens or removes the override wins is
+        // caught instead of merely a "still greater than 1" regression.
+        assertEquals(100, new ExternalEmailTemplateLocator(overrideDir).getPriority());
     }
 }

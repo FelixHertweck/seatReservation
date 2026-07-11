@@ -19,7 +19,11 @@
  */
 package de.felixhertweck.seatreservation.email.template;
 
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Path;
 import java.util.Map;
+import java.util.Objects;
 import jakarta.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -43,8 +47,20 @@ class ExternalTemplateOverrideTest {
     public static class OverrideProfile implements QuarkusTestProfile {
         @Override
         public Map<String, String> getConfigOverrides() {
-            return Map.of(
-                    "email.template.override-dir", "src/test/resources/email-template-overrides");
+            // Resolved via the test classpath rather than a "src/test/resources/..." relative
+            // literal, so this doesn't depend on the working directory the test happens to run
+            // from (Maven, an IDE and CI can all differ).
+            URL url =
+                    ExternalTemplateOverrideTest.class
+                            .getClassLoader()
+                            .getResource("email-template-overrides");
+            Objects.requireNonNull(url, "email-template-overrides test resource not found");
+            try {
+                Path dir = Path.of(url.toURI());
+                return Map.of("email.template.override-dir", dir.toString());
+            } catch (URISyntaxException e) {
+                throw new IllegalStateException(e);
+            }
         }
     }
 
