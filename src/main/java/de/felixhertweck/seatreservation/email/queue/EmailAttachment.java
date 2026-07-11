@@ -19,6 +19,9 @@
  */
 package de.felixhertweck.seatreservation.email.queue;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 /**
  * Immutable description of a binary attachment to be queued with an {@link EmailMessage}.
  *
@@ -31,6 +34,51 @@ package de.felixhertweck.seatreservation.email.queue;
  * @param data the raw attachment bytes
  */
 public record EmailAttachment(String fileName, String contentType, String contentId, byte[] data) {
+
+    /**
+     * Overridden because the record-generated {@code equals} compares {@link #data} by array
+     * reference (via {@code Objects.equals}), not by content.
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o
+                instanceof
+                EmailAttachment(
+                        String oFileName,
+                        String oContentType,
+                        String oContentId,
+                        byte[] oData))) {
+            return false;
+        }
+        return Objects.equals(fileName, oFileName)
+                && Objects.equals(contentType, oContentType)
+                && Objects.equals(contentId, oContentId)
+                && Arrays.equals(data, oData);
+    }
+
+    /** Overridden to stay consistent with the content-based {@link #equals(Object)}. */
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(fileName, contentType, contentId);
+        return 31 * result + Arrays.hashCode(data);
+    }
+
+    /** Overridden so {@link #data} is rendered as its length rather than a raw array reference. */
+    @Override
+    public String toString() {
+        return "EmailAttachment[fileName="
+                + fileName
+                + ", contentType="
+                + contentType
+                + ", contentId="
+                + contentId
+                + ", data="
+                + (data != null ? data.length + " bytes" : "null")
+                + "]";
+    }
 
     /**
      * Creates an inline attachment referenced from the HTML body via {@code cid:<contentId>}.

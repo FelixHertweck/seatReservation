@@ -5,60 +5,8 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Reservation Confirmation</title>
       <style>
-          body {
-              font-family: sans-serif;
-              line-height: 1.6;
-              color: #333;
-          }
-          .container {
-              max-width: 600px;
-              margin: 20px auto;
-              padding: 20px;
-              border: 1px solid #a0a0a0;
-              border-radius: 5px;
-          }
-          .header {
-              font-size: 24px;
-              font-weight: bold;
-              margin-bottom: 20px;
-              text-align: center;
-          }
-          .footer {
-              margin-top: 20px;
-              font-size: 12px;
-              text-align: center;
-              color: #777;
-          }
-          ul {
-              padding-left: 20px;
-          }
-          .seatmap-container {
-              text-align: center;
-              margin: 30px 0;
-          }
-          .seatmap-image {
-              max-width: 100%;
-              height: auto;
-              border: 2px solid #a0a0a0;
-              border-radius: 8px;
-              margin-bottom: 20px;
-          }
-          .button {
-              display: inline-block;
-              background: linear-gradient(135deg, #3498db, #2980b9);
-              color: white !important;
-              text-decoration: none;
-              padding: 10px 20px;
-              border-radius: 6px;
-              font-weight: bold;
-              font-size: 14px;
-              box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
-              transition: all 0.3s ease;
-          }
-          .button:hover {
-              background: linear-gradient(135deg, #2980b9, #21618c);
-              box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-          }
+{#include email/fragments/simple-card-styles /}
+{#include email/fragments/action-styles /}
       </style>
   </head>
   <body>
@@ -79,16 +27,8 @@
               {#for seat in existingSeats}<li>{seat.number} ({seat.row})</li>{/for}
           </ul>
           {/if}
-          <div style="text-align: center; margin: 30px 0;">
-              <p style="font-size: 16px; font-weight: bold; color: #2c3e50; margin-bottom: 10px;">Your Check-in QR Code:</p>
-              <p style="font-size: 16px; font-weight: bold; color: #7f8c8d; margin-bottom: 15px;">Please present this QR code at check-in for the event.</p>
-              <img src="cid:qrcode-image" alt="Check-in QR Code" style="max-width: 150px; height: auto; border: 1px solid #a0a0a0; border-radius: 5px; margin-bottom: 5px;" />
-              <p style="font-size: 10px; color: #7f8c8d; margin-top: 5px;">{userName}</p>
-          </div>
-          <div class="entrance-info" style="background-color: #e8f4f8; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; border-radius: 4px;">
-              <p style="margin: 0; font-weight: bold; color: #2c3e50;">Entrance Information:</p>
-              <p style="margin: 10px 0 0 0; white-space: pre-line;">{entranceInfo}</p>
-          </div>
+{#include email/fragments/qrcode-block /}
+{#include email/fragments/entrance-info-block /}
           <p>You can view the event details here: <a href="{eventLink}">View Event</a></p>
           <div class="seatmap-container">
               <p><strong>Here is an overview of your seats:</strong></p>
