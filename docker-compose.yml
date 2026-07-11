@@ -62,12 +62,19 @@ services:
     # Export templates for PDF generation
     #  - ./export-template:/export-template:ro
 
+    # Override email templates at runtime (mirror the bundled layout, e.g.
+    # ./email-templates/email/password-changed.html or email/fragments/card-layout-styles.html)
+    #  - ./email-templates:/deployments/email-templates:ro
+
     environment:
       # Application configuration
       - APP_URL=${APP_URL}
 
       # If you use only HTTP, set this to false
       # - SSL_ENABLED=false
+
+      # Point to the volume mounted above to enable email template overrides
+      # - EMAIL_TEMPLATE_OVERRIDE_DIR=/deployments/email-templates
 
       # Email configuration
       - MAIL_FROM=${MAIL_FROM}

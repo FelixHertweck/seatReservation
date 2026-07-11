@@ -240,7 +240,21 @@ The application renders emails from customizable [Qute](https://quarkus.io/guide
 -   `event-reminder.html`
 -   `manager-reservation-export.html`
 
-Edit these files to adjust the look and content of outgoing emails, keeping the existing `{placeholder}` expressions intact. Subject lines and small text snippets are configured under `email.header.*` and related keys in [`application.yaml`](src/main/resources/application.yaml).
+Edit these files directly to adjust the look and content of outgoing emails, keeping the existing `{placeholder}` expressions intact. Subject lines and small text snippets are configured under `email.header.*` and related keys in [`application.yaml`](src/main/resources/application.yaml).
+
+#### Overriding Templates in a Deployment
+
+Instead of editing the bundled files (which requires rebuilding the image), you can supply your own templates from an external directory via `email.template.override-dir` (env var `EMAIL_TEMPLATE_OVERRIDE_DIR`). This is picked up on application start and takes precedence over the bundled templates.
+
+To customize a template:
+
+1.   Create a directory, e.g. `./email-templates/email/`.
+2.   Add an `.html` file named after the template you want to replace, e.g. `password-changed.html`. It only needs to contain the templates you actually want to change — anything missing falls back to the bundled version.
+3.   Write it as a normal, self-contained HTML file (Qute `{placeholder}`, `{#if}`, `{#for}` syntax is supported), using the same `{placeholder}` names as the original.
+4.   Point the app at the directory:
+     -   Locally: set `EMAIL_TEMPLATE_OVERRIDE_DIR=/path/to/email-templates` in `.env`.
+     -   Docker Compose: mount the directory into the container and set the env var — see the commented `email-templates` volume and `EMAIL_TEMPLATE_OVERRIDE_DIR` entry in [`docker-compose.yml`](docker-compose.yml).
+5.   Restart the application to pick up the changes.
 
 ### PDF Export Templates
 
