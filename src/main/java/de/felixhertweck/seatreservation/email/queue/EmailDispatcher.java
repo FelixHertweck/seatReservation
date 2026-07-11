@@ -134,12 +134,12 @@ public class EmailDispatcher {
      * @return {@code true} if the message was sent successfully
      */
     private boolean dispatchOne(Long id) {
-        Mail mail = self.buildMail(id);
-        if (mail == null) {
-            // Message vanished between claim and load; nothing to do.
-            return false;
-        }
         try {
+            Mail mail = self.buildMail(id);
+            if (mail == null) {
+                // Message vanished between claim and load; nothing to do.
+                return false;
+            }
             mailer.send(mail);
             self.markSent(id);
             return true;

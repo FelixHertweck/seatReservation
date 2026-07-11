@@ -714,10 +714,15 @@ public class EmailService {
     }
 
     /**
-     * Adds a Bcc (blind carbon copy) address to the specified mail if the address is present,
-     * non-empty, and not already included in the email recipients.
+     * Builds an {@link EmailMessage} from the given content and hands it off to the email queue.
+     * The Bcc address is added only when {@code includeBcc} is {@code true} and the address is
+     * present, non-empty, and not already included in the recipients.
      *
-     * @param mail the Mail object to which the Bcc address will be added
+     * @param recipients the To/Cc recipients (first entry becomes To, the rest Cc)
+     * @param subject the email subject
+     * @param htmlContent the rendered HTML body
+     * @param attachments the attachments to include, if any
+     * @param includeBcc whether the configured Bcc address should be added
      */
     private void enqueue(
             List<String> recipients,
