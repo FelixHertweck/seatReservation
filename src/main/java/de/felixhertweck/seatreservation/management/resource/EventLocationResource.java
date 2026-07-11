@@ -200,7 +200,7 @@ public class EventLocationResource {
             responseCode = "404",
             description = "Not Found: Event location with specified ID not found")
     public EventLocationResponseDTO importSeatsToEventLocation(
-            @PathParam("id") Long id, @Valid Set<ImportSeatDto> seats) {
+            @PathParam("id") Long id, Set<@Valid ImportSeatDto> seats) {
         LOG.debugf(
                 "Received POST request to /api/manager/eventlocations/import for new event"
                         + " location with seats.");

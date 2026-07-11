@@ -85,7 +85,7 @@ public class UserResource {
             responseCode = "409",
             description =
                     "Conflict: One or more users in the batch have a conflicting username or email")
-    public Set<UserDTO> importUsers(@Valid Set<AdminUserCreationDto> userCreationDTOs) {
+    public Set<UserDTO> importUsers(Set<@Valid AdminUserCreationDto> userCreationDTOs) {
         LOG.debugf(
                 "Received POST request to /api/users/admin/import for %d users.",
                 userCreationDTOs.size());
