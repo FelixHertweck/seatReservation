@@ -100,8 +100,7 @@ public class NotificationService {
                 .newJob(jobId)
                 .setInterval("365d") // Set a long interval to satisfy the scheduler requirement
                 .setDelayed(delaySeconds + "s") // Set the delay until first execution
-                // Sending is now just a fast enqueue into the email outbox, so the task can run
-                // directly on the scheduler worker without an extra thread pool.
+                // Fast enqueue into the email outbox; no extra thread pool needed
                 .setTask(executionContext -> self.sendReminderForEvent(event.id))
                 .schedule();
 
