@@ -23,13 +23,16 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
 import de.felixhertweck.seatreservation.model.repository.LoginAttemptRepository;
+import de.felixhertweck.seatreservation.model.repository.OutboundEmailRepository;
 import de.felixhertweck.seatreservation.model.repository.RefreshTokenRepository;
 import io.quarkus.scheduler.Scheduled;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 /**
@@ -49,6 +52,35 @@ public class DatabaseCleanup {
     @Inject EmailSeatMapTokenRepository emailSeatMapTokenRepository;
 
     @Inject LoginAttemptRepository loginAttemptRepository;
+
+    @Inject OutboundEmailRepository outboundEmailRepository;
+
+    @ConfigProperty(name = "email.queue.retention-days", defaultValue = "30")
+    long outboundEmailRetentionDays;
+
+    /**
+     * Cleans up delivered and permanently failed emails from the outbox.
+     *
+     * <p>Runs daily at 4:30 AM. Removes {@code SENT} and {@code FAILED} outbox rows (including
+     * their stored attachments) that were last updated before the configured retention window,
+     * keeping the outbox table small while preserving recent history for troubleshooting.
+     */
+    @Scheduled(cron = "0 30 4 * * ?") // Every day at 4:30 AM
+    @Transactional
+    public void cleanupFinishedOutboundEmails() {
+        LOG.info("Starting scheduled cleanup of finished outbound emails.");
+        try {
+            Instant cutoff = Instant.now().minus(outboundEmailRetentionDays, ChronoUnit.DAYS);
+            long deletedCount = outboundEmailRepository.deleteFinishedBefore(cutoff);
+            if (deletedCount > 0) {
+                LOG.infof("Successfully cleaned up %d finished outbound emails.", deletedCount);
+            } else {
+                LOG.debug("No finished outbound emails found to clean up.");
+            }
+        } catch (PersistenceException e) {
+            LOG.error("Error during outbound email cleanup", e);
+        }
+    }
 
     /**
      * Cleans up expired email verification entries.

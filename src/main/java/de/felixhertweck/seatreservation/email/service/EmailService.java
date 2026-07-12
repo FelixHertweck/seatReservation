@@ -35,6 +35,9 @@ import jakarta.inject.Inject;
 
 import com.google.zxing.WriterException;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
+import de.felixhertweck.seatreservation.email.queue.EmailAttachment;
+import de.felixhertweck.seatreservation.email.queue.EmailMessage;
+import de.felixhertweck.seatreservation.email.queue.EmailQueueService;
 import de.felixhertweck.seatreservation.management.service.ReservationService;
 import de.felixhertweck.seatreservation.model.entity.EmailVerification;
 import de.felixhertweck.seatreservation.model.entity.Event;
@@ -47,8 +50,8 @@ import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.utils.QRCodeImage;
 import de.felixhertweck.seatreservation.utils.VerificationCodeGenerator;
 import io.quarkus.logging.Log;
-import io.quarkus.mailer.Mail;
-import io.quarkus.mailer.reactive.ReactiveMailer;
+import io.quarkus.qute.Location;
+import io.quarkus.qute.Template;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
@@ -82,7 +85,7 @@ public class EmailService {
 
     private static final Logger LOG = Logger.getLogger(EmailService.class);
 
-    @Inject ReactiveMailer mailer;
+    @Inject EmailQueueService emailQueueService;
 
     @Inject EmailVerificationRepository emailVerificationRepository;
 
@@ -100,26 +103,35 @@ public class EmailService {
     @ConfigProperty(name = "email.verification.expiration.minutes", defaultValue = "60")
     long expirationMinutes;
 
-    @ConfigProperty(name = "email.content.email-confirmation")
-    String emailContentEmailConfirmation;
-
     @ConfigProperty(name = "email.bcc-address")
     Optional<String> bccAddress;
 
-    @ConfigProperty(name = "email.content.event-reminder")
-    String emailContentEventReminder;
-
-    @ConfigProperty(name = "email.content.password-changed")
-    String emailContentPasswordChanged;
-
-    @ConfigProperty(name = "email.content.reservation-confirmation")
-    String emailContentReservationConfirmation;
-
-    @ConfigProperty(name = "email.content.reservation-update-confirmation")
-    String emailContentReservationUpdateConfirmation;
-
     @ConfigProperty(name = "email.entrance-info-template")
     String entranceInfoTemplate;
+
+    @Inject
+    @Location("email/email-confirmation")
+    Template emailConfirmationTemplate;
+
+    @Inject
+    @Location("email/password-changed")
+    Template passwordChangedTemplate;
+
+    @Inject
+    @Location("email/event-reminder")
+    Template eventReminderTemplate;
+
+    @Inject
+    @Location("email/reservation-confirmation")
+    Template reservationConfirmationTemplate;
+
+    @Inject
+    @Location("email/reservation-update-confirmation")
+    Template reservationUpdateTemplate;
+
+    @Inject
+    @Location("email/manager-reservation-export")
+    Template managerExportTemplate;
 
     /**
      * Sends an email confirmation to the specified user.
@@ -141,46 +153,22 @@ public class EmailService {
 
         LOG.debugf("User ID: %d, Username: %s", user.id, user.getUsername());
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+        String htmlContent =
+                emailConfirmationTemplate
+                        .data("fullName", fullName(user))
+                        .data("verificationCode", emailVerification.getToken())
+                        .data(
+                                "verificationLink",
+                                generateVerificationLink(emailVerification.getToken()))
+                        .data(
+                                "expirationTime",
+                                formatDateTime(emailVerification.getExpirationTime()))
+                        .data("currentYear", currentYear())
+                        .render();
 
-        String htmlContent = emailContentEmailConfirmation;
-
-        // Replace placeholders with actual values
-        htmlContent =
-                htmlContent.replace("{fullName}", user.getFirstname() + " " + user.getLastname());
-        htmlContent = htmlContent.replace("{verificationCode}", emailVerification.getToken());
-        htmlContent =
-                htmlContent.replace(
-                        "{verificationLink}",
-                        generateVerificationLink(emailVerification.getToken()));
-        htmlContent =
-                htmlContent.replace(
-                        "{expirationTime}",
-                        emailVerification
-                                .getExpirationTime()
-                                .atZone(ZoneId.systemDefault())
-                                .format(formatter));
-        htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
-        LOG.debug("Placeholders replaced in email template.");
-
-        // Create and send the email
+        // Queue the email for asynchronous, retried delivery
         LOG.debugf("Email confirmation subject: %s", EMAIL_HEADER_CONFIRMATION);
-        Mail mail = Mail.withHtml(user.getEmail(), EMAIL_HEADER_CONFIRMATION, htmlContent);
-
-        mailer.send(mail)
-                .subscribe()
-                .with(
-                        success ->
-                                LOG.infof(
-                                        "Email confirmation sent successfully to %s for user ID:"
-                                                + " %d",
-                                        user.getEmail(), user.id),
-                        failure ->
-                                LOG.errorf(
-                                        failure,
-                                        "Failed to send email confirmation to %s for user ID: %d",
-                                        user.getEmail(),
-                                        user.id));
+        enqueue(List.of(user.getEmail()), EMAIL_HEADER_CONFIRMATION, htmlContent, List.of(), false);
     }
 
     /**
@@ -216,6 +204,54 @@ public class EmailService {
                 "Email verification entry ID %d expiration time updated to: %s",
                 emailVerification.id, emailVerification.getExpirationTime());
         return emailVerification;
+    }
+
+    private static final DateTimeFormatter DATE_TIME_FORMATTER =
+            DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+
+    /**
+     * Formats an instant in the system time zone using the shared email date/time pattern.
+     *
+     * @param instant the instant to format
+     * @return the formatted date/time string
+     */
+    private String formatDateTime(Instant instant) {
+        return instant.atZone(ZoneId.systemDefault()).format(DATE_TIME_FORMATTER);
+    }
+
+    /**
+     * Returns the current year as a string for the template footers.
+     *
+     * @return the current year
+     */
+    private String currentYear() {
+        return Year.now().toString();
+    }
+
+    /**
+     * Builds a user's display name from first and last name.
+     *
+     * @param user the user
+     * @return the concatenated full name
+     */
+    private String fullName(User user) {
+        return user.getFirstname() + " " + user.getLastname();
+    }
+
+    /**
+     * Maps reservations to the seat views rendered by the templates.
+     *
+     * @param reservations the reservations to map (may be {@code null})
+     * @return the seat views, in encounter order
+     */
+    private List<SeatView> toSeatViews(List<Reservation> reservations) {
+        if (reservations == null) {
+            return List.of();
+        }
+        return reservations.stream()
+                .map(Reservation::getSeat)
+                .map(seat -> new SeatView(seat.getSeatNumber(), seat.getSeatRow()))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -319,104 +355,40 @@ public class EmailService {
         existingSeatNumbers.removeAll(newSeatNumbers); // Keep only previously reserved seats
         LOG.debugf("Existing seat numbers (excluding new ones): %s", existingSeatNumbers);
 
-        StringBuilder seatListHtml = new StringBuilder();
-        for (Reservation reservation : reservations) {
-            seatListHtml
-                    .append("<li>")
-                    .append(reservation.getSeat().getSeatNumber())
-                    .append(" (")
-                    .append(reservation.getSeat().getSeatRow())
-                    .append(")")
-                    .append("</li>");
-        }
-        LOG.debugf("HTML list of seats generated: %s", seatListHtml.toString());
+        List<SeatView> newSeats = toSeatViews(reservations);
+        List<SeatView> existingSeats =
+                existingSeatNumbers.stream()
+                        .map(seat -> new SeatView(seat.getSeatNumber(), seat.getSeatRow()))
+                        .collect(Collectors.toList());
 
-        String htmlContent = emailContentReservationConfirmation;
-
-        htmlContent = htmlContent.replace("{userName}", user.getUsername());
-        htmlContent =
-                htmlContent.replace("{fullName}", user.getFirstname() + " " + user.getLastname());
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
-
-        htmlContent = htmlContent.replace("{eventName}", eventName != null ? eventName : "");
-        htmlContent = htmlContent.replace("{eventLocation}", event.getEventLocation().getName());
-        htmlContent =
-                htmlContent.replace(
-                        "{eventStartTime}",
-                        event.getStartTime().atZone(ZoneId.systemDefault()).format(formatter));
-        htmlContent =
-                htmlContent.replace(
-                        "{eventEndTime}",
-                        event.getEndTime().atZone(ZoneId.systemDefault()).format(formatter));
-        htmlContent = htmlContent.replace("{seatList}", seatListHtml.toString());
-        htmlContent = htmlContent.replace("{eventLink}", generateEventLink(event.id));
-        htmlContent = htmlContent.replace("{seatmapLink}", seatmapLink);
-        htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
-
-        // Add entrance information
         String entranceInfo = generateEntranceInfo(reservations);
-        htmlContent = htmlContent.replace("{entranceInfo}", entranceInfo);
-        LOG.debugf("Entrance information added: %s", entranceInfo);
 
-        // Show or hide existing reservations section based on presence of existing seats
-        if (existingSeatNumbers.isEmpty()) {
-            htmlContent = htmlContent.replace("{existingHeaderVisible}", "hidden");
-            htmlContent = htmlContent.replace("{existingSeatList}", "");
-        } else {
-            htmlContent = htmlContent.replace("{existingHeaderVisible}", "visible");
-            StringBuilder existingSeatListHtml = new StringBuilder();
-            for (Seat seat : existingSeatNumbers) {
-                existingSeatListHtml
-                        .append("<li>")
-                        .append(seat.getSeatNumber())
-                        .append(" (")
-                        .append(seat.getSeatRow())
-                        .append(")")
-                        .append("</li>");
-            }
-            htmlContent =
-                    htmlContent.replace("{existingSeatList}", existingSeatListHtml.toString());
-        }
-
-        LOG.debug("Placeholders replaced in reservation email template.");
-
-        Mail mail =
-                Mail.withHtml(
-                        emailAddresses.getFirst(),
-                        EMAIL_HEADER_RESERVATION_CONFIRMATION,
-                        htmlContent);
-
-        // Add PNG image as inline attachment
-        if (pngImage.length > 0) {
-            mail.addInlineAttachment("seatmap.png", pngImage, "image/png", "seatmap-image");
-        }
+        String htmlContent =
+                reservationConfirmationTemplate
+                        .data("userName", user.getUsername())
+                        .data("fullName", fullName(user))
+                        .data("eventName", eventName != null ? eventName : "")
+                        .data("eventLocation", event.getEventLocation().getName())
+                        .data("eventStartTime", formatDateTime(event.getStartTime()))
+                        .data("eventEndTime", formatDateTime(event.getEndTime()))
+                        .data("newSeats", newSeats)
+                        .data("hasExistingSeats", !existingSeats.isEmpty())
+                        .data("existingSeats", existingSeats)
+                        .data("entranceInfo", entranceInfo)
+                        .data("eventLink", generateEventLink(event.id))
+                        .data("seatmapLink", seatmapLink)
+                        .data("currentYear", currentYear())
+                        .render();
 
         String qrCodeContent = generateQrCodeContent(user, event, reservations);
         byte[] qrCodeImage = generateQrCodeImage(qrCodeContent);
-        // Add QR code image as inline attachment
-        if (qrCodeImage.length > 0) {
-            mail.addInlineAttachment("qrcode.png", qrCodeImage, "image/png", "qrcode-image");
-        }
 
-        if (emailAddresses.size() > 1) {
-            emailAddresses.subList(1, emailAddresses.size()).forEach(mail::addCc);
-        }
-        addBcc(mail);
-        mailer.send(mail)
-                .subscribe()
-                .with(
-                        success ->
-                                LOG.infof(
-                                        "Reservation confirmation email sent successfully to %s for"
-                                                + " user ID: %d",
-                                        user.getEmail(), user.id),
-                        failure ->
-                                LOG.errorf(
-                                        failure,
-                                        "Failed to send reservation confirmation to %s for user ID:"
-                                                + " %d",
-                                        user.getEmail(),
-                                        user.id));
+        enqueue(
+                emailAddresses,
+                EMAIL_HEADER_RESERVATION_CONFIRMATION,
+                htmlContent,
+                buildImageAttachments(pngImage, qrCodeImage),
+                true);
     }
 
     /**
@@ -500,112 +472,37 @@ public class EmailService {
                 activeReservations != null ? activeReservations.size() : 0,
                 eventName);
 
-        Set<String> existingSeatNumbers =
-                activeReservations != null
-                        ? activeReservations.stream()
-                                .map(r -> r.getSeat().getSeatNumber())
-                                .collect(Collectors.toSet())
-                        : Set.of();
-        LOG.debugf("Existing seat numbers (excluding new ones): %s", existingSeatNumbers);
+        List<SeatView> deletedSeats = toSeatViews(deletedReservations);
+        List<SeatView> activeSeats = toSeatViews(activeReservations);
 
-        StringBuilder deletedSeatListHtml = new StringBuilder();
-        for (Reservation reservation : deletedReservations) {
-            deletedSeatListHtml
-                    .append("<li>")
-                    .append(reservation.getSeat().getSeatNumber())
-                    .append(" (")
-                    .append(reservation.getSeat().getSeatRow())
-                    .append(")")
-                    .append("</li>");
-        }
-        LOG.debugf("HTML list of seats generated: %s", deletedSeatListHtml.toString());
-
-        String htmlContent = emailContentReservationUpdateConfirmation;
-
-        htmlContent = htmlContent.replace("{userName}", user.getUsername());
-        htmlContent =
-                htmlContent.replace("{fullName}", user.getFirstname() + " " + user.getLastname());
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
-
-        htmlContent = htmlContent.replace("{eventName}", eventName != null ? eventName : "");
-        htmlContent = htmlContent.replace("{eventLocation}", event.getEventLocation().getName());
-        htmlContent =
-                htmlContent.replace(
-                        "{eventStartTime}",
-                        event.getStartTime().atZone(ZoneId.systemDefault()).format(formatter));
-        htmlContent =
-                htmlContent.replace(
-                        "{eventEndTime}",
-                        event.getEndTime().atZone(ZoneId.systemDefault()).format(formatter));
-
-        htmlContent = htmlContent.replace("{deletedSeatList}", deletedSeatListHtml.toString());
-        htmlContent = htmlContent.replace("{eventLink}", generateEventLink(event.id));
-        htmlContent = htmlContent.replace("{seatmapLink}", seatmapLink);
-        htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
-
-        // Add entrance information for active reservations
         String entranceInfo = generateEntranceInfo(activeReservations);
-        htmlContent = htmlContent.replace("{entranceInfo}", entranceInfo);
-        LOG.debugf("Entrance information added: %s", entranceInfo);
 
-        if (activeReservations == null || activeReservations.isEmpty()) {
-            htmlContent = htmlContent.replace("{existingHeaderVisible}", "hidden");
-            htmlContent = htmlContent.replace("{activeSeatList}", "");
-
-        } else {
-            htmlContent = htmlContent.replace("{existingHeaderVisible}", "visible");
-            StringBuilder activeSeatListHtml = new StringBuilder();
-            for (Reservation reservation : activeReservations) {
-                activeSeatListHtml
-                        .append("<li>")
-                        .append(reservation.getSeat().getSeatNumber())
-                        .append(" (")
-                        .append(reservation.getSeat().getSeatRow())
-                        .append(" ")
-                        .append(")")
-                        .append("</li>");
-            }
-            LOG.debugf("HTML list of seats generated: %s", activeSeatListHtml.toString());
-            htmlContent = htmlContent.replace("{activeSeatList}", activeSeatListHtml.toString());
-        }
-
-        LOG.debug("Placeholders replaced in reservation email template.");
-
-        Mail mail =
-                Mail.withHtml(
-                        emailAddresses.getFirst(), EMAIL_HEADER_RESERVATION_UPDATE, htmlContent);
-
-        // Add PNG image as inline attachment
-        if (pngImage.length > 0) {
-            mail.addInlineAttachment("seatmap.png", pngImage, "image/png", "seatmap-image");
-        }
+        String htmlContent =
+                reservationUpdateTemplate
+                        .data("userName", user.getUsername())
+                        .data("fullName", fullName(user))
+                        .data("eventName", eventName != null ? eventName : "")
+                        .data("eventLocation", event.getEventLocation().getName())
+                        .data("eventStartTime", formatDateTime(event.getStartTime()))
+                        .data("eventEndTime", formatDateTime(event.getEndTime()))
+                        .data("deletedSeats", deletedSeats)
+                        .data("hasActiveSeats", !activeSeats.isEmpty())
+                        .data("activeSeats", activeSeats)
+                        .data("entranceInfo", entranceInfo)
+                        .data("eventLink", generateEventLink(event.id))
+                        .data("seatmapLink", seatmapLink)
+                        .data("currentYear", currentYear())
+                        .render();
 
         String qrCodeContent = generateQrCodeContent(user, event, activeReservations);
         byte[] qrCodeImage = generateQrCodeImage(qrCodeContent);
-        // Add QR code image as inline attachment
-        if (qrCodeImage.length > 0) {
-            mail.addInlineAttachment("qrcode.png", qrCodeImage, "image/png", "qrcode-image");
-        }
 
-        if (emailAddresses.size() > 1) {
-            emailAddresses.subList(1, emailAddresses.size()).forEach(mail::addCc);
-        }
-        addBcc(mail);
-        mailer.send(mail)
-                .subscribe()
-                .with(
-                        success ->
-                                LOG.infof(
-                                        "Reservation update confirmation email sent successfully to"
-                                                + " %s for user ID: %d",
-                                        user.getEmail(), user.id),
-                        failure ->
-                                LOG.errorf(
-                                        failure,
-                                        "Failed to send reservation update confirmation to %s for"
-                                                + " user ID: %d",
-                                        user.getEmail(),
-                                        user.id));
+        enqueue(
+                emailAddresses,
+                EMAIL_HEADER_RESERVATION_UPDATE,
+                htmlContent,
+                buildImageAttachments(pngImage, qrCodeImage),
+                true);
     }
 
     /**
@@ -640,32 +537,19 @@ public class EmailService {
 
         LOG.debugf("User ID: %d, Username: %s", user.id, user.getUsername());
 
-        String htmlContent = emailContentPasswordChanged;
+        String htmlContent =
+                passwordChangedTemplate
+                        .data("fullName", fullName(user))
+                        .data("currentYear", currentYear())
+                        .render();
 
-        // Replace placeholders with actual values
-        htmlContent =
-                htmlContent.replace("{fullName}", user.getFirstname() + " " + user.getLastname());
-        htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
-        LOG.debug("Placeholders replaced in password changed email template.");
-
-        // Create and send the email
-        Mail mail = Mail.withHtml(user.getEmail(), EMAIL_HEADER_PASSWORD_CHANGED, htmlContent);
-
-        mailer.send(mail)
-                .subscribe()
-                .with(
-                        success ->
-                                LOG.infof(
-                                        "Password changed notification sent successfully to %s for"
-                                                + " user ID: %d",
-                                        user.getEmail(), user.id),
-                        failure ->
-                                LOG.errorf(
-                                        failure,
-                                        "Failed to send password changed notification to %s for"
-                                                + " user ID: %d",
-                                        user.getEmail(),
-                                        user.id));
+        // Queue the email for asynchronous, retried delivery
+        enqueue(
+                List.of(user.getEmail()),
+                EMAIL_HEADER_PASSWORD_CHANGED,
+                htmlContent,
+                List.of(),
+                false);
     }
 
     /**
@@ -701,88 +585,46 @@ public class EmailService {
         byte[] pngImage = pngImageOpt.orElse(new byte[0]);
         LOG.debugf("Retrieved PNG image with size: %d bytes", pngImage.length);
 
-        List<Seat> reservedSeats =
-                reservations.stream().map(Reservation::getSeat).collect(Collectors.toList());
-
-        String htmlContent = emailContentEventReminder;
-
-        // Prepare seat list HTML
-        StringBuilder seatListHtml = new StringBuilder();
-        for (Seat seat : reservedSeats) {
-            seatListHtml
-                    .append("<li>")
-                    .append(seat.getSeatNumber())
-                    .append(" (")
-                    .append(seat.getSeatRow())
-                    .append(")")
-                    .append("</li>");
-        }
-        LOG.debugf("HTML list of seats generated: %s", seatListHtml.toString());
-
-        // Replace placeholders with actual values
-        htmlContent = htmlContent.replace("{userName}", user.getUsername());
-        htmlContent =
-                htmlContent.replace("{fullName}", user.getFirstname() + " " + user.getLastname());
-        htmlContent = htmlContent.replace("{eventName}", event.getName());
-        htmlContent =
-                htmlContent.replace(
-                        "{eventDate}",
-                        event.getStartTime()
-                                .atZone(ZoneId.systemDefault())
-                                .toLocalDate()
-                                .toString());
-        htmlContent =
-                htmlContent.replace(
-                        "{eventTime}",
-                        event.getStartTime()
-                                .atZone(ZoneId.systemDefault())
-                                .toLocalTime()
-                                .toString());
-        htmlContent = htmlContent.replace("{eventLocation}", event.getEventLocation().getName());
-        htmlContent = htmlContent.replace("{seatList}", seatListHtml.toString());
-        htmlContent = htmlContent.replace("{seatmapLink}", seatmapLink);
-        htmlContent = htmlContent.replace("{eventLink}", generateEventLink(event.id));
-        htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
-
-        // Add entrance information
+        List<SeatView> seats = toSeatViews(reservations);
         String entranceInfo = generateEntranceInfo(reservations);
-        htmlContent = htmlContent.replace("{entranceInfo}", entranceInfo);
-        LOG.debugf("Entrance information added: %s", entranceInfo);
 
-        LOG.debug("Placeholders replaced in event reminder email template.");
+        String htmlContent =
+                eventReminderTemplate
+                        .data("userName", user.getUsername())
+                        .data("fullName", fullName(user))
+                        .data("eventName", event.getName())
+                        .data(
+                                "eventDate",
+                                event.getStartTime()
+                                        .atZone(ZoneId.systemDefault())
+                                        .toLocalDate()
+                                        .toString())
+                        .data(
+                                "eventTime",
+                                event.getStartTime()
+                                        .atZone(ZoneId.systemDefault())
+                                        .toLocalTime()
+                                        .toString())
+                        .data("eventLocation", event.getEventLocation().getName())
+                        .data("seats", seats)
+                        .data("entranceInfo", entranceInfo)
+                        .data("seatmapLink", seatmapLink)
+                        .data("eventLink", generateEventLink(event.id))
+                        .data("currentYear", currentYear())
+                        .render();
 
-        // Create and send the email
+        // Queue the email for asynchronous, retried delivery
         LOG.debugf("Event reminder subject: %s", EMAIL_HEADER_REMINDER);
-        Mail mail = Mail.withHtml(user.getEmail(), EMAIL_HEADER_REMINDER, htmlContent);
-
-        // Add PNG image as inline attachment
-        if (pngImage.length > 0) {
-            mail.addInlineAttachment("seatmap.png", pngImage, "image/png", "seatmap-image");
-        }
 
         String qrCodeContent = generateQrCodeContent(user, event, reservations);
         byte[] qrCodeImage = generateQrCodeImage(qrCodeContent);
-        // Add QR code image as inline attachment
-        if (qrCodeImage.length > 0) {
-            mail.addInlineAttachment("qrcode.png", qrCodeImage, "image/png", "qrcode-image");
-        }
 
-        mailer.send(mail)
-                .subscribe()
-                .with(
-                        success ->
-                                LOG.infof(
-                                        "Event reminder sent successfully to %s for user ID: %d,"
-                                                + " event ID: %d",
-                                        user.getEmail(), user.id, event.id),
-                        failure ->
-                                LOG.errorf(
-                                        failure,
-                                        "Failed to send event reminder to %s for user ID: %d, event"
-                                                + " ID: %d",
-                                        user.getEmail(),
-                                        user.id,
-                                        event.id));
+        enqueue(
+                List.of(user.getEmail()),
+                EMAIL_HEADER_REMINDER,
+                htmlContent,
+                buildImageAttachments(pngImage, qrCodeImage),
+                false);
     }
 
     /**
@@ -811,60 +653,36 @@ public class EmailService {
         LOG.debugf(
                 "Generated CSV data of size %d bytes for event ID: %d", csvData.length, event.id);
 
-        String htmlContent = emailContentEventReminder;
+        String htmlContent =
+                managerExportTemplate
+                        .data("fullName", fullName(manager))
+                        .data("eventName", event.getName())
+                        .data(
+                                "eventDate",
+                                event.getStartTime()
+                                        .atZone(ZoneId.systemDefault())
+                                        .toLocalDate()
+                                        .toString())
+                        .data(
+                                "eventTime",
+                                event.getStartTime()
+                                        .atZone(ZoneId.systemDefault())
+                                        .toLocalTime()
+                                        .toString())
+                        .data("eventLocation", event.getEventLocation().getName())
+                        .data("currentYear", currentYear())
+                        .render();
 
-        // Replace placeholders
-        htmlContent =
-                htmlContent.replace(
-                        "{fullName}", manager.getFirstname() + " " + manager.getLastname());
-        htmlContent = htmlContent.replace("{eventName}", event.getName());
-        htmlContent =
-                htmlContent.replace(
-                        "{eventDate}",
-                        event.getStartTime()
-                                .atZone(ZoneId.systemDefault())
-                                .toLocalDate()
-                                .toString());
-        htmlContent =
-                htmlContent.replace(
-                        "{eventTime}",
-                        event.getStartTime()
-                                .atZone(ZoneId.systemDefault())
-                                .toLocalTime()
-                                .toString());
-        htmlContent = htmlContent.replace("{eventLocation}", event.getEventLocation().getName());
-        htmlContent =
-                htmlContent.replace(
-                        "{seatList}",
-                        "Bitte finden Sie die Reservierungsdetails im Anhang."); // Placeholder for
-        // seat list
-        htmlContent = htmlContent.replace("{currentYear}", Year.now().toString());
-        LOG.debug("Placeholders replaced in CSV export email template.");
+        // Queue the email with the CSV attachment for asynchronous, retried delivery
+        EmailAttachment csvAttachment =
+                EmailAttachment.file("reservations_" + event.id + ".csv", "text/csv", csvData);
 
-        // Create and send the email with CSV attachment
-        Mail mail =
-                Mail.withHtml(
-                        manager.getEmail(),
-                        EMAIL_HEADER_RESERVATION_OVERVIEW + event.getName(),
-                        htmlContent);
-        mail.addAttachment("reservations_" + event.id + ".csv", csvData, "text/csv");
-
-        mailer.send(mail)
-                .subscribe()
-                .with(
-                        success ->
-                                LOG.infof(
-                                        "Reservation CSV export email sent successfully to %s for"
-                                                + " manager ID: %d, event ID: %d",
-                                        manager.getEmail(), manager.id, event.id),
-                        failure ->
-                                LOG.errorf(
-                                        failure,
-                                        "Failed to send reservation CSV export email to %s for"
-                                                + " manager ID: %d, event ID: %d",
-                                        manager.getEmail(),
-                                        manager.id,
-                                        event.id));
+        enqueue(
+                List.of(manager.getEmail()),
+                EMAIL_HEADER_RESERVATION_OVERVIEW + event.getName(),
+                htmlContent,
+                List.of(csvAttachment),
+                false);
     }
 
     /**
@@ -896,20 +714,66 @@ public class EmailService {
     }
 
     /**
-     * Adds a Bcc (blind carbon copy) address to the specified mail if the address is present,
-     * non-empty, and not already included in the email recipients.
+     * Builds an {@link EmailMessage} from the given content and hands it off to the email queue.
+     * The Bcc address is added only when {@code includeBcc} is {@code true} and the address is
+     * present, non-empty, and not already included in the recipients.
      *
-     * @param mail the Mail object to which the Bcc address will be added
+     * @param recipients the To/Cc recipients (first entry becomes To, the rest Cc)
+     * @param subject the email subject
+     * @param htmlContent the rendered HTML body
+     * @param attachments the attachments to include, if any
+     * @param includeBcc whether the configured Bcc address should be added
      */
-    private void addBcc(Mail mail) {
-        bccAddress.ifPresent(
-                address -> {
-                    if (!address.trim().isEmpty()
-                            && !mail.getTo().contains(address)
-                            && !mail.getCc().contains(address)) {
-                        mail.addBcc(address);
-                    }
-                });
+    private void enqueue(
+            List<String> recipients,
+            String subject,
+            String htmlContent,
+            List<EmailAttachment> attachments,
+            boolean includeBcc) {
+        EmailMessage.Builder builder =
+                EmailMessage.builder().subject(subject).htmlBody(htmlContent);
+
+        if (!recipients.isEmpty()) {
+            builder.to(recipients.getFirst());
+            recipients.subList(1, recipients.size()).forEach(builder::cc);
+        }
+
+        if (includeBcc) {
+            bccAddress.ifPresent(
+                    address -> {
+                        if (!address.trim().isEmpty() && !recipients.contains(address)) {
+                            builder.bcc(address);
+                        }
+                    });
+        }
+
+        if (attachments != null) {
+            attachments.forEach(builder::attachment);
+        }
+
+        emailQueueService.enqueue(builder.build());
+    }
+
+    /**
+     * Builds the list of inline image attachments (seat map and QR code) shared by the reservation
+     * and reminder emails, skipping any image that could not be rendered.
+     *
+     * @param seatmapPng the rendered seat map PNG (may be empty)
+     * @param qrCode the rendered QR code PNG (may be empty)
+     * @return the non-empty inline attachments, referenced from the templates via their content-id
+     */
+    private List<EmailAttachment> buildImageAttachments(byte[] seatmapPng, byte[] qrCode) {
+        List<EmailAttachment> attachments = new ArrayList<>();
+        if (seatmapPng != null && seatmapPng.length > 0) {
+            attachments.add(
+                    EmailAttachment.inline(
+                            "seatmap.png", "image/png", "seatmap-image", seatmapPng));
+        }
+        if (qrCode != null && qrCode.length > 0) {
+            attachments.add(
+                    EmailAttachment.inline("qrcode.png", "image/png", "qrcode-image", qrCode));
+        }
+        return attachments;
     }
 
     /**

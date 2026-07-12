@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Reservation Confirmation</title>
+      <style>
+{#include email/fragments/simple-card-styles /}
+{#include email/fragments/action-styles /}
+      </style>
+  </head>
+  <body>
+      <div class="container">
+          <div class="header">Your reservation confirmation</div>
+          <p>Hello {fullName},</p>
+          <p>Thank you for your reservation for the event "{eventName}".</p>
+          <p><strong>Location:</strong> {eventLocation}</p>
+          <p><strong>Start:</strong> {eventStartTime}</p>
+          <p><strong>End:</strong> {eventEndTime}</p>
+          <p>You have newly reserved the following seats:</p>
+          <ul>
+              {#for seat in newSeats}<li>{seat.number} ({seat.row})</li>{/for}
+          </ul>
+          {#if hasExistingSeats}
+          <p>You have already reserved the following seats:</p>
+          <ul>
+              {#for seat in existingSeats}<li>{seat.number} ({seat.row})</li>{/for}
+          </ul>
+          {/if}
+{#include email/fragments/qrcode-block /}
+{#include email/fragments/entrance-info-block /}
+          <p>You can view the event details here: <a href="{eventLink}">View Event</a></p>
+          <div class="seatmap-container">
+              <p><strong>Here is an overview of your seats:</strong></p>
+              <img src="cid:seatmap-image" alt="Seat Map" class="seatmap-image" />
+              <div style="margin-bottom: 20px;">
+                  <span style="display: inline-block; width: 15px; height: 15px; background-color: #2B7FFF; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
+                  <span style="vertical-align: middle;">My Reserved</span>
+                  <span style="display: inline-block; width: 15px; height: 15px; background-color: #F0B100; border-radius: 3px; vertical-align: middle; margin-right: 5px; margin-left: 15px;"></span>
+                  <span style="vertical-align: middle;">Already Reserved</span>
+              </div>
+              <a href="{seatmapLink}" class="button">🪑 View Interactive Seat Map</a>
+          </div>
+          <p style="margin-top: 20px;">We wish you a great time at the event!</p>
+          <p>Best regards</p>
+          <div class="footer">
+              &copy; {currentYear} - All rights reserved
+          </div>
+      </div>
+  </body>
+</html>

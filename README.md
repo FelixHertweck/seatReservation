@@ -1,23 +1,35 @@
 # Seat Reservation System
 
-A comprehensive system for managing seat reservations for events. The system consists of a Quarkus backend and a Next.js frontend.
+A comprehensive system for managing seat reservations for events. The system consists of a Quarkus backend and a Next.js frontend, and ships with a ready-to-run Docker Compose stack including reverse proxy and monitoring.
 
 ## Overview
 
 There is a [DeepWiki](https://deepwiki.com/FelixHertweck/seatReservation), check it out for documentation.
 
-
 This application provides a robust solution for managing event seat reservations. It allows users to browse events, reserve seats, and receive email notifications. The system supports different user roles with varying levels of access and capabilities, ensuring secure and efficient management of events and reservations.
+
+## Features
+
+-   **Event & seat management** with interactive seating plans.
+-   **Reservations** with per-user allowances and manager oversight.
+-   **Role-based access** (Standard User, Manager, Admin) secured with JWT.
+-   **Transactional email delivery** via a persistent outbox with automatic retries and dead-lettering (see [Email Delivery](#email-delivery-transactional-outbox)).
+-   **Customizable email templates** (Qute HTML) and **PDF export** of reservations.
+-   **Bulk user import** from CSV.
+-   **Monitoring** out of the box with Prometheus and Grafana.
+-   **Cloud-native backend** with JVM and native (GraalVM) build options.
 
 ## Architecture
 
 The system is built with a clear separation of concerns:
 
+-   **Reverse Proxy:** **nginx** sits in front of the stack, routing traffic to the frontend, the backend API (`/api`, `/q`), and Grafana (`/grafana`).
 -   **Backend:** Developed using **Quarkus**, a cloud-native Java framework, providing high performance and a small memory footprint. It handles all business logic, data persistence, and API endpoints.
 -   **Frontend:** A modern web application built with **Next.js**, a React framework, offering a responsive and interactive user interface. It consumes data from the backend API.
 -   **Database:** **PostgreSQL** is used as the primary data store, ensuring reliable and scalable data management for events, seats, and user information.
 -   **Security:** Implemented with **JWT (JSON Web Tokens)** for authentication and authorization, securing access to various functionalities based on user roles.
--   **Email Services:** Integrated for sending automated notifications, such as reservation confirmations and event reminders, configured via environment variables.
+-   **Email Services:** Integrated for sending automated notifications, such as reservation confirmations and event reminders, delivered asynchronously through a transactional outbox and configured via environment variables.
+-   **Monitoring:** **Prometheus** scrapes the backend's metrics and **Grafana** visualizes them via a provisioned dashboard.
 
 ## User Roles and Permissions
 
@@ -53,9 +65,61 @@ Admins have full control over the system, including user management and system-w
 - Backend:  [![Build Status](https://github.com/FelixHertweck/SeatReservation/actions/workflows/backend.yml/badge.svg?branch=main)](https://github.com/FelixHertweck/SeatReservation/actions/workflows/backend.yml)
 - Backend Native: [![Build Status](https://github.com/FelixHertweck/SeatReservation/actions/workflows/backend-native.yml/badge.svg?branch=main)](https://github.com/FelixHertweck/SeatReservation/actions/workflows/backend-native.yml)
 
+## Deployment with Docker Compose
+
+The fastest way to run the full system (reverse proxy, frontend, backend, database, and monitoring) is the provided [`docker-compose.yml`](docker-compose.yml). It uses the pre-built images published to GitHub Container Registry, so no local build is required.
+
+### Prerequisites
+
+-   [Docker](https://docs.docker.com/get-docker/) and Docker Compose.
+-   Generated JWT keys (see [JWT Key Generation](#jwt-key-generation)).
+-   A configured `.env` file (see [Environment Variables](#environment-variables)).
+
+### Starting the stack
+
+```shell script
+# 1. Generate JWT keys (once)
+mkdir -p keys && openssl genpkey -algorithm RSA -out keys/privateKey.pem -pkeyopt rsa_keygen_bits:2048 && openssl rsa -pubout -in keys/privateKey.pem -out keys/publicKey.pem
+
+# 2. Create and edit your environment file
+cp .env.example .env
+
+# 3. Start everything in the background
+docker compose up -d
+```
+
+> **_NOTE:_** The backend container runs as `${UID}:${GID}` so it can read the mounted `keys/` directory. Export these before starting if they are not already set: `export UID=$(id -u) GID=$(id -g)`.
+
+### Services and access
+
+Only **nginx** is published to the host (port `80`); all other services communicate over the internal `app-network`.
+
+| Service | Purpose | Access |
+|---------|---------|--------|
+| `nginx` | Reverse proxy / entry point | `http://localhost` |
+| `frontend` | Next.js web UI | via nginx `/` |
+| `backend` | Quarkus API | via nginx `/api`, `/q` |
+| `db` | PostgreSQL 18 | internal only |
+| `prometheus` | Metrics collection | internal only |
+| `grafana` | Dashboards | `http://localhost/grafana` (default login `admin` / `admin`) |
+
+To expose individual services directly (e.g. the backend on `8080` or the database on `5432`) for debugging, uncomment the corresponding `ports:` blocks in [`docker-compose.yml`](docker-compose.yml).
+
+### Using the native backend image
+
+For a smaller footprint and faster startup, switch the backend to the native image by uncommenting the native image line in the `backend` service:
+
+```yaml
+image: ghcr.io/felixhertweck/seatreservation-backend-native:latest
+```
+
+### Building the images locally
+
+The Dockerfiles live in [`src/main/docker/`](src/main/docker/) (`Dockerfile.jvm`, `Dockerfile.native`) for the backend and [`webapp/Dockerfile`](webapp/Dockerfile) for the frontend, in case you want to build the images yourself instead of pulling from GHCR.
+
 ## Initial Setup
 
-Before running the application, ensure the following setup steps are completed:
+Before running the application (locally or via Docker), ensure the following setup steps are completed:
 
 ### JWT Key Generation
 
@@ -78,23 +142,57 @@ Upon initial startup, the application automatically checks for the existence of 
 
 ## Environment Variables
 
-The application requires certain environment variables to be set for proper functionality, especially for email services. These variables are loaded from a `.env` file in the project root.
+The application is configured via environment variables. For local runs and Docker Compose, these are loaded from a `.env` file in the project root. Copy the template to get started:
 
-### Setting up your environment
+```shell script
+cp .env.example .env
+```
 
-1.  Copy the `.env.example` file to create your own `.env` file:
-    ```shell script
-    cp .env.example .env
-    ```
+Then edit the values:
 
-2.  Edit the `.env` file and replace the placeholder values with your actual configuration:
-    ```
-    mail-host=your-mail-host         # e.g., smtp.gmail.com
-    mail-port=your-mail-port         # e.g., 465 for SSL
-    mail-username=your-mail-username # Your email username/address
-    mail-password=your-mail-password # Your email password or app password
-    mail-from=your-mail-from-address # The "from" address for sent emails
-    ```
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `MAIL_HOST` | SMTP server host | `smtp.gmail.com` |
+| `MAIL_PORT` | SMTP server port | `465` (SSL) |
+| `MAIL_USERNAME` | SMTP username / address | `you@example.com` |
+| `MAIL_PASSWORD` | SMTP password or app password | `••••••••` |
+| `MAIL_FROM` | The "from" address for sent emails | `noreply@example.com` |
+| `MAIL_TLS` | Set to `true` if the SMTP server requires TLS | `false` |
+| `MAIL_START_TLS` | STARTTLS mode (`REQUIRED`, `OPTIONAL`, `DISABLED`) | `REQUIRED` |
+| `EMAIL_BCC_ADDRESS` | Optional BCC address for all outgoing emails (leave empty to disable) | |
+| `APP_URL` | Public base URL of the deployment (used for links in emails and the Grafana root URL) | `http://localhost:8080` |
+| `POSTGRES_USER` | Database user (Docker deployment) | `postgres` |
+| `POSTGRES_PASSWORD` | Database password (Docker deployment) | `postgres_password` |
+| `POSTGRES_DB` | Database name (Docker deployment) | `seatReservation` |
+
+## Email Delivery (Transactional Outbox)
+
+Outgoing emails are not sent inline. Instead they are written to a persistent **outbox** and delivered asynchronously by a background dispatcher. This makes email delivery reliable and resilient to temporary mail-server outages:
+
+-   When a business action triggers an email, the message is persisted as an `OutboundEmail` in the **same database transaction** as the change that caused it. If that transaction rolls back, no orphan email is queued; once it commits, delivery is guaranteed to be attempted.
+-   A scheduled dispatcher drains the queue, hands messages to the SMTP server, and records the outcome. Message lifecycle: `PENDING → SENDING → SENT` (or `FAILED`).
+-   Failed sends are retried with **exponential back-off**. After the configured number of attempts a message becomes a `FAILED` dead letter.
+-   Delivered and failed messages are cleaned up automatically after a retention period.
+
+The behaviour is configurable via `email.queue.*` in [`application.yaml`](src/main/resources/application.yaml):
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `poll-interval` | `30s` | How often the dispatcher drains the queue |
+| `batch-size` | `20` | Max number of mails handled per drain cycle |
+| `max-attempts` | `5` | Delivery attempts before a mail becomes a `FAILED` dead letter |
+| `retry-backoff-seconds` | `60` | Base back-off; doubles per attempt (60s, 120s, 240s, …) |
+| `max-backoff-seconds` | `3600` | Upper bound for the back-off delay |
+| `sending-timeout-seconds` | `300` | After this, a mail stuck in `SENDING` is requeued |
+| `retention-days` | `30` | How long delivered/failed mails are kept before cleanup |
+
+## Monitoring
+
+The Docker Compose stack includes a monitoring setup:
+
+-   The backend exposes Prometheus metrics at `/q/metrics/prometheus`.
+-   **Prometheus** ([`prometheus/prometheus.yml`](prometheus/prometheus.yml)) scrapes the backend and stores the metrics.
+-   **Grafana** ([`grafana/`](grafana/)) is provisioned with the Prometheus data source and a Quarkus dashboard, reachable at `http://localhost/grafana` (default login `admin` / `admin` — change this before deploying).
 
 ## User Import
 
@@ -129,7 +227,36 @@ Max,Mustermann,secret123
 Anna,Müller,password
 ```
 
-## PDF Export Templates
+## Templates
+
+### Email Templates
+
+The application renders emails from customizable [Qute](https://quarkus.io/guides/qute) HTML templates located in [`src/main/resources/templates/email/`](src/main/resources/templates/email/):
+
+-   `email-confirmation.html`
+-   `password-changed.html`
+-   `reservation-confirmation.html`
+-   `reservation-update-confirmation.html`
+-   `event-reminder.html`
+-   `manager-reservation-export.html`
+
+Edit these files directly to adjust the look and content of outgoing emails, keeping the existing `{placeholder}` expressions intact. Subject lines and small text snippets are configured under `email.header.*` and related keys in [`application.yaml`](src/main/resources/application.yaml).
+
+#### Overriding Templates in a Deployment
+
+Instead of editing the bundled files (which requires rebuilding the image), you can supply your own templates from an external directory via `email.template.override-dir` (env var `EMAIL_TEMPLATE_OVERRIDE_DIR`). This is picked up on application start and takes precedence over the bundled templates.
+
+To customize a template:
+
+1.   Create a directory, e.g. `./email-templates/email/`.
+2.   Add an `.html` file named after the template you want to replace, e.g. `password-changed.html`. It only needs to contain the templates you actually want to change — anything missing falls back to the bundled version.
+3.   Write it as a normal, self-contained HTML file (Qute `{placeholder}`, `{#if}`, `{#for}` syntax is supported), using the same `{placeholder}` names as the original.
+4.   Point the app at the directory:
+     -   Locally: set `EMAIL_TEMPLATE_OVERRIDE_DIR=/path/to/email-templates` in `.env`.
+     -   Docker Compose: mount the directory into the container and set the env var — see the commented `email-templates` volume and `EMAIL_TEMPLATE_OVERRIDE_DIR` entry in [`docker-compose.yml`](docker-compose.yml).
+5.   Restart the application to pick up the changes.
+
+### PDF Export Templates
 
 The application supports exporting reservations as PDF documents, utilizing predefined PDF templates with AcroForm fields. There are two distinct templates used based on the reservation status:
 

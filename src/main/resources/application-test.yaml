@@ -15,3 +15,9 @@ quarkus:
 
 email:
   redirect-url: http://localhost:8081
+  # Effectively disable the background dispatcher during tests: the queue is drained
+  # explicitly via EmailDispatcher#drainQueue so assertions stay deterministic.
+  queue:
+    poll-interval: 24h
+    retry-backoff-seconds: 0
+    sending-timeout-seconds: 1
