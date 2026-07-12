@@ -141,7 +141,7 @@ public class Seat extends PanacheEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Seat that = (Seat) o;
-        if (id != null && that.id != null) {
+        if (id != null || that.id != null) {
             return Objects.equals(id, that.id);
         }
         return xCoordinate == that.xCoordinate
