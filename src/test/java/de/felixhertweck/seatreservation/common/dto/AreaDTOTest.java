@@ -30,10 +30,12 @@ import org.junit.jupiter.api.Test;
 
 class AreaDTOTest {
 
-    private Seat seat(String number, int x, int y, String area) {
+    private Seat seat(long id, String number, int x, int y, String area) {
         EventLocation location = new EventLocation();
         location.id = 1L;
-        return new Seat(number, location, "Row", x, y, null, area);
+        Seat seat = new Seat(number, location, "Row", x, y, null, area);
+        seat.id = id;
+        return seat;
     }
 
     @Test
@@ -45,34 +47,49 @@ class AreaDTOTest {
     void fromSeats_ignoresSeatsWithoutArea() {
         List<Seat> seats =
                 List.of(
-                        seat("A1", 1, 1, null),
-                        seat("A2", 2, 1, ""),
-                        seat("A3", 3, 1, "   "),
-                        seat("A4", 4, 1, "Balkon"));
+                        seat(1, "A1", 1, 1, null),
+                        seat(2, "A2", 2, 1, ""),
+                        seat(3, "A3", 3, 1, "   "),
+                        seat(4, "A4", 4, 1, "Balkon"));
 
         List<AreaDTO> areas = AreaDTO.fromSeats(seats);
 
         assertEquals(1, areas.size());
         assertEquals("Balkon", areas.get(0).name());
-        assertEquals(1, areas.get(0).seats().size());
-        assertEquals("A4", areas.get(0).seats().get(0).seatNumber());
+        assertEquals(1, areas.get(0).seatIds().size());
+        assertEquals(4L, areas.get(0).seatIds().get(0));
+    }
+
+    @Test
+    void fromSeats_groupsSeatsIgnoringSurroundingWhitespaceInAreaName() {
+        List<Seat> seats =
+                List.of(
+                        seat(1, "A1", 1, 1, "Parkett"),
+                        seat(2, "A2", 2, 1, "Parkett "),
+                        seat(3, "A3", 3, 1, " Parkett"));
+
+        List<AreaDTO> areas = AreaDTO.fromSeats(seats);
+
+        assertEquals(1, areas.size());
+        assertEquals("Parkett", areas.get(0).name());
+        assertEquals(3, areas.get(0).seatIds().size());
     }
 
     @Test
     void fromSeats_groupsSeatsByAreaInFirstSeenOrder() {
         List<Seat> seats =
                 List.of(
-                        seat("A1", 1, 1, "Parkett"),
-                        seat("B1", 1, 2, "Balkon"),
-                        seat("A2", 2, 1, "Parkett"),
-                        seat("B2", 2, 2, "Balkon"));
+                        seat(1, "A1", 1, 1, "Parkett"),
+                        seat(2, "B1", 1, 2, "Balkon"),
+                        seat(3, "A2", 2, 1, "Parkett"),
+                        seat(4, "B2", 2, 2, "Balkon"));
 
         List<AreaDTO> areas = AreaDTO.fromSeats(seats);
 
         assertEquals(2, areas.size());
         assertEquals("Parkett", areas.get(0).name());
-        assertEquals(2, areas.get(0).seats().size());
+        assertEquals(2, areas.get(0).seatIds().size());
         assertEquals("Balkon", areas.get(1).name());
-        assertEquals(2, areas.get(1).seats().size());
+        assertEquals(2, areas.get(1).seatIds().size());
     }
 }
