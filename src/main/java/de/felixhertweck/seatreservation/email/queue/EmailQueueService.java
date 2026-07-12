@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.email.queue;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -69,9 +70,9 @@ public class EmailQueueService {
 
         Instant now = Instant.now();
         OutboundEmail email = new OutboundEmail();
-        email.setTo(new java.util.ArrayList<>(message.getTo()));
-        email.setCc(new java.util.ArrayList<>(message.getCc()));
-        email.setBcc(new java.util.ArrayList<>(message.getBcc()));
+        email.setTo(new ArrayList<>(message.getTo()));
+        email.setCc(new ArrayList<>(message.getCc()));
+        email.setBcc(new ArrayList<>(message.getBcc()));
         email.setSubject(message.getSubject());
         email.setHtmlBody(message.getHtmlBody());
         email.setMaxAttempts(maxAttempts);
