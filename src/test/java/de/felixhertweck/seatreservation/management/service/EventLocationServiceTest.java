@@ -402,7 +402,7 @@ public class EventLocationServiceTest {
         // Seats sharing an area are grouped into a single AreaDTO on the response
         assertEquals(1, result.areas().size());
         assertEquals("Parkett", result.areas().get(0).name());
-        assertEquals(2, result.areas().get(0).seats().size());
+        assertEquals(2, result.areas().get(0).seatIds().size());
     }
 
     @Test

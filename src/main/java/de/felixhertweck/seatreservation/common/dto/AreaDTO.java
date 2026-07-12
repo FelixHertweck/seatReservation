@@ -29,12 +29,13 @@ import de.felixhertweck.seatreservation.model.entity.Seat;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 /**
- * Represents a named area within an event location together with all seats assigned to it. Areas
- * are derived by grouping the seats of a location by their {@code area} value and are intended to
- * be rendered as an overlay on top of the seat map.
+ * Represents a named area within an event location together with the ids of all seats assigned to
+ * it. Areas are derived by grouping the seats of a location by their {@code area} value and are
+ * intended to be rendered as an overlay on top of the seat map. Only seat ids are referenced here
+ * since the full seat data is already part of the enclosing response.
  */
 @RegisterForReflection
-public record AreaDTO(String name, List<SeatDTO> seats) {
+public record AreaDTO(String name, List<Long> seatIds) {
 
     /**
      * Groups the given seats by their area name into a list of {@link AreaDTO}s. Seats without an
@@ -42,22 +43,22 @@ public record AreaDTO(String name, List<SeatDTO> seats) {
      * areas are first encountered.
      *
      * @param seats the seats to group; may be {@code null}
-     * @return a list of areas with their assigned seats, never {@code null}
+     * @return a list of areas with their assigned seat ids, never {@code null}
      */
     public static List<AreaDTO> fromSeats(Collection<Seat> seats) {
         if (seats == null) {
             return List.of();
         }
-        Map<String, List<SeatDTO>> grouped = new LinkedHashMap<>();
+        Map<String, List<Long>> grouped = new LinkedHashMap<>();
         for (Seat seat : seats) {
             String area = seat.getArea();
             if (area == null || area.trim().isEmpty()) {
                 continue;
             }
-            grouped.computeIfAbsent(area, key -> new ArrayList<>()).add(new SeatDTO(seat));
+            grouped.computeIfAbsent(area.trim(), key -> new ArrayList<>()).add(seat.id);
         }
         List<AreaDTO> result = new ArrayList<>();
-        grouped.forEach((name, areaSeats) -> result.add(new AreaDTO(name, areaSeats)));
+        grouped.forEach((name, seatIds) -> result.add(new AreaDTO(name, seatIds)));
         return result;
     }
 }
