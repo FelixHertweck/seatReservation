@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.email.template;
 
+import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.URI;
@@ -109,7 +110,7 @@ public class ExternalEmailTemplateLocator implements TemplateLocator {
             String content = Files.readString(file, StandardCharsets.UTF_8);
             LOG.debugf("Using external override for email template '%s' from %s", id, file);
             return Optional.of(new FileTemplateLocation(content, file.toUri()));
-        } catch (Exception e) {
+        } catch (IOException e) {
             LOG.warnf(e, "Failed to read email template override for '%s' from %s", id, file);
             return Optional.empty();
         }
@@ -146,7 +147,7 @@ public class ExternalEmailTemplateLocator implements TemplateLocator {
                             id);
                     return null;
                 }
-            } catch (Exception e) {
+            } catch (IOException e) {
                 LOG.warnf(e, "Failed to resolve real path for email template override: %s", id);
                 return null;
             }

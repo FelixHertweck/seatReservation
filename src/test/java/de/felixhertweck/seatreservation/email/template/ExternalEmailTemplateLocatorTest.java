@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.email.template;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -43,7 +44,7 @@ class ExternalEmailTemplateLocatorTest {
     private String readAll(Reader reader) {
         try (BufferedReader br = new BufferedReader(reader)) {
             return br.lines().collect(Collectors.joining("\n"));
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new IllegalStateException(e);
         }
     }

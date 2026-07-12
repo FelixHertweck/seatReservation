@@ -23,6 +23,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenRepository;
@@ -76,7 +77,7 @@ public class DatabaseCleanup {
             } else {
                 LOG.debug("No finished outbound emails found to clean up.");
             }
-        } catch (Exception e) {
+        } catch (PersistenceException e) {
             LOG.error("Error during outbound email cleanup", e);
         }
     }
