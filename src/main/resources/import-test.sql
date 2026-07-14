@@ -41,5 +41,28 @@ INSERT INTO user_tags (user_id, tags) VALUES (4, 'demouser');
 -- Assign USER role to regular user
 INSERT INTO user_roles (user_id, role) VALUES (3, 'SUPERVISOR');
 
+-- Insert a minimal event location for tests
+INSERT INTO eventlocations (id, name, address, manager_id) VALUES (1, 'Test Hall', 'Teststraße 1, 12345 Teststadt', 2);
+
+-- Insert a minimal event for tests
+INSERT INTO events (id, name, startTime, endTime, bookingStartTime, bookingDeadline, reminderSent, event_location_id, manager_id) VALUES (1, 'Test Concert', '2024-12-31 19:00:00', '2024-12-31 21:00:00', '2024-12-12 17:00:00', '2026-12-12 17:00:00', false, 1, 2);
+
+-- Assign supervisor user (id 4) to the event (id 1)
+INSERT INTO event_supervisors (event_id, user_id) VALUES (1, 4);
+
+-- Insert seats, split into two areas (Ground Floor on the ground floor, Balcony above)
+INSERT INTO seats (id, seatNumber, location_id, xCoordinate, yCoordinate, seatRow, entrance, area) VALUES
+(1, '1', 1, 1, 1, 'Row 1', 'Entrance A', 'Ground Floor'),
+(2, '2', 1, 2, 1, 'Row 1', 'Entrance A', 'Ground Floor'),
+(3, '3', 1, 3, 1, 'Row 1', 'Entrance A', 'Ground Floor'),
+(4, '4', 1, 4, 1, 'Row 1', 'Entrance A', 'Ground Floor'),
+(5, '5', 1, 1, 2, 'Balcony 1', 'Entrance B', 'Balcony'),
+(6, '6', 1, 2, 2, 'Balcony 1', 'Entrance B', 'Balcony'),
+(7, '7', 1, 3, 2, 'Balcony 1', 'Entrance B', 'Balcony'),
+(8, '8', 1, 4, 2, 'Balcony 1', 'Entrance B', 'Balcony');
+
 -- Update sequence for tables
 ALTER SEQUENCE users_seq RESTART WITH 5;
+ALTER SEQUENCE eventlocations_seq RESTART WITH 2;
+ALTER SEQUENCE events_seq RESTART WITH 2;
+ALTER SEQUENCE seats_seq RESTART WITH 9;
