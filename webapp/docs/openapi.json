@@ -81,6 +81,40 @@
         },
         "required" : [ "emailVerified", "sendEmailVerification", "firstname", "lastname", "tags", "roles" ]
       },
+      "AreaBoundaryPointDTO" : {
+        "type" : "object",
+        "properties" : {
+          "xCoordinate" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "yCoordinate" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "AreaDTO" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "seatIds" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          },
+          "boundary" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AreaBoundaryPointDTO"
+            }
+          }
+        }
+      },
       "BlockSeatsRequestDTO" : {
         "type" : "object",
         "properties" : {
@@ -228,6 +262,12 @@
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/EventLocationMakerDTO"
+            }
+          },
+          "areas" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AreaDTO"
             }
           }
         }
@@ -443,6 +483,12 @@
           },
           "seatRow" : {
             "type" : "string"
+          },
+          "entrance" : {
+            "type" : "string"
+          },
+          "area" : {
+            "type" : "string"
           }
         }
       },
@@ -635,6 +681,9 @@
           },
           "entrance" : {
             "type" : "string"
+          },
+          "area" : {
+            "type" : "string"
           }
         }
       },
@@ -661,6 +710,9 @@
             "type" : "string"
           },
           "entrance" : {
+            "type" : "string"
+          },
+          "area" : {
             "type" : "string"
           }
         }
@@ -698,6 +750,12 @@
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/EventLocationMakerDTO"
+            }
+          },
+          "areas" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AreaDTO"
             }
           }
         }
@@ -849,6 +907,12 @@
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/EventLocationMakerDTO"
+            }
+          },
+          "areas" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AreaDTO"
             }
           }
         }

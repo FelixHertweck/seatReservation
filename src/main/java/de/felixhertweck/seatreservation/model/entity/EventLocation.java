@@ -47,6 +47,13 @@ public class EventLocation extends PanacheEntity {
             orphanRemoval = true)
     private List<EventLocationMarker> markers = new ArrayList<>();
 
+    @OneToMany(
+            mappedBy = "eventLocation",
+            fetch = FetchType.EAGER,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    private List<AreaBoundaryPoint> areaBoundaryPoints = new ArrayList<>();
+
     public EventLocation() {}
 
     public EventLocation(String name, String address, User manager, Integer capacity) {
@@ -119,6 +126,14 @@ public class EventLocation extends PanacheEntity {
 
     public void setMarkers(List<EventLocationMarker> markers) {
         this.markers = markers;
+    }
+
+    public List<AreaBoundaryPoint> getAreaBoundaryPoints() {
+        return areaBoundaryPoints;
+    }
+
+    public void setAreaBoundaryPoints(List<AreaBoundaryPoint> areaBoundaryPoints) {
+        this.areaBoundaryPoints = areaBoundaryPoints;
     }
 
     @Override

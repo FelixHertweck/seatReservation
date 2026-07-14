@@ -20,8 +20,10 @@
 package de.felixhertweck.seatreservation.common.dto;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
@@ -91,5 +93,50 @@ class AreaDTOTest {
         assertEquals(2, areas.get(0).seatIds().size());
         assertEquals("Balkon", areas.get(1).name());
         assertEquals(2, areas.get(1).seatIds().size());
+    }
+
+    @Test
+    void fromSeats_withoutBoundariesMap_leavesBoundaryNull() {
+        List<Seat> seats = List.of(seat(1, "A1", 1, 1, "Parkett"));
+
+        List<AreaDTO> areas = AreaDTO.fromSeats(seats);
+
+        assertEquals(1, areas.size());
+        assertNull(areas.get(0).boundary());
+    }
+
+    @Test
+    void fromSeats_withBoundariesMap_attachesBoundaryToMatchingArea() {
+        List<Seat> seats =
+                List.of(
+                        seat(1, "A1", 1, 1, "Parkett"),
+                        seat(2, "A2", 2, 1, "Parkett"),
+                        seat(3, "B1", 1, 2, "Balkon"));
+
+        List<AreaBoundaryPointDTO> parkettBoundary =
+                List.of(
+                        new AreaBoundaryPointDTO(1, 1),
+                        new AreaBoundaryPointDTO(2, 1),
+                        new AreaBoundaryPointDTO(2, 2),
+                        new AreaBoundaryPointDTO(1, 2));
+
+        List<AreaDTO> areas = AreaDTO.fromSeats(seats, Map.of("Parkett", parkettBoundary));
+
+        assertEquals(2, areas.size());
+        assertEquals("Parkett", areas.get(0).name());
+        assertEquals(parkettBoundary, areas.get(0).boundary());
+        assertEquals("Balkon", areas.get(1).name());
+        assertNull(areas.get(1).boundary());
+    }
+
+    @Test
+    void fromSeats_withBoundariesMap_ignoresEntriesForUnknownAreaNames() {
+        List<Seat> seats = List.of(seat(1, "A1", 1, 1, "Parkett"));
+
+        List<AreaDTO> areas =
+                AreaDTO.fromSeats(seats, Map.of("Balkon", List.of(new AreaBoundaryPointDTO(1, 1))));
+
+        assertEquals(1, areas.size());
+        assertNull(areas.get(0).boundary());
     }
 }

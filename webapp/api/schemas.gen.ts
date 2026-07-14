@@ -96,6 +96,42 @@ export const AdminUserUpdateDTOSchema = {
     ]
 } as const;
 
+export const AreaBoundaryPointDTOSchema = {
+    type: 'object',
+    properties: {
+        xCoordinate: {
+            type: 'integer',
+            format: 'int32'
+        },
+        yCoordinate: {
+            type: 'integer',
+            format: 'int32'
+        }
+    }
+} as const;
+
+export const AreaDTOSchema = {
+    type: 'object',
+    properties: {
+        name: {
+            type: 'string'
+        },
+        seatIds: {
+            type: 'array',
+            items: {
+                type: 'integer',
+                format: 'int64'
+            }
+        },
+        boundary: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/AreaBoundaryPointDTO'
+            }
+        }
+    }
+} as const;
+
 export const BlockSeatsRequestDTOSchema = {
     type: 'object',
     properties: {
@@ -259,6 +295,12 @@ export const EventLocationResponseDTOSchema = {
             type: 'array',
             items: {
                 $ref: '#/components/schemas/EventLocationMakerDTO'
+            }
+        },
+        areas: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/AreaDTO'
             }
         }
     }
@@ -506,6 +548,12 @@ export const ImportSeatDtoSchema = {
         },
         seatRow: {
             type: 'string'
+        },
+        entrance: {
+            type: 'string'
+        },
+        area: {
+            type: 'string'
         }
     }
 } as const;
@@ -736,6 +784,9 @@ export const SeatDTOSchema = {
         },
         entrance: {
             type: 'string'
+        },
+        area: {
+            type: 'string'
         }
     }
 } as const;
@@ -769,6 +820,9 @@ export const SeatRequestDTOSchema = {
             type: 'string'
         },
         entrance: {
+            type: 'string'
+        },
+        area: {
             type: 'string'
         }
     }
@@ -808,6 +862,12 @@ export const SupervisorEventLocationDTOSchema = {
             type: 'array',
             items: {
                 $ref: '#/components/schemas/EventLocationMakerDTO'
+            }
+        },
+        areas: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/AreaDTO'
             }
         }
     }
@@ -964,6 +1024,12 @@ export const UserEventLocationResponseDTOSchema = {
             type: 'array',
             items: {
                 $ref: '#/components/schemas/EventLocationMakerDTO'
+            }
+        },
+        areas: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/AreaDTO'
             }
         }
     }

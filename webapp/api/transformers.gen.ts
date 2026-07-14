@@ -32,6 +32,13 @@ const limitedUserInfoDtoSchemaResponseTransformer = (data: any) => {
     return data;
 };
 
+const areaDtoSchemaResponseTransformer = (data: any) => {
+    if (data.seatIds) {
+        data.seatIds = data.seatIds.map((item: any) => BigInt(item.toString()));
+    }
+    return data;
+};
+
 const eventLocationResponseDtoSchemaResponseTransformer = (data: any) => {
     if (data.id) {
         data.id = BigInt(data.id.toString());
@@ -41,6 +48,9 @@ const eventLocationResponseDtoSchemaResponseTransformer = (data: any) => {
     }
     if (data.seatIds) {
         data.seatIds = data.seatIds.map((item: any) => BigInt(item.toString()));
+    }
+    if (data.areas) {
+        data.areas = data.areas.map((item: any) => areaDtoSchemaResponseTransformer(item));
     }
     return data;
 };
@@ -352,6 +362,9 @@ const userEventLocationResponseDtoSchemaResponseTransformer = (data: any) => {
     }
     if (data.seats) {
         data.seats = data.seats.map((item: any) => seatDtoSchemaResponseTransformer(item));
+    }
+    if (data.areas) {
+        data.areas = data.areas.map((item: any) => areaDtoSchemaResponseTransformer(item));
     }
     return data;
 };

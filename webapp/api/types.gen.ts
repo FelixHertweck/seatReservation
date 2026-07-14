@@ -26,6 +26,17 @@ export type AdminUserUpdateDto = {
     roles: Array<string>;
 };
 
+export type AreaBoundaryPointDto = {
+    xCoordinate?: number;
+    yCoordinate?: number;
+};
+
+export type AreaDto = {
+    name?: string;
+    seatIds?: Array<bigint>;
+    boundary?: Array<AreaBoundaryPointDto>;
+};
+
 export type BlockSeatsRequestDto = {
     eventId?: bigint;
     seatIds?: Array<bigint>;
@@ -70,6 +81,7 @@ export type EventLocationResponseDto = {
     manager?: LimitedUserInfoDto;
     seatIds?: Array<bigint>;
     markers?: Array<EventLocationMakerDto>;
+    areas?: Array<AreaDto>;
 };
 
 export type EventRequestDto = {
@@ -134,6 +146,8 @@ export type ImportSeatDto = {
     xCoordinate: number;
     yCoordinate: number;
     seatRow?: string;
+    entrance?: string;
+    area?: string;
 };
 
 export type Instant = Date;
@@ -209,6 +223,7 @@ export type SeatDto = {
     xCoordinate?: number;
     yCoordinate?: number;
     entrance?: string;
+    area?: string;
 };
 
 export type SeatRequestDto = {
@@ -218,6 +233,7 @@ export type SeatRequestDto = {
     yCoordinate: number;
     seatRow: string;
     entrance?: string;
+    area?: string;
 };
 
 export type SeatStatusDto = {
@@ -233,6 +249,7 @@ export type SupervisorEventLocationDto = {
     name?: string;
     seats?: Array<SeatDto>;
     markers?: Array<EventLocationMakerDto>;
+    areas?: Array<AreaDto>;
 };
 
 export type SupervisorEventResponseDto = {
@@ -285,6 +302,7 @@ export type UserEventLocationResponseDto = {
     manager?: LimitedUserInfoDto;
     seats?: Array<SeatDto>;
     markers?: Array<EventLocationMakerDto>;
+    areas?: Array<AreaDto>;
 };
 
 export type UserEventResponseDto = {
