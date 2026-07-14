@@ -42,6 +42,6 @@ public record SupervisorEventLocationDTO(
                 eventLocation.getName(),
                 eventLocation.getSeats().stream().map(SeatDTO::new).toList(),
                 eventLocation.getMarkers().stream().map(EventLocationMakerDTO::new).toList(),
-                AreaDTO.fromSeats(eventLocation.getSeats()));
+                AreaDTO.fromSeats(eventLocation.getSeats(), eventLocation.getAreaBoundaryPoints()));
     }
 }
