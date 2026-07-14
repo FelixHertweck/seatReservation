@@ -29,6 +29,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import de.felixhertweck.seatreservation.common.dto.AreaDTO;
 import de.felixhertweck.seatreservation.model.entity.EmailSeatMapToken;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
@@ -149,9 +150,15 @@ public class EmailSeatMapService {
                         .map(Seat::getSeatNumber)
                         .collect(java.util.stream.Collectors.toSet());
         Collection<EventLocationMarker> markers = event.getEventLocation().getMarkers();
+        List<AreaDTO> areas =
+                AreaDTO.fromSeats(allSeats, event.getEventLocation().getAreaBoundaryPoints());
 
         return Optional.of(
                 SvgRenderer.renderSeats(
-                        allSeats, newReservedSeatNumbers, existingReservedSeatNumbers, markers));
+                        allSeats,
+                        newReservedSeatNumbers,
+                        existingReservedSeatNumbers,
+                        markers,
+                        areas));
     }
 }

@@ -330,6 +330,29 @@ class EmailSeatMapServiceTest {
     }
 
     @Test
+    void getSvgImage_WithAreas_RendersAreaZone() {
+        String token = UUID.randomUUID().toString();
+
+        testSeat.setArea("Parkett");
+
+        EmailSeatMapToken emailSeatMapToken = new EmailSeatMapToken();
+        emailSeatMapToken.setToken(token);
+        emailSeatMapToken.setUser(testUser);
+        emailSeatMapToken.setEvent(testEvent);
+        emailSeatMapToken.setExpirationTime(Instant.now().plus(30, ChronoUnit.DAYS));
+        emailSeatMapToken.setNewReservedSeatNumbers(Collections.singleton("A1"));
+
+        when(tokenRepository.findByToken(token)).thenReturn(Optional.of(emailSeatMapToken));
+
+        Optional<String> svg = emailSeatMapService.getSvgImage(token);
+
+        assertTrue(svg.isPresent());
+        assertTrue(svg.get().contains("<svg"));
+        assertTrue(svg.get().contains("Parkett"));
+        assertTrue(svg.get().contains("<rect"));
+    }
+
+    @Test
     void getPngImage_Success_WithValidToken() {
         String token = UUID.randomUUID().toString();
         EmailSeatMapToken emailSeatMapToken = new EmailSeatMapToken();
