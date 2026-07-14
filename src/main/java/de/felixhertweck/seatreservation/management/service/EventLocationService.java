@@ -20,19 +20,23 @@
 package de.felixhertweck.seatreservation.management.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import de.felixhertweck.seatreservation.management.dto.AreaBoundaryPointRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationResponseDTO;
 import de.felixhertweck.seatreservation.management.dto.ImportEventLocationDto;
 import de.felixhertweck.seatreservation.management.dto.ImportSeatDto;
 import de.felixhertweck.seatreservation.management.dto.MakerRequestDTO;
 import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
+import de.felixhertweck.seatreservation.model.entity.AreaBoundaryPoint;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
 import de.felixhertweck.seatreservation.model.entity.Roles;
@@ -122,6 +126,8 @@ public class EventLocationService {
                 new EventLocation(dto.getName(), dto.getAddress(), manager, dto.getCapacity());
         // Set markers after location is created to avoid circular dependency
         location.setMarkers(convertToMarkerEntities(dto.getmarkers(), location));
+        location.setAreaBoundaryPoints(
+                convertToAreaBoundaryPointEntities(dto.getAreaBoundaryPoints(), location));
         eventLocationRepository.persist(location);
         LOG.infof(
                 "Event location '%s' (ID: %d) created successfully by manager: %s (ID: %d)",
@@ -200,6 +206,22 @@ public class EventLocationService {
             location.setMarkers(newMarkersList);
         }
 
+        // Update area boundary points: same immutable-collection-safe handling as markers
+        List<AreaBoundaryPoint> currentAreaBoundaryPoints = location.getAreaBoundaryPoints();
+
+        List<AreaBoundaryPoint> newAreaBoundaryPointsList = new ArrayList<>();
+        if (dto.getAreaBoundaryPoints() != null) {
+            newAreaBoundaryPointsList.addAll(
+                    convertToAreaBoundaryPointEntities(dto.getAreaBoundaryPoints(), location));
+        }
+
+        try {
+            currentAreaBoundaryPoints.clear();
+            currentAreaBoundaryPoints.addAll(newAreaBoundaryPointsList);
+        } catch (UnsupportedOperationException e) {
+            location.setAreaBoundaryPoints(newAreaBoundaryPointsList);
+        }
+
         eventLocationRepository.persist(location);
         LOG.infof(
                 "Event location '%s' (ID: %d) updated successfully by manager: %s (ID: %d)",
@@ -232,6 +254,34 @@ public class EventLocationService {
                                     return marker;
                                 })
                         .toList());
+    }
+
+    /**
+     * Converts a list of area boundary point DTOs to AreaBoundaryPoint entities. Points sharing the
+     * same (trimmed) area name are assigned an ascending {@code sortOrder} based on their position
+     * in {@code dtoPoints}, so the submission order defines the polygon's vertex order.
+     *
+     * @param dtoPoints The list of area boundary point DTOs to convert
+     * @param eventLocation The event location to associate with the points
+     * @return A list of AreaBoundaryPoint entities
+     */
+    private List<AreaBoundaryPoint> convertToAreaBoundaryPointEntities(
+            List<AreaBoundaryPointRequestDTO> dtoPoints, EventLocation eventLocation) {
+        if (dtoPoints == null) {
+            return new ArrayList<>();
+        }
+        Map<String, Integer> nextSortOrderByArea = new HashMap<>();
+        List<AreaBoundaryPoint> result = new ArrayList<>();
+        for (AreaBoundaryPointRequestDTO pointDto : dtoPoints) {
+            String area = pointDto.getArea() == null ? null : pointDto.getArea().trim();
+            int sortOrder = nextSortOrderByArea.merge(area, 1, Integer::sum) - 1;
+            AreaBoundaryPoint point =
+                    new AreaBoundaryPoint(
+                            area, pointDto.getxCoordinate(), pointDto.getyCoordinate(), sortOrder);
+            point.setEventLocation(eventLocation);
+            result.add(point);
+        }
+        return result;
     }
 
     /**
@@ -320,6 +370,8 @@ public class EventLocationService {
         location.setCapacity(dto.getCapacity());
         location.setManager(manager);
         location.setMarkers(convertToMarkerEntities(dto.getMarkers(), location));
+        location.setAreaBoundaryPoints(
+                convertToAreaBoundaryPointEntities(dto.getAreaBoundaryPoints(), location));
 
         eventLocationRepository.persist(location);
 
