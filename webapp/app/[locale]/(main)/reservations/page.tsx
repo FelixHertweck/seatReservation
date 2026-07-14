@@ -162,6 +162,7 @@ export default function EventsPage() {
           seats={selectedReservation.location?.seats || []}
           seatStatuses={selectedReservation.event?.seatStatuses || []}
           markers={selectedReservation.location?.markers || []}
+          areas={selectedReservation.location?.areas || []}
           reservation={selectedReservation.reservation}
           eventReservations={selectedReservation.eventReservations || []}
           onClose={() => setSelectedReservation(null)}

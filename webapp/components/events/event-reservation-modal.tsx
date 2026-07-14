@@ -18,6 +18,8 @@ import type {
 } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { findSeatStatus } from "@/lib/reservationSeat";
+import { getAreaColor } from "@/lib/areaColors";
+import { cn } from "@/lib/utils";
 
 interface EventReservationModalProps {
   event: UserEventResponseDto;
@@ -123,6 +125,29 @@ export function EventReservationModal({
               <div className="w-4 h-4 bg-gray-500 rounded"></div>
               <span>{t("eventReservationModal.blocked")}</span>
             </div>
+            {location?.areas && location.areas.length > 0 && (
+              <>
+                <div className="w-px self-stretch bg-border hidden sm:block" />
+                {location.areas.map((area, index) => {
+                  const color = getAreaColor(index);
+                  return (
+                    <div
+                      key={area.name ?? index}
+                      className="flex items-center gap-2"
+                    >
+                      <div
+                        className={cn(
+                          "w-4 h-4 rounded-sm border-2 border-dashed",
+                          color.fill,
+                          color.border,
+                        )}
+                      ></div>
+                      <span>{area.name}</span>
+                    </div>
+                  );
+                })}
+              </>
+            )}
           </div>
 
           <div className="flex-1 min-h-0">
@@ -130,6 +155,7 @@ export function EventReservationModal({
               seats={seats}
               seatStatuses={event.seatStatuses ?? []}
               markers={location?.markers ?? []}
+              areas={location?.areas ?? []}
               selectedSeats={selectedSeats}
               userReservedSeats={userReservedSeats}
               onSeatSelect={handleSeatSelect}

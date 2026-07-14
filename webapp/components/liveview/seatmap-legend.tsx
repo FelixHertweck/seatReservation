@@ -1,6 +1,13 @@
 import { useT } from "@/lib/i18n/hooks";
+import type { AreaDto } from "@/api";
+import { getAreaColor } from "@/lib/areaColors";
+import { cn } from "@/lib/utils";
 
-export default function SeatmapLegend() {
+interface SeatmapLegendProps {
+  areas?: AreaDto[];
+}
+
+export default function SeatmapLegend({ areas = [] }: SeatmapLegendProps) {
   const t = useT();
   return (
     <div className="p-4 border rounded-lg bg-card">
@@ -27,6 +34,32 @@ export default function SeatmapLegend() {
           <span className="text-sm">{t("seatStatus.checkedIn")}</span>
         </div>
       </div>
+
+      {areas.length > 0 && (
+        <>
+          <div className="my-4 border-t" />
+          <div className="space-y-3">
+            {areas.map((area, index) => {
+              const color = getAreaColor(index);
+              return (
+                <div
+                  key={area.name ?? index}
+                  className="flex items-center gap-3"
+                >
+                  <div
+                    className={cn(
+                      "w-4 h-4 rounded-sm border-2 border-dashed",
+                      color.fill,
+                      color.border,
+                    )}
+                  ></div>
+                  <span className="text-sm">{area.name}</span>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
     </div>
   );
 }

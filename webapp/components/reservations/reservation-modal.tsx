@@ -10,17 +10,21 @@ import {
 import { SeatMap } from "@/components/common/seat-map";
 import { useState } from "react";
 import type {
+  AreaDto,
   EventLocationMakerDto,
   UserReservationResponseDto,
   SeatDto,
   SeatStatusDto,
 } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
+import { getAreaColor } from "@/lib/areaColors";
+import { cn } from "@/lib/utils";
 
 interface SeatMapModalProps {
   seats: SeatDto[];
   seatStatuses: SeatStatusDto[];
   markers: EventLocationMakerDto[];
+  areas?: AreaDto[];
   reservation: UserReservationResponseDto;
   eventReservations: UserReservationResponseDto[];
   onClose: () => void;
@@ -31,6 +35,7 @@ export function SeatMapModal({
   seats,
   seatStatuses,
   markers,
+  areas = [],
   reservation,
   eventReservations,
   onClose,
@@ -117,12 +122,36 @@ export function SeatMapModal({
                 <div className="w-4 h-4 bg-gray-500 rounded transition-all duration-300 hover:scale-110"></div>
                 <span>{t("eventReservationModal.blocked")}</span>
               </div>
+              {areas.length > 0 && (
+                <>
+                  <div className="w-px self-stretch bg-border hidden sm:block" />
+                  {areas.map((area, index) => {
+                    const color = getAreaColor(index);
+                    return (
+                      <div
+                        key={area.name ?? index}
+                        className="flex items-center gap-2 animate-in slide-in-from-left duration-300"
+                      >
+                        <div
+                          className={cn(
+                            "w-4 h-4 rounded-sm border-2 border-dashed transition-all duration-300 hover:scale-110",
+                            color.fill,
+                            color.border,
+                          )}
+                        ></div>
+                        <span>{area.name}</span>
+                      </div>
+                    );
+                  })}
+                </>
+              )}
             </div>
             <div className="flex-1 min-h-0 min-w-0">
               <SeatMap
                 seats={seats}
                 seatStatuses={seatStatuses}
                 markers={markers}
+                areas={areas}
                 selectedSeats={highlightedSeats}
                 onSeatSelect={() => {}} // Read-only
                 userReservedSeats={reservedSeats}

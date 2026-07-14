@@ -6,6 +6,8 @@ import type { ReactElement } from "react";
 
 import { cn } from "@/lib/utils";
 import type {
+  AreaBoundaryPointDto,
+  AreaDto,
   EventLocationMakerDto,
   SeatDto,
   SeatStatusDto,
@@ -22,11 +24,21 @@ import {
 } from "react";
 import { useT } from "@/lib/i18n/hooks";
 import { findSeatStatus, isSupervisorSeatStatus } from "@/lib/reservationSeat";
+import { getAreaColor } from "@/lib/areaColors";
+
+// Shared grid geometry, used both for placing markers/area zones and for
+// sizing the seat grid itself.
+const SEAT_SIZE = 32;
+const GAP = 4;
+const PADDING = 16;
+const CELL_TOTAL_SIZE = SEAT_SIZE + GAP;
+const ZONE_INSET = 6;
 
 interface SeatMapProps {
   seats: SeatDto[];
   seatStatuses: SeatStatusDto[] | SupervisorSeatStatusDto[];
   markers: EventLocationMakerDto[];
+  areas?: AreaDto[];
   selectedSeats: SeatDto[];
   userReservedSeats?: SeatDto[];
   onSeatSelect: (seat: SeatDto) => void;
@@ -103,11 +115,6 @@ const MarkerComponent = React.memo(
     marker: EventLocationMakerDto;
     showLabel: boolean;
   }) => {
-    const seatSize = 32;
-    const gap = 4;
-    const padding = 16;
-    const cellTotalSize = seatSize + gap;
-
     const containerRef = useRef<HTMLDivElement>(null);
     const textRef = useRef<HTMLSpanElement>(null);
 
@@ -126,24 +133,24 @@ const MarkerComponent = React.memo(
         let textScale = 1;
 
         // If the marker would become wider than a seat, cap its width and scale the text
-        if (finalWidth > seatSize) {
-          finalWidth = seatSize;
-          textScale = (seatSize - HORIZONTAL_PADDING) / textWidth;
+        if (finalWidth > SEAT_SIZE) {
+          finalWidth = SEAT_SIZE;
+          textScale = (SEAT_SIZE - HORIZONTAL_PADDING) / textWidth;
         }
 
         // --- Centering Logic ---
         // Calculate the original starting position of the grid cell
         const cellLeft =
-          padding + ((marker.xCoordinate || 1) - 1) * cellTotalSize;
+          PADDING + ((marker.xCoordinate || 1) - 1) * CELL_TOTAL_SIZE;
         // Adjust the left position to center the new, smaller width within the cell
-        const newLeft = cellLeft + (seatSize - finalWidth) / 2;
+        const newLeft = cellLeft + (SEAT_SIZE - finalWidth) / 2;
 
         // Apply all the new styles
         containerEl.style.width = `${finalWidth}px`;
         containerEl.style.left = `${newLeft}px`;
         textEl.style.transform = `scale(${textScale})`;
       }
-    }, [marker.label, marker.xCoordinate, showLabel, cellTotalSize]);
+    }, [marker.label, marker.xCoordinate, showLabel]);
 
     return (
       <div
@@ -151,10 +158,10 @@ const MarkerComponent = React.memo(
         className="absolute z-0 flex items-center justify-center font-bold text-gray-800 dark:text-gray-200 rounded-md overflow-hidden"
         style={{
           // Initial position and size before dynamic adjustment
-          left: `${padding + ((marker.xCoordinate || 1) - 1) * cellTotalSize}px`,
-          top: `${padding + ((marker.yCoordinate || 1) - 1) * cellTotalSize}px`,
-          width: `${seatSize}px`,
-          height: `${seatSize}px`,
+          left: `${PADDING + ((marker.xCoordinate || 1) - 1) * CELL_TOTAL_SIZE}px`,
+          top: `${PADDING + ((marker.yCoordinate || 1) - 1) * CELL_TOTAL_SIZE}px`,
+          width: `${SEAT_SIZE}px`,
+          height: `${SEAT_SIZE}px`,
           fontSize: "14px",
           transition: "width 0.2s ease, left 0.2s ease", // Optional: smooth transition
         }}
@@ -175,10 +182,119 @@ const MarkerComponent = React.memo(
 
 MarkerComponent.displayName = "MarkerComponent";
 
+interface AreaRectZone {
+  shape: "rect";
+  key: string;
+  name: string;
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+  colorIndex: number;
+}
+
+interface AreaPolygonZone {
+  shape: "polygon";
+  key: string;
+  name: string;
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+  // Points relative to (left, top), as an SVG `points` attribute value.
+  pointsAttr: string;
+  colorIndex: number;
+}
+
+type AreaZone = AreaRectZone | AreaPolygonZone;
+
+const AreaZoneLabel = ({
+  name,
+  textClass,
+}: {
+  name: string;
+  textClass: string;
+}) => (
+  <span
+    className={cn(
+      "absolute -top-3 left-2 px-1.5 rounded-sm bg-seatmap text-[10px] font-semibold whitespace-nowrap",
+      textClass,
+    )}
+  >
+    {name}
+  </span>
+);
+
+const AreaZoneComponent = React.memo(({ zone }: { zone: AreaRectZone }) => {
+  const color = getAreaColor(zone.colorIndex);
+
+  return (
+    <div
+      className={cn(
+        "absolute rounded-lg border-2 border-dashed pointer-events-none",
+        color.fill,
+        color.border,
+      )}
+      style={{
+        left: `${zone.left}px`,
+        top: `${zone.top}px`,
+        width: `${zone.width}px`,
+        height: `${zone.height}px`,
+      }}
+    >
+      <AreaZoneLabel name={zone.name} textClass={color.text} />
+    </div>
+  );
+});
+
+AreaZoneComponent.displayName = "AreaZoneComponent";
+
+// Renders a custom area boundary polygon, used instead of AreaZoneComponent
+// when the API supplies explicit boundary points for an area.
+const AreaPolygonZoneComponent = React.memo(
+  ({ zone }: { zone: AreaPolygonZone }) => {
+    const color = getAreaColor(zone.colorIndex);
+
+    return (
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          left: `${zone.left}px`,
+          top: `${zone.top}px`,
+          width: `${zone.width}px`,
+          height: `${zone.height}px`,
+        }}
+      >
+        <svg
+          width="100%"
+          height="100%"
+          style={{ overflow: "visible" }}
+          preserveAspectRatio="none"
+        >
+          <polygon
+            points={zone.pointsAttr}
+            fill={color.hex}
+            fillOpacity={0.12}
+            stroke={color.hex}
+            strokeOpacity={0.7}
+            strokeWidth={2}
+            strokeDasharray="6 4"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <AreaZoneLabel name={zone.name} textClass={color.text} />
+      </div>
+    );
+  },
+);
+
+AreaPolygonZoneComponent.displayName = "AreaPolygonZoneComponent";
+
 export function SeatMap({
   seats,
   seatStatuses,
   markers,
+  areas = [],
   selectedSeats,
   userReservedSeats = [],
   onSeatSelect,
@@ -204,20 +320,37 @@ export function SeatMap({
     selectedSeatIds,
     userReservedSeatIds,
     renderedMarkers,
+    areaZones,
   } = useMemo(() => {
     const seatMaxX = Math.max(...seats.map((s) => s.xCoordinate || 0));
     const seatMaxY = Math.max(...seats.map((s) => s.yCoordinate || 0));
     const markerMaxX = Math.max(...markers.map((m) => m.xCoordinate || 0));
     const markerMaxY = Math.max(...markers.map((m) => m.yCoordinate || 0));
+    // A custom area boundary polygon (see below) may intentionally extend past the
+    // outermost seats (e.g. a rounded balcony edge) - include it so the grid container
+    // is sized to fit it instead of clipping it via the map's `overflow-hidden` wrapper.
+    const areaBoundaryPoints = areas.flatMap((area) => area.boundary ?? []);
+    const areaMaxX = Math.max(
+      0,
+      ...areaBoundaryPoints.map((p) => p.xCoordinate || 0),
+    );
+    const areaMaxY = Math.max(
+      0,
+      ...areaBoundaryPoints.map((p) => p.yCoordinate || 0),
+    );
 
-    const maxX = Math.max(seatMaxX, markerMaxX);
-    const maxY = Math.max(seatMaxY, markerMaxY);
+    const maxX = Math.max(seatMaxX, markerMaxX, areaMaxX);
+    const maxY = Math.max(seatMaxY, markerMaxY, areaMaxY);
 
     // Create a map for O(1) seat lookup
     const seatPositionMap = new Map<string, SeatDto>();
+    const seatById = new Map<bigint, SeatDto>();
     seats.forEach((seat) => {
       if (seat.xCoordinate && seat.yCoordinate) {
         seatPositionMap.set(`${seat.xCoordinate}-${seat.yCoordinate}`, seat);
+      }
+      if (seat.id !== undefined) {
+        seatById.set(seat.id, seat);
       }
     });
 
@@ -231,6 +364,98 @@ export function SeatMap({
       (marker) => marker.xCoordinate && marker.yCoordinate,
     );
 
+    // Each area is rendered either from custom boundary points (when the API
+    // supplies at least 3 - a valid polygon) or, failing that, as a
+    // bounding-box derived from its member seats' coordinates. Areas are
+    // usually contiguous blocks (e.g. "Parkett", "Balkon"), so a rectangle is
+    // a good enough default shape without needing a more elaborate one.
+    const areaZones: AreaZone[] = areas.flatMap((area, index): AreaZone[] => {
+      const key = area.name ?? `area-${index}`;
+
+      const validBoundaryPoints = (area.boundary ?? []).filter(
+        (p): p is Required<AreaBoundaryPointDto> =>
+          p.xCoordinate != null && p.yCoordinate != null,
+      );
+
+      if (validBoundaryPoints.length >= 3) {
+        // Anchor each boundary point to the center of the referenced grid
+        // cell, then push it outward from the polygon's centroid so the
+        // outline doesn't just clip through the seats it encloses.
+        const rawPoints = validBoundaryPoints.map((p) => ({
+          x: PADDING + (p.xCoordinate - 1) * CELL_TOTAL_SIZE + SEAT_SIZE / 2,
+          y: PADDING + (p.yCoordinate - 1) * CELL_TOTAL_SIZE + SEAT_SIZE / 2,
+        }));
+        const centroidX =
+          rawPoints.reduce((sum, p) => sum + p.x, 0) / rawPoints.length;
+        const centroidY =
+          rawPoints.reduce((sum, p) => sum + p.y, 0) / rawPoints.length;
+        const inflatedPoints = rawPoints.map((p) => {
+          const dx = p.x - centroidX;
+          const dy = p.y - centroidY;
+          const len = Math.hypot(dx, dy) || 1;
+          return {
+            x: p.x + (dx / len) * ZONE_INSET,
+            y: p.y + (dy / len) * ZONE_INSET,
+          };
+        });
+
+        const left = Math.min(...inflatedPoints.map((p) => p.x));
+        const top = Math.min(...inflatedPoints.map((p) => p.y));
+        const width = Math.max(...inflatedPoints.map((p) => p.x)) - left;
+        const height = Math.max(...inflatedPoints.map((p) => p.y)) - top;
+
+        return [
+          {
+            shape: "polygon" as const,
+            key,
+            name: area.name ?? "",
+            left,
+            top,
+            width,
+            height,
+            pointsAttr: inflatedPoints
+              .map((p) => `${p.x - left},${p.y - top}`)
+              .join(" "),
+            colorIndex: index,
+          },
+        ];
+      }
+
+      const memberSeats = (area.seatIds ?? [])
+        .map((id) => seatById.get(id))
+        .filter(
+          (s): s is SeatDto =>
+            !!s && s.xCoordinate != null && s.yCoordinate != null,
+        );
+      if (memberSeats.length === 0) return [];
+
+      const xs = memberSeats.map((s) => s.xCoordinate!);
+      const ys = memberSeats.map((s) => s.yCoordinate!);
+      const minX = Math.min(...xs);
+      const maxAreaX = Math.max(...xs);
+      const minY = Math.min(...ys);
+      const maxAreaY = Math.max(...ys);
+
+      return [
+        {
+          shape: "rect" as const,
+          key,
+          name: area.name ?? "",
+          left: PADDING + (minX - 1) * CELL_TOTAL_SIZE - ZONE_INSET,
+          top: PADDING + (minY - 1) * CELL_TOTAL_SIZE - ZONE_INSET,
+          width:
+            (maxAreaX - minX + 1) * SEAT_SIZE +
+            (maxAreaX - minX) * GAP +
+            ZONE_INSET * 2,
+          height:
+            (maxAreaY - minY + 1) * SEAT_SIZE +
+            (maxAreaY - minY) * GAP +
+            ZONE_INSET * 2,
+          colorIndex: index,
+        },
+      ];
+    });
+
     return {
       maxX,
       maxY,
@@ -238,8 +463,9 @@ export function SeatMap({
       selectedSeatIds,
       userReservedSeatIds,
       renderedMarkers,
+      areaZones,
     };
-  }, [seats, selectedSeats, userReservedSeats, markers]);
+  }, [seats, selectedSeats, userReservedSeats, markers, areas]);
 
   const getSeatColor = useCallback(
     (seat: SeatDto | undefined) => {
@@ -590,7 +816,7 @@ export function SeatMap({
           <div
             className="border-2 border rounded-lg mb-0 bg-seatmap"
             style={{
-              width: `${maxX * 32 + (maxX - 1) * 4 + 32}px`,
+              width: `${maxX * SEAT_SIZE + (maxX - 1) * GAP + PADDING * 2}px`,
               height: "120px",
             }}
           >
@@ -602,10 +828,19 @@ export function SeatMap({
           <div
             className="border-2 border rounded-lg p-4 bg-seatmap relative"
             style={{
-              width: `${maxX * 32 + (maxX - 1) * 4 + 32}px`,
-              height: `${maxY * 32 + (maxY - 1) * 4 + 32}px`,
+              width: `${maxX * SEAT_SIZE + (maxX - 1) * GAP + PADDING * 2}px`,
+              height: `${maxY * SEAT_SIZE + (maxY - 1) * GAP + PADDING * 2}px`,
             }}
           >
+            {/* Area Zone Layer - ganz im Hintergrund */}
+            {areaZones.map((zone) =>
+              zone.shape === "polygon" ? (
+                <AreaPolygonZoneComponent key={zone.key} zone={zone} />
+              ) : (
+                <AreaZoneComponent key={zone.key} zone={zone} />
+              ),
+            )}
+
             {/* Marker Layer - Hintergrund */}
             {renderedMarkers.map((marker, index) => (
               <MarkerComponent
@@ -620,7 +855,7 @@ export function SeatMap({
               className="grid gap-1 relative z-10"
               style={{
                 gridTemplateColumns: `repeat(${maxX}, 1fr)`,
-                width: `${maxX * 32 + (maxX - 1) * 4}px`,
+                width: `${maxX * SEAT_SIZE + (maxX - 1) * GAP}px`,
               }}
             >
               {gridItems}
