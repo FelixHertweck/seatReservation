@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.management.service;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -39,12 +40,14 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import de.felixhertweck.seatreservation.management.dto.AreaBoundaryPointRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationResponseDTO;
 import de.felixhertweck.seatreservation.management.dto.ImportEventLocationDto;
 import de.felixhertweck.seatreservation.management.dto.ImportSeatDto;
 import de.felixhertweck.seatreservation.management.dto.MakerRequestDTO;
 import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
+import de.felixhertweck.seatreservation.model.entity.AreaBoundaryPoint;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
 import de.felixhertweck.seatreservation.model.entity.Roles;
@@ -703,5 +706,135 @@ public class EventLocationServiceTest {
         assertEquals(-100, result.markers().get(1).yCoordinate());
         assertEquals(Integer.MAX_VALUE, result.markers().get(2).xCoordinate());
         assertEquals(Integer.MIN_VALUE, result.markers().get(2).yCoordinate());
+    }
+
+    @Test
+    void createEventLocation_WithAreaBoundaryPoints_Success() {
+        EventLocationRequestDTO dto = new EventLocationRequestDTO();
+        dto.setName("Concert Hall");
+        dto.setAddress("Music Street 1");
+        dto.setCapacity(300);
+
+        List<AreaBoundaryPointRequestDTO> areaBoundaryPoints =
+                List.of(
+                        new AreaBoundaryPointRequestDTO("Parkett", 1, 1),
+                        new AreaBoundaryPointRequestDTO("Parkett", 5, 1),
+                        new AreaBoundaryPointRequestDTO("Parkett", 5, 5),
+                        new AreaBoundaryPointRequestDTO("Balkon", 1, 10),
+                        new AreaBoundaryPointRequestDTO("Balkon", 5, 10));
+        dto.setAreaBoundaryPoints(areaBoundaryPoints);
+
+        doAnswer(
+                        invocation -> {
+                            EventLocation location = invocation.getArgument(0);
+                            location.id = 19L;
+                            return null;
+                        })
+                .when(eventLocationRepository)
+                .persist(any(EventLocation.class));
+
+        eventLocationService.createEventLocation(dto, managerUser);
+
+        ArgumentCaptor<EventLocation> locationCaptor = ArgumentCaptor.forClass(EventLocation.class);
+        verify(eventLocationRepository, times(1)).persist(locationCaptor.capture());
+
+        List<AreaBoundaryPoint> persistedPoints = locationCaptor.getValue().getAreaBoundaryPoints();
+        assertEquals(5, persistedPoints.size());
+
+        List<AreaBoundaryPoint> parkettPoints =
+                persistedPoints.stream().filter(p -> "Parkett".equals(p.getArea())).toList();
+        assertEquals(3, parkettPoints.size());
+        assertEquals(0, parkettPoints.get(0).getSortOrder());
+        assertEquals(1, parkettPoints.get(1).getSortOrder());
+        assertEquals(2, parkettPoints.get(2).getSortOrder());
+        assertEquals(1, parkettPoints.get(0).getxCoordinate());
+        assertEquals(1, parkettPoints.get(0).getyCoordinate());
+
+        List<AreaBoundaryPoint> balkonPoints =
+                persistedPoints.stream().filter(p -> "Balkon".equals(p.getArea())).toList();
+        assertEquals(2, balkonPoints.size());
+        assertEquals(0, balkonPoints.get(0).getSortOrder());
+        assertEquals(1, balkonPoints.get(1).getSortOrder());
+    }
+
+    @Test
+    void createEventLocation_WithNullAreaBoundaryPoints_Success() {
+        EventLocationRequestDTO dto = new EventLocationRequestDTO();
+        dto.setName("Simple Hall");
+        dto.setAddress("Simple Street 1");
+        dto.setCapacity(100);
+        dto.setAreaBoundaryPoints(null);
+
+        doAnswer(
+                        invocation -> {
+                            EventLocation location = invocation.getArgument(0);
+                            location.id = 20L;
+                            return null;
+                        })
+                .when(eventLocationRepository)
+                .persist(any(EventLocation.class));
+
+        eventLocationService.createEventLocation(dto, managerUser);
+
+        ArgumentCaptor<EventLocation> locationCaptor = ArgumentCaptor.forClass(EventLocation.class);
+        verify(eventLocationRepository, times(1)).persist(locationCaptor.capture());
+        assertTrue(locationCaptor.getValue().getAreaBoundaryPoints().isEmpty());
+    }
+
+    @Test
+    void updateEventLocation_WithAreaBoundaryPoints_Success() {
+        when(eventLocationRepository.findByIdOptional(existingLocation.id))
+                .thenReturn(Optional.of(existingLocation));
+        doAnswer(invocation -> null)
+                .when(eventLocationRepository)
+                .persist(any(EventLocation.class));
+
+        EventLocationRequestDTO updateDto = new EventLocationRequestDTO();
+        updateDto.setName("Updated Hall");
+        updateDto.setAddress("Updated Street 1");
+        updateDto.setCapacity(250);
+
+        List<AreaBoundaryPointRequestDTO> newAreaBoundaryPoints =
+                List.of(
+                        new AreaBoundaryPointRequestDTO("Loge", 2, 2),
+                        new AreaBoundaryPointRequestDTO("Loge", 4, 2),
+                        new AreaBoundaryPointRequestDTO("Loge", 4, 4));
+        updateDto.setAreaBoundaryPoints(newAreaBoundaryPoints);
+
+        eventLocationService.updateEventLocation(existingLocation.id, updateDto, managerUser);
+
+        ArgumentCaptor<EventLocation> locationCaptor = ArgumentCaptor.forClass(EventLocation.class);
+        verify(eventLocationRepository, times(1)).persist(locationCaptor.capture());
+
+        List<AreaBoundaryPoint> persistedPoints = locationCaptor.getValue().getAreaBoundaryPoints();
+        assertEquals(3, persistedPoints.size());
+        assertTrue(persistedPoints.stream().allMatch(p -> "Loge".equals(p.getArea())));
+    }
+
+    @Test
+    void updateEventLocation_ClearingAreaBoundaryPoints_Success() {
+        List<AreaBoundaryPoint> existingPoints =
+                List.of(
+                        new AreaBoundaryPoint("Old Area", 0, 0, 0),
+                        new AreaBoundaryPoint("Old Area", 1, 1, 1));
+        existingLocation.setAreaBoundaryPoints(new ArrayList<>(existingPoints));
+
+        when(eventLocationRepository.findByIdOptional(existingLocation.id))
+                .thenReturn(Optional.of(existingLocation));
+        doAnswer(invocation -> null)
+                .when(eventLocationRepository)
+                .persist(any(EventLocation.class));
+
+        EventLocationRequestDTO updateDto = new EventLocationRequestDTO();
+        updateDto.setName("Cleared Hall");
+        updateDto.setAddress("Cleared Street 1");
+        updateDto.setCapacity(100);
+        updateDto.setAreaBoundaryPoints(Collections.emptyList());
+
+        eventLocationService.updateEventLocation(existingLocation.id, updateDto, managerUser);
+
+        ArgumentCaptor<EventLocation> locationCaptor = ArgumentCaptor.forClass(EventLocation.class);
+        verify(eventLocationRepository, times(1)).persist(locationCaptor.capture());
+        assertTrue(locationCaptor.getValue().getAreaBoundaryPoints().isEmpty());
     }
 }

@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.management.dto;
 
 import java.util.List;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
@@ -35,9 +36,11 @@ public class ImportEventLocationDto {
     @NotNull(message = "Capacity must not be null")
     private int capacity;
 
-    private List<ImportSeatDto> seats;
+    @Valid private List<ImportSeatDto> seats;
 
-    private List<MakerRequestDTO> markers;
+    @Valid private List<MakerRequestDTO> markers;
+
+    @Valid private List<AreaBoundaryPointRequestDTO> areaBoundaryPoints;
 
     public String getName() {
         return name;
@@ -77,5 +80,13 @@ public class ImportEventLocationDto {
 
     public void setMarkers(List<MakerRequestDTO> markers) {
         this.markers = markers;
+    }
+
+    public List<AreaBoundaryPointRequestDTO> getAreaBoundaryPoints() {
+        return areaBoundaryPoints;
+    }
+
+    public void setAreaBoundaryPoints(List<AreaBoundaryPointRequestDTO> areaBoundaryPoints) {
+        this.areaBoundaryPoints = areaBoundaryPoints;
     }
 }

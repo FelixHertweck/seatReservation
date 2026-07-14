@@ -110,6 +110,28 @@ export const AreaBoundaryPointDTOSchema = {
     }
 } as const;
 
+export const AreaBoundaryPointRequestDTOSchema = {
+    type: 'object',
+    required: [
+        'area',
+        'xCoordinate',
+        'yCoordinate'
+    ],
+    properties: {
+        area: {
+            type: 'string'
+        },
+        xCoordinate: {
+            type: 'integer',
+            format: 'int32'
+        },
+        yCoordinate: {
+            type: 'integer',
+            format: 'int32'
+        }
+    }
+} as const;
+
 export const AreaDTOSchema = {
     type: 'object',
     properties: {
@@ -259,6 +281,12 @@ export const EventLocationRequestDTOSchema = {
             type: 'array',
             items: {
                 $ref: '#/components/schemas/MakerRequestDTO'
+            }
+        },
+        areaBoundaryPoints: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/AreaBoundaryPointRequestDTO'
             }
         }
     }
@@ -522,6 +550,12 @@ export const ImportEventLocationDtoSchema = {
             type: 'array',
             items: {
                 $ref: '#/components/schemas/MakerRequestDTO'
+            }
+        },
+        areaBoundaryPoints: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/AreaBoundaryPointRequestDTO'
             }
         }
     }

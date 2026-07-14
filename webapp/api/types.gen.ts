@@ -31,6 +31,12 @@ export type AreaBoundaryPointDto = {
     yCoordinate?: number;
 };
 
+export type AreaBoundaryPointRequestDto = {
+    area: string;
+    xCoordinate: number;
+    yCoordinate: number;
+};
+
 export type AreaDto = {
     name?: string;
     seatIds?: Array<bigint>;
@@ -71,6 +77,7 @@ export type EventLocationRequestDto = {
     address: string;
     capacity: number;
     markers?: Array<MakerRequestDto>;
+    areaBoundaryPoints?: Array<AreaBoundaryPointRequestDto>;
 };
 
 export type EventLocationResponseDto = {
@@ -139,6 +146,7 @@ export type ImportEventLocationDto = {
     capacity: number;
     seats?: Array<ImportSeatDto>;
     markers?: Array<MakerRequestDto>;
+    areaBoundaryPoints?: Array<AreaBoundaryPointRequestDto>;
 };
 
 export type ImportSeatDto = {
