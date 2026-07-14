@@ -148,7 +148,7 @@ export default function LiveViewPage() {
                     </AccordionTrigger>
                     <AccordionContent>
                       <div className="pt-2">
-                        <SeatmapLegend />
+                        <SeatmapLegend areas={location.areas ?? []} />
                       </div>
                     </AccordionContent>
                   </AccordionItem>
@@ -170,6 +170,7 @@ export default function LiveViewPage() {
                                 reservations,
                               )}
                               markers={location.markers || []}
+                              areas={location.areas ?? []}
                               selectedSeats={selectedSeats}
                               onSeatSelect={handleSeatSelect}
                               readonly={true}
@@ -212,6 +213,7 @@ export default function LiveViewPage() {
                     seats={location.seats || []}
                     seatStatuses={convertReservationsToStatuses(reservations)}
                     markers={location.markers || []}
+                    areas={location.areas ?? []}
                     selectedSeats={selectedSeats}
                     onSeatSelect={handleSeatSelect}
                     readonly={true}
