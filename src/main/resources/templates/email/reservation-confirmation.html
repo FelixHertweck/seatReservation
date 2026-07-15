@@ -19,12 +19,12 @@
           <p><strong>End:</strong> {eventEndTime}</p>
           <p>You have newly reserved the following seats:</p>
           <ul>
-              {#for seat in newSeats}<li>{seat.number} ({seat.row}) - {seat.area}</li>{/for}
+              {#for seat in newSeats}<li>{seat.number} ({seat.row}){#if seat.area} - {seat.area}{/if}</li>{/for}
           </ul>
           {#if hasExistingSeats}
           <p>You have already reserved the following seats:</p>
           <ul>
-              {#for seat in existingSeats}<li>{seat.number} ({seat.row}) - {seat.area}</li>{/for}
+              {#for seat in existingSeats}<li>{seat.number} ({seat.row}){#if seat.area} - {seat.area}{/if}</li>{/for}
           </ul>
           {/if}
 {#include email/fragments/qrcode-block /}

@@ -829,6 +829,7 @@
   "reservationFormModal": {
     "createReservationTitle": "Reservierung erstellen",
     "createReservationDescription": "Eine neue Reservierung für mehrere Plätze erstellen",
+    "userReservedStatus": "Benutzer reserviert",
     "selectEventToViewSeats": "Bitte wählen Sie eine Veranstaltung aus, um Plätze anzuzeigen",
     "noSeatsAvailableForEvent": "Keine Plätze für diese Veranstaltung verfügbar",
     "eventLabel": "Veranstaltung",
