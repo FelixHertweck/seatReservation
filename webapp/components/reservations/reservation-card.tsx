@@ -179,11 +179,25 @@ export function ReservationCard({
                     }
                     className="mr-1"
                   />
-                  <span>
-                    {reservation.seat?.seatNumber +
-                      (reservation.seat?.seatRow
-                        ? " (" + reservation.seat.seatRow + ")"
-                        : "")}
+                  <span className="flex flex-col leading-tight py-0.5">
+                    <span>
+                      {reservation.seat?.seatNumber +
+                        (reservation.seat?.seatRow
+                          ? " (" + reservation.seat.seatRow + ")"
+                          : "")}
+                    </span>
+                    {(reservation.seat?.area || reservation.seat?.entrance) && (
+                      <span className="text-[10px] text-muted-foreground">
+                        {[
+                          reservation.seat?.area &&
+                            `${t("reservationCard.areaLabel")}: ${reservation.seat.area}`,
+                          reservation.seat?.entrance &&
+                            `${t("reservationCard.entranceLabel")}: ${reservation.seat.entrance}`,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </span>
+                    )}
                   </span>
                 </div>
               ))}

@@ -250,7 +250,7 @@ public class EmailService {
         }
         return reservations.stream()
                 .map(Reservation::getSeat)
-                .map(seat -> new SeatView(seat.getSeatNumber(), seat.getSeatRow()))
+                .map(seat -> new SeatView(seat.getSeatNumber(), seat.getSeatRow(), seat.getArea()))
                 .collect(Collectors.toList());
     }
 
@@ -358,7 +358,12 @@ public class EmailService {
         List<SeatView> newSeats = toSeatViews(reservations);
         List<SeatView> existingSeats =
                 existingSeatNumbers.stream()
-                        .map(seat -> new SeatView(seat.getSeatNumber(), seat.getSeatRow()))
+                        .map(
+                                seat ->
+                                        new SeatView(
+                                                seat.getSeatNumber(),
+                                                seat.getSeatRow(),
+                                                seat.getArea()))
                         .collect(Collectors.toList());
 
         String entranceInfo = generateEntranceInfo(reservations);

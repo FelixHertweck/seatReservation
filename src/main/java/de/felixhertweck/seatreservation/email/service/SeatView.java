@@ -25,5 +25,6 @@ package de.felixhertweck.seatreservation.email.service;
  *
  * @param number the seat number (e.g. {@code A1})
  * @param row the seat row label
+ * @param area the seat's area label
  */
-public record SeatView(String number, String row) {}
+public record SeatView(String number, String row, String area) {}

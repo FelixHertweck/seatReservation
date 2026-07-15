@@ -19,12 +19,12 @@
           <p><strong>End:</strong> {eventEndTime}</p>
           <p>You have deleted the following seats:</p>
           <ul>
-              {#for seat in deletedSeats}<li>{seat.number} ({seat.row})</li>{/for}
+              {#for seat in deletedSeats}<li>{seat.number} ({seat.row}) - {seat.area}</li>{/for}
           </ul>
           {#if hasActiveSeats}
           <p>You have still reserved the following seats:</p>
           <ul>
-              {#for seat in activeSeats}<li>{seat.number} ({seat.row})</li>{/for}
+              {#for seat in activeSeats}<li>{seat.number} ({seat.row}) - {seat.area}</li>{/for}
           </ul>
           {/if}
 {#include email/fragments/qrcode-block /}
