@@ -1,14 +1,25 @@
-name: Daily Image Cleanup
+name: Image Cleanup
 on:
   # Runs daily at 2:00 AM
   schedule:
     - cron: '0 2 * * *'
+  # Fires as soon as a PR is closed (merged or not)
+  pull_request:
+    types: [closed]
   # Run manually
   workflow_dispatch:
-    
+
+# The cleanup action isn't safe to run concurrently against the same
+# packages, so queue overlapping runs (e.g. nightly cron vs. a PR closing
+# at the same time) instead of letting them race.
+concurrency:
+  group: image-cleanup
+  cancel-in-progress: false
+
 jobs:
   delete-untagged-packages:
     name: Delete Untagged Package Versions
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -30,4 +41,25 @@ jobs:
           package-type: 'container'
           min-versions-to-keep: 5
           delete-only-untagged-versions: 'true'
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  delete-pr-images:
+    name: Delete Images For Closed Pull Request
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    strategy:
+      matrix:
+        package-name:
+          - seatreservation-frontend
+          - seatreservation-backend
+          - seatreservation-backend-native
+
+    steps:
+      - name: Delete image tagged with closed PR
+        uses: dataaxiom/ghcr-cleanup-action@v1
+        with:
+          package: ${{ matrix.package-name }}
+          delete-tags: pr-${{ github.event.pull_request.number }}
           token: ${{ secrets.GITHUB_TOKEN }}
