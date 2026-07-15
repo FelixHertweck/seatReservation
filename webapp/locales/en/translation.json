@@ -972,6 +972,7 @@
   "reservationFormModal": {
     "createReservationTitle": "Create Reservation",
     "createReservationDescription": "Create a new reservation for multiple seats",
+    "userReservedStatus": "User Reserved",
     "selectEventToViewSeats": "Please select an event to view seats",
     "noSeatsAvailableForEvent": "No seats available for this event",
     "eventLabel": "Event",

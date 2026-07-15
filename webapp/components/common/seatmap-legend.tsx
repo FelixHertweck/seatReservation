@@ -9,6 +9,11 @@ interface SeatmapLegendProps {
   // "selection": interactive seat picking (selected + optionally the user's own reservation).
   variant?: "supervisor" | "selection";
   showUserReserved?: boolean;
+  // Overrides the label of the "my reserved" swatch. Useful when the yellow
+  // status doesn't mean "reserved by me" (e.g. the manager's reservation
+  // form, where it highlights seats already reserved by the user being
+  // booked for).
+  userReservedLabel?: string;
   // "card": boxed, vertical list (liveview sidebar). "bar": compact, wraps horizontally (dialogs).
   layout?: "card" | "bar";
   className?: string;
@@ -35,6 +40,7 @@ export default function SeatmapLegend({
   areas = [],
   variant = "supervisor",
   showUserReserved = true,
+  userReservedLabel,
   layout = "card",
   className,
 }: SeatmapLegendProps) {
@@ -58,7 +64,7 @@ export default function SeatmapLegend({
       {variant === "selection" && showUserReserved && (
         <LegendSwatch
           color="bg-yellow-500"
-          label={t("seatStatus.myReserved")}
+          label={userReservedLabel ?? t("seatStatus.myReserved")}
           bar={bar}
         />
       )}

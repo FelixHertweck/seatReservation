@@ -181,6 +181,7 @@ export function ReservationFormModal({
               variant="selection"
               layout="bar"
               areas={availableAreas}
+              userReservedLabel={t("reservationFormModal.userReservedStatus")}
               className="mb-4"
             />
 

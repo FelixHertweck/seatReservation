@@ -29,7 +29,7 @@
           </ul>
           <p>You have reserved the following seats for this event:</p>
           <ul>
-              {#for seat in seats}<li>{seat.number} ({seat.row}) - {seat.area}</li>{/for}
+              {#for seat in seats}<li>{seat.number} ({seat.row}){#if seat.area} - {seat.area}{/if}</li>{/for}
           </ul>
 {#include email/fragments/qrcode-block /}
 {#include email/fragments/entrance-info-block /}

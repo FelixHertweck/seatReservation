@@ -140,6 +140,27 @@ class EmailTemplateFragmentsRenderTest {
     }
 
     @Test
+    void eventReminder_seatWithoutArea_rendersWithoutTrailingDash() {
+        String html =
+                eventReminder
+                        .data("userName", "jane")
+                        .data("fullName", "Jane Doe")
+                        .data("eventName", "Concert")
+                        .data("eventDate", "2026-07-10")
+                        .data("eventTime", "20:00")
+                        .data("eventLocation", "Main Hall")
+                        .data("seats", List.of(new SeatView("A1", "1", null)))
+                        .data("entranceInfo", "Use the north entrance")
+                        .data("eventLink", "https://example.com/e")
+                        .data("seatmapLink", "https://example.com/s")
+                        .data("currentYear", "2026")
+                        .render();
+
+        assertTrue(html.contains("<li>A1 (1)</li>"));
+        assertFalse(html.contains("A1 (1) -"));
+    }
+
+    @Test
     void managerReservationExport_rendersIncludedFragments() {
         String html =
                 managerReservationExport
