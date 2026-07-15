@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { SeatMap } from "@/components/common/seat-map";
+import SeatmapLegend from "@/components/common/seatmap-legend";
 import type {
   UserEventResponseDto,
   UserReservationResponseDto,
@@ -18,8 +19,6 @@ import type {
 } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { findSeatStatus } from "@/lib/reservationSeat";
-import { getAreaColor } from "@/lib/areaColors";
-import { cn } from "@/lib/utils";
 
 interface EventReservationModalProps {
   event: UserEventResponseDto;
@@ -104,51 +103,11 @@ export function EventReservationModal({
         </DialogHeader>
 
         <div className="flex-1 flex flex-col min-h-0">
-          <div className="flex flex-wrap gap-2 md:gap-4 text-sm border-b pb-1">
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-green-500 rounded"></div>
-              <span>{t("eventReservationModal.available")}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-blue-500 rounded"></div>
-              <span>{t("eventReservationModal.selected")}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-yellow-500 rounded"></div>
-              <span>{t("eventReservationModal.myReserved")}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-red-500 rounded"></div>
-              <span>{t("eventReservationModal.reserved")}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-gray-500 rounded"></div>
-              <span>{t("eventReservationModal.blocked")}</span>
-            </div>
-            {location?.areas && location.areas.length > 0 && (
-              <>
-                <div className="w-px self-stretch bg-border hidden sm:block" />
-                {location.areas.map((area, index) => {
-                  const color = getAreaColor(index);
-                  return (
-                    <div
-                      key={area.name ?? index}
-                      className="flex items-center gap-2"
-                    >
-                      <div
-                        className={cn(
-                          "w-4 h-4 rounded-sm border-2 border-dashed",
-                          color.fill,
-                          color.border,
-                        )}
-                      ></div>
-                      <span>{area.name}</span>
-                    </div>
-                  );
-                })}
-              </>
-            )}
-          </div>
+          <SeatmapLegend
+            variant="selection"
+            layout="bar"
+            areas={location?.areas ?? []}
+          />
 
           <div className="flex-1 min-h-0">
             <SeatMap

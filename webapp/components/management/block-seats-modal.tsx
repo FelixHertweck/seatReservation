@@ -21,6 +21,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { SeatMap } from "@/components/common/seat-map";
+import SeatmapLegend from "@/components/common/seatmap-legend";
 import type {
   BlockSeatsRequestDto,
   EventResponseDto,
@@ -145,24 +146,12 @@ export function BlockSeatsModal({
             </Select>
           </div>
 
-          <div className="flex gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-green-500 dark:bg-green-400 rounded"></div>
-              <span>{t("blockSeatsModal.available")}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-blue-500 dark:bg-blue-400 rounded"></div>
-              <span>{t("blockSeatsModal.selectedToBlock")}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-red-500 dark:bg-red-400 rounded"></div>
-              <span>{t("blockSeatsModal.reserved")}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-gray-500 dark:bg-gray-400 rounded"></div>
-              <span>{t("blockSeatsModal.alreadyBlocked")}</span>
-            </div>
-          </div>
+          <SeatmapLegend
+            variant="selection"
+            layout="bar"
+            showUserReserved={false}
+            areas={eventLocation?.areas ?? []}
+          />
 
           {formData.eventId && availableSeats.length > 0 && (
             <div className="flex-1 min-h-0">
@@ -170,6 +159,7 @@ export function BlockSeatsModal({
                 seats={availableSeats}
                 seatStatuses={availableSeatStatuses}
                 markers={eventLocation?.markers ?? []}
+                areas={eventLocation?.areas ?? []}
                 selectedSeats={selectedSeats}
                 onSeatSelect={handleSeatSelect}
               />

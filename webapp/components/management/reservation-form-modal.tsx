@@ -22,6 +22,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { SeatMap } from "@/components/common/seat-map";
+import SeatmapLegend from "@/components/common/seatmap-legend";
 import type {
   EventResponseDto,
   ReservationRequestDto,
@@ -31,6 +32,7 @@ import type {
   EventLocationMakerDto,
   SeatStatusDto,
   EventLocationResponseDto,
+  AreaDto,
 } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 
@@ -77,6 +79,7 @@ export function ReservationFormModal({
     selectedEvent?.seatStatuses ?? [];
   const availableMarkers: EventLocationMakerDto[] =
     eventLocation?.markers ?? [];
+  const availableAreas: AreaDto[] = eventLocation?.areas ?? [];
 
   const filteredUsers = users
     .filter((user) => {
@@ -174,30 +177,12 @@ export function ReservationFormModal({
         >
           {/* Left side - Seat Map */}
           <div className="flex-1 flex flex-col min-h-0 lg:max-w-[calc(100%-20rem)] order-2 lg:order-1">
-            <div className="flex flex-wrap gap-2 md:gap-4 text-sm mb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-green-500 dark:bg-green-400 rounded"></div>
-                <span className="font-semibold">
-                  {t("reservationFormModal.availableStatus")}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-blue-500 dark:bg-blue-400 rounded"></div>
-                <span>{t("reservationFormModal.selectedStatus")}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-red-500 dark:bg-red-400 rounded"></div>
-                <span>{t("reservationFormModal.reservedStatus")}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-yellow-500 dark:bg-yellow-400 rounded"></div>
-                <span>{t("reservationFormModal.userReservedStatus")}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-gray-500 dark:bg-gray-400 rounded"></div>
-                <span>{t("reservationFormModal.blockedStatus")}</span>
-              </div>
-            </div>
+            <SeatmapLegend
+              variant="selection"
+              layout="bar"
+              areas={availableAreas}
+              className="mb-4"
+            />
 
             {formData.eventId && availableSeats.length > 0 ? (
               <div className="flex-1 flex items-center justify-center">
@@ -206,6 +191,7 @@ export function ReservationFormModal({
                     seats={availableSeats}
                     seatStatuses={availableSeatStatuses}
                     markers={availableMarkers}
+                    areas={availableAreas}
                     selectedSeats={selectedSeats}
                     userReservedSeats={userReservedSeats}
                     onSeatSelect={handleSeatSelect}

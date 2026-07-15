@@ -18,7 +18,7 @@ import {
   SupervisorReservationResponseDto,
   SupervisorSeatStatusDto,
 } from "@/api";
-import SeatmapLegend from "@/components/liveview/seatmap-legend";
+import SeatmapLegend from "@/components/common/seatmap-legend";
 import { LiveviewStatus } from "@/components/liveview/liveview-status";
 
 export default function LiveViewPage() {
@@ -97,7 +97,9 @@ export default function LiveViewPage() {
               />
 
               {/* Legend */}
-              {location && !isInitialLoading && <SeatmapLegend />}
+              {location && !isInitialLoading && (
+                <SeatmapLegend areas={location.areas ?? []} />
+              )}
 
               {/* Reservations List */}
               {reservations && !isInitialLoading && (
