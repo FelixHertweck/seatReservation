@@ -22,8 +22,10 @@ package de.felixhertweck.seatreservation.common.dto;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import de.felixhertweck.seatreservation.model.entity.AreaBoundaryPoint;
@@ -64,8 +66,9 @@ public record AreaDTO(String name, List<Long> seatIds, List<AreaBoundaryPointDTO
      * areas are first encountered.
      *
      * @param seats the seats to group; may be {@code null}
-     * @param boundariesByAreaName custom boundary points keyed by (trimmed) area name; areas not
-     *     present in this map are returned without a boundary
+     * @param boundariesByAreaName custom boundary points keyed by area name; matched against each
+     *     group's (trimmed) area name case-insensitively, so a boundary submitted as "parkett"
+     *     still attaches to seats whose area is "Parkett"
      * @return a list of areas with their assigned seat ids, never {@code null}
      */
     public static List<AreaDTO> fromSeats(
@@ -73,6 +76,10 @@ public record AreaDTO(String name, List<Long> seatIds, List<AreaBoundaryPointDTO
         if (seats == null) {
             return List.of();
         }
+        Map<String, List<AreaBoundaryPointDTO>> boundariesByNormalizedName = new HashMap<>();
+        boundariesByAreaName.forEach(
+                (name, boundary) -> boundariesByNormalizedName.put(normalize(name), boundary));
+
         Map<String, List<Long>> grouped = new LinkedHashMap<>();
         for (Seat seat : seats) {
             String area = seat.getArea();
@@ -84,8 +91,16 @@ public record AreaDTO(String name, List<Long> seatIds, List<AreaBoundaryPointDTO
         List<AreaDTO> result = new ArrayList<>();
         grouped.forEach(
                 (name, seatIds) ->
-                        result.add(new AreaDTO(name, seatIds, boundariesByAreaName.get(name))));
+                        result.add(
+                                new AreaDTO(
+                                        name,
+                                        seatIds,
+                                        boundariesByNormalizedName.get(normalize(name)))));
         return result;
+    }
+
+    private static String normalize(String areaName) {
+        return areaName.trim().toLowerCase(Locale.ROOT);
     }
 
     /**

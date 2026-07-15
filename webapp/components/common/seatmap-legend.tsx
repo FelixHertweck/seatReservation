@@ -5,7 +5,8 @@ import { cn } from "@/lib/utils";
 
 interface SeatmapLegendProps {
   areas?: AreaDto[];
-  // "supervisor": read-only liveview coloring (checked-in/cancelled tracked separately).
+  // "supervisor": read-only liveview coloring (checked-in/cancelled/no-show tracked separately,
+  // so red always means "reserved" consistently with the "selection" variant below).
   // "selection": interactive seat picking (selected + optionally the user's own reservation).
   variant?: "supervisor" | "selection";
   showUserReserved?: boolean;
@@ -88,6 +89,11 @@ export default function SeatmapLegend({
           <LegendSwatch
             color="bg-violet-500"
             label={t("seatStatus.cancelled")}
+            bar={bar}
+          />
+          <LegendSwatch
+            color="bg-orange-500"
+            label={t("seatStatus.noShow")}
             bar={bar}
           />
         </>

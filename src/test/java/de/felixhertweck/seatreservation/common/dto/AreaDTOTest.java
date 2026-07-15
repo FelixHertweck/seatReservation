@@ -139,4 +139,17 @@ class AreaDTOTest {
         assertEquals(1, areas.size());
         assertNull(areas.get(0).boundary());
     }
+
+    @Test
+    void fromSeats_withBoundariesMap_matchesAreaNameCaseInsensitively() {
+        List<Seat> seats = List.of(seat(1, "A1", 1, 1, "Parkett"));
+        List<AreaBoundaryPointDTO> boundary =
+                List.of(new AreaBoundaryPointDTO(1, 1), new AreaBoundaryPointDTO(2, 1));
+
+        List<AreaDTO> areas = AreaDTO.fromSeats(seats, Map.of(" PARKETT ", boundary));
+
+        assertEquals(1, areas.size());
+        assertEquals("Parkett", areas.get(0).name());
+        assertEquals(boundary, areas.get(0).boundary());
+    }
 }

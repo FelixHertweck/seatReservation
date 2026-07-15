@@ -188,7 +188,8 @@ public class EventLocationService {
         location.setAddress(dto.getAddress());
         location.setCapacity(dto.getCapacity());
 
-        // Update markers: Handle potential immutable collections
+        // Update markers: Handle potential immutable collections. Full replace, not a merge: a
+        // null/omitted dto.getmarkers() clears all existing markers (see EventLocationRequestDTO).
         List<EventLocationMarker> currentMarkers = location.getMarkers();
 
         // Create a new mutable list for markers
@@ -206,7 +207,8 @@ public class EventLocationService {
             location.setMarkers(newMarkersList);
         }
 
-        // Update area boundary points: same immutable-collection-safe handling as markers
+        // Update area boundary points: same immutable-collection-safe, full-replace handling as
+        // markers above (a null/omitted dto.getAreaBoundaryPoints() clears all existing points).
         List<AreaBoundaryPoint> currentAreaBoundaryPoints = location.getAreaBoundaryPoints();
 
         List<AreaBoundaryPoint> newAreaBoundaryPointsList = new ArrayList<>();

@@ -136,6 +136,12 @@ public class Seat extends PanacheEntity {
         this.area = area;
     }
 
+    /**
+     * Two seats are equal only if both are persisted (non-{@code null} {@code id}) and share that
+     * id; a persisted seat is never equal to a transient one, even with matching fields. Only two
+     * transient seats (both {@code id == null}) fall back to field-based comparison, so they can be
+     * compared/deduplicated before being persisted.
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
