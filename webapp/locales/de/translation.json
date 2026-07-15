@@ -5,7 +5,9 @@
     "blocked": "Blockiert",
     "checkedIn": "Eingecheckt",
     "noShow": "Nicht erschienen",
-    "cancelled": "Storniert"
+    "cancelled": "Storniert",
+    "selected": "Ausgewählt",
+    "myReserved": "Meine Reservierung"
   },
   "validation": {
     "usernameHint": "3-64 Zeichen: Buchstaben, Zahlen, Punkte, Unterstriche, Bindestriche"
@@ -567,11 +569,6 @@
   "eventReservationModal": {
     "title": "Plätze reservieren - {{eventName}}",
     "description": "Wählen Sie Ihre Plätze für diese Veranstaltung aus. Verfügbar: {{availableSeats}}",
-    "available": "Verfügbar",
-    "selected": "Ausgewählt",
-    "myReserved": "Meine Reserviert",
-    "reserved": "Reserviert",
-    "blocked": "Blockiert",
     "selectedSeatsTitle": "Ausgewählte Plätze:",
     "cancelButton": "Abbrechen",
     "reservingButton": "Reserviere...",
@@ -686,10 +683,6 @@
     "description": "Wählen Sie Plätze zum Blockieren aus und verhindern Sie Reservierungen",
     "eventLabel": "Event",
     "selectEventPlaceholder": "Event auswählen",
-    "available": "Verfügbar",
-    "selectedToBlock": "Zum Blockieren ausgewählt",
-    "reserved": "Reserviert",
-    "alreadyBlocked": "Bereits blockiert",
     "seatsToBlockTitle": "Zu blockierende Plätze:",
     "cancelButton": "Abbrechen",
     "blockingButton": "Blockiere...",
@@ -832,11 +825,6 @@
   "reservationFormModal": {
     "createReservationTitle": "Reservierung erstellen",
     "createReservationDescription": "Eine neue Reservierung für mehrere Plätze erstellen",
-    "availableStatus": "Verfügbar",
-    "selectedStatus": "Ausgewählt",
-    "reservedStatus": "Reserviert",
-    "userReservedStatus": "Benutzer reserviert",
-    "blockedStatus": "Blockiert",
     "selectEventToViewSeats": "Bitte wählen Sie eine Veranstaltung aus, um Plätze anzuzeigen",
     "noSeatsAvailableForEvent": "Keine Plätze für diese Veranstaltung verfügbar",
     "eventLabel": "Veranstaltung",

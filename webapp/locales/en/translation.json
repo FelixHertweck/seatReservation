@@ -5,7 +5,9 @@
     "blocked": "Blocked",
     "checkedIn": "Checked In",
     "noShow": "No Show",
-    "cancelled": "Cancelled"
+    "cancelled": "Cancelled",
+    "selected": "Selected",
+    "myReserved": "My Reservation"
   },
   "validation": {
     "usernameHint": "3-64 characters: letters, numbers, dots, underscores, hyphens"
@@ -710,11 +712,6 @@
   "eventReservationModal": {
     "title": "Reserve Seats - {{eventName}}",
     "description": "Select your seats for this event. Available: {{availableSeats}}",
-    "available": "Available",
-    "selected": "Selected",
-    "myReserved": "My Reserved",
-    "reserved": "Reserved",
-    "blocked": "Blocked",
     "selectedSeatsTitle": "Selected Seats:",
     "cancelButton": "Cancel",
     "reservingButton": "Reserving...",
@@ -829,10 +826,6 @@
     "description": "Select seats to block and prevent reservations",
     "eventLabel": "Event",
     "selectEventPlaceholder": "Select an event",
-    "available": "Available",
-    "selectedToBlock": "Selected to Block",
-    "reserved": "Reserved",
-    "alreadyBlocked": "Already Blocked",
     "seatsToBlockTitle": "Seats to Block:",
     "cancelButton": "Cancel",
     "blockingButton": "Blocking...",
@@ -975,11 +968,6 @@
   "reservationFormModal": {
     "createReservationTitle": "Create Reservation",
     "createReservationDescription": "Create a new reservation for multiple seats",
-    "availableStatus": "Available",
-    "selectedStatus": "Selected",
-    "reservedStatus": "Reserved",
-    "userReservedStatus": "User Reserved",
-    "blockedStatus": "Blocked",
     "selectEventToViewSeats": "Please select an event to view seats",
     "noSeatsAvailableForEvent": "No seats available for this event",
     "eventLabel": "Event",
