@@ -36,8 +36,19 @@ public class EventLocationRequestDTO {
     @NotNull(message = "Capacity must not be null")
     private Integer capacity;
 
+    /**
+     * On update, this is a full replace, not a merge: omitting this field (or sending {@code null})
+     * clears all of the location's existing markers. Send the complete desired list every time,
+     * including markers that are meant to be kept.
+     */
     @Valid private List<MakerRequestDTO> markers;
 
+    /**
+     * On update, this is a full replace, not a merge: omitting this field (or sending {@code null})
+     * clears all of the location's existing area boundary points. Send the complete desired list
+     * every time, including boundary points that are meant to be kept. See {@link
+     * de.felixhertweck.seatreservation.management.service.EventLocationService#updateEventLocation}.
+     */
     @Valid private List<AreaBoundaryPointRequestDTO> areaBoundaryPoints;
 
     public String getName() {

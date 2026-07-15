@@ -496,7 +496,7 @@ export function SeatMap({
               case "CANCELLED":
                 return "bg-violet-500 dark:bg-violet-500";
               case "NO_SHOW":
-                return "bg-red-500 dark:bg-red-600";
+                return "bg-orange-500 dark:bg-orange-600";
               default:
                 return "bg-red-500 dark:bg-red-600";
             }
