@@ -71,7 +71,7 @@ class EmailTemplateFragmentsRenderTest {
                         .data("eventLocation", "Main Hall")
                         .data("eventStartTime", "2026-07-10 20:00")
                         .data("eventEndTime", "2026-07-10 23:00")
-                        .data("newSeats", List.of(new SeatView("A1", "1")))
+                        .data("newSeats", List.of(new SeatView("A1", "1", "Floor")))
                         .data("hasExistingSeats", false)
                         .data("existingSeats", List.of())
                         .data("entranceInfo", "Use the north entrance")
@@ -85,7 +85,7 @@ class EmailTemplateFragmentsRenderTest {
         assertTrue(html.contains("Your Check-in QR Code"), "qrcode-block fragment did not render");
         assertTrue(html.contains("Entrance Information"), "entrance-info-block did not render");
         assertTrue(html.contains("Use the north entrance"));
-        assertTrue(html.contains("<li>A1 (1)</li>"));
+        assertTrue(html.contains("<li>A1 (1) - Floor</li>"));
     }
 
     @Test
@@ -98,9 +98,9 @@ class EmailTemplateFragmentsRenderTest {
                         .data("eventLocation", "Main Hall")
                         .data("eventStartTime", "2026-07-10 20:00")
                         .data("eventEndTime", "2026-07-10 23:00")
-                        .data("deletedSeats", List.of(new SeatView("A1", "1")))
+                        .data("deletedSeats", List.of(new SeatView("A1", "1", "Floor")))
                         .data("hasActiveSeats", true)
-                        .data("activeSeats", List.of(new SeatView("A2", "1")))
+                        .data("activeSeats", List.of(new SeatView("A2", "1", "Floor")))
                         .data("entranceInfo", "Use the north entrance")
                         .data("eventLink", "https://example.com/e")
                         .data("seatmapLink", "https://example.com/s")
@@ -111,8 +111,8 @@ class EmailTemplateFragmentsRenderTest {
         assertTrue(html.contains(".header {"), "simple-card-styles fragment did not render");
         assertTrue(html.contains("Your Check-in QR Code"), "qrcode-block fragment did not render");
         assertTrue(html.contains("Entrance Information"), "entrance-info-block did not render");
-        assertTrue(html.contains("<li>A1 (1)</li>"));
-        assertTrue(html.contains("<li>A2 (1)</li>"));
+        assertTrue(html.contains("<li>A1 (1) - Floor</li>"));
+        assertTrue(html.contains("<li>A2 (1) - Floor</li>"));
     }
 
     @Test
@@ -125,7 +125,7 @@ class EmailTemplateFragmentsRenderTest {
                         .data("eventDate", "2026-07-10")
                         .data("eventTime", "20:00")
                         .data("eventLocation", "Main Hall")
-                        .data("seats", List.of(new SeatView("A1", "1")))
+                        .data("seats", List.of(new SeatView("A1", "1", "Floor")))
                         .data("entranceInfo", "Use the north entrance")
                         .data("eventLink", "https://example.com/e")
                         .data("seatmapLink", "https://example.com/s")
@@ -136,7 +136,7 @@ class EmailTemplateFragmentsRenderTest {
         assertTrue(html.contains("h1 {"), "card-layout-styles fragment did not render");
         assertTrue(html.contains("Your Check-in QR Code"), "qrcode-block fragment did not render");
         assertTrue(html.contains("Entrance Information"), "entrance-info-block did not render");
-        assertTrue(html.contains("<li>A1 (1)</li>"));
+        assertTrue(html.contains("<li>A1 (1) - Floor</li>"));
     }
 
     @Test

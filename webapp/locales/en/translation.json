@@ -757,7 +757,9 @@
     "seatPlural": "Seats",
     "bookingUntil": "Booking until",
     "unknownEvent": "Unknown event",
-    "selectAll": "Select all"
+    "selectAll": "Select all",
+    "areaLabel": "Area",
+    "entranceLabel": "Entrance"
   },
   "reservationDeleteModal": {
     "title": "Delete Reservation",
@@ -790,7 +792,9 @@
     "loadingText": "Loading...",
     "yourReservedSeatsSectionTitle": "Your Reserved Seats",
     "seatNumberButton": "Seat {{seatNumber}}",
-    "noSeatsReserved": "No seats reserved"
+    "noSeatsReserved": "No seats reserved",
+    "areaLabel": "Area",
+    "entranceLabel": "Entrance"
   },
   "allowanceFormModal": {
     "validationErrorTitle": "Validation Error",

@@ -614,7 +614,9 @@
     "seatPlural": "Plätze",
     "bookingUntil": "Buchung bis",
     "unknownEvent": "Unbekannte Veranstaltung",
-    "selectAll": "Alle auswählen"
+    "selectAll": "Alle auswählen",
+    "areaLabel": "Bereich",
+    "entranceLabel": "Eingang"
   },
   "reservationDeleteModal": {
     "title": "Reservierung löschen",
@@ -647,7 +649,9 @@
     "loadingText": "Wird geladen...",
     "yourReservedSeatsSectionTitle": "Ihre reservierten Plätze",
     "seatNumberButton": "Platz {{seatNumber}}",
-    "noSeatsReserved": "Keine Plätze reserviert"
+    "noSeatsReserved": "Keine Plätze reserviert",
+    "areaLabel": "Bereich",
+    "entranceLabel": "Eingang"
   },
   "allowanceFormModal": {
     "validationErrorTitle": "Validierungsfehler",

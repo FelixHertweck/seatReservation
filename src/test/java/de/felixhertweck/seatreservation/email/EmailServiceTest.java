@@ -228,6 +228,7 @@ class EmailServiceTest {
         Event event = createTestEvent(location);
         Seat seat = createTestSeat(location, "A1");
         seat.setSeatRow("1");
+        seat.setArea("Floor");
         List<Reservation> reservations =
                 Collections.singletonList(createTestReservation(user, event, seat));
 
@@ -255,7 +256,7 @@ class EmailServiceTest {
                                         .toLocalDate()
                                         .toString()));
         assertTrue(sentMail.getHtml().contains(event.getEventLocation().getName()));
-        assertTrue(sentMail.getHtml().contains("<li>A1 (1)</li>"));
+        assertTrue(sentMail.getHtml().contains("<li>A1 (1) - Floor</li>"));
         assertTrue(
                 sentMail.getHtml()
                         .contains("http://localhost:8080/email/seatmap?token=test-token-123"));

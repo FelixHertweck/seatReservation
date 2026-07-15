@@ -124,18 +124,32 @@ export function SeatMapModal({
                     {reservedSeats.map((seat, index) => (
                       <button
                         key={seat.id || index}
-                        className={`px-2 py-1.5 md:px-3 md:py-2 text-sm rounded-md border transition-all hover:shadow-md ${
+                        className={`flex flex-col items-start px-2 py-1.5 md:px-3 md:py-2 text-sm rounded-md border transition-all hover:shadow-md ${
                           highlightedSeats.some((s) => s.id === seat.id)
                             ? "bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white border-blue-600 shadow-md"
                             : "bg-seatmap border rounded shadow-xs hover:bg-secondary"
                         }`}
                         onClick={() => handleSeatClick(seat)}
                       >
-                        {t("seatMapModal.seatNumberButton", {
-                          seatNumber:
-                            seat.seatNumber +
-                            (seat.seatRow ? " (" + seat.seatRow + ")" : ""),
-                        })}
+                        <span>
+                          {t("seatMapModal.seatNumberButton", {
+                            seatNumber:
+                              seat.seatNumber +
+                              (seat.seatRow ? " (" + seat.seatRow + ")" : ""),
+                          })}
+                        </span>
+                        {(seat.area || seat.entrance) && (
+                          <span className="text-[10px] opacity-80">
+                            {[
+                              seat.area &&
+                                `${t("seatMapModal.areaLabel")}: ${seat.area}`,
+                              seat.entrance &&
+                                `${t("seatMapModal.entranceLabel")}: ${seat.entrance}`,
+                            ]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </span>
+                        )}
                       </button>
                     ))}
                   </div>
