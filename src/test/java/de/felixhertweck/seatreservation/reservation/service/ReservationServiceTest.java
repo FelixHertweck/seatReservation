@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.reservation.service;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
@@ -42,6 +43,7 @@ import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.ReservationNotFoundException;
+import de.felixhertweck.seatreservation.email.service.EmailService;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
@@ -80,6 +82,8 @@ class ReservationServiceTest {
     @InjectMock EventUserAllowanceRepository eventUserAllowanceRepository;
 
     @InjectMock EmailSeatMapTokenRepository emailSeatMapTokenRepository;
+
+    @InjectMock EmailService emailService;
 
     private User currentUser;
     private User otherUser;
@@ -374,6 +378,22 @@ class ReservationServiceTest {
                 () -> reservationService.deleteReservationForUser(List.of(1L), currentUser));
         verify(eventUserAllowanceRepository, times(1)).persist(allowance);
         assertEquals(3, allowance.getReservationsAllowedCount());
+    }
+
+    @Test
+    void deleteReservationForUser_IOException_EmailServiceFailure() throws IOException {
+        when(reservationRepository.findByIdOptional(1L)).thenReturn(Optional.of(reservation));
+        when(eventUserAllowanceRepository.findByUser(currentUser)).thenReturn(List.of(allowance));
+        when(eventUserAllowanceRepository.findByUserAndEventId(currentUser, event.id))
+                .thenReturn(Optional.of(allowance));
+
+        org.mockito.Mockito.doThrow(new IOException("Simulated IO Exception"))
+                .when(emailService)
+                .sendUpdateReservationConfirmation(any(), any(), any());
+
+        assertDoesNotThrow(
+                () -> reservationService.deleteReservationForUser(List.of(1L), currentUser));
+        verify(eventUserAllowanceRepository, times(1)).persist(allowance);
     }
 
     @Test
