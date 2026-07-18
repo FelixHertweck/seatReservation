@@ -37,6 +37,7 @@ import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenRepository;
+import de.felixhertweck.seatreservation.utils.SecurityUtils;
 import de.felixhertweck.seatreservation.utils.SvgRenderer;
 import de.felixhertweck.seatreservation.utils.SvgToPngConverter;
 import org.apache.batik.transcoder.TranscoderException;
@@ -64,8 +65,11 @@ public class EmailSeatMapService {
     @Transactional
     public String createEmailSeatMapToken(
             User user, Event event, List<Reservation> newReservations) {
-        // Generate unique token
-        String token = java.util.UUID.randomUUID().toString();
+        // Generate secure unique token
+        String token =
+                java.util.Base64.getUrlEncoder()
+                        .withoutPadding()
+                        .encodeToString(SecurityUtils.generateRandomBytes(32));
 
         // Extract seat numbers from new reservations
         Set<String> newReservedSeatNumbers =
