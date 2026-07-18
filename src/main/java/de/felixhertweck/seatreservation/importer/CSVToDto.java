@@ -31,6 +31,7 @@ import de.felixhertweck.seatreservation.userManagment.dto.AdminUserCreationDto;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.jboss.logging.Logger;
 
 /**
  * Simple CSV -> JSON importer for AdminUserCreationDto.
@@ -39,6 +40,8 @@ import org.apache.commons.csv.CSVRecord;
  * to 'importer/input.csv' and 'importer/output.json'.
  */
 public class CSVToDto {
+
+    private static final Logger LOG = Logger.getLogger(CSVToDto.class);
 
     private static final Set<String> DEFAULT_ROLES = Set.of("USER");
     private static final Set<String> DEFAULT_TAGS = Set.of("imported");
@@ -55,7 +58,7 @@ public class CSVToDto {
 
         Path inputPath = Path.of(input);
         if (!Files.exists(inputPath)) {
-            System.err.println("Input file does not exist: " + inputPath.toAbsolutePath());
+            LOG.error("Input file does not exist: " + inputPath.toAbsolutePath());
             System.exit(2);
         }
 
@@ -88,8 +91,7 @@ public class CSVToDto {
             }
 
         } catch (IOException e) {
-            System.err.println("Error reading CSV: " + e.getMessage());
-            e.printStackTrace();
+            LOG.error("Error reading CSV: " + e.getMessage(), e);
             System.exit(3);
         }
 
@@ -100,10 +102,9 @@ public class CSVToDto {
             Files.createDirectories(
                     outPath.getParent() == null ? Path.of(".") : outPath.getParent());
             mapper.writeValue(outPath.toFile(), users);
-            System.out.println("Wrote " + users.size() + " users to " + outPath.toAbsolutePath());
+            LOG.info("Wrote " + users.size() + " users to " + outPath.toAbsolutePath());
         } catch (IOException e) {
-            System.err.println("Error writing JSON: " + e.getMessage());
-            e.printStackTrace();
+            LOG.error("Error writing JSON: " + e.getMessage(), e);
             System.exit(4);
         }
     }
@@ -131,7 +132,7 @@ public class CSVToDto {
         String email = safeGet(record, "email", 3);
 
         if (firstname.isBlank() || lastname.isBlank() || password.isBlank()) {
-            System.err.println("Skipping record due missing mandatory fields: " + record);
+            LOG.error("Skipping record due missing mandatory fields: " + record);
             return;
         }
 
