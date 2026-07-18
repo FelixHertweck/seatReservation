@@ -140,8 +140,7 @@ export function QrCodeScanner({
       try {
         BigInt(userId);
         BigInt(eventId);
-      } catch (e) {
-        console.log("Error parsing QR code data:", e);
+      } catch {
         throw new Error("Invalid user ID or event ID");
       }
 
@@ -154,7 +153,13 @@ export function QrCodeScanner({
       // Stop scanning after successful scan
       stopScanning();
     } catch (error) {
-      console.log("Error parsing QR code data:", error);
+      console.error("Error parsing QR code data:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : t("checkin.error.scanningFailed"),
+        { id: "qr-scan-error" },
+      );
     }
   };
 
