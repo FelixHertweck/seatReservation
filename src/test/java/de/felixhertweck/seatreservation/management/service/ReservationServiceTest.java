@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.management.service;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
@@ -36,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -587,6 +589,27 @@ public class ReservationServiceTest {
         verify(reservationRepository, times(1)).delete(reservation);
         verify(eventUserAllowanceRepository, times(1)).persist(allowance);
         assertEquals(6, allowance.getReservationsAllowedCount());
+    }
+
+    @Test
+    void deleteReservation_IOExceptionOnEmailSend_ContinuesGracefully() throws IOException {
+        when(reservationRepository.findByIdOptional(reservation.id))
+                .thenReturn(Optional.of(reservation));
+        @SuppressWarnings("unchecked")
+        PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
+        when(allowanceQuery.firstResultOptional()).thenReturn(Optional.empty());
+        when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", regularUser, event))
+                .thenReturn(allowanceQuery);
+
+        doThrow(new IOException("Test exception"))
+                .when(emailService)
+                .sendUpdateReservationConfirmation(any(), any(), any(), any());
+
+        reservationService.deleteReservation(List.of(reservation.id), adminUser);
+
+        verify(reservationRepository, times(1)).delete(reservation);
+        verify(emailService, times(1))
+                .sendUpdateReservationConfirmation(any(), any(), any(), any());
     }
 
     @Test
