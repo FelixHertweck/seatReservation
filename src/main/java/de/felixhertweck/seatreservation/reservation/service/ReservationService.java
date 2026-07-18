@@ -353,20 +353,20 @@ public class ReservationService {
                     "At least one reservation ID must be provided for deletion");
         }
 
+        List<Reservation> foundReservations = reservationRepository.find("id in ?1", ids).list();
+        Map<Long, Reservation> foundReservationMap =
+                foundReservations.stream()
+                        .collect(Collectors.toMap(r -> r.id, r -> r, (r1, r2) -> r1));
+
         List<Reservation> reservations = new ArrayList<>();
         for (Long id : ids) {
-            Reservation uncheckedReservation =
-                    reservationRepository
-                            .findByIdOptional(id)
-                            .orElseThrow(
-                                    () -> {
-                                        LOG.warnf(
-                                                "Reservation with ID %d not found for deletion by"
-                                                        + " user %s.",
-                                                id, currentUser.id);
-                                        return new ReservationNotFoundException(
-                                                "Reservation not found");
-                                    });
+            Reservation uncheckedReservation = foundReservationMap.get(id);
+            if (uncheckedReservation == null) {
+                LOG.warnf(
+                        "Reservation with ID %d not found for deletion by user %s.",
+                        id, currentUser.id);
+                throw new ReservationNotFoundException("Reservation not found");
+            }
             if (!uncheckedReservation.getUser().equals(currentUser)) {
                 LOG.warnf(
                         "user ID: %d attempted to delete reservation %d which belongs to user ID:"
@@ -411,18 +411,12 @@ public class ReservationService {
                                         eventUserAllowance.getReservationsAllowedCount());
                             });
 
-            // Delete reservations for the current event
-            entry.getValue()
-                    .forEach(
-                            reservation -> {
-                                reservationRepository.delete(reservation);
-                                LOG.infof(
-                                        "Deleted reservation with ID %d for user ID: %d.",
-                                        reservation.id, currentUser.id);
-                                LOG.debugf(
-                                        "Deleted reservation with ID %d for user ID: %d.",
-                                        reservation.id, currentUser.id);
-                            });
+            // Delete reservations for the current event in a single batch query
+            List<Long> reservationIdsToDelete = entry.getValue().stream().map(r -> r.id).toList();
+            reservationRepository.delete("id in ?1", reservationIdsToDelete);
+            LOG.infof(
+                    "Deleted reservations with IDs %s for user ID: %d.",
+                    reservationIdsToDelete, currentUser.id);
 
             // Send email update confirmation for each event
             List<Reservation> activeReservations =

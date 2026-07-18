@@ -36,6 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -63,6 +64,7 @@ import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableEx
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatBlockedException;
 import de.felixhertweck.seatreservation.utils.CodeGenerator;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -396,7 +398,10 @@ class ReservationServiceTest {
 
     @Test
     void deleteReservationForUser_Success() {
-        when(reservationRepository.findByIdOptional(1L)).thenReturn(Optional.of(reservation));
+        PanacheQuery<Reservation> queryMock = mock(PanacheQuery.class);
+        when(reservationRepository.find("id in ?1", List.of(1L))).thenReturn(queryMock);
+        when(queryMock.list()).thenReturn(List.of(reservation));
+
         when(eventUserAllowanceRepository.findByUser(currentUser)).thenReturn(List.of(allowance));
         when(eventUserAllowanceRepository.findByUserAndEventId(currentUser, event.id))
                 .thenReturn(Optional.of(allowance));
@@ -409,7 +414,10 @@ class ReservationServiceTest {
 
     @Test
     void deleteReservationForUser_IOException_EmailServiceFailure() throws IOException {
-        when(reservationRepository.findByIdOptional(1L)).thenReturn(Optional.of(reservation));
+        PanacheQuery<Reservation> queryMock = mock(PanacheQuery.class);
+        when(reservationRepository.find("id in ?1", List.of(1L))).thenReturn(queryMock);
+        when(queryMock.list()).thenReturn(List.of(reservation));
+
         when(eventUserAllowanceRepository.findByUser(currentUser)).thenReturn(List.of(allowance));
         when(eventUserAllowanceRepository.findByUserAndEventId(currentUser, event.id))
                 .thenReturn(Optional.of(allowance));
@@ -425,7 +433,10 @@ class ReservationServiceTest {
 
     @Test
     void deleteReservationForUser_Success_NoAllowanceExists() {
-        when(reservationRepository.findByIdOptional(1L)).thenReturn(Optional.of(reservation));
+        PanacheQuery<Reservation> queryMock = mock(PanacheQuery.class);
+        when(reservationRepository.find("id in ?1", List.of(1L))).thenReturn(queryMock);
+        when(queryMock.list()).thenReturn(List.of(reservation));
+
         when(eventUserAllowanceRepository.findByUser(currentUser))
                 .thenReturn(Collections.emptyList());
 
@@ -436,7 +447,9 @@ class ReservationServiceTest {
 
     @Test
     void deleteReservationForUser_NotFoundException() {
-        when(reservationRepository.findByIdOptional(1L)).thenReturn(Optional.empty());
+        PanacheQuery<Reservation> queryMock = mock(PanacheQuery.class);
+        when(reservationRepository.find("id in ?1", List.of(1L))).thenReturn(queryMock);
+        when(queryMock.list()).thenReturn(Collections.emptyList());
 
         assertThrows(
                 ReservationNotFoundException.class,
@@ -445,7 +458,9 @@ class ReservationServiceTest {
 
     @Test
     void deleteReservationForUser_ForbiddenException_NotOwner() {
-        when(reservationRepository.findByIdOptional(1L)).thenReturn(Optional.of(reservation));
+        PanacheQuery<Reservation> queryMock = mock(PanacheQuery.class);
+        when(reservationRepository.find("id in ?1", List.of(1L))).thenReturn(queryMock);
+        when(queryMock.list()).thenReturn(List.of(reservation));
 
         assertThrows(
                 SecurityException.class,
