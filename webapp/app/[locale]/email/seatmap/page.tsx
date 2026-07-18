@@ -20,6 +20,7 @@ import {
 import { toast } from "sonner";
 import { getApiEmailSeatmap } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
+import DOMPurify from "dompurify";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -79,7 +80,7 @@ export default function EmailSeatmapPage() {
 
         // Convert Blob to SVG text
         const svg = await response.data.text();
-        setSvgContent(svg);
+        setSvgContent(DOMPurify.sanitize(svg));
       } catch (err) {
         const errorMessage =
           err instanceof Error
