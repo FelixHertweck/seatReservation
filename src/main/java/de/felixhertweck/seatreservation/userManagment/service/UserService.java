@@ -25,8 +25,10 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -418,14 +420,28 @@ public class UserService {
      */
     @Transactional
     public void deleteUser(List<Long> ids) throws UserNotFoundException {
+        if (ids == null || ids.isEmpty()) {
+            return;
+        }
+
+        LOG.debugf("Attempting to batch delete users with IDs: %s.", ids);
+
+        // Fetch all users in a single query
+        List<User> users = userRepository.find("id in ?1", ids).list();
+
+        // Map users by ID for quick lookup and to preserve iterative validation behavior
+        Map<Long, User> userMap = users.stream().collect(Collectors.toMap(u -> u.id, u -> u));
+
         for (Long id : ids) {
-            LOG.debugf("Attempting to delete user with ID: %d.", id);
-            boolean deleted = userRepository.deleteById(id);
-            if (!deleted) {
+            User user = userMap.remove(id);
+            if (user == null) {
                 LOG.warnf("User with ID %d not found for deletion.", id);
                 throw new UserNotFoundException("User with id " + id + " not found.");
             }
         }
+
+        userRepository.delete("id in ?1", ids);
+
         LOG.infof("Users with IDs %s deleted successfully.", ids);
     }
 
