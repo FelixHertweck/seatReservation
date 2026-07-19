@@ -20,7 +20,9 @@
 package de.felixhertweck.seatreservation.security.service;
 
 import java.time.Instant;
+import java.util.Base64;
 import java.util.Set;
+import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -36,6 +38,7 @@ import de.felixhertweck.seatreservation.security.exceptions.AccountLockedExcepti
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
+import de.felixhertweck.seatreservation.utils.SecurityUtils;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
@@ -59,6 +62,17 @@ public class AuthService {
 
     @ConfigProperty(name = "login.lockout-duration-seconds", defaultValue = "300")
     int lockoutDurationSeconds;
+
+    private String randomPasswordHash;
+
+    @PostConstruct
+    void init() {
+        String randomPassword =
+                Base64.getUrlEncoder()
+                        .withoutPadding()
+                        .encodeToString(SecurityUtils.generateRandomBytes(32));
+        this.randomPasswordHash = BcryptUtil.bcryptHash(randomPassword);
+    }
 
     /**
      * Checks if user registration is enabled.
@@ -85,9 +99,6 @@ public class AuthService {
 
         // Check if account is locked due to failed login attempts
         checkAccountLockout(username);
-
-        // Generate random password hash to mitigate timing attacks
-        String randomPasswordHash = "$2a$12$G0LZJi5jGdl5wqspjaVYN.eXdZcZ3X9cMny/3m8mRM3vK/5Yf6TE6";
 
         User user = userRepository.findByUsername(username);
         if (user == null) {

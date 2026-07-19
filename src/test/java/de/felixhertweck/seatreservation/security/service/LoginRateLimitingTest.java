@@ -60,6 +60,7 @@ public class LoginRateLimitingTest {
         authService.loginAttemptRepository = loginAttemptRepository;
         authService.maxFailedAttempts = 5;
         authService.lockoutDurationSeconds = 300;
+        authService.init();
     }
 
     @Test
