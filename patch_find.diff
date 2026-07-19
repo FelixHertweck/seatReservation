@@ -1,0 +1,47 @@
+--- src/main/java/de/felixhertweck/seatreservation/reservation/service/ReservationService.java
++++ src/main/java/de/felixhertweck/seatreservation/reservation/service/ReservationService.java
+@@ -351,21 +351,19 @@
+                     "At least one reservation ID must be provided for deletion");
+         }
+
+-        List<Reservation> reservations = new ArrayList<>();
+-        for (Long id : ids) {
+-            Reservation uncheckedReservation =
+-                    reservationRepository
+-                            .findByIdOptional(id)
+-                            .orElseThrow(
+-                                    () -> {
+-                                        LOG.warnf(
+-                                                "Reservation with ID %d not found for deletion by"
+-                                                        + " user %s.",
+-                                                id, currentUser.id);
+-                                        return new ReservationNotFoundException(
+-                                                "Reservation not found");
+-                                    });
+-            if (!uncheckedReservation.getUser().equals(currentUser)) {
++        List<Reservation> reservations = reservationRepository.find("id in ?1", ids).list();
++
++        if (reservations.size() != ids.size()) {
++            LOG.warnf("Some reservations were not found for deletion by user %s.", currentUser.id);
++            throw new ReservationNotFoundException("Reservation not found");
++        }
++
++        // We still need to iterate to maintain correct exception order when validating current user
++        List<Reservation> validatedReservations = new ArrayList<>();
++        Map<Long, Reservation> reservationMap = reservations.stream().collect(Collectors.toMap(r -> r.id, r -> r));
++        for(Long id : ids) {
++            Reservation uncheckedReservation = reservationMap.get(id);
++            if (uncheckedReservation == null || !uncheckedReservation.getUser().equals(currentUser)) {
+                 LOG.warnf(
+                         "user ID: %d attempted to delete reservation %d which belongs to user ID:"
+                                 + " %d.",
+@@ -373,9 +371,11 @@
+                 throw new SecurityException("You are not allowed to delete this reservation");
+             }
+-            reservations.add(uncheckedReservation);
++            validatedReservations.add(uncheckedReservation);
+         }
++
++        reservations = validatedReservations;
+
+         if (reservations.isEmpty()) {

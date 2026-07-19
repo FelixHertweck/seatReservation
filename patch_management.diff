@@ -1,0 +1,30 @@
+--- src/main/java/de/felixhertweck/seatreservation/management/service/ReservationService.java
++++ src/main/java/de/felixhertweck/seatreservation/management/service/ReservationService.java
+@@ -370,18 +370,12 @@
+                 ids, managerUser.id, managerUser.getId());
+
+         List<Reservation> deletedReservations = new ArrayList<>();
++        List<Reservation> foundReservations = reservationRepository.find("id in ?1", ids).list();
++        Map<Long, Reservation> reservationMap = foundReservations.stream().collect(Collectors.toMap(r -> r.id, r -> r));
+
+         for (Long id : ids) {
+-
+-            Reservation reservation =
+-                    reservationRepository
+-                            .findByIdOptional(id)
+-                            .orElseThrow(
+-                                    () -> {
+-                                        LOG.warnf(
+-                                                "Reservation with ID %d not found for deletion by"
+-                                                        + " user: %s (ID: %d)",
+-                                                id, managerUser.id, managerUser.getId());
+-                                        return new ReservationNotFoundException(
+-                                                "Reservation with id " + id + " not found");
+-                                    });
++            Reservation reservation = reservationMap.get(id);
++            if (reservation == null) {
++                LOG.warnf("Reservation with ID %d not found for deletion by user: %s (ID: %d)", id, managerUser.id, managerUser.getId());
++                throw new ReservationNotFoundException("Reservation with id " + id + " not found");
++            }
+
+             if (!managerUser.getRoles().contains(Roles.ADMIN)

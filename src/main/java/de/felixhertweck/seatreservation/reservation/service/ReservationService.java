@@ -169,24 +169,11 @@ public class ReservationService {
         LOG.debugf("Event ID: %d found for reservation.", event.id);
 
         // Validate the seatIds, ensure they exist
-        List<Seat> seats =
-                dto.getSeatIds().stream()
-                        .map(
-                                seatId ->
-                                        seatRepository
-                                                .findByIdOptional(seatId)
-                                                .orElseThrow(
-                                                        () -> {
-                                                            LOG.warnf(
-                                                                    "Seat with ID %d not found for"
-                                                                        + " reservation creation by"
-                                                                        + " user %s.",
-                                                                    seatId, currentUser.id);
-                                                            return new EventNotFoundException(
-                                                                    "Minimum one seat not"
-                                                                            + " found");
-                                                        }))
-                        .toList();
+        List<Seat> seats = seatRepository.find("id in ?1", dto.getSeatIds()).list();
+        if (seats.size() != dto.getSeatIds().size()) {
+            LOG.warnf("Some seats not found for reservation creation by user %s.", currentUser.id);
+            throw new EventNotFoundException("Minimum one seat not found");
+        }
         LOG.debugf("All %d seats found for reservation.", seats.size());
 
         // Check if the user has an allowance for this event
@@ -342,20 +329,19 @@ public class ReservationService {
                     "At least one reservation ID must be provided for deletion");
         }
 
-        List<Reservation> reservations = new ArrayList<>();
+        List<Reservation> foundReservations = reservationRepository.find("id in ?1", ids).list();
+        Map<Long, Reservation> reservationMap =
+                foundReservations.stream().collect(Collectors.toMap(r -> r.id, r -> r));
+
+        List<Reservation> reservations = new ArrayList<>(ids.size());
         for (Long id : ids) {
-            Reservation uncheckedReservation =
-                    reservationRepository
-                            .findByIdOptional(id)
-                            .orElseThrow(
-                                    () -> {
-                                        LOG.warnf(
-                                                "Reservation with ID %d not found for deletion by"
-                                                        + " user %s.",
-                                                id, currentUser.id);
-                                        return new ReservationNotFoundException(
-                                                "Reservation not found");
-                                    });
+            Reservation uncheckedReservation = reservationMap.get(id);
+            if (uncheckedReservation == null) {
+                LOG.warnf(
+                        "Reservation with ID %d not found for deletion by user %s.",
+                        id, currentUser.id);
+                throw new ReservationNotFoundException("Reservation not found");
+            }
             if (!uncheckedReservation.getUser().equals(currentUser)) {
                 LOG.warnf(
                         "user ID: %d attempted to delete reservation %d which belongs to user ID:"
@@ -372,10 +358,10 @@ public class ReservationService {
         }
 
         // Group reservations by event to handle allowance updates and email confirmations correctly
-        Map<Long, List<Reservation>> reservationMap =
+        Map<Long, List<Reservation>> groupedReservationMap =
                 reservations.stream().collect(Collectors.groupingBy(r -> r.getEvent().id));
 
-        for (Map.Entry<Long, List<Reservation>> entry : reservationMap.entrySet()) {
+        for (Map.Entry<Long, List<Reservation>> entry : groupedReservationMap.entrySet()) {
             if (entry.getValue().isEmpty()) {
                 LOG.warnf(
                         "No reservations found for event ID %d during deletion process for user"

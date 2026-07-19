@@ -1,0 +1,14 @@
+--- src/main/java/de/felixhertweck/seatreservation/reservation/service/ReservationService.java
++++ src/main/java/de/felixhertweck/seatreservation/reservation/service/ReservationService.java
+@@ -191,9 +191,7 @@
+
+         // Check if the user has an allowance for this event
+         // And if the user is allowed to reserve that amount of seats
+-        List<EventUserAllowance> allowances = eventUserAllowanceRepository.findByUser(currentUser);
+         EventUserAllowance eventUserAllowance =
+-                allowances.stream()
+-                        .filter(a -> a.getEvent().id.equals(event.id))
+-                        .findFirst()
++                eventUserAllowanceRepository
++                        .findByUserAndEventId(currentUser, event.id)
+                         .orElseThrow(

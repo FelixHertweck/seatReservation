@@ -1,0 +1,32 @@
+--- src/main/java/de/felixhertweck/seatreservation/reservation/service/ReservationService.java
++++ src/main/java/de/felixhertweck/seatreservation/reservation/service/ReservationService.java
+@@ -342,20 +342,16 @@
+                     "At least one reservation ID must be provided for deletion");
+         }
+
+-        List<Reservation> reservations = new ArrayList<>();
++        List<Reservation> foundReservations = reservationRepository.find("id in ?1", ids).list();
++        Map<Long, Reservation> reservationMap = foundReservations.stream().collect(Collectors.toMap(r -> r.id, r -> r));
++
++        List<Reservation> reservations = new ArrayList<>(ids.size());
+         for (Long id : ids) {
+-            Reservation uncheckedReservation =
+-                    reservationRepository
+-                            .findByIdOptional(id)
+-                            .orElseThrow(
+-                                    () -> {
+-                                        LOG.warnf(
+-                                                "Reservation with ID %d not found for deletion by"
+-                                                        + " user %s.",
+-                                                id, currentUser.id);
+-                                        return new ReservationNotFoundException(
+-                                                "Reservation not found");
+-                                    });
++            Reservation uncheckedReservation = reservationMap.get(id);
++            if (uncheckedReservation == null) {
++                LOG.warnf("Reservation with ID %d not found for deletion by user %s.", id, currentUser.id);
++                throw new ReservationNotFoundException("Reservation not found");
++            }
+             if (!uncheckedReservation.getUser().equals(currentUser)) {
+                 LOG.warnf(
+                         "user ID: %d attempted to delete reservation %d which belongs to user ID:"
