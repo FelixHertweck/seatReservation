@@ -192,7 +192,7 @@ class ReservationServiceTest {
 
     @Test
     void findReservationByIdForUser_Success() {
-        mockReservationRepositoryFindIn(List.of(reservation));
+        when(reservationRepository.findByIdOptional(1L)).thenReturn(Optional.of(reservation));
 
         UserReservationResponseDTO result =
                 reservationService.findReservationByIdForUser(1L, currentUser);
@@ -203,7 +203,7 @@ class ReservationServiceTest {
 
     @Test
     void findReservationByIdForUser_NotFoundException() {
-        mockReservationRepositoryFindIn(Collections.emptyList());
+        when(reservationRepository.findByIdOptional(1L)).thenReturn(Optional.empty());
 
         assertThrows(
                 ReservationNotFoundException.class,
@@ -212,7 +212,7 @@ class ReservationServiceTest {
 
     @Test
     void findReservationByIdForUser_ForbiddenException() {
-        mockReservationRepositoryFindIn(List.of(reservation));
+        when(reservationRepository.findByIdOptional(1L)).thenReturn(Optional.of(reservation));
 
         assertThrows(
                 SecurityException.class,
