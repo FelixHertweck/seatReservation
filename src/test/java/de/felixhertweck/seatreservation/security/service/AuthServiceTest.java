@@ -62,6 +62,7 @@ public class AuthServiceTest {
         authService.loginAttemptRepository = loginAttemptRepository;
         authService.maxFailedAttempts = 5;
         authService.lockoutDurationSeconds = 300;
+        authService.init();
 
         // Mock loginAttemptRepository to return 0 failed attempts by default
         when(loginAttemptRepository.countFailedAttempts(anyString(), any(Instant.class)))
