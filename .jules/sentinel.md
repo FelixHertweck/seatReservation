@@ -1,0 +1,4 @@
+## 2026-07-19 - Removed Hardcoded Dummy Password Hash
+**Vulnerability:** A hardcoded bcrypt hash (`$2a$12$G0LZJi5jGdl5wqspjaVYN.eXdZcZ3X9cMny/3m8mRM3vK/5Yf6TE6`) was used in `AuthService.java` to perform a dummy password hash validation. This was used to mitigate timing attacks when users were not found or accounts were passkey-only without a password.
+**Learning:** Hardcoding security-related values such as dummy password hashes makes the dummy hash predictable. While the immediate risk might be lower since it's a dummy value, hardcoding any hash creates a static signature.
+**Prevention:** Generate dummy hashes dynamically upon application startup using secure random sequences. This ensures each deployment or application restart uses an unpredictable dummy hash for side-channel attack mitigation.
