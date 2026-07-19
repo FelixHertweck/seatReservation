@@ -72,6 +72,28 @@ import org.mockito.Mockito;
 @QuarkusTest
 public class ReservationServiceTest {
 
+    @SuppressWarnings("unchecked")
+    private void mockSeatRepositoryFindIn(List<Seat> seatsToReturn) {
+        io.quarkus.hibernate.orm.panache.PanacheQuery<Seat> query =
+                org.mockito.Mockito.mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
+        when(query.list()).thenReturn(seatsToReturn);
+        when(seatRepository.find(
+                        org.mockito.ArgumentMatchers.anyString(),
+                        org.mockito.ArgumentMatchers.any(List.class)))
+                .thenReturn(query);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void mockReservationRepositoryFindIn(List<Reservation> reservationsToReturn) {
+        io.quarkus.hibernate.orm.panache.PanacheQuery<Reservation> query =
+                org.mockito.Mockito.mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
+        when(query.list()).thenReturn(reservationsToReturn);
+        when(reservationRepository.find(
+                        org.mockito.ArgumentMatchers.anyString(),
+                        org.mockito.ArgumentMatchers.any(List.class)))
+                .thenReturn(query);
+    }
+
     @InjectMock ReservationRepository reservationRepository;
     @InjectMock EventRepository eventRepository;
     @InjectMock SeatRepository seatRepository;
