@@ -55,6 +55,6 @@ public record EventLocationResponseDTO(
                                 .map(EventLocationMakerDTO::new)
                                 .toList()
                         : List.of()),
-                AreaDTO.fromAreas(eventLocation.getSeats()));
+                AreaDTO.fromEventLocation(eventLocation));
     }
 }

@@ -27,6 +27,7 @@ export type AdminUserUpdateDto = {
 };
 
 export type AreaDto = {
+    id?: bigint;
     name?: string;
     seatIds?: Array<bigint>;
     boundary?: Array<CoordinateDto>;

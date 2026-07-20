@@ -25,15 +25,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 /**
- * Represents a named area within an event location together with the ids of all seats assigned to
- * it. Areas are derived by grouping the given seats by their {@link Seat#getArea()} and are
- * intended to be rendered as an overlay on top of the seat map. Only seat ids are referenced here
- * since the full seat data is already part of the enclosing response.
+ * Represents a named area of an event location together with the ids of all seats assigned to it.
+ * Areas are intended to be rendered as an overlay on top of the seat map. Only seat ids are
+ * referenced here since the full seat data is already part of the enclosing response.
  *
  * <p>{@code boundary} is an optional custom polygon (in the same coordinate system as {@code
  * Seat.coordinate}) that a renderer should use instead of deriving a shape from the member seats'
@@ -41,42 +41,67 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
  * area's seats.
  */
 @RegisterForReflection
-public record AreaDTO(String name, List<Long> seatIds, List<CoordinateDTO> boundary) {
+public record AreaDTO(Long id, String name, List<Long> seatIds, List<CoordinateDTO> boundary) {
 
     /**
-     * Groups the given seats by their {@link Seat#getArea()} into a list of {@link AreaDTO}s. Seats
-     * without an area (i.e. {@code null}) are ignored. The resulting group order follows the order
-     * in which the areas are first encountered. An area's boundary (if any) is taken directly from
-     * its {@link EventLocationArea#getBoundary()}, so an area only appears in the result if it has
-     * at least one seat, even if it has a custom boundary defined.
+     * Maps an event location's areas to {@link AreaDTO}s, attaching the ids of the seats assigned
+     * to each area.
      *
-     * @param seats the seats to group; may be {@code null}
-     * @return a list of areas with their assigned seat ids, never {@code null}
+     * <p>The areas drive the result, not the seats: an area is reported even when no seat
+     * references it yet (with an empty {@code seatIds}), so that a freshly drawn boundary is
+     * visible on the map right away. The result follows the location's own area order.
+     *
+     * @param eventLocation the event location whose areas to map; may be {@code null}
+     * @return the location's areas with their assigned seat ids, never {@code null}
      */
-    public static List<AreaDTO> fromAreas(Collection<Seat> seats) {
-        if (seats == null) {
+    public static List<AreaDTO> fromEventLocation(EventLocation eventLocation) {
+        if (eventLocation == null) {
             return List.of();
         }
-        Map<Long, EventLocationArea> areaById = new LinkedHashMap<>();
-        Map<Long, List<Long>> seatIdsByAreaId = new LinkedHashMap<>();
-        for (Seat seat : seats) {
-            EventLocationArea area = seat.getArea();
-            if (area == null) {
-                continue;
-            }
-            areaById.putIfAbsent(area.id, area);
-            seatIdsByAreaId.computeIfAbsent(area.id, key -> new ArrayList<>()).add(seat.id);
+        return fromAreas(eventLocation.getAreas(), eventLocation.getSeats());
+    }
+
+    /**
+     * Maps the given areas to {@link AreaDTO}s, attaching the ids of those seats that reference
+     * them. Seats without an area, and seats referencing an area not present in {@code areas}, are
+     * ignored.
+     *
+     * @param areas the areas to map; may be {@code null}
+     * @param seats the seats to take the area assignment from; may be {@code null}
+     * @return the areas with their assigned seat ids, never {@code null}
+     */
+    public static List<AreaDTO> fromAreas(
+            Collection<EventLocationArea> areas, Collection<Seat> seats) {
+        if (areas == null || areas.isEmpty()) {
+            return List.of();
         }
-        List<AreaDTO> result = new ArrayList<>();
-        seatIdsByAreaId.forEach(
-                (areaId, seatIds) -> {
-                    EventLocationArea area = areaById.get(areaId);
-                    List<CoordinateDTO> boundary =
-                            (area.getBoundary() == null || area.getBoundary().isEmpty())
-                                    ? null
-                                    : area.getBoundary().stream().map(CoordinateDTO::new).toList();
-                    result.add(new AreaDTO(area.getName(), seatIds, boundary));
-                });
-        return result;
+
+        Map<Long, List<Long>> seatIdsByAreaId = new LinkedHashMap<>();
+        if (seats != null) {
+            for (Seat seat : seats) {
+                EventLocationArea area = seat.getArea();
+                if (area == null) {
+                    continue;
+                }
+                seatIdsByAreaId.computeIfAbsent(area.id, key -> new ArrayList<>()).add(seat.id);
+            }
+        }
+
+        return areas.stream()
+                .map(
+                        area -> {
+                            List<CoordinateDTO> boundary =
+                                    (area.getBoundary() == null || area.getBoundary().isEmpty())
+                                            ? null
+                                            : area.getBoundary().stream()
+                                                    .map(CoordinateDTO::new)
+                                                    .toList();
+                            return new AreaDTO(
+                                    area.id,
+                                    area.getName(),
+                                    seatIdsByAreaId.getOrDefault(area.id, List.of()),
+                                    boundary);
+                        })
+                .toList();
     }
 }

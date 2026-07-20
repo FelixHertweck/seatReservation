@@ -103,6 +103,9 @@ const eventLocationMakerDtoSchemaResponseTransformer = (data: any) => {
 };
 
 const areaDtoSchemaResponseTransformer = (data: any) => {
+    if (data.id) {
+        data.id = BigInt(data.id.toString());
+    }
     if (data.seatIds) {
         data.seatIds = data.seatIds.map((item: any) => BigInt(item.toString()));
     }

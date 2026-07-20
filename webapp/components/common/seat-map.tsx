@@ -387,7 +387,8 @@ export function SeatMap({
     // usually contiguous blocks (e.g. "Parkett", "Balkon"), so a rectangle is
     // a good enough default shape without needing a more elaborate one.
     const areaZones: AreaZone[] = areas.flatMap((area, index): AreaZone[] => {
-      const key = area.name ?? `area-${index}`;
+      // Prefer the id: area names are not guaranteed to be unique within a location.
+      const key = area.id != null ? `area-${area.id}` : (area.name ?? `area-${index}`);
 
       const validBoundaryPoints = (area.boundary ?? []).filter(
         (p): p is Required<CoordinateDto> =>

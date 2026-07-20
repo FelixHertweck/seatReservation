@@ -29,80 +29,113 @@ import de.felixhertweck.seatreservation.model.entity.Coordinate;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
 import de.felixhertweck.seatreservation.model.entity.Seat;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class AreaDTOTest {
 
+    private EventLocation location;
+
+    @BeforeEach
+    void setUp() {
+        location = new EventLocation();
+        location.id = 1L;
+    }
+
     private EventLocationArea area(long id, String name) {
         EventLocationArea area = new EventLocationArea(name);
         area.id = id;
+        area.setEventLocation(location);
+        location.getAreas().add(area);
         return area;
     }
 
     private Seat seat(long id, String number, int x, int y, EventLocationArea area) {
-        EventLocation location = new EventLocation();
-        location.id = 1L;
         Seat seat = new Seat(number, location, "Row", x, y, null, area);
         seat.id = id;
+        location.getSeats().add(seat);
         return seat;
     }
 
     @Test
-    void fromAreas_returnsEmptyList_forNullInput() {
-        assertTrue(AreaDTO.fromAreas(null).isEmpty());
+    void fromEventLocation_returnsEmptyList_forNullInput() {
+        assertTrue(AreaDTO.fromEventLocation(null).isEmpty());
     }
 
     @Test
-    void fromAreas_ignoresSeatsWithoutArea() {
-        EventLocationArea balkon = area(1, "Balkon");
-        List<Seat> seats =
-                List.of(
-                        seat(1, "A1", 1, 1, null),
-                        seat(2, "A2", 2, 1, null),
-                        seat(3, "A3", 3, 1, null),
-                        seat(4, "A4", 4, 1, balkon));
+    void fromEventLocation_returnsEmptyList_whenLocationHasNoAreas() {
+        seat(1, "A1", 1, 1, null);
 
-        List<AreaDTO> areas = AreaDTO.fromAreas(seats);
+        assertTrue(AreaDTO.fromEventLocation(location).isEmpty());
+    }
+
+    /**
+     * The point of deriving from the areas: a freshly drawn area is visible before any seat uses
+     * it.
+     */
+    @Test
+    void fromEventLocation_reportsArea_withoutAnyAssignedSeats() {
+        EventLocationArea balkon = area(1, "Balkon");
+        balkon.setBoundary(
+                List.of(new Coordinate(1, 1), new Coordinate(2, 1), new Coordinate(2, 2)));
+        seat(1, "A1", 1, 1, null);
+
+        List<AreaDTO> areas = AreaDTO.fromEventLocation(location);
 
         assertEquals(1, areas.size());
-        assertEquals("Balkon", areas.get(0).name());
-        assertEquals(1, areas.get(0).seatIds().size());
-        assertEquals(4L, areas.get(0).seatIds().get(0));
+        assertEquals("Balkon", areas.getFirst().name());
+        assertEquals(1L, areas.getFirst().id());
+        assertTrue(areas.getFirst().seatIds().isEmpty());
+        assertEquals(3, areas.getFirst().boundary().size());
     }
 
     @Test
-    void fromAreas_groupsSeatsByAreaInFirstSeenOrder() {
+    void fromEventLocation_ignoresSeatsWithoutArea() {
+        area(1, "Balkon");
+        seat(1, "A1", 1, 1, null);
+        seat(2, "A2", 2, 1, null);
+        seat(3, "A3", 3, 1, null);
+        seat(4, "A4", 4, 1, location.getAreas().getFirst());
+
+        List<AreaDTO> areas = AreaDTO.fromEventLocation(location);
+
+        assertEquals(1, areas.size());
+        assertEquals("Balkon", areas.getFirst().name());
+        assertEquals(List.of(4L), areas.getFirst().seatIds());
+    }
+
+    @Test
+    void fromEventLocation_groupsSeatsByArea_inLocationAreaOrder() {
         EventLocationArea parkett = area(1, "Parkett");
         EventLocationArea balkon = area(2, "Balkon");
-        List<Seat> seats =
-                List.of(
-                        seat(1, "A1", 1, 1, parkett),
-                        seat(2, "B1", 1, 2, balkon),
-                        seat(3, "A2", 2, 1, parkett),
-                        seat(4, "B2", 2, 2, balkon));
+        seat(1, "B1", 1, 2, balkon);
+        seat(2, "A1", 1, 1, parkett);
+        seat(3, "B2", 2, 2, balkon);
+        seat(4, "A2", 2, 1, parkett);
 
-        List<AreaDTO> areas = AreaDTO.fromAreas(seats);
+        List<AreaDTO> areas = AreaDTO.fromEventLocation(location);
 
         assertEquals(2, areas.size());
+        // Order follows the location's areas, not the order the seats happen to be in.
         assertEquals("Parkett", areas.get(0).name());
-        assertEquals(2, areas.get(0).seatIds().size());
+        assertEquals(List.of(2L, 4L), areas.get(0).seatIds());
         assertEquals("Balkon", areas.get(1).name());
-        assertEquals(2, areas.get(1).seatIds().size());
+        assertEquals(List.of(1L, 3L), areas.get(1).seatIds());
     }
 
     @Test
-    void fromAreas_leavesBoundaryNull_whenAreaHasNoBoundary() {
+    void fromEventLocation_leavesBoundaryNull_whenAreaHasNoBoundary() {
         EventLocationArea parkett = area(1, "Parkett");
-        List<Seat> seats = List.of(seat(1, "A1", 1, 1, parkett));
+        seat(1, "A1", 1, 1, parkett);
 
-        List<AreaDTO> areas = AreaDTO.fromAreas(seats);
+        List<AreaDTO> areas = AreaDTO.fromEventLocation(location);
 
         assertEquals(1, areas.size());
-        assertNull(areas.get(0).boundary());
+        assertNull(areas.getFirst().boundary());
     }
 
     @Test
-    void fromAreas_attachesBoundary_whenAreaHasOne() {
+    void fromEventLocation_attachesBoundary_whenAreaHasOne() {
         EventLocationArea parkett = area(1, "Parkett");
         parkett.setBoundary(
                 List.of(
@@ -111,13 +144,11 @@ class AreaDTOTest {
                         new Coordinate(2, 2),
                         new Coordinate(1, 2)));
         EventLocationArea balkon = area(2, "Balkon");
-        List<Seat> seats =
-                List.of(
-                        seat(1, "A1", 1, 1, parkett),
-                        seat(2, "A2", 2, 1, parkett),
-                        seat(3, "B1", 1, 2, balkon));
+        seat(1, "A1", 1, 1, parkett);
+        seat(2, "A2", 2, 1, parkett);
+        seat(3, "B1", 1, 2, balkon);
 
-        List<AreaDTO> areas = AreaDTO.fromAreas(seats);
+        List<AreaDTO> areas = AreaDTO.fromEventLocation(location);
 
         assertEquals(2, areas.size());
         assertEquals("Parkett", areas.get(0).name());
@@ -130,5 +161,20 @@ class AreaDTOTest {
                 areas.get(0).boundary());
         assertEquals("Balkon", areas.get(1).name());
         assertNull(areas.get(1).boundary());
+    }
+
+    @Test
+    void fromAreas_ignoresSeatsReferencingAnAreaOutsideTheGivenAreas() {
+        EventLocationArea parkett = area(1, "Parkett");
+        EventLocationArea foreign = new EventLocationArea("Foreign");
+        foreign.id = 99L;
+        Seat assigned = seat(1, "A1", 1, 1, parkett);
+        Seat outsider = new Seat("X1", location, "Row", 9, 9, null, foreign);
+        outsider.id = 2L;
+
+        List<AreaDTO> areas = AreaDTO.fromAreas(List.of(parkett), List.of(assigned, outsider));
+
+        assertEquals(1, areas.size());
+        assertEquals(List.of(1L), areas.getFirst().seatIds());
     }
 }
