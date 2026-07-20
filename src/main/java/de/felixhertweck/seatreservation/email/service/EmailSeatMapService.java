@@ -155,7 +155,7 @@ public class EmailSeatMapService {
                         .map(Seat::getSeatNumber)
                         .collect(java.util.stream.Collectors.toSet());
         Collection<EventLocationMarker> markers = event.getEventLocation().getMarkers();
-        List<AreaDTO> areas = AreaDTO.fromAreas(allSeats);
+        List<AreaDTO> areas = AreaDTO.fromEventLocation(event.getEventLocation());
 
         return Optional.of(
                 SvgRenderer.renderSeats(

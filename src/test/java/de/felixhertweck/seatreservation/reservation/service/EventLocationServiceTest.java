@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.reservation.service;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -337,6 +338,10 @@ class EventLocationServiceTest {
         seat2.id = 2L;
         seat2.setArea(parkett);
         locationA.setSeats(List.of(seat1, seat2));
+        // Areas hang off the location in JPA; the response is derived from them, not from the
+        // seats.
+        parkett.setEventLocation(locationA);
+        locationA.setAreas(new ArrayList<>(List.of(parkett)));
 
         var allowance = new EventUserAllowance();
         allowance.setUser(user);

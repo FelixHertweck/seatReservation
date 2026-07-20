@@ -287,7 +287,7 @@ class SvgRendererTest {
         seat2.setSeatNumber("A2");
         seat2.setCoordinate(new Coordinate(2, 1));
 
-        AreaDTO area = new AreaDTO("Parkett", List.of(1L, 2L), null);
+        AreaDTO area = new AreaDTO(1L, "Parkett", List.of(1L, 2L), null);
 
         String result =
                 SvgRenderer.renderSeats(
@@ -313,7 +313,7 @@ class SvgRendererTest {
                         new CoordinateDTO(3, 1),
                         new CoordinateDTO(3, 3),
                         new CoordinateDTO(1, 3));
-        AreaDTO area = new AreaDTO("Loge", List.of(1L), boundary);
+        AreaDTO area = new AreaDTO(2L, "Loge", List.of(1L), boundary);
 
         String result =
                 SvgRenderer.renderSeats(List.of(seat), Set.of(), Set.of(), null, List.of(area));
@@ -333,7 +333,7 @@ class SvgRendererTest {
 
         List<CoordinateDTO> tooFewPoints =
                 List.of(new CoordinateDTO(1, 1), new CoordinateDTO(2, 1));
-        AreaDTO area = new AreaDTO("Loge", List.of(1L), tooFewPoints);
+        AreaDTO area = new AreaDTO(3L, "Loge", List.of(1L), tooFewPoints);
 
         String result =
                 SvgRenderer.renderSeats(List.of(seat), Set.of(), Set.of(), null, List.of(area));
@@ -350,7 +350,7 @@ class SvgRendererTest {
         seat.setSeatNumber("A1");
         seat.setCoordinate(new Coordinate(1, 1));
 
-        AreaDTO area = new AreaDTO("Parkett", List.of(999L), null);
+        AreaDTO area = new AreaDTO(4L, "Parkett", List.of(999L), null);
 
         String result =
                 SvgRenderer.renderSeats(List.of(seat), Set.of(), Set.of(), null, List.of(area));
@@ -373,8 +373,8 @@ class SvgRendererTest {
         seat2.setSeatNumber("B1");
         seat2.setCoordinate(new Coordinate(1, 2));
 
-        AreaDTO parkett = new AreaDTO("Parkett", List.of(1L), null);
-        AreaDTO balkon = new AreaDTO("Balkon", List.of(2L), null);
+        AreaDTO parkett = new AreaDTO(5L, "Parkett", List.of(1L), null);
+        AreaDTO balkon = new AreaDTO(6L, "Balkon", List.of(2L), null);
 
         String result =
                 SvgRenderer.renderSeats(
@@ -401,7 +401,7 @@ class SvgRendererTest {
                         new CoordinateDTO(10, 1),
                         new CoordinateDTO(10, 10),
                         new CoordinateDTO(1, 10));
-        AreaDTO area = new AreaDTO("Balkon", List.of(1L), boundary);
+        AreaDTO area = new AreaDTO(7L, "Balkon", List.of(1L), boundary);
 
         String result =
                 SvgRenderer.renderSeats(List.of(seat), Set.of(), Set.of(), null, List.of(area));

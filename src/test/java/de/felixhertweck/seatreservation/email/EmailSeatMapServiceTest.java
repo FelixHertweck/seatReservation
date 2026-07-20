@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.email;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -334,7 +335,11 @@ class EmailSeatMapServiceTest {
     void getSvgImage_WithAreas_RendersAreaZone() {
         String token = UUID.randomUUID().toString();
 
-        testSeat.setArea(new EventLocationArea("Parkett"));
+        EventLocationArea parkett = new EventLocationArea("Parkett");
+        parkett.id = 1L;
+        parkett.setEventLocation(testLocation);
+        testLocation.setAreas(new ArrayList<>(List.of(parkett)));
+        testSeat.setArea(parkett);
 
         EmailSeatMapToken emailSeatMapToken = new EmailSeatMapToken();
         emailSeatMapToken.setToken(token);
