@@ -63,6 +63,7 @@ import org.jboss.logging.Logger;
 public class ReservationService {
 
     private static final Logger LOG = Logger.getLogger(ReservationService.class);
+    private static final String ID_IN_QUERY = "id in ?1";
 
     @ConfigProperty(name = "exporter.pdf.minutesBeforeEventStart", defaultValue = "10")
     Integer EXPORTER_PDF_MINUTES_BEFORE_EVENT_START;
@@ -258,19 +259,16 @@ public class ReservationService {
 
         List<Reservation> existingReservations = new ArrayList<>();
 
+        Map<Long, Seat> seatMap =
+                seatRepository.find(ID_IN_QUERY, dto.getSeatIds()).list().stream()
+                        .collect(Collectors.toMap(s -> s.id, s -> s, (s1, s2) -> s1));
+
         for (Long dtoSeatId : dto.getSeatIds()) {
-            Seat seat =
-                    seatRepository
-                            .findByIdOptional(dtoSeatId)
-                            .orElseThrow(
-                                    () -> {
-                                        LOG.warnf(
-                                                "Seat with ID %d not found for reservation"
-                                                        + " creation.",
-                                                dtoSeatId);
-                                        return new IllegalArgumentException(
-                                                "Seat with id " + dtoSeatId + " not found");
-                                    });
+            Seat seat = seatMap.get(dtoSeatId);
+            if (seat == null) {
+                LOG.warnf("Seat with ID %d not found for reservation creation.", dtoSeatId);
+                throw new IllegalArgumentException("Seat with id " + dtoSeatId + " not found");
+            }
 
             if (!dto.isDeductAllowance()) {
                 LOG.debugf(
@@ -371,20 +369,20 @@ public class ReservationService {
 
         List<Reservation> deletedReservations = new ArrayList<>();
 
+        List<Reservation> foundReservations = reservationRepository.find(ID_IN_QUERY, ids).list();
+        Map<Long, Reservation> foundReservationMap =
+                foundReservations.stream()
+                        .collect(Collectors.toMap(r -> r.id, r -> r, (r1, r2) -> r1));
+
         for (Long id : ids) {
 
-            Reservation reservation =
-                    reservationRepository
-                            .findByIdOptional(id)
-                            .orElseThrow(
-                                    () -> {
-                                        LOG.warnf(
-                                                "Reservation with ID %d not found for deletion by"
-                                                        + " user: %s (ID: %d)",
-                                                id, managerUser.id, managerUser.getId());
-                                        return new ReservationNotFoundException(
-                                                "Reservation with id " + id + " not found");
-                                    });
+            Reservation reservation = foundReservationMap.get(id);
+            if (reservation == null) {
+                LOG.warnf(
+                        "Reservation with ID %d not found for deletion by user: %s (ID: %d)",
+                        id, managerUser.id, managerUser.getId());
+                throw new ReservationNotFoundException("Reservation with id " + id + " not found");
+            }
 
             if (!managerUser.getRoles().contains(Roles.ADMIN)
                     && !isManagerAllowedToAccessEvent(managerUser, reservation.getEvent())) {
@@ -539,25 +537,21 @@ public class ReservationService {
             throw new SecurityException("You are not allowed to block seats for this event.");
         }
 
-        List<Seat> seats =
-                seatIds.stream()
-                        .map(
-                                seatId ->
-                                        seatRepository
-                                                .findByIdOptional(seatId)
-                                                .orElseThrow(
-                                                        () -> {
-                                                            LOG.warnf(
-                                                                    "Seat with ID %d not found for"
-                                                                        + " blocking seats in event"
-                                                                        + " ID %d.",
-                                                                    seatId, eventId);
-                                                            return new IllegalArgumentException(
-                                                                    "Seat with id "
-                                                                            + seatId
-                                                                            + " not found");
-                                                        }))
-                        .toList();
+        Map<Long, Seat> seatMap =
+                seatRepository.find(ID_IN_QUERY, seatIds).list().stream()
+                        .collect(Collectors.toMap(s -> s.id, s -> s, (s1, s2) -> s1));
+
+        List<Seat> seats = new ArrayList<>();
+        for (Long seatId : seatIds) {
+            Seat seat = seatMap.get(seatId);
+            if (seat == null) {
+                LOG.warnf(
+                        "Seat with ID %d not found for blocking seats in event ID %d.",
+                        seatId, eventId);
+                throw new IllegalArgumentException("Seat with id " + seatId + " not found");
+            }
+            seats.add(seat);
+        }
 
         List<Reservation> existingReservations = reservationRepository.findByEventId(eventId);
         for (Seat seat : seats) {

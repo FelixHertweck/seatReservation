@@ -184,6 +184,27 @@ public class ReservationServiceTest {
         allowance = new EventUserAllowance(regularUser, event, 1);
     }
 
+    private void mockSeatFind(Set<Long> seatIds, List<Seat> seats) {
+        @SuppressWarnings("unchecked")
+        PanacheQuery<Seat> seatQuery = mock(PanacheQuery.class);
+        when(seatQuery.list()).thenReturn(seats);
+        when(seatRepository.find("id in ?1", seatIds)).thenReturn(seatQuery);
+    }
+
+    private void mockSeatFind(List<Long> seatIds, List<Seat> seats) {
+        @SuppressWarnings("unchecked")
+        PanacheQuery<Seat> seatQuery = mock(PanacheQuery.class);
+        when(seatQuery.list()).thenReturn(seats);
+        when(seatRepository.find("id in ?1", seatIds)).thenReturn(seatQuery);
+    }
+
+    private void mockReservationFind(List<Long> ids, List<Reservation> reservations) {
+        @SuppressWarnings("unchecked")
+        PanacheQuery<Reservation> reservationQuery = mock(PanacheQuery.class);
+        when(reservationQuery.list()).thenReturn(reservations);
+        when(reservationRepository.find("id in ?1", ids)).thenReturn(reservationQuery);
+    }
+
     @Test
     void createReservation_Success_AsAdmin() {
         ReservationRequestDTO dto = new ReservationRequestDTO();
@@ -193,7 +214,7 @@ public class ReservationServiceTest {
 
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
-        when(seatRepository.findByIdOptional(seat.id)).thenReturn(Optional.of(seat));
+        mockSeatFind(dto.getSeatIds(), List.of(seat));
         @SuppressWarnings("unchecked")
         PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
         when(allowanceQuery.singleResult()).thenReturn(allowance);
@@ -229,7 +250,7 @@ public class ReservationServiceTest {
 
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
-        when(seatRepository.findByIdOptional(seat.id)).thenReturn(Optional.of(seat));
+        mockSeatFind(dto.getSeatIds(), List.of(seat));
         // No allowance setup needed as it should be skipped
 
         doAnswer(
@@ -260,7 +281,7 @@ public class ReservationServiceTest {
 
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
-        when(seatRepository.findByIdOptional(seat.id)).thenReturn(Optional.of(seat));
+        mockSeatFind(dto.getSeatIds(), List.of(seat));
         // No allowance setup needed as it should be skipped
 
         doAnswer(
@@ -291,7 +312,7 @@ public class ReservationServiceTest {
 
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
-        when(seatRepository.findByIdOptional(seat.id)).thenReturn(Optional.of(seat));
+        mockSeatFind(dto.getSeatIds(), List.of(seat));
         @SuppressWarnings("unchecked")
         PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
         when(allowanceQuery.singleResult()).thenReturn(allowance);
@@ -318,7 +339,7 @@ public class ReservationServiceTest {
 
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
-        when(seatRepository.findByIdOptional(seat.id)).thenReturn(Optional.of(seat));
+        mockSeatFind(dto.getSeatIds(), List.of(seat));
 
         assertThrows(
                 SecurityException.class,
@@ -334,7 +355,7 @@ public class ReservationServiceTest {
 
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
-        when(seatRepository.findByIdOptional(seat.id)).thenReturn(Optional.of(seat));
+        mockSeatFind(dto.getSeatIds(), List.of(seat));
         @SuppressWarnings("unchecked")
         PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
         when(allowanceQuery.singleResult()).thenThrow(new NoResultException());
@@ -356,7 +377,7 @@ public class ReservationServiceTest {
 
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
-        when(seatRepository.findByIdOptional(seat.id)).thenReturn(Optional.of(seat));
+        mockSeatFind(dto.getSeatIds(), List.of(seat));
         @SuppressWarnings("unchecked")
         PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
         when(allowanceQuery.singleResult()).thenReturn(allowance);
@@ -408,8 +429,7 @@ public class ReservationServiceTest {
 
     @Test
     void deleteReservation_Success_AsAdmin() {
-        when(reservationRepository.findByIdOptional(reservation.id))
-                .thenReturn(Optional.of(reservation));
+        mockReservationFind(List.of(reservation.id), List.of(reservation));
         @SuppressWarnings("unchecked")
         PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
         when(allowanceQuery.firstResultOptional()).thenReturn(Optional.empty());
@@ -423,8 +443,7 @@ public class ReservationServiceTest {
 
     @Test
     void deleteReservation_Success_AsManager() {
-        when(reservationRepository.findByIdOptional(reservation.id))
-                .thenReturn(Optional.of(reservation));
+        mockReservationFind(List.of(reservation.id), List.of(reservation));
         @SuppressWarnings("unchecked")
         PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
         when(allowanceQuery.firstResultOptional()).thenReturn(Optional.empty());
@@ -438,8 +457,7 @@ public class ReservationServiceTest {
 
     @Test
     void deleteReservation_Forbidden() {
-        when(reservationRepository.findByIdOptional(reservation.id))
-                .thenReturn(Optional.of(reservation));
+        mockReservationFind(List.of(reservation.id), List.of(reservation));
 
         assertThrows(
                 SecurityException.class,
@@ -452,8 +470,7 @@ public class ReservationServiceTest {
         // Set up allowance with initial count
         allowance.setReservationsAllowedCount(0);
 
-        when(reservationRepository.findByIdOptional(reservation.id))
-                .thenReturn(Optional.of(reservation));
+        mockReservationFind(List.of(reservation.id), List.of(reservation));
         when(eventUserAllowanceRepository.findByUserAndEvent(regularUser, event))
                 .thenReturn(Optional.of(allowance));
         doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
@@ -467,8 +484,7 @@ public class ReservationServiceTest {
 
     @Test
     void deleteReservation_Success_NoAllowanceExists() {
-        when(reservationRepository.findByIdOptional(reservation.id))
-                .thenReturn(Optional.of(reservation));
+        mockReservationFind(List.of(reservation.id), List.of(reservation));
         when(eventUserAllowanceRepository.findByUserAndEvent(regularUser, event))
                 .thenReturn(Optional.empty());
 
@@ -493,8 +509,7 @@ public class ReservationServiceTest {
                         CodeGenerator.generateRandomCode());
         blockedReservation.id = 2L;
 
-        when(reservationRepository.findByIdOptional(blockedReservation.id))
-                .thenReturn(Optional.of(blockedReservation));
+        mockReservationFind(List.of(blockedReservation.id), List.of(blockedReservation));
 
         reservationService.deleteReservation(List.of(blockedReservation.id), managerUser);
 
@@ -521,10 +536,8 @@ public class ReservationServiceTest {
         // Set up allowance with initial count
         allowance.setReservationsAllowedCount(0);
 
-        when(reservationRepository.findByIdOptional(reservation.id))
-                .thenReturn(Optional.of(reservation));
-        when(reservationRepository.findByIdOptional(reservation2.id))
-                .thenReturn(Optional.of(reservation2));
+        mockReservationFind(
+                List.of(reservation.id, reservation2.id), List.of(reservation, reservation2));
         when(eventUserAllowanceRepository.findByUserAndEvent(regularUser, event))
                 .thenReturn(Optional.of(allowance));
         doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
@@ -573,10 +586,9 @@ public class ReservationServiceTest {
 
         allowance.setReservationsAllowedCount(0);
 
-        when(reservationRepository.findByIdOptional(blockedReservation.id))
-                .thenReturn(Optional.of(blockedReservation));
-        when(reservationRepository.findByIdOptional(reservedReservation.id))
-                .thenReturn(Optional.of(reservedReservation));
+        mockReservationFind(
+                List.of(blockedReservation.id, reservedReservation.id),
+                List.of(blockedReservation, reservedReservation));
         when(eventUserAllowanceRepository.findByUserAndEvent(regularUser, event))
                 .thenReturn(Optional.of(allowance));
         doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
@@ -596,8 +608,7 @@ public class ReservationServiceTest {
         // Test with different starting allowance counts
         allowance.setReservationsAllowedCount(5);
 
-        when(reservationRepository.findByIdOptional(reservation.id))
-                .thenReturn(Optional.of(reservation));
+        mockReservationFind(List.of(reservation.id), List.of(reservation));
         when(eventUserAllowanceRepository.findByUserAndEvent(regularUser, event))
                 .thenReturn(Optional.of(allowance));
         doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
@@ -611,8 +622,7 @@ public class ReservationServiceTest {
 
     @Test
     void deleteReservation_IOExceptionOnEmailSend_ContinuesGracefully() throws IOException {
-        when(reservationRepository.findByIdOptional(reservation.id))
-                .thenReturn(Optional.of(reservation));
+        mockReservationFind(List.of(reservation.id), List.of(reservation));
         @SuppressWarnings("unchecked")
         PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
         when(allowanceQuery.firstResultOptional()).thenReturn(Optional.empty());
@@ -691,8 +701,7 @@ public class ReservationServiceTest {
 
     @Test
     void deleteReservation_Forbidden_NotManager() {
-        when(reservationRepository.findByIdOptional(reservation.id))
-                .thenReturn(Optional.of(reservation));
+        mockReservationFind(List.of(reservation.id), List.of(reservation));
         User otherManager = new User();
         otherManager.id = 4L;
         otherManager.setRoles(Set.of(Roles.MANAGER));
@@ -706,7 +715,7 @@ public class ReservationServiceTest {
     @Test
     void blockSeats_Success() {
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
-        when(seatRepository.findByIdOptional(seat.id)).thenReturn(Optional.of(seat));
+        mockSeatFind(List.of(seat.id), List.of(seat));
         when(reservationRepository.findByEventId(event.id)).thenReturn(Collections.emptyList());
 
         reservationService.blockSeats(event.id, List.of(seat.id), managerUser);
@@ -726,7 +735,7 @@ public class ReservationServiceTest {
     @Test
     void blockSeats_SeatAlreadyReserved() {
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
-        when(seatRepository.findByIdOptional(seat.id)).thenReturn(Optional.of(seat));
+        mockSeatFind(List.of(seat.id), List.of(seat));
         when(reservationRepository.findByEventId(event.id)).thenReturn(List.of(reservation));
 
         assertThrows(
