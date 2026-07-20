@@ -55,7 +55,8 @@ public class Seat extends PanacheEntity {
     @JoinColumn(name = "area_id")
     private EventLocationArea area;
 
-    public Seat() {}
+    // Protected: JPA needs a no-arg constructor, but a Seat must never lack a coordinate.
+    protected Seat() {}
 
     public Seat(String seatNumber, String seatRow, EventLocation location) {
         this.seatNumber = seatNumber;
@@ -92,7 +93,7 @@ public class Seat extends PanacheEntity {
     }
 
     public void setCoordinate(Coordinate coordinate) {
-        this.coordinate = coordinate;
+        this.coordinate = Objects.requireNonNull(coordinate, "coordinate must not be null");
     }
 
     public void setSeatNumber(String seatNumber) {

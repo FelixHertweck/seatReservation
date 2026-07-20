@@ -91,9 +91,8 @@ class CheckInServiceTest {
         EventLocation location = new EventLocation();
         location.id = 1L;
 
-        Seat seat = new Seat();
+        Seat seat = new Seat("", "", location);
         seat.id = 1L;
-        seat.setLocation(location);
 
         Reservation reservation1 = new Reservation();
         reservation1.id = reservationId1;
@@ -142,9 +141,8 @@ class CheckInServiceTest {
         EventLocation location = new EventLocation();
         location.id = 1L;
 
-        Seat seat = new Seat();
+        Seat seat = new Seat("", "", location);
         seat.id = 1L;
-        seat.setLocation(location);
 
         Reservation reservation1 = new Reservation();
         reservation1.id = reservationId1;
@@ -185,9 +183,8 @@ class CheckInServiceTest {
         EventLocation location = new EventLocation();
         location.id = 1L;
 
-        Seat seat = new Seat();
+        Seat seat = new Seat("", "", location);
         seat.id = 1L;
-        seat.setLocation(location);
 
         Reservation checkInReservation = new Reservation();
         checkInReservation.id = checkInId;
@@ -276,9 +273,8 @@ class CheckInServiceTest {
         EventLocation location = new EventLocation();
         location.id = 1L;
 
-        Seat seat = new Seat();
+        Seat seat = new Seat("", "", location);
         seat.id = 1L;
-        seat.setLocation(location);
 
         Reservation reservation1 = new Reservation();
         reservation1.setCheckInCode(token1);
@@ -332,9 +328,8 @@ class CheckInServiceTest {
         EventLocation location = new EventLocation();
         location.id = 1L;
 
-        Seat seat = new Seat();
+        Seat seat = new Seat("", "", location);
         seat.id = 1L;
-        seat.setLocation(location);
 
         Reservation reservation1 = new Reservation();
         reservation1.id = reservationId;
@@ -404,9 +399,8 @@ class CheckInServiceTest {
         EventLocation location = new EventLocation();
         location.id = 1L;
 
-        Seat seat = new Seat();
+        Seat seat = new Seat("", "", location);
         seat.id = 1L;
-        seat.setLocation(location);
 
         Reservation reservation1 = new Reservation();
         reservation1.setCheckInCode(token1);
@@ -455,9 +449,8 @@ class CheckInServiceTest {
         EventLocation location = new EventLocation();
         location.id = 1L;
 
-        Seat seat = new Seat();
+        Seat seat = new Seat("", "", location);
         seat.id = 1L;
-        seat.setLocation(location);
 
         Reservation reservation1 = new Reservation();
         reservation1.setCheckInCode(token1);

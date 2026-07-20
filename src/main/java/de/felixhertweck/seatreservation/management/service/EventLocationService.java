@@ -138,19 +138,21 @@ public class EventLocationService {
                     seatDtos.stream()
                             .map(
                                     seatDto -> {
-                                        Seat seat = new Seat();
-                                        seat.setSeatNumber(seatDto.getSeatNumber());
-                                        seat.setCoordinate(seatDto.getCoordinate().toEntity());
-                                        seat.setSeatRow(seatDto.getSeatRow());
-                                        seat.setEntrance(
-                                                resolveOrCreateEntrance(
-                                                        seatDto.getEntrance(),
+                                        Seat seat =
+                                                new Seat(
+                                                        seatDto.getSeatNumber(),
                                                         location,
-                                                        entrancesByName));
-                                        seat.setArea(
-                                                resolveOrCreateArea(
-                                                        seatDto.getArea(), location, areasByName));
-                                        seat.setLocation(location);
+                                                        seatDto.getSeatRow(),
+                                                        seatDto.getCoordinate().xCoordinate(),
+                                                        seatDto.getCoordinate().yCoordinate(),
+                                                        resolveOrCreateEntrance(
+                                                                seatDto.getEntrance(),
+                                                                location,
+                                                                entrancesByName),
+                                                        resolveOrCreateArea(
+                                                                seatDto.getArea(),
+                                                                location,
+                                                                areasByName));
                                         seatRepository.persist(seat);
                                         return seat;
                                     })

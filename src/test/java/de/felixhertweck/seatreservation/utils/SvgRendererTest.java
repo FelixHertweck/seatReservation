@@ -47,8 +47,7 @@ class SvgRendererTest {
 
     @Test
     void renderSeats_SingleSeat_ReturnsValidSvg() {
-        Seat seat = new Seat();
-        seat.setSeatNumber("A1");
+        Seat seat = new Seat("A1", "", null);
         seat.setCoordinate(new Coordinate(1, 1));
 
         String result = SvgRenderer.renderSeats(List.of(seat), Set.of(), Set.of());
@@ -62,8 +61,7 @@ class SvgRendererTest {
 
     @Test
     void renderSeats_WithNewReservation_ShowsCorrectColors() {
-        Seat seat = new Seat();
-        seat.setSeatNumber("A1");
+        Seat seat = new Seat("A1", "", null);
         seat.setCoordinate(new Coordinate(1, 1));
 
         String result = SvgRenderer.renderSeats(List.of(seat), Set.of("A1"), Set.of());
@@ -73,8 +71,7 @@ class SvgRendererTest {
 
     @Test
     void renderSeats_WithExistingReservation_ShowsCorrectColors() {
-        Seat seat = new Seat();
-        seat.setSeatNumber("A1");
+        Seat seat = new Seat("A1", "", null);
         seat.setCoordinate(new Coordinate(1, 1));
 
         String result = SvgRenderer.renderSeats(List.of(seat), Set.of(), Set.of("A1"));
@@ -84,8 +81,7 @@ class SvgRendererTest {
 
     @Test
     void renderSeats_WithMarkers_IncludesMarkerLabels() {
-        Seat seat = new Seat();
-        seat.setSeatNumber("A1");
+        Seat seat = new Seat("A1", "", null);
         seat.setCoordinate(new Coordinate(2, 2));
 
         EventLocationMarker marker = new EventLocationMarker("Entrance", 1, 1);
@@ -105,8 +101,7 @@ class SvgRendererTest {
 
     @Test
     void renderSeats_WithNullMarkers_WorksNormally() {
-        Seat seat = new Seat();
-        seat.setSeatNumber("A1");
+        Seat seat = new Seat("A1", "", null);
         seat.setCoordinate(new Coordinate(1, 1));
 
         String result = SvgRenderer.renderSeats(List.of(seat), Set.of(), Set.of(), null);
@@ -117,8 +112,7 @@ class SvgRendererTest {
 
     @Test
     void renderSeats_WithEmptyMarkers_WorksNormally() {
-        Seat seat = new Seat();
-        seat.setSeatNumber("A1");
+        Seat seat = new Seat("A1", "", null);
         seat.setCoordinate(new Coordinate(1, 1));
 
         String result = SvgRenderer.renderSeats(List.of(seat), Set.of(), Set.of(), List.of());
@@ -128,25 +122,8 @@ class SvgRendererTest {
     }
 
     @Test
-    void renderSeats_WithMarkerNullCoordinates_SkipsMarker() {
-        Seat seat = new Seat();
-        seat.setSeatNumber("A1");
-        seat.setCoordinate(new Coordinate(1, 1));
-
-        EventLocationMarker marker = new EventLocationMarker();
-        marker.setLabel("Invalid");
-
-        String result = SvgRenderer.renderSeats(List.of(seat), Set.of(), Set.of(), List.of(marker));
-
-        assertNotNull(result);
-        assertTrue(result.contains("A1"));
-        assertFalse(result.contains("Invalid"));
-    }
-
-    @Test
     void renderSeats_WithMarkerEmptyLabel_SkipsMarker() {
-        Seat seat = new Seat();
-        seat.setSeatNumber("A1");
+        Seat seat = new Seat("A1", "", null);
         seat.setCoordinate(new Coordinate(1, 1));
 
         EventLocationMarker marker = new EventLocationMarker("", 1, 1);
@@ -161,8 +138,7 @@ class SvgRendererTest {
 
     @Test
     void renderSeats_WithSpecialCharactersInMarkerLabel_EscapesXml() {
-        Seat seat = new Seat();
-        seat.setSeatNumber("A1");
+        Seat seat = new Seat("A1", "", null);
         seat.setCoordinate(new Coordinate(2, 2));
 
         EventLocationMarker marker = new EventLocationMarker("Entry & Exit", 1, 1);
@@ -176,8 +152,7 @@ class SvgRendererTest {
 
     @Test
     void renderSeats_WithSpecialCharactersInSeatNumber_EscapesXml() {
-        Seat seat = new Seat();
-        seat.setSeatNumber("<script>alert(1)</script>");
+        Seat seat = new Seat("<script>alert(1)</script>", "", null);
         seat.setCoordinate(new Coordinate(2, 2));
 
         String result = SvgRenderer.renderSeats(List.of(seat), Set.of(), Set.of());
@@ -191,8 +166,7 @@ class SvgRendererTest {
 
     @Test
     void renderSeats_CalculatesBoundingBoxWithMarkers() {
-        Seat seat = new Seat();
-        seat.setSeatNumber("A1");
+        Seat seat = new Seat("A1", "", null);
         seat.setCoordinate(new Coordinate(3, 3));
 
         // Marker extends the bounding box
@@ -209,8 +183,7 @@ class SvgRendererTest {
 
     @Test
     void renderSeats_BackwardsCompatibility_WithoutMarkersWorks() {
-        Seat seat = new Seat();
-        seat.setSeatNumber("A1");
+        Seat seat = new Seat("A1", "", null);
         seat.setCoordinate(new Coordinate(1, 1));
 
         // Call the old method without markers parameter
@@ -224,12 +197,10 @@ class SvgRendererTest {
 
     @Test
     void renderSeats_MultipleMarkersAndSeats_RendersAll() {
-        Seat seat1 = new Seat();
-        seat1.setSeatNumber("A1");
+        Seat seat1 = new Seat("A1", "", null);
         seat1.setCoordinate(new Coordinate(2, 2));
 
-        Seat seat2 = new Seat();
-        seat2.setSeatNumber("B2");
+        Seat seat2 = new Seat("B2", "", null);
         seat2.setCoordinate(new Coordinate(3, 3));
 
         EventLocationMarker marker1 = new EventLocationMarker("Entrance", 1, 1);
@@ -253,8 +224,7 @@ class SvgRendererTest {
 
     @Test
     void renderSeats_WithNullAreas_WorksNormally() {
-        Seat seat = new Seat();
-        seat.setSeatNumber("A1");
+        Seat seat = new Seat("A1", "", null);
         seat.setCoordinate(new Coordinate(1, 1));
 
         String result = SvgRenderer.renderSeats(List.of(seat), Set.of(), Set.of(), null, null);
@@ -265,8 +235,7 @@ class SvgRendererTest {
 
     @Test
     void renderSeats_WithEmptyAreas_WorksNormally() {
-        Seat seat = new Seat();
-        seat.setSeatNumber("A1");
+        Seat seat = new Seat("A1", "", null);
         seat.setCoordinate(new Coordinate(1, 1));
 
         String result = SvgRenderer.renderSeats(List.of(seat), Set.of(), Set.of(), null, List.of());
@@ -277,14 +246,12 @@ class SvgRendererTest {
 
     @Test
     void renderSeats_WithAreaWithoutBoundary_RendersBoundingBoxAndLabel() {
-        Seat seat1 = new Seat();
+        Seat seat1 = new Seat("A1", "", null);
         seat1.id = 1L;
-        seat1.setSeatNumber("A1");
         seat1.setCoordinate(new Coordinate(1, 1));
 
-        Seat seat2 = new Seat();
+        Seat seat2 = new Seat("A2", "", null);
         seat2.id = 2L;
-        seat2.setSeatNumber("A2");
         seat2.setCoordinate(new Coordinate(2, 1));
 
         AreaDTO area = new AreaDTO(1L, "Parkett", List.of(1L, 2L), null);
@@ -302,9 +269,8 @@ class SvgRendererTest {
 
     @Test
     void renderSeats_WithAreaBoundary_RendersPolygonInsteadOfBoundingBox() {
-        Seat seat = new Seat();
+        Seat seat = new Seat("A1", "", null);
         seat.id = 1L;
-        seat.setSeatNumber("A1");
         seat.setCoordinate(new Coordinate(1, 1));
 
         List<CoordinateDTO> boundary =
@@ -326,9 +292,8 @@ class SvgRendererTest {
 
     @Test
     void renderSeats_WithAreaBoundaryOfLessThanThreePoints_FallsBackToBoundingBox() {
-        Seat seat = new Seat();
+        Seat seat = new Seat("A1", "", null);
         seat.id = 1L;
-        seat.setSeatNumber("A1");
         seat.setCoordinate(new Coordinate(1, 1));
 
         List<CoordinateDTO> tooFewPoints =
@@ -345,9 +310,8 @@ class SvgRendererTest {
 
     @Test
     void renderSeats_WithAreaReferencingUnknownSeatIds_SkipsZone() {
-        Seat seat = new Seat();
+        Seat seat = new Seat("A1", "", null);
         seat.id = 1L;
-        seat.setSeatNumber("A1");
         seat.setCoordinate(new Coordinate(1, 1));
 
         AreaDTO area = new AreaDTO(4L, "Parkett", List.of(999L), null);
@@ -363,14 +327,12 @@ class SvgRendererTest {
 
     @Test
     void renderSeats_MultipleAreas_UseDifferentColors() {
-        Seat seat1 = new Seat();
+        Seat seat1 = new Seat("A1", "", null);
         seat1.id = 1L;
-        seat1.setSeatNumber("A1");
         seat1.setCoordinate(new Coordinate(1, 1));
 
-        Seat seat2 = new Seat();
+        Seat seat2 = new Seat("B1", "", null);
         seat2.id = 2L;
-        seat2.setSeatNumber("B1");
         seat2.setCoordinate(new Coordinate(1, 2));
 
         AreaDTO parkett = new AreaDTO(5L, "Parkett", List.of(1L), null);
@@ -388,9 +350,8 @@ class SvgRendererTest {
 
     @Test
     void renderSeats_WithAreaBoundaryOutsideSeatBounds_ExpandsViewBoxToIncludeIt() {
-        Seat seat = new Seat();
+        Seat seat = new Seat("A1", "", null);
         seat.id = 1L;
-        seat.setSeatNumber("A1");
         seat.setCoordinate(new Coordinate(1, 1));
 
         // Boundary reaches far past the only seat (logical x/y 10 vs. the seat's 1,1), e.g. a

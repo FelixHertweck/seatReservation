@@ -43,7 +43,8 @@ public class EventLocationEntrance extends PanacheEntity {
     @JoinColumn(name = "event_location_id")
     private EventLocation eventLocation;
 
-    public EventLocationEntrance() {}
+    // Protected: JPA needs a no-arg constructor, but an entrance must never lack a name.
+    protected EventLocationEntrance() {}
 
     public EventLocationEntrance(String name) {
         this.name = name;

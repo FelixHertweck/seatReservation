@@ -88,10 +88,7 @@ public class SeatResourceTest {
         var testAllowance = new EventUserAllowance(manager, testEvent, 100);
         eventUserAllowanceRepository.persist(testAllowance);
 
-        testSeat = new Seat();
-        testSeat.setSeatNumber("A1");
-        testSeat.setSeatRow("R: 1");
-        testSeat.setLocation(testLocation);
+        testSeat = new Seat("A1", "R: 1", testLocation);
         seatRepository.persist(testSeat);
 
         areaParkett = new EventLocationArea("Parkett");
@@ -365,15 +362,9 @@ public class SeatResourceTest {
             roles = {"MANAGER"})
     void testDeleteMultipleSeats() {
         // Create additional seats for bulk delete test
-        var seat2 = new Seat();
-        seat2.setSeatNumber("A2");
-        seat2.setSeatRow("R: 1");
-        seat2.setLocation(testLocation);
+        var seat2 = new Seat("A2", "R: 1", testLocation);
 
-        var seat3 = new Seat();
-        seat3.setSeatNumber("A3");
-        seat3.setSeatRow("R: 1");
-        seat3.setLocation(testLocation);
+        var seat3 = new Seat("A3", "R: 1", testLocation);
 
         seedAdditionalSeats(seat2, seat3);
 

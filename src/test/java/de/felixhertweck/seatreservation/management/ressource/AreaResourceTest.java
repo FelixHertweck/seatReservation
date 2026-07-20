@@ -241,10 +241,7 @@ public class AreaResourceTest {
             user = "manager",
             roles = {"MANAGER"})
     void testDeleteAreaConflictWhenReferencedBySeat() {
-        Seat seat = new Seat();
-        seat.setSeatNumber("A1");
-        seat.setSeatRow("Row 1");
-        seat.setLocation(testLocation);
+        Seat seat = new Seat("A1", "Row 1", testLocation);
         seat.setArea(testArea);
         persistSeat(seat);
 
