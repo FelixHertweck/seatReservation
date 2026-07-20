@@ -40,7 +40,7 @@ public class ImportEventLocationDto {
 
     @Valid private List<MakerRequestDTO> markers;
 
-    @Valid private List<AreaBoundaryPointRequestDTO> areaBoundaryPoints;
+    @Valid private List<AreaRequestDTO> areas;
 
     public String getName() {
         return name;
@@ -82,11 +82,11 @@ public class ImportEventLocationDto {
         this.markers = markers;
     }
 
-    public List<AreaBoundaryPointRequestDTO> getAreaBoundaryPoints() {
-        return areaBoundaryPoints;
+    public List<AreaRequestDTO> getAreas() {
+        return areas;
     }
 
-    public void setAreaBoundaryPoints(List<AreaBoundaryPointRequestDTO> areaBoundaryPoints) {
-        this.areaBoundaryPoints = areaBoundaryPoints;
+    public void setAreas(List<AreaRequestDTO> areas) {
+        this.areas = areas;
     }
 }

@@ -21,119 +21,62 @@ package de.felixhertweck.seatreservation.common.dto;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
-import de.felixhertweck.seatreservation.model.entity.AreaBoundaryPoint;
+import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 /**
  * Represents a named area within an event location together with the ids of all seats assigned to
- * it. Areas are derived by grouping the seats of a location by their {@code area} value and are
+ * it. Areas are derived by grouping the given seats by their {@link Seat#getArea()} and are
  * intended to be rendered as an overlay on top of the seat map. Only seat ids are referenced here
  * since the full seat data is already part of the enclosing response.
  *
  * <p>{@code boundary} is an optional custom polygon (in the same coordinate system as {@code
- * Seat.xCoordinate}/{@code Seat.yCoordinate}) that a renderer should use instead of deriving a
- * shape from the member seats' positions. When {@code null} or empty, renderers fall back to
- * computing a bounding box from the area's seats.
+ * Seat.coordinate}) that a renderer should use instead of deriving a shape from the member seats'
+ * positions. When {@code null} or empty, renderers fall back to computing a bounding box from the
+ * area's seats.
  */
 @RegisterForReflection
-public record AreaDTO(String name, List<Long> seatIds, List<AreaBoundaryPointDTO> boundary) {
+public record AreaDTO(String name, List<Long> seatIds, List<CoordinateDTO> boundary) {
 
     /**
-     * Groups the given seats by their area name into a list of {@link AreaDTO}s. Seats without an
-     * area (null or blank) are ignored. The resulting group order follows the order in which the
-     * areas are first encountered. No custom boundary is set; use {@link #fromSeats(Collection,
-     * Map)} to supply one per area name.
+     * Groups the given seats by their {@link Seat#getArea()} into a list of {@link AreaDTO}s. Seats
+     * without an area (i.e. {@code null}) are ignored. The resulting group order follows the order
+     * in which the areas are first encountered. An area's boundary (if any) is taken directly from
+     * its {@link EventLocationArea#getBoundary()}, so an area only appears in the result if it has
+     * at least one seat, even if it has a custom boundary defined.
      *
      * @param seats the seats to group; may be {@code null}
      * @return a list of areas with their assigned seat ids, never {@code null}
      */
-    public static List<AreaDTO> fromSeats(Collection<Seat> seats) {
-        return fromSeats(seats, Map.of());
-    }
-
-    /**
-     * Groups the given seats by their area name into a list of {@link AreaDTO}s, attaching a custom
-     * boundary polygon to areas that have one in {@code boundariesByAreaName}. Seats without an
-     * area (null or blank) are ignored. The resulting group order follows the order in which the
-     * areas are first encountered.
-     *
-     * @param seats the seats to group; may be {@code null}
-     * @param boundariesByAreaName custom boundary points keyed by area name; matched against each
-     *     group's (trimmed) area name case-insensitively, so a boundary submitted as "parkett"
-     *     still attaches to seats whose area is "Parkett"
-     * @return a list of areas with their assigned seat ids, never {@code null}
-     */
-    public static List<AreaDTO> fromSeats(
-            Collection<Seat> seats, Map<String, List<AreaBoundaryPointDTO>> boundariesByAreaName) {
+    public static List<AreaDTO> fromAreas(Collection<Seat> seats) {
         if (seats == null) {
             return List.of();
         }
-        Map<String, List<AreaBoundaryPointDTO>> boundariesByNormalizedName = new HashMap<>();
-        boundariesByAreaName.forEach(
-                (name, boundary) -> boundariesByNormalizedName.put(normalize(name), boundary));
-
-        Map<String, List<Long>> grouped = new LinkedHashMap<>();
+        Map<Long, EventLocationArea> areaById = new LinkedHashMap<>();
+        Map<Long, List<Long>> seatIdsByAreaId = new LinkedHashMap<>();
         for (Seat seat : seats) {
-            String area = seat.getArea();
-            if (area == null || area.trim().isEmpty()) {
+            EventLocationArea area = seat.getArea();
+            if (area == null) {
                 continue;
             }
-            grouped.computeIfAbsent(area.trim(), key -> new ArrayList<>()).add(seat.id);
+            areaById.putIfAbsent(area.id, area);
+            seatIdsByAreaId.computeIfAbsent(area.id, key -> new ArrayList<>()).add(seat.id);
         }
         List<AreaDTO> result = new ArrayList<>();
-        grouped.forEach(
-                (name, seatIds) ->
-                        result.add(
-                                new AreaDTO(
-                                        name,
-                                        seatIds,
-                                        boundariesByNormalizedName.get(normalize(name)))));
+        seatIdsByAreaId.forEach(
+                (areaId, seatIds) -> {
+                    EventLocationArea area = areaById.get(areaId);
+                    List<CoordinateDTO> boundary =
+                            (area.getBoundary() == null || area.getBoundary().isEmpty())
+                                    ? null
+                                    : area.getBoundary().stream().map(CoordinateDTO::new).toList();
+                    result.add(new AreaDTO(area.getName(), seatIds, boundary));
+                });
         return result;
-    }
-
-    private static String normalize(String areaName) {
-        return areaName.trim().toLowerCase(Locale.ROOT);
-    }
-
-    /**
-     * Groups the given seats by their area name into a list of {@link AreaDTO}s, attaching a custom
-     * boundary polygon to areas that have one among {@code boundaryPoints}. Points are grouped by
-     * their (trimmed) area name and ordered by {@link AreaBoundaryPoint#getSortOrder()} to form the
-     * polygon.
-     *
-     * @param seats the seats to group; may be {@code null}
-     * @param boundaryPoints the custom boundary points to attach, keyed by area name via {@link
-     *     AreaBoundaryPoint#getArea()}; may be {@code null}
-     * @return a list of areas with their assigned seat ids, never {@code null}
-     */
-    public static List<AreaDTO> fromSeats(
-            Collection<Seat> seats, Collection<AreaBoundaryPoint> boundaryPoints) {
-        Map<String, List<AreaBoundaryPointDTO>> boundariesByAreaName = new LinkedHashMap<>();
-        if (boundaryPoints != null) {
-            boundaryPoints.stream()
-                    .sorted(Comparator.comparingInt(AreaBoundaryPoint::getSortOrder))
-                    .forEach(
-                            point -> {
-                                String area = point.getArea();
-                                if (area == null || area.trim().isEmpty()) {
-                                    return;
-                                }
-                                boundariesByAreaName
-                                        .computeIfAbsent(area.trim(), key -> new ArrayList<>())
-                                        .add(
-                                                new AreaBoundaryPointDTO(
-                                                        point.getxCoordinate(),
-                                                        point.getyCoordinate()));
-                            });
-        }
-        return fromSeats(seats, boundariesByAreaName);
     }
 }

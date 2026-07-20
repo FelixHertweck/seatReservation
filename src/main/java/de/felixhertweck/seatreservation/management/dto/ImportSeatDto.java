@@ -19,8 +19,10 @@
  */
 package de.felixhertweck.seatreservation.management.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
+import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
@@ -28,11 +30,9 @@ public class ImportSeatDto {
     @NotNull(message = "Seat number must not be null")
     private String seatNumber;
 
-    @NotNull(message = "X coordinate must not be null")
-    private int xCoordinate;
-
-    @NotNull(message = "Y coordinate must not be null")
-    private int yCoordinate;
+    @NotNull(message = "Coordinate must not be null")
+    @Valid
+    private CoordinateDTO coordinate;
 
     private String seatRow;
 
@@ -46,8 +46,7 @@ public class ImportSeatDto {
 
     public ImportSeatDto(String seatNumber, int xCoordinate, int yCoordinate, String seatRow) {
         this.seatNumber = seatNumber;
-        this.xCoordinate = xCoordinate;
-        this.yCoordinate = yCoordinate;
+        this.coordinate = new CoordinateDTO(xCoordinate, yCoordinate);
         this.seatRow = seatRow;
     }
 
@@ -59,8 +58,7 @@ public class ImportSeatDto {
             String entrance,
             String area) {
         this.seatNumber = seatNumber;
-        this.xCoordinate = xCoordinate;
-        this.yCoordinate = yCoordinate;
+        this.coordinate = new CoordinateDTO(xCoordinate, yCoordinate);
         this.seatRow = seatRow;
         this.entrance = entrance;
         this.area = area;
@@ -70,24 +68,16 @@ public class ImportSeatDto {
         return seatNumber;
     }
 
-    public int getxCoordinate() {
-        return xCoordinate;
+    public CoordinateDTO getCoordinate() {
+        return coordinate;
     }
 
-    public int getyCoordinate() {
-        return yCoordinate;
+    public void setCoordinate(CoordinateDTO coordinate) {
+        this.coordinate = coordinate;
     }
 
     public void setSeatNumber(String seatNumber) {
         this.seatNumber = seatNumber;
-    }
-
-    public void setxCoordinate(int xCoordinate) {
-        this.xCoordinate = xCoordinate;
-    }
-
-    public void setyCoordinate(int yCoordinate) {
-        this.yCoordinate = yCoordinate;
     }
 
     public String getSeatRow() {

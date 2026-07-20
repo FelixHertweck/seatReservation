@@ -17,14 +17,17 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.common.dto;
+package de.felixhertweck.seatreservation.model.entity;
 
-import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
-import io.quarkus.runtime.annotations.RegisterForReflection;
+import jakarta.persistence.Embeddable;
 
-@RegisterForReflection
-public record EventLocationMakerDTO(String label, CoordinateDTO coordinate) {
-    public EventLocationMakerDTO(EventLocationMarker maker) {
-        this(maker.getLabel(), new CoordinateDTO(maker.getCoordinate()));
+/**
+ * A 2D position shared by every entity that is placed on an event location's seat map (seats,
+ * markers, area boundary points).
+ */
+@Embeddable
+public record Coordinate(int xCoordinate, int yCoordinate) {
+    public Coordinate() {
+        this(0, 0);
     }
 }

@@ -28,6 +28,7 @@ import static org.hamcrest.CoreMatchers.is;
 
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenRepository;
+import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
@@ -42,6 +43,8 @@ import org.junit.jupiter.api.Test;
 public class EventLocationResourceTest {
 
     @Inject EventLocationRepository eventLocationRepository;
+
+    @Inject EventLocationAreaRepository eventLocationAreaRepository;
 
     @Inject EventRepository eventRepository;
 
@@ -61,6 +64,7 @@ public class EventLocationResourceTest {
         emailSeatMapTokenRepository.deleteAll();
         seatRepository.deleteAll();
         eventRepository.deleteAll();
+        eventLocationAreaRepository.deleteAll();
         eventLocationRepository.deleteAll();
 
         var user = userRepository.findByUsernameOptional("manager").orElseThrow();
@@ -79,6 +83,7 @@ public class EventLocationResourceTest {
         emailSeatMapTokenRepository.deleteAll();
         seatRepository.deleteAll();
         eventRepository.deleteAll();
+        eventLocationAreaRepository.deleteAll();
         eventLocationRepository.deleteAll();
     }
 
@@ -287,7 +292,7 @@ public class EventLocationResourceTest {
     void testCreateEventLocationWithSeats() {
         String requestBody =
                 "{\"name\":\"New Location\",\"address\":\"123 Main"
-                    + " St\",\"capacity\":100,\"seats\":[{\"seatNumber\":\"A1\",\"xCoordinate\":1,\"yCoordinate\":1},{\"seatNumber\":\"A2\",\"xCoordinate\":1,\"yCoordinate\":2}]}";
+                    + " St\",\"capacity\":100,\"seats\":[{\"seatNumber\":\"A1\",\"coordinate\":{\"xCoordinate\":1,\"yCoordinate\":1}},{\"seatNumber\":\"A2\",\"coordinate\":{\"xCoordinate\":1,\"yCoordinate\":2}}]}";
 
         given().contentType("application/json")
                 .body(requestBody)
@@ -305,8 +310,8 @@ public class EventLocationResourceTest {
             roles = {"MANAGER"})
     void testImportSeatsToEventLocation_Success() {
         String requestBody =
-                "[{\"seatNumber\":\"B1\",\"xCoordinate\":2,\"yCoordinate\":1,\"seatRow\":\"Row"
-                    + " B\"},{\"seatNumber\":\"B2\",\"xCoordinate\":2,\"yCoordinate\":2,\"seatRow\":\"Row"
+                "[{\"seatNumber\":\"B1\",\"coordinate\":{\"xCoordinate\":2,\"yCoordinate\":1},\"seatRow\":\"Row"
+                    + " B\"},{\"seatNumber\":\"B2\",\"coordinate\":{\"xCoordinate\":2,\"yCoordinate\":2},\"seatRow\":\"Row"
                     + " B\"}]";
 
         given().contentType("application/json")
@@ -325,8 +330,8 @@ public class EventLocationResourceTest {
             roles = {"MANAGER"})
     void testImportSeatsToEventLocation_NotFound() {
         String requestBody =
-                "[{\"seatNumber\":\"B1\",\"xCoordinate\":2,\"yCoordinate\":1,\"seatRow\":\"Row"
-                        + " B\"}]";
+                "[{\"seatNumber\":\"B1\",\"coordinate\":{\"xCoordinate\":2,\"yCoordinate\":1},\"seatRow\":\"Row"
+                    + " B\"}]";
         given().contentType("application/json")
                 .body(requestBody)
                 .when()
@@ -341,8 +346,8 @@ public class EventLocationResourceTest {
             roles = {"USER"})
     void testImportSeatsToEventLocation_Forbidden() {
         String requestBody =
-                "[{\"seatNumber\":\"B1\",\"xCoordinate\":2,\"yCoordinate\":1,\"seatRow\":\"Row"
-                        + " B\"}]";
+                "[{\"seatNumber\":\"B1\",\"coordinate\":{\"xCoordinate\":2,\"yCoordinate\":1},\"seatRow\":\"Row"
+                    + " B\"}]";
         given().contentType("application/json")
                 .body(requestBody)
                 .when()

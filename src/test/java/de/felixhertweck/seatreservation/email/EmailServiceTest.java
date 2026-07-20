@@ -47,6 +47,7 @@ import de.felixhertweck.seatreservation.email.service.EmailService;
 import de.felixhertweck.seatreservation.model.entity.EmailVerification;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
+import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
@@ -116,6 +117,7 @@ class EmailServiceTest {
         seat.id = 1000L;
         seat.setSeatNumber(seatNumber);
         seat.setLocation(location);
+        seat.setArea(new EventLocationArea("Parkett"));
         return seat;
     }
 
@@ -228,7 +230,6 @@ class EmailServiceTest {
         Event event = createTestEvent(location);
         Seat seat = createTestSeat(location, "A1");
         seat.setSeatRow("1");
-        seat.setArea("Floor");
         List<Reservation> reservations =
                 Collections.singletonList(createTestReservation(user, event, seat));
 
@@ -256,7 +257,7 @@ class EmailServiceTest {
                                         .toLocalDate()
                                         .toString()));
         assertTrue(sentMail.getHtml().contains(event.getEventLocation().getName()));
-        assertTrue(sentMail.getHtml().contains("<li>A1 (1) - Floor</li>"));
+        assertTrue(sentMail.getHtml().contains("<li>A1 (1) - Parkett</li>"));
         assertTrue(
                 sentMail.getHtml()
                         .contains("http://localhost:8080/email/seatmap?token=test-token-123"));

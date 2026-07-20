@@ -31,10 +31,26 @@ class SeatTest {
         EventLocation location = new EventLocation();
         location.id = 1L;
 
-        Seat persisted = new Seat("A1", location, "Row 1", 1, 1, "Entrance A", "Parkett");
+        Seat persisted =
+                new Seat(
+                        "A1",
+                        location,
+                        "Row 1",
+                        1,
+                        1,
+                        "Entrance A",
+                        new EventLocationArea("Parkett"));
         persisted.id = 5L;
 
-        Seat transientSeat = new Seat("A1", location, "Row 1", 1, 1, "Entrance A", "Parkett");
+        Seat transientSeat =
+                new Seat(
+                        "A1",
+                        location,
+                        "Row 1",
+                        1,
+                        1,
+                        "Entrance A",
+                        new EventLocationArea("Parkett"));
 
         assertNotEquals(persisted, transientSeat);
         assertNotEquals(transientSeat, persisted);
@@ -45,9 +61,25 @@ class SeatTest {
         EventLocation location = new EventLocation();
         location.id = 1L;
 
-        Seat a = new Seat("A1", location, "Row 1", 1, 1, "Entrance A", "Parkett");
+        Seat a =
+                new Seat(
+                        "A1",
+                        location,
+                        "Row 1",
+                        1,
+                        1,
+                        "Entrance A",
+                        new EventLocationArea("Parkett"));
         a.id = 5L;
-        Seat b = new Seat("B2", location, "Row 2", 2, 2, "Entrance B", "Balkon");
+        Seat b =
+                new Seat(
+                        "B2",
+                        location,
+                        "Row 2",
+                        2,
+                        2,
+                        "Entrance B",
+                        new EventLocationArea("Balkon"));
         b.id = 5L;
 
         assertEquals(a, b);
@@ -59,8 +91,24 @@ class SeatTest {
         EventLocation location = new EventLocation();
         location.id = 1L;
 
-        Seat a = new Seat("A1", location, "Row 1", 1, 1, "Entrance A", "Parkett");
-        Seat b = new Seat("A1", location, "Row 1", 1, 1, "Entrance A", "Parkett");
+        Seat a =
+                new Seat(
+                        "A1",
+                        location,
+                        "Row 1",
+                        1,
+                        1,
+                        "Entrance A",
+                        new EventLocationArea("Parkett"));
+        Seat b =
+                new Seat(
+                        "A1",
+                        location,
+                        "Row 1",
+                        1,
+                        1,
+                        "Entrance A",
+                        new EventLocationArea("Parkett"));
 
         assertEquals(a, b);
         assertEquals(a.hashCode(), b.hashCode());
@@ -71,9 +119,25 @@ class SeatTest {
         EventLocation location = new EventLocation();
         location.id = 1L;
 
-        Seat a = new Seat("A1", location, "Row 1", 1, 1, "Entrance A", "Parkett");
+        Seat a =
+                new Seat(
+                        "A1",
+                        location,
+                        "Row 1",
+                        1,
+                        1,
+                        "Entrance A",
+                        new EventLocationArea("Parkett"));
         a.id = 5L;
-        Seat b = new Seat("A1", location, "Row 1", 1, 1, "Entrance A", "Parkett");
+        Seat b =
+                new Seat(
+                        "A1",
+                        location,
+                        "Row 1",
+                        1,
+                        1,
+                        "Entrance A",
+                        new EventLocationArea("Parkett"));
         b.id = 6L;
 
         assertNotEquals(a, b);

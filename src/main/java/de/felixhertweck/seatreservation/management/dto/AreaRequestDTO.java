@@ -19,41 +19,45 @@
  */
 package de.felixhertweck.seatreservation.management.dto;
 
+import java.util.List;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
+/**
+ * A named area within an {@link EventLocationRequestDTO} or {@link ImportEventLocationDto},
+ * carrying an optional custom boundary polygon (ordered list of vertices). Seats reference an area
+ * by name via their own {@code area} field.
+ */
 @RegisterForReflection
-public class MakerRequestDTO {
-    @NotNull(message = "Label must not be null")
-    private String label;
+public class AreaRequestDTO {
+    @NotNull(message = "Area name must not be null")
+    private String name;
 
-    @NotNull(message = "Coordinate must not be null")
-    @Valid
-    private CoordinateDTO coordinate;
+    @Valid private List<CoordinateDTO> boundary;
 
-    public MakerRequestDTO() {}
+    public AreaRequestDTO() {}
 
-    public MakerRequestDTO(String label, Integer xCoordinate, Integer yCoordinate) {
-        this.label = label;
-        this.coordinate = new CoordinateDTO(xCoordinate, yCoordinate);
+    public AreaRequestDTO(String name, List<CoordinateDTO> boundary) {
+        this.name = name;
+        this.boundary = boundary;
     }
 
-    public String getLabel() {
-        return label;
+    public String getName() {
+        return name;
     }
 
-    public CoordinateDTO getCoordinate() {
-        return coordinate;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public List<CoordinateDTO> getBoundary() {
+        return boundary;
     }
 
-    public void setCoordinate(CoordinateDTO coordinate) {
-        this.coordinate = coordinate;
+    public void setBoundary(List<CoordinateDTO> boundary) {
+        this.boundary = boundary;
     }
 }

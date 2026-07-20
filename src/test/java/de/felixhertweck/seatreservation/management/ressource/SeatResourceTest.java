@@ -30,9 +30,11 @@ import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.Seat;
+import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
+import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import io.quarkus.test.junit.QuarkusTest;
@@ -46,9 +48,11 @@ public class SeatResourceTest {
 
     @Inject SeatRepository seatRepository;
     @Inject EventLocationRepository eventLocationRepository;
+    @Inject EventLocationAreaRepository eventLocationAreaRepository;
     @Inject UserRepository userRepository;
     @Inject EventRepository eventRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
+    @Inject ReservationRepository reservationRepository;
 
     private Seat testSeat;
     private EventLocation testLocation;
@@ -85,9 +89,11 @@ public class SeatResourceTest {
     @SuppressWarnings("unused")
     void tearDown() {
         // It's safer to delete all created entities to clean up the state
+        reservationRepository.deleteAll();
         seatRepository.deleteAll();
         eventUserAllowanceRepository.deleteAll();
         eventRepository.deleteAll();
+        eventLocationAreaRepository.deleteAll();
         eventLocationRepository.deleteAll();
     }
 

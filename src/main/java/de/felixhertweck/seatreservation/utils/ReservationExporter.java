@@ -84,7 +84,7 @@ public class ReservationExporter {
                                 reservation.getSeat().getEntrance(),
                                 reservation.getSeat().getArea() == null
                                         ? ""
-                                        : reservation.getSeat().getArea(),
+                                        : reservation.getSeat().getArea().getName(),
                                 reservation.getUser().getFirstname(),
                                 reservation.getUser().getLastname(),
                                 reservation

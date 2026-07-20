@@ -44,8 +44,8 @@ export function SeatFormModal({
     seatNumber: seat?.seatNumber || "",
     seatRow: seat?.seatRow || "",
     eventLocationId: seat?.locationId?.toString() || "",
-    xCoordinate: seat?.xCoordinate?.toString() || "",
-    yCoordinate: seat?.yCoordinate?.toString() || "",
+    xCoordinate: seat?.coordinate?.xCoordinate?.toString() || "",
+    yCoordinate: seat?.coordinate?.yCoordinate?.toString() || "",
     entrance: seat?.entrance || "",
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -61,8 +61,10 @@ export function SeatFormModal({
         seatNumber: formData.seatNumber,
         seatRow: formData.seatRow,
         eventLocationId: BigInt(formData.eventLocationId),
-        xCoordinate: Number.parseInt(formData.xCoordinate),
-        yCoordinate: Number.parseInt(formData.yCoordinate),
+        coordinate: {
+          xCoordinate: Number.parseInt(formData.xCoordinate),
+          yCoordinate: Number.parseInt(formData.yCoordinate),
+        },
         entrance: formData.entrance,
       };
       await onSubmit(seatData);

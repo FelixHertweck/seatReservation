@@ -441,7 +441,7 @@ export function LocationManagement({
                                 ? location.markers
                                     .map(
                                       (marker) =>
-                                        `${marker.label} (${marker.xCoordinate}, ${marker.yCoordinate})`,
+                                        `${marker.label} (${marker.coordinate?.xCoordinate}, ${marker.coordinate?.yCoordinate})`,
                                     )
                                     .join(", ")
                                 : "-";
@@ -551,7 +551,7 @@ export function LocationManagement({
                             ? location.markers
                                 .map(
                                   (marker) =>
-                                    `${marker.label} (${marker.xCoordinate}, ${marker.yCoordinate})`,
+                                    `${marker.label} (${marker.coordinate?.xCoordinate}, ${marker.coordinate?.yCoordinate})`,
                                 )
                                 .join(", ")
                             : "-";

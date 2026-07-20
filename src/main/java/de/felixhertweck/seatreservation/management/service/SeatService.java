@@ -30,6 +30,7 @@ import de.felixhertweck.seatreservation.common.dto.SeatDTO;
 import de.felixhertweck.seatreservation.management.dto.SeatRequestDTO;
 import de.felixhertweck.seatreservation.management.exception.SeatNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
+import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
@@ -90,7 +91,7 @@ public class SeatService {
                     eventLocation.getId());
             throw new IllegalArgumentException("Seat number cannot be empty");
         }
-        if (dto.getxCoordinate() < 0 || dto.getyCoordinate() < 0) {
+        if (dto.getCoordinate().xCoordinate() < 0 || dto.getCoordinate().yCoordinate() < 0) {
             LOG.warnf(
                     "Invalid seat data: coordinates are negative for seat number '%s' in event"
                             + " location ID %d.",
@@ -109,10 +110,10 @@ public class SeatService {
                         dto.getSeatNumber(),
                         eventLocation,
                         dto.getSeatRow(),
-                        dto.getxCoordinate(),
-                        dto.getyCoordinate(),
+                        dto.getCoordinate().xCoordinate(),
+                        dto.getCoordinate().yCoordinate(),
                         dto.getEntrance(),
-                        dto.getArea());
+                        resolveOrCreateArea(dto.getArea(), eventLocation));
         seatRepository.persist(seat);
         LOG.infof(
                 "Seat ID: %d created successfully for event location ID %d",
@@ -224,7 +225,7 @@ public class SeatService {
             LOG.warnf("Invalid seat data: seat number is empty for seat ID %d.", id);
             throw new IllegalArgumentException("Seat number cannot be empty");
         }
-        if (dto.getxCoordinate() < 0 || dto.getyCoordinate() < 0) {
+        if (dto.getCoordinate().xCoordinate() < 0 || dto.getCoordinate().yCoordinate() < 0) {
             LOG.warnf("Invalid seat data: coordinates are negative for seat ID %d.", id);
             throw new IllegalArgumentException("Coordinates cannot be negative");
         }
@@ -235,17 +236,15 @@ public class SeatService {
 
         LOG.debugf(
                 "Updating seat ID %d: seatNumber='%s' -> '%s', location ID='%d' -> '%d',"
-                        + " xCoordinate='%d' -> '%d', yCoordinate='%d' -> '%d',"
+                        + " coordinate='%s' -> '%s',"
                         + " seatRow='%s' -> '%s', entrance='%s' -> '%s', area='%s' -> '%s'",
                 id,
                 seat.getSeatNumber(),
                 dto.getSeatNumber(),
                 seat.getLocation().getId(),
                 newEventLocation.getId(),
-                seat.getxCoordinate(),
-                dto.getxCoordinate(),
-                seat.getyCoordinate(),
-                dto.getyCoordinate(),
+                seat.getCoordinate(),
+                dto.getCoordinate(),
                 seat.getSeatRow(),
                 dto.getSeatRow(),
                 seat.getEntrance(),
@@ -255,11 +254,10 @@ public class SeatService {
 
         seat.setSeatNumber(dto.getSeatNumber());
         seat.setLocation(newEventLocation);
-        seat.setxCoordinate(dto.getxCoordinate());
-        seat.setyCoordinate(dto.getyCoordinate());
+        seat.setCoordinate(dto.getCoordinate().toEntity());
         seat.setSeatRow(dto.getSeatRow());
         seat.setEntrance(dto.getEntrance());
-        seat.setArea(dto.getArea());
+        seat.setArea(resolveOrCreateArea(dto.getArea(), newEventLocation));
 
         seatRepository.persist(seat);
 
@@ -268,6 +266,30 @@ public class SeatService {
                 "Seat with ID %d updated successfully by manager: %s (ID: %d)",
                 id, manager.id, manager.getId());
         return new SeatDTO(seat);
+    }
+
+    /**
+     * Resolves an {@link EventLocationArea} by (trimmed) name, scoped to the given {@code
+     * eventLocation}, creating and registering a new one if no match exists yet.
+     *
+     * @param rawName The (possibly untrimmed) area name; {@code null}/blank resolves to no area
+     * @param eventLocation The event location the area belongs to
+     * @return The resolved or newly created area, or {@code null} if {@code rawName} is blank
+     */
+    private EventLocationArea resolveOrCreateArea(String rawName, EventLocation eventLocation) {
+        if (rawName == null || rawName.trim().isEmpty()) {
+            return null;
+        }
+        String name = rawName.trim();
+        for (EventLocationArea existing : eventLocation.getAreas()) {
+            if (name.equals(existing.getName())) {
+                return existing;
+            }
+        }
+        EventLocationArea created = new EventLocationArea(name);
+        created.setEventLocation(eventLocation);
+        eventLocation.getAreas().add(created);
+        return created;
     }
 
     /**

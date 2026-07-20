@@ -17,13 +17,12 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.common.dto;
+package de.felixhertweck.seatreservation.model.repository;
 
-import io.quarkus.runtime.annotations.RegisterForReflection;
+import jakarta.enterprise.context.ApplicationScoped;
 
-/**
- * A single vertex of a custom area boundary polygon, expressed in the same coordinate system as
- * {@code Seat.xCoordinate}/{@code Seat.yCoordinate}.
- */
-@RegisterForReflection
-public record AreaBoundaryPointDTO(int xCoordinate, int yCoordinate) {}
+import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
+import io.quarkus.hibernate.orm.panache.PanacheRepository;
+
+@ApplicationScoped
+public class EventLocationAreaRepository implements PanacheRepository<EventLocationArea> {}

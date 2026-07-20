@@ -6,8 +6,8 @@ import type { ReactElement } from "react";
 
 import { cn } from "@/lib/utils";
 import type {
-  AreaBoundaryPointDto,
   AreaDto,
+  CoordinateDto,
   EventLocationMakerDto,
   SeatDto,
   SeatStatusDto,
@@ -141,7 +141,8 @@ const MarkerComponent = React.memo(
         // --- Centering Logic ---
         // Calculate the original starting position of the grid cell
         const cellLeft =
-          PADDING + ((marker.xCoordinate || 1) - 1) * CELL_TOTAL_SIZE;
+          PADDING +
+          ((marker.coordinate?.xCoordinate ?? 1) - 1) * CELL_TOTAL_SIZE;
         // Adjust the left position to center the new, smaller width within the cell
         const newLeft = cellLeft + (SEAT_SIZE - finalWidth) / 2;
 
@@ -150,7 +151,7 @@ const MarkerComponent = React.memo(
         containerEl.style.left = `${newLeft}px`;
         textEl.style.transform = `scale(${textScale})`;
       }
-    }, [marker.label, marker.xCoordinate, showLabel]);
+    }, [marker.label, marker.coordinate?.xCoordinate, showLabel]);
 
     return (
       <div
@@ -158,8 +159,8 @@ const MarkerComponent = React.memo(
         className="absolute z-0 flex items-center justify-center font-bold text-gray-800 dark:text-gray-200 rounded-md overflow-hidden"
         style={{
           // Initial position and size before dynamic adjustment
-          left: `${PADDING + ((marker.xCoordinate || 1) - 1) * CELL_TOTAL_SIZE}px`,
-          top: `${PADDING + ((marker.yCoordinate || 1) - 1) * CELL_TOTAL_SIZE}px`,
+          left: `${PADDING + ((marker.coordinate?.xCoordinate ?? 1) - 1) * CELL_TOTAL_SIZE}px`,
+          top: `${PADDING + ((marker.coordinate?.yCoordinate ?? 1) - 1) * CELL_TOTAL_SIZE}px`,
           width: `${SEAT_SIZE}px`,
           height: `${SEAT_SIZE}px`,
           fontSize: "14px",
@@ -322,10 +323,18 @@ export function SeatMap({
     renderedMarkers,
     areaZones,
   } = useMemo(() => {
-    const seatMaxX = Math.max(...seats.map((s) => s.xCoordinate || 0));
-    const seatMaxY = Math.max(...seats.map((s) => s.yCoordinate || 0));
-    const markerMaxX = Math.max(...markers.map((m) => m.xCoordinate || 0));
-    const markerMaxY = Math.max(...markers.map((m) => m.yCoordinate || 0));
+    const seatMaxX = Math.max(
+      ...seats.map((s) => s.coordinate?.xCoordinate || 0),
+    );
+    const seatMaxY = Math.max(
+      ...seats.map((s) => s.coordinate?.yCoordinate || 0),
+    );
+    const markerMaxX = Math.max(
+      ...markers.map((m) => m.coordinate?.xCoordinate || 0),
+    );
+    const markerMaxY = Math.max(
+      ...markers.map((m) => m.coordinate?.yCoordinate || 0),
+    );
     // A custom area boundary polygon (see below) may intentionally extend past the
     // outermost seats (e.g. a rounded balcony edge) - include it so the grid container
     // is sized to fit it instead of clipping it via the map's `overflow-hidden` wrapper.
@@ -346,8 +355,14 @@ export function SeatMap({
     const seatPositionMap = new Map<string, SeatDto>();
     const seatById = new Map<bigint, SeatDto>();
     seats.forEach((seat) => {
-      if (seat.xCoordinate && seat.yCoordinate) {
-        seatPositionMap.set(`${seat.xCoordinate}-${seat.yCoordinate}`, seat);
+      if (
+        seat.coordinate?.xCoordinate != null &&
+        seat.coordinate?.yCoordinate != null
+      ) {
+        seatPositionMap.set(
+          `${seat.coordinate.xCoordinate}-${seat.coordinate.yCoordinate}`,
+          seat,
+        );
       }
       if (seat.id !== undefined) {
         seatById.set(seat.id, seat);
@@ -361,7 +376,9 @@ export function SeatMap({
 
     // Filter markers with valid coordinates
     const renderedMarkers = markers.filter(
-      (marker) => marker.xCoordinate && marker.yCoordinate,
+      (marker) =>
+        marker.coordinate?.xCoordinate != null &&
+        marker.coordinate?.yCoordinate != null,
     );
 
     // Each area is rendered either from custom boundary points (when the API
@@ -373,7 +390,7 @@ export function SeatMap({
       const key = area.name ?? `area-${index}`;
 
       const validBoundaryPoints = (area.boundary ?? []).filter(
-        (p): p is Required<AreaBoundaryPointDto> =>
+        (p): p is Required<CoordinateDto> =>
           p.xCoordinate != null && p.yCoordinate != null,
       );
 
@@ -425,12 +442,14 @@ export function SeatMap({
         .map((id) => seatById.get(id))
         .filter(
           (s): s is SeatDto =>
-            !!s && s.xCoordinate != null && s.yCoordinate != null,
+            !!s &&
+            s.coordinate?.xCoordinate != null &&
+            s.coordinate?.yCoordinate != null,
         );
       if (memberSeats.length === 0) return [];
 
-      const xs = memberSeats.map((s) => s.xCoordinate!);
-      const ys = memberSeats.map((s) => s.yCoordinate!);
+      const xs = memberSeats.map((s) => s.coordinate!.xCoordinate!);
+      const ys = memberSeats.map((s) => s.coordinate!.yCoordinate!);
       const minX = Math.min(...xs);
       const maxAreaX = Math.max(...xs);
       const minY = Math.min(...ys);
