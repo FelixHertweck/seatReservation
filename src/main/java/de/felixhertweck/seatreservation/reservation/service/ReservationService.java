@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -49,6 +50,7 @@ import de.felixhertweck.seatreservation.reservation.dto.UserReservationsRequestD
 import de.felixhertweck.seatreservation.reservation.exception.EventBookingClosedException;
 import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
+import de.felixhertweck.seatreservation.reservation.exception.SeatBlockedException;
 import de.felixhertweck.seatreservation.utils.CodeGenerator;
 import org.jboss.logging.Logger;
 
@@ -123,8 +125,8 @@ public class ReservationService {
      * @throws NoSeatsAvailableException if the user has exceeded their reservation limit for the
      *     event
      * @throws EventBookingClosedException if the event booking has not started or has already ended
-     * @throws SeatAlreadyReservedException if any of the requested seats are already reserved or
-     *     blocked
+     * @throws SeatAlreadyReservedException if any of the requested seats are already reserved
+     * @throws SeatBlockedException if any of the requested seats are blocked
      * @throws IllegalStateException if the user does not have a verified email address
      * @throws IllegalArgumentException if no seats are selected
      */
@@ -250,17 +252,26 @@ public class ReservationService {
 
         // Check if seats are already reserved
         List<Reservation> existingReservations = reservationRepository.findByEventId(event.id);
+
+        Set<Long> reservedSeatIds = new java.util.HashSet<>();
+        Set<Long> blockedSeatIds = new java.util.HashSet<>();
+
+        for (Reservation r : existingReservations) {
+            if (r.getStatus() == ReservationStatus.RESERVED) {
+                reservedSeatIds.add(r.getSeat().id);
+            } else if (r.getStatus() == ReservationStatus.BLOCKED) {
+                blockedSeatIds.add(r.getSeat().id);
+            }
+        }
+
         List<Reservation> newReservations = new ArrayList<>();
         for (Seat seat : seats) {
-            if (existingReservations.stream()
-                    .anyMatch(
-                            r ->
-                                    r.getSeat().id.equals(seat.id)
-                                            && (r.getStatus() == ReservationStatus.RESERVED
-                                                    || r.getStatus()
-                                                            == ReservationStatus.BLOCKED))) {
+            if (reservedSeatIds.contains(seat.id)) {
                 LOG.warnf("Seat ID: %d is already reserved for event ID: %d.", seat.id, event.id);
                 throw new SeatAlreadyReservedException("One or more seats are already reserved");
+            } else if (blockedSeatIds.contains(seat.id)) {
+                LOG.warnf("Seat ID: %d is blocked for event ID: %d.", seat.id, event.id);
+                throw new SeatBlockedException("One or more seats are blocked");
             }
             String checkInCode = CodeGenerator.generateRandomCode();
             newReservations.add(

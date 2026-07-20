@@ -61,6 +61,7 @@ import de.felixhertweck.seatreservation.reservation.dto.UserReservationsRequestD
 import de.felixhertweck.seatreservation.reservation.exception.EventBookingClosedException;
 import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
+import de.felixhertweck.seatreservation.reservation.exception.SeatBlockedException;
 import de.felixhertweck.seatreservation.utils.CodeGenerator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -360,9 +361,37 @@ class ReservationServiceTest {
         when(reservationRepository.findByEventId(event.id))
                 .thenReturn(List.of(existingReservation));
 
-        assertThrows(
-                SeatAlreadyReservedException.class,
-                () -> reservationService.createReservationForUser(dto, currentUser));
+        SeatAlreadyReservedException exception =
+                assertThrows(
+                        SeatAlreadyReservedException.class,
+                        () -> reservationService.createReservationForUser(dto, currentUser));
+
+        assertEquals("One or more seats are already reserved", exception.getMessage());
+    }
+
+    @Test
+    void createReservationForUser_SeatBlockedException() {
+        UserReservationsRequestDTO dto = new UserReservationsRequestDTO();
+        dto.setEventId(event.id);
+        dto.setSeatIds(Set.of(seat1.id));
+
+        Reservation existingReservation =
+                new Reservation(
+                        otherUser, event, seat1, Instant.now(), ReservationStatus.BLOCKED, "12345");
+        existingReservation.id = 2L;
+
+        when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
+        when(seatRepository.findByIdOptional(seat1.id)).thenReturn(Optional.of(seat1));
+        when(eventUserAllowanceRepository.findByUser(currentUser)).thenReturn(List.of(allowance));
+        when(reservationRepository.findByEventId(event.id))
+                .thenReturn(List.of(existingReservation));
+
+        SeatBlockedException exception =
+                assertThrows(
+                        SeatBlockedException.class,
+                        () -> reservationService.createReservationForUser(dto, currentUser));
+
+        assertEquals("One or more seats are blocked", exception.getMessage());
     }
 
     @Test
