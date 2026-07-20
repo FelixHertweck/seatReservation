@@ -58,6 +58,7 @@ import org.jboss.logging.Logger;
 public class ReservationService {
 
     private static final Logger LOG = Logger.getLogger(ReservationService.class);
+    private static final String ID_IN_QUERY = "id in ?1";
 
     @Inject ReservationRepository reservationRepository;
     @Inject EventRepository eventRepository;
@@ -171,24 +172,21 @@ public class ReservationService {
         LOG.debugf("Event ID: %d found for reservation.", event.id);
 
         // Validate the seatIds, ensure they exist
-        List<Seat> seats =
-                dto.getSeatIds().stream()
-                        .map(
-                                seatId ->
-                                        seatRepository
-                                                .findByIdOptional(seatId)
-                                                .orElseThrow(
-                                                        () -> {
-                                                            LOG.warnf(
-                                                                    "Seat with ID %d not found for"
-                                                                        + " reservation creation by"
-                                                                        + " user %s.",
-                                                                    seatId, currentUser.id);
-                                                            return new EventNotFoundException(
-                                                                    "Minimum one seat not"
-                                                                            + " found");
-                                                        }))
-                        .toList();
+        List<Seat> foundSeats = seatRepository.find(ID_IN_QUERY, dto.getSeatIds()).list();
+        Map<Long, Seat> foundSeatMap =
+                foundSeats.stream().collect(Collectors.toMap(s -> s.id, s -> s, (s1, s2) -> s1));
+
+        List<Seat> seats = new ArrayList<>();
+        for (Long seatId : dto.getSeatIds()) {
+            Seat seat = foundSeatMap.get(seatId);
+            if (seat == null) {
+                LOG.warnf(
+                        "Seat with ID %d not found for reservation creation by user %s.",
+                        seatId, currentUser.id);
+                throw new EventNotFoundException("Minimum one seat not found");
+            }
+            seats.add(seat);
+        }
         LOG.debugf("All %d seats found for reservation.", seats.size());
 
         // Check if the user has an allowance for this event
@@ -353,7 +351,7 @@ public class ReservationService {
                     "At least one reservation ID must be provided for deletion");
         }
 
-        List<Reservation> foundReservations = reservationRepository.find("id in ?1", ids).list();
+        List<Reservation> foundReservations = reservationRepository.find(ID_IN_QUERY, ids).list();
         Map<Long, Reservation> foundReservationMap =
                 foundReservations.stream()
                         .collect(Collectors.toMap(r -> r.id, r -> r, (r1, r2) -> r1));
@@ -413,7 +411,7 @@ public class ReservationService {
 
             // Delete reservations for the current event in a single batch query
             List<Long> reservationIdsToDelete = entry.getValue().stream().map(r -> r.id).toList();
-            reservationRepository.delete("id in ?1", reservationIdsToDelete);
+            reservationRepository.delete(ID_IN_QUERY, reservationIdsToDelete);
             LOG.infof(
                     "Deleted reservations with IDs %s for user ID: %d.",
                     reservationIdsToDelete, currentUser.id);

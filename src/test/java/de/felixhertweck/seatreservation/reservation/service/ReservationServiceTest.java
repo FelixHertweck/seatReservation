@@ -147,6 +147,12 @@ class ReservationServiceTest {
         allowance.setReservationsAllowedCount(2);
     }
 
+    private void mockSeatFind(Set<Long> seatIds, List<Seat> seats) {
+        PanacheQuery<Seat> seatQueryMock = mock(PanacheQuery.class);
+        when(seatRepository.find("id in ?1", seatIds)).thenReturn(seatQueryMock);
+        when(seatQueryMock.list()).thenReturn(seats);
+    }
+
     @Test
     void findReservationsByUser_Success() {
         when(reservationRepository.findByUser(currentUser)).thenReturn(List.of(reservation));
@@ -205,7 +211,7 @@ class ReservationServiceTest {
         dto.setSeatIds(Set.of(seat1.id));
 
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
-        when(seatRepository.findByIdOptional(seat1.id)).thenReturn(Optional.of(seat1));
+        mockSeatFind(dto.getSeatIds(), List.of(seat1));
         when(eventUserAllowanceRepository.findByUser(currentUser)).thenReturn(List.of(allowance));
         when(reservationRepository.findByEventId(event.id)).thenReturn(Collections.emptyList());
         doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
@@ -265,7 +271,7 @@ class ReservationServiceTest {
         dto.setSeatIds(Set.of(99L));
 
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
-        when(seatRepository.findByIdOptional(99L)).thenReturn(Optional.empty());
+        mockSeatFind(dto.getSeatIds(), Collections.emptyList());
 
         assertThrows(
                 EventNotFoundException.class,
@@ -279,7 +285,7 @@ class ReservationServiceTest {
         dto.setSeatIds(Set.of(seat1.id));
 
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
-        when(seatRepository.findByIdOptional(seat1.id)).thenReturn(Optional.of(seat1));
+        mockSeatFind(dto.getSeatIds(), List.of(seat1));
         when(eventUserAllowanceRepository.findByUser(currentUser))
                 .thenReturn(Collections.emptyList());
 
@@ -296,10 +302,11 @@ class ReservationServiceTest {
 
         allowance.setReservationsAllowedCount(2);
 
+        Seat seat3 = new Seat("", "", null);
+        seat3.id = 3L;
+
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
-        when(seatRepository.findByIdOptional(seat1.id)).thenReturn(Optional.of(seat1));
-        when(seatRepository.findByIdOptional(seat2.id)).thenReturn(Optional.of(seat2));
-        when(seatRepository.findByIdOptional(3L)).thenReturn(Optional.of(new Seat("", "", null)));
+        mockSeatFind(dto.getSeatIds(), List.of(seat1, seat2, seat3));
         when(eventUserAllowanceRepository.findByUser(currentUser)).thenReturn(List.of(allowance));
 
         assertThrows(
@@ -315,7 +322,7 @@ class ReservationServiceTest {
         dto.setSeatIds(Set.of(seat1.id));
 
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
-        when(seatRepository.findByIdOptional(seat1.id)).thenReturn(Optional.of(seat1));
+        mockSeatFind(dto.getSeatIds(), List.of(seat1));
         when(eventUserAllowanceRepository.findByUser(currentUser)).thenReturn(List.of(allowance));
 
         assertThrows(
@@ -335,7 +342,7 @@ class ReservationServiceTest {
         dto.setSeatIds(Set.of(seat1.id));
 
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
-        when(seatRepository.findByIdOptional(seat1.id)).thenReturn(Optional.of(seat1));
+        mockSeatFind(dto.getSeatIds(), List.of(seat1));
         when(eventUserAllowanceRepository.findByUser(currentUser)).thenReturn(List.of(allowance));
 
         assertThrows(
@@ -358,7 +365,7 @@ class ReservationServiceTest {
                         ReservationStatus.RESERVED,
                         CodeGenerator.generateRandomCode());
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
-        when(seatRepository.findByIdOptional(seat1.id)).thenReturn(Optional.of(seat1));
+        mockSeatFind(dto.getSeatIds(), List.of(seat1));
         when(eventUserAllowanceRepository.findByUser(currentUser)).thenReturn(List.of(allowance));
         when(reservationRepository.findByEventId(event.id))
                 .thenReturn(List.of(existingReservation));
@@ -383,7 +390,7 @@ class ReservationServiceTest {
         existingReservation.id = 2L;
 
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
-        when(seatRepository.findByIdOptional(seat1.id)).thenReturn(Optional.of(seat1));
+        mockSeatFind(dto.getSeatIds(), List.of(seat1));
         when(eventUserAllowanceRepository.findByUser(currentUser)).thenReturn(List.of(allowance));
         when(reservationRepository.findByEventId(event.id))
                 .thenReturn(List.of(existingReservation));
@@ -474,7 +481,7 @@ class ReservationServiceTest {
         dto.setSeatIds(Set.of(seat1.id));
 
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
-        when(seatRepository.findByIdOptional(seat1.id)).thenReturn(Optional.of(seat1));
+        mockSeatFind(dto.getSeatIds(), List.of(seat1));
         when(eventUserAllowanceRepository.findByUser(currentUser)).thenReturn(List.of(allowance));
         when(reservationRepository.findByEventId(event.id)).thenReturn(Collections.emptyList());
         doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
