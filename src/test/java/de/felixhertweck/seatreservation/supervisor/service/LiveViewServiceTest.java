@@ -151,6 +151,54 @@ public class LiveViewServiceTest {
                 () -> webSocketService.registerConnection(nullEventIdStr, mockConnection));
     }
 
+    @Test
+    void testSendInitialReservations_IOException() throws Exception {
+        // Use reflection to mock the objectMapper and force an IOException
+        // (JsonProcessingException)
+        java.lang.reflect.Field mapperField =
+                LiveViewService.class.getDeclaredField("objectMapper");
+        mapperField.setAccessible(true);
+        com.fasterxml.jackson.databind.ObjectMapper originalMapper =
+                (com.fasterxml.jackson.databind.ObjectMapper) mapperField.get(webSocketService);
+
+        com.fasterxml.jackson.databind.ObjectMapper mockMapper =
+                Mockito.mock(com.fasterxml.jackson.databind.ObjectMapper.class);
+        Mockito.when(mockMapper.writeValueAsString(Mockito.any()))
+                .thenThrow(
+                        new com.fasterxml.jackson.core.JsonProcessingException(
+                                "Test IOException") {});
+
+        mapperField.set(webSocketService, mockMapper);
+
+        try {
+            Long testEventId = 999L;
+            WebSocketConnection mockConnection = Mockito.mock(WebSocketConnection.class);
+
+            Event mockEvent = new Event();
+            mockEvent.id = testEventId;
+            mockEvent.setName("Test Exception Event");
+            EventLocation mockLocation = new EventLocation();
+            mockLocation.id = 1L;
+            mockEvent.setEventLocation(mockLocation);
+
+            Mockito.when(eventRepository.findById(testEventId)).thenReturn(mockEvent);
+            Mockito.when(reservationRepository.findByEventId(testEventId))
+                    .thenReturn(new java.util.ArrayList<>());
+
+            assertDoesNotThrow(
+                    () -> {
+                        webSocketService.registerConnection(testEventId, mockConnection);
+                    },
+                    "registerConnection should handle IOException without throwing it");
+
+            // Verify that writeValueAsString was indeed called
+            Mockito.verify(mockMapper).writeValueAsString(Mockito.any());
+        } finally {
+            // Restore original mapper
+            mapperField.set(webSocketService, originalMapper);
+        }
+    }
+
     private Reservation createTestReservation() {
         User user = new User();
         user.id = 1L;
