@@ -104,6 +104,16 @@ public class ReservationRepository implements PanacheRepository<Reservation> {
     }
 
     /**
+     * Finds reservations by their check-in codes.
+     *
+     * @param checkInCodes the list of check-in codes to search for
+     * @return a list containing the reservations found
+     */
+    public List<Reservation> findByCheckInCodeIn(List<String> checkInCodes) {
+        return find("checkInCode in ?1", checkInCodes).list();
+    }
+
+    /**
      * Finds a reservation by its ID and associated user ID and event ID.
      *
      * @param id the reservation ID to search for

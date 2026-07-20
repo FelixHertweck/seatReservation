@@ -1,0 +1,3 @@
+## 2026-07-20 - N+1 Query in CheckInService.getReservationInfos
+**Learning:** Resolving N+1 database queries safely requires maintaining identical exception order and state logic, particularly when users may request multiple instances of the same ID (or invalid IDs). Mapping batch result sets back to a Dictionary/Map before looping over the user's original list allows you to seamlessly eliminate the DB overhead while preserving exact behavior.
+**Action:** When migrating from loops to batch lookups, group/map the entities first, then iterate over the original request input to check state and validate rather than iterating over the returned result set directly.
