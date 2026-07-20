@@ -534,9 +534,10 @@ class CheckInServiceTest {
                 (io.quarkus.hibernate.orm.panache.PanacheQuery<Event>)
                         mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
         when(eq.stream()).thenReturn(Stream.of(e1, e2));
+        when(eq.list()).thenReturn(List.of(e1, e2));
         when(eventRepository.findAll()).thenReturn(eq);
-        when(eventRepository.isUserSupervisor(eq(10L), eq(1L))).thenReturn(true);
-        when(eventRepository.isUserSupervisor(eq(20L), eq(1L))).thenReturn(false);
+        when(eventRepository.findAuthorizedEvents(supervisor)).thenReturn(List.of(e1));
+
         List<de.felixhertweck.seatreservation.supervisor.dto.SupervisorEventResponseDTO> events =
                 checkInService.getAllEventsForSupervisor(supervisor);
         assertEquals(1, events.size());
