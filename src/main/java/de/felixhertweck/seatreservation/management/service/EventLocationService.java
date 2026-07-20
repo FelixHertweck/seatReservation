@@ -29,12 +29,12 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
-import de.felixhertweck.seatreservation.management.dto.AreaRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationResponseDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationUpdateDTO;
+import de.felixhertweck.seatreservation.management.dto.ImportAreaDto;
+import de.felixhertweck.seatreservation.management.dto.ImportMarkerDto;
 import de.felixhertweck.seatreservation.management.dto.ImportSeatDto;
-import de.felixhertweck.seatreservation.management.dto.MakerRequestDTO;
 import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
@@ -232,7 +232,7 @@ public class EventLocationService {
      * @return A list of EventLocationMarker entities
      */
     private List<EventLocationMarker> convertToMarkerEntities(
-            List<MakerRequestDTO> dtoMarkers, EventLocation eventLocation) {
+            List<ImportMarkerDto> dtoMarkers, EventLocation eventLocation) {
         if (dtoMarkers == null) {
             return new ArrayList<>();
         }
@@ -295,14 +295,14 @@ public class EventLocationService {
      * @return The resolved/created areas, in the order of {@code dtoAreas}; never {@code null}
      */
     private List<EventLocationArea> applyAreaDtos(
-            List<AreaRequestDTO> dtoAreas,
+            List<ImportAreaDto> dtoAreas,
             EventLocation eventLocation,
             Map<String, EventLocationArea> areasByName) {
         List<EventLocationArea> result = new ArrayList<>();
         if (dtoAreas == null) {
             return result;
         }
-        for (AreaRequestDTO areaDto : dtoAreas) {
+        for (ImportAreaDto areaDto : dtoAreas) {
             EventLocationArea area =
                     resolveOrCreateArea(areaDto.getName(), eventLocation, areasByName);
             if (area == null) {

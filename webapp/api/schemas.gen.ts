@@ -124,11 +124,11 @@ export const AreaDTOSchema = {
 
 export const AreaRequestDTOSchema = {
     type: 'object',
+    required: [
+        'name',
+        'eventLocationId'
+    ],
     properties: {
-        eventLocationId: {
-            type: 'integer',
-            format: 'int64'
-        },
         name: {
             type: 'string'
         },
@@ -137,11 +137,12 @@ export const AreaRequestDTOSchema = {
             items: {
                 $ref: '#/components/schemas/CoordinateDTO'
             }
+        },
+        eventLocationId: {
+            type: 'integer',
+            format: 'int64'
         }
-    },
-    required: [
-        'name'
-    ]
+    }
 } as const;
 
 export const AreaResponseDTOSchema = {
@@ -346,13 +347,13 @@ export const EventLocationRequestDTOSchema = {
         markers: {
             type: 'array',
             items: {
-                $ref: '#/components/schemas/MakerRequestDTO'
+                $ref: '#/components/schemas/ImportMarkerDto'
             }
         },
         areas: {
             type: 'array',
             items: {
-                $ref: '#/components/schemas/AreaRequestDTO'
+                $ref: '#/components/schemas/ImportAreaDto'
             }
         },
         seats: {
@@ -615,6 +616,40 @@ export const EventUserAllowancesDtoSchema = {
     }
 } as const;
 
+export const ImportAreaDtoSchema = {
+    type: 'object',
+    required: [
+        'name'
+    ],
+    properties: {
+        name: {
+            type: 'string'
+        },
+        boundary: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/CoordinateDTO'
+            }
+        }
+    }
+} as const;
+
+export const ImportMarkerDtoSchema = {
+    type: 'object',
+    required: [
+        'label',
+        'coordinate'
+    ],
+    properties: {
+        label: {
+            type: 'string'
+        },
+        coordinate: {
+            $ref: '#/components/schemas/CoordinateDTO'
+        }
+    }
+} as const;
+
 export const ImportSeatDtoSchema = {
     type: 'object',
     required: [
@@ -700,22 +735,23 @@ export const LoginRequestDTOSchema = {
 
 export const MakerRequestDTOSchema = {
     type: 'object',
+    required: [
+        'label',
+        'coordinate',
+        'eventLocationId'
+    ],
     properties: {
-        eventLocationId: {
-            type: 'integer',
-            format: 'int64'
-        },
         label: {
             type: 'string'
         },
         coordinate: {
             $ref: '#/components/schemas/CoordinateDTO'
+        },
+        eventLocationId: {
+            type: 'integer',
+            format: 'int64'
         }
-    },
-    required: [
-        'label',
-        'coordinate'
-    ]
+    }
 } as const;
 
 export const RegisterRequestDTOSchema = {

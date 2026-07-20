@@ -19,40 +19,30 @@
  */
 package de.felixhertweck.seatreservation.management.dto;
 
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 /**
- * Request body for the standalone {@code MarkerResource} CRUD endpoints, also used as the embedded
- * scaffold in {@link EventLocationRequestDTO} on create. {@code eventLocationId} is required for
- * the standalone resource and validated there; it stays null for the embedded create-time scaffold,
- * where the enclosing location does not exist yet.
+ * Request body for the standalone {@code MarkerResource} CRUD endpoints: an {@link ImportMarkerDto}
+ * plus the id of the location the marker belongs to.
+ *
+ * <p>The split exists so that {@code eventLocationId} can be declared required here while staying
+ * absent from the create-time scaffold, where the enclosing location does not exist yet. Marker
+ * fields themselves live on the superclass and are inherited, so adding one is a single edit.
  */
 @RegisterForReflection
-public class MakerRequestDTO {
+public class MakerRequestDTO extends ImportMarkerDto {
+
+    @NotNull(message = "EventLocation ID must not be null")
     private Long eventLocationId;
-
-    @NotNull(message = "Label must not be null")
-    private String label;
-
-    @NotNull(message = "Coordinate must not be null")
-    @Valid
-    private CoordinateDTO coordinate;
 
     public MakerRequestDTO() {}
 
-    public MakerRequestDTO(String label, Integer xCoordinate, Integer yCoordinate) {
-        this.label = label;
-        this.coordinate = new CoordinateDTO(xCoordinate, yCoordinate);
-    }
-
     public MakerRequestDTO(Long eventLocationId, String label, CoordinateDTO coordinate) {
+        super(label, coordinate);
         this.eventLocationId = eventLocationId;
-        this.label = label;
-        this.coordinate = coordinate;
     }
 
     public Long getEventLocationId() {
@@ -61,21 +51,5 @@ public class MakerRequestDTO {
 
     public void setEventLocationId(Long eventLocationId) {
         this.eventLocationId = eventLocationId;
-    }
-
-    public String getLabel() {
-        return label;
-    }
-
-    public CoordinateDTO getCoordinate() {
-        return coordinate;
-    }
-
-    public void setLabel(String label) {
-        this.label = label;
-    }
-
-    public void setCoordinate(CoordinateDTO coordinate) {
-        this.coordinate = coordinate;
     }
 }

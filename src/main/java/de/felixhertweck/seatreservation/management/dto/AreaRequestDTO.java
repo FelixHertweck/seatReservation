@@ -20,39 +20,30 @@
 package de.felixhertweck.seatreservation.management.dto;
 
 import java.util.List;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 /**
- * A named area, carrying an optional custom boundary polygon (ordered list of vertices). Used both
- * as the embedded scaffold in {@link EventLocationRequestDTO} on create and as the request body for
- * the standalone {@code AreaResource} CRUD endpoints. {@code eventLocationId} is required for the
- * standalone resource and validated there; it stays null for the embedded create-time scaffold,
- * where the enclosing location does not exist yet.
+ * Request body for the standalone {@code AreaResource} CRUD endpoints: an {@link ImportAreaDto}
+ * plus the id of the location the area belongs to.
+ *
+ * <p>The split exists so that {@code eventLocationId} can be declared required here while staying
+ * absent from the create-time scaffold, where the enclosing location does not exist yet. Area
+ * fields themselves live on the superclass and are inherited, so adding one is a single edit.
  */
 @RegisterForReflection
-public class AreaRequestDTO {
+public class AreaRequestDTO extends ImportAreaDto {
+
+    @NotNull(message = "EventLocation ID must not be null")
     private Long eventLocationId;
-
-    @NotNull(message = "Area name must not be null")
-    private String name;
-
-    private List<@Valid CoordinateDTO> boundary;
 
     public AreaRequestDTO() {}
 
-    public AreaRequestDTO(String name, List<CoordinateDTO> boundary) {
-        this.name = name;
-        this.boundary = boundary;
-    }
-
     public AreaRequestDTO(Long eventLocationId, String name, List<CoordinateDTO> boundary) {
+        super(name, boundary);
         this.eventLocationId = eventLocationId;
-        this.name = name;
-        this.boundary = boundary;
     }
 
     public Long getEventLocationId() {
@@ -61,21 +52,5 @@ public class AreaRequestDTO {
 
     public void setEventLocationId(Long eventLocationId) {
         this.eventLocationId = eventLocationId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public List<CoordinateDTO> getBoundary() {
-        return boundary;
-    }
-
-    public void setBoundary(List<CoordinateDTO> boundary) {
-        this.boundary = boundary;
     }
 }
