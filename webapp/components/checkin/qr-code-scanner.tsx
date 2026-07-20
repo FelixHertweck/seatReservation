@@ -130,7 +130,7 @@ export function QrCodeScanner({
       // Expected format: userId;eventId;token1,token2,...
       const parts = data.split(";");
       if (parts.length !== 3) {
-        throw new Error("Invalid format");
+        throw new Error(t("checkin.error.invalidQrFormat"));
       }
 
       const userId = parts[0];
@@ -140,9 +140,8 @@ export function QrCodeScanner({
       try {
         BigInt(userId);
         BigInt(eventId);
-      } catch (e) {
-        console.log("Error parsing QR code data:", e);
-        throw new Error("Invalid user ID or event ID");
+      } catch {
+        throw new Error(t("checkin.error.invalidUserOrEventId"));
       }
 
       const checkInTokens = parts[2]
@@ -154,7 +153,13 @@ export function QrCodeScanner({
       // Stop scanning after successful scan
       stopScanning();
     } catch (error) {
-      console.log("Error parsing QR code data:", error);
+      console.error("Error parsing QR code data:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : t("checkin.error.scanningFailed"),
+        { id: "qr-scan-error" },
+      );
     }
   };
 
