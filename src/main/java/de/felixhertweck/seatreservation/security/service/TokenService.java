@@ -103,6 +103,7 @@ public class TokenService {
                 .maxAge((int) (expirationMinutes * 60))
                 .httpOnly(true)
                 .secure(cookieSecure)
+                .sameSite(NewCookie.SameSite.STRICT)
                 .build();
     }
 
@@ -206,6 +207,7 @@ public class TokenService {
                 .maxAge(maxAge)
                 .httpOnly(true)
                 .secure(cookieSecure)
+                .sameSite(NewCookie.SameSite.STRICT)
                 .build();
     }
 
@@ -223,6 +225,7 @@ public class TokenService {
                 .maxAge(0)
                 .httpOnly(httpOnly)
                 .secure(cookieSecure)
+                .sameSite(NewCookie.SameSite.STRICT)
                 .build();
     }
 
@@ -244,6 +247,7 @@ public class TokenService {
                 .path("/")
                 .maxAge(maxAge)
                 .httpOnly(false)
+                .sameSite(NewCookie.SameSite.STRICT)
                 .build();
     }
 
