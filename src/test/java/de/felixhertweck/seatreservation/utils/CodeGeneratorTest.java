@@ -43,14 +43,14 @@ class CodeGeneratorTest {
     @Test
     void generateRandomCode_ReturnsCorrectLength() {
         String code = CodeGenerator.generateRandomCode();
-        assertEquals(4, code.length(), "Generated code should have length 4");
+        assertEquals(8, code.length(), "Generated code should have length 8");
     }
 
     @Test
     void generateRandomCode_ContainsOnlyAllowedCharacters() {
         String code = CodeGenerator.generateRandomCode();
         assertTrue(
-                code.matches("^[A-Z0-9]{4}$"),
+                code.matches("^[A-Z0-9]{8}$"),
                 "Generated code should only contain uppercase letters and digits, got: " + code);
     }
 
@@ -62,7 +62,7 @@ class CodeGeneratorTest {
             codes.add(CodeGenerator.generateRandomCode());
         }
 
-        // With 36^4 = 1,679,616 possible combinations,
+        // With 36^8 = 2,821,109,907,456 possible combinations,
         // the probability of collisions in 1000 samples is very low.
         // We expect almost all to be unique.
         assertTrue(
