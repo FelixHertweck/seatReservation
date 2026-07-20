@@ -119,6 +119,44 @@ class EventLocationAreaTest {
     }
 
     @Test
+    void testEquals_SameNameInDifferentLocations_NotEqual() {
+        EventLocation locationA = new EventLocation();
+        locationA.id = 1L;
+        EventLocation locationB = new EventLocation();
+        locationB.id = 2L;
+
+        EventLocationArea area1 = new EventLocationArea("Parkett");
+        area1.setEventLocation(locationA);
+        EventLocationArea area2 = new EventLocationArea("Parkett");
+        area2.setEventLocation(locationB);
+
+        assertNotEquals(area1, area2);
+    }
+
+    @Test
+    void testEquals_PersistedComparesById() {
+        EventLocationArea area1 = new EventLocationArea("Parkett");
+        area1.id = 42L;
+        // Differs in every other field: once persisted, only the id decides.
+        EventLocationArea area2 = new EventLocationArea("Balkon");
+        area2.id = 42L;
+        area2.setBoundary(List.of(new Coordinate(1, 2)));
+
+        assertEquals(area1, area2);
+        assertEquals(area1.hashCode(), area2.hashCode());
+    }
+
+    @Test
+    void testEquals_DifferentIds_NotEqual() {
+        EventLocationArea area1 = new EventLocationArea("Parkett");
+        area1.id = 1L;
+        EventLocationArea area2 = new EventLocationArea("Parkett");
+        area2.id = 2L;
+
+        assertNotEquals(area1, area2);
+    }
+
+    @Test
     void testToString() {
         EventLocationArea area = new EventLocationArea("Parkett");
 
@@ -126,8 +164,11 @@ class EventLocationAreaTest {
 
         assertTrue(toString.contains("EventLocationArea"));
         assertTrue(toString.contains("name='Parkett'"));
-        assertTrue(toString.contains("boundary="));
+        assertTrue(toString.contains("eventLocationId="));
         assertTrue(toString.contains("id="));
+        // boundary is lazy and toString() is reached from debug logging via Seat#toString(),
+        // so it must not be rendered: that would cost a query, or throw outside a session.
+        assertFalse(toString.contains("boundary="));
     }
 
     @Test

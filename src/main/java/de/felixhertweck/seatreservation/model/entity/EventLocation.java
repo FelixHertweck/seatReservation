@@ -25,6 +25,7 @@ import java.util.Objects;
 import jakarta.persistence.*;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Table(name = "eventlocations")
@@ -37,28 +38,26 @@ public class EventLocation extends PanacheEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private User manager;
 
+    // All four collections are lazy bags. Hibernate cannot join-fetch more than one bag in a
+    // single query (MultipleBagFetchException), so @BatchSize is what keeps listing several
+    // locations from degenerating into one query per location per collection: the collections of
+    // up to BATCH_SIZE locations are loaded in a single IN-query each.
+    private static final int BATCH_SIZE = 32;
+
     @OneToMany(mappedBy = "location", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = BATCH_SIZE)
     private List<Seat> seats = new ArrayList<>();
 
-    @OneToMany(
-            mappedBy = "eventLocation",
-            fetch = FetchType.EAGER,
-            cascade = CascadeType.ALL,
-            orphanRemoval = true)
+    @OneToMany(mappedBy = "eventLocation", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = BATCH_SIZE)
     private List<EventLocationMarker> markers = new ArrayList<>();
 
-    @OneToMany(
-            mappedBy = "eventLocation",
-            fetch = FetchType.EAGER,
-            cascade = CascadeType.ALL,
-            orphanRemoval = true)
+    @OneToMany(mappedBy = "eventLocation", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = BATCH_SIZE)
     private List<EventLocationArea> areas = new ArrayList<>();
 
-    @OneToMany(
-            mappedBy = "eventLocation",
-            fetch = FetchType.EAGER,
-            cascade = CascadeType.ALL,
-            orphanRemoval = true)
+    @OneToMany(mappedBy = "eventLocation", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = BATCH_SIZE)
     private List<EventLocationEntrance> entrances = new ArrayList<>();
 
     public EventLocation() {}
