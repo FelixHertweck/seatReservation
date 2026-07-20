@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.email.service;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -67,7 +68,7 @@ public class EmailSeatMapService {
             User user, Event event, List<Reservation> newReservations) {
         // Generate secure unique token
         String token =
-                java.util.Base64.getUrlEncoder()
+                Base64.getUrlEncoder()
                         .withoutPadding()
                         .encodeToString(SecurityUtils.generateRandomBytes(32));
 
