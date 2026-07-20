@@ -69,4 +69,18 @@ public class EventRepository implements PanacheRepository<Event> {
                 .firstResultOptional()
                 .isPresent();
     }
+
+    /**
+     * Finds all events authorized for a specific user (manager or supervisor).
+     *
+     * @param user the user to search for
+     * @return a list of events where the user is either a manager or a supervisor
+     */
+    public List<Event> findAuthorizedEvents(User user) {
+        return find(
+                        "SELECT DISTINCT e FROM Event e LEFT JOIN e.supervisors s WHERE e.manager ="
+                                + " ?1 OR s = ?1",
+                        user)
+                .list();
+    }
 }

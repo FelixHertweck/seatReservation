@@ -240,8 +240,15 @@ public class CheckInService {
                     .map(SupervisorEventResponseDTO::new)
                     .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
         }
-        return eventRepository.findAll().stream()
-                .filter(e -> isAuthorizedForEvent(currentUser, e.getId()))
+
+        boolean isAdmin =
+                currentUser.getRoles() != null && currentUser.getRoles().contains(Roles.ADMIN);
+        List<Event> authorizedEvents =
+                isAdmin
+                        ? eventRepository.findAll().list()
+                        : eventRepository.findAuthorizedEvents(currentUser);
+
+        return authorizedEvents.stream()
                 .map(SupervisorEventResponseDTO::new)
                 .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
     }
