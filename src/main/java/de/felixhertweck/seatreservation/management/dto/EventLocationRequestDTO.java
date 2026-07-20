@@ -37,10 +37,10 @@ public class EventLocationRequestDTO {
     private Integer capacity;
 
     /** Optional markers to scaffold together with the location. */
-    private List<@Valid MakerRequestDTO> markers;
+    private List<@Valid ImportMarkerDto> markers;
 
     /** Optional areas to scaffold together with the location. */
-    private List<@Valid AreaRequestDTO> areas;
+    private List<@Valid ImportAreaDto> areas;
 
     /** Optional seats to scaffold together with the location. */
     private List<@Valid ImportSeatDto> seats;
@@ -69,19 +69,19 @@ public class EventLocationRequestDTO {
         this.capacity = capacity;
     }
 
-    public List<MakerRequestDTO> getmarkers() {
+    public List<ImportMarkerDto> getmarkers() {
         return markers;
     }
 
-    public void setmarkers(List<MakerRequestDTO> markers) {
+    public void setmarkers(List<ImportMarkerDto> markers) {
         this.markers = markers;
     }
 
-    public List<AreaRequestDTO> getAreas() {
+    public List<ImportAreaDto> getAreas() {
         return areas;
     }
 
-    public void setAreas(List<AreaRequestDTO> areas) {
+    public void setAreas(List<ImportAreaDto> areas) {
         this.areas = areas;
     }
 

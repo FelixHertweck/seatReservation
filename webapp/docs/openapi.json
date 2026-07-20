@@ -108,11 +108,8 @@
       },
       "AreaRequestDTO" : {
         "type" : "object",
+        "required" : [ "name", "eventLocationId" ],
         "properties" : {
-          "eventLocationId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
           "name" : {
             "type" : "string"
           },
@@ -121,9 +118,12 @@
             "items" : {
               "$ref" : "#/components/schemas/CoordinateDTO"
             }
+          },
+          "eventLocationId" : {
+            "type" : "integer",
+            "format" : "int64"
           }
-        },
-        "required" : [ "name" ]
+        }
       },
       "AreaResponseDTO" : {
         "type" : "object",
@@ -305,13 +305,13 @@
           "markers" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/MakerRequestDTO"
+              "$ref" : "#/components/schemas/ImportMarkerDto"
             }
           },
           "areas" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/AreaRequestDTO"
+              "$ref" : "#/components/schemas/ImportAreaDto"
             }
           },
           "seats" : {
@@ -545,6 +545,33 @@
           }
         }
       },
+      "ImportAreaDto" : {
+        "type" : "object",
+        "required" : [ "name" ],
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "boundary" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CoordinateDTO"
+            }
+          }
+        }
+      },
+      "ImportMarkerDto" : {
+        "type" : "object",
+        "required" : [ "label", "coordinate" ],
+        "properties" : {
+          "label" : {
+            "type" : "string"
+          },
+          "coordinate" : {
+            "$ref" : "#/components/schemas/CoordinateDTO"
+          }
+        }
+      },
       "ImportSeatDto" : {
         "type" : "object",
         "required" : [ "seatNumber", "coordinate" ],
@@ -617,19 +644,19 @@
       },
       "MakerRequestDTO" : {
         "type" : "object",
+        "required" : [ "label", "coordinate", "eventLocationId" ],
         "properties" : {
-          "eventLocationId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
           "label" : {
             "type" : "string"
           },
           "coordinate" : {
             "$ref" : "#/components/schemas/CoordinateDTO"
+          },
+          "eventLocationId" : {
+            "type" : "integer",
+            "format" : "int64"
           }
-        },
-        "required" : [ "label", "coordinate" ]
+        }
       },
       "RegisterRequestDTO" : {
         "type" : "object",

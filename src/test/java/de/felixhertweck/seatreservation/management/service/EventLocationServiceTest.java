@@ -39,12 +39,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
-import de.felixhertweck.seatreservation.management.dto.AreaRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationResponseDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationUpdateDTO;
+import de.felixhertweck.seatreservation.management.dto.ImportAreaDto;
+import de.felixhertweck.seatreservation.management.dto.ImportMarkerDto;
 import de.felixhertweck.seatreservation.management.dto.ImportSeatDto;
-import de.felixhertweck.seatreservation.management.dto.MakerRequestDTO;
 import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
@@ -411,11 +411,11 @@ public class EventLocationServiceTest {
         dto.setAddress("Music Street 1");
         dto.setCapacity(300);
 
-        List<MakerRequestDTO> markers =
+        List<ImportMarkerDto> markers =
                 List.of(
-                        new MakerRequestDTO("Main Entrance", 100, 200),
-                        new MakerRequestDTO("Emergency Exit", 50, 250),
-                        new MakerRequestDTO("Stage", 150, 50));
+                        new ImportMarkerDto("Main Entrance", 100, 200),
+                        new ImportMarkerDto("Emergency Exit", 50, 250),
+                        new ImportMarkerDto("Stage", 150, 50));
         dto.setmarkers(markers);
 
         doAnswer(
@@ -514,11 +514,11 @@ public class EventLocationServiceTest {
         dto.setAddress("Test Street");
         dto.setCapacity(100);
 
-        List<MakerRequestDTO> markerDtos =
+        List<ImportMarkerDto> markerDtos =
                 List.of(
-                        new MakerRequestDTO("Test Marker 1", 0, 0),
-                        new MakerRequestDTO("Test Marker 2", -50, -100),
-                        new MakerRequestDTO("Test Marker 3", Integer.MAX_VALUE, Integer.MIN_VALUE));
+                        new ImportMarkerDto("Test Marker 1", 0, 0),
+                        new ImportMarkerDto("Test Marker 2", -50, -100),
+                        new ImportMarkerDto("Test Marker 3", Integer.MAX_VALUE, Integer.MIN_VALUE));
         dto.setmarkers(markerDtos);
 
         doAnswer(
@@ -552,15 +552,15 @@ public class EventLocationServiceTest {
         dto.setAddress("Music Street 1");
         dto.setCapacity(300);
 
-        List<AreaRequestDTO> areas =
+        List<ImportAreaDto> areas =
                 List.of(
-                        new AreaRequestDTO(
+                        new ImportAreaDto(
                                 "Parkett",
                                 List.of(
                                         new CoordinateDTO(1, 1),
                                         new CoordinateDTO(5, 1),
                                         new CoordinateDTO(5, 5))),
-                        new AreaRequestDTO(
+                        new ImportAreaDto(
                                 "Balkon",
                                 List.of(new CoordinateDTO(1, 10), new CoordinateDTO(5, 10))));
         dto.setAreas(areas);

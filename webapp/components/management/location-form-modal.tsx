@@ -18,7 +18,7 @@ import { Plus, Trash2 } from "lucide-react";
 import type {
   EventLocationResponseDto,
   EventLocationRequestDto,
-  MakerRequestDto,
+  ImportMarkerDto,
 } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 
@@ -42,7 +42,7 @@ export function LocationFormModal({
     address: location?.address || "",
     capacity: location?.capacity?.toString() || "",
   });
-  const [markers, setMarkers] = useState<MakerRequestDto[]>(
+  const [markers, setMarkers] = useState<ImportMarkerDto[]>(
     location?.markers?.map((m) => ({
       label: m.label || "",
       coordinate: {

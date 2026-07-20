@@ -34,9 +34,9 @@ export type AreaDto = {
 };
 
 export type AreaRequestDto = {
-    eventLocationId?: bigint;
     name: string;
     boundary?: Array<CoordinateDto>;
+    eventLocationId: bigint;
 };
 
 export type AreaResponseDto = {
@@ -96,8 +96,8 @@ export type EventLocationRequestDto = {
     name: string;
     address: string;
     capacity: number;
-    markers?: Array<MakerRequestDto>;
-    areas?: Array<AreaRequestDto>;
+    markers?: Array<ImportMarkerDto>;
+    areas?: Array<ImportAreaDto>;
     seats?: Array<ImportSeatDto>;
 };
 
@@ -167,6 +167,16 @@ export type EventUserAllowancesDto = {
     reservationsAllowedCount?: number;
 };
 
+export type ImportAreaDto = {
+    name: string;
+    boundary?: Array<CoordinateDto>;
+};
+
+export type ImportMarkerDto = {
+    label: string;
+    coordinate: CoordinateDto;
+};
+
 export type ImportSeatDto = {
     seatNumber: string;
     coordinate: CoordinateDto;
@@ -194,9 +204,9 @@ export type LoginRequestDto = {
 };
 
 export type MakerRequestDto = {
-    eventLocationId?: bigint;
     label: string;
     coordinate: CoordinateDto;
+    eventLocationId: bigint;
 };
 
 export type RegisterRequestDto = {
