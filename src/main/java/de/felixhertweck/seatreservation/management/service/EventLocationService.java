@@ -23,8 +23,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -34,7 +32,7 @@ import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
 import de.felixhertweck.seatreservation.management.dto.AreaRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationResponseDTO;
-import de.felixhertweck.seatreservation.management.dto.ImportEventLocationDto;
+import de.felixhertweck.seatreservation.management.dto.EventLocationUpdateDTO;
 import de.felixhertweck.seatreservation.management.dto.ImportSeatDto;
 import de.felixhertweck.seatreservation.management.dto.MakerRequestDTO;
 import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
@@ -129,8 +127,37 @@ public class EventLocationService {
                 new EventLocation(dto.getName(), dto.getAddress(), manager, dto.getCapacity());
         // Set markers after location is created to avoid circular dependency
         location.setMarkers(convertToMarkerEntities(dto.getmarkers(), location));
-        applyAreaDtos(dto.getAreas(), location, new LinkedHashMap<>());
+        Map<String, EventLocationArea> areasByName = new LinkedHashMap<>();
+        applyAreaDtos(dto.getAreas(), location, areasByName);
         eventLocationRepository.persist(location);
+
+        List<ImportSeatDto> seatDtos = dto.getSeats();
+        if (seatDtos != null) {
+            Map<String, EventLocationEntrance> entrancesByName = new LinkedHashMap<>();
+            List<Seat> seats =
+                    seatDtos.stream()
+                            .map(
+                                    seatDto -> {
+                                        Seat seat = new Seat();
+                                        seat.setSeatNumber(seatDto.getSeatNumber());
+                                        seat.setCoordinate(seatDto.getCoordinate().toEntity());
+                                        seat.setSeatRow(seatDto.getSeatRow());
+                                        seat.setEntrance(
+                                                resolveOrCreateEntrance(
+                                                        seatDto.getEntrance(),
+                                                        location,
+                                                        entrancesByName));
+                                        seat.setArea(
+                                                resolveOrCreateArea(
+                                                        seatDto.getArea(), location, areasByName));
+                                        seat.setLocation(location);
+                                        seatRepository.persist(seat);
+                                        return seat;
+                                    })
+                            .toList();
+            location.setSeats(seats);
+        }
+
         LOG.infof(
                 "Event location '%s' (ID: %d) created successfully by manager: %s (ID: %d)",
                 location.getName(), location.getId(), manager.id, manager.getId());
@@ -149,7 +176,7 @@ public class EventLocationService {
      */
     @Transactional
     public EventLocationResponseDTO updateEventLocation(
-            Long id, EventLocationRequestDTO dto, User manager)
+            Long id, EventLocationUpdateDTO dto, User manager)
             throws IllegalArgumentException, SecurityException {
         LOG.debugf(
                 "Attempting to update event location with ID: %d for manager: %s (ID: %d)",
@@ -190,105 +217,11 @@ public class EventLocationService {
         location.setAddress(dto.getAddress());
         location.setCapacity(dto.getCapacity());
 
-        updateMarkers(location, dto);
-        updateAreas(location, dto);
-
         eventLocationRepository.persist(location);
         LOG.infof(
                 "Event location '%s' (ID: %d) updated successfully by manager: %s (ID: %d)",
                 location.getName(), location.getId(), manager.id, manager.getId());
         return new EventLocationResponseDTO(location);
-    }
-
-    /**
-     * Replaces an event location's markers with the ones from {@code dto}, handling the case where
-     * the current collection is immutable. A null/omitted {@code dto.getmarkers()} clears all
-     * existing markers.
-     *
-     * @param location The event location whose markers are replaced
-     * @param dto The request DTO carrying the new markers
-     */
-    private void updateMarkers(EventLocation location, EventLocationRequestDTO dto) {
-        List<EventLocationMarker> newMarkersList = new ArrayList<>();
-        if (dto.getmarkers() != null) {
-            newMarkersList.addAll(convertToMarkerEntities(dto.getmarkers(), location));
-        }
-
-        List<EventLocationMarker> currentMarkers = location.getMarkers();
-        try {
-            currentMarkers.clear();
-            currentMarkers.addAll(newMarkersList);
-        } catch (UnsupportedOperationException e) {
-            // If immutable, replace with new mutable list
-            location.setMarkers(newMarkersList);
-        }
-    }
-
-    /**
-     * Upserts an event location's areas by name from {@code dto}, never dropping an area still
-     * referenced by one of the location's seats (its FK would otherwise be orphaned), even if the
-     * client omitted it from this request.
-     *
-     * @param location The event location whose areas are updated
-     * @param dto The request DTO carrying the new areas
-     */
-    private void updateAreas(EventLocation location, EventLocationRequestDTO dto) {
-        Set<Long> areaIdsInUseBySeats = collectAreaIdsInUseBySeats(location);
-        List<EventLocationArea> existingAreasSnapshot = new ArrayList<>(location.getAreas());
-
-        List<EventLocationArea> newAreasList =
-                applyAreaDtos(dto.getAreas(), location, new LinkedHashMap<>());
-        retainAreasStillReferencedBySeats(newAreasList, existingAreasSnapshot, areaIdsInUseBySeats);
-
-        List<EventLocationArea> currentAreas = location.getAreas();
-        try {
-            currentAreas.clear();
-            currentAreas.addAll(newAreasList);
-        } catch (UnsupportedOperationException e) {
-            location.setAreas(newAreasList);
-        }
-    }
-
-    /**
-     * Collects the ids of all {@link EventLocationArea}s referenced by at least one of the
-     * location's seats.
-     *
-     * @param location The event location whose seats are inspected
-     * @return The set of area ids currently in use; never {@code null}
-     */
-    private Set<Long> collectAreaIdsInUseBySeats(EventLocation location) {
-        return location.getSeats().stream()
-                .map(Seat::getArea)
-                .filter(Objects::nonNull)
-                .map(area -> area.id)
-                .collect(Collectors.toSet());
-    }
-
-    /**
-     * Re-adds any area from {@code existingAreasSnapshot} to {@code newAreasList} that is still
-     * referenced by a seat ({@code areaIdsInUseBySeats}) but was not included in the new list,
-     * preventing seats from being left with a dangling area reference.
-     *
-     * @param newAreasList The areas resolved from the request; mutated in place
-     * @param existingAreasSnapshot The areas the location had before this update
-     * @param areaIdsInUseBySeats The ids of areas currently referenced by a seat
-     */
-    private void retainAreasStillReferencedBySeats(
-            List<EventLocationArea> newAreasList,
-            List<EventLocationArea> existingAreasSnapshot,
-            Set<Long> areaIdsInUseBySeats) {
-        Set<Long> includedAreaIds =
-                newAreasList.stream()
-                        .map(area -> area.id)
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toSet());
-        for (EventLocationArea existing : existingAreasSnapshot) {
-            if (existing.id != null
-                    && areaIdsInUseBySeats.contains(existing.id)
-                    && !includedAreaIds.contains(existing.id)) {
-                newAreasList.add(existing);
-            }
-        }
     }
 
     /**
@@ -468,151 +401,5 @@ public class EventLocationService {
             eventLocationRepository.delete(location);
         }
         LOG.infof("Event locations %s deleted successfully by manager: %s", ids, manager.id);
-    }
-
-    /**
-     * Imports a complete EventLocation with its seats from an import DTO. This method creates a new
-     * EventLocation and optionally imports associated seats in a single transaction. The
-     * authenticated user will be assigned as the manager of the new EventLocation.
-     *
-     * @param dto The ImportEventLocationDto containing the EventLocation details and optional seat
-     *     data.
-     * @param manager The currently authenticated user who will become the manager of the
-     *     EventLocation.
-     * @return A DTO representing the newly imported EventLocation with its seats.
-     */
-    @Transactional
-    public EventLocationResponseDTO importEventLocation(ImportEventLocationDto dto, User manager) {
-        LOG.debugf(
-                "Importing event location: %s by manager: %s (ID: %d)",
-                dto, manager.id, manager.getId());
-
-        // Validate input data
-        if (dto.getName() == null
-                || dto.getName().trim().isEmpty()
-                || dto.getAddress() == null
-                || dto.getAddress().trim().isEmpty()
-                || dto.getCapacity() <= 0) {
-            LOG.warnf(
-                    "Invalid EventLocation data provided for import by manager: %s (ID: %d)",
-                    manager.id, manager.getId());
-            throw new IllegalArgumentException("Invalid EventLocation data provided.");
-        }
-
-        EventLocation location = new EventLocation();
-        location.setName(dto.getName());
-        location.setAddress(dto.getAddress());
-        location.setCapacity(dto.getCapacity());
-        location.setManager(manager);
-        location.setMarkers(convertToMarkerEntities(dto.getMarkers(), location));
-        Map<String, EventLocationArea> areasByName = new LinkedHashMap<>();
-        applyAreaDtos(dto.getAreas(), location, areasByName);
-        Map<String, EventLocationEntrance> entrancesByName = new LinkedHashMap<>();
-
-        eventLocationRepository.persist(location);
-
-        List<ImportSeatDto> seatDtos = dto.getSeats();
-        if (seatDtos != null) {
-            List<Seat> seats =
-                    seatDtos.stream()
-                            .map(
-                                    seatDto -> {
-                                        Seat seat = new Seat();
-                                        seat.setSeatNumber(seatDto.getSeatNumber());
-                                        seat.setCoordinate(seatDto.getCoordinate().toEntity());
-                                        seat.setSeatRow(seatDto.getSeatRow());
-                                        seat.setEntrance(
-                                                resolveOrCreateEntrance(
-                                                        seatDto.getEntrance(),
-                                                        location,
-                                                        entrancesByName));
-                                        seat.setArea(
-                                                resolveOrCreateArea(
-                                                        seatDto.getArea(), location, areasByName));
-                                        seat.setLocation(location);
-                                        seatRepository.persist(seat);
-
-                                        return seat;
-                                    })
-                            .collect(Collectors.toList());
-            location.setSeats(seats);
-        }
-
-        LOG.infof(
-                "Event location '%s' (ID: %d) imported successfully by manager: %s (ID: %d)",
-                location.getName(), location.getId(), manager.id, manager.getId());
-        return new EventLocationResponseDTO(location);
-    }
-
-    /**
-     * Imports seats to an existing EventLocation. This method allows adding multiple seats to an
-     * event location. The import is only allowed if the currently authenticated user is the manager
-     * of the EventLocation or has the ADMIN role.
-     *
-     * @param id The ID of the EventLocation to which seats should be imported.
-     * @param seats A set of ImportSeatDto objects containing the seat details to be imported.
-     * @param manager The currently authenticated user attempting to import seats.
-     * @return A DTO representing the updated EventLocation with the newly imported seats.
-     * @throws EventLocationNotFoundException If the EventLocation with the specified ID is not
-     *     found.
-     * @throws SecurityException If the user is not authorized to import seats to this
-     *     EventLocation.
-     */
-    @Transactional
-    public EventLocationResponseDTO importSeatsToEventLocation(
-            Long id, Set<ImportSeatDto> seats, User manager)
-            throws IllegalArgumentException, SecurityException {
-        LOG.debugf(
-                "Importing seats to event location with ID: %d by manager: %s (ID: %d)",
-                id, manager.id, manager.getId());
-        EventLocation location =
-                eventLocationRepository
-                        .findByIdOptional(id)
-                        .orElseThrow(
-                                () -> {
-                                    LOG.warnf(
-                                            "EventLocation with ID %d not found for seat import by"
-                                                    + " manager: %s (ID: %d)",
-                                            id, manager.id, manager.getId());
-                                    return new EventLocationNotFoundException(
-                                            "EventLocation with id " + id + " not found");
-                                });
-
-        // Check if manager has rights or user is admin
-        try {
-            validateManagerPermission(location, manager);
-        } catch (SecurityException e) {
-            LOG.warnf(
-                    "user ID: %d (ID: %d) is not authorized to import seats to event location with"
-                            + " ID %d.",
-                    manager.id, manager.getId(), id);
-            throw e;
-        }
-
-        List<Seat> newSeats = new ArrayList<>();
-        Map<String, EventLocationArea> areasByName = new LinkedHashMap<>();
-        Map<String, EventLocationEntrance> entrancesByName = new LinkedHashMap<>();
-
-        seats.forEach(
-                seat -> {
-                    LOG.debugf(
-                            "Importing seat: %s to event location with ID: %d by manager: %s (ID:"
-                                    + " %d)",
-                            seat, id, manager.id, manager.getId());
-                    Seat newSeat = new Seat();
-                    newSeat.setSeatNumber(seat.getSeatNumber());
-                    newSeat.setCoordinate(seat.getCoordinate().toEntity());
-                    newSeat.setSeatRow(seat.getSeatRow());
-                    newSeat.setEntrance(
-                            resolveOrCreateEntrance(seat.getEntrance(), location, entrancesByName));
-                    newSeat.setArea(resolveOrCreateArea(seat.getArea(), location, areasByName));
-                    newSeat.setLocation(location);
-                    seatRepository.persist(newSeat);
-                    newSeats.add(newSeat);
-                });
-
-        location.getSeats().addAll(newSeats);
-
-        return new EventLocationResponseDTO(location);
     }
 }

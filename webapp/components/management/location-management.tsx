@@ -36,8 +36,6 @@ import { TruncatedCell } from "@/components/common/truncated-cell";
 import type {
   EventLocationResponseDto,
   EventLocationRequestDto,
-  ImportEventLocationDto,
-  ImportSeatDto,
   SeatDto,
 } from "@/api";
 import { customSerializer } from "@/lib/jsonBodySerializer";
@@ -57,11 +55,7 @@ export interface LocationManagementProps {
   ) => Promise<EventLocationResponseDto>;
   deleteLocation: (ids: bigint[]) => Promise<unknown>;
   importLocationWithSeats: (
-    data: ImportEventLocationDto,
-  ) => Promise<EventLocationResponseDto>;
-  importSeats: (
-    seats: ImportSeatDto[],
-    locationId: string,
+    data: EventLocationRequestDto,
   ) => Promise<EventLocationResponseDto>;
   onNavigateToSeats?: (locationId: bigint) => void;
   initialFilter?: Record<string, string>;
@@ -74,7 +68,6 @@ export function LocationManagement({
   updateLocation,
   deleteLocation,
   importLocationWithSeats,
-  importSeats,
   seats: seatDtos,
   onNavigateToSeats,
   initialFilter = {},
@@ -175,15 +168,6 @@ export function LocationManagement({
   const handleSeatsClick = (locationId: bigint) => {
     if (onNavigateToSeats) {
       onNavigateToSeats(locationId);
-    }
-  };
-
-  const handleImportSeats = async (
-    seats: ImportSeatDto[],
-    locationId: string,
-  ) => {
-    if (importSeats) {
-      await importSeats(seats, locationId);
     }
   };
 
@@ -701,9 +685,7 @@ export function LocationManagement({
         <LocationImportModal
           isOpen={isImportModalOpen}
           onClose={() => setIsImportModalOpen(false)}
-          locations={locations}
           onImportLocation={importLocationWithSeats}
-          onImportSeats={handleImportSeats}
         />
       )}
     </Card>

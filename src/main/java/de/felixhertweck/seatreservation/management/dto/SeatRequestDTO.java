@@ -41,9 +41,9 @@ public class SeatRequestDTO {
     @NotNull(message = "Row must not be null")
     private String seatRow;
 
-    @Nullable private String entrance;
+    @Nullable private Long entranceId;
 
-    @Nullable private String area;
+    @Nullable private Long areaId;
 
     public SeatRequestDTO() {
         // Default constructor for serialization/deserialization
@@ -55,14 +55,14 @@ public class SeatRequestDTO {
             Long eventLocationId,
             int xCoordinate,
             int yCoordinate,
-            String entrance,
-            String area) {
+            Long entranceId,
+            Long areaId) {
         this.seatNumber = seatNumber;
         this.eventLocationId = eventLocationId;
         this.coordinate = new CoordinateDTO(xCoordinate, yCoordinate);
         this.seatRow = seatRow;
-        this.entrance = entrance;
-        this.area = area;
+        this.entranceId = entranceId;
+        this.areaId = areaId;
     }
 
     public String getSeatNumber() {
@@ -97,19 +97,19 @@ public class SeatRequestDTO {
         this.seatRow = seatRow;
     }
 
-    public String getEntrance() {
-        return entrance;
+    public Long getEntranceId() {
+        return entranceId;
     }
 
-    public void setEntrance(String entrance) {
-        this.entrance = entrance;
+    public void setEntranceId(Long entranceId) {
+        this.entranceId = entranceId;
     }
 
-    public String getArea() {
-        return area;
+    public Long getAreaId() {
+        return areaId;
     }
 
-    public void setArea(String area) {
-        this.area = area;
+    public void setAreaId(Long areaId) {
+        this.areaId = areaId;
     }
 }

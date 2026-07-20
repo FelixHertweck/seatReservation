@@ -23,6 +23,8 @@ import java.util.List;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
+import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
+import de.felixhertweck.seatreservation.model.entity.EventLocationEntrance;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import org.jboss.logging.Logger;
@@ -43,5 +45,27 @@ public class SeatRepository implements PanacheRepository<Seat> {
         List<Seat> seats = find("location", eventLocation).list();
         LOG.debugf("Found %d seats for event location ID: %d", seats.size(), eventLocation.id);
         return seats;
+    }
+
+    /**
+     * Counts how many seats reference the given area, used to guard against deleting an area still
+     * in use.
+     *
+     * @param area the area to check
+     * @return the number of seats referencing the area
+     */
+    public long countByArea(EventLocationArea area) {
+        return count("area", area);
+    }
+
+    /**
+     * Counts how many seats reference the given entrance, used to guard against deleting an
+     * entrance still in use.
+     *
+     * @param entrance the entrance to check
+     * @return the number of seats referencing the entrance
+     */
+    public long countByEntrance(EventLocationEntrance entrance) {
+        return count("entrance", entrance);
     }
 }

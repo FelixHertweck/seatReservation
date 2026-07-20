@@ -23,6 +23,14 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
+/**
+ * Seat projection returned by every read endpoint.
+ *
+ * <p>Entrance and area are exposed both as {@code entrance}/{@code area} (the display name) and as
+ * {@code entranceId}/{@code areaId} (the FK). The names are deliberately kept: the seat map and the
+ * ticket/email rendering label seats without having to resolve the ids, while the ids are what the
+ * management forms submit back. Do not drop the names without adapting those consumers.
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @RegisterForReflection
 public record SeatDTO(
@@ -32,7 +40,9 @@ public record SeatDTO(
         Long locationId,
         CoordinateDTO coordinate,
         String entrance,
-        String area) {
+        String area,
+        Long entranceId,
+        Long areaId) {
     public SeatDTO(Seat seat) {
         this(
                 seat.getId(),
@@ -41,6 +51,8 @@ public record SeatDTO(
                 seat.getLocation().id,
                 new CoordinateDTO(seat.getCoordinate()),
                 seat.getEntrance() != null ? seat.getEntrance().getName() : null,
-                seat.getArea() != null ? seat.getArea().getName() : null);
+                seat.getArea() != null ? seat.getArea().getName() : null,
+                seat.getEntrance() != null ? seat.getEntrance().id : null,
+                seat.getArea() != null ? seat.getArea().id : null);
     }
 }

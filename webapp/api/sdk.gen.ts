@@ -2,8 +2,8 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import { getApiAuthWebauthnCredentialsResponseTransformer, getApiManagerEventlocationsResponseTransformer, getApiManagerEventsByIdResponseTransformer, getApiManagerEventsResponseTransformer, getApiManagerReservationAllowanceByIdResponseTransformer, getApiManagerReservationAllowanceEventByEventIdResponseTransformer, getApiManagerReservationAllowanceResponseTransformer, getApiManagerReservationsByIdResponseTransformer, getApiManagerReservationsEventByIdResponseTransformer, getApiManagerReservationsResponseTransformer, getApiManagerSeatsByIdResponseTransformer, getApiManagerSeatsResponseTransformer, getApiSupervisorCheckinEventsResponseTransformer, getApiUserEventsResponseTransformer, getApiUserLocationsResponseTransformer, getApiUserReservationsByIdResponseTransformer, getApiUserReservationsResponseTransformer, getApiUsersAdminResponseTransformer, getApiUsersManagerResponseTransformer, getApiUsersMeResponseTransformer, postApiManagerEventlocationsImportByIdResponseTransformer, postApiManagerEventlocationsImportResponseTransformer, postApiManagerEventlocationsResponseTransformer, postApiManagerEventsResponseTransformer, postApiManagerReservationAllowanceResponseTransformer, postApiManagerReservationsBlockResponseTransformer, postApiManagerReservationsResponseTransformer, postApiManagerSeatsResponseTransformer, postApiSupervisorCheckinInfoByUsernameResponseTransformer, postApiSupervisorCheckinInfoResponseTransformer, postApiUserReservationsResponseTransformer, postApiUsersAdminImportResponseTransformer, putApiManagerEventlocationsByIdResponseTransformer, putApiManagerEventsByIdResponseTransformer, putApiManagerReservationAllowanceResponseTransformer, putApiManagerSeatsByIdResponseTransformer, putApiUsersAdminByIdResponseTransformer, putApiUsersMeResponseTransformer } from './transformers.gen';
-import type { DeleteApiAuthWebauthnCredentialsByIdData, DeleteApiAuthWebauthnCredentialsByIdErrors, DeleteApiAuthWebauthnCredentialsByIdResponses, DeleteApiManagerEventlocationsData, DeleteApiManagerEventlocationsErrors, DeleteApiManagerEventlocationsResponses, DeleteApiManagerEventsData, DeleteApiManagerEventsErrors, DeleteApiManagerEventsResponses, DeleteApiManagerReservationAllowanceData, DeleteApiManagerReservationAllowanceErrors, DeleteApiManagerReservationAllowanceResponses, DeleteApiManagerReservationsData, DeleteApiManagerReservationsErrors, DeleteApiManagerReservationsResponses, DeleteApiManagerSeatsData, DeleteApiManagerSeatsErrors, DeleteApiManagerSeatsResponses, DeleteApiUserReservationsData, DeleteApiUserReservationsErrors, DeleteApiUserReservationsResponses, DeleteApiUsersAdminByIdData, DeleteApiUsersAdminByIdErrors, DeleteApiUsersAdminByIdResponses, GetApiAuthRegistrationStatusData, GetApiAuthRegistrationStatusResponses, GetApiAuthWebauthnCredentialsData, GetApiAuthWebauthnCredentialsErrors, GetApiAuthWebauthnCredentialsResponses, GetApiAuthWebauthnStatusData, GetApiAuthWebauthnStatusErrors, GetApiAuthWebauthnStatusResponses, GetApiEmailSeatmapData, GetApiEmailSeatmapResponses, GetApiManagerEventlocationsData, GetApiManagerEventlocationsErrors, GetApiManagerEventlocationsResponses, GetApiManagerEventsByIdData, GetApiManagerEventsByIdErrors, GetApiManagerEventsByIdResponses, GetApiManagerEventsData, GetApiManagerEventsErrors, GetApiManagerEventsResponses, GetApiManagerReservationAllowanceByIdData, GetApiManagerReservationAllowanceByIdErrors, GetApiManagerReservationAllowanceByIdResponses, GetApiManagerReservationAllowanceData, GetApiManagerReservationAllowanceErrors, GetApiManagerReservationAllowanceEventByEventIdData, GetApiManagerReservationAllowanceEventByEventIdErrors, GetApiManagerReservationAllowanceEventByEventIdResponses, GetApiManagerReservationAllowanceResponses, GetApiManagerReservationsByIdData, GetApiManagerReservationsByIdErrors, GetApiManagerReservationsByIdResponses, GetApiManagerReservationsData, GetApiManagerReservationsErrors, GetApiManagerReservationsEventByIdData, GetApiManagerReservationsEventByIdErrors, GetApiManagerReservationsEventByIdResponses, GetApiManagerReservationsExportByEventIdCsvData, GetApiManagerReservationsExportByEventIdCsvErrors, GetApiManagerReservationsExportByEventIdCsvResponses, GetApiManagerReservationsExportByEventIdPdfData, GetApiManagerReservationsExportByEventIdPdfErrors, GetApiManagerReservationsExportByEventIdPdfResponses, GetApiManagerReservationsResponses, GetApiManagerSeatsByIdData, GetApiManagerSeatsByIdErrors, GetApiManagerSeatsByIdResponses, GetApiManagerSeatsData, GetApiManagerSeatsErrors, GetApiManagerSeatsResponses, GetApiSupervisorCheckinEventsData, GetApiSupervisorCheckinEventsErrors, GetApiSupervisorCheckinEventsResponses, GetApiSupervisorCheckinUsernamesByEventIdData, GetApiSupervisorCheckinUsernamesByEventIdErrors, GetApiSupervisorCheckinUsernamesByEventIdResponses, GetApiUserEventsData, GetApiUserEventsErrors, GetApiUserEventsResponses, GetApiUserLocationsData, GetApiUserLocationsErrors, GetApiUserLocationsResponses, GetApiUserReservationsByIdData, GetApiUserReservationsByIdErrors, GetApiUserReservationsByIdResponses, GetApiUserReservationsData, GetApiUserReservationsErrors, GetApiUserReservationsResponses, GetApiUsersAdminData, GetApiUsersAdminErrors, GetApiUsersAdminResponses, GetApiUsersManagerData, GetApiUsersManagerErrors, GetApiUsersManagerResponses, GetApiUsersMeData, GetApiUsersMeErrors, GetApiUsersMeResponses, GetApiUsersRolesData, GetApiUsersRolesErrors, GetApiUsersRolesResponses, PostApiAuthLoginData, PostApiAuthLoginErrors, PostApiAuthLoginResponses, PostApiAuthLogoutAllDevicesData, PostApiAuthLogoutAllDevicesErrors, PostApiAuthLogoutAllDevicesResponses, PostApiAuthLogoutData, PostApiAuthLogoutErrors, PostApiAuthLogoutResponses, PostApiAuthRefreshData, PostApiAuthRefreshErrors, PostApiAuthRefreshResponses, PostApiAuthRegisterData, PostApiAuthRegisterErrors, PostApiAuthRegisterResponses, PostApiAuthWebauthnLoginData, PostApiAuthWebauthnLoginErrors, PostApiAuthWebauthnLoginOptionsData, PostApiAuthWebauthnLoginOptionsResponses, PostApiAuthWebauthnLoginResponses, PostApiAuthWebauthnRegisterData, PostApiAuthWebauthnRegisterErrors, PostApiAuthWebauthnRegisterNewData, PostApiAuthWebauthnRegisterNewErrors, PostApiAuthWebauthnRegisterNewOptionsData, PostApiAuthWebauthnRegisterNewOptionsErrors, PostApiAuthWebauthnRegisterNewOptionsResponses, PostApiAuthWebauthnRegisterNewResponses, PostApiAuthWebauthnRegisterOptionsData, PostApiAuthWebauthnRegisterOptionsErrors, PostApiAuthWebauthnRegisterOptionsResponses, PostApiAuthWebauthnRegisterResponses, PostApiManagerEventlocationsData, PostApiManagerEventlocationsErrors, PostApiManagerEventlocationsImportByIdData, PostApiManagerEventlocationsImportByIdErrors, PostApiManagerEventlocationsImportByIdResponses, PostApiManagerEventlocationsImportData, PostApiManagerEventlocationsImportErrors, PostApiManagerEventlocationsImportResponses, PostApiManagerEventlocationsResponses, PostApiManagerEventsData, PostApiManagerEventsErrors, PostApiManagerEventsResponses, PostApiManagerReservationAllowanceData, PostApiManagerReservationAllowanceErrors, PostApiManagerReservationAllowanceResponses, PostApiManagerReservationsBlockData, PostApiManagerReservationsBlockErrors, PostApiManagerReservationsBlockResponses, PostApiManagerReservationsData, PostApiManagerReservationsErrors, PostApiManagerReservationsResponses, PostApiManagerSeatsData, PostApiManagerSeatsErrors, PostApiManagerSeatsResponses, PostApiSupervisorCheckinInfoByUsernameData, PostApiSupervisorCheckinInfoByUsernameErrors, PostApiSupervisorCheckinInfoByUsernameResponses, PostApiSupervisorCheckinInfoData, PostApiSupervisorCheckinInfoErrors, PostApiSupervisorCheckinInfoResponses, PostApiSupervisorCheckinProcessData, PostApiSupervisorCheckinProcessErrors, PostApiSupervisorCheckinProcessResponses, PostApiUserResendEmailConfirmationData, PostApiUserResendEmailConfirmationErrors, PostApiUserResendEmailConfirmationResponses, PostApiUserReservationsData, PostApiUserReservationsErrors, PostApiUserReservationsResponses, PostApiUsersAdminData, PostApiUsersAdminErrors, PostApiUsersAdminImportData, PostApiUsersAdminImportErrors, PostApiUsersAdminImportResponses, PostApiUsersAdminResponses, PostApiUserVerifyEmailCodeData, PostApiUserVerifyEmailCodeErrors, PostApiUserVerifyEmailCodeResponses, PutApiAuthWebauthnCredentialsByIdData, PutApiAuthWebauthnCredentialsByIdErrors, PutApiAuthWebauthnCredentialsByIdResponses, PutApiManagerEventlocationsByIdData, PutApiManagerEventlocationsByIdErrors, PutApiManagerEventlocationsByIdResponses, PutApiManagerEventsByIdData, PutApiManagerEventsByIdErrors, PutApiManagerEventsByIdResponses, PutApiManagerReservationAllowanceData, PutApiManagerReservationAllowanceErrors, PutApiManagerReservationAllowanceResponses, PutApiManagerSeatsByIdData, PutApiManagerSeatsByIdErrors, PutApiManagerSeatsByIdResponses, PutApiUsersAdminByIdData, PutApiUsersAdminByIdErrors, PutApiUsersAdminByIdResponses, PutApiUsersMeData, PutApiUsersMeErrors, PutApiUsersMeResponses } from './types.gen';
+import { getApiAuthWebauthnCredentialsResponseTransformer, getApiManagerAreasByIdResponseTransformer, getApiManagerAreasResponseTransformer, getApiManagerEntrancesByIdResponseTransformer, getApiManagerEntrancesResponseTransformer, getApiManagerEventlocationsResponseTransformer, getApiManagerEventsByIdResponseTransformer, getApiManagerEventsResponseTransformer, getApiManagerMarkersByIdResponseTransformer, getApiManagerMarkersResponseTransformer, getApiManagerReservationAllowanceByIdResponseTransformer, getApiManagerReservationAllowanceEventByEventIdResponseTransformer, getApiManagerReservationAllowanceResponseTransformer, getApiManagerReservationsByIdResponseTransformer, getApiManagerReservationsEventByIdResponseTransformer, getApiManagerReservationsResponseTransformer, getApiManagerSeatsByIdResponseTransformer, getApiManagerSeatsResponseTransformer, getApiSupervisorCheckinEventsResponseTransformer, getApiUserEventsResponseTransformer, getApiUserLocationsResponseTransformer, getApiUserReservationsByIdResponseTransformer, getApiUserReservationsResponseTransformer, getApiUsersAdminResponseTransformer, getApiUsersManagerResponseTransformer, getApiUsersMeResponseTransformer, postApiManagerAreasResponseTransformer, postApiManagerEntrancesResponseTransformer, postApiManagerEventlocationsResponseTransformer, postApiManagerEventsResponseTransformer, postApiManagerMarkersResponseTransformer, postApiManagerReservationAllowanceResponseTransformer, postApiManagerReservationsBlockResponseTransformer, postApiManagerReservationsResponseTransformer, postApiManagerSeatsResponseTransformer, postApiSupervisorCheckinInfoByUsernameResponseTransformer, postApiSupervisorCheckinInfoResponseTransformer, postApiUserReservationsResponseTransformer, postApiUsersAdminImportResponseTransformer, putApiManagerAreasByIdResponseTransformer, putApiManagerEntrancesByIdResponseTransformer, putApiManagerEventlocationsByIdResponseTransformer, putApiManagerEventsByIdResponseTransformer, putApiManagerMarkersByIdResponseTransformer, putApiManagerReservationAllowanceResponseTransformer, putApiManagerSeatsByIdResponseTransformer, putApiUsersAdminByIdResponseTransformer, putApiUsersMeResponseTransformer } from './transformers.gen';
+import type { DeleteApiAuthWebauthnCredentialsByIdData, DeleteApiAuthWebauthnCredentialsByIdErrors, DeleteApiAuthWebauthnCredentialsByIdResponses, DeleteApiManagerAreasData, DeleteApiManagerAreasErrors, DeleteApiManagerAreasResponses, DeleteApiManagerEntrancesData, DeleteApiManagerEntrancesErrors, DeleteApiManagerEntrancesResponses, DeleteApiManagerEventlocationsData, DeleteApiManagerEventlocationsErrors, DeleteApiManagerEventlocationsResponses, DeleteApiManagerEventsData, DeleteApiManagerEventsErrors, DeleteApiManagerEventsResponses, DeleteApiManagerMarkersData, DeleteApiManagerMarkersErrors, DeleteApiManagerMarkersResponses, DeleteApiManagerReservationAllowanceData, DeleteApiManagerReservationAllowanceErrors, DeleteApiManagerReservationAllowanceResponses, DeleteApiManagerReservationsData, DeleteApiManagerReservationsErrors, DeleteApiManagerReservationsResponses, DeleteApiManagerSeatsData, DeleteApiManagerSeatsErrors, DeleteApiManagerSeatsResponses, DeleteApiUserReservationsData, DeleteApiUserReservationsErrors, DeleteApiUserReservationsResponses, DeleteApiUsersAdminByIdData, DeleteApiUsersAdminByIdErrors, DeleteApiUsersAdminByIdResponses, GetApiAuthRegistrationStatusData, GetApiAuthRegistrationStatusResponses, GetApiAuthWebauthnCredentialsData, GetApiAuthWebauthnCredentialsErrors, GetApiAuthWebauthnCredentialsResponses, GetApiAuthWebauthnStatusData, GetApiAuthWebauthnStatusErrors, GetApiAuthWebauthnStatusResponses, GetApiEmailSeatmapData, GetApiEmailSeatmapResponses, GetApiManagerAreasByIdData, GetApiManagerAreasByIdErrors, GetApiManagerAreasByIdResponses, GetApiManagerAreasData, GetApiManagerAreasErrors, GetApiManagerAreasResponses, GetApiManagerEntrancesByIdData, GetApiManagerEntrancesByIdErrors, GetApiManagerEntrancesByIdResponses, GetApiManagerEntrancesData, GetApiManagerEntrancesErrors, GetApiManagerEntrancesResponses, GetApiManagerEventlocationsData, GetApiManagerEventlocationsErrors, GetApiManagerEventlocationsResponses, GetApiManagerEventsByIdData, GetApiManagerEventsByIdErrors, GetApiManagerEventsByIdResponses, GetApiManagerEventsData, GetApiManagerEventsErrors, GetApiManagerEventsResponses, GetApiManagerMarkersByIdData, GetApiManagerMarkersByIdErrors, GetApiManagerMarkersByIdResponses, GetApiManagerMarkersData, GetApiManagerMarkersErrors, GetApiManagerMarkersResponses, GetApiManagerReservationAllowanceByIdData, GetApiManagerReservationAllowanceByIdErrors, GetApiManagerReservationAllowanceByIdResponses, GetApiManagerReservationAllowanceData, GetApiManagerReservationAllowanceErrors, GetApiManagerReservationAllowanceEventByEventIdData, GetApiManagerReservationAllowanceEventByEventIdErrors, GetApiManagerReservationAllowanceEventByEventIdResponses, GetApiManagerReservationAllowanceResponses, GetApiManagerReservationsByIdData, GetApiManagerReservationsByIdErrors, GetApiManagerReservationsByIdResponses, GetApiManagerReservationsData, GetApiManagerReservationsErrors, GetApiManagerReservationsEventByIdData, GetApiManagerReservationsEventByIdErrors, GetApiManagerReservationsEventByIdResponses, GetApiManagerReservationsExportByEventIdCsvData, GetApiManagerReservationsExportByEventIdCsvErrors, GetApiManagerReservationsExportByEventIdCsvResponses, GetApiManagerReservationsExportByEventIdPdfData, GetApiManagerReservationsExportByEventIdPdfErrors, GetApiManagerReservationsExportByEventIdPdfResponses, GetApiManagerReservationsResponses, GetApiManagerSeatsByIdData, GetApiManagerSeatsByIdErrors, GetApiManagerSeatsByIdResponses, GetApiManagerSeatsData, GetApiManagerSeatsErrors, GetApiManagerSeatsResponses, GetApiSupervisorCheckinEventsData, GetApiSupervisorCheckinEventsErrors, GetApiSupervisorCheckinEventsResponses, GetApiSupervisorCheckinUsernamesByEventIdData, GetApiSupervisorCheckinUsernamesByEventIdErrors, GetApiSupervisorCheckinUsernamesByEventIdResponses, GetApiUserEventsData, GetApiUserEventsErrors, GetApiUserEventsResponses, GetApiUserLocationsData, GetApiUserLocationsErrors, GetApiUserLocationsResponses, GetApiUserReservationsByIdData, GetApiUserReservationsByIdErrors, GetApiUserReservationsByIdResponses, GetApiUserReservationsData, GetApiUserReservationsErrors, GetApiUserReservationsResponses, GetApiUsersAdminData, GetApiUsersAdminErrors, GetApiUsersAdminResponses, GetApiUsersManagerData, GetApiUsersManagerErrors, GetApiUsersManagerResponses, GetApiUsersMeData, GetApiUsersMeErrors, GetApiUsersMeResponses, GetApiUsersRolesData, GetApiUsersRolesErrors, GetApiUsersRolesResponses, PostApiAuthLoginData, PostApiAuthLoginErrors, PostApiAuthLoginResponses, PostApiAuthLogoutAllDevicesData, PostApiAuthLogoutAllDevicesErrors, PostApiAuthLogoutAllDevicesResponses, PostApiAuthLogoutData, PostApiAuthLogoutErrors, PostApiAuthLogoutResponses, PostApiAuthRefreshData, PostApiAuthRefreshErrors, PostApiAuthRefreshResponses, PostApiAuthRegisterData, PostApiAuthRegisterErrors, PostApiAuthRegisterResponses, PostApiAuthWebauthnLoginData, PostApiAuthWebauthnLoginErrors, PostApiAuthWebauthnLoginOptionsData, PostApiAuthWebauthnLoginOptionsResponses, PostApiAuthWebauthnLoginResponses, PostApiAuthWebauthnRegisterData, PostApiAuthWebauthnRegisterErrors, PostApiAuthWebauthnRegisterNewData, PostApiAuthWebauthnRegisterNewErrors, PostApiAuthWebauthnRegisterNewOptionsData, PostApiAuthWebauthnRegisterNewOptionsErrors, PostApiAuthWebauthnRegisterNewOptionsResponses, PostApiAuthWebauthnRegisterNewResponses, PostApiAuthWebauthnRegisterOptionsData, PostApiAuthWebauthnRegisterOptionsErrors, PostApiAuthWebauthnRegisterOptionsResponses, PostApiAuthWebauthnRegisterResponses, PostApiManagerAreasData, PostApiManagerAreasErrors, PostApiManagerAreasResponses, PostApiManagerEntrancesData, PostApiManagerEntrancesErrors, PostApiManagerEntrancesResponses, PostApiManagerEventlocationsData, PostApiManagerEventlocationsErrors, PostApiManagerEventlocationsResponses, PostApiManagerEventsData, PostApiManagerEventsErrors, PostApiManagerEventsResponses, PostApiManagerMarkersData, PostApiManagerMarkersErrors, PostApiManagerMarkersResponses, PostApiManagerReservationAllowanceData, PostApiManagerReservationAllowanceErrors, PostApiManagerReservationAllowanceResponses, PostApiManagerReservationsBlockData, PostApiManagerReservationsBlockErrors, PostApiManagerReservationsBlockResponses, PostApiManagerReservationsData, PostApiManagerReservationsErrors, PostApiManagerReservationsResponses, PostApiManagerSeatsData, PostApiManagerSeatsErrors, PostApiManagerSeatsResponses, PostApiSupervisorCheckinInfoByUsernameData, PostApiSupervisorCheckinInfoByUsernameErrors, PostApiSupervisorCheckinInfoByUsernameResponses, PostApiSupervisorCheckinInfoData, PostApiSupervisorCheckinInfoErrors, PostApiSupervisorCheckinInfoResponses, PostApiSupervisorCheckinProcessData, PostApiSupervisorCheckinProcessErrors, PostApiSupervisorCheckinProcessResponses, PostApiUserResendEmailConfirmationData, PostApiUserResendEmailConfirmationErrors, PostApiUserResendEmailConfirmationResponses, PostApiUserReservationsData, PostApiUserReservationsErrors, PostApiUserReservationsResponses, PostApiUsersAdminData, PostApiUsersAdminErrors, PostApiUsersAdminImportData, PostApiUsersAdminImportErrors, PostApiUsersAdminImportResponses, PostApiUsersAdminResponses, PostApiUserVerifyEmailCodeData, PostApiUserVerifyEmailCodeErrors, PostApiUserVerifyEmailCodeResponses, PutApiAuthWebauthnCredentialsByIdData, PutApiAuthWebauthnCredentialsByIdErrors, PutApiAuthWebauthnCredentialsByIdResponses, PutApiManagerAreasByIdData, PutApiManagerAreasByIdErrors, PutApiManagerAreasByIdResponses, PutApiManagerEntrancesByIdData, PutApiManagerEntrancesByIdErrors, PutApiManagerEntrancesByIdResponses, PutApiManagerEventlocationsByIdData, PutApiManagerEventlocationsByIdErrors, PutApiManagerEventlocationsByIdResponses, PutApiManagerEventsByIdData, PutApiManagerEventsByIdErrors, PutApiManagerEventsByIdResponses, PutApiManagerMarkersByIdData, PutApiManagerMarkersByIdErrors, PutApiManagerMarkersByIdResponses, PutApiManagerReservationAllowanceData, PutApiManagerReservationAllowanceErrors, PutApiManagerReservationAllowanceResponses, PutApiManagerSeatsByIdData, PutApiManagerSeatsByIdErrors, PutApiManagerSeatsByIdResponses, PutApiUsersAdminByIdData, PutApiUsersAdminByIdErrors, PutApiUsersAdminByIdResponses, PutApiUsersMeData, PutApiUsersMeErrors, PutApiUsersMeResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -181,6 +181,120 @@ export const getApiAuthWebauthnStatus = <ThrowOnError extends boolean = false>(o
 export const getApiEmailSeatmap = <ThrowOnError extends boolean = false>(options?: Options<GetApiEmailSeatmapData, ThrowOnError>): RequestResult<GetApiEmailSeatmapResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetApiEmailSeatmapResponses, unknown, ThrowOnError>({ url: '/api/email/seatmap', ...options });
 
 /**
+ * Delete Manager Area
+ */
+export const deleteApiManagerAreas = <ThrowOnError extends boolean = false>(options?: Options<DeleteApiManagerAreasData, ThrowOnError>): RequestResult<DeleteApiManagerAreasResponses, DeleteApiManagerAreasErrors, ThrowOnError> => (options?.client ?? client).delete<DeleteApiManagerAreasResponses, DeleteApiManagerAreasErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/areas',
+    ...options
+});
+
+/**
+ * Get Areas By Event Location
+ */
+export const getApiManagerAreas = <ThrowOnError extends boolean = false>(options?: Options<GetApiManagerAreasData, ThrowOnError>): RequestResult<GetApiManagerAreasResponses, GetApiManagerAreasErrors, ThrowOnError> => (options?.client ?? client).get<GetApiManagerAreasResponses, GetApiManagerAreasErrors, ThrowOnError>({
+    responseTransformer: getApiManagerAreasResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/areas',
+    ...options
+});
+
+/**
+ * Create Area
+ */
+export const postApiManagerAreas = <ThrowOnError extends boolean = false>(options: Options<PostApiManagerAreasData, ThrowOnError>): RequestResult<PostApiManagerAreasResponses, PostApiManagerAreasErrors, ThrowOnError> => (options.client ?? client).post<PostApiManagerAreasResponses, PostApiManagerAreasErrors, ThrowOnError>({
+    responseTransformer: postApiManagerAreasResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/areas',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get Manager Area By Id
+ */
+export const getApiManagerAreasById = <ThrowOnError extends boolean = false>(options: Options<GetApiManagerAreasByIdData, ThrowOnError>): RequestResult<GetApiManagerAreasByIdResponses, GetApiManagerAreasByIdErrors, ThrowOnError> => (options.client ?? client).get<GetApiManagerAreasByIdResponses, GetApiManagerAreasByIdErrors, ThrowOnError>({
+    responseTransformer: getApiManagerAreasByIdResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/areas/{id}',
+    ...options
+});
+
+/**
+ * Update Manager Area
+ */
+export const putApiManagerAreasById = <ThrowOnError extends boolean = false>(options: Options<PutApiManagerAreasByIdData, ThrowOnError>): RequestResult<PutApiManagerAreasByIdResponses, PutApiManagerAreasByIdErrors, ThrowOnError> => (options.client ?? client).put<PutApiManagerAreasByIdResponses, PutApiManagerAreasByIdErrors, ThrowOnError>({
+    responseTransformer: putApiManagerAreasByIdResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/areas/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete Manager Entrance
+ */
+export const deleteApiManagerEntrances = <ThrowOnError extends boolean = false>(options?: Options<DeleteApiManagerEntrancesData, ThrowOnError>): RequestResult<DeleteApiManagerEntrancesResponses, DeleteApiManagerEntrancesErrors, ThrowOnError> => (options?.client ?? client).delete<DeleteApiManagerEntrancesResponses, DeleteApiManagerEntrancesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/entrances',
+    ...options
+});
+
+/**
+ * Get Entrances By Event Location
+ */
+export const getApiManagerEntrances = <ThrowOnError extends boolean = false>(options?: Options<GetApiManagerEntrancesData, ThrowOnError>): RequestResult<GetApiManagerEntrancesResponses, GetApiManagerEntrancesErrors, ThrowOnError> => (options?.client ?? client).get<GetApiManagerEntrancesResponses, GetApiManagerEntrancesErrors, ThrowOnError>({
+    responseTransformer: getApiManagerEntrancesResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/entrances',
+    ...options
+});
+
+/**
+ * Create Entrance
+ */
+export const postApiManagerEntrances = <ThrowOnError extends boolean = false>(options: Options<PostApiManagerEntrancesData, ThrowOnError>): RequestResult<PostApiManagerEntrancesResponses, PostApiManagerEntrancesErrors, ThrowOnError> => (options.client ?? client).post<PostApiManagerEntrancesResponses, PostApiManagerEntrancesErrors, ThrowOnError>({
+    responseTransformer: postApiManagerEntrancesResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/entrances',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get Manager Entrance By Id
+ */
+export const getApiManagerEntrancesById = <ThrowOnError extends boolean = false>(options: Options<GetApiManagerEntrancesByIdData, ThrowOnError>): RequestResult<GetApiManagerEntrancesByIdResponses, GetApiManagerEntrancesByIdErrors, ThrowOnError> => (options.client ?? client).get<GetApiManagerEntrancesByIdResponses, GetApiManagerEntrancesByIdErrors, ThrowOnError>({
+    responseTransformer: getApiManagerEntrancesByIdResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/entrances/{id}',
+    ...options
+});
+
+/**
+ * Update Manager Entrance
+ */
+export const putApiManagerEntrancesById = <ThrowOnError extends boolean = false>(options: Options<PutApiManagerEntrancesByIdData, ThrowOnError>): RequestResult<PutApiManagerEntrancesByIdResponses, PutApiManagerEntrancesByIdErrors, ThrowOnError> => (options.client ?? client).put<PutApiManagerEntrancesByIdResponses, PutApiManagerEntrancesByIdErrors, ThrowOnError>({
+    responseTransformer: putApiManagerEntrancesByIdResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/entrances/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Delete Event Location
  */
 export const deleteApiManagerEventlocations = <ThrowOnError extends boolean = false>(options?: Options<DeleteApiManagerEventlocationsData, ThrowOnError>): RequestResult<DeleteApiManagerEventlocationsResponses, DeleteApiManagerEventlocationsErrors, ThrowOnError> => (options?.client ?? client).delete<DeleteApiManagerEventlocationsResponses, DeleteApiManagerEventlocationsErrors, ThrowOnError>({
@@ -206,34 +320,6 @@ export const postApiManagerEventlocations = <ThrowOnError extends boolean = fals
     responseTransformer: postApiManagerEventlocationsResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/manager/eventlocations',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Create Event Location With Seats
- */
-export const postApiManagerEventlocationsImport = <ThrowOnError extends boolean = false>(options: Options<PostApiManagerEventlocationsImportData, ThrowOnError>): RequestResult<PostApiManagerEventlocationsImportResponses, PostApiManagerEventlocationsImportErrors, ThrowOnError> => (options.client ?? client).post<PostApiManagerEventlocationsImportResponses, PostApiManagerEventlocationsImportErrors, ThrowOnError>({
-    responseTransformer: postApiManagerEventlocationsImportResponseTransformer,
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/api/manager/eventlocations/import',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Import Seats To Event Location
- */
-export const postApiManagerEventlocationsImportById = <ThrowOnError extends boolean = false>(options: Options<PostApiManagerEventlocationsImportByIdData, ThrowOnError>): RequestResult<PostApiManagerEventlocationsImportByIdResponses, PostApiManagerEventlocationsImportByIdErrors, ThrowOnError> => (options.client ?? client).post<PostApiManagerEventlocationsImportByIdResponses, PostApiManagerEventlocationsImportByIdErrors, ThrowOnError>({
-    responseTransformer: postApiManagerEventlocationsImportByIdResponseTransformer,
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/api/manager/eventlocations/import/{id}',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -305,6 +391,63 @@ export const putApiManagerEventsById = <ThrowOnError extends boolean = false>(op
     responseTransformer: putApiManagerEventsByIdResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/manager/events/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete Manager Marker
+ */
+export const deleteApiManagerMarkers = <ThrowOnError extends boolean = false>(options?: Options<DeleteApiManagerMarkersData, ThrowOnError>): RequestResult<DeleteApiManagerMarkersResponses, DeleteApiManagerMarkersErrors, ThrowOnError> => (options?.client ?? client).delete<DeleteApiManagerMarkersResponses, DeleteApiManagerMarkersErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/markers',
+    ...options
+});
+
+/**
+ * Get Markers By Event Location
+ */
+export const getApiManagerMarkers = <ThrowOnError extends boolean = false>(options?: Options<GetApiManagerMarkersData, ThrowOnError>): RequestResult<GetApiManagerMarkersResponses, GetApiManagerMarkersErrors, ThrowOnError> => (options?.client ?? client).get<GetApiManagerMarkersResponses, GetApiManagerMarkersErrors, ThrowOnError>({
+    responseTransformer: getApiManagerMarkersResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/markers',
+    ...options
+});
+
+/**
+ * Create Marker
+ */
+export const postApiManagerMarkers = <ThrowOnError extends boolean = false>(options: Options<PostApiManagerMarkersData, ThrowOnError>): RequestResult<PostApiManagerMarkersResponses, PostApiManagerMarkersErrors, ThrowOnError> => (options.client ?? client).post<PostApiManagerMarkersResponses, PostApiManagerMarkersErrors, ThrowOnError>({
+    responseTransformer: postApiManagerMarkersResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/markers',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get Manager Marker By Id
+ */
+export const getApiManagerMarkersById = <ThrowOnError extends boolean = false>(options: Options<GetApiManagerMarkersByIdData, ThrowOnError>): RequestResult<GetApiManagerMarkersByIdResponses, GetApiManagerMarkersByIdErrors, ThrowOnError> => (options.client ?? client).get<GetApiManagerMarkersByIdResponses, GetApiManagerMarkersByIdErrors, ThrowOnError>({
+    responseTransformer: getApiManagerMarkersByIdResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/markers/{id}',
+    ...options
+});
+
+/**
+ * Update Manager Marker
+ */
+export const putApiManagerMarkersById = <ThrowOnError extends boolean = false>(options: Options<PutApiManagerMarkersByIdData, ThrowOnError>): RequestResult<PutApiManagerMarkersByIdResponses, PutApiManagerMarkersByIdErrors, ThrowOnError> => (options.client ?? client).put<PutApiManagerMarkersByIdResponses, PutApiManagerMarkersByIdErrors, ThrowOnError>({
+    responseTransformer: putApiManagerMarkersByIdResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/manager/markers/{id}',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -474,7 +617,7 @@ export const deleteApiManagerSeats = <ThrowOnError extends boolean = false>(opti
 });
 
 /**
- * Get All Manager Seats
+ * Get Seats By Event Location
  */
 export const getApiManagerSeats = <ThrowOnError extends boolean = false>(options?: Options<GetApiManagerSeatsData, ThrowOnError>): RequestResult<GetApiManagerSeatsResponses, GetApiManagerSeatsErrors, ThrowOnError> => (options?.client ?? client).get<GetApiManagerSeatsResponses, GetApiManagerSeatsErrors, ThrowOnError>({
     responseTransformer: getApiManagerSeatsResponseTransformer,

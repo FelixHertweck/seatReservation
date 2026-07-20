@@ -36,20 +36,14 @@ public class EventLocationRequestDTO {
     @NotNull(message = "Capacity must not be null")
     private Integer capacity;
 
-    /**
-     * On update, this is a full replace, not a merge: omitting this field (or sending {@code null})
-     * clears all of the location's existing markers. Send the complete desired list every time,
-     * including markers that are meant to be kept.
-     */
-    @Valid private List<MakerRequestDTO> markers;
+    /** Optional markers to scaffold together with the location. */
+    private List<@Valid MakerRequestDTO> markers;
 
-    /**
-     * On update, this is a full replace, not a merge: omitting this field (or sending {@code null})
-     * clears all of the location's existing areas. Send the complete desired list every time,
-     * including areas that are meant to be kept. See {@link
-     * de.felixhertweck.seatreservation.management.service.EventLocationService#updateEventLocation}.
-     */
-    @Valid private List<AreaRequestDTO> areas;
+    /** Optional areas to scaffold together with the location. */
+    private List<@Valid AreaRequestDTO> areas;
+
+    /** Optional seats to scaffold together with the location. */
+    private List<@Valid ImportSeatDto> seats;
 
     public String getName() {
         return name;
@@ -89,6 +83,14 @@ public class EventLocationRequestDTO {
 
     public void setAreas(List<AreaRequestDTO> areas) {
         this.areas = areas;
+    }
+
+    public List<ImportSeatDto> getSeats() {
+        return seats;
+    }
+
+    public void setSeats(List<ImportSeatDto> seats) {
+        this.seats = seats;
     }
 
     public EventLocationRequestDTO() {}

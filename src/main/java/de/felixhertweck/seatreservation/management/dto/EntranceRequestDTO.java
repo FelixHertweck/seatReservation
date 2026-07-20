@@ -19,40 +19,27 @@
  */
 package de.felixhertweck.seatreservation.management.dto;
 
-import java.util.List;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
-import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 /**
- * A named area, carrying an optional custom boundary polygon (ordered list of vertices). Used both
- * as the embedded scaffold in {@link EventLocationRequestDTO} on create and as the request body for
- * the standalone {@code AreaResource} CRUD endpoints. {@code eventLocationId} is required for the
- * standalone resource and validated there; it stays null for the embedded create-time scaffold,
- * where the enclosing location does not exist yet.
+ * Request body for the standalone {@code EntranceResource} CRUD endpoints. {@code eventLocationId}
+ * is always required.
  */
 @RegisterForReflection
-public class AreaRequestDTO {
+public class EntranceRequestDTO {
+    @NotNull(message = "EventLocation ID must not be null")
     private Long eventLocationId;
 
-    @NotNull(message = "Area name must not be null")
+    @NotNull(message = "Entrance name must not be null")
     private String name;
 
-    private List<@Valid CoordinateDTO> boundary;
+    public EntranceRequestDTO() {}
 
-    public AreaRequestDTO() {}
-
-    public AreaRequestDTO(String name, List<CoordinateDTO> boundary) {
-        this.name = name;
-        this.boundary = boundary;
-    }
-
-    public AreaRequestDTO(Long eventLocationId, String name, List<CoordinateDTO> boundary) {
+    public EntranceRequestDTO(Long eventLocationId, String name) {
         this.eventLocationId = eventLocationId;
         this.name = name;
-        this.boundary = boundary;
     }
 
     public Long getEventLocationId() {
@@ -69,13 +56,5 @@ public class AreaRequestDTO {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public List<CoordinateDTO> getBoundary() {
-        return boundary;
-    }
-
-    public void setBoundary(List<CoordinateDTO> boundary) {
-        this.boundary = boundary;
     }
 }

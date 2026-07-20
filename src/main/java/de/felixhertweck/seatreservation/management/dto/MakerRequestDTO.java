@@ -25,8 +25,16 @@ import jakarta.validation.constraints.NotNull;
 import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
+/**
+ * Request body for the standalone {@code MarkerResource} CRUD endpoints, also used as the embedded
+ * scaffold in {@link EventLocationRequestDTO} on create. {@code eventLocationId} is required for
+ * the standalone resource and validated there; it stays null for the embedded create-time scaffold,
+ * where the enclosing location does not exist yet.
+ */
 @RegisterForReflection
 public class MakerRequestDTO {
+    private Long eventLocationId;
+
     @NotNull(message = "Label must not be null")
     private String label;
 
@@ -39,6 +47,20 @@ public class MakerRequestDTO {
     public MakerRequestDTO(String label, Integer xCoordinate, Integer yCoordinate) {
         this.label = label;
         this.coordinate = new CoordinateDTO(xCoordinate, yCoordinate);
+    }
+
+    public MakerRequestDTO(Long eventLocationId, String label, CoordinateDTO coordinate) {
+        this.eventLocationId = eventLocationId;
+        this.label = label;
+        this.coordinate = coordinate;
+    }
+
+    public Long getEventLocationId() {
+        return eventLocationId;
+    }
+
+    public void setEventLocationId(Long eventLocationId) {
+        this.eventLocationId = eventLocationId;
     }
 
     public String getLabel() {

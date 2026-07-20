@@ -480,17 +480,15 @@ This is an overview of the test cases for the application.
 | `deleteEventLocation_Success_AsAdmin` | Successfully deletes an existing EventLocation as an administrator. |
 | `deleteEventLocation_NotFound` | Attempts to delete a non-existent EventLocation. |
 | `deleteEventLocation_ForbiddenException_NotManagerOrAdmin` | Attempts to delete an EventLocation without the required permissions. |
-| `importEventLocation_Success` | Successfully creates a new EventLocation with a list of seats. |
-| `importSeatsToEventLocation_Success` | Successfully imports seats to an existing EventLocation as a manager. |
-| `importSeatsToEventLocation_Success_AsAdmin` | Successfully imports seats to an existing EventLocation as an administrator. |
-| `importSeatsToEventLocation_NotFound` | Attempts to import seats to a non-existent EventLocation. |
-| `importSeatsToEventLocation_Forbidden` | Attempts to import seats to an EventLocation for which there is no permission. |
+| `createEventLocation_WithSeats_Success` | Successfully creates a new EventLocation together with an initial list of seats (merged create+import; `POST /eventlocations/import` and the separate bulk-add-to-existing-location endpoint have been removed). |
 | `createEventLocation_WithMarkers_Success` | Successfully creates a new EventLocation with markers. |
 | `createEventLocation_WithNullMarkers_Success` | Successfully creates a new EventLocation with a null marker list. |
 | `createEventLocation_WithEmptyMarkers_Success` | Successfully creates a new EventLocation with an empty marker list. |
-| `updateEventLocation_WithMarkers_Success` | Successfully updates an existing EventLocation with new markers. |
-| `updateEventLocation_ClearingMarkers_Success` | Successfully updates an existing EventLocation and deletes all markers. |
+| `createEventLocation_WithAreas_Success` | Successfully creates a new EventLocation with areas (including boundary polygons). |
+| `createEventLocation_WithNullAreas_Success` | Successfully creates a new EventLocation with a null area list. |
 | `convertToMarkerEntities_ValidInput` | Tests the conversion of marker DTOs to entities with various limits. |
+
+Note: `PUT /eventlocations/{id}` (`updateEventLocation`) only touches `name`/`address`/`capacity` (`EventLocationUpdateDTO`) — markers/areas/seats/entrances are no longer editable through this endpoint, only through the dedicated `MarkerResource`/`AreaResource`/`EntranceResource`/`SeatResource` APIs (see below).
 
 ### EventLocationService (User)
 
@@ -586,9 +584,10 @@ This is an overview of the test cases for the application.
 | `createSeat_Success_AsAdmin` | Successfully creates a new seat as an admin. |
 | `createSeat_ForbiddenException_NotManagerOfLocation` | Attempts to create a seat for a location that one does not own. |
 | `createSeat_InvalidInput` | Attempts to create a seat with invalid data. |
-| `findAllSeatsForManager_Success_AsAdmin` | Retrieves all seats as an administrator. |
-| `findAllSeatsForManager_Success_AsManager` | Retrieves seats belonging to the current manager. |
-| `findAllSeatsForManager_Success_NoSeatsForManager` | Retrieves an empty list if the manager manages no seats. |
+| `findSeatsForManagerByLocation_Success_AsAdmin` | Retrieves all seats of a given event location as an administrator. |
+| `findSeatsForManagerByLocation_Success_AsManager` | Retrieves seats of a given event location belonging to the current manager. |
+| `findSeatsForManagerByLocation_Forbidden_NotOwner` | Attempts to retrieve seats of an event location owned by another manager. |
+| `findSeatsForManagerByLocation_NotFound` | Attempts to retrieve seats of a non-existent event location. |
 | `findSeatByIdForManager_Success_AsAdmin` | Retrieves a seat as an administrator. |
 | `findSeatByIdForManager_Success_AsManager` | Retrieves a seat belonging to the current manager. |
 | `findSeatByIdForManager_NotFound` | Attempts to retrieve a non-existent seat. |
@@ -607,6 +606,77 @@ This is an overview of the test cases for the application.
 | `deleteSeat_ForbiddenException_NotManager` | Attempts to delete a seat for which there is no permission. |
 | `findSeatEntityById_Success` | Successfully retrieves a seat entity. |
 | `findSeatEntityById_ForbiddenException` | Attempts to retrieve a seat entity for which the user has no permission. |
+
+## Area Service
+
+### AreaService
+
+| Test Case | Description |
+| :--- | :--- |
+| `createArea_Success_AsManager` | Successfully creates a new area for one of the manager's event locations. |
+| `createArea_Success_AsAdmin` | Successfully creates a new area as an administrator. |
+| `createArea_Forbidden_NotManagerOfLocation` | Attempts to create an area for a location that one does not own. |
+| `createArea_InvalidInput_EmptyName` | Attempts to create an area with a blank name. |
+| `createArea_EventLocationNotFound` | Attempts to create an area for a non-existent event location. |
+| `findAreasByLocation_Success_AsManager` | Retrieves all areas of a given event location as its manager. |
+| `findAreasByLocation_Success_AsAdmin` | Retrieves all areas of a given event location as an administrator. |
+| `findAreasByLocation_Forbidden_NotOwner` | Attempts to retrieve areas of an event location owned by another manager. |
+| `findAreasByLocation_NotFound` | Attempts to retrieve areas of a non-existent event location. |
+| `findAreaByIdForManager_Success` | Successfully retrieves a single area by ID. |
+| `findAreaByIdForManager_NotFound` | Attempts to retrieve a non-existent area. |
+| `findAreaByIdForManager_Forbidden` | Attempts to retrieve an area belonging to another manager's location. |
+| `updateArea_Success` | Successfully updates an existing area's name/boundary. |
+| `updateArea_NotFound` | Attempts to update a non-existent area. |
+| `updateArea_Forbidden_NotManagerOfNewLocation` | Attempts to move an area to a location one does not own. |
+| `deleteAreas_Success` | Successfully deletes an area not referenced by any seat. |
+| `deleteAreas_NotFound` | Attempts to delete a non-existent area. |
+| `deleteAreas_Forbidden` | Attempts to delete an area belonging to another manager's location. |
+| `deleteAreas_Conflict_ReferencedBySeat` | Attempts to delete an area still referenced by at least one seat; expects `AreaInUseException` (`409 Conflict`). |
+
+## Entrance Service
+
+### EntranceService
+
+| Test Case | Description |
+| :--- | :--- |
+| `createEntrance_Success_AsManager` | Successfully creates a new entrance for one of the manager's event locations. |
+| `createEntrance_Success_AsAdmin` | Successfully creates a new entrance as an administrator. |
+| `createEntrance_Forbidden_NotManagerOfLocation` | Attempts to create an entrance for a location that one does not own. |
+| `createEntrance_InvalidInput_EmptyName` | Attempts to create an entrance with a blank name. |
+| `createEntrance_EventLocationNotFound` | Attempts to create an entrance for a non-existent event location. |
+| `findEntrancesByLocation_Success_AsManager` | Retrieves all entrances of a given event location as its manager. |
+| `findEntrancesByLocation_Forbidden_NotOwner` | Attempts to retrieve entrances of an event location owned by another manager. |
+| `findEntrancesByLocation_NotFound` | Attempts to retrieve entrances of a non-existent event location. |
+| `findEntranceByIdForManager_Success` | Successfully retrieves a single entrance by ID. |
+| `findEntranceByIdForManager_NotFound` | Attempts to retrieve a non-existent entrance. |
+| `updateEntrance_Success` | Successfully updates an existing entrance's name. |
+| `updateEntrance_NotFound` | Attempts to update a non-existent entrance. |
+| `updateEntrance_Forbidden_NotManagerOfNewLocation` | Attempts to move an entrance to a location one does not own. |
+| `deleteEntrances_Success` | Successfully deletes an entrance not referenced by any seat. |
+| `deleteEntrances_NotFound` | Attempts to delete a non-existent entrance. |
+| `deleteEntrances_Conflict_ReferencedBySeat` | Attempts to delete an entrance still referenced by at least one seat; expects `EntranceInUseException` (`409 Conflict`). |
+
+## Marker Service
+
+### MarkerService
+
+| Test Case | Description |
+| :--- | :--- |
+| `createMarker_Success_AsManager` | Successfully creates a new marker for one of the manager's event locations. |
+| `createMarker_Forbidden_NotManagerOfLocation` | Attempts to create a marker for a location that one does not own. |
+| `createMarker_InvalidInput_EmptyLabel` | Attempts to create a marker with a blank label. |
+| `createMarker_EventLocationNotFound` | Attempts to create a marker for a non-existent event location. |
+| `findMarkersByLocation_Success` | Retrieves all markers of a given event location. |
+| `findMarkersByLocation_Forbidden_NotOwner` | Attempts to retrieve markers of an event location owned by another manager. |
+| `findMarkersByLocation_NotFound` | Attempts to retrieve markers of a non-existent event location. |
+| `findMarkerByIdForManager_Success` | Successfully retrieves a single marker by ID. |
+| `findMarkerByIdForManager_NotFound` | Attempts to retrieve a non-existent marker. |
+| `updateMarker_Success` | Successfully updates an existing marker's label/coordinate. |
+| `updateMarker_NotFound` | Attempts to update a non-existent marker. |
+| `updateMarker_Forbidden_NotManagerOfNewLocation` | Attempts to move a marker to a location one does not own. |
+| `deleteMarkers_Success` | Successfully deletes a marker (no reference-conflict check needed — nothing references a marker). |
+| `deleteMarkers_NotFound` | Attempts to delete a non-existent marker. |
+| `deleteMarkers_Forbidden` | Attempts to delete a marker belonging to another manager's location. |
 
 ## GlobalExceptionHandler
 
@@ -714,36 +784,19 @@ This test checks if a manager or administrator can retrieve a list of their even
 
 #### POST /
 
-Creates a new event location.
+Creates a new event location, optionally with an initial list of seats.
 
 **Description:**
 
-This test ensures that a manager or administrator can create a new event location.
+This test ensures that a manager or administrator can create a new event location, either bare or together with a `seats` list (merged create+import — the former separate `POST /eventlocations/import` endpoint and `ImportEventLocationDto` have been removed; `EventLocationRequestDTO` now carries an optional `seats` field directly).
 
 **Test Cases:**
 
 *   **Success:**
     *   A manager sends valid data and successfully creates a new event location. A `200 OK` status is returned with the data of the created location.
+    *   A manager sends valid data including a `seats` list and successfully creates the location together with its seats. A `200 OK` status is returned with the seat IDs populated.
 *   **Failure:**
     *   A manager sends invalid data (e.g., missing name) and receives a `400 Bad Request` status.
-    *   An unauthenticated user attempts to create a location and receives `401 Unauthorized`.
-    *   A user with the `USER` role attempts to create a location and receives `403 Forbidden`.
----
-
-#### POST /import
-
-Creates a new event location with seats.
-
-**Description:**
-
-This test ensures that a manager or administrator can import a new event location along with a list of seats.
-
-**Test Cases:**
-
-*   **Success:**
-    *   A manager sends valid data and successfully imports a new event location and its associated seats. A `200 OK` status is returned with the data of the imported location.
-*   **Failure:**
-    *   A manager sends invalid data (e.g., missing name in the location or missing seat number) and receives a `400 Bad Request` status.
     *   An unauthenticated user attempts to create a location and receives `401 Unauthorized`.
     *   A user with the `USER` role attempts to create a location and receives `403 Forbidden`.
 
@@ -751,11 +804,16 @@ This test ensures that a manager or administrator can import a new event locatio
 
 #### PUT /{id}
 
-Updates an existing event location.
+Updates an existing event location's metadata (name/address/capacity only).
 
 **Description:**
 
-This test checks the update functionality for an event location.
+This test checks the update functionality for an event location. The request
+body is `EventLocationUpdateDTO` (name/address/capacity only) —
+markers/areas/seats/entrances are not editable through this endpoint; they
+are managed exclusively through the dedicated `MarkerResource`/
+`AreaResource`/`EntranceResource`/`SeatResource` APIs after the location has
+been created.
 
 **Test Cases:**
 
@@ -1048,19 +1106,24 @@ This test ensures that a manager can add new seats to one of their locations.
 
 #### GET /
 
-Retrieves all seats belonging to the current manager's locations.
+Retrieves all seats of a given event location.
 
 **Description:**
 
-This test ensures that a manager can retrieve a list of all their seats.
+This test ensures that a manager can retrieve the seats of one of their event
+locations. `eventLocationId` is a required query parameter — there is no
+unscoped "all seats of the manager" listing (consistent with
+`AreaResource`/`EntranceResource`/`MarkerResource`).
 
 **Test Cases:**
 
 *   **Success:**
-    *   A manager retrieves the list of their seats and receives `200 OK`.
-    *   After updating a seat, the changed seat row and entrance remain visible when listing all seats.
+    *   A manager retrieves the list of seats for one of their event locations and receives `200 OK`.
+    *   After updating a seat, the changed seat row and entrance remain visible when listing the location's seats.
 *   **Failure:**
+    *   A request without the `eventLocationId` query parameter receives `400 Bad Request`.
     *   An unauthorized user receives `403 Forbidden`.
+    *   An unauthenticated user receives `401 Unauthorized`.
 
 ---
 
@@ -1129,6 +1192,245 @@ This test ensures that a user can retrieve a list of available events for them.
     *   An authenticated user without permissions for events retrieves the list and receives `200 OK` with an empty list.
 *   **Failure:**
     *   An unauthenticated user attempts to access the endpoint and receives `401 Unauthorized`.
+
+---
+
+### AreaResource (Manager)
+
+Base Path: `/api/manager/areas`
+
+Roles: `MANAGER`, `ADMIN`
+
+---
+
+#### GET /
+
+Retrieves the areas of a given event location.
+
+**Description:**
+
+`eventLocationId` is a required query parameter — there is no unscoped "all areas of the manager" listing.
+
+**Test Cases:**
+
+*   **Success:**
+    *   A manager retrieves the areas of one of their event locations and receives `200 OK`.
+*   **Failure:**
+    *   A request without the `eventLocationId` query parameter receives `400 Bad Request`.
+    *   An unauthenticated user receives `401 Unauthorized`.
+    *   A user with the `USER` role receives `403 Forbidden`.
+
+---
+
+#### GET /{id}
+
+Retrieves a specific area by its ID.
+
+**Test Cases:**
+
+*   **Success:**
+    *   A manager retrieves one of their areas and receives `200 OK`.
+*   **Failure:**
+    *   Attempting to retrieve a non-existent area results in `404 Not Found`.
+
+---
+
+#### POST /
+
+Creates a new area for an event location.
+
+**Test Cases:**
+
+*   **Success:**
+    *   A manager creates a new area and receives `200 OK`.
+*   **Failure:**
+    *   Sending invalid data (e.g., empty name) results in `400 Bad Request`.
+
+---
+
+#### PUT /{id}
+
+Updates an existing area.
+
+**Test Cases:**
+
+*   **Success:**
+    *   A manager updates one of their areas and receives `200 OK`.
+*   **Failure:**
+    *   Attempting to update a non-existent area results in `404 Not Found`.
+
+---
+
+#### DELETE /
+
+Deletes one or more areas.
+
+**Test Cases:**
+
+*   **Success:**
+    *   A manager deletes an area not referenced by any seat and receives `204 No Content`.
+*   **Failure:**
+    *   Attempting to delete a non-existent area results in `404 Not Found`.
+    *   Attempting to delete an area still referenced by at least one seat results in `409 Conflict`.
+
+---
+
+### EntranceResource (Manager)
+
+Base Path: `/api/manager/entrances`
+
+Roles: `MANAGER`, `ADMIN`
+
+---
+
+#### GET /
+
+Retrieves the entrances of a given event location.
+
+**Description:**
+
+`eventLocationId` is a required query parameter — there is no unscoped "all entrances of the manager" listing.
+
+**Test Cases:**
+
+*   **Success:**
+    *   A manager retrieves the entrances of one of their event locations and receives `200 OK`.
+*   **Failure:**
+    *   A request without the `eventLocationId` query parameter receives `400 Bad Request`.
+    *   An unauthenticated user receives `401 Unauthorized`.
+    *   A user with the `USER` role receives `403 Forbidden`.
+
+---
+
+#### GET /{id}
+
+Retrieves a specific entrance by its ID.
+
+**Test Cases:**
+
+*   **Success:**
+    *   A manager retrieves one of their entrances and receives `200 OK`.
+*   **Failure:**
+    *   Attempting to retrieve a non-existent entrance results in `404 Not Found`.
+
+---
+
+#### POST /
+
+Creates a new entrance for an event location.
+
+**Test Cases:**
+
+*   **Success:**
+    *   A manager creates a new entrance and receives `200 OK`.
+*   **Failure:**
+    *   Sending invalid data (e.g., empty name) results in `400 Bad Request`.
+
+---
+
+#### PUT /{id}
+
+Updates an existing entrance.
+
+**Test Cases:**
+
+*   **Success:**
+    *   A manager updates one of their entrances and receives `200 OK`.
+*   **Failure:**
+    *   Attempting to update a non-existent entrance results in `404 Not Found`.
+
+---
+
+#### DELETE /
+
+Deletes one or more entrances.
+
+**Test Cases:**
+
+*   **Success:**
+    *   A manager deletes an entrance not referenced by any seat and receives `204 No Content`.
+*   **Failure:**
+    *   Attempting to delete a non-existent entrance results in `404 Not Found`.
+    *   Attempting to delete an entrance still referenced by at least one seat results in `409 Conflict`.
+
+---
+
+### MarkerResource (Manager)
+
+Base Path: `/api/manager/markers`
+
+Roles: `MANAGER`, `ADMIN`
+
+---
+
+#### GET /
+
+Retrieves the markers of a given event location.
+
+**Description:**
+
+`eventLocationId` is a required query parameter — there is no unscoped "all markers of the manager" listing.
+
+**Test Cases:**
+
+*   **Success:**
+    *   A manager retrieves the markers of one of their event locations and receives `200 OK`.
+*   **Failure:**
+    *   A request without the `eventLocationId` query parameter receives `400 Bad Request`.
+    *   An unauthenticated user receives `401 Unauthorized`.
+    *   A user with the `USER` role receives `403 Forbidden`.
+
+---
+
+#### GET /{id}
+
+Retrieves a specific marker by its ID.
+
+**Test Cases:**
+
+*   **Success:**
+    *   A manager retrieves one of their markers and receives `200 OK`.
+*   **Failure:**
+    *   Attempting to retrieve a non-existent marker results in `404 Not Found`.
+
+---
+
+#### POST /
+
+Creates a new marker for an event location.
+
+**Test Cases:**
+
+*   **Success:**
+    *   A manager creates a new marker and receives `200 OK`.
+*   **Failure:**
+    *   Sending invalid data (e.g., empty label) results in `400 Bad Request`.
+
+---
+
+#### PUT /{id}
+
+Updates an existing marker.
+
+**Test Cases:**
+
+*   **Success:**
+    *   A manager updates one of their markers and receives `200 OK`.
+*   **Failure:**
+    *   Attempting to update a non-existent marker results in `404 Not Found`.
+
+---
+
+#### DELETE /
+
+Deletes one or more markers. No 409-conflict case — nothing references a marker by FK.
+
+**Test Cases:**
+
+*   **Success:**
+    *   A manager deletes one of their markers and receives `204 No Content`.
+*   **Failure:**
+    *   Attempting to delete a non-existent marker results in `404 Not Found`.
 
 ---
 

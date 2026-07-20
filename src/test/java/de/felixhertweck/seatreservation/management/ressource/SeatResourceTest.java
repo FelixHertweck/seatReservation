@@ -28,6 +28,8 @@ import static org.hamcrest.CoreMatchers.is;
 import de.felixhertweck.seatreservation.management.dto.SeatRequestDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
+import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
+import de.felixhertweck.seatreservation.model.entity.EventLocationEntrance;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
@@ -59,6 +61,12 @@ public class SeatResourceTest {
 
     private Seat testSeat;
     private EventLocation testLocation;
+    private EventLocationArea areaParkett;
+    private EventLocationArea areaBalkon;
+    private EventLocationArea areaLoge;
+    private EventLocationEntrance entranceA;
+    private EventLocationEntrance entranceB;
+    private EventLocationEntrance entranceC;
 
     @BeforeEach
     @Transactional
@@ -85,6 +93,26 @@ public class SeatResourceTest {
         testSeat.setSeatRow("R: 1");
         testSeat.setLocation(testLocation);
         seatRepository.persist(testSeat);
+
+        areaParkett = new EventLocationArea("Parkett");
+        areaParkett.setEventLocation(testLocation);
+        eventLocationAreaRepository.persist(areaParkett);
+        areaBalkon = new EventLocationArea("Balkon");
+        areaBalkon.setEventLocation(testLocation);
+        eventLocationAreaRepository.persist(areaBalkon);
+        areaLoge = new EventLocationArea("Loge");
+        areaLoge.setEventLocation(testLocation);
+        eventLocationAreaRepository.persist(areaLoge);
+
+        entranceA = new EventLocationEntrance("A");
+        entranceA.setEventLocation(testLocation);
+        eventLocationEntranceRepository.persist(entranceA);
+        entranceB = new EventLocationEntrance("B");
+        entranceB.setEventLocation(testLocation);
+        eventLocationEntranceRepository.persist(entranceB);
+        entranceC = new EventLocationEntrance("C");
+        entranceC.setEventLocation(testLocation);
+        eventLocationEntranceRepository.persist(entranceC);
     }
 
     @AfterEach
@@ -106,12 +134,20 @@ public class SeatResourceTest {
             user = "testUser",
             roles = {"USER"})
     void testGetAllManagerSeatsForbidden() {
-        given().when().get("/api/manager/seats").then().statusCode(403);
+        given().when()
+                .queryParam("eventLocationId", testLocation.id)
+                .get("/api/manager/seats")
+                .then()
+                .statusCode(403);
     }
 
     @Test
     void testGetAllManagerSeatsUnauthorized() {
-        given().when().get("/api/manager/seats").then().statusCode(401);
+        given().when()
+                .queryParam("eventLocationId", testLocation.id)
+                .get("/api/manager/seats")
+                .then()
+                .statusCode(401);
     }
 
     @Test
@@ -119,7 +155,20 @@ public class SeatResourceTest {
             user = "manager",
             roles = {"MANAGER"})
     void testGetAllManagerSeats() {
-        given().when().get("/api/manager/seats").then().statusCode(200).body("size()", is(1));
+        given().when()
+                .queryParam("eventLocationId", testLocation.id)
+                .get("/api/manager/seats")
+                .then()
+                .statusCode(200)
+                .body("size()", is(1));
+    }
+
+    @Test
+    @TestSecurity(
+            user = "manager",
+            roles = {"MANAGER"})
+    void testGetAllManagerSeatsMissingEventLocationId() {
+        given().when().get("/api/manager/seats").then().statusCode(400);
     }
 
     @Test
@@ -148,7 +197,9 @@ public class SeatResourceTest {
             roles = {"MANAGER"})
     void testCreateSeat() {
         given().contentType("application/json")
-                .body(new SeatRequestDTO("A2", "R: 2", testLocation.id, 1, 2, "A", "Parkett"))
+                .body(
+                        new SeatRequestDTO(
+                                "A2", "R: 2", testLocation.id, 1, 2, entranceA.id, areaParkett.id))
                 .when()
                 .post("/api/manager/seats")
                 .then()
@@ -176,7 +227,9 @@ public class SeatResourceTest {
             roles = {"MANAGER"})
     void testUpdateManagerSeat() {
         given().contentType("application/json")
-                .body(new SeatRequestDTO("A3", "R: 2", testLocation.id, 1, 3, "A", "Balkon"))
+                .body(
+                        new SeatRequestDTO(
+                                "A3", "R: 2", testLocation.id, 1, 3, entranceA.id, areaBalkon.id))
                 .when()
                 .put("/api/manager/seats/" + testSeat.id)
                 .then()
@@ -190,7 +243,9 @@ public class SeatResourceTest {
             roles = {"MANAGER"})
     void testUpdateManagerSeatEntranceAndRowArePersisted() {
         given().contentType("application/json")
-                .body(new SeatRequestDTO("A1", "R: 5", testLocation.id, 1, 1, "B", "Loge"))
+                .body(
+                        new SeatRequestDTO(
+                                "A1", "R: 5", testLocation.id, 1, 1, entranceB.id, areaLoge.id))
                 .when()
                 .put("/api/manager/seats/" + testSeat.id)
                 .then()
@@ -200,6 +255,7 @@ public class SeatResourceTest {
                 .body("seatRow", is("R: 5"));
 
         given().when()
+                .queryParam("eventLocationId", testLocation.id)
                 .get("/api/manager/seats")
                 .then()
                 .statusCode(200)
@@ -224,7 +280,13 @@ public class SeatResourceTest {
                 given().contentType("application/json")
                         .body(
                                 new SeatRequestDTO(
-                                        "B1", "R: 7", testLocation.id, 5, 6, "A", "Parkett"))
+                                        "B1",
+                                        "R: 7",
+                                        testLocation.id,
+                                        5,
+                                        6,
+                                        entranceA.id,
+                                        areaParkett.id))
                         .when()
                         .post("/api/manager/seats")
                         .then()
@@ -234,7 +296,9 @@ public class SeatResourceTest {
                         .path("id");
 
         given().contentType("application/json")
-                .body(new SeatRequestDTO("B1", "R: 9", testLocation.id, 7, 8, "C", "Balkon"))
+                .body(
+                        new SeatRequestDTO(
+                                "B1", "R: 9", testLocation.id, 7, 8, entranceC.id, areaBalkon.id))
                 .when()
                 .put("/api/manager/seats/" + createdSeatId)
                 .then()
@@ -251,6 +315,7 @@ public class SeatResourceTest {
                 .body("entrance", is("C"));
 
         given().when()
+                .queryParam("eventLocationId", testLocation.id)
                 .get("/api/manager/seats")
                 .then()
                 .statusCode(200)
@@ -265,7 +330,9 @@ public class SeatResourceTest {
             roles = {"MANAGER"})
     void testUpdateManagerSeatNotFound() {
         given().contentType("application/json")
-                .body(new SeatRequestDTO("A3", "R: 2", testLocation.id, 1, 3, "A", "Balkon"))
+                .body(
+                        new SeatRequestDTO(
+                                "A3", "R: 2", testLocation.id, 1, 3, entranceA.id, areaBalkon.id))
                 .when()
                 .put("/api/manager/seats/999")
                 .then()
@@ -320,7 +387,12 @@ public class SeatResourceTest {
                 .statusCode(204);
 
         // Verify all were deleted
-        given().when().get("/api/manager/seats").then().statusCode(200).body("size()", is(0));
+        given().when()
+                .queryParam("eventLocationId", testLocation.id)
+                .get("/api/manager/seats")
+                .then()
+                .statusCode(200)
+                .body("size()", is(0));
     }
 
     @Test

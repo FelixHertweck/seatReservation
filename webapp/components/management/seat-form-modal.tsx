@@ -3,6 +3,7 @@
 import type React from "react";
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -21,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { SeatRequestDto, EventLocationResponseDto, SeatDto } from "@/api";
+import { getApiManagerEntrancesOptions } from "@/api/@tanstack/react-query.gen";
 import { useT } from "@/lib/i18n/hooks";
 
 interface SeatFormModalProps {
@@ -46,9 +48,16 @@ export function SeatFormModal({
     eventLocationId: seat?.locationId?.toString() || "",
     xCoordinate: seat?.coordinate?.xCoordinate?.toString() || "",
     yCoordinate: seat?.coordinate?.yCoordinate?.toString() || "",
-    entrance: seat?.entrance || "",
+    entranceId: seat?.entranceId?.toString() || "",
   });
   const [isLoading, setIsLoading] = useState(false);
+
+  const { data: entrances = [] } = useQuery({
+    ...getApiManagerEntrancesOptions({
+      query: { eventLocationId: BigInt(formData.eventLocationId || 0) },
+    }),
+    enabled: !!formData.eventLocationId,
+  });
 
   const handleSubmit = async (e?: React.FormEvent | React.KeyboardEvent) => {
     if (e) {
@@ -65,7 +74,9 @@ export function SeatFormModal({
           xCoordinate: Number.parseInt(formData.xCoordinate),
           yCoordinate: Number.parseInt(formData.yCoordinate),
         },
-        entrance: formData.entrance,
+        entranceId: formData.entranceId
+          ? BigInt(formData.entranceId)
+          : undefined,
       };
       await onSubmit(seatData);
     } finally {
@@ -199,17 +210,29 @@ export function SeatFormModal({
           </div>
           <div className="space-y-2">
             <Label htmlFor="entrance">{t("seatFormModal.entrance")}</Label>
-            <Input
-              id="entrance"
-              type="text"
-              value={formData.entrance}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  entrance: e.target.value,
-                }))
+            <Select
+              value={formData.entranceId}
+              onValueChange={(value) =>
+                setFormData((prev) => ({ ...prev, entranceId: value }))
               }
-            />
+              disabled={!formData.eventLocationId}
+            >
+              <SelectTrigger id="entrance">
+                <SelectValue
+                  placeholder={t("seatFormModal.selectEntrancePlaceholder")}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {entrances.map((entrance) => (
+                  <SelectItem
+                    key={entrance.id?.toString()}
+                    value={entrance.id?.toString() ?? "unknown"}
+                  >
+                    {entrance.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex justify-end gap-2">

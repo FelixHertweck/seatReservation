@@ -1,13 +1,17 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useQueries,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useT } from "@/lib/i18n/hooks";
 import {
   type EventResponseDto,
   type EventRequestDto,
   type EventLocationResponseDto,
-  type SeatDto,
   type ReservationResponseDto,
   type EventUserAllowancesDto,
   type EventLocationRequestDto,
@@ -16,8 +20,6 @@ import {
   type BlockSeatsRequestDto,
   type EventUserAllowancesCreateDto,
   type EventUserAllowanceUpdateDto,
-  type ImportEventLocationDto,
-  type ImportSeatDto,
   getApiManagerReservationsExportByEventIdCsv,
   getApiManagerReservationsExportByEventIdPdf,
 } from "@/api";
@@ -48,8 +50,6 @@ import {
   getApiManagerReservationsQueryKey,
   getApiManagerReservationAllowanceQueryKey,
   getApiUsersManagerOptions,
-  postApiManagerEventlocationsImportMutation,
-  postApiManagerEventlocationsImportByIdMutation,
 } from "@/api/@tanstack/react-query.gen";
 import type { EventManagementProps } from "@/components/management/event-management";
 import type { LocationManagementProps } from "@/components/management/location-management";
@@ -178,7 +178,7 @@ export function useManager(): UseManagerReturn {
   });
 
   const importLocationWithSeatsMutation = useMutation({
-    ...postApiManagerEventlocationsImportMutation(),
+    ...postApiManagerEventlocationsMutation(),
     onSuccess: (data) => {
       queryClient.setQueriesData(
         { queryKey: getApiManagerEventlocationsQueryKey() },
@@ -189,66 +189,45 @@ export function useManager(): UseManagerReturn {
     },
   });
 
-  const importSeatsMutation = useMutation({
-    ...postApiManagerEventlocationsImportByIdMutation(),
-    onSuccess: (data) => {
-      queryClient.setQueriesData(
-        { queryKey: getApiManagerEventlocationsQueryKey() },
-        (oldData: EventLocationResponseDto[] | undefined) => {
-          return oldData
-            ? oldData.map((location) =>
-                location.id === data.id ? data : location,
-              )
-            : [data];
-        },
-      );
-    },
+  // GET /api/manager/seats requires an eventLocationId, so seats are fetched per
+  // location and flattened into the single list the rest of the app expects.
+  const seatsQueries = useQueries({
+    queries: (locations ?? [])
+      .filter((location) => location.id !== undefined)
+      .map((location) => ({
+        ...getApiManagerSeatsOptions({
+          query: { eventLocationId: location.id! },
+        }),
+      })),
   });
-
-  // Seat management
-  const { data: seats, isLoading: seatsIsLoading } = useQuery({
-    ...getApiManagerSeatsOptions(),
-  });
+  const seats = seatsQueries.flatMap((query) => query.data ?? []);
+  const seatsIsLoading = seatsQueries.some((query) => query.isLoading);
 
   const createSeatMutation = useMutation({
     ...postApiManagerSeatsMutation(),
-    onSuccess: (data) => {
-      queryClient.setQueriesData(
-        { queryKey: getApiManagerSeatsQueryKey() },
-        (oldData: SeatDto[] | undefined) => {
-          return oldData ? [...oldData, data] : [data];
-        },
-      );
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: getApiManagerSeatsQueryKey(),
+      });
       eventsRefetch();
     },
   });
 
   const updateSeatMutation = useMutation({
     ...putApiManagerSeatsByIdMutation(),
-    onSuccess: (data) => {
-      queryClient.setQueriesData(
-        { queryKey: getApiManagerSeatsQueryKey() },
-        (oldData: SeatDto[] | undefined) => {
-          return oldData
-            ? oldData.map((seat) => (seat.id === data.id ? data : seat))
-            : [data];
-        },
-      );
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: getApiManagerSeatsQueryKey(),
+      });
     },
   });
 
   const deleteSeatMutation = useMutation({
     ...deleteApiManagerSeatsMutation(),
-    onSuccess: (_, variables) => {
-      queryClient.setQueriesData(
-        { queryKey: getApiManagerSeatsQueryKey() },
-        (oldData: SeatDto[] | undefined) => {
-          const idsSet = createIdsSet(variables.query);
-          return oldData
-            ? oldData.filter((seat) => !idsSet.has(seat.id ?? BigInt(-1)))
-            : [];
-        },
-      );
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: getApiManagerSeatsQueryKey(),
+      });
     },
   });
 
@@ -462,7 +441,7 @@ export function useManager(): UseManagerReturn {
   };
 
   const handleImportLocationWithSeats = async (
-    location: ImportEventLocationDto,
+    location: EventLocationRequestDto,
   ) => {
     const request = importLocationWithSeatsMutation.mutateAsync({
       body: location,
@@ -472,25 +451,6 @@ export function useManager(): UseManagerReturn {
       success: t("manager.location.importWithSeats.success.title"),
       error: (error: ErrorWithResponse) => ({
         message: t("manager.location.importWithSeats.error.title"),
-        description: error.response?.description ?? t("common.error.default"),
-      }),
-    });
-    return request;
-  };
-
-  const handleImportSeats = async (
-    seatsToImport: ImportSeatDto[],
-    locationId: string,
-  ) => {
-    const request = importSeatsMutation.mutateAsync({
-      body: seatsToImport,
-      path: { id: BigInt(locationId) },
-    });
-    toast.promise(request, {
-      loading: t("common.loading"),
-      success: t("manager.location.importSeats.success.title"),
-      error: (error: ErrorWithResponse) => ({
-        message: t("manager.location.importSeats.error.title"),
         description: error.response?.description ?? t("common.error.default"),
       }),
     });
@@ -656,7 +616,6 @@ export function useManager(): UseManagerReturn {
       updateLocation: handleUpdateLocation,
       deleteLocation: handleDeleteLocation,
       importLocationWithSeats: handleImportLocationWithSeats,
-      importSeats: handleImportSeats,
     },
     seats: {
       locations: locations ?? [],

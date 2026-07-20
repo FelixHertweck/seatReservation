@@ -35,10 +35,9 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 
-import de.felixhertweck.seatreservation.management.dto.EventLocationRequestDTO;
-import de.felixhertweck.seatreservation.management.dto.EventLocationResponseDTO;
-import de.felixhertweck.seatreservation.management.dto.EventLocationUpdateDTO;
-import de.felixhertweck.seatreservation.management.service.EventLocationService;
+import de.felixhertweck.seatreservation.common.dto.EventLocationMakerDTO;
+import de.felixhertweck.seatreservation.management.dto.MakerRequestDTO;
+import de.felixhertweck.seatreservation.management.service.MarkerService;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
@@ -48,17 +47,33 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.jboss.logging.Logger;
 
-@Path("/api/manager/eventlocations")
+@Path("/api/manager/markers")
 @RolesAllowed({Roles.MANAGER, Roles.ADMIN})
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class EventLocationResource {
+public class MarkerResource {
 
-    private static final Logger LOG = Logger.getLogger(EventLocationResource.class);
+    private static final Logger LOG = Logger.getLogger(MarkerResource.class);
 
-    @Inject EventLocationService eventLocationService;
+    @Inject MarkerService markerService;
 
     @Inject UserSecurityContext userSecurityContext;
+
+    @POST
+    @APIResponse(
+            responseCode = "200",
+            description = "OK",
+            content = @Content(schema = @Schema(implementation = EventLocationMakerDTO.class)))
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(responseCode = "404", description = "Not Found: Event location not found")
+    public EventLocationMakerDTO createMarker(@Valid MakerRequestDTO markerRequestDTO) {
+        LOG.debugf("Received POST request to /api/manager/markers to create a new marker.");
+        User currentUser = userSecurityContext.getCurrentUser();
+        return markerService.createMarker(markerRequestDTO, currentUser);
+    }
 
     @GET
     @APIResponse(
@@ -69,43 +84,40 @@ public class EventLocationResource {
                             schema =
                                     @Schema(
                                             type = SchemaType.ARRAY,
-                                            implementation = EventLocationResponseDTO.class)))
+                                            implementation = EventLocationMakerDTO.class)))
+    @APIResponse(responseCode = "400", description = "Bad Request: eventLocationId is required")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
             description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
-    public List<EventLocationResponseDTO> getEventLocationsByCurrentManager() {
-        LOG.debugf("Received GET request to /api/manager/eventlocations");
-        User currentUser = userSecurityContext.getCurrentUser();
-        List<EventLocationResponseDTO> result =
-                eventLocationService.getEventLocationsByCurrentManager(currentUser);
+    public List<EventLocationMakerDTO> getMarkersByEventLocation(
+            @QueryParam("eventLocationId") Long eventLocationId) {
         LOG.debugf(
-                "Successfully responded to GET /api/manager/eventlocations with %d event"
-                        + " locations.",
-                result.size());
-        return result;
+                "Received GET request to /api/manager/markers?eventLocationId=%d", eventLocationId);
+        if (eventLocationId == null) {
+            throw new IllegalArgumentException("eventLocationId query parameter is required");
+        }
+        User currentUser = userSecurityContext.getCurrentUser();
+        return markerService.findMarkersByLocation(eventLocationId, currentUser);
     }
 
-    @POST
+    @GET
+    @Path("/{id}")
     @APIResponse(
             responseCode = "200",
             description = "OK",
-            content = @Content(schema = @Schema(implementation = EventLocationResponseDTO.class)))
+            content = @Content(schema = @Schema(implementation = EventLocationMakerDTO.class)))
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
             description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
     @APIResponse(
-            responseCode = "409",
-            description = "Conflict: Event location with this name already exists")
-    public EventLocationResponseDTO createEventLocation(@Valid EventLocationRequestDTO dto) {
-        LOG.debugf("Received POST request to /api/manager/eventlocations for new event location.");
-        LOG.debugf("EventLocationRequestDTO received: %s", dto.toString());
+            responseCode = "404",
+            description = "Not Found: Marker with specified ID not found for the current manager")
+    public EventLocationMakerDTO getManagerMarkerById(@PathParam("id") Long id) {
+        LOG.debugf("Received GET request to /api/manager/markers/%d.", id);
         User currentUser = userSecurityContext.getCurrentUser();
-        EventLocationResponseDTO result =
-                eventLocationService.createEventLocation(dto, currentUser);
-        LOG.infof("Event location '%s' created successfully.", result.name());
-        return result;
+        return markerService.findMarkerByIdForManager(id, currentUser);
     }
 
     @PUT
@@ -113,33 +125,23 @@ public class EventLocationResource {
     @APIResponse(
             responseCode = "200",
             description = "OK",
-            content = @Content(schema = @Schema(implementation = EventLocationResponseDTO.class)))
+            content = @Content(schema = @Schema(implementation = EventLocationMakerDTO.class)))
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
             description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
     @APIResponse(
             responseCode = "404",
-            description = "Not Found: Event location with specified ID not found")
-    @APIResponse(
-            responseCode = "409",
-            description = "Conflict: Event location with this name already exists")
-    public EventLocationResponseDTO updateEventLocation(
-            @PathParam("id") Long id, @Valid EventLocationUpdateDTO dto) {
-        LOG.debugf(
-                "Received PUT request to /api/manager/eventlocations/%d to update event location.",
-                id);
-        LOG.debugf("EventLocationRequestDTO received for ID %d: %s", id, dto.toString());
+            description = "Not Found: Marker with specified ID not found for the current manager")
+    public EventLocationMakerDTO updateManagerMarker(
+            @PathParam("id") Long id, @Valid MakerRequestDTO markerRequestDTO) {
+        LOG.debugf("Received PUT request to /api/manager/markers/%d to update marker.", id);
         User currentUser = userSecurityContext.getCurrentUser();
-        EventLocationResponseDTO result =
-                eventLocationService.updateEventLocation(id, dto, currentUser);
-        LOG.infof("Event location with ID %d updated successfully.", id);
-        return result;
+        return markerService.updateMarker(id, markerRequestDTO, currentUser);
     }
 
     @DELETE
-    @APIResponse(responseCode = "200", description = "OK")
-    @APIResponse(responseCode = "204", description = "Event location deleted successfully")
+    @APIResponse(responseCode = "204", description = "Marker(s) deleted successfully")
     @APIResponse(responseCode = "400", description = "Bad Request: Invalid input")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
@@ -147,15 +149,12 @@ public class EventLocationResource {
             description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
     @APIResponse(
             responseCode = "404",
-            description = "Not Found: Event location with specified ID not found")
-    public void deleteEventLocation(@QueryParam("ids") List<Long> ids) {
+            description = "Not Found: Marker with specified ID not found for the current manager")
+    public void deleteManagerMarker(@QueryParam("ids") List<Long> ids) {
         LOG.debugf(
-                "Received DELETE request to /api/manager/eventlocations with IDs: %s",
+                "Received DELETE request to /api/manager/markers with IDs: %s",
                 ids != null ? ids : Collections.emptyList());
         User currentUser = userSecurityContext.getCurrentUser();
-        eventLocationService.deleteEventLocation(ids, currentUser);
-        LOG.debugf(
-                "Event location with IDs %s deleted successfully.",
-                ids != null ? ids : Collections.emptyList());
+        markerService.deleteMarkers(ids, currentUser);
     }
 }

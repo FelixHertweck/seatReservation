@@ -19,9 +19,7 @@
  */
 package de.felixhertweck.seatreservation.management.service;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -44,14 +42,12 @@ import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
 import de.felixhertweck.seatreservation.management.dto.AreaRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationResponseDTO;
-import de.felixhertweck.seatreservation.management.dto.ImportEventLocationDto;
+import de.felixhertweck.seatreservation.management.dto.EventLocationUpdateDTO;
 import de.felixhertweck.seatreservation.management.dto.ImportSeatDto;
 import de.felixhertweck.seatreservation.management.dto.MakerRequestDTO;
 import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
-import de.felixhertweck.seatreservation.model.entity.EventLocationEntrance;
-import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
@@ -231,7 +227,7 @@ public class EventLocationServiceTest {
 
     @Test
     void updateEventLocation_Success_AsManager() {
-        EventLocationRequestDTO dto = new EventLocationRequestDTO();
+        EventLocationUpdateDTO dto = new EventLocationUpdateDTO();
         dto.setName("Updated Hall");
         dto.setAddress("Updated Street 1");
         dto.setCapacity(600);
@@ -251,7 +247,7 @@ public class EventLocationServiceTest {
 
     @Test
     void updateEventLocation_NotFound() {
-        EventLocationRequestDTO dto = new EventLocationRequestDTO();
+        EventLocationUpdateDTO dto = new EventLocationUpdateDTO();
         dto.setName("Updated Hall");
         dto.setAddress("Updated Street 1");
         dto.setCapacity(600);
@@ -266,7 +262,7 @@ public class EventLocationServiceTest {
 
     @Test
     void updateEventLocation_Success_AsAdmin() {
-        EventLocationRequestDTO dto = new EventLocationRequestDTO();
+        EventLocationUpdateDTO dto = new EventLocationUpdateDTO();
         dto.setName("Updated Hall by Admin");
         dto.setAddress("Updated Street 1 by Admin");
         dto.setCapacity(700);
@@ -286,7 +282,7 @@ public class EventLocationServiceTest {
 
     @Test
     void updateEventLocation_ForbiddenException_NotManagerOrAdmin() {
-        EventLocationRequestDTO dto = new EventLocationRequestDTO();
+        EventLocationUpdateDTO dto = new EventLocationUpdateDTO();
         dto.setName("Updated Hall");
         dto.setAddress("Updated Street 1");
         dto.setCapacity(600);
@@ -344,9 +340,9 @@ public class EventLocationServiceTest {
     }
 
     @Test
-    void createEventLocationWithSeats_Success() {
+    void createEventLocation_WithSeats_Success() {
         // Arrange
-        ImportEventLocationDto dto = new ImportEventLocationDto();
+        EventLocationRequestDTO dto = new EventLocationRequestDTO();
         dto.setName("New Location with Seats");
         dto.setAddress("123 Seat Street");
         dto.setCapacity(10);
@@ -379,7 +375,7 @@ public class EventLocationServiceTest {
 
         // Act
         EventLocationResponseDTO result =
-                eventLocationService.importEventLocation(dto, managerUser);
+                eventLocationService.createEventLocation(dto, managerUser);
 
         // Assert
         assertNotNull(result);
@@ -406,87 +402,6 @@ public class EventLocationServiceTest {
         assertEquals(1, result.areas().size());
         assertEquals("Parkett", result.areas().get(0).name());
         assertEquals(2, result.areas().get(0).seatIds().size());
-    }
-
-    @Test
-    void importSeatsToEventLocation_Success() {
-        // Arrange
-        Set<ImportSeatDto> seats = new HashSet<>();
-        seats.add(new ImportSeatDto("B1", 2, 1, "Row 1", "Main", "Parkett"));
-        seats.add(new ImportSeatDto("B2", 2, 2, "Row 1", "Main", "Parkett"));
-
-        when(eventLocationRepository.findByIdOptional(existingLocation.id))
-                .thenReturn(Optional.of(existingLocation));
-        doAnswer(
-                        invocation -> {
-                            Seat seat = invocation.getArgument(0);
-                            seat.id = 100L; // Simulate ID generation
-                            return null;
-                        })
-                .when(seatRepository)
-                .persist(any(Seat.class));
-
-        // Act
-        EventLocationResponseDTO result =
-                eventLocationService.importSeatsToEventLocation(
-                        existingLocation.id, seats, managerUser);
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(existingLocation.getName(), result.name());
-        assertEquals(2, result.seatIds().size());
-        verify(eventLocationRepository, times(1)).findByIdOptional(existingLocation.id);
-        verify(seatRepository, times(2)).persist(any(Seat.class));
-
-        // Entrance and area must be copied onto the persisted seats, not just coordinates
-        ArgumentCaptor<Seat> seatCaptor = ArgumentCaptor.forClass(Seat.class);
-        verify(seatRepository, times(2)).persist(seatCaptor.capture());
-        assertTrue(
-                seatCaptor.getAllValues().stream()
-                        .allMatch(
-                                seat ->
-                                        seat.getEntrance() != null
-                                                && "Main".equals(seat.getEntrance().getName())
-                                                && seat.getArea() != null
-                                                && "Parkett".equals(seat.getArea().getName())));
-
-        // Seats sharing an area are grouped into a single AreaDTO on the response
-        assertEquals(1, result.areas().size());
-        assertEquals("Parkett", result.areas().get(0).name());
-        assertEquals(2, result.areas().get(0).seatIds().size());
-    }
-
-    @Test
-    void importSeatsToEventLocation_EventLocationNotFound() {
-        // Arrange
-        Set<ImportSeatDto> seats = new HashSet<>();
-        seats.add(new ImportSeatDto("B1", 2, 1, "Row 1"));
-        when(eventLocationRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
-
-        // Act & Assert
-        assertThrows(
-                EventLocationNotFoundException.class,
-                () -> eventLocationService.importSeatsToEventLocation(999L, seats, managerUser));
-        verify(eventLocationRepository, times(1)).findByIdOptional(anyLong());
-        verify(seatRepository, never()).persist(any(Seat.class));
-    }
-
-    @Test
-    void importSeatsToEventLocation_Forbidden() {
-        // Arrange
-        Set<ImportSeatDto> seats = new HashSet<>();
-        seats.add(new ImportSeatDto("B1", 2, 1, "Row 1"));
-        when(eventLocationRepository.findByIdOptional(existingLocation.id))
-                .thenReturn(Optional.of(existingLocation));
-
-        // Act & Assert
-        assertThrows(
-                SecurityException.class,
-                () ->
-                        eventLocationService.importSeatsToEventLocation(
-                                existingLocation.id, seats, regularUser));
-        verify(eventLocationRepository, times(1)).findByIdOptional(existingLocation.id);
-        verify(seatRepository, never()).persist(any(Seat.class));
     }
 
     @Test
@@ -588,86 +503,6 @@ public class EventLocationServiceTest {
         assertNotNull(result);
         assertEquals("Empty Markers Hall", result.name());
         assertTrue(result.markers().isEmpty());
-    }
-
-    @Test
-    void updateEventLocation_WithMarkers_Success() {
-        when(eventLocationRepository.findByIdOptional(existingLocation.id))
-                .thenReturn(Optional.of(existingLocation));
-        doAnswer(
-                        invocation -> {
-                            invocation.getArgument(0);
-                            return null;
-                        })
-                .when(eventLocationRepository)
-                .persist(any(EventLocation.class));
-
-        EventLocationRequestDTO updateDto = new EventLocationRequestDTO();
-        updateDto.setName("Updated Hall");
-        updateDto.setAddress("Updated Street 1");
-        updateDto.setCapacity(250);
-
-        List<MakerRequestDTO> newMarkers =
-                List.of(
-                        new MakerRequestDTO("Updated Entrance", 120, 220),
-                        new MakerRequestDTO("VIP Area", 200, 100));
-        updateDto.setmarkers(newMarkers);
-
-        EventLocationResponseDTO result =
-                eventLocationService.updateEventLocation(
-                        existingLocation.id, updateDto, managerUser);
-
-        assertNotNull(result);
-        assertEquals("Updated Hall", result.name());
-        assertEquals(2, result.markers().size());
-        assertEquals("Updated Entrance", result.markers().get(0).label());
-        assertEquals("VIP Area", result.markers().get(1).label());
-
-        ArgumentCaptor<EventLocation> locationCaptor = ArgumentCaptor.forClass(EventLocation.class);
-        verify(eventLocationRepository, times(1)).persist(locationCaptor.capture());
-
-        EventLocation capturedLocation = locationCaptor.getValue();
-        assertEquals(2, capturedLocation.getMarkers().size());
-    }
-
-    @Test
-    void updateEventLocation_ClearingMarkers_Success() {
-        // Setup existing location with markers
-        List<EventLocationMarker> existingMarkers =
-                List.of(
-                        new EventLocationMarker("Old Entrance", 10, 20),
-                        new EventLocationMarker("Old Exit", 30, 40));
-        existingLocation.setMarkers(existingMarkers);
-
-        when(eventLocationRepository.findByIdOptional(existingLocation.id))
-                .thenReturn(Optional.of(existingLocation));
-        doAnswer(
-                        invocation -> {
-                            invocation.getArgument(0);
-                            return null;
-                        })
-                .when(eventLocationRepository)
-                .persist(any(EventLocation.class));
-
-        EventLocationRequestDTO updateDto = new EventLocationRequestDTO();
-        updateDto.setName("Cleared Hall");
-        updateDto.setAddress("Cleared Street 1");
-        updateDto.setCapacity(100);
-        updateDto.setmarkers(Collections.emptyList()); // Clear markers
-
-        EventLocationResponseDTO result =
-                eventLocationService.updateEventLocation(
-                        existingLocation.id, updateDto, managerUser);
-
-        assertNotNull(result);
-        assertEquals("Cleared Hall", result.name());
-        assertTrue(result.markers().isEmpty());
-
-        ArgumentCaptor<EventLocation> locationCaptor = ArgumentCaptor.forClass(EventLocation.class);
-        verify(eventLocationRepository, times(1)).persist(locationCaptor.capture());
-
-        EventLocation capturedLocation = locationCaptor.getValue();
-        assertTrue(capturedLocation.getMarkers().isEmpty());
     }
 
     @Test
@@ -786,108 +621,5 @@ public class EventLocationServiceTest {
         ArgumentCaptor<EventLocation> locationCaptor = ArgumentCaptor.forClass(EventLocation.class);
         verify(eventLocationRepository, times(1)).persist(locationCaptor.capture());
         assertTrue(locationCaptor.getValue().getAreas().isEmpty());
-    }
-
-    @Test
-    void updateEventLocation_WithAreas_Success() {
-        when(eventLocationRepository.findByIdOptional(existingLocation.id))
-                .thenReturn(Optional.of(existingLocation));
-        doAnswer(invocation -> null)
-                .when(eventLocationRepository)
-                .persist(any(EventLocation.class));
-
-        EventLocationRequestDTO updateDto = new EventLocationRequestDTO();
-        updateDto.setName("Updated Hall");
-        updateDto.setAddress("Updated Street 1");
-        updateDto.setCapacity(250);
-
-        List<AreaRequestDTO> newAreas =
-                List.of(
-                        new AreaRequestDTO(
-                                "Loge",
-                                List.of(
-                                        new CoordinateDTO(2, 2),
-                                        new CoordinateDTO(4, 2),
-                                        new CoordinateDTO(4, 4))));
-        updateDto.setAreas(newAreas);
-
-        eventLocationService.updateEventLocation(existingLocation.id, updateDto, managerUser);
-
-        ArgumentCaptor<EventLocation> locationCaptor = ArgumentCaptor.forClass(EventLocation.class);
-        verify(eventLocationRepository, times(1)).persist(locationCaptor.capture());
-
-        List<EventLocationArea> persistedAreas = locationCaptor.getValue().getAreas();
-        assertEquals(1, persistedAreas.size());
-        assertEquals("Loge", persistedAreas.get(0).getName());
-        assertEquals(3, persistedAreas.get(0).getBoundary().size());
-    }
-
-    @Test
-    void updateEventLocation_ClearingAreas_Success() {
-        EventLocationArea oldArea = new EventLocationArea("Old Area");
-        oldArea.id = 5L;
-        oldArea.setEventLocation(existingLocation);
-        existingLocation.setAreas(new ArrayList<>(List.of(oldArea)));
-
-        when(eventLocationRepository.findByIdOptional(existingLocation.id))
-                .thenReturn(Optional.of(existingLocation));
-        doAnswer(invocation -> null)
-                .when(eventLocationRepository)
-                .persist(any(EventLocation.class));
-
-        EventLocationRequestDTO updateDto = new EventLocationRequestDTO();
-        updateDto.setName("Cleared Hall");
-        updateDto.setAddress("Cleared Street 1");
-        updateDto.setCapacity(100);
-        updateDto.setAreas(Collections.emptyList());
-
-        eventLocationService.updateEventLocation(existingLocation.id, updateDto, managerUser);
-
-        ArgumentCaptor<EventLocation> locationCaptor = ArgumentCaptor.forClass(EventLocation.class);
-        verify(eventLocationRepository, times(1)).persist(locationCaptor.capture());
-        assertTrue(locationCaptor.getValue().getAreas().isEmpty());
-    }
-
-    @Test
-    void updateEventLocation_PreservesAreaStillReferencedBySeat_EvenIfOmittedFromRequest() {
-        EventLocationArea existingArea = new EventLocationArea("Old Area");
-        existingArea.id = 5L;
-        existingArea.setEventLocation(existingLocation);
-        existingLocation.setAreas(new ArrayList<>(List.of(existingArea)));
-
-        Seat seatInArea =
-                new Seat(
-                        "A1",
-                        existingLocation,
-                        "Row 1",
-                        1,
-                        1,
-                        new EventLocationEntrance("Main"),
-                        existingArea);
-        seatInArea.id = 50L;
-        existingLocation.setSeats(new ArrayList<>(List.of(seatInArea)));
-
-        when(eventLocationRepository.findByIdOptional(existingLocation.id))
-                .thenReturn(Optional.of(existingLocation));
-        doAnswer(invocation -> null)
-                .when(eventLocationRepository)
-                .persist(any(EventLocation.class));
-
-        EventLocationRequestDTO updateDto = new EventLocationRequestDTO();
-        updateDto.setName("Updated Hall");
-        updateDto.setAddress("Updated Street 1");
-        updateDto.setCapacity(250);
-        // Client omits the area entirely; it must NOT be dropped since a Seat still uses it.
-        updateDto.setAreas(Collections.emptyList());
-
-        eventLocationService.updateEventLocation(existingLocation.id, updateDto, managerUser);
-
-        ArgumentCaptor<EventLocation> locationCaptor = ArgumentCaptor.forClass(EventLocation.class);
-        verify(eventLocationRepository, times(1)).persist(locationCaptor.capture());
-
-        List<EventLocationArea> persistedAreas = locationCaptor.getValue().getAreas();
-        assertEquals(1, persistedAreas.size());
-        assertEquals("Old Area", persistedAreas.get(0).getName());
-        assertEquals(existingArea.id, persistedAreas.get(0).id);
     }
 }

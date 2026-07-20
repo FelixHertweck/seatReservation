@@ -19,9 +19,7 @@
  */
 package de.felixhertweck.seatreservation.management.service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -35,7 +33,8 @@ import de.felixhertweck.seatreservation.model.entity.EventLocationEntrance;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
-import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
+import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
+import de.felixhertweck.seatreservation.model.repository.EventLocationEntranceRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import org.jboss.logging.Logger;
 
@@ -46,7 +45,11 @@ public class SeatService {
 
     @Inject SeatRepository seatRepository;
 
-    @Inject EventLocationRepository eventLocationRepository;
+    @Inject EventLocationAccessService eventLocationAccessService;
+
+    @Inject EventLocationAreaRepository eventLocationAreaRepository;
+
+    @Inject EventLocationEntranceRepository eventLocationEntranceRepository;
 
     /**
      * Creates a new seat for the specified event location by a manager.
@@ -65,39 +68,14 @@ public class SeatService {
                         + " (ID: %d)",
                 dto.getSeatNumber(), dto.getEventLocationId(), manager.id, manager.getId());
         EventLocation eventLocation =
-                eventLocationRepository
-                        .findByIdOptional(dto.getEventLocationId())
-                        .orElseThrow(
-                                () -> {
-                                    LOG.warnf(
-                                            "EventLocation with id %d not found for seat creation.",
-                                            dto.getEventLocationId());
-                                    return new IllegalArgumentException(
-                                            "EventLocation with id "
-                                                    + dto.getEventLocationId()
-                                                    + " not found");
-                                });
-
-        if (!eventLocation.getManager().equals(manager)
-                && !manager.getRoles().contains(Roles.ADMIN)) {
-            LOG.warnf(
-                    "Manager %s (ID: %d) does not own EventLocation with ID %d.",
-                    manager.id, manager.getId(), eventLocation.getId());
-            throw new SecurityException("Manager does not own this EventLocation");
-        }
+                eventLocationAccessService.findOwnedEventLocation(
+                        dto.getEventLocationId(), manager);
 
         if (dto.getSeatNumber() == null || dto.getSeatNumber().trim().isEmpty()) {
             LOG.warnf(
                     "Invalid seat data: seat number is empty for event location ID %d.",
                     eventLocation.getId());
             throw new IllegalArgumentException("Seat number cannot be empty");
-        }
-        if (dto.getCoordinate().xCoordinate() < 0 || dto.getCoordinate().yCoordinate() < 0) {
-            LOG.warnf(
-                    "Invalid seat data: coordinates are negative for seat number '%s' in event"
-                            + " location ID %d.",
-                    dto.getSeatNumber(), eventLocation.getId());
-            throw new IllegalArgumentException("Coordinates cannot be negative");
         }
         if (dto.getSeatRow() == null || dto.getSeatRow().trim().isEmpty()) {
             LOG.warnf(
@@ -113,8 +91,8 @@ public class SeatService {
                         dto.getSeatRow(),
                         dto.getCoordinate().xCoordinate(),
                         dto.getCoordinate().yCoordinate(),
-                        resolveOrCreateEntrance(dto.getEntrance(), eventLocation),
-                        resolveOrCreateArea(dto.getArea(), eventLocation));
+                        resolveEntrance(dto.getEntranceId(), eventLocation),
+                        resolveArea(dto.getAreaId(), eventLocation));
         seatRepository.persist(seat);
         LOG.infof(
                 "Seat ID: %d created successfully for event location ID %d",
@@ -127,34 +105,26 @@ public class SeatService {
     }
 
     /**
-     * Finds all seats for a given manager. Returns all seats for admin users, or only seats
-     * belonging to event locations managed by the specified manager.
+     * Finds all seats of an event location for a given manager, verifying the manager owns that
+     * location (or is ADMIN).
      *
+     * @param eventLocationId the event location to list seats for
      * @param manager the manager whose seats should be retrieved
      * @return a list of seat DTOs
      */
-    public List<SeatDTO> findAllSeatsForManager(User manager) {
+    public List<SeatDTO> findSeatsForManagerByLocation(Long eventLocationId, User manager) {
         LOG.debugf(
-                "Attempting to retrieve all seats for manager: %s (ID: %d)",
-                manager.id, manager.getId());
-        if (manager.getRoles().contains(Roles.ADMIN)) {
-            LOG.debug("User is ADMIN, listing all seats.");
-            return seatRepository.listAll().stream().map(SeatDTO::new).collect(Collectors.toList());
-        }
-        List<EventLocation> managerLocations;
-        if (manager.getRoles().contains(Roles.ADMIN)) {
-            managerLocations = new ArrayList<>(eventLocationRepository.listAll());
-        } else {
-            managerLocations = new ArrayList<>(eventLocationRepository.findByManager(manager));
-        }
+                "Attempting to retrieve seats for event location ID: %d for manager: %s (ID: %d)",
+                eventLocationId, manager.id, manager.getId());
+        EventLocation eventLocation =
+                eventLocationAccessService.findOwnedEventLocation(eventLocationId, manager);
         List<SeatDTO> result =
-                managerLocations.stream()
-                        .flatMap(location -> seatRepository.findByEventLocation(location).stream())
+                seatRepository.findByEventLocation(eventLocation).stream()
                         .map(SeatDTO::new)
-                        .collect(Collectors.toList());
+                        .toList();
         LOG.debugf(
-                "Retrieved %d seats for manager: %s (ID: %d)",
-                result.size(), manager.id, manager.getId());
+                "Retrieved %d seats for event location ID: %d for manager: %s (ID: %d)",
+                result.size(), eventLocationId, manager.id, manager.getId());
         return result;
     }
 
@@ -200,35 +170,12 @@ public class SeatService {
         Seat seat = findSeatEntityById(id, manager);
 
         EventLocation newEventLocation =
-                eventLocationRepository
-                        .findByIdOptional(dto.getEventLocationId())
-                        .orElseThrow(
-                                () -> {
-                                    LOG.warnf(
-                                            "EventLocation with id %d not found for seat update.",
-                                            dto.getEventLocationId());
-                                    return new IllegalArgumentException(
-                                            "EventLocation with id "
-                                                    + dto.getEventLocationId()
-                                                    + " not found");
-                                });
-
-        if (!manager.getRoles().contains(Roles.ADMIN)
-                && !newEventLocation.getManager().equals(manager)) {
-            LOG.warnf(
-                    "Manager %s (ID: %d) does not own the new EventLocation with ID %d for seat"
-                            + " update.",
-                    manager.id, manager.getId(), newEventLocation.getId());
-            throw new SecurityException("Manager does not own the new EventLocation");
-        }
+                eventLocationAccessService.findOwnedEventLocation(
+                        dto.getEventLocationId(), manager);
 
         if (dto.getSeatNumber() == null || dto.getSeatNumber().trim().isEmpty()) {
             LOG.warnf("Invalid seat data: seat number is empty for seat ID %d.", id);
             throw new IllegalArgumentException("Seat number cannot be empty");
-        }
-        if (dto.getCoordinate().xCoordinate() < 0 || dto.getCoordinate().yCoordinate() < 0) {
-            LOG.warnf("Invalid seat data: coordinates are negative for seat ID %d.", id);
-            throw new IllegalArgumentException("Coordinates cannot be negative");
         }
         if (dto.getSeatRow() == null || dto.getSeatRow().trim().isEmpty()) {
             LOG.warnf("Invalid seat data: seat row is empty for seat ID %d.", id);
@@ -249,16 +196,16 @@ public class SeatService {
                 seat.getSeatRow(),
                 dto.getSeatRow(),
                 seat.getEntrance(),
-                dto.getEntrance(),
+                dto.getEntranceId(),
                 seat.getArea(),
-                dto.getArea());
+                dto.getAreaId());
 
         seat.setSeatNumber(dto.getSeatNumber());
         seat.setLocation(newEventLocation);
         seat.setCoordinate(dto.getCoordinate().toEntity());
         seat.setSeatRow(dto.getSeatRow());
-        seat.setEntrance(resolveOrCreateEntrance(dto.getEntrance(), newEventLocation));
-        seat.setArea(resolveOrCreateArea(dto.getArea(), newEventLocation));
+        seat.setEntrance(resolveEntrance(dto.getEntranceId(), newEventLocation));
+        seat.setArea(resolveArea(dto.getAreaId(), newEventLocation));
 
         seatRepository.persist(seat);
 
@@ -270,53 +217,60 @@ public class SeatService {
     }
 
     /**
-     * Resolves an {@link EventLocationArea} by (trimmed) name, scoped to the given {@code
-     * eventLocation}, creating and registering a new one if no match exists yet.
+     * Resolves an existing {@link EventLocationArea} by id, verifying it belongs to the given
+     * {@code eventLocation}. No auto-create: the area must already exist, created via the dedicated
+     * {@code AreaResource}.
      *
-     * @param rawName The (possibly untrimmed) area name; {@code null}/blank resolves to no area
-     * @param eventLocation The event location the area belongs to
-     * @return The resolved or newly created area, or {@code null} if {@code rawName} is blank
+     * @param areaId The area id; {@code null} resolves to no area
+     * @param eventLocation The event location the area must belong to
+     * @return The resolved area, or {@code null} if {@code areaId} is {@code null}
+     * @throws IllegalArgumentException if the area does not exist or belongs to another location
      */
-    private EventLocationArea resolveOrCreateArea(String rawName, EventLocation eventLocation) {
-        if (rawName == null || rawName.trim().isEmpty()) {
+    private EventLocationArea resolveArea(Long areaId, EventLocation eventLocation) {
+        if (areaId == null) {
             return null;
         }
-        String name = rawName.trim();
-        for (EventLocationArea existing : eventLocation.getAreas()) {
-            if (name.equals(existing.getName())) {
-                return existing;
-            }
+        EventLocationArea area =
+                eventLocationAreaRepository
+                        .findByIdOptional(areaId)
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "Area with id " + areaId + " not found"));
+        if (!area.getEventLocation().getId().equals(eventLocation.getId())) {
+            throw new IllegalArgumentException(
+                    "Area with id " + areaId + " does not belong to this EventLocation");
         }
-        EventLocationArea created = new EventLocationArea(name);
-        created.setEventLocation(eventLocation);
-        eventLocation.getAreas().add(created);
-        return created;
+        return area;
     }
 
     /**
-     * Resolves an {@link EventLocationEntrance} by (trimmed) name, scoped to the given {@code
-     * eventLocation}, creating and registering a new one if no match exists yet.
+     * Resolves an existing {@link EventLocationEntrance} by id, verifying it belongs to the given
+     * {@code eventLocation}. No auto-create: the entrance must already exist, created via the
+     * dedicated {@code EntranceResource}.
      *
-     * @param rawName The (possibly untrimmed) entrance name; {@code null}/blank resolves to no
-     *     entrance
-     * @param eventLocation The event location the entrance belongs to
-     * @return The resolved or newly created entrance, or {@code null} if {@code rawName} is blank
+     * @param entranceId The entrance id; {@code null} resolves to no entrance
+     * @param eventLocation The event location the entrance must belong to
+     * @return The resolved entrance, or {@code null} if {@code entranceId} is {@code null}
+     * @throws IllegalArgumentException if the entrance does not exist or belongs to another
+     *     location
      */
-    private EventLocationEntrance resolveOrCreateEntrance(
-            String rawName, EventLocation eventLocation) {
-        if (rawName == null || rawName.trim().isEmpty()) {
+    private EventLocationEntrance resolveEntrance(Long entranceId, EventLocation eventLocation) {
+        if (entranceId == null) {
             return null;
         }
-        String name = rawName.trim();
-        for (EventLocationEntrance existing : eventLocation.getEntrances()) {
-            if (name.equals(existing.getName())) {
-                return existing;
-            }
+        EventLocationEntrance entrance =
+                eventLocationEntranceRepository
+                        .findByIdOptional(entranceId)
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "Entrance with id " + entranceId + " not found"));
+        if (!entrance.getEventLocation().getId().equals(eventLocation.getId())) {
+            throw new IllegalArgumentException(
+                    "Entrance with id " + entranceId + " does not belong to this EventLocation");
         }
-        EventLocationEntrance created = new EventLocationEntrance(name);
-        created.setEventLocation(eventLocation);
-        eventLocation.getEntrances().add(created);
-        return created;
+        return entrance;
     }
 
     /**

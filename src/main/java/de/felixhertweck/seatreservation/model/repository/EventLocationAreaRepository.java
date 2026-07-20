@@ -19,10 +19,40 @@
  */
 package de.felixhertweck.seatreservation.model.repository;
 
+import java.util.List;
+import java.util.Optional;
 import jakarta.enterprise.context.ApplicationScoped;
 
+import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 
 @ApplicationScoped
-public class EventLocationAreaRepository implements PanacheRepository<EventLocationArea> {}
+public class EventLocationAreaRepository implements PanacheRepository<EventLocationArea> {
+    /**
+     * Finds all areas belonging to a specific event location.
+     *
+     * @param eventLocation the event location to search for
+     * @return a list of areas for the specified event location
+     */
+    public List<EventLocationArea> findByEventLocation(EventLocation eventLocation) {
+        return find("eventLocation", eventLocation).list();
+    }
+
+    /**
+     * Finds a area by ID, eagerly fetching its event location and that location's manager. The
+     * ownership check needs both, so fetching them up front saves two extra queries.
+     *
+     * @param id the area ID to find
+     * @return the area including its event location and manager, if it exists
+     */
+    public Optional<EventLocationArea> findByIdWithEventLocation(Long id) {
+        return find(
+                        "select e from EventLocationArea e"
+                                + " join fetch e.eventLocation el"
+                                + " join fetch el.manager"
+                                + " where e.id = ?1",
+                        id)
+                .firstResultOptional();
+    }
+}
