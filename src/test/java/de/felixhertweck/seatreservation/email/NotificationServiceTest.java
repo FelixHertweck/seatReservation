@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -40,9 +41,14 @@ import de.felixhertweck.seatreservation.email.service.EmailService;
 import de.felixhertweck.seatreservation.email.service.NotificationService;
 import de.felixhertweck.seatreservation.management.service.EventService;
 import de.felixhertweck.seatreservation.management.service.ReservationService;
+import de.felixhertweck.seatreservation.model.entity.Coordinate;
 import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.EventLocation;
+import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
+import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.Roles;
+import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -86,6 +92,69 @@ class NotificationServiceTest {
     // now uses programmatic scheduling where reminders are scheduled when events are
     // created/updated.
     // These tests would have tested the old sendEventReminders() method which no longer exists.
+
+    // loadReminderData() force-loads event.getEventLocation()'s seats/markers/areas (and each
+    // area's boundary) before returning, since sendReminderEmails() later reads them outside the
+    // @Transactional boundary (see eagerLoadEntities()). Because eventService/reservationService
+    // are Mockito mocks here, event/location/reservation are plain POJOs, never real Hibernate
+    // proxies - so these tests cannot reproduce a genuine LazyInitializationException. What they do
+    // verify: the eager-load traversal is null-safe and structurally correct for a location that
+    // actually has seats, markers, areas and boundary points, and for the null-location and
+    // empty-collection edge cases. Verifying against a real lazy proxy needs a @QuarkusTest with a
+    // genuine persistence context.
+
+    @Test
+    void loadReminderData_WithFullEventLocationGraph_DoesNotThrow() {
+        // Arrange
+        EventLocation location = new EventLocation("Main Hall", "Test Street 1", null, 100);
+        Seat seat = new Seat("A1", location, "A", 1, 1, null, null);
+        location.setSeats(List.of(seat));
+        location.setMarkers(List.of(new EventLocationMarker("Entrance", 0, 0)));
+
+        EventLocationArea area = new EventLocationArea("VIP");
+        area.setBoundary(List.of(new Coordinate(0, 0), new Coordinate(5, 0), new Coordinate(5, 5)));
+        location.setAreas(List.of(area));
+
+        testEvent.setEventLocation(location);
+        testReservation.setSeat(seat);
+
+        when(eventService.findById(1L)).thenReturn(testEvent);
+        when(reservationService.findByEvent(testEvent)).thenReturn(List.of(testReservation));
+
+        // Act & Assert
+        NotificationService.ReminderData data =
+                assertDoesNotThrow(() -> notificationService.loadReminderData(1L));
+        assertNotNull(data);
+        verify(eventService).findById(1L);
+        verify(reservationService).findByEvent(testEvent);
+    }
+
+    @Test
+    void loadReminderData_WithNullEventLocation_DoesNotThrow() {
+        // Arrange: testEvent has no location set (default from setUp()).
+        when(eventService.findById(2L)).thenReturn(testEvent);
+        when(reservationService.findByEvent(testEvent)).thenReturn(List.of(testReservation));
+
+        // Act & Assert
+        NotificationService.ReminderData data =
+                assertDoesNotThrow(() -> notificationService.loadReminderData(2L));
+        assertNotNull(data);
+    }
+
+    @Test
+    void loadReminderData_WithEmptyLocationCollections_DoesNotThrow() {
+        // Arrange: a location with no seats/markers/areas (all default to empty lists).
+        EventLocation location = new EventLocation("Empty Hall", "Test Street 2", null, 50);
+        testEvent.setEventLocation(location);
+
+        when(eventService.findById(3L)).thenReturn(testEvent);
+        when(reservationService.findByEvent(testEvent)).thenReturn(List.of(testReservation));
+
+        // Act & Assert
+        NotificationService.ReminderData data =
+                assertDoesNotThrow(() -> notificationService.loadReminderData(3L));
+        assertNotNull(data);
+    }
 
     @Test
     void sendDailyReservationCsvToManagers_WithEventsAndManagers_SendsCsvEmails() throws Exception {
