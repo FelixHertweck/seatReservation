@@ -88,14 +88,10 @@ public class ReservationResourceTest {
         testEvent.setManager(manager);
         eventRepository.persist(testEvent);
 
-        testSeat = new Seat();
-        testSeat.setSeatNumber("A1");
-        testSeat.setLocation(testLocation);
+        testSeat = new Seat("A1", "", testLocation);
         seatRepository.persist(testSeat);
 
-        anotherSeat = new Seat();
-        anotherSeat.setSeatNumber("A2");
-        anotherSeat.setLocation(testLocation);
+        anotherSeat = new Seat("A2", "", testLocation);
         seatRepository.persist(anotherSeat);
 
         testReservation = new Reservation();
@@ -237,9 +233,7 @@ public class ReservationResourceTest {
         reservation2.setUser(testUser);
 
         var user2 = userRepository.findByUsernameOptional("user").orElseThrow();
-        var seat3 = new Seat();
-        seat3.setSeatNumber("A3");
-        seat3.setLocation(testSeat.getLocation());
+        var seat3 = new Seat("A3", "", testSeat.getLocation());
 
         var reservation3 = new Reservation();
         reservation3.setEvent(testEvent);

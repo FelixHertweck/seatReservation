@@ -245,10 +245,7 @@ public class EntranceResourceTest {
             user = "manager",
             roles = {"MANAGER"})
     void testDeleteEntranceConflictWhenReferencedBySeat() {
-        Seat seat = new Seat();
-        seat.setSeatNumber("A1");
-        seat.setSeatRow("Row 1");
-        seat.setLocation(testLocation);
+        Seat seat = new Seat("A1", "Row 1", testLocation);
         seat.setEntrance(testEntrance);
         persistSeat(seat);
 

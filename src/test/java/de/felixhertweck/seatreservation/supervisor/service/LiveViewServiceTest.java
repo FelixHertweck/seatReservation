@@ -163,10 +163,8 @@ public class LiveViewServiceTest {
         EventLocation location = new EventLocation();
         location.id = 1L;
 
-        Seat seat = new Seat();
+        Seat seat = new Seat("A1", "", location);
         seat.id = 1L;
-        seat.setSeatNumber("A1");
-        seat.setLocation(location);
 
         Reservation reservation = new Reservation();
         reservation.id = 1L;

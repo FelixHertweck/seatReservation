@@ -138,9 +138,7 @@ public class SeatServiceTest {
         EventUserAllowance allowance = new EventUserAllowance(managerUser, dummyEvent, 1);
         managerUser.getEventAllowances().add(allowance);
 
-        existingSeat = new Seat();
-        existingSeat.setSeatNumber("A1");
-        existingSeat.setLocation(eventLocation);
+        existingSeat = new Seat("A1", "", eventLocation);
         existingSeat.setCoordinate(new Coordinate(1, 1));
         existingSeat.id = 1L;
 
@@ -440,9 +438,7 @@ public class SeatServiceTest {
         EventLocation otherLocation =
                 new EventLocation("Other Hall", "Other Address", regularUser, 50);
         otherLocation.id = 2L;
-        Seat seatInOtherLocation = new Seat();
-        seatInOtherLocation.setSeatNumber("X1");
-        seatInOtherLocation.setLocation(otherLocation);
+        Seat seatInOtherLocation = new Seat("X1", "", otherLocation);
         seatInOtherLocation.id = 2L;
 
         when(seatRepository.findByIdOptional(seatInOtherLocation.id))
@@ -665,9 +661,7 @@ public class SeatServiceTest {
         EventLocation otherLocation =
                 new EventLocation("Other Hall", "Other Address", regularUser, 50);
         otherLocation.id = 2L;
-        Seat seatInOtherLocation = new Seat();
-        seatInOtherLocation.setSeatNumber("X1");
-        seatInOtherLocation.setLocation(otherLocation);
+        Seat seatInOtherLocation = new Seat("X1", "", otherLocation);
         seatInOtherLocation.id = 2L;
 
         SeatRequestDTO dto = new SeatRequestDTO();
@@ -745,9 +739,7 @@ public class SeatServiceTest {
         EventLocation otherLocation =
                 new EventLocation("Other Hall", "Other Address", regularUser, 50);
         otherLocation.id = 2L;
-        Seat seatInOtherLocation = new Seat();
-        seatInOtherLocation.setSeatNumber("X1");
-        seatInOtherLocation.setLocation(otherLocation);
+        Seat seatInOtherLocation = new Seat("X1", "", otherLocation);
         seatInOtherLocation.id = 2L;
 
         when(seatRepository.findByIdOptional(seatInOtherLocation.id))

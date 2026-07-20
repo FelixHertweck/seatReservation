@@ -35,7 +35,8 @@ public class EventLocationMarker extends PanacheEntity {
     @JoinColumn(name = "event_location_id")
     private EventLocation eventLocation;
 
-    public EventLocationMarker() {}
+    // Protected: JPA needs a no-arg constructor, but a marker must never lack a coordinate.
+    protected EventLocationMarker() {}
 
     public EventLocationMarker(String label, int xCoordinate, int yCoordinate) {
         this.label = label;
@@ -55,7 +56,7 @@ public class EventLocationMarker extends PanacheEntity {
     }
 
     public void setCoordinate(Coordinate coordinate) {
-        this.coordinate = coordinate;
+        this.coordinate = Objects.requireNonNull(coordinate, "coordinate must not be null");
     }
 
     public EventLocation getEventLocation() {

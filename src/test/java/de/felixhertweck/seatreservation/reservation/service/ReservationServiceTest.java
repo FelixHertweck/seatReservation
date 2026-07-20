@@ -122,13 +122,11 @@ class ReservationServiceTest {
                         .plusSeconds(Duration.ofHours(2).toSeconds()));
         event.setEventLocation(location);
 
-        seat1 = new Seat();
+        seat1 = new Seat("", "", location);
         seat1.id = 1L;
-        seat1.setLocation(location);
 
-        seat2 = new Seat();
+        seat2 = new Seat("", "", location);
         seat2.id = 2L;
-        seat2.setLocation(location);
 
         reservation =
                 new Reservation(
@@ -298,7 +296,7 @@ class ReservationServiceTest {
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
         when(seatRepository.findByIdOptional(seat1.id)).thenReturn(Optional.of(seat1));
         when(seatRepository.findByIdOptional(seat2.id)).thenReturn(Optional.of(seat2));
-        when(seatRepository.findByIdOptional(3L)).thenReturn(Optional.of(new Seat()));
+        when(seatRepository.findByIdOptional(3L)).thenReturn(Optional.of(new Seat("", "", null)));
         when(eventUserAllowanceRepository.findByUser(currentUser)).thenReturn(List.of(allowance));
 
         assertThrows(

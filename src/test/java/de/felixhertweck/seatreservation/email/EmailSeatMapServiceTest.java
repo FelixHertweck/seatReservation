@@ -43,7 +43,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.email.service.EmailSeatMapService;
-import de.felixhertweck.seatreservation.model.entity.Coordinate;
 import de.felixhertweck.seatreservation.model.entity.EmailSeatMapToken;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
@@ -85,11 +84,8 @@ class EmailSeatMapServiceTest {
         testLocation.setName("Test Location");
         testLocation.setCapacity(50);
 
-        testSeat = new Seat();
+        testSeat = new Seat("A1", "A", testLocation);
         testSeat.id = 1000L;
-        testSeat.setSeatNumber("A1");
-        testSeat.setSeatRow("A");
-        testSeat.setLocation(testLocation);
 
         testLocation.setSeats(Collections.singletonList(testSeat));
 
@@ -137,10 +133,8 @@ class EmailSeatMapServiceTest {
 
     @Test
     void createEmailSeatMapToken_WithMultipleReservations() {
-        Seat seat2 = new Seat();
+        Seat seat2 = new Seat("A2", "", testLocation);
         seat2.id = 1001L;
-        seat2.setSeatNumber("A2");
-        seat2.setLocation(testLocation);
 
         Reservation reservation2 = new Reservation();
         reservation2.id = 10001L;
@@ -275,11 +269,8 @@ class EmailSeatMapServiceTest {
         String token = UUID.randomUUID().toString();
 
         // Add existing reservation
-        Seat existingSeat = new Seat();
+        Seat existingSeat = new Seat("B1", "B", testLocation);
         existingSeat.id = 1001L;
-        existingSeat.setSeatNumber("B1");
-        existingSeat.setSeatRow("B");
-        existingSeat.setLocation(testLocation);
 
         Reservation existingReservation = new Reservation();
         existingReservation.id = 10001L;
@@ -309,9 +300,7 @@ class EmailSeatMapServiceTest {
     void getSvgImage_WithMarkers() {
         String token = UUID.randomUUID().toString();
 
-        EventLocationMarker marker = new EventLocationMarker();
-        marker.setLabel("Stage");
-        marker.setCoordinate(new Coordinate(100, 50));
+        EventLocationMarker marker = new EventLocationMarker("Stage", 100, 50);
         marker.setEventLocation(testLocation);
 
         testLocation.setMarkers(Collections.singletonList(marker));

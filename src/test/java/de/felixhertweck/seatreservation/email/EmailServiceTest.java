@@ -113,10 +113,8 @@ class EmailServiceTest {
     }
 
     private Seat createTestSeat(EventLocation location, String seatNumber) {
-        Seat seat = new Seat();
+        Seat seat = new Seat(seatNumber, "", location);
         seat.id = 1000L;
-        seat.setSeatNumber(seatNumber);
-        seat.setLocation(location);
         seat.setArea(new EventLocationArea("Parkett"));
         return seat;
     }

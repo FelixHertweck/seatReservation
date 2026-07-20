@@ -47,10 +47,8 @@ class ReservationExporterTest {
         user.setFirstname(firstName);
         user.setLastname(lastName);
         user.id = id;
-        Seat seat = new Seat();
+        Seat seat = new Seat(seatNumber, seatRow, null);
         seat.id = id;
-        seat.setSeatNumber(seatNumber);
-        seat.setSeatRow(seatRow);
         Reservation reservation = new Reservation();
         reservation.id = id;
         reservation.setUser(user);
