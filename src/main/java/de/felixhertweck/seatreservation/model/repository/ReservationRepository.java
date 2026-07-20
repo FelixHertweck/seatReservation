@@ -125,4 +125,20 @@ public class ReservationRepository implements PanacheRepository<Reservation> {
         return find("id = ?1 and user.id = ?2 and event.id = ?3", id, userId, eventId)
                 .firstResultOptional();
     }
+
+    /**
+     * Finds multiple reservations by their IDs and associated user ID and event ID.
+     *
+     * @param ids the reservation IDs to search for
+     * @param userId the user ID to search for
+     * @param eventId the event ID to search for
+     * @return a list of reservations if found
+     */
+    public List<Reservation> findAllByIdUserIdAndEventId(
+            List<Long> ids, Long userId, Long eventId) {
+        if (ids == null || ids.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+        return find("id in ?1 and user.id = ?2 and event.id = ?3", ids, userId, eventId).list();
+    }
 }
