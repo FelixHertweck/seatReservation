@@ -83,8 +83,8 @@ export function SeatMapModal({
                   })
                 : t("seatMapModal.singleSeatReserved", {
                     seatNumber: reservation.seat?.seatNumber,
-                    x: reservation.seat?.xCoordinate,
-                    y: reservation.seat?.yCoordinate,
+                    x: reservation.seat?.coordinate?.xCoordinate,
+                    y: reservation.seat?.coordinate?.yCoordinate,
                   })}
           </DialogDescription>
         </DialogHeader>

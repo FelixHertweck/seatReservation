@@ -26,21 +26,15 @@ export type AdminUserUpdateDto = {
     roles: Array<string>;
 };
 
-export type AreaBoundaryPointDto = {
-    xCoordinate?: number;
-    yCoordinate?: number;
-};
-
-export type AreaBoundaryPointRequestDto = {
-    area: string;
-    xCoordinate: number;
-    yCoordinate: number;
-};
-
 export type AreaDto = {
     name?: string;
     seatIds?: Array<bigint>;
-    boundary?: Array<AreaBoundaryPointDto>;
+    boundary?: Array<CoordinateDto>;
+};
+
+export type AreaRequestDto = {
+    name: string;
+    boundary?: Array<CoordinateDto>;
 };
 
 export type BlockSeatsRequestDto = {
@@ -66,10 +60,14 @@ export type CheckInProcessRequestDto = {
     cancel?: Array<bigint>;
 };
 
-export type EventLocationMakerDto = {
-    label?: string;
+export type CoordinateDto = {
     xCoordinate?: number;
     yCoordinate?: number;
+};
+
+export type EventLocationMakerDto = {
+    label?: string;
+    coordinate?: CoordinateDto;
 };
 
 export type EventLocationRequestDto = {
@@ -77,7 +75,7 @@ export type EventLocationRequestDto = {
     address: string;
     capacity: number;
     markers?: Array<MakerRequestDto>;
-    areaBoundaryPoints?: Array<AreaBoundaryPointRequestDto>;
+    areas?: Array<AreaRequestDto>;
 };
 
 export type EventLocationResponseDto = {
@@ -146,13 +144,12 @@ export type ImportEventLocationDto = {
     capacity: number;
     seats?: Array<ImportSeatDto>;
     markers?: Array<MakerRequestDto>;
-    areaBoundaryPoints?: Array<AreaBoundaryPointRequestDto>;
+    areas?: Array<AreaRequestDto>;
 };
 
 export type ImportSeatDto = {
     seatNumber: string;
-    xCoordinate: number;
-    yCoordinate: number;
+    coordinate: CoordinateDto;
     seatRow?: string;
     entrance?: string;
     area?: string;
@@ -178,8 +175,7 @@ export type LoginRequestDto = {
 
 export type MakerRequestDto = {
     label: string;
-    xCoordinate: number;
-    yCoordinate: number;
+    coordinate: CoordinateDto;
 };
 
 export type RegisterRequestDto = {
@@ -228,8 +224,7 @@ export type SeatDto = {
     seatNumber?: string;
     seatRow?: string;
     locationId?: bigint;
-    xCoordinate?: number;
-    yCoordinate?: number;
+    coordinate?: CoordinateDto;
     entrance?: string;
     area?: string;
 };
@@ -237,8 +232,7 @@ export type SeatDto = {
 export type SeatRequestDto = {
     seatNumber: string;
     eventLocationId: bigint;
-    xCoordinate: number;
-    yCoordinate: number;
+    coordinate: CoordinateDto;
     seatRow: string;
     entrance?: string;
     area?: string;

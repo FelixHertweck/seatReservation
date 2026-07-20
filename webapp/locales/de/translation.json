@@ -778,7 +778,7 @@
     "locationDataValidationError": "Standortdaten müssen Name, Adresse und Kapazität enthalten",
     "selectLocationForSeatsError": "Bitte wählen Sie einen Standort für die Plätze aus",
     "seatsDataArrayError": "Platzdaten müssen ein Array sein",
-    "seatDataValidationError": "Jeder Platz muss seatNumber, xCoordinate und yCoordinate haben",
+    "seatDataValidationError": "Jeder Platz muss seatNumber und coordinate (xCoordinate, yCoordinate) haben",
     "invalidJsonOrDataStructureError": "Ungültiges JSON-Format oder Datenstruktur"
   },
   "locationManagement": {

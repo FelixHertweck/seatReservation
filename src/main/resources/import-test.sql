@@ -50,19 +50,25 @@ INSERT INTO events (id, name, startTime, endTime, bookingStartTime, bookingDeadl
 -- Assign supervisor user (id 4) to the event (id 1)
 INSERT INTO event_supervisors (event_id, user_id) VALUES (1, 4);
 
+-- Insert areas (referenced by seats via area_id below)
+INSERT INTO event_location_areas (id, event_location_id, name) VALUES
+(1, 1, 'Ground Floor'),
+(2, 1, 'Balcony');
+
 -- Insert seats, split into two areas (Ground Floor on the ground floor, Balcony above)
-INSERT INTO seats (id, seatNumber, location_id, xCoordinate, yCoordinate, seatRow, entrance, area) VALUES
-(1, '1', 1, 1, 1, 'Row 1', 'Entrance A', 'Ground Floor'),
-(2, '2', 1, 2, 1, 'Row 1', 'Entrance A', 'Ground Floor'),
-(3, '3', 1, 3, 1, 'Row 1', 'Entrance A', 'Ground Floor'),
-(4, '4', 1, 4, 1, 'Row 1', 'Entrance A', 'Ground Floor'),
-(5, '5', 1, 1, 2, 'Balcony 1', 'Entrance B', 'Balcony'),
-(6, '6', 1, 2, 2, 'Balcony 1', 'Entrance B', 'Balcony'),
-(7, '7', 1, 3, 2, 'Balcony 1', 'Entrance B', 'Balcony'),
-(8, '8', 1, 4, 2, 'Balcony 1', 'Entrance B', 'Balcony');
+INSERT INTO seats (id, seatNumber, location_id, xCoordinate, yCoordinate, seatRow, entrance, area_id) VALUES
+(1, '1', 1, 1, 1, 'Row 1', 'Entrance A', 1),
+(2, '2', 1, 2, 1, 'Row 1', 'Entrance A', 1),
+(3, '3', 1, 3, 1, 'Row 1', 'Entrance A', 1),
+(4, '4', 1, 4, 1, 'Row 1', 'Entrance A', 1),
+(5, '5', 1, 1, 2, 'Balcony 1', 'Entrance B', 2),
+(6, '6', 1, 2, 2, 'Balcony 1', 'Entrance B', 2),
+(7, '7', 1, 3, 2, 'Balcony 1', 'Entrance B', 2),
+(8, '8', 1, 4, 2, 'Balcony 1', 'Entrance B', 2);
 
 -- Update sequence for tables
 ALTER SEQUENCE users_seq RESTART WITH 5;
 ALTER SEQUENCE eventlocations_seq RESTART WITH 2;
 ALTER SEQUENCE events_seq RESTART WITH 2;
 ALTER SEQUENCE seats_seq RESTART WITH 9;
+ALTER SEQUENCE event_location_areas_seq RESTART WITH 3;

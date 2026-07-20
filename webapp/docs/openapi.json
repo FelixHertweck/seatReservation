@@ -81,36 +81,6 @@
         },
         "required" : [ "emailVerified", "sendEmailVerification", "firstname", "lastname", "tags", "roles" ]
       },
-      "AreaBoundaryPointDTO" : {
-        "type" : "object",
-        "properties" : {
-          "xCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "yCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        }
-      },
-      "AreaBoundaryPointRequestDTO" : {
-        "type" : "object",
-        "required" : [ "area", "xCoordinate", "yCoordinate" ],
-        "properties" : {
-          "area" : {
-            "type" : "string"
-          },
-          "xCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "yCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        }
-      },
       "AreaDTO" : {
         "type" : "object",
         "properties" : {
@@ -127,7 +97,22 @@
           "boundary" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/AreaBoundaryPointDTO"
+              "$ref" : "#/components/schemas/CoordinateDTO"
+            }
+          }
+        }
+      },
+      "AreaRequestDTO" : {
+        "type" : "object",
+        "required" : [ "name" ],
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "boundary" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CoordinateDTO"
             }
           }
         }
@@ -210,19 +195,29 @@
           }
         }
       },
+      "CoordinateDTO" : {
+        "type" : "object",
+        "properties" : {
+          "xCoordinate" : {
+            "type" : "integer",
+            "format" : "int32",
+            "minimum" : 0
+          },
+          "yCoordinate" : {
+            "type" : "integer",
+            "format" : "int32",
+            "minimum" : 0
+          }
+        }
+      },
       "EventLocationMakerDTO" : {
         "type" : "object",
         "properties" : {
           "label" : {
             "type" : "string"
           },
-          "xCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "yCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
+          "coordinate" : {
+            "$ref" : "#/components/schemas/CoordinateDTO"
           }
         }
       },
@@ -246,10 +241,10 @@
               "$ref" : "#/components/schemas/MakerRequestDTO"
             }
           },
-          "areaBoundaryPoints" : {
+          "areas" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/AreaBoundaryPointRequestDTO"
+              "$ref" : "#/components/schemas/AreaRequestDTO"
             }
           }
         }
@@ -487,28 +482,23 @@
               "$ref" : "#/components/schemas/MakerRequestDTO"
             }
           },
-          "areaBoundaryPoints" : {
+          "areas" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/AreaBoundaryPointRequestDTO"
+              "$ref" : "#/components/schemas/AreaRequestDTO"
             }
           }
         }
       },
       "ImportSeatDto" : {
         "type" : "object",
-        "required" : [ "seatNumber", "xCoordinate", "yCoordinate" ],
+        "required" : [ "seatNumber", "coordinate" ],
         "properties" : {
           "seatNumber" : {
             "type" : "string"
           },
-          "xCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "yCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
+          "coordinate" : {
+            "$ref" : "#/components/schemas/CoordinateDTO"
           },
           "seatRow" : {
             "type" : "string"
@@ -572,18 +562,13 @@
       },
       "MakerRequestDTO" : {
         "type" : "object",
-        "required" : [ "label", "xCoordinate", "yCoordinate" ],
+        "required" : [ "label", "coordinate" ],
         "properties" : {
           "label" : {
             "type" : "string"
           },
-          "xCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "yCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
+          "coordinate" : {
+            "$ref" : "#/components/schemas/CoordinateDTO"
           }
         }
       },
@@ -700,13 +685,8 @@
             "type" : "integer",
             "format" : "int64"
           },
-          "xCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "yCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
+          "coordinate" : {
+            "$ref" : "#/components/schemas/CoordinateDTO"
           },
           "entrance" : {
             "type" : "string"
@@ -718,7 +698,7 @@
       },
       "SeatRequestDTO" : {
         "type" : "object",
-        "required" : [ "seatNumber", "eventLocationId", "xCoordinate", "yCoordinate", "seatRow" ],
+        "required" : [ "seatNumber", "eventLocationId", "coordinate", "seatRow" ],
         "properties" : {
           "seatNumber" : {
             "type" : "string"
@@ -727,13 +707,8 @@
             "type" : "integer",
             "format" : "int64"
           },
-          "xCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "yCoordinate" : {
-            "type" : "integer",
-            "format" : "int32"
+          "coordinate" : {
+            "$ref" : "#/components/schemas/CoordinateDTO"
           },
           "seatRow" : {
             "type" : "string"

@@ -45,11 +45,11 @@ public class EventLocationRequestDTO {
 
     /**
      * On update, this is a full replace, not a merge: omitting this field (or sending {@code null})
-     * clears all of the location's existing area boundary points. Send the complete desired list
-     * every time, including boundary points that are meant to be kept. See {@link
+     * clears all of the location's existing areas. Send the complete desired list every time,
+     * including areas that are meant to be kept. See {@link
      * de.felixhertweck.seatreservation.management.service.EventLocationService#updateEventLocation}.
      */
-    @Valid private List<AreaBoundaryPointRequestDTO> areaBoundaryPoints;
+    @Valid private List<AreaRequestDTO> areas;
 
     public String getName() {
         return name;
@@ -83,12 +83,12 @@ public class EventLocationRequestDTO {
         this.markers = markers;
     }
 
-    public List<AreaBoundaryPointRequestDTO> getAreaBoundaryPoints() {
-        return areaBoundaryPoints;
+    public List<AreaRequestDTO> getAreas() {
+        return areas;
     }
 
-    public void setAreaBoundaryPoints(List<AreaBoundaryPointRequestDTO> areaBoundaryPoints) {
-        this.areaBoundaryPoints = areaBoundaryPoints;
+    public void setAreas(List<AreaRequestDTO> areas) {
+        this.areas = areas;
     }
 
     public EventLocationRequestDTO() {}

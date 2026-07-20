@@ -30,6 +30,7 @@ import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenRepository;
+import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
@@ -48,6 +49,7 @@ class EventLocationResourceTest {
 
     @Inject UserRepository userRepository;
     @Inject EventLocationRepository eventLocationRepository;
+    @Inject EventLocationAreaRepository eventLocationAreaRepository;
     @Inject EventRepository eventRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
     @Inject SeatRepository seatRepository;
@@ -68,6 +70,7 @@ class EventLocationResourceTest {
         eventUserAllowanceRepository.deleteAll();
         seatRepository.deleteAll();
         eventRepository.deleteAll();
+        eventLocationAreaRepository.deleteAll();
         eventLocationRepository.deleteAll();
 
         // Seed minimal data required for tests (get-or-create user)
@@ -107,6 +110,7 @@ class EventLocationResourceTest {
         eventUserAllowanceRepository.deleteAll();
         seatRepository.deleteAll();
         eventRepository.deleteAll();
+        eventLocationAreaRepository.deleteAll();
         eventLocationRepository.deleteAll();
     }
 
@@ -164,6 +168,7 @@ class EventLocationResourceTest {
         eventUserAllowanceRepository.deleteAll();
         seatRepository.deleteAll();
         eventRepository.deleteAll();
+        eventLocationAreaRepository.deleteAll();
         eventLocationRepository.deleteAll();
     }
 

@@ -311,7 +311,7 @@ export function SeatManagement({
                         {t("seatManagement.table.entranceHeader")}
                       </SortableTableHead>
                       <SortableTableHead
-                        sortKey="xCoordinate"
+                        sortKey="coordinate.xCoordinate"
                         currentSortKey={sortKey}
                         currentSortDirection={sortDirection}
                         onSort={handleSort}
@@ -400,7 +400,8 @@ export function SeatManagement({
                                 className="w-[15%]"
                               />
                               <TableCell className="w-[15%]">
-                                ({seat.xCoordinate}, {seat.yCoordinate})
+                                ({seat.coordinate?.xCoordinate},{" "}
+                                {seat.coordinate?.yCoordinate})
                               </TableCell>
                               <TableCell className="w-[10%]">
                                 <div className="flex gap-2">
@@ -496,7 +497,8 @@ export function SeatManagement({
                                 {t("seatManagement.table.positionHeader")}
                               </p>
                               <p className="text-sm break-words">
-                                ({seat.xCoordinate}, {seat.yCoordinate})
+                                ({seat.coordinate?.xCoordinate},{" "}
+                                {seat.coordinate?.yCoordinate})
                               </p>
                             </div>
 

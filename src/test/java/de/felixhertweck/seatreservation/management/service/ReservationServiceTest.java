@@ -50,6 +50,7 @@ import de.felixhertweck.seatreservation.management.dto.ReservationRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.ReservationResponseDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
+import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
@@ -158,7 +159,7 @@ public class ReservationServiceTest {
         event.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(1).toSeconds()));
         event.setManager(managerUser);
 
-        seat = new Seat("A1", eventLocation, "1", 1, 1, "A", "Parkett");
+        seat = new Seat("A1", eventLocation, "1", 1, 1, "A", new EventLocationArea("Parkett"));
         seat.id = 1L;
 
         reservation =
@@ -496,7 +497,7 @@ public class ReservationServiceTest {
     @Test
     void deleteReservation_Success_MultipleReservations_WithAllowanceIncrement() {
         // Create multiple reservations for the same user and event
-        Seat seat2 = new Seat("A2", event.getEventLocation(), "2", 1, 2, "", "");
+        Seat seat2 = new Seat("A2", event.getEventLocation(), "2", 1, 2, "", null);
         seat2.id = 2L;
         Reservation reservation2 =
                 new Reservation(
@@ -541,7 +542,15 @@ public class ReservationServiceTest {
                         CodeGenerator.generateRandomCode());
         blockedReservation.id = 2L;
 
-        Seat seat2 = new Seat("A2", event.getEventLocation(), "2", 1, 2, "A", "Balkon");
+        Seat seat2 =
+                new Seat(
+                        "A2",
+                        event.getEventLocation(),
+                        "2",
+                        1,
+                        2,
+                        "A",
+                        new EventLocationArea("Balkon"));
         seat2.id = 3L;
         Reservation reservedReservation =
                 new Reservation(

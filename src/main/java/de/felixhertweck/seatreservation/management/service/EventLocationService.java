@@ -20,24 +20,26 @@
 package de.felixhertweck.seatreservation.management.service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
-import de.felixhertweck.seatreservation.management.dto.AreaBoundaryPointRequestDTO;
+import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
+import de.felixhertweck.seatreservation.management.dto.AreaRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationResponseDTO;
 import de.felixhertweck.seatreservation.management.dto.ImportEventLocationDto;
 import de.felixhertweck.seatreservation.management.dto.ImportSeatDto;
 import de.felixhertweck.seatreservation.management.dto.MakerRequestDTO;
 import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
-import de.felixhertweck.seatreservation.model.entity.AreaBoundaryPoint;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
+import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
 import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.Seat;
@@ -126,8 +128,7 @@ public class EventLocationService {
                 new EventLocation(dto.getName(), dto.getAddress(), manager, dto.getCapacity());
         // Set markers after location is created to avoid circular dependency
         location.setMarkers(convertToMarkerEntities(dto.getmarkers(), location));
-        location.setAreaBoundaryPoints(
-                convertToAreaBoundaryPointEntities(dto.getAreaBoundaryPoints(), location));
+        applyAreaDtos(dto.getAreas(), location, new LinkedHashMap<>());
         eventLocationRepository.persist(location);
         LOG.infof(
                 "Event location '%s' (ID: %d) created successfully by manager: %s (ID: %d)",
@@ -188,17 +189,31 @@ public class EventLocationService {
         location.setAddress(dto.getAddress());
         location.setCapacity(dto.getCapacity());
 
-        // Update markers: Handle potential immutable collections. Full replace, not a merge: a
-        // null/omitted dto.getmarkers() clears all existing markers (see EventLocationRequestDTO).
-        List<EventLocationMarker> currentMarkers = location.getMarkers();
+        updateMarkers(location, dto);
+        updateAreas(location, dto);
 
-        // Create a new mutable list for markers
+        eventLocationRepository.persist(location);
+        LOG.infof(
+                "Event location '%s' (ID: %d) updated successfully by manager: %s (ID: %d)",
+                location.getName(), location.getId(), manager.id, manager.getId());
+        return new EventLocationResponseDTO(location);
+    }
+
+    /**
+     * Replaces an event location's markers with the ones from {@code dto}, handling the case where
+     * the current collection is immutable. A null/omitted {@code dto.getmarkers()} clears all
+     * existing markers.
+     *
+     * @param location The event location whose markers are replaced
+     * @param dto The request DTO carrying the new markers
+     */
+    private void updateMarkers(EventLocation location, EventLocationRequestDTO dto) {
         List<EventLocationMarker> newMarkersList = new ArrayList<>();
         if (dto.getmarkers() != null) {
             newMarkersList.addAll(convertToMarkerEntities(dto.getmarkers(), location));
         }
 
-        // If the current list is mutable, clear and add new items
+        List<EventLocationMarker> currentMarkers = location.getMarkers();
         try {
             currentMarkers.clear();
             currentMarkers.addAll(newMarkersList);
@@ -206,29 +221,73 @@ public class EventLocationService {
             // If immutable, replace with new mutable list
             location.setMarkers(newMarkersList);
         }
+    }
 
-        // Update area boundary points: same immutable-collection-safe, full-replace handling as
-        // markers above (a null/omitted dto.getAreaBoundaryPoints() clears all existing points).
-        List<AreaBoundaryPoint> currentAreaBoundaryPoints = location.getAreaBoundaryPoints();
+    /**
+     * Upserts an event location's areas by name from {@code dto}, never dropping an area still
+     * referenced by one of the location's seats (its FK would otherwise be orphaned), even if the
+     * client omitted it from this request.
+     *
+     * @param location The event location whose areas are updated
+     * @param dto The request DTO carrying the new areas
+     */
+    private void updateAreas(EventLocation location, EventLocationRequestDTO dto) {
+        Set<Long> areaIdsInUseBySeats = collectAreaIdsInUseBySeats(location);
+        List<EventLocationArea> existingAreasSnapshot = new ArrayList<>(location.getAreas());
 
-        List<AreaBoundaryPoint> newAreaBoundaryPointsList = new ArrayList<>();
-        if (dto.getAreaBoundaryPoints() != null) {
-            newAreaBoundaryPointsList.addAll(
-                    convertToAreaBoundaryPointEntities(dto.getAreaBoundaryPoints(), location));
-        }
+        List<EventLocationArea> newAreasList =
+                applyAreaDtos(dto.getAreas(), location, new LinkedHashMap<>());
+        retainAreasStillReferencedBySeats(newAreasList, existingAreasSnapshot, areaIdsInUseBySeats);
 
+        List<EventLocationArea> currentAreas = location.getAreas();
         try {
-            currentAreaBoundaryPoints.clear();
-            currentAreaBoundaryPoints.addAll(newAreaBoundaryPointsList);
+            currentAreas.clear();
+            currentAreas.addAll(newAreasList);
         } catch (UnsupportedOperationException e) {
-            location.setAreaBoundaryPoints(newAreaBoundaryPointsList);
+            location.setAreas(newAreasList);
         }
+    }
 
-        eventLocationRepository.persist(location);
-        LOG.infof(
-                "Event location '%s' (ID: %d) updated successfully by manager: %s (ID: %d)",
-                location.getName(), location.getId(), manager.id, manager.getId());
-        return new EventLocationResponseDTO(location);
+    /**
+     * Collects the ids of all {@link EventLocationArea}s referenced by at least one of the
+     * location's seats.
+     *
+     * @param location The event location whose seats are inspected
+     * @return The set of area ids currently in use; never {@code null}
+     */
+    private Set<Long> collectAreaIdsInUseBySeats(EventLocation location) {
+        return location.getSeats().stream()
+                .map(Seat::getArea)
+                .filter(Objects::nonNull)
+                .map(area -> area.id)
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * Re-adds any area from {@code existingAreasSnapshot} to {@code newAreasList} that is still
+     * referenced by a seat ({@code areaIdsInUseBySeats}) but was not included in the new list,
+     * preventing seats from being left with a dangling area reference.
+     *
+     * @param newAreasList The areas resolved from the request; mutated in place
+     * @param existingAreasSnapshot The areas the location had before this update
+     * @param areaIdsInUseBySeats The ids of areas currently referenced by a seat
+     */
+    private void retainAreasStillReferencedBySeats(
+            List<EventLocationArea> newAreasList,
+            List<EventLocationArea> existingAreasSnapshot,
+            Set<Long> areaIdsInUseBySeats) {
+        Set<Long> includedAreaIds =
+                newAreasList.stream()
+                        .map(area -> area.id)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toSet());
+        for (EventLocationArea existing : existingAreasSnapshot) {
+            if (existing.id != null
+                    && areaIdsInUseBySeats.contains(existing.id)
+                    && !includedAreaIds.contains(existing.id)) {
+                newAreasList.add(existing);
+            }
+        }
     }
 
     /**
@@ -250,8 +309,8 @@ public class EventLocationService {
                                     EventLocationMarker marker =
                                             new EventLocationMarker(
                                                     markerDto.getLabel(),
-                                                    markerDto.getxCoordinate(),
-                                                    markerDto.getyCoordinate());
+                                                    markerDto.getCoordinate().xCoordinate(),
+                                                    markerDto.getCoordinate().yCoordinate());
                                     marker.setEventLocation(eventLocation);
                                     return marker;
                                 })
@@ -259,29 +318,67 @@ public class EventLocationService {
     }
 
     /**
-     * Converts a list of area boundary point DTOs to AreaBoundaryPoint entities. Points sharing the
-     * same (trimmed) area name are assigned an ascending {@code sortOrder} based on their position
-     * in {@code dtoPoints}, so the submission order defines the polygon's vertex order.
+     * Resolves an {@link EventLocationArea} by (trimmed) name, scoped to the given {@code
+     * eventLocation}, creating and registering a new one if no match exists yet. {@code
+     * areasByName} is a per-call cache so that a seat and a boundary polygon referencing the same
+     * area name resolve to the same entity.
      *
-     * @param dtoPoints The list of area boundary point DTOs to convert
-     * @param eventLocation The event location to associate with the points
-     * @return A list of AreaBoundaryPoint entities
+     * @param rawName The (possibly untrimmed) area name; {@code null}/blank resolves to no area
+     * @param eventLocation The event location the area belongs to
+     * @param areasByName A per-call cache of already-resolved areas, keyed by trimmed name
+     * @return The resolved or newly created area, or {@code null} if {@code rawName} is blank
      */
-    private List<AreaBoundaryPoint> convertToAreaBoundaryPointEntities(
-            List<AreaBoundaryPointRequestDTO> dtoPoints, EventLocation eventLocation) {
-        if (dtoPoints == null) {
-            return new ArrayList<>();
+    private EventLocationArea resolveOrCreateArea(
+            String rawName,
+            EventLocation eventLocation,
+            Map<String, EventLocationArea> areasByName) {
+        if (rawName == null || rawName.trim().isEmpty()) {
+            return null;
         }
-        Map<String, Integer> nextSortOrderByArea = new HashMap<>();
-        List<AreaBoundaryPoint> result = new ArrayList<>();
-        for (AreaBoundaryPointRequestDTO pointDto : dtoPoints) {
-            String area = pointDto.getArea() == null ? null : pointDto.getArea().trim();
-            int sortOrder = nextSortOrderByArea.merge(area, 1, Integer::sum) - 1;
-            AreaBoundaryPoint point =
-                    new AreaBoundaryPoint(
-                            area, pointDto.getxCoordinate(), pointDto.getyCoordinate(), sortOrder);
-            point.setEventLocation(eventLocation);
-            result.add(point);
+        String name = rawName.trim();
+        return areasByName.computeIfAbsent(
+                name,
+                key -> {
+                    for (EventLocationArea existing : eventLocation.getAreas()) {
+                        if (key.equals(existing.getName())) {
+                            return existing;
+                        }
+                    }
+                    EventLocationArea created = new EventLocationArea(key);
+                    created.setEventLocation(eventLocation);
+                    eventLocation.getAreas().add(created);
+                    return created;
+                });
+    }
+
+    /**
+     * Resolves or creates the {@link EventLocationArea} named by each DTO and sets its boundary,
+     * mutating {@code eventLocation.getAreas()} via {@link #resolveOrCreateArea}.
+     *
+     * @param dtoAreas The list of area DTOs to apply
+     * @param eventLocation The event location the areas belong to
+     * @param areasByName A per-call cache of already-resolved areas, keyed by trimmed name
+     * @return The resolved/created areas, in the order of {@code dtoAreas}; never {@code null}
+     */
+    private List<EventLocationArea> applyAreaDtos(
+            List<AreaRequestDTO> dtoAreas,
+            EventLocation eventLocation,
+            Map<String, EventLocationArea> areasByName) {
+        List<EventLocationArea> result = new ArrayList<>();
+        if (dtoAreas == null) {
+            return result;
+        }
+        for (AreaRequestDTO areaDto : dtoAreas) {
+            EventLocationArea area =
+                    resolveOrCreateArea(areaDto.getName(), eventLocation, areasByName);
+            if (area == null) {
+                continue;
+            }
+            area.setBoundary(
+                    areaDto.getBoundary() == null
+                            ? new ArrayList<>()
+                            : areaDto.getBoundary().stream().map(CoordinateDTO::toEntity).toList());
+            result.add(area);
         }
         return result;
     }
@@ -372,8 +469,8 @@ public class EventLocationService {
         location.setCapacity(dto.getCapacity());
         location.setManager(manager);
         location.setMarkers(convertToMarkerEntities(dto.getMarkers(), location));
-        location.setAreaBoundaryPoints(
-                convertToAreaBoundaryPointEntities(dto.getAreaBoundaryPoints(), location));
+        Map<String, EventLocationArea> areasByName = new LinkedHashMap<>();
+        applyAreaDtos(dto.getAreas(), location, areasByName);
 
         eventLocationRepository.persist(location);
 
@@ -385,11 +482,12 @@ public class EventLocationService {
                                     seatDto -> {
                                         Seat seat = new Seat();
                                         seat.setSeatNumber(seatDto.getSeatNumber());
-                                        seat.setxCoordinate(seatDto.getxCoordinate());
-                                        seat.setyCoordinate(seatDto.getyCoordinate());
+                                        seat.setCoordinate(seatDto.getCoordinate().toEntity());
                                         seat.setSeatRow(seatDto.getSeatRow());
                                         seat.setEntrance(seatDto.getEntrance());
-                                        seat.setArea(seatDto.getArea());
+                                        seat.setArea(
+                                                resolveOrCreateArea(
+                                                        seatDto.getArea(), location, areasByName));
                                         seat.setLocation(location);
                                         seatRepository.persist(seat);
 
@@ -451,6 +549,7 @@ public class EventLocationService {
         }
 
         List<Seat> newSeats = new ArrayList<>();
+        Map<String, EventLocationArea> areasByName = new LinkedHashMap<>();
 
         seats.forEach(
                 seat -> {
@@ -460,11 +559,10 @@ public class EventLocationService {
                             seat, id, manager.id, manager.getId());
                     Seat newSeat = new Seat();
                     newSeat.setSeatNumber(seat.getSeatNumber());
-                    newSeat.setxCoordinate(seat.getxCoordinate());
-                    newSeat.setyCoordinate(seat.getyCoordinate());
+                    newSeat.setCoordinate(seat.getCoordinate().toEntity());
                     newSeat.setSeatRow(seat.getSeatRow());
                     newSeat.setEntrance(seat.getEntrance());
-                    newSeat.setArea(seat.getArea());
+                    newSeat.setArea(resolveOrCreateArea(seat.getArea(), location, areasByName));
                     newSeat.setLocation(location);
                     seatRepository.persist(newSeat);
                     newSeats.add(newSeat);

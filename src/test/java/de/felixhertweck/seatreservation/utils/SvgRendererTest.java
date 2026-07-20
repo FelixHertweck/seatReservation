@@ -24,8 +24,9 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import de.felixhertweck.seatreservation.common.dto.AreaBoundaryPointDTO;
 import de.felixhertweck.seatreservation.common.dto.AreaDTO;
+import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
+import de.felixhertweck.seatreservation.model.entity.Coordinate;
 import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import org.junit.jupiter.api.Test;
@@ -48,8 +49,7 @@ class SvgRendererTest {
     void renderSeats_SingleSeat_ReturnsValidSvg() {
         Seat seat = new Seat();
         seat.setSeatNumber("A1");
-        seat.setxCoordinate(1);
-        seat.setyCoordinate(1);
+        seat.setCoordinate(new Coordinate(1, 1));
 
         String result = SvgRenderer.renderSeats(List.of(seat), Set.of(), Set.of());
 
@@ -64,8 +64,7 @@ class SvgRendererTest {
     void renderSeats_WithNewReservation_ShowsCorrectColors() {
         Seat seat = new Seat();
         seat.setSeatNumber("A1");
-        seat.setxCoordinate(1);
-        seat.setyCoordinate(1);
+        seat.setCoordinate(new Coordinate(1, 1));
 
         String result = SvgRenderer.renderSeats(List.of(seat), Set.of("A1"), Set.of());
 
@@ -76,8 +75,7 @@ class SvgRendererTest {
     void renderSeats_WithExistingReservation_ShowsCorrectColors() {
         Seat seat = new Seat();
         seat.setSeatNumber("A1");
-        seat.setxCoordinate(1);
-        seat.setyCoordinate(1);
+        seat.setCoordinate(new Coordinate(1, 1));
 
         String result = SvgRenderer.renderSeats(List.of(seat), Set.of(), Set.of("A1"));
 
@@ -88,8 +86,7 @@ class SvgRendererTest {
     void renderSeats_WithMarkers_IncludesMarkerLabels() {
         Seat seat = new Seat();
         seat.setSeatNumber("A1");
-        seat.setxCoordinate(2);
-        seat.setyCoordinate(2);
+        seat.setCoordinate(new Coordinate(2, 2));
 
         EventLocationMarker marker = new EventLocationMarker("Entrance", 1, 1);
 
@@ -110,8 +107,7 @@ class SvgRendererTest {
     void renderSeats_WithNullMarkers_WorksNormally() {
         Seat seat = new Seat();
         seat.setSeatNumber("A1");
-        seat.setxCoordinate(1);
-        seat.setyCoordinate(1);
+        seat.setCoordinate(new Coordinate(1, 1));
 
         String result = SvgRenderer.renderSeats(List.of(seat), Set.of(), Set.of(), null);
 
@@ -123,8 +119,7 @@ class SvgRendererTest {
     void renderSeats_WithEmptyMarkers_WorksNormally() {
         Seat seat = new Seat();
         seat.setSeatNumber("A1");
-        seat.setxCoordinate(1);
-        seat.setyCoordinate(1);
+        seat.setCoordinate(new Coordinate(1, 1));
 
         String result = SvgRenderer.renderSeats(List.of(seat), Set.of(), Set.of(), List.of());
 
@@ -136,10 +131,10 @@ class SvgRendererTest {
     void renderSeats_WithMarkerNullCoordinates_SkipsMarker() {
         Seat seat = new Seat();
         seat.setSeatNumber("A1");
-        seat.setxCoordinate(1);
-        seat.setyCoordinate(1);
+        seat.setCoordinate(new Coordinate(1, 1));
 
-        EventLocationMarker marker = new EventLocationMarker("Invalid", null, null);
+        EventLocationMarker marker = new EventLocationMarker();
+        marker.setLabel("Invalid");
 
         String result = SvgRenderer.renderSeats(List.of(seat), Set.of(), Set.of(), List.of(marker));
 
@@ -152,8 +147,7 @@ class SvgRendererTest {
     void renderSeats_WithMarkerEmptyLabel_SkipsMarker() {
         Seat seat = new Seat();
         seat.setSeatNumber("A1");
-        seat.setxCoordinate(1);
-        seat.setyCoordinate(1);
+        seat.setCoordinate(new Coordinate(1, 1));
 
         EventLocationMarker marker = new EventLocationMarker("", 1, 1);
 
@@ -169,8 +163,7 @@ class SvgRendererTest {
     void renderSeats_WithSpecialCharactersInMarkerLabel_EscapesXml() {
         Seat seat = new Seat();
         seat.setSeatNumber("A1");
-        seat.setxCoordinate(2);
-        seat.setyCoordinate(2);
+        seat.setCoordinate(new Coordinate(2, 2));
 
         EventLocationMarker marker = new EventLocationMarker("Entry & Exit", 1, 1);
 
@@ -185,8 +178,7 @@ class SvgRendererTest {
     void renderSeats_WithSpecialCharactersInSeatNumber_EscapesXml() {
         Seat seat = new Seat();
         seat.setSeatNumber("<script>alert(1)</script>");
-        seat.setxCoordinate(2);
-        seat.setyCoordinate(2);
+        seat.setCoordinate(new Coordinate(2, 2));
 
         String result = SvgRenderer.renderSeats(List.of(seat), Set.of(), Set.of());
 
@@ -201,8 +193,7 @@ class SvgRendererTest {
     void renderSeats_CalculatesBoundingBoxWithMarkers() {
         Seat seat = new Seat();
         seat.setSeatNumber("A1");
-        seat.setxCoordinate(3);
-        seat.setyCoordinate(3);
+        seat.setCoordinate(new Coordinate(3, 3));
 
         // Marker extends the bounding box
         EventLocationMarker marker = new EventLocationMarker("Far", 10, 10);
@@ -220,8 +211,7 @@ class SvgRendererTest {
     void renderSeats_BackwardsCompatibility_WithoutMarkersWorks() {
         Seat seat = new Seat();
         seat.setSeatNumber("A1");
-        seat.setxCoordinate(1);
-        seat.setyCoordinate(1);
+        seat.setCoordinate(new Coordinate(1, 1));
 
         // Call the old method without markers parameter
         String result = SvgRenderer.renderSeats(List.of(seat), Set.of(), Set.of());
@@ -236,13 +226,11 @@ class SvgRendererTest {
     void renderSeats_MultipleMarkersAndSeats_RendersAll() {
         Seat seat1 = new Seat();
         seat1.setSeatNumber("A1");
-        seat1.setxCoordinate(2);
-        seat1.setyCoordinate(2);
+        seat1.setCoordinate(new Coordinate(2, 2));
 
         Seat seat2 = new Seat();
         seat2.setSeatNumber("B2");
-        seat2.setxCoordinate(3);
-        seat2.setyCoordinate(3);
+        seat2.setCoordinate(new Coordinate(3, 3));
 
         EventLocationMarker marker1 = new EventLocationMarker("Entrance", 1, 1);
         EventLocationMarker marker2 = new EventLocationMarker("Exit", 4, 4);
@@ -267,8 +255,7 @@ class SvgRendererTest {
     void renderSeats_WithNullAreas_WorksNormally() {
         Seat seat = new Seat();
         seat.setSeatNumber("A1");
-        seat.setxCoordinate(1);
-        seat.setyCoordinate(1);
+        seat.setCoordinate(new Coordinate(1, 1));
 
         String result = SvgRenderer.renderSeats(List.of(seat), Set.of(), Set.of(), null, null);
 
@@ -280,8 +267,7 @@ class SvgRendererTest {
     void renderSeats_WithEmptyAreas_WorksNormally() {
         Seat seat = new Seat();
         seat.setSeatNumber("A1");
-        seat.setxCoordinate(1);
-        seat.setyCoordinate(1);
+        seat.setCoordinate(new Coordinate(1, 1));
 
         String result = SvgRenderer.renderSeats(List.of(seat), Set.of(), Set.of(), null, List.of());
 
@@ -294,14 +280,12 @@ class SvgRendererTest {
         Seat seat1 = new Seat();
         seat1.id = 1L;
         seat1.setSeatNumber("A1");
-        seat1.setxCoordinate(1);
-        seat1.setyCoordinate(1);
+        seat1.setCoordinate(new Coordinate(1, 1));
 
         Seat seat2 = new Seat();
         seat2.id = 2L;
         seat2.setSeatNumber("A2");
-        seat2.setxCoordinate(2);
-        seat2.setyCoordinate(1);
+        seat2.setCoordinate(new Coordinate(2, 1));
 
         AreaDTO area = new AreaDTO("Parkett", List.of(1L, 2L), null);
 
@@ -321,15 +305,14 @@ class SvgRendererTest {
         Seat seat = new Seat();
         seat.id = 1L;
         seat.setSeatNumber("A1");
-        seat.setxCoordinate(1);
-        seat.setyCoordinate(1);
+        seat.setCoordinate(new Coordinate(1, 1));
 
-        List<AreaBoundaryPointDTO> boundary =
+        List<CoordinateDTO> boundary =
                 List.of(
-                        new AreaBoundaryPointDTO(1, 1),
-                        new AreaBoundaryPointDTO(3, 1),
-                        new AreaBoundaryPointDTO(3, 3),
-                        new AreaBoundaryPointDTO(1, 3));
+                        new CoordinateDTO(1, 1),
+                        new CoordinateDTO(3, 1),
+                        new CoordinateDTO(3, 3),
+                        new CoordinateDTO(1, 3));
         AreaDTO area = new AreaDTO("Loge", List.of(1L), boundary);
 
         String result =
@@ -346,11 +329,10 @@ class SvgRendererTest {
         Seat seat = new Seat();
         seat.id = 1L;
         seat.setSeatNumber("A1");
-        seat.setxCoordinate(1);
-        seat.setyCoordinate(1);
+        seat.setCoordinate(new Coordinate(1, 1));
 
-        List<AreaBoundaryPointDTO> tooFewPoints =
-                List.of(new AreaBoundaryPointDTO(1, 1), new AreaBoundaryPointDTO(2, 1));
+        List<CoordinateDTO> tooFewPoints =
+                List.of(new CoordinateDTO(1, 1), new CoordinateDTO(2, 1));
         AreaDTO area = new AreaDTO("Loge", List.of(1L), tooFewPoints);
 
         String result =
@@ -366,8 +348,7 @@ class SvgRendererTest {
         Seat seat = new Seat();
         seat.id = 1L;
         seat.setSeatNumber("A1");
-        seat.setxCoordinate(1);
-        seat.setyCoordinate(1);
+        seat.setCoordinate(new Coordinate(1, 1));
 
         AreaDTO area = new AreaDTO("Parkett", List.of(999L), null);
 
@@ -385,14 +366,12 @@ class SvgRendererTest {
         Seat seat1 = new Seat();
         seat1.id = 1L;
         seat1.setSeatNumber("A1");
-        seat1.setxCoordinate(1);
-        seat1.setyCoordinate(1);
+        seat1.setCoordinate(new Coordinate(1, 1));
 
         Seat seat2 = new Seat();
         seat2.id = 2L;
         seat2.setSeatNumber("B1");
-        seat2.setxCoordinate(1);
-        seat2.setyCoordinate(2);
+        seat2.setCoordinate(new Coordinate(1, 2));
 
         AreaDTO parkett = new AreaDTO("Parkett", List.of(1L), null);
         AreaDTO balkon = new AreaDTO("Balkon", List.of(2L), null);
@@ -412,17 +391,16 @@ class SvgRendererTest {
         Seat seat = new Seat();
         seat.id = 1L;
         seat.setSeatNumber("A1");
-        seat.setxCoordinate(1);
-        seat.setyCoordinate(1);
+        seat.setCoordinate(new Coordinate(1, 1));
 
         // Boundary reaches far past the only seat (logical x/y 10 vs. the seat's 1,1), e.g. a
         // balcony edge drawn larger than its outermost seats.
-        List<AreaBoundaryPointDTO> boundary =
+        List<CoordinateDTO> boundary =
                 List.of(
-                        new AreaBoundaryPointDTO(1, 1),
-                        new AreaBoundaryPointDTO(10, 1),
-                        new AreaBoundaryPointDTO(10, 10),
-                        new AreaBoundaryPointDTO(1, 10));
+                        new CoordinateDTO(1, 1),
+                        new CoordinateDTO(10, 1),
+                        new CoordinateDTO(10, 10),
+                        new CoordinateDTO(1, 10));
         AreaDTO area = new AreaDTO("Balkon", List.of(1L), boundary);
 
         String result =

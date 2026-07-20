@@ -19,43 +19,54 @@
  */
 package de.felixhertweck.seatreservation.model.entity;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import jakarta.persistence.*;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 
+/**
+ * A named area within an event location, optionally carrying a custom boundary polygon. Seats
+ * reference their area via {@link Seat#getArea()}.
+ */
 @Entity
-@Table(name = "event_location_markers")
-public class EventLocationMarker extends PanacheEntity {
-    private String label;
+@Table(name = "event_location_areas")
+public class EventLocationArea extends PanacheEntity {
 
-    @Embedded private Coordinate coordinate;
+    private String name;
+
+    @ElementCollection
+    @CollectionTable(
+            name = "event_location_area_boundary",
+            joinColumns = @JoinColumn(name = "area_id"))
+    @OrderColumn(name = "sort_order")
+    private List<Coordinate> boundary = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_location_id")
     private EventLocation eventLocation;
 
-    public EventLocationMarker() {}
+    public EventLocationArea() {}
 
-    public EventLocationMarker(String label, int xCoordinate, int yCoordinate) {
-        this.label = label;
-        this.coordinate = new Coordinate(xCoordinate, yCoordinate);
+    public EventLocationArea(String name) {
+        this.name = name;
     }
 
-    public String getLabel() {
-        return label;
+    public String getName() {
+        return name;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public Coordinate getCoordinate() {
-        return coordinate;
+    public List<Coordinate> getBoundary() {
+        return boundary;
     }
 
-    public void setCoordinate(Coordinate coordinate) {
-        this.coordinate = coordinate;
+    public void setBoundary(List<Coordinate> boundary) {
+        this.boundary = boundary;
     }
 
     public EventLocation getEventLocation() {
@@ -68,12 +79,12 @@ public class EventLocationMarker extends PanacheEntity {
 
     @Override
     public String toString() {
-        return "EventLocationMarker{"
-                + "label='"
-                + label
+        return "EventLocationArea{"
+                + "name='"
+                + name
                 + '\''
-                + ", coordinate="
-                + coordinate
+                + ", boundary="
+                + boundary
                 + ", id="
                 + id
                 + '}';
@@ -82,12 +93,12 @@ public class EventLocationMarker extends PanacheEntity {
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        EventLocationMarker that = (EventLocationMarker) o;
-        return Objects.equals(label, that.label) && Objects.equals(coordinate, that.coordinate);
+        EventLocationArea that = (EventLocationArea) o;
+        return Objects.equals(name, that.name) && Objects.equals(boundary, that.boundary);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(label, coordinate);
+        return Objects.hash(name, boundary);
     }
 }

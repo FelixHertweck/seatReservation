@@ -96,42 +96,6 @@ export const AdminUserUpdateDTOSchema = {
     ]
 } as const;
 
-export const AreaBoundaryPointDTOSchema = {
-    type: 'object',
-    properties: {
-        xCoordinate: {
-            type: 'integer',
-            format: 'int32'
-        },
-        yCoordinate: {
-            type: 'integer',
-            format: 'int32'
-        }
-    }
-} as const;
-
-export const AreaBoundaryPointRequestDTOSchema = {
-    type: 'object',
-    required: [
-        'area',
-        'xCoordinate',
-        'yCoordinate'
-    ],
-    properties: {
-        area: {
-            type: 'string'
-        },
-        xCoordinate: {
-            type: 'integer',
-            format: 'int32'
-        },
-        yCoordinate: {
-            type: 'integer',
-            format: 'int32'
-        }
-    }
-} as const;
-
 export const AreaDTOSchema = {
     type: 'object',
     properties: {
@@ -148,7 +112,25 @@ export const AreaDTOSchema = {
         boundary: {
             type: 'array',
             items: {
-                $ref: '#/components/schemas/AreaBoundaryPointDTO'
+                $ref: '#/components/schemas/CoordinateDTO'
+            }
+        }
+    }
+} as const;
+
+export const AreaRequestDTOSchema = {
+    type: 'object',
+    required: [
+        'name'
+    ],
+    properties: {
+        name: {
+            type: 'string'
+        },
+        boundary: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/CoordinateDTO'
             }
         }
     }
@@ -242,19 +224,30 @@ export const CheckInProcessRequestDTOSchema = {
     }
 } as const;
 
+export const CoordinateDTOSchema = {
+    type: 'object',
+    properties: {
+        xCoordinate: {
+            type: 'integer',
+            format: 'int32',
+            minimum: 0
+        },
+        yCoordinate: {
+            type: 'integer',
+            format: 'int32',
+            minimum: 0
+        }
+    }
+} as const;
+
 export const EventLocationMakerDTOSchema = {
     type: 'object',
     properties: {
         label: {
             type: 'string'
         },
-        xCoordinate: {
-            type: 'integer',
-            format: 'int32'
-        },
-        yCoordinate: {
-            type: 'integer',
-            format: 'int32'
+        coordinate: {
+            $ref: '#/components/schemas/CoordinateDTO'
         }
     }
 } as const;
@@ -283,10 +276,10 @@ export const EventLocationRequestDTOSchema = {
                 $ref: '#/components/schemas/MakerRequestDTO'
             }
         },
-        areaBoundaryPoints: {
+        areas: {
             type: 'array',
             items: {
-                $ref: '#/components/schemas/AreaBoundaryPointRequestDTO'
+                $ref: '#/components/schemas/AreaRequestDTO'
             }
         }
     }
@@ -552,10 +545,10 @@ export const ImportEventLocationDtoSchema = {
                 $ref: '#/components/schemas/MakerRequestDTO'
             }
         },
-        areaBoundaryPoints: {
+        areas: {
             type: 'array',
             items: {
-                $ref: '#/components/schemas/AreaBoundaryPointRequestDTO'
+                $ref: '#/components/schemas/AreaRequestDTO'
             }
         }
     }
@@ -565,20 +558,14 @@ export const ImportSeatDtoSchema = {
     type: 'object',
     required: [
         'seatNumber',
-        'xCoordinate',
-        'yCoordinate'
+        'coordinate'
     ],
     properties: {
         seatNumber: {
             type: 'string'
         },
-        xCoordinate: {
-            type: 'integer',
-            format: 'int32'
-        },
-        yCoordinate: {
-            type: 'integer',
-            format: 'int32'
+        coordinate: {
+            $ref: '#/components/schemas/CoordinateDTO'
         },
         seatRow: {
             type: 'string'
@@ -654,20 +641,14 @@ export const MakerRequestDTOSchema = {
     type: 'object',
     required: [
         'label',
-        'xCoordinate',
-        'yCoordinate'
+        'coordinate'
     ],
     properties: {
         label: {
             type: 'string'
         },
-        xCoordinate: {
-            type: 'integer',
-            format: 'int32'
-        },
-        yCoordinate: {
-            type: 'integer',
-            format: 'int32'
+        coordinate: {
+            $ref: '#/components/schemas/CoordinateDTO'
         }
     }
 } as const;
@@ -808,13 +789,8 @@ export const SeatDTOSchema = {
             type: 'integer',
             format: 'int64'
         },
-        xCoordinate: {
-            type: 'integer',
-            format: 'int32'
-        },
-        yCoordinate: {
-            type: 'integer',
-            format: 'int32'
+        coordinate: {
+            $ref: '#/components/schemas/CoordinateDTO'
         },
         entrance: {
             type: 'string'
@@ -830,8 +806,7 @@ export const SeatRequestDTOSchema = {
     required: [
         'seatNumber',
         'eventLocationId',
-        'xCoordinate',
-        'yCoordinate',
+        'coordinate',
         'seatRow'
     ],
     properties: {
@@ -842,13 +817,8 @@ export const SeatRequestDTOSchema = {
             type: 'integer',
             format: 'int64'
         },
-        xCoordinate: {
-            type: 'integer',
-            format: 'int32'
-        },
-        yCoordinate: {
-            type: 'integer',
-            format: 'int32'
+        coordinate: {
+            $ref: '#/components/schemas/CoordinateDTO'
         },
         seatRow: {
             type: 'string'

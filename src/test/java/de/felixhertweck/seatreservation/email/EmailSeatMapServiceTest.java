@@ -42,9 +42,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.email.service.EmailSeatMapService;
+import de.felixhertweck.seatreservation.model.entity.Coordinate;
 import de.felixhertweck.seatreservation.model.entity.EmailSeatMapToken;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
+import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
 import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
@@ -308,8 +310,7 @@ class EmailSeatMapServiceTest {
 
         EventLocationMarker marker = new EventLocationMarker();
         marker.setLabel("Stage");
-        marker.setxCoordinate(100);
-        marker.setyCoordinate(50);
+        marker.setCoordinate(new Coordinate(100, 50));
         marker.setEventLocation(testLocation);
 
         testLocation.setMarkers(Collections.singletonList(marker));
@@ -333,7 +334,7 @@ class EmailSeatMapServiceTest {
     void getSvgImage_WithAreas_RendersAreaZone() {
         String token = UUID.randomUUID().toString();
 
-        testSeat.setArea("Parkett");
+        testSeat.setArea(new EventLocationArea("Parkett"));
 
         EmailSeatMapToken emailSeatMapToken = new EmailSeatMapToken();
         emailSeatMapToken.setToken(token);

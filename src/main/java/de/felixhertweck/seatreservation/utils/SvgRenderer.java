@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import de.felixhertweck.seatreservation.common.dto.AreaBoundaryPointDTO;
 import de.felixhertweck.seatreservation.common.dto.AreaDTO;
+import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
 import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 
@@ -120,20 +120,20 @@ public class SvgRenderer {
         int maxY = Integer.MIN_VALUE;
 
         for (Seat seat : allSeats) {
-            minX = Math.min(minX, seat.getxCoordinate());
-            minY = Math.min(minY, seat.getyCoordinate());
-            maxX = Math.max(maxX, seat.getxCoordinate());
-            maxY = Math.max(maxY, seat.getyCoordinate());
+            minX = Math.min(minX, seat.getCoordinate().xCoordinate());
+            minY = Math.min(minY, seat.getCoordinate().yCoordinate());
+            maxX = Math.max(maxX, seat.getCoordinate().xCoordinate());
+            maxY = Math.max(maxY, seat.getCoordinate().yCoordinate());
         }
 
         // Include markers in bounding box calculation if they exist
         if (markers != null && !markers.isEmpty()) {
             for (EventLocationMarker marker : markers) {
-                if (marker.getxCoordinate() != null && marker.getyCoordinate() != null) {
-                    minX = Math.min(minX, marker.getxCoordinate());
-                    minY = Math.min(minY, marker.getyCoordinate());
-                    maxX = Math.max(maxX, marker.getxCoordinate());
-                    maxY = Math.max(maxY, marker.getyCoordinate());
+                if (marker.getCoordinate() != null) {
+                    minX = Math.min(minX, marker.getCoordinate().xCoordinate());
+                    minY = Math.min(minY, marker.getCoordinate().yCoordinate());
+                    maxX = Math.max(maxX, marker.getCoordinate().xCoordinate());
+                    maxY = Math.max(maxY, marker.getCoordinate().yCoordinate());
                 }
             }
         }
@@ -142,11 +142,11 @@ public class SvgRenderer {
         // outside the seats' extent (e.g. a rounded balcony edge) aren't clipped by the viewBox.
         if (areas != null && !areas.isEmpty()) {
             for (AreaDTO area : areas) {
-                List<AreaBoundaryPointDTO> boundary = area.boundary();
+                List<CoordinateDTO> boundary = area.boundary();
                 if (boundary == null) {
                     continue;
                 }
-                for (AreaBoundaryPointDTO point : boundary) {
+                for (CoordinateDTO point : boundary) {
                     minX = Math.min(minX, point.xCoordinate());
                     minY = Math.min(minY, point.yCoordinate());
                     maxX = Math.max(maxX, point.xCoordinate());
@@ -178,13 +178,12 @@ public class SvgRenderer {
         // Render markers first (as background layer)
         if (markers != null && !markers.isEmpty()) {
             for (EventLocationMarker marker : markers) {
-                if (marker.getxCoordinate() != null
-                        && marker.getyCoordinate() != null
+                if (marker.getCoordinate() != null
                         && marker.getLabel() != null
                         && !marker.getLabel().trim().isEmpty()) {
 
-                    int markerX = marker.getxCoordinate() * scale;
-                    int markerY = marker.getyCoordinate() * scale;
+                    int markerX = marker.getCoordinate().xCoordinate() * scale;
+                    int markerY = marker.getCoordinate().yCoordinate() * scale;
                     String label = marker.getLabel();
 
                     sb.append("<text x=\"")
@@ -214,8 +213,8 @@ public class SvgRenderer {
             }
 
             // Apply scaling to the coordinates when drawing
-            int cx = seat.getxCoordinate() * scale;
-            int cy = seat.getyCoordinate() * scale;
+            int cx = seat.getCoordinate().xCoordinate() * scale;
+            int cy = seat.getCoordinate().yCoordinate() * scale;
 
             sb.append("<circle cx=\"")
                     .append(cx)
@@ -267,7 +266,7 @@ public class SvgRenderer {
             String color = AREA_COLORS[colorIndex % AREA_COLORS.length];
             colorIndex++;
 
-            List<AreaBoundaryPointDTO> boundary = area.boundary();
+            List<CoordinateDTO> boundary = area.boundary();
             if (boundary != null && boundary.size() >= 3) {
                 appendAreaPolygon(sb, area.name(), boundary, scale, color);
             } else {
@@ -277,11 +276,7 @@ public class SvgRenderer {
     }
 
     private static void appendAreaPolygon(
-            StringBuilder sb,
-            String name,
-            List<AreaBoundaryPointDTO> boundary,
-            int scale,
-            String color) {
+            StringBuilder sb, String name, List<CoordinateDTO> boundary, int scale, String color) {
         int[] xs = new int[boundary.size()];
         int[] ys = new int[boundary.size()];
         double centroidX = 0;
@@ -342,10 +337,10 @@ public class SvgRenderer {
             Seat seat = seatById.get(seatId);
             if (seat == null) continue;
             found = true;
-            minX = Math.min(minX, seat.getxCoordinate());
-            minY = Math.min(minY, seat.getyCoordinate());
-            maxX = Math.max(maxX, seat.getxCoordinate());
-            maxY = Math.max(maxY, seat.getyCoordinate());
+            minX = Math.min(minX, seat.getCoordinate().xCoordinate());
+            minY = Math.min(minY, seat.getCoordinate().yCoordinate());
+            maxX = Math.max(maxX, seat.getCoordinate().xCoordinate());
+            maxY = Math.max(maxY, seat.getCoordinate().yCoordinate());
         }
         if (!found) {
             return;

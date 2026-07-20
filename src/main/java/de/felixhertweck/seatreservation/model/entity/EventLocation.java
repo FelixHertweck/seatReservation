@@ -52,7 +52,7 @@ public class EventLocation extends PanacheEntity {
             fetch = FetchType.EAGER,
             cascade = CascadeType.ALL,
             orphanRemoval = true)
-    private List<AreaBoundaryPoint> areaBoundaryPoints = new ArrayList<>();
+    private List<EventLocationArea> areas = new ArrayList<>();
 
     public EventLocation() {}
 
@@ -128,12 +128,12 @@ public class EventLocation extends PanacheEntity {
         this.markers = markers;
     }
 
-    public List<AreaBoundaryPoint> getAreaBoundaryPoints() {
-        return areaBoundaryPoints;
+    public List<EventLocationArea> getAreas() {
+        return areas;
     }
 
-    public void setAreaBoundaryPoints(List<AreaBoundaryPoint> areaBoundaryPoints) {
-        this.areaBoundaryPoints = areaBoundaryPoints;
+    public void setAreas(List<EventLocationArea> areas) {
+        this.areas = areas;
     }
 
     @Override

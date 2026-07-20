@@ -88,8 +88,8 @@ export function LocationImportModal({
           if (
             !seat.seatNumber ||
             !seat.seatRow ||
-            seat.xCoordinate === undefined ||
-            seat.yCoordinate === undefined
+            seat.coordinate?.xCoordinate === undefined ||
+            seat.coordinate?.yCoordinate === undefined
           ) {
             throw new Error(t("locationImportModal.seatDataValidationError"));
           }

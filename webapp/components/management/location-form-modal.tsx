@@ -45,27 +45,41 @@ export function LocationFormModal({
   const [markers, setMarkers] = useState<MakerRequestDto[]>(
     location?.markers?.map((m) => ({
       label: m.label || "",
-      xCoordinate: m.xCoordinate || 0,
-      yCoordinate: m.yCoordinate || 0,
+      coordinate: {
+        xCoordinate: m.coordinate?.xCoordinate || 0,
+        yCoordinate: m.coordinate?.yCoordinate || 0,
+      },
     })) || [],
   );
   const [isLoading, setIsLoading] = useState(false);
 
   const addMarker = () => {
-    setMarkers([...markers, { label: "", xCoordinate: 0, yCoordinate: 0 }]);
+    setMarkers([
+      ...markers,
+      { label: "", coordinate: { xCoordinate: 0, yCoordinate: 0 } },
+    ]);
   };
 
   const removeMarker = (index: number) => {
     setMarkers(markers.filter((_, i) => i !== index));
   };
 
-  const updateMarker = (
+  const updateMarkerLabel = (index: number, value: string) => {
+    const updatedMarkers = [...markers];
+    updatedMarkers[index] = { ...updatedMarkers[index], label: value };
+    setMarkers(updatedMarkers);
+  };
+
+  const updateMarkerCoordinate = (
     index: number,
-    field: keyof MakerRequestDto,
-    value: string | number,
+    axis: "xCoordinate" | "yCoordinate",
+    value: number,
   ) => {
     const updatedMarkers = [...markers];
-    updatedMarkers[index] = { ...updatedMarkers[index], [field]: value };
+    updatedMarkers[index] = {
+      ...updatedMarkers[index],
+      coordinate: { ...updatedMarkers[index].coordinate, [axis]: value },
+    };
     setMarkers(updatedMarkers);
   };
 
@@ -210,9 +224,7 @@ export function LocationFormModal({
                     <Input
                       id={`marker-label-${index}`}
                       value={marker.label}
-                      onChange={(e) =>
-                        updateMarker(index, "label", e.target.value)
-                      }
+                      onChange={(e) => updateMarkerLabel(index, e.target.value)}
                       placeholder="Label"
                       className="h-8 text-sm"
                       required
@@ -229,9 +241,9 @@ export function LocationFormModal({
                     <Input
                       id={`marker-x-${index}`}
                       type="number"
-                      value={marker.xCoordinate}
+                      value={marker.coordinate.xCoordinate}
                       onChange={(e) =>
-                        updateMarker(
+                        updateMarkerCoordinate(
                           index,
                           "xCoordinate",
                           Number(e.target.value),
@@ -253,9 +265,9 @@ export function LocationFormModal({
                     <Input
                       id={`marker-y-${index}`}
                       type="number"
-                      value={marker.yCoordinate}
+                      value={marker.coordinate.yCoordinate}
                       onChange={(e) =>
-                        updateMarker(
+                        updateMarkerCoordinate(
                           index,
                           "yCoordinate",
                           Number(e.target.value),

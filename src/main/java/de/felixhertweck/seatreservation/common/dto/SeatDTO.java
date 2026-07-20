@@ -30,8 +30,7 @@ public record SeatDTO(
         String seatNumber,
         String seatRow,
         Long locationId,
-        int xCoordinate,
-        int yCoordinate,
+        CoordinateDTO coordinate,
         String entrance,
         String area) {
     public SeatDTO(Seat seat) {
@@ -40,9 +39,8 @@ public record SeatDTO(
                 seat.getSeatNumber(),
                 seat.getSeatRow(),
                 seat.getLocation().id,
-                seat.getxCoordinate(),
-                seat.getyCoordinate(),
+                new CoordinateDTO(seat.getCoordinate()),
                 seat.getEntrance(),
-                seat.getArea());
+                seat.getArea() != null ? seat.getArea().getName() : null);
     }
 }

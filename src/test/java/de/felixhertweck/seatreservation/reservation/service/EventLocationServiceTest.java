@@ -328,12 +328,14 @@ class EventLocationServiceTest {
     @Test
     void getLocationsForCurrentUser_GroupsSeatsIntoAreas() {
         // Location A has two seats sharing an area, exposed via the allowance
+        var parkett = new EventLocationArea("Parkett");
+        parkett.id = 1L;
         var seat1 = new Seat("S1", "Row 1", locationA);
         seat1.id = 1L;
-        seat1.setArea("Parkett");
+        seat1.setArea(parkett);
         var seat2 = new Seat("S2", "Row 1", locationA);
         seat2.id = 2L;
-        seat2.setArea("Parkett");
+        seat2.setArea(parkett);
         locationA.setSeats(List.of(seat1, seat2));
 
         var allowance = new EventUserAllowance();

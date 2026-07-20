@@ -40,11 +40,14 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
 import de.felixhertweck.seatreservation.common.dto.SeatDTO;
 import de.felixhertweck.seatreservation.management.dto.SeatRequestDTO;
 import de.felixhertweck.seatreservation.management.exception.SeatNotFoundException;
+import de.felixhertweck.seatreservation.model.entity.Coordinate;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
+import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.Seat;
@@ -128,8 +131,7 @@ public class SeatServiceTest {
         existingSeat = new Seat();
         existingSeat.setSeatNumber("A1");
         existingSeat.setLocation(eventLocation);
-        existingSeat.setxCoordinate(1);
-        existingSeat.setyCoordinate(1);
+        existingSeat.setCoordinate(new Coordinate(1, 1));
         existingSeat.id = 1L;
     }
 
@@ -154,8 +156,8 @@ public class SeatServiceTest {
         assertEquals("B2", createdSeat.seatNumber());
         assertEquals(eventLocation.id, createdSeat.locationId());
         assertEquals("Row 1", createdSeat.seatRow());
-        assertEquals(2, createdSeat.xCoordinate());
-        assertEquals(2, createdSeat.yCoordinate());
+        assertEquals(2, createdSeat.coordinate().xCoordinate());
+        assertEquals(2, createdSeat.coordinate().yCoordinate());
         assertEquals("A", createdSeat.entrance());
         assertEquals("Parkett", createdSeat.area());
         verify(seatRepository, times(1)).persist(any(Seat.class));
@@ -183,8 +185,8 @@ public class SeatServiceTest {
         assertEquals("C3", createdSeat.seatNumber());
         assertEquals(eventLocation.id, createdSeat.locationId());
         assertEquals("Row 1", createdSeat.seatRow());
-        assertEquals(3, createdSeat.xCoordinate());
-        assertEquals(3, createdSeat.yCoordinate());
+        assertEquals(3, createdSeat.coordinate().xCoordinate());
+        assertEquals(3, createdSeat.coordinate().yCoordinate());
         assertEquals("A", createdSeat.entrance());
         verify(seatRepository, times(1)).persist(any(Seat.class));
     }
@@ -194,8 +196,7 @@ public class SeatServiceTest {
         SeatRequestDTO dto = new SeatRequestDTO();
         dto.setSeatNumber("D4");
         dto.setEventLocationId(eventLocation.id);
-        dto.setxCoordinate(4);
-        dto.setyCoordinate(4);
+        dto.setCoordinate(new CoordinateDTO(4, 4));
 
         // The eventLocation is managed by managerUser, not regularUser
         when(eventLocationRepository.findByIdOptional(eventLocation.id))
@@ -211,8 +212,7 @@ public class SeatServiceTest {
         SeatRequestDTO dto = new SeatRequestDTO();
         dto.setSeatNumber(""); // Empty seat number
         dto.setEventLocationId(eventLocation.id);
-        dto.setxCoordinate(-1); // Negative coordinate
-        dto.setyCoordinate(2);
+        dto.setCoordinate(new CoordinateDTO(-1, 2)); // Negative coordinate
 
         when(eventLocationRepository.findByIdOptional(eventLocation.id))
                 .thenReturn(Optional.of(eventLocation));
@@ -222,8 +222,7 @@ public class SeatServiceTest {
         verify(seatRepository, never()).persist(any(Seat.class));
 
         dto.setSeatNumber("C3");
-        dto.setxCoordinate(1);
-        dto.setyCoordinate(-1); // Negative coordinate
+        dto.setCoordinate(new CoordinateDTO(1, -1)); // Negative coordinate
         assertThrows(
                 IllegalArgumentException.class,
                 () -> seatService.createSeatManager(dto, managerUser));
@@ -236,7 +235,15 @@ public class SeatServiceTest {
         otherLocation.id = 2L; // Assign an ID for consistency
         List<Seat> allSeats =
                 Arrays.asList(
-                        existingSeat, new Seat("C1", otherLocation, "1", 3, 3, "A", "Parkett"));
+                        existingSeat,
+                        new Seat(
+                                "C1",
+                                otherLocation,
+                                "1",
+                                3,
+                                3,
+                                "A",
+                                new EventLocationArea("Parkett")));
         when(seatRepository.listAll()).thenReturn(allSeats);
         List<SeatDTO> result = seatService.findAllSeatsForManager(adminUser);
 
@@ -250,7 +257,8 @@ public class SeatServiceTest {
         EventLocation otherLocation =
                 new EventLocation("Other Hall", "Other Address", regularUser, 50);
         otherLocation.id = 2L;
-        Seat otherSeat = new Seat("X1", otherLocation, "1", 1, 1, "B", "Balkon");
+        Seat otherSeat =
+                new Seat("X1", otherLocation, "1", 1, 1, "B", new EventLocationArea("Balkon"));
         otherSeat.id = 2L;
 
         List<Seat> managerSeats = Collections.singletonList(existingSeat);
@@ -263,8 +271,12 @@ public class SeatServiceTest {
         assertNotNull(result);
         assertEquals(1, result.size()); // Should only find the one seat they manage
         assertEquals(existingSeat.getSeatNumber(), result.getFirst().seatNumber());
-        assertEquals(existingSeat.getxCoordinate(), result.getFirst().xCoordinate());
-        assertEquals(existingSeat.getyCoordinate(), result.getFirst().yCoordinate());
+        assertEquals(
+                existingSeat.getCoordinate().xCoordinate(),
+                result.getFirst().coordinate().xCoordinate());
+        assertEquals(
+                existingSeat.getCoordinate().yCoordinate(),
+                result.getFirst().coordinate().yCoordinate());
         assertEquals(existingSeat.getEntrance(), result.getFirst().entrance());
         verify(seatRepository, times(1)).findByEventLocation(eventLocation);
     }
@@ -290,8 +302,10 @@ public class SeatServiceTest {
 
         assertNotNull(foundSeat);
         assertEquals(existingSeat.getSeatNumber(), foundSeat.seatNumber());
-        assertEquals(existingSeat.getxCoordinate(), foundSeat.xCoordinate());
-        assertEquals(existingSeat.getyCoordinate(), foundSeat.yCoordinate());
+        assertEquals(
+                existingSeat.getCoordinate().xCoordinate(), foundSeat.coordinate().xCoordinate());
+        assertEquals(
+                existingSeat.getCoordinate().yCoordinate(), foundSeat.coordinate().yCoordinate());
     }
 
     @Test
@@ -302,8 +316,10 @@ public class SeatServiceTest {
 
         assertNotNull(foundSeat);
         assertEquals(existingSeat.getSeatNumber(), foundSeat.seatNumber());
-        assertEquals(existingSeat.getxCoordinate(), foundSeat.xCoordinate());
-        assertEquals(existingSeat.getyCoordinate(), foundSeat.yCoordinate());
+        assertEquals(
+                existingSeat.getCoordinate().xCoordinate(), foundSeat.coordinate().xCoordinate());
+        assertEquals(
+                existingSeat.getCoordinate().yCoordinate(), foundSeat.coordinate().yCoordinate());
     }
 
     @Test
@@ -337,8 +353,7 @@ public class SeatServiceTest {
         SeatRequestDTO dto = new SeatRequestDTO();
         dto.setSeatNumber("Updated A1");
         dto.setEventLocationId(eventLocation.id);
-        dto.setxCoordinate(10);
-        dto.setyCoordinate(10);
+        dto.setCoordinate(new CoordinateDTO(10, 10));
         dto.setSeatRow("Row 2");
         dto.setEntrance("B");
         dto.setArea("Balkon");
@@ -352,8 +367,8 @@ public class SeatServiceTest {
 
         assertNotNull(updatedSeat);
         assertEquals("Updated A1", updatedSeat.seatNumber());
-        assertEquals(10, updatedSeat.xCoordinate());
-        assertEquals(10, updatedSeat.yCoordinate());
+        assertEquals(10, updatedSeat.coordinate().xCoordinate());
+        assertEquals(10, updatedSeat.coordinate().yCoordinate());
         assertEquals("Row 2", updatedSeat.seatRow());
         assertEquals("B", updatedSeat.entrance());
         assertEquals("Balkon", updatedSeat.area());
@@ -369,8 +384,7 @@ public class SeatServiceTest {
         SeatRequestDTO dto = new SeatRequestDTO();
         dto.setSeatNumber("A1");
         dto.setEventLocationId(eventLocation.id);
-        dto.setxCoordinate(1);
-        dto.setyCoordinate(1);
+        dto.setCoordinate(new CoordinateDTO(1, 1));
         dto.setSeatRow("Row 5");
         dto.setEntrance("C");
 
@@ -393,8 +407,7 @@ public class SeatServiceTest {
         SeatRequestDTO dto = new SeatRequestDTO();
         dto.setSeatNumber("Updated A1 by Admin");
         dto.setEventLocationId(eventLocation.id);
-        dto.setxCoordinate(20);
-        dto.setyCoordinate(20);
+        dto.setCoordinate(new CoordinateDTO(20, 20));
         dto.setSeatRow("Row 2");
         dto.setEntrance("B");
 
@@ -407,8 +420,8 @@ public class SeatServiceTest {
 
         assertNotNull(updatedSeat);
         assertEquals("Updated A1 by Admin", updatedSeat.seatNumber());
-        assertEquals(20, updatedSeat.xCoordinate());
-        assertEquals(20, updatedSeat.yCoordinate());
+        assertEquals(20, updatedSeat.coordinate().xCoordinate());
+        assertEquals(20, updatedSeat.coordinate().yCoordinate());
         assertEquals("Row 2", updatedSeat.seatRow());
         assertEquals("B", updatedSeat.entrance());
         verify(seatRepository, times(1)).persist(existingSeat);
@@ -419,8 +432,7 @@ public class SeatServiceTest {
         SeatRequestDTO dto = new SeatRequestDTO();
         dto.setSeatNumber("Updated A1");
         dto.setEventLocationId(eventLocation.id);
-        dto.setxCoordinate(10);
-        dto.setyCoordinate(10);
+        dto.setCoordinate(new CoordinateDTO(10, 10));
 
         when(seatRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
 
@@ -435,8 +447,7 @@ public class SeatServiceTest {
         SeatRequestDTO dto = new SeatRequestDTO();
         dto.setSeatNumber(""); // Invalid seat number
         dto.setEventLocationId(eventLocation.id);
-        dto.setxCoordinate(-1); // Invalid coordinate
-        dto.setyCoordinate(10);
+        dto.setCoordinate(new CoordinateDTO(-1, 10)); // Invalid coordinate
 
         when(seatRepository.findByIdOptional(existingSeat.id))
                 .thenReturn(Optional.of(existingSeat));
@@ -449,8 +460,7 @@ public class SeatServiceTest {
         verify(seatRepository, never()).persist(any(Seat.class));
 
         dto.setSeatNumber("A1");
-        dto.setxCoordinate(1);
-        dto.setyCoordinate(-1); // Invalid coordinate
+        dto.setCoordinate(new CoordinateDTO(1, -1)); // Invalid coordinate
         assertThrows(
                 IllegalArgumentException.class,
                 () -> seatService.updateSeatForManager(existingSeat.id, dto, managerUser));
@@ -470,8 +480,7 @@ public class SeatServiceTest {
         SeatRequestDTO dto = new SeatRequestDTO();
         dto.setSeatNumber("Updated X1");
         dto.setEventLocationId(otherLocation.id);
-        dto.setxCoordinate(10);
-        dto.setyCoordinate(10);
+        dto.setCoordinate(new CoordinateDTO(10, 10));
 
         when(seatRepository.findByIdOptional(seatInOtherLocation.id))
                 .thenReturn(Optional.of(seatInOtherLocation));
@@ -493,8 +502,7 @@ public class SeatServiceTest {
         SeatRequestDTO dto = new SeatRequestDTO();
         dto.setSeatNumber("Updated A1");
         dto.setEventLocationId(newOtherLocation.id); // New location not owned by manager
-        dto.setxCoordinate(10);
-        dto.setyCoordinate(10);
+        dto.setCoordinate(new CoordinateDTO(10, 10));
 
         when(seatRepository.findByIdOptional(existingSeat.id))
                 .thenReturn(Optional.of(existingSeat));

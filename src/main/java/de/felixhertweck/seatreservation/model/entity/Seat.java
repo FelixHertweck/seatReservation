@@ -21,8 +21,10 @@ package de.felixhertweck.seatreservation.model.entity;
 
 import java.util.Objects;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -41,15 +43,15 @@ public class Seat extends PanacheEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private EventLocation location;
 
-    private int xCoordinate;
-
-    private int yCoordinate;
+    @Embedded private Coordinate coordinate = new Coordinate();
 
     private String seatRow;
 
     private String entrance;
 
-    private String area;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "area_id")
+    private EventLocationArea area;
 
     public Seat() {}
 
@@ -66,12 +68,11 @@ public class Seat extends PanacheEntity {
             int xCoordinate,
             int yCoordinate,
             String entrance,
-            String area) {
+            EventLocationArea area) {
         this.seatNumber = seatNumber;
         this.location = location;
         this.seatRow = seatRow;
-        this.xCoordinate = xCoordinate;
-        this.yCoordinate = yCoordinate;
+        this.coordinate = new Coordinate(xCoordinate, yCoordinate);
         this.entrance = entrance;
         this.area = area;
     }
@@ -84,12 +85,12 @@ public class Seat extends PanacheEntity {
         return location;
     }
 
-    public int getxCoordinate() {
-        return xCoordinate;
+    public Coordinate getCoordinate() {
+        return coordinate;
     }
 
-    public int getyCoordinate() {
-        return yCoordinate;
+    public void setCoordinate(Coordinate coordinate) {
+        this.coordinate = coordinate;
     }
 
     public void setSeatNumber(String seatNumber) {
@@ -98,14 +99,6 @@ public class Seat extends PanacheEntity {
 
     public void setLocation(EventLocation location) {
         this.location = location;
-    }
-
-    public void setxCoordinate(int xCoordinate) {
-        this.xCoordinate = xCoordinate;
-    }
-
-    public void setyCoordinate(int yCoordinate) {
-        this.yCoordinate = yCoordinate;
     }
 
     public Long getId() {
@@ -128,11 +121,11 @@ public class Seat extends PanacheEntity {
         this.entrance = entrance;
     }
 
-    public String getArea() {
+    public EventLocationArea getArea() {
         return area;
     }
 
-    public void setArea(String area) {
+    public void setArea(EventLocationArea area) {
         this.area = area;
     }
 
@@ -150,8 +143,7 @@ public class Seat extends PanacheEntity {
         if (id != null || that.id != null) {
             return Objects.equals(id, that.id);
         }
-        return xCoordinate == that.xCoordinate
-                && yCoordinate == that.yCoordinate
+        return Objects.equals(coordinate, that.coordinate)
                 && Objects.equals(seatNumber, that.seatNumber)
                 && Objects.equals(location, that.location)
                 && Objects.equals(seatRow, that.seatRow)
@@ -164,8 +156,7 @@ public class Seat extends PanacheEntity {
         if (id != null) {
             return Objects.hash(id);
         }
-        return Objects.hash(
-                seatNumber, location, xCoordinate, yCoordinate, seatRow, entrance, area);
+        return Objects.hash(seatNumber, location, coordinate, seatRow, entrance, area);
     }
 
     @Override
@@ -176,10 +167,8 @@ public class Seat extends PanacheEntity {
                 + '\''
                 + ", location="
                 + location
-                + ", xCoordinate="
-                + xCoordinate
-                + ", yCoordinate="
-                + yCoordinate
+                + ", coordinate="
+                + coordinate
                 + ", seatRow='"
                 + seatRow
                 + '\''
