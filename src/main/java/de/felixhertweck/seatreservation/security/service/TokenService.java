@@ -240,13 +240,14 @@ public class TokenService {
     public NewCookie createStatusCookie(String token, String name) throws JwtInvalidException {
         Long expiration = getExpirationFromJwt(token);
         long currentEpochSeconds = Instant.now().getEpochSecond();
-        int maxAge = (int) (expiration - currentEpochSeconds);
+        int maxAge = (int) Math.max(0, expiration - currentEpochSeconds);
 
         return new NewCookie.Builder(name)
                 .value(expiration.toString())
                 .path("/")
                 .maxAge(maxAge)
                 .httpOnly(false)
+                .secure(cookieSecure)
                 .sameSite(NewCookie.SameSite.STRICT)
                 .build();
     }
