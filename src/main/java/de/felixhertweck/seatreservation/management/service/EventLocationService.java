@@ -40,6 +40,7 @@ import de.felixhertweck.seatreservation.management.dto.MakerRequestDTO;
 import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
+import de.felixhertweck.seatreservation.model.entity.EventLocationEntrance;
 import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.Seat;
@@ -384,6 +385,41 @@ public class EventLocationService {
     }
 
     /**
+     * Resolves an {@link EventLocationEntrance} by (trimmed) name, scoped to the given {@code
+     * eventLocation}, creating and registering a new one if no match exists yet. {@code
+     * entrancesByName} is a per-call cache so that seats referencing the same entrance name resolve
+     * to the same entity.
+     *
+     * @param rawName The (possibly untrimmed) entrance name; {@code null}/blank resolves to no
+     *     entrance
+     * @param eventLocation The event location the entrance belongs to
+     * @param entrancesByName A per-call cache of already-resolved entrances, keyed by trimmed name
+     * @return The resolved or newly created entrance, or {@code null} if {@code rawName} is blank
+     */
+    private EventLocationEntrance resolveOrCreateEntrance(
+            String rawName,
+            EventLocation eventLocation,
+            Map<String, EventLocationEntrance> entrancesByName) {
+        if (rawName == null || rawName.trim().isEmpty()) {
+            return null;
+        }
+        String name = rawName.trim();
+        return entrancesByName.computeIfAbsent(
+                name,
+                key -> {
+                    for (EventLocationEntrance existing : eventLocation.getEntrances()) {
+                        if (key.equals(existing.getName())) {
+                            return existing;
+                        }
+                    }
+                    EventLocationEntrance created = new EventLocationEntrance(key);
+                    created.setEventLocation(eventLocation);
+                    eventLocation.getEntrances().add(created);
+                    return created;
+                });
+    }
+
+    /**
      * Deletes an EventLocation. The deletion is only allowed if the currently authenticated user is
      * the manager of the EventLocation or has the ADMIN role.
      *
@@ -471,6 +507,7 @@ public class EventLocationService {
         location.setMarkers(convertToMarkerEntities(dto.getMarkers(), location));
         Map<String, EventLocationArea> areasByName = new LinkedHashMap<>();
         applyAreaDtos(dto.getAreas(), location, areasByName);
+        Map<String, EventLocationEntrance> entrancesByName = new LinkedHashMap<>();
 
         eventLocationRepository.persist(location);
 
@@ -484,7 +521,11 @@ public class EventLocationService {
                                         seat.setSeatNumber(seatDto.getSeatNumber());
                                         seat.setCoordinate(seatDto.getCoordinate().toEntity());
                                         seat.setSeatRow(seatDto.getSeatRow());
-                                        seat.setEntrance(seatDto.getEntrance());
+                                        seat.setEntrance(
+                                                resolveOrCreateEntrance(
+                                                        seatDto.getEntrance(),
+                                                        location,
+                                                        entrancesByName));
                                         seat.setArea(
                                                 resolveOrCreateArea(
                                                         seatDto.getArea(), location, areasByName));
@@ -550,6 +591,7 @@ public class EventLocationService {
 
         List<Seat> newSeats = new ArrayList<>();
         Map<String, EventLocationArea> areasByName = new LinkedHashMap<>();
+        Map<String, EventLocationEntrance> entrancesByName = new LinkedHashMap<>();
 
         seats.forEach(
                 seat -> {
@@ -561,7 +603,8 @@ public class EventLocationService {
                     newSeat.setSeatNumber(seat.getSeatNumber());
                     newSeat.setCoordinate(seat.getCoordinate().toEntity());
                     newSeat.setSeatRow(seat.getSeatRow());
-                    newSeat.setEntrance(seat.getEntrance());
+                    newSeat.setEntrance(
+                            resolveOrCreateEntrance(seat.getEntrance(), location, entrancesByName));
                     newSeat.setArea(resolveOrCreateArea(seat.getArea(), location, areasByName));
                     newSeat.setLocation(location);
                     seatRepository.persist(newSeat);

@@ -47,7 +47,9 @@ public class Seat extends PanacheEntity {
 
     private String seatRow;
 
-    private String entrance;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "entrance_id")
+    private EventLocationEntrance entrance;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "area_id")
@@ -67,7 +69,7 @@ public class Seat extends PanacheEntity {
             String seatRow,
             int xCoordinate,
             int yCoordinate,
-            String entrance,
+            EventLocationEntrance entrance,
             EventLocationArea area) {
         this.seatNumber = seatNumber;
         this.location = location;
@@ -113,11 +115,11 @@ public class Seat extends PanacheEntity {
         this.seatRow = seatRow;
     }
 
-    public String getEntrance() {
+    public EventLocationEntrance getEntrance() {
         return entrance;
     }
 
-    public void setEntrance(String entrance) {
+    public void setEntrance(EventLocationEntrance entrance) {
         this.entrance = entrance;
     }
 

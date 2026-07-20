@@ -34,6 +34,7 @@ import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
+import de.felixhertweck.seatreservation.model.repository.EventLocationEntranceRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
@@ -52,6 +53,8 @@ public class EventResourceTest {
     @Inject EventLocationRepository eventLocationRepository;
 
     @Inject EventLocationAreaRepository eventLocationAreaRepository;
+
+    @Inject EventLocationEntranceRepository eventLocationEntranceRepository;
 
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
 
@@ -102,6 +105,7 @@ public class EventResourceTest {
         eventUserAllowanceRepository.deleteAll();
         eventRepository.deleteAll();
         eventLocationAreaRepository.deleteAll();
+        eventLocationEntranceRepository.deleteAll();
         eventLocationRepository.deleteAll();
         userRepository.delete("username", "manager2");
     }

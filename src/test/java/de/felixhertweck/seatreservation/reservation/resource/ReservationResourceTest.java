@@ -37,6 +37,7 @@ import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
+import de.felixhertweck.seatreservation.model.repository.EventLocationEntranceRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
@@ -58,6 +59,8 @@ public class ReservationResourceTest {
     @Inject EventRepository eventRepository;
     @Inject EventLocationRepository eventLocationRepository;
     @Inject EventLocationAreaRepository eventLocationAreaRepository;
+
+    @Inject EventLocationEntranceRepository eventLocationEntranceRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
     @Inject SeatRepository seatRepository;
     @Inject ReservationRepository reservationRepository;
@@ -80,6 +83,7 @@ public class ReservationResourceTest {
         eventRepository.deleteAll();
         seatRepository.deleteAll();
         eventLocationAreaRepository.deleteAll();
+        eventLocationEntranceRepository.deleteAll();
         eventLocationRepository.deleteAll();
 
         var manager = userRepository.findByUsernameOptional("manager").orElseThrow();
@@ -135,6 +139,7 @@ public class ReservationResourceTest {
         eventRepository.deleteAll();
         seatRepository.deleteAll();
         eventLocationAreaRepository.deleteAll();
+        eventLocationEntranceRepository.deleteAll();
         eventLocationRepository.deleteAll();
     }
 

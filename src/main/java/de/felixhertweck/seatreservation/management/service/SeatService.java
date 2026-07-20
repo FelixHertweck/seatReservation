@@ -31,6 +31,7 @@ import de.felixhertweck.seatreservation.management.dto.SeatRequestDTO;
 import de.felixhertweck.seatreservation.management.exception.SeatNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
+import de.felixhertweck.seatreservation.model.entity.EventLocationEntrance;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
@@ -112,7 +113,7 @@ public class SeatService {
                         dto.getSeatRow(),
                         dto.getCoordinate().xCoordinate(),
                         dto.getCoordinate().yCoordinate(),
-                        dto.getEntrance(),
+                        resolveOrCreateEntrance(dto.getEntrance(), eventLocation),
                         resolveOrCreateArea(dto.getArea(), eventLocation));
         seatRepository.persist(seat);
         LOG.infof(
@@ -256,7 +257,7 @@ public class SeatService {
         seat.setLocation(newEventLocation);
         seat.setCoordinate(dto.getCoordinate().toEntity());
         seat.setSeatRow(dto.getSeatRow());
-        seat.setEntrance(dto.getEntrance());
+        seat.setEntrance(resolveOrCreateEntrance(dto.getEntrance(), newEventLocation));
         seat.setArea(resolveOrCreateArea(dto.getArea(), newEventLocation));
 
         seatRepository.persist(seat);
@@ -289,6 +290,32 @@ public class SeatService {
         EventLocationArea created = new EventLocationArea(name);
         created.setEventLocation(eventLocation);
         eventLocation.getAreas().add(created);
+        return created;
+    }
+
+    /**
+     * Resolves an {@link EventLocationEntrance} by (trimmed) name, scoped to the given {@code
+     * eventLocation}, creating and registering a new one if no match exists yet.
+     *
+     * @param rawName The (possibly untrimmed) entrance name; {@code null}/blank resolves to no
+     *     entrance
+     * @param eventLocation The event location the entrance belongs to
+     * @return The resolved or newly created entrance, or {@code null} if {@code rawName} is blank
+     */
+    private EventLocationEntrance resolveOrCreateEntrance(
+            String rawName, EventLocation eventLocation) {
+        if (rawName == null || rawName.trim().isEmpty()) {
+            return null;
+        }
+        String name = rawName.trim();
+        for (EventLocationEntrance existing : eventLocation.getEntrances()) {
+            if (name.equals(existing.getName())) {
+                return existing;
+            }
+        }
+        EventLocationEntrance created = new EventLocationEntrance(name);
+        created.setEventLocation(eventLocation);
+        eventLocation.getEntrances().add(created);
         return created;
     }
 
