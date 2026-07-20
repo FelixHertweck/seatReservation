@@ -182,6 +182,22 @@ class SvgRendererTest {
     }
 
     @Test
+    void renderSeats_WithSpecialCharactersInSeatNumber_EscapesXml() {
+        Seat seat = new Seat();
+        seat.setSeatNumber("<script>alert(1)</script>");
+        seat.setxCoordinate(2);
+        seat.setyCoordinate(2);
+
+        String result = SvgRenderer.renderSeats(List.of(seat), Set.of(), Set.of());
+
+        assertNotNull(result);
+        assertTrue(result.contains("&lt;script&gt;alert(1)&lt;/script&gt;"));
+        assertFalse(
+                result.contains(
+                        "<script>alert(1)</script>")); // Should not contain unescaped script tags
+    }
+
+    @Test
     void renderSeats_CalculatesBoundingBoxWithMarkers() {
         Seat seat = new Seat();
         seat.setSeatNumber("A1");

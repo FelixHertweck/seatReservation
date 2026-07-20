@@ -233,7 +233,7 @@ public class SvgRenderer {
                     .append("\" font-size=\"")
                     .append(textHeight)
                     .append("\" text-anchor=\"middle\" fill=\"black\">")
-                    .append(seat.getSeatNumber())
+                    .append(escapeXml(seat.getSeatNumber()))
                     .append("</text>\n");
         }
 
