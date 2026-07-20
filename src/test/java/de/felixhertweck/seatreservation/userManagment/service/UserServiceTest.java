@@ -66,6 +66,7 @@ import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.exceptions.VerificationCodeNotFoundException;
 import de.felixhertweck.seatreservation.userManagment.exceptions.VerifyTokenExpiredException;
 import io.quarkus.elytron.security.common.BcryptUtil;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -919,19 +920,22 @@ public class UserServiceTest {
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
         existingUser.id = 1L;
-        when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
-        when(userRepository.deleteById(1L)).thenReturn(true); // Mock deleteById to return true
+
+        PanacheQuery<User> mockQuery = Mockito.mock(PanacheQuery.class);
+        when(mockQuery.list()).thenReturn(List.of(existingUser));
+        when(userRepository.find("id in ?1", List.of(1L))).thenReturn(mockQuery);
+        when(userRepository.delete("id in ?1", List.of(1L))).thenReturn(1L);
 
         userService.deleteUser(List.of(1L));
 
-        verify(userRepository, times(1)).deleteById(1L);
+        verify(userRepository, times(1)).delete("id in ?1", List.of(1L));
     }
 
     @Test
     void deleteUser_UserNotFoundException() throws UserNotFoundException {
-        when(userRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
-        when(userRepository.deleteById(anyLong()))
-                .thenReturn(false); // Mock deleteById to return false
+        PanacheQuery<User> mockQuery = Mockito.mock(PanacheQuery.class);
+        when(mockQuery.list()).thenReturn(Collections.emptyList());
+        when(userRepository.find("id in ?1", List.of(1L))).thenReturn(mockQuery);
 
         assertThrows(UserNotFoundException.class, () -> userService.deleteUser(List.of(1L)));
         verify(userRepository, never()).delete(any(User.class));
