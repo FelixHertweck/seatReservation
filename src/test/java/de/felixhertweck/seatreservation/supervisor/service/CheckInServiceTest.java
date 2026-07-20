@@ -106,10 +106,9 @@ class CheckInServiceTest {
         reservation2.setEvent(event);
         reservation2.setSeat(seat);
 
-        when(reservationRepository.findByIdUserIdAndEventId(reservationId1, userId, eventId))
-                .thenReturn(Optional.of(reservation1));
-        when(reservationRepository.findByIdUserIdAndEventId(reservationId2, userId, eventId))
-                .thenReturn(Optional.of(reservation2));
+        when(reservationRepository.findAllByIdUserIdAndEventId(
+                        Arrays.asList(reservationId1, reservationId2), userId, eventId))
+                .thenReturn(Arrays.asList(reservation1, reservation2));
 
         CheckInProcessRequestDTO requestDTO =
                 new CheckInProcessRequestDTO(
@@ -151,8 +150,9 @@ class CheckInServiceTest {
         reservation1.setSeat(seat);
         reservation1.setLiveStatus(ReservationLiveStatus.CHECKED_IN);
 
-        when(reservationRepository.findByIdUserIdAndEventId(reservationId1, userId, eventId))
-                .thenReturn(Optional.of(reservation1));
+        when(reservationRepository.findAllByIdUserIdAndEventId(
+                        Collections.singletonList(reservationId1), userId, eventId))
+                .thenReturn(Collections.singletonList(reservation1));
 
         CheckInProcessRequestDTO requestDTO =
                 new CheckInProcessRequestDTO(
@@ -198,10 +198,12 @@ class CheckInServiceTest {
         cancelReservation.setEvent(event);
         cancelReservation.setSeat(seat);
 
-        when(reservationRepository.findByIdUserIdAndEventId(checkInId, userId, eventId))
-                .thenReturn(Optional.of(checkInReservation));
-        when(reservationRepository.findByIdUserIdAndEventId(cancelId, userId, eventId))
-                .thenReturn(Optional.of(cancelReservation));
+        when(reservationRepository.findAllByIdUserIdAndEventId(
+                        Collections.singletonList(checkInId), userId, eventId))
+                .thenReturn(Collections.singletonList(checkInReservation));
+        when(reservationRepository.findAllByIdUserIdAndEventId(
+                        Collections.singletonList(cancelId), userId, eventId))
+                .thenReturn(Collections.singletonList(cancelReservation));
 
         CheckInProcessRequestDTO requestDTO =
                 new CheckInProcessRequestDTO(
@@ -224,8 +226,9 @@ class CheckInServiceTest {
         long userId = 1L;
         long eventId = 10L;
 
-        when(reservationRepository.findByIdUserIdAndEventId(reservationId, userId, eventId))
-                .thenReturn(Optional.empty());
+        when(reservationRepository.findAllByIdUserIdAndEventId(
+                        Collections.singletonList(reservationId), userId, eventId))
+                .thenReturn(Collections.emptyList());
 
         CheckInProcessRequestDTO requestDTO =
                 new CheckInProcessRequestDTO(
@@ -341,8 +344,9 @@ class CheckInServiceTest {
         long userId = 1L;
         long eventId = 10L;
 
-        when(reservationRepository.findByIdUserIdAndEventId(reservationId, userId, eventId))
-                .thenReturn(Optional.of(reservation1));
+        when(reservationRepository.findAllByIdUserIdAndEventId(
+                        Collections.singletonList(reservationId), userId, eventId))
+                .thenReturn(Collections.singletonList(reservation1));
 
         CheckInProcessRequestDTO requestDTO =
                 new CheckInProcessRequestDTO(

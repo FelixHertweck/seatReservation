@@ -139,6 +139,6 @@ public class ReservationRepository implements PanacheRepository<Reservation> {
         if (ids == null || ids.isEmpty()) {
             return java.util.Collections.emptyList();
         }
-        return find("id in ?1 and user.id = ?2 and event.id = ?3", ids, userId, eventId).list();
+        return find("id in (?1) and user.id = ?2 and event.id = ?3", ids, userId, eventId).list();
     }
 }
