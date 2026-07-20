@@ -901,7 +901,8 @@
     "savingButton": "Speichern...",
     "createButton": "Erstellen",
     "updateButton": "Aktualisieren",
-    "entrance": "Eingang"
+    "entrance": "Eingang",
+    "selectEntrancePlaceholder": "Eingang auswählen"
   },
   "sidebar": {
     "navigation": "Navigation",

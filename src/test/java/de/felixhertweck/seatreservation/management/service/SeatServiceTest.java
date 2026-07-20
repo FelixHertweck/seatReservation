@@ -19,8 +19,6 @@
  */
 package de.felixhertweck.seatreservation.management.service;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -30,7 +28,6 @@ import jakarta.ws.rs.core.SecurityContext;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doAnswer;
@@ -43,6 +40,7 @@ import static org.mockito.Mockito.when;
 import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
 import de.felixhertweck.seatreservation.common.dto.SeatDTO;
 import de.felixhertweck.seatreservation.management.dto.SeatRequestDTO;
+import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
 import de.felixhertweck.seatreservation.management.exception.SeatNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.Coordinate;
 import de.felixhertweck.seatreservation.model.entity.Event;
@@ -53,6 +51,8 @@ import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
+import de.felixhertweck.seatreservation.model.repository.EventLocationEntranceRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
@@ -67,6 +67,8 @@ public class SeatServiceTest {
 
     @InjectMock SeatRepository seatRepository;
     @InjectMock EventLocationRepository eventLocationRepository;
+    @InjectMock EventLocationAreaRepository eventLocationAreaRepository;
+    @InjectMock EventLocationEntranceRepository eventLocationEntranceRepository;
     @InjectMock UserRepository userRepository;
     @InjectMock SecurityContext securityContext;
 
@@ -77,6 +79,13 @@ public class SeatServiceTest {
     private User regularUser;
     private EventLocation eventLocation;
     private Seat existingSeat;
+    private EventLocationArea areaParkett;
+    private EventLocationArea areaBalkon;
+    private EventLocationEntrance entranceA;
+    private EventLocationEntrance entranceB;
+    private EventLocationEntrance entranceC;
+    private EventLocationArea areaInOtherLocation;
+    private EventLocationEntrance entranceInOtherLocation;
 
     @BeforeEach
     void setUp() {
@@ -134,12 +143,55 @@ public class SeatServiceTest {
         existingSeat.setLocation(eventLocation);
         existingSeat.setCoordinate(new Coordinate(1, 1));
         existingSeat.id = 1L;
+
+        areaParkett = new EventLocationArea("Parkett");
+        areaParkett.id = 100L;
+        areaParkett.setEventLocation(eventLocation);
+        areaBalkon = new EventLocationArea("Balkon");
+        areaBalkon.id = 101L;
+        areaBalkon.setEventLocation(eventLocation);
+
+        entranceA = new EventLocationEntrance("A");
+        entranceA.id = 200L;
+        entranceA.setEventLocation(eventLocation);
+        entranceB = new EventLocationEntrance("B");
+        entranceB.id = 201L;
+        entranceB.setEventLocation(eventLocation);
+        entranceC = new EventLocationEntrance("C");
+        entranceC.id = 202L;
+        entranceC.setEventLocation(eventLocation);
+
+        EventLocation otherLocation =
+                new EventLocation("Other Hall", "Other Address", regularUser, 50);
+        otherLocation.id = 2L;
+        areaInOtherLocation = new EventLocationArea("Foreign Area");
+        areaInOtherLocation.id = 300L;
+        areaInOtherLocation.setEventLocation(otherLocation);
+        entranceInOtherLocation = new EventLocationEntrance("Foreign Entrance");
+        entranceInOtherLocation.id = 301L;
+        entranceInOtherLocation.setEventLocation(otherLocation);
+
+        when(eventLocationAreaRepository.findByIdOptional(areaParkett.id))
+                .thenReturn(Optional.of(areaParkett));
+        when(eventLocationAreaRepository.findByIdOptional(areaBalkon.id))
+                .thenReturn(Optional.of(areaBalkon));
+        when(eventLocationAreaRepository.findByIdOptional(areaInOtherLocation.id))
+                .thenReturn(Optional.of(areaInOtherLocation));
+        when(eventLocationEntranceRepository.findByIdOptional(entranceA.id))
+                .thenReturn(Optional.of(entranceA));
+        when(eventLocationEntranceRepository.findByIdOptional(entranceB.id))
+                .thenReturn(Optional.of(entranceB));
+        when(eventLocationEntranceRepository.findByIdOptional(entranceC.id))
+                .thenReturn(Optional.of(entranceC));
+        when(eventLocationEntranceRepository.findByIdOptional(entranceInOtherLocation.id))
+                .thenReturn(Optional.of(entranceInOtherLocation));
     }
 
     @Test
     void createSeat_Success_AsManager() {
         SeatRequestDTO dto =
-                new SeatRequestDTO("B2", "Row 1", eventLocation.id, 2, 2, "A", "Parkett");
+                new SeatRequestDTO(
+                        "B2", "Row 1", eventLocation.id, 2, 2, entranceA.id, areaParkett.id);
         when(eventLocationRepository.findByIdOptional(eventLocation.id))
                 .thenReturn(Optional.of(eventLocation));
         doAnswer(
@@ -167,7 +219,8 @@ public class SeatServiceTest {
     @Test
     void createSeat_Success_AsAdmin() {
         SeatRequestDTO dto =
-                new SeatRequestDTO("C3", "Row 1", eventLocation.id, 3, 3, "A", "Balkon");
+                new SeatRequestDTO(
+                        "C3", "Row 1", eventLocation.id, 3, 3, entranceA.id, areaBalkon.id);
 
         when(eventLocationRepository.findByIdOptional(eventLocation.id))
                 .thenReturn(Optional.of(eventLocation));
@@ -231,53 +284,88 @@ public class SeatServiceTest {
     }
 
     @Test
-    void findAllSeatsForManager_Success_AsAdmin() {
-        EventLocation otherLocation = new EventLocation("Hall 2", "Addr 2", regularUser, 50);
-        otherLocation.id = 2L; // Assign an ID for consistency
-        List<Seat> allSeats =
-                Arrays.asList(
-                        existingSeat,
-                        new Seat(
-                                "C1",
-                                otherLocation,
-                                "1",
-                                3,
-                                3,
-                                new EventLocationEntrance("A"),
-                                new EventLocationArea("Parkett")));
-        when(seatRepository.listAll()).thenReturn(allSeats);
-        List<SeatDTO> result = seatService.findAllSeatsForManager(adminUser);
+    void createSeat_InvalidInput_AreaNotFound() {
+        SeatRequestDTO dto = new SeatRequestDTO("D4", "Row 1", eventLocation.id, 1, 1, null, 999L);
 
-        assertNotNull(result);
-        assertEquals(2, result.size());
-        verify(seatRepository, times(1)).listAll();
+        when(eventLocationRepository.findByIdOptional(eventLocation.id))
+                .thenReturn(Optional.of(eventLocation));
+        when(eventLocationAreaRepository.findByIdOptional(999L)).thenReturn(Optional.empty());
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> seatService.createSeatManager(dto, managerUser));
+        verify(seatRepository, never()).persist(any(Seat.class));
     }
 
     @Test
-    void findAllSeatsForManager_Success_AsManager() {
-        EventLocation otherLocation =
-                new EventLocation("Other Hall", "Other Address", regularUser, 50);
-        otherLocation.id = 2L;
-        Seat otherSeat =
-                new Seat(
-                        "X1",
-                        otherLocation,
-                        "1",
-                        1,
-                        1,
-                        new EventLocationEntrance("B"),
-                        new EventLocationArea("Balkon"));
-        otherSeat.id = 2L;
+    void createSeat_InvalidInput_AreaBelongsToDifferentLocation() {
+        SeatRequestDTO dto =
+                new SeatRequestDTO(
+                        "D4", "Row 1", eventLocation.id, 1, 1, null, areaInOtherLocation.id);
 
-        List<Seat> managerSeats = Collections.singletonList(existingSeat);
-        when(eventLocationRepository.findByManager(managerUser))
-                .thenReturn(Collections.singletonList(eventLocation));
-        when(seatRepository.findByEventLocation(eventLocation)).thenReturn(managerSeats);
+        when(eventLocationRepository.findByIdOptional(eventLocation.id))
+                .thenReturn(Optional.of(eventLocation));
 
-        List<SeatDTO> result = seatService.findAllSeatsForManager(managerUser);
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> seatService.createSeatManager(dto, managerUser));
+        verify(seatRepository, never()).persist(any(Seat.class));
+    }
+
+    @Test
+    void createSeat_InvalidInput_EntranceNotFound() {
+        SeatRequestDTO dto = new SeatRequestDTO("D4", "Row 1", eventLocation.id, 1, 1, 999L, null);
+
+        when(eventLocationRepository.findByIdOptional(eventLocation.id))
+                .thenReturn(Optional.of(eventLocation));
+        when(eventLocationEntranceRepository.findByIdOptional(999L)).thenReturn(Optional.empty());
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> seatService.createSeatManager(dto, managerUser));
+        verify(seatRepository, never()).persist(any(Seat.class));
+    }
+
+    @Test
+    void createSeat_InvalidInput_EntranceBelongsToDifferentLocation() {
+        SeatRequestDTO dto =
+                new SeatRequestDTO(
+                        "D4", "Row 1", eventLocation.id, 1, 1, entranceInOtherLocation.id, null);
+
+        when(eventLocationRepository.findByIdOptional(eventLocation.id))
+                .thenReturn(Optional.of(eventLocation));
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> seatService.createSeatManager(dto, managerUser));
+        verify(seatRepository, never()).persist(any(Seat.class));
+    }
+
+    @Test
+    void findSeatsForManagerByLocation_Success_AsAdmin() {
+        when(eventLocationRepository.findByIdOptional(eventLocation.id))
+                .thenReturn(Optional.of(eventLocation));
+        when(seatRepository.findByEventLocation(eventLocation)).thenReturn(List.of(existingSeat));
+
+        List<SeatDTO> result =
+                seatService.findSeatsForManagerByLocation(eventLocation.id, adminUser);
 
         assertNotNull(result);
-        assertEquals(1, result.size()); // Should only find the one seat they manage
+        assertEquals(1, result.size());
+        verify(seatRepository, times(1)).findByEventLocation(eventLocation);
+    }
+
+    @Test
+    void findSeatsForManagerByLocation_Success_AsManager() {
+        when(eventLocationRepository.findByIdOptional(eventLocation.id))
+                .thenReturn(Optional.of(eventLocation));
+        when(seatRepository.findByEventLocation(eventLocation)).thenReturn(List.of(existingSeat));
+
+        List<SeatDTO> result =
+                seatService.findSeatsForManagerByLocation(eventLocation.id, managerUser);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
         assertEquals(existingSeat.getSeatNumber(), result.getFirst().seatNumber());
         assertEquals(
                 existingSeat.getCoordinate().xCoordinate(),
@@ -285,21 +373,29 @@ public class SeatServiceTest {
         assertEquals(
                 existingSeat.getCoordinate().yCoordinate(),
                 result.getFirst().coordinate().yCoordinate());
-        assertEquals(existingSeat.getEntrance(), result.getFirst().entrance());
         verify(seatRepository, times(1)).findByEventLocation(eventLocation);
     }
 
     @Test
-    void findAllSeatsForManager_Success_NoSeatsForManager() {
-        when(eventLocationRepository.findByManager(managerUser))
-                .thenReturn(Collections.emptyList());
-        // No direct seatRepository.list call when managerLocations is empty
+    void findSeatsForManagerByLocation_Forbidden_NotOwner() {
+        EventLocation otherLocation =
+                new EventLocation("Other Hall", "Other Address", regularUser, 50);
+        otherLocation.id = 2L;
+        when(eventLocationRepository.findByIdOptional(otherLocation.id))
+                .thenReturn(Optional.of(otherLocation));
 
-        List<SeatDTO> result = seatService.findAllSeatsForManager(managerUser);
+        assertThrows(
+                SecurityException.class,
+                () -> seatService.findSeatsForManagerByLocation(otherLocation.id, managerUser));
+    }
 
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
-        verify(seatRepository, never()).findByEventLocation(any(EventLocation.class));
+    @Test
+    void findSeatsForManagerByLocation_NotFound() {
+        when(eventLocationRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
+
+        assertThrows(
+                EventLocationNotFoundException.class,
+                () -> seatService.findSeatsForManagerByLocation(999L, managerUser));
     }
 
     @Test
@@ -363,8 +459,8 @@ public class SeatServiceTest {
         dto.setEventLocationId(eventLocation.id);
         dto.setCoordinate(new CoordinateDTO(10, 10));
         dto.setSeatRow("Row 2");
-        dto.setEntrance("B");
-        dto.setArea("Balkon");
+        dto.setEntranceId(entranceB.id);
+        dto.setAreaId(areaBalkon.id);
 
         when(seatRepository.findByIdOptional(existingSeat.id))
                 .thenReturn(Optional.of(existingSeat));
@@ -394,7 +490,7 @@ public class SeatServiceTest {
         dto.setEventLocationId(eventLocation.id);
         dto.setCoordinate(new CoordinateDTO(1, 1));
         dto.setSeatRow("Row 5");
-        dto.setEntrance("C");
+        dto.setEntranceId(entranceC.id);
 
         when(seatRepository.findByIdOptional(existingSeat.id))
                 .thenReturn(Optional.of(existingSeat));
@@ -411,13 +507,53 @@ public class SeatServiceTest {
     }
 
     @Test
+    void updateSeat_InvalidInput_AreaBelongsToDifferentLocation() {
+        SeatRequestDTO dto = new SeatRequestDTO();
+        dto.setSeatNumber("A1");
+        dto.setEventLocationId(eventLocation.id);
+        dto.setCoordinate(new CoordinateDTO(1, 1));
+        dto.setSeatRow("Row 1");
+        dto.setAreaId(areaInOtherLocation.id);
+
+        when(seatRepository.findByIdOptional(existingSeat.id))
+                .thenReturn(Optional.of(existingSeat));
+        when(eventLocationRepository.findByIdOptional(eventLocation.id))
+                .thenReturn(Optional.of(eventLocation));
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> seatService.updateSeatForManager(existingSeat.id, dto, managerUser));
+        verify(seatRepository, never()).persist(any(Seat.class));
+    }
+
+    @Test
+    void updateSeat_InvalidInput_EntranceBelongsToDifferentLocation() {
+        SeatRequestDTO dto = new SeatRequestDTO();
+        dto.setSeatNumber("A1");
+        dto.setEventLocationId(eventLocation.id);
+        dto.setCoordinate(new CoordinateDTO(1, 1));
+        dto.setSeatRow("Row 1");
+        dto.setEntranceId(entranceInOtherLocation.id);
+
+        when(seatRepository.findByIdOptional(existingSeat.id))
+                .thenReturn(Optional.of(existingSeat));
+        when(eventLocationRepository.findByIdOptional(eventLocation.id))
+                .thenReturn(Optional.of(eventLocation));
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> seatService.updateSeatForManager(existingSeat.id, dto, managerUser));
+        verify(seatRepository, never()).persist(any(Seat.class));
+    }
+
+    @Test
     void updateSeat_Success_AsAdmin() {
         SeatRequestDTO dto = new SeatRequestDTO();
         dto.setSeatNumber("Updated A1 by Admin");
         dto.setEventLocationId(eventLocation.id);
         dto.setCoordinate(new CoordinateDTO(20, 20));
         dto.setSeatRow("Row 2");
-        dto.setEntrance("B");
+        dto.setEntranceId(entranceB.id);
 
         when(seatRepository.findByIdOptional(existingSeat.id))
                 .thenReturn(Optional.of(existingSeat));
@@ -473,6 +609,55 @@ public class SeatServiceTest {
                 IllegalArgumentException.class,
                 () -> seatService.updateSeatForManager(existingSeat.id, dto, managerUser));
         verify(seatRepository, never()).persist(any(Seat.class));
+
+        dto.setCoordinate(new CoordinateDTO(1, 1));
+        dto.setSeatRow(""); // Invalid seat row
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> seatService.updateSeatForManager(existingSeat.id, dto, managerUser));
+        verify(seatRepository, never()).persist(any(Seat.class));
+    }
+
+    @Test
+    void createSeat_EventLocationNotFound() {
+        SeatRequestDTO dto = new SeatRequestDTO();
+        dto.setSeatNumber("Z1");
+        dto.setEventLocationId(999L);
+        dto.setCoordinate(new CoordinateDTO(1, 1));
+        dto.setSeatRow("Row 1");
+
+        when(eventLocationRepository.findByIdOptional(999L)).thenReturn(Optional.empty());
+
+        assertThrows(
+                EventLocationNotFoundException.class,
+                () -> seatService.createSeatManager(dto, managerUser));
+        verify(seatRepository, never()).persist(any(Seat.class));
+    }
+
+    @Test
+    void updateSeat_EventLocationNotFound() {
+        SeatRequestDTO dto = new SeatRequestDTO();
+        dto.setSeatNumber("Z1");
+        dto.setEventLocationId(999L);
+        dto.setCoordinate(new CoordinateDTO(1, 1));
+        dto.setSeatRow("Row 1");
+
+        when(seatRepository.findByIdOptional(existingSeat.id))
+                .thenReturn(Optional.of(existingSeat));
+        when(eventLocationRepository.findByIdOptional(999L)).thenReturn(Optional.empty());
+
+        assertThrows(
+                EventLocationNotFoundException.class,
+                () -> seatService.updateSeatForManager(existingSeat.id, dto, managerUser));
+        verify(seatRepository, never()).persist(any(Seat.class));
+    }
+
+    @Test
+    void deleteSeat_InvalidInput_EmptyIds() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> seatService.deleteSeatForManager(List.of(), managerUser));
+        verify(seatRepository, never()).delete(any(Seat.class));
     }
 
     @Test

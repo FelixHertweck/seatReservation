@@ -30,6 +30,7 @@ import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationEntranceRepository;
+import de.felixhertweck.seatreservation.model.repository.EventLocationMarkerRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
@@ -48,6 +49,8 @@ public class EventLocationResourceTest {
     @Inject EventLocationAreaRepository eventLocationAreaRepository;
 
     @Inject EventLocationEntranceRepository eventLocationEntranceRepository;
+
+    @Inject EventLocationMarkerRepository eventLocationMarkerRepository;
 
     @Inject EventRepository eventRepository;
 
@@ -69,6 +72,7 @@ public class EventLocationResourceTest {
         eventRepository.deleteAll();
         eventLocationAreaRepository.deleteAll();
         eventLocationEntranceRepository.deleteAll();
+        eventLocationMarkerRepository.deleteAll();
         eventLocationRepository.deleteAll();
 
         var user = userRepository.findByUsernameOptional("manager").orElseThrow();
@@ -89,6 +93,7 @@ public class EventLocationResourceTest {
         eventRepository.deleteAll();
         eventLocationAreaRepository.deleteAll();
         eventLocationEntranceRepository.deleteAll();
+        eventLocationMarkerRepository.deleteAll();
         eventLocationRepository.deleteAll();
     }
 
@@ -129,6 +134,35 @@ public class EventLocationResourceTest {
                 .then()
                 .statusCode(200)
                 .body("name", is("New Location"));
+    }
+
+    /**
+     * The embedded area/marker scaffolds carry no eventLocationId on create — the enclosing
+     * location does not exist yet. A @NotNull on that field would reject this payload at the
+     * validation layer, so this test pins the create path down through bean validation.
+     *
+     * <p>Note that {@code areas} in the response is derived from the seats (see {@link
+     * de.felixhertweck.seatreservation.common.dto.AreaDTO#fromAreas}), so a freshly created area
+     * without seats is intentionally not echoed back here.
+     */
+    @Test
+    @TestSecurity(
+            user = "manager",
+            roles = {"MANAGER"})
+    void testCreateEventLocationWithEmbeddedAreasAndMarkers() {
+        given().contentType("application/json")
+                .body(
+                        "{\"name\":\"Hall With Areas\",\"address\":\"123 Main"
+                            + " St\",\"capacity\":100,"
+                            + "\"areas\":[{\"name\":\"Parkett\",\"boundary\":[{\"xCoordinate\":1,\"yCoordinate\":1},"
+                            + "{\"xCoordinate\":5,\"yCoordinate\":1}]}],"
+                            + "\"markers\":[{\"label\":\"Bühne\",\"coordinate\":{\"xCoordinate\":3,\"yCoordinate\":9}}]}")
+                .when()
+                .post("/api/manager/eventlocations")
+                .then()
+                .statusCode(200)
+                .body("name", is("Hall With Areas"))
+                .body("markers[0].label", is("Bühne"));
     }
 
     @Test
@@ -302,62 +336,10 @@ public class EventLocationResourceTest {
         given().contentType("application/json")
                 .body(requestBody)
                 .when()
-                .post("/api/manager/eventlocations/import")
+                .post("/api/manager/eventlocations")
                 .then()
                 .statusCode(200)
                 .body("name", is("New Location"))
                 .body("seatIds.size()", is(2));
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    void testImportSeatsToEventLocation_Success() {
-        String requestBody =
-                "[{\"seatNumber\":\"B1\",\"coordinate\":{\"xCoordinate\":2,\"yCoordinate\":1},\"seatRow\":\"Row"
-                    + " B\"},{\"seatNumber\":\"B2\",\"coordinate\":{\"xCoordinate\":2,\"yCoordinate\":2},\"seatRow\":\"Row"
-                    + " B\"}]";
-
-        given().contentType("application/json")
-                .body(requestBody)
-                .when()
-                .post("/api/manager/eventlocations/import/" + testLocation.getId())
-                .then()
-                .statusCode(200)
-                .body("name", is("Test Location"))
-                .body("seatIds.size()", is(2)); // Assuming initial seats are 0, and 2 are added
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    void testImportSeatsToEventLocation_NotFound() {
-        String requestBody =
-                "[{\"seatNumber\":\"B1\",\"coordinate\":{\"xCoordinate\":2,\"yCoordinate\":1},\"seatRow\":\"Row"
-                    + " B\"}]";
-        given().contentType("application/json")
-                .body(requestBody)
-                .when()
-                .post("/api/manager/eventlocations/import/999")
-                .then()
-                .statusCode(404);
-    }
-
-    @Test
-    @TestSecurity(
-            user = "testUser",
-            roles = {"USER"})
-    void testImportSeatsToEventLocation_Forbidden() {
-        String requestBody =
-                "[{\"seatNumber\":\"B1\",\"coordinate\":{\"xCoordinate\":2,\"yCoordinate\":1},\"seatRow\":\"Row"
-                    + " B\"}]";
-        given().contentType("application/json")
-                .body(requestBody)
-                .when()
-                .post("/api/manager/eventlocations/import/" + testLocation.getId())
-                .then()
-                .statusCode(403);
     }
 }

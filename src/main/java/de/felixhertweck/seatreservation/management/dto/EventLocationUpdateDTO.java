@@ -19,14 +19,17 @@
  */
 package de.felixhertweck.seatreservation.management.dto;
 
-import java.util.List;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
+/**
+ * Request body for {@code PUT /api/manager/eventlocations/{id}}. Only covers the location's own
+ * metadata; seats/markers/areas/entrances are managed exclusively through their dedicated CRUD
+ * resources after creation, not through this endpoint.
+ */
 @RegisterForReflection
-public class ImportEventLocationDto {
+public class EventLocationUpdateDTO {
     @NotNull(message = "Name must not be null")
     private String name;
 
@@ -34,13 +37,15 @@ public class ImportEventLocationDto {
     private String address;
 
     @NotNull(message = "Capacity must not be null")
-    private int capacity;
+    private Integer capacity;
 
-    @Valid private List<ImportSeatDto> seats;
+    public EventLocationUpdateDTO() {}
 
-    @Valid private List<MakerRequestDTO> markers;
-
-    @Valid private List<AreaRequestDTO> areas;
+    public EventLocationUpdateDTO(String name, String address, Integer capacity) {
+        this.name = name;
+        this.address = address;
+        this.capacity = capacity;
+    }
 
     public String getName() {
         return name;
@@ -58,35 +63,11 @@ public class ImportEventLocationDto {
         this.address = address;
     }
 
-    public int getCapacity() {
+    public Integer getCapacity() {
         return capacity;
     }
 
-    public void setCapacity(int capacity) {
+    public void setCapacity(Integer capacity) {
         this.capacity = capacity;
-    }
-
-    public List<ImportSeatDto> getSeats() {
-        return seats;
-    }
-
-    public void setSeats(List<ImportSeatDto> seats) {
-        this.seats = seats;
-    }
-
-    public List<MakerRequestDTO> getMarkers() {
-        return markers;
-    }
-
-    public void setMarkers(List<MakerRequestDTO> markers) {
-        this.markers = markers;
-    }
-
-    public List<AreaRequestDTO> getAreas() {
-        return areas;
-    }
-
-    public void setAreas(List<AreaRequestDTO> areas) {
-        this.areas = areas;
     }
 }

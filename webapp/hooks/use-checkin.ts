@@ -8,8 +8,8 @@ import {
   postApiSupervisorCheckinInfoByUsernameMutation,
   postApiSupervisorCheckinProcessMutation,
   getApiSupervisorCheckinEventsOptions,
+  getApiSupervisorCheckinUsernamesByEventIdOptions,
 } from "@/api/@tanstack/react-query.gen";
-import { getApiSupervisorCheckinUsernamesByEventId } from "@/api/sdk.gen";
 import type {
   CheckInInfoRequestDto,
   CheckInProcessRequestDto,
@@ -64,22 +64,10 @@ export function useCheckin(): UseCheckinReturn {
   });
 
   const getUsernamesByEventId = (eventId: bigint) => {
-    // Use a manually-constructed, serializable queryKey (stringify the id)
-    // but call the SDK function with the bigint eventId in the queryFn.
-    const queryKey = [
-      "getApiSupervisorCheckinUsernamesByEventId",
-      { eventId: eventId.toString() },
-    ];
     return queryClient.fetchQuery({
-      queryKey,
-      queryFn: async ({ signal }) => {
-        const { data } = await getApiSupervisorCheckinUsernamesByEventId({
-          path: { eventId },
-          signal,
-          throwOnError: true,
-        });
-        return data as string[] | undefined;
-      },
+      ...getApiSupervisorCheckinUsernamesByEventIdOptions({
+        path: { eventId },
+      }),
     });
   };
 

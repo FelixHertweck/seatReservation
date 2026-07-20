@@ -24,31 +24,31 @@ import java.util.Optional;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
-import de.felixhertweck.seatreservation.model.entity.EventLocationEntrance;
+import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 
 @ApplicationScoped
-public class EventLocationEntranceRepository implements PanacheRepository<EventLocationEntrance> {
+public class EventLocationMarkerRepository implements PanacheRepository<EventLocationMarker> {
     /**
-     * Finds all entrances belonging to a specific event location.
+     * Finds all markers belonging to a specific event location.
      *
      * @param eventLocation the event location to search for
-     * @return a list of entrances for the specified event location
+     * @return a list of markers for the specified event location
      */
-    public List<EventLocationEntrance> findByEventLocation(EventLocation eventLocation) {
+    public List<EventLocationMarker> findByEventLocation(EventLocation eventLocation) {
         return find("eventLocation", eventLocation).list();
     }
 
     /**
-     * Finds a entrance by ID, eagerly fetching its event location and that location's manager. The
+     * Finds a marker by ID, eagerly fetching its event location and that location's manager. The
      * ownership check needs both, so fetching them up front saves two extra queries.
      *
-     * @param id the entrance ID to find
-     * @return the entrance including its event location and manager, if it exists
+     * @param id the marker ID to find
+     * @return the marker including its event location and manager, if it exists
      */
-    public Optional<EventLocationEntrance> findByIdWithEventLocation(Long id) {
+    public Optional<EventLocationMarker> findByIdWithEventLocation(Long id) {
         return find(
-                        "select e from EventLocationEntrance e"
+                        "select e from EventLocationMarker e"
                                 + " join fetch e.eventLocation el"
                                 + " join fetch el.manager"
                                 + " where e.id = ?1",

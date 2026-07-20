@@ -17,19 +17,11 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.common.dto;
+package de.felixhertweck.seatreservation.management.exception;
 
-import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
-import io.quarkus.runtime.annotations.RegisterForReflection;
-
-@RegisterForReflection
-public record EventLocationMakerDTO(
-        Long id, String label, CoordinateDTO coordinate, Long eventLocationId) {
-    public EventLocationMakerDTO(EventLocationMarker maker) {
-        this(
-                maker.id,
-                maker.getLabel(),
-                new CoordinateDTO(maker.getCoordinate()),
-                maker.getEventLocation().getId());
+/** Thrown when deleting an {@code EventLocationArea} that is still referenced by a seat. */
+public class AreaInUseException extends RuntimeException {
+    public AreaInUseException(String message) {
+        super(message);
     }
 }

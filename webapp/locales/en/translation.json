@@ -1044,7 +1044,8 @@
     "savingButton": "Saving...",
     "createButton": "Create",
     "updateButton": "Update",
-    "entrance": "Entrance"
+    "entrance": "Entrance",
+    "selectEntrancePlaceholder": "Select an entrance"
   },
   "sidebar": {
     "navigation": "Navigation",

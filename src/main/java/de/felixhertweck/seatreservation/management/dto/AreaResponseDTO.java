@@ -17,19 +17,24 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.common.dto;
+package de.felixhertweck.seatreservation.management.dto;
 
-import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
+import java.util.List;
+
+import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
+import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
-public record EventLocationMakerDTO(
-        Long id, String label, CoordinateDTO coordinate, Long eventLocationId) {
-    public EventLocationMakerDTO(EventLocationMarker maker) {
+public record AreaResponseDTO(
+        Long id, String name, List<CoordinateDTO> boundary, Long eventLocationId) {
+    public AreaResponseDTO(EventLocationArea area) {
         this(
-                maker.id,
-                maker.getLabel(),
-                new CoordinateDTO(maker.getCoordinate()),
-                maker.getEventLocation().getId());
+                area.id,
+                area.getName(),
+                area.getBoundary() == null
+                        ? List.of()
+                        : area.getBoundary().stream().map(CoordinateDTO::new).toList(),
+                area.getEventLocation().getId());
     }
 }

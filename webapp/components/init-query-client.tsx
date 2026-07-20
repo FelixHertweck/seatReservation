@@ -15,6 +15,33 @@ export interface ErrorWithResponse extends Error {
   };
 }
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  if (Object.prototype.toString.call(value) !== "[object Object]") {
+    return false;
+  }
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === null || prototype === Object.prototype;
+}
+
+// API ids are bigint, and JSON.stringify (which the default query key hasher uses)
+// cannot serialize bigint. Mirrors TanStack Query's default hashing (stable key order)
+// while also converting bigint to string so query keys containing ids don't crash.
+function hashQueryKey(queryKey: readonly unknown[]): string {
+  return JSON.stringify(queryKey, (_key, value) => {
+    if (typeof value === "bigint") {
+      return value.toString();
+    }
+    return isPlainObject(value)
+      ? Object.keys(value)
+          .sort()
+          .reduce((result: Record<string, unknown>, key) => {
+            result[key] = value[key];
+            return result;
+          }, {})
+      : value;
+  });
+}
+
 // Promise cache for token refresh to prevent multiple simultaneous refresh calls
 let refreshPromise: Promise<Response> | null = null;
 
@@ -102,6 +129,7 @@ export default function InitQueryClient({
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
+        queryKeyHashFn: hashQueryKey,
         staleTime: 60000,
         refetchOnMount: true,
         refetchOnWindowFocus: true,

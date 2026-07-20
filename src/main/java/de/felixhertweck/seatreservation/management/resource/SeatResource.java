@@ -93,14 +93,21 @@ public class SeatResource {
                                     @Schema(
                                             type = SchemaType.ARRAY,
                                             implementation = SeatDTO.class)))
+    @APIResponse(responseCode = "400", description = "Bad Request: eventLocationId is required")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
             description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
-    public List<SeatDTO> getAllManagerSeats() {
-        LOG.debugf("Received GET request to /api/manager/seats to get all manager seats.");
+    public List<SeatDTO> getSeatsByEventLocation(
+            @QueryParam("eventLocationId") Long eventLocationId) {
+        LOG.debugf(
+                "Received GET request to /api/manager/seats?eventLocationId=%d", eventLocationId);
+        if (eventLocationId == null) {
+            throw new IllegalArgumentException("eventLocationId query parameter is required");
+        }
         User currentUser = userSecurityContext.getCurrentUser();
-        List<SeatDTO> result = seatService.findAllSeatsForManager(currentUser);
+        List<SeatDTO> result =
+                seatService.findSeatsForManagerByLocation(eventLocationId, currentUser);
         LOG.debugf(
                 "Successfully responded to GET /api/manager/seats with %d seats.", result.size());
         return result;
