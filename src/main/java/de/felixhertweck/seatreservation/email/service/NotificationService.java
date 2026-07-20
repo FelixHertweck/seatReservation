@@ -42,6 +42,7 @@ import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.User;
 import io.quarkus.scheduler.Scheduled;
 import io.quarkus.scheduler.Scheduler;
+import org.hibernate.Hibernate;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
@@ -212,6 +213,15 @@ public class NotificationService {
         event.getStartTime();
         if (event.getEventLocation() != null) {
             event.getEventLocation().getName();
+            // Force load the location's seat/marker/area collections and each area's boundary:
+            // sendReminderEmails() (called later, outside this transaction) renders a seat map via
+            // EmailSeatMapService, which reads all of these off event.getEventLocation().
+            Hibernate.initialize(event.getEventLocation().getSeats());
+            Hibernate.initialize(event.getEventLocation().getMarkers());
+            Hibernate.initialize(event.getEventLocation().getAreas());
+            event.getEventLocation()
+                    .getAreas()
+                    .forEach(area -> Hibernate.initialize(area.getBoundary()));
         }
 
         // Force load user and seat data for all reservations
