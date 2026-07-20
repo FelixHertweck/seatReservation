@@ -130,7 +130,7 @@ export function QrCodeScanner({
       // Expected format: userId;eventId;token1,token2,...
       const parts = data.split(";");
       if (parts.length !== 3) {
-        throw new Error("Invalid format");
+        throw new Error(t("checkin.error.invalidQrFormat"));
       }
 
       const userId = parts[0];
@@ -141,7 +141,7 @@ export function QrCodeScanner({
         BigInt(userId);
         BigInt(eventId);
       } catch {
-        throw new Error("Invalid user ID or event ID");
+        throw new Error(t("checkin.error.invalidUserOrEventId"));
       }
 
       const checkInTokens = parts[2]

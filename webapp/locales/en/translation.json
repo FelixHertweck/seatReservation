@@ -589,6 +589,8 @@
       "default": "An error occurred during check-in. Please try again.",
       "noCheckInInfo": "No check-in information available.",
       "scanningFailed": "Error scanning QR code.",
+      "invalidQrFormat": "Invalid QR code format.",
+      "invalidUserOrEventId": "Invalid user ID or event ID in QR code.",
       "getInfoFailed": "Failed to get check-in info.",
       "getInfoByUsernameFailed": "Failed to get check-in info by username.",
       "processFailed": "Check-in process failed."

@@ -1049,6 +1049,8 @@
       "default": "Bei der Verarbeitung des Check-In ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
       "noCheckInInfo": "Keine Check-In Informationen verfügbar.",
       "scanningFailed": "Fehler beim Scannen des QR-Codes.",
+      "invalidQrFormat": "Ungültiges QR-Code-Format.",
+      "invalidUserOrEventId": "Ungültige Benutzer-ID oder Event-ID im QR-Code.",
       "getInfoFailed": "Abrufen der Check-In Informationen fehlgeschlagen.",
       "getInfoByUsernameFailed": "Abrufen der Check-In Informationen nach Benutzername fehlgeschlagen.",
       "processFailed": "Check-In Prozess fehlgeschlagen."
