@@ -50,6 +50,7 @@ import de.felixhertweck.seatreservation.management.dto.MakerRequestDTO;
 import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
+import de.felixhertweck.seatreservation.model.entity.EventLocationEntrance;
 import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.Seat;
@@ -397,7 +398,7 @@ public class EventLocationServiceTest {
         assertEquals(2, persistedLocation.getSeats().size());
         assertEquals("A1", persistedLocation.getSeats().get(0).getSeatNumber());
         assertEquals("A2", persistedLocation.getSeats().get(1).getSeatNumber());
-        assertEquals("Main", persistedLocation.getSeats().get(0).getEntrance());
+        assertEquals("Main", persistedLocation.getSeats().get(0).getEntrance().getName());
         assertEquals("Parkett", persistedLocation.getSeats().get(0).getArea().getName());
         assertEquals("Parkett", persistedLocation.getSeats().get(1).getArea().getName());
 
@@ -444,7 +445,8 @@ public class EventLocationServiceTest {
                 seatCaptor.getAllValues().stream()
                         .allMatch(
                                 seat ->
-                                        "Main".equals(seat.getEntrance())
+                                        seat.getEntrance() != null
+                                                && "Main".equals(seat.getEntrance().getName())
                                                 && seat.getArea() != null
                                                 && "Parkett".equals(seat.getArea().getName())));
 
@@ -853,7 +855,15 @@ public class EventLocationServiceTest {
         existingArea.setEventLocation(existingLocation);
         existingLocation.setAreas(new ArrayList<>(List.of(existingArea)));
 
-        Seat seatInArea = new Seat("A1", existingLocation, "Row 1", 1, 1, "Main", existingArea);
+        Seat seatInArea =
+                new Seat(
+                        "A1",
+                        existingLocation,
+                        "Row 1",
+                        1,
+                        1,
+                        new EventLocationEntrance("Main"),
+                        existingArea);
         seatInArea.id = 50L;
         existingLocation.setSeats(new ArrayList<>(List.of(seatInArea)));
 

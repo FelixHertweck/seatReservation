@@ -48,6 +48,7 @@ import de.felixhertweck.seatreservation.model.entity.Coordinate;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
+import de.felixhertweck.seatreservation.model.entity.EventLocationEntrance;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.Seat;
@@ -242,7 +243,7 @@ public class SeatServiceTest {
                                 "1",
                                 3,
                                 3,
-                                "A",
+                                new EventLocationEntrance("A"),
                                 new EventLocationArea("Parkett")));
         when(seatRepository.listAll()).thenReturn(allSeats);
         List<SeatDTO> result = seatService.findAllSeatsForManager(adminUser);
@@ -258,7 +259,14 @@ public class SeatServiceTest {
                 new EventLocation("Other Hall", "Other Address", regularUser, 50);
         otherLocation.id = 2L;
         Seat otherSeat =
-                new Seat("X1", otherLocation, "1", 1, 1, "B", new EventLocationArea("Balkon"));
+                new Seat(
+                        "X1",
+                        otherLocation,
+                        "1",
+                        1,
+                        1,
+                        new EventLocationEntrance("B"),
+                        new EventLocationArea("Balkon"));
         otherSeat.id = 2L;
 
         List<Seat> managerSeats = Collections.singletonList(existingSeat);
@@ -379,7 +387,7 @@ public class SeatServiceTest {
     void updateSeat_EntranceAndRowUpdate_Success() {
         // Set initial values
         existingSeat.setSeatRow("Row 1");
-        existingSeat.setEntrance("A");
+        existingSeat.setEntrance(new EventLocationEntrance("A"));
 
         SeatRequestDTO dto = new SeatRequestDTO();
         dto.setSeatNumber("A1");

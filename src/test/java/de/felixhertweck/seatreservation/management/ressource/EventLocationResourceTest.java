@@ -29,6 +29,7 @@ import static org.hamcrest.CoreMatchers.is;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
+import de.felixhertweck.seatreservation.model.repository.EventLocationEntranceRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
@@ -45,6 +46,8 @@ public class EventLocationResourceTest {
     @Inject EventLocationRepository eventLocationRepository;
 
     @Inject EventLocationAreaRepository eventLocationAreaRepository;
+
+    @Inject EventLocationEntranceRepository eventLocationEntranceRepository;
 
     @Inject EventRepository eventRepository;
 
@@ -65,6 +68,7 @@ public class EventLocationResourceTest {
         seatRepository.deleteAll();
         eventRepository.deleteAll();
         eventLocationAreaRepository.deleteAll();
+        eventLocationEntranceRepository.deleteAll();
         eventLocationRepository.deleteAll();
 
         var user = userRepository.findByUsernameOptional("manager").orElseThrow();
@@ -84,6 +88,7 @@ public class EventLocationResourceTest {
         seatRepository.deleteAll();
         eventRepository.deleteAll();
         eventLocationAreaRepository.deleteAll();
+        eventLocationEntranceRepository.deleteAll();
         eventLocationRepository.deleteAll();
     }
 

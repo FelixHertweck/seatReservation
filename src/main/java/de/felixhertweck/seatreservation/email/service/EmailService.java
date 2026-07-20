@@ -808,10 +808,10 @@ public class EmailService {
                         .filter(
                                 seat ->
                                         seat.getEntrance() != null
-                                                && !seat.getEntrance().trim().isEmpty())
+                                                && !seat.getEntrance().getName().trim().isEmpty())
                         .collect(
                                 Collectors.groupingBy(
-                                        Seat::getEntrance,
+                                        seat -> seat.getEntrance().getName(),
                                         Collectors.mapping(
                                                 Seat::getSeatNumber, Collectors.toList())));
 

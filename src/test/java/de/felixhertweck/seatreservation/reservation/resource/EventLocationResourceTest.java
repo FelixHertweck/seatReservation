@@ -31,6 +31,7 @@ import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
+import de.felixhertweck.seatreservation.model.repository.EventLocationEntranceRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
@@ -50,6 +51,8 @@ class EventLocationResourceTest {
     @Inject UserRepository userRepository;
     @Inject EventLocationRepository eventLocationRepository;
     @Inject EventLocationAreaRepository eventLocationAreaRepository;
+
+    @Inject EventLocationEntranceRepository eventLocationEntranceRepository;
     @Inject EventRepository eventRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
     @Inject SeatRepository seatRepository;
@@ -71,6 +74,7 @@ class EventLocationResourceTest {
         seatRepository.deleteAll();
         eventRepository.deleteAll();
         eventLocationAreaRepository.deleteAll();
+        eventLocationEntranceRepository.deleteAll();
         eventLocationRepository.deleteAll();
 
         // Seed minimal data required for tests (get-or-create user)
@@ -111,6 +115,7 @@ class EventLocationResourceTest {
         seatRepository.deleteAll();
         eventRepository.deleteAll();
         eventLocationAreaRepository.deleteAll();
+        eventLocationEntranceRepository.deleteAll();
         eventLocationRepository.deleteAll();
     }
 
@@ -169,6 +174,7 @@ class EventLocationResourceTest {
         seatRepository.deleteAll();
         eventRepository.deleteAll();
         eventLocationAreaRepository.deleteAll();
+        eventLocationEntranceRepository.deleteAll();
         eventLocationRepository.deleteAll();
     }
 

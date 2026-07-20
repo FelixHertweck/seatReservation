@@ -40,7 +40,7 @@ public record SeatDTO(
                 seat.getSeatRow(),
                 seat.getLocation().id,
                 new CoordinateDTO(seat.getCoordinate()),
-                seat.getEntrance(),
+                seat.getEntrance() != null ? seat.getEntrance().getName() : null,
                 seat.getArea() != null ? seat.getArea().getName() : null);
     }
 }

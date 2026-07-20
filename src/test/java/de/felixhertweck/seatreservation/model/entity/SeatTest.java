@@ -38,7 +38,7 @@ class SeatTest {
                         "Row 1",
                         1,
                         1,
-                        "Entrance A",
+                        new EventLocationEntrance("Entrance A"),
                         new EventLocationArea("Parkett"));
         persisted.id = 5L;
 
@@ -49,7 +49,7 @@ class SeatTest {
                         "Row 1",
                         1,
                         1,
-                        "Entrance A",
+                        new EventLocationEntrance("Entrance A"),
                         new EventLocationArea("Parkett"));
 
         assertNotEquals(persisted, transientSeat);
@@ -68,7 +68,7 @@ class SeatTest {
                         "Row 1",
                         1,
                         1,
-                        "Entrance A",
+                        new EventLocationEntrance("Entrance A"),
                         new EventLocationArea("Parkett"));
         a.id = 5L;
         Seat b =
@@ -78,7 +78,7 @@ class SeatTest {
                         "Row 2",
                         2,
                         2,
-                        "Entrance B",
+                        new EventLocationEntrance("Entrance B"),
                         new EventLocationArea("Balkon"));
         b.id = 5L;
 
@@ -98,7 +98,7 @@ class SeatTest {
                         "Row 1",
                         1,
                         1,
-                        "Entrance A",
+                        new EventLocationEntrance("Entrance A"),
                         new EventLocationArea("Parkett"));
         Seat b =
                 new Seat(
@@ -107,7 +107,7 @@ class SeatTest {
                         "Row 1",
                         1,
                         1,
-                        "Entrance A",
+                        new EventLocationEntrance("Entrance A"),
                         new EventLocationArea("Parkett"));
 
         assertEquals(a, b);
@@ -126,7 +126,7 @@ class SeatTest {
                         "Row 1",
                         1,
                         1,
-                        "Entrance A",
+                        new EventLocationEntrance("Entrance A"),
                         new EventLocationArea("Parkett"));
         a.id = 5L;
         Seat b =
@@ -136,7 +136,7 @@ class SeatTest {
                         "Row 1",
                         1,
                         1,
-                        "Entrance A",
+                        new EventLocationEntrance("Entrance A"),
                         new EventLocationArea("Parkett"));
         b.id = 6L;
 
