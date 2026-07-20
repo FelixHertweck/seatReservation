@@ -716,7 +716,8 @@ public class ReservationServiceTest {
     void blockSeats_Success() {
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
         mockSeatFind(List.of(seat.id), List.of(seat));
-        when(reservationRepository.findByEventId(event.id)).thenReturn(Collections.emptyList());
+        when(reservationRepository.findByEventIdAndSeatIds(event.id, List.of(seat.id)))
+                .thenReturn(Collections.emptyList());
 
         reservationService.blockSeats(event.id, List.of(seat.id), managerUser);
 
@@ -736,7 +737,8 @@ public class ReservationServiceTest {
     void blockSeats_SeatAlreadyReserved() {
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
         mockSeatFind(List.of(seat.id), List.of(seat));
-        when(reservationRepository.findByEventId(event.id)).thenReturn(List.of(reservation));
+        when(reservationRepository.findByEventIdAndSeatIds(event.id, List.of(seat.id)))
+                .thenReturn(List.of(reservation));
 
         assertThrows(
                 IllegalStateException.class,

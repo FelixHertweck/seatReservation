@@ -26,7 +26,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -554,22 +553,15 @@ public class ReservationService {
             seats.add(seat);
         }
 
-        List<Reservation> existingReservations = reservationRepository.findByEventId(eventId);
-        Set<Long> reservedSeatIds = new HashSet<>();
-        for (Reservation res : existingReservations) {
-            if (res.getSeat() != null && res.getSeat().id != null) {
-                reservedSeatIds.add(res.getSeat().id);
-            }
-        }
-
-        for (Seat seat : seats) {
-            if (reservedSeatIds.contains(seat.id)) {
-                LOG.warnf(
-                        "Seat with ID %d is already reserved or blocked for event ID %d.",
-                        seat.id, eventId);
-                throw new IllegalStateException(
-                        "Seat with id " + seat.id + " is already reserved or blocked.");
-            }
+        List<Reservation> conflictingReservations =
+                reservationRepository.findByEventIdAndSeatIds(eventId, seatIds);
+        if (!conflictingReservations.isEmpty()) {
+            Long conflictingSeatId = conflictingReservations.getFirst().getSeat().id;
+            LOG.warnf(
+                    "Seat with ID %d is already reserved or blocked for event ID %d.",
+                    conflictingSeatId, eventId);
+            throw new IllegalStateException(
+                    "Seat with id " + conflictingSeatId + " is already reserved or blocked.");
         }
 
         List<Reservation> newReservations =
