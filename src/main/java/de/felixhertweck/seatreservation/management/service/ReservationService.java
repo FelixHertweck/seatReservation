@@ -553,15 +553,15 @@ public class ReservationService {
             seats.add(seat);
         }
 
-        List<Reservation> existingReservations = reservationRepository.findByEventId(eventId);
-        for (Seat seat : seats) {
-            if (existingReservations.stream().anyMatch(r -> r.getSeat().equals(seat))) {
-                LOG.warnf(
-                        "Seat with ID %d is already reserved or blocked for event ID %d.",
-                        seat.id, eventId);
-                throw new IllegalStateException(
-                        "Seat with id " + seat.id + " is already reserved or blocked.");
-            }
+        List<Reservation> conflictingReservations =
+                reservationRepository.findByEventIdAndSeatIds(eventId, seatIds);
+        if (!conflictingReservations.isEmpty()) {
+            Long conflictingSeatId = conflictingReservations.getFirst().getSeat().id;
+            LOG.warnf(
+                    "Seat with ID %d is already reserved or blocked for event ID %d.",
+                    conflictingSeatId, eventId);
+            throw new IllegalStateException(
+                    "Seat with id " + conflictingSeatId + " is already reserved or blocked.");
         }
 
         List<Reservation> newReservations =
