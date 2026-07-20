@@ -130,7 +130,7 @@ public class ReservationResource {
             responseCode = "403",
             description = "Forbidden: Only authenticated users can access this resource")
     @APIResponse(responseCode = "404", description = "Not Found: Event or seat not found")
-    @APIResponse(responseCode = "409", description = "Conflict: Seat already reserved")
+    @APIResponse(responseCode = "409", description = "Conflict: Seat already reserved or blocked")
     public List<UserReservationResponseDTO> createReservation(
             @Valid UserReservationsRequestDTO dto) {
         User currentUser = userSecurityContext.getCurrentUser();

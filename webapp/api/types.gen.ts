@@ -2732,7 +2732,7 @@ export type PostApiUserReservationsErrors = {
      */
     404: unknown;
     /**
-     * Conflict: Seat already reserved
+     * Conflict: Seat already reserved or blocked
      */
     409: unknown;
 };

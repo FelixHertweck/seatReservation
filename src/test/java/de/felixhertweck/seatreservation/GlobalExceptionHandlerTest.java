@@ -40,6 +40,7 @@ import de.felixhertweck.seatreservation.management.exception.SeatNotFoundExcepti
 import de.felixhertweck.seatreservation.reservation.exception.EventBookingClosedException;
 import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
+import de.felixhertweck.seatreservation.reservation.exception.SeatBlockedException;
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
 import de.felixhertweck.seatreservation.security.service.TokenService;
@@ -67,6 +68,17 @@ class GlobalExceptionHandlerTest {
         assertTrue(response.getEntity() instanceof ErrorResponseDTO);
         ErrorResponseDTO errorResponse = (ErrorResponseDTO) response.getEntity();
         assertEquals("User not found", errorResponse.getMessage());
+    }
+
+    @Test
+    void testSeatBlockedException() {
+        SeatBlockedException exception = new SeatBlockedException("Seat blocked");
+        Response response = exceptionHandler.toResponse(exception);
+
+        assertEquals(Response.Status.CONFLICT.getStatusCode(), response.getStatus());
+        assertTrue(response.getEntity() instanceof ErrorResponseDTO);
+        ErrorResponseDTO errorResponse = (ErrorResponseDTO) response.getEntity();
+        assertEquals("Seat blocked", errorResponse.getMessage());
     }
 
     @Test
