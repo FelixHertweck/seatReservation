@@ -1,0 +1,3 @@
+## 2026-07-20 - Block seats HashSet performance optimization
+**Learning:** Nested loop comparisons utilizing stream filters (e.g. `existingReservations.stream().anyMatch(...)`) result in O(N*M) time complexity, creating significant performance bottlenecks during bulk operations (like seat blocking) on entities with thousands of active reservations.
+**Action:** When performing existence checks across large sets of relational entities, pre-aggregate the distinct identifier properties into a `HashSet` before iterating over the target collection, ensuring O(N+M) complexity and drastically faster lookup times.
