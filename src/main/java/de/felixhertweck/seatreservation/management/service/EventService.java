@@ -240,19 +240,19 @@ public class EventService {
             // empty set when no supervisors are provided
             return supervisors;
         }
-        for (Long supervisorId : supervisorIds) {
-            User supervisor =
-                    userRepository
-                            .findByIdOptional(supervisorId)
-                            .orElseThrow(
-                                    () -> {
-                                        LOG.warnf(
-                                                "User with id %d not found for event creation.",
-                                                supervisorId);
-                                        return new IllegalArgumentException(
-                                                "User with id " + supervisorId + " not found");
-                                    });
-            supervisors.add(supervisor);
+        List<User> foundSupervisors = userRepository.find("id in ?1", supervisorIds).list();
+        supervisors.addAll(foundSupervisors);
+
+        if (supervisors.size() != supervisorIds.size()) {
+            Set<Long> foundIds =
+                    foundSupervisors.stream().map(u -> u.id).collect(Collectors.toSet());
+            for (Long supervisorId : supervisorIds) {
+                if (!foundIds.contains(supervisorId)) {
+                    LOG.warnf("User with id %d not found for event creation.", supervisorId);
+                    throw new IllegalArgumentException(
+                            "User with id " + supervisorId + " not found");
+                }
+            }
         }
         return supervisors;
     }
