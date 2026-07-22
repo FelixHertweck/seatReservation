@@ -209,8 +209,10 @@ public class EventServiceTest {
 
         when(eventLocationRepository.findByIdOptional(eventLocation.id))
                 .thenReturn(Optional.of(eventLocation));
-        when(userRepository.findByIdOptional(supervisorUser.id))
-                .thenReturn(Optional.of(supervisorUser));
+        PanacheQuery<User> supervisorQuery = Mockito.mock(PanacheQuery.class);
+        when(supervisorQuery.list()).thenReturn(List.of(supervisorUser));
+        when(userRepository.find("id in ?1", Set.of(supervisorUser.id)))
+                .thenReturn(supervisorQuery);
         doAnswer(
                         invocation -> {
                             Event event = invocation.getArgument(0);
@@ -287,7 +289,9 @@ public class EventServiceTest {
                 .thenReturn(Optional.of(existingEvent));
         when(eventLocationRepository.findByIdOptional(eventLocation.id))
                 .thenReturn(Optional.of(eventLocation));
-        when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
+        PanacheQuery<User> supervisorQuery = Mockito.mock(PanacheQuery.class);
+        when(supervisorQuery.list()).thenReturn(List.of(regularUser));
+        when(userRepository.find("id in ?1", Set.of(regularUser.id))).thenReturn(supervisorQuery);
 
         EventResponseDTO updatedEvent =
                 eventService.updateEvent(existingEvent.id, dto, managerUser);
