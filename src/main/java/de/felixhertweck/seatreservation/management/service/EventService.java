@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.management.service;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -338,8 +339,7 @@ public class EventService {
                 fetchedEvents.stream()
                         .collect(Collectors.toMap(e -> e.getId(), e -> e, (e1, e2) -> e1));
 
-        Set<Long> validatedIds = new HashSet<>();
-
+        List<Event> eventsToDelete = new ArrayList<>(ids.size());
         for (Long id : ids) {
             Event event = eventMap.get(id);
             if (event == null) {
@@ -357,17 +357,14 @@ public class EventService {
                 throw new SecurityException("User is not authorized to delete this event");
             }
 
-            validatedIds.add(id);
+            eventsToDelete.add(event);
         }
 
-        if (!validatedIds.isEmpty()) {
-            for (Long id : validatedIds) {
-                Event event = eventMap.get(id);
-                eventRepository.delete(event);
-                LOG.debugf(
-                        "Event '%s' (ID: %d) deleted successfully by user ID: %d (ID: %d)",
-                        event.getName(), event.getId(), currentUser.id, currentUser.getId());
-            }
+        for (Event event : eventsToDelete) {
+            eventRepository.delete(event);
+            LOG.debugf(
+                    "Event '%s' (ID: %d) deleted successfully by user ID: %d (ID: %d)",
+                    event.getName(), event.getId(), currentUser.id, currentUser.getId());
         }
 
         LOG.infof("Events '%s' deleted successfully", ids);

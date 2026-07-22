@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
@@ -65,7 +66,7 @@ public class EventServiceDeleteEventTest {
     }
 
     @Test
-    void deleteEvent_Success() throws Exception {
+    void deleteEvent_Success() {
         Event event1 = new Event();
         event1.id = 101L;
         event1.setName("Event 1");
@@ -87,5 +88,46 @@ public class EventServiceDeleteEventTest {
 
         verify(eventRepository, times(1)).delete(event1);
         verify(eventRepository, times(1)).delete(event2);
+    }
+
+    @Test
+    void deleteEvent_NotFound_ThrowsAndDoesNotDeleteAny() {
+        Event event1 = new Event();
+        event1.id = 101L;
+        event1.setName("Event 1");
+        event1.setManager(managerUser);
+
+        PanacheQuery<Event> queryMock = mock(PanacheQuery.class);
+        when(queryMock.list()).thenReturn(List.of(event1));
+        when(eventRepository.find(
+                        eq("from Event e left join fetch e.manager where e.id in ?1"),
+                        eq(List.of(101L, 999L))))
+                .thenReturn(queryMock);
+
+        assertThrows(
+                EventNotFoundException.class,
+                () -> eventService.deleteEvent(List.of(101L, 999L), managerUser));
+
+        verify(eventRepository, never()).delete(any());
+    }
+
+    @Test
+    void deleteEvent_NotAuthorized_ThrowsAndDoesNotDelete() {
+        Event event1 = new Event();
+        event1.id = 101L;
+        event1.setName("Event 1");
+        event1.setManager(managerUser);
+
+        PanacheQuery<Event> queryMock = mock(PanacheQuery.class);
+        when(queryMock.list()).thenReturn(List.of(event1));
+        when(eventRepository.find(
+                        eq("from Event e left join fetch e.manager where e.id in ?1"),
+                        eq(List.of(101L))))
+                .thenReturn(queryMock);
+
+        assertThrows(
+                SecurityException.class, () -> eventService.deleteEvent(List.of(101L), otherUser));
+
+        verify(eventRepository, never()).delete(any());
     }
 }
