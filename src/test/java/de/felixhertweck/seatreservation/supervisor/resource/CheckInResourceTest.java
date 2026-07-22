@@ -115,7 +115,16 @@ class CheckInResourceTest {
         // Provide a PanacheQuery for findAll containing both events
         PanacheQuery<Event> eventsQuery = (PanacheQuery<Event>) mock(PanacheQuery.class);
         when(eventsQuery.stream()).thenReturn(Stream.of(event10, event20));
+        when(eventsQuery.list()).thenReturn(List.of(event10, event20));
         when(eventRepository.findAll()).thenReturn(eventsQuery);
+
+        // Mock findAuthorizedEvents for each user
+        when(eventRepository.findAuthorizedEvents(supervisorUser)).thenReturn(List.of(event10));
+        when(eventRepository.findAuthorizedEvents(managerUser)).thenReturn(List.of(event10));
+        when(eventRepository.findAuthorizedEvents(otherSupervisor))
+                .thenReturn(Collections.emptyList());
+        when(eventRepository.findAuthorizedEvents(adminUser))
+                .thenReturn(List.of(event10, event20)); // Though admin will use findAll().list()
 
         // Mock reservations for event 10 (two usernames) and for event 20 none
         User r1 = new User();

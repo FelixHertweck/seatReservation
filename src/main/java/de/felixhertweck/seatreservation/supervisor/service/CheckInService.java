@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -240,8 +241,15 @@ public class CheckInService {
                     .map(SupervisorEventResponseDTO::new)
                     .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
         }
-        return eventRepository.findAll().stream()
-                .filter(e -> isAuthorizedForEvent(currentUser, e.getId()))
+
+        boolean isAdmin =
+                currentUser.getRoles() != null && currentUser.getRoles().contains(Roles.ADMIN);
+        Stream<Event> authorizedEvents =
+                isAdmin
+                        ? eventRepository.findAll().stream()
+                        : eventRepository.findAuthorizedEvents(currentUser).stream();
+
+        return authorizedEvents
                 .map(SupervisorEventResponseDTO::new)
                 .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
     }
