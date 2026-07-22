@@ -263,6 +263,24 @@ public class ReservationService {
                 seatRepository.find(ID_IN_QUERY, dto.getSeatIds()).list().stream()
                         .collect(Collectors.toMap(s -> s.id, s -> s, (s1, s2) -> s1));
 
+        EventUserAllowance allowance = null;
+        if (dto.isDeductAllowance()) {
+            try {
+                allowance =
+                        eventUserAllowanceRepository
+                                .find("user = ?1 and event = ?2", targetUser, event)
+                                .singleResult();
+            } catch (NoResultException e) {
+                LOG.warnf(
+                        e,
+                        "User ID %d has no reservation allowance for event ID %d.",
+                        targetUser.getId(),
+                        event.getId());
+                throw new IllegalArgumentException(
+                        "User has no reservation allowance for this event.");
+            }
+        }
+
         for (Long dtoSeatId : dto.getSeatIds()) {
             Seat seat = seatMap.get(dtoSeatId);
             if (seat == null) {
@@ -275,37 +293,22 @@ public class ReservationService {
                         "Allowance check skipped for user ID: %d (ID: %d).",
                         targetUser.id, targetUser.getId());
             } else {
-                try {
-                    EventUserAllowance allowance =
-                            eventUserAllowanceRepository
-                                    .find("user = ?1 and event = ?2", targetUser, event)
-                                    .singleResult();
-                    if (allowance.getReservationsAllowedCount() <= 0) {
-                        LOG.warnf(
-                                "No more reservations allowed for user ID %d and event ID %d.",
-                                targetUser.getId(), event.getId());
-                        throw new IllegalArgumentException(
-                                "No more reservations allowed for this user and event.");
-                    }
-                    allowance.setReservationsAllowedCount(
-                            allowance.getReservationsAllowedCount() - 1);
-                    eventUserAllowanceRepository.persist(allowance);
-                    LOG.debug(
-                            String.format(
-                                    "Decremented reservation allowance for user ID %d and event ID"
-                                            + " %d. New allowance: %d",
-                                    targetUser.getId(),
-                                    event.getId(),
-                                    allowance.getReservationsAllowedCount()));
-                } catch (NoResultException e) {
+                if (allowance.getReservationsAllowedCount() <= 0) {
                     LOG.warnf(
-                            e,
-                            "User ID %d has no reservation allowance for event ID %d.",
-                            targetUser.getId(),
-                            event.getId());
+                            "No more reservations allowed for user ID %d and event ID %d.",
+                            targetUser.getId(), event.getId());
                     throw new IllegalArgumentException(
-                            "User has no reservation allowance for this event.");
+                            "No more reservations allowed for this user and event.");
                 }
+                allowance.setReservationsAllowedCount(allowance.getReservationsAllowedCount() - 1);
+                eventUserAllowanceRepository.persist(allowance);
+                LOG.debug(
+                        String.format(
+                                "Decremented reservation allowance for user ID %d and event ID"
+                                        + " %d. New allowance: %d",
+                                targetUser.getId(),
+                                event.getId(),
+                                allowance.getReservationsAllowedCount()));
             }
 
             Reservation reservation =
