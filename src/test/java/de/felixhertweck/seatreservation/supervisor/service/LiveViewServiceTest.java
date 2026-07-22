@@ -153,13 +153,16 @@ public class LiveViewServiceTest {
 
     @Test
     void testSendInitialReservations_IOException() throws Exception {
-        // Use reflection to mock the objectMapper and force an IOException
-        // (JsonProcessingException)
+        // webSocketService is a CDI client proxy; its own fields are never read by the delegated
+        // business methods, so the objectMapper field must be patched on the real contextual
+        // instance behind the proxy, not on the proxy itself.
+        Object realInstance = io.quarkus.arc.ClientProxy.unwrap(webSocketService);
+
         java.lang.reflect.Field mapperField =
                 LiveViewService.class.getDeclaredField("objectMapper");
         mapperField.setAccessible(true);
         com.fasterxml.jackson.databind.ObjectMapper originalMapper =
-                (com.fasterxml.jackson.databind.ObjectMapper) mapperField.get(webSocketService);
+                (com.fasterxml.jackson.databind.ObjectMapper) mapperField.get(realInstance);
 
         com.fasterxml.jackson.databind.ObjectMapper mockMapper =
                 Mockito.mock(com.fasterxml.jackson.databind.ObjectMapper.class);
@@ -168,7 +171,7 @@ public class LiveViewServiceTest {
                         new com.fasterxml.jackson.core.JsonProcessingException(
                                 "Test IOException") {});
 
-        mapperField.set(webSocketService, mockMapper);
+        mapperField.set(realInstance, mockMapper);
 
         try {
             Long testEventId = 999L;
