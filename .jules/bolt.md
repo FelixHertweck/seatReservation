@@ -1,3 +1,0 @@
-## 2026-07-20 - Fix N+1 Query in EventService Deletion
-**Learning:** Bulk JPQL deletes in Panache/JPA (e.g. `delete("id in ?1", ids)`) bypass standard JPA lifecycle events and cascade configurations (like `@PreRemove` or `CascadeType.REMOVE`). Using them indiscriminately can lead to silent data orphans or `ConstraintViolationException`s in production.
-**Action:** When optimizing N+1 entity deletions, always bulk-fetch the entities into memory using `find("id in ?1", ids).list()` for validation and authorization checks, but perform the actual deletion by iterating the fetched entities and calling `repository.delete(entity)` to ensure proper cascading deletions are executed.
