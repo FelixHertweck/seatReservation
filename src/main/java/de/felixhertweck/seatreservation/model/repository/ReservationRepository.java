@@ -114,15 +114,18 @@ public class ReservationRepository implements PanacheRepository<Reservation> {
     }
 
     /**
-     * Finds a reservation by its ID and associated user ID and event ID.
+     * Finds multiple reservations by their IDs and associated user ID and event ID.
      *
-     * @param id the reservation ID to search for
+     * @param ids the reservation IDs to search for
      * @param userId the user ID to search for
      * @param eventId the event ID to search for
-     * @return an Optional containing the reservation if found, or empty otherwise
+     * @return a list of reservations if found
      */
-    public Optional<Reservation> findByIdUserIdAndEventId(Long id, Long userId, Long eventId) {
-        return find("id = ?1 and user.id = ?2 and event.id = ?3", id, userId, eventId)
-                .firstResultOptional();
+    public List<Reservation> findAllByIdUserIdAndEventId(
+            List<Long> ids, Long userId, Long eventId) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return find("id in (?1) and user.id = ?2 and event.id = ?3", ids, userId, eventId).list();
     }
 }

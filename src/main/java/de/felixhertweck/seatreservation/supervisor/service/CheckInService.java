@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -159,12 +159,18 @@ public class CheckInService {
                 cancelIds != null ? cancelIds.size() : 0);
 
         if (checkInIds != null && !checkInIds.isEmpty()) {
-            for (Long reservationId : checkInIds) {
-                Optional<Reservation> reservationOptional =
-                        reservationRepository.findByIdUserIdAndEventId(
-                                reservationId, userId, eventId);
+            List<Reservation> checkInReservations =
+                    reservationRepository.findAllByIdUserIdAndEventId(checkInIds, userId, eventId);
+            Map<Long, Reservation> reservationMap =
+                    checkInReservations.stream()
+                            .collect(
+                                    Collectors.toMap(
+                                            r -> r.id, Function.identity(), (r1, r2) -> r1));
 
-                if (!reservationOptional.isPresent()) {
+            for (Long reservationId : checkInIds) {
+                Reservation reservation = reservationMap.get(reservationId);
+
+                if (reservation == null) {
                     LOG.warnf(
                             "Reservation with ID %d not found or does not belong to user %d/event"
                                     + " %d for check-in.",
@@ -175,8 +181,6 @@ public class CheckInService {
                                             + " %d/event %d for check-in.",
                                     reservationId, userId, eventId));
                 }
-
-                Reservation reservation = reservationOptional.get();
 
                 LOG.debugf("Setting reservation %d to CHECK_IN status.", reservationId);
                 reservation.setLiveStatus(ReservationLiveStatus.CHECKED_IN);
@@ -189,12 +193,18 @@ public class CheckInService {
         }
 
         if (cancelIds != null && !cancelIds.isEmpty()) {
-            for (Long reservationId : cancelIds) {
-                Optional<Reservation> reservationOptional =
-                        reservationRepository.findByIdUserIdAndEventId(
-                                reservationId, userId, eventId);
+            List<Reservation> cancelReservations =
+                    reservationRepository.findAllByIdUserIdAndEventId(cancelIds, userId, eventId);
+            Map<Long, Reservation> reservationMap =
+                    cancelReservations.stream()
+                            .collect(
+                                    Collectors.toMap(
+                                            r -> r.id, Function.identity(), (r1, r2) -> r1));
 
-                if (!reservationOptional.isPresent()) {
+            for (Long reservationId : cancelIds) {
+                Reservation reservation = reservationMap.get(reservationId);
+
+                if (reservation == null) {
                     LOG.warnf(
                             "Reservation with ID %d not found or does not belong to user %d/event"
                                     + " %d for cancellation.",
@@ -205,8 +215,6 @@ public class CheckInService {
                                             + " %d/event %d for cancellation.",
                                     reservationId, userId, eventId));
                 }
-
-                Reservation reservation = reservationOptional.get();
 
                 LOG.debugf("Setting reservation %d to CANCEL status.", reservationId);
                 reservation.setLiveStatus(ReservationLiveStatus.CANCELLED);
