@@ -202,6 +202,53 @@ public class LiveViewServiceTest {
         }
     }
 
+    @Test
+    void testBroadcastUpdate_IOExceptionHandledAndConnectionRemoved() throws Exception {
+        Long testEventId = 100L;
+        Reservation mockReservation = new Reservation();
+        mockReservation.id = 1L;
+
+        WebSocketConnection mockConnection = Mockito.mock(WebSocketConnection.class);
+
+        // Register the mock connection for the event
+        webSocketService.registerConnection(testEventId, mockConnection);
+
+        // Unwrap the CDI proxy to get the real instance
+        Object realInstance = io.quarkus.arc.ClientProxy.unwrap(webSocketService);
+
+        // Save original mapper
+        java.lang.reflect.Field mapperField =
+                LiveViewService.class.getDeclaredField("objectMapper");
+        mapperField.setAccessible(true);
+        com.fasterxml.jackson.databind.ObjectMapper originalMapper =
+                (com.fasterxml.jackson.databind.ObjectMapper) mapperField.get(realInstance);
+
+        // Mock the mapper to throw a JsonProcessingException (which is a subclass of IOException)
+        com.fasterxml.jackson.databind.ObjectMapper mockMapper =
+                Mockito.mock(com.fasterxml.jackson.databind.ObjectMapper.class);
+        Mockito.when(mockMapper.writeValueAsString(Mockito.any()))
+                .thenThrow(
+                        new com.fasterxml.jackson.core.JsonProcessingException(
+                                "Simulated IOException") {});
+
+        // Inject the mock mapper
+        mapperField.set(realInstance, mockMapper);
+
+        try {
+            // Invoke the method under test
+            assertDoesNotThrow(
+                    () -> webSocketService.broadcastUpdate(testEventId, mockReservation));
+
+            // Verify that the exception was caught and the connection was removed
+            // getActiveConnectionCount should return 0 since the failed connection was removed
+            assertEquals(0, webSocketService.getActiveConnectionCount(testEventId));
+        } finally {
+            // Restore original mapper
+            mapperField.set(realInstance, originalMapper);
+            webSocketService.unregisterConnection(testEventId, mockConnection); // cleanup
+        }
+    }
+
     private Reservation createTestReservation() {
         User user = new User();
         user.id = 1L;
