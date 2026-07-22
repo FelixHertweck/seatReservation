@@ -205,10 +205,21 @@ public class LiveViewServiceTest {
     @Test
     void testBroadcastUpdate_IOExceptionHandledAndConnectionRemoved() throws Exception {
         Long testEventId = 100L;
-        Reservation mockReservation = new Reservation();
-        mockReservation.id = 1L;
+        Reservation mockReservation = createTestReservation();
 
         WebSocketConnection mockConnection = Mockito.mock(WebSocketConnection.class);
+
+        // registerConnection() sends an initial reservations snapshot, so the repositories
+        // must be stubbed for testEventId or that call fails before broadcastUpdate runs.
+        Event mockEvent = new Event();
+        mockEvent.id = testEventId;
+        mockEvent.setName("Test Broadcast Event");
+        EventLocation mockLocation = new EventLocation();
+        mockLocation.id = 1L;
+        mockEvent.setEventLocation(mockLocation);
+        Mockito.when(eventRepository.findById(testEventId)).thenReturn(mockEvent);
+        Mockito.when(reservationRepository.findByEventId(testEventId))
+                .thenReturn(new java.util.ArrayList<>());
 
         // Register the mock connection for the event
         webSocketService.registerConnection(testEventId, mockConnection);
