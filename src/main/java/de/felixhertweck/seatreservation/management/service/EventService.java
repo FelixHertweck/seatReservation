@@ -20,8 +20,10 @@
 package de.felixhertweck.seatreservation.management.service;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -328,20 +330,24 @@ public class EventService {
                 "Attempting to delete events with IDs: %s for user ID: %d (ID: %d)",
                 ids, currentUser.id, currentUser.getId());
 
-        for (Long id : ids) {
+        List<Event> fetchedEvents =
+                eventRepository
+                        .find("from Event e left join fetch e.manager where e.id in ?1", ids)
+                        .list();
 
-            Event event =
-                    eventRepository
-                            .findByIdOptional(id)
-                            .orElseThrow(
-                                    () -> {
-                                        LOG.warnf(
-                                                "Event with ID %d not found for deletion by user:"
-                                                        + " %s (ID: %d)",
-                                                id, currentUser.id, currentUser.getId());
-                                        return new EventNotFoundException(
-                                                "Event with id " + id + " not found");
-                                    });
+        Map<Long, Event> eventMap =
+                fetchedEvents.stream()
+                        .collect(Collectors.toMap(e -> e.getId(), e -> e, (e1, e2) -> e1));
+
+        List<Event> eventsToDelete = new ArrayList<>(ids.size());
+        for (Long id : ids) {
+            Event event = eventMap.get(id);
+            if (event == null) {
+                LOG.warnf(
+                        "Event with ID %d not found for deletion by user: %s (ID: %d)",
+                        id, currentUser.id, currentUser.getId());
+                throw new EventNotFoundException("Event with id " + id + " not found");
+            }
 
             if (!event.getManager().equals(currentUser)
                     && !currentUser.getRoles().contains(Roles.ADMIN)) {
@@ -351,11 +357,16 @@ public class EventService {
                 throw new SecurityException("User is not authorized to delete this event");
             }
 
+            eventsToDelete.add(event);
+        }
+
+        for (Event event : eventsToDelete) {
             eventRepository.delete(event);
             LOG.debugf(
                     "Event '%s' (ID: %d) deleted successfully by user ID: %d (ID: %d)",
                     event.getName(), event.getId(), currentUser.id, currentUser.getId());
         }
+
         LOG.infof("Events '%s' deleted successfully", ids);
     }
 
