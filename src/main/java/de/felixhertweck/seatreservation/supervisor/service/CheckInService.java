@@ -21,8 +21,10 @@ package de.felixhertweck.seatreservation.supervisor.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -91,17 +93,21 @@ public class CheckInService {
         User user = userRepository.findById(userId);
 
         if (checkInTokens != null && !checkInTokens.isEmpty()) {
-            for (String token : checkInTokens) {
-                Optional<Reservation> reservationOptional =
-                        reservationRepository.findByCheckInCode(token);
+            List<Reservation> foundReservations =
+                    reservationRepository.findByCheckInCodeIn(checkInTokens);
+            Map<String, Reservation> reservationMap =
+                    foundReservations.stream()
+                            .collect(Collectors.toMap(Reservation::getCheckInCode, r -> r));
 
-                if (!reservationOptional.isPresent()) {
+            for (String token : checkInTokens) {
+                Reservation reservation = reservationMap.get(token);
+
+                if (reservation == null) {
                     LOG.warnf("Check-in token %s not found.", token);
                     throw new CheckInTokenNotFoundException(
                             String.format("Check-in token %s not found.", token));
                 }
 
-                Reservation reservation = reservationOptional.get();
                 validateReservation(reservation, userId, eventId);
                 LOG.debugf("Processed reservation %s for token %s.", reservation, token);
 

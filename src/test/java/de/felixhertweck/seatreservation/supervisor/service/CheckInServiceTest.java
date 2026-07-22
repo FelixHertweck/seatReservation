@@ -290,8 +290,8 @@ class CheckInServiceTest {
         reservation2.setSeat(seat);
         reservation2.setStatus(ReservationStatus.RESERVED);
 
-        when(reservationRepository.findByCheckInCode(token1)).thenReturn(Optional.of(reservation1));
-        when(reservationRepository.findByCheckInCode(token2)).thenReturn(Optional.of(reservation2));
+        when(reservationRepository.findByCheckInCodeIn(Arrays.asList(token1, token2)))
+                .thenReturn(Arrays.asList(reservation1, reservation2));
 
         CheckInInfoResponseDTO result =
                 checkInService.getReservationInfos(
@@ -376,7 +376,8 @@ class CheckInServiceTest {
         reservation1.setEvent(event);
         reservation1.setStatus(ReservationStatus.RESERVED);
 
-        when(reservationRepository.findByCheckInCode(token1)).thenReturn(Optional.of(reservation1));
+        when(reservationRepository.findByCheckInCodeIn(Collections.singletonList(token1)))
+                .thenReturn(Collections.singletonList(reservation1));
 
         assertThrows(
                 UserMismatchException.class,
@@ -409,7 +410,8 @@ class CheckInServiceTest {
         reservation1.setSeat(seat);
         reservation1.setStatus(ReservationStatus.RESERVED);
 
-        when(reservationRepository.findByCheckInCode(token1)).thenReturn(Optional.of(reservation1));
+        when(reservationRepository.findByCheckInCodeIn(Collections.singletonList(token1)))
+                .thenReturn(Collections.singletonList(reservation1));
 
         assertThrows(
                 EventMismatchException.class,
@@ -424,7 +426,8 @@ class CheckInServiceTest {
         long eventId = 10L;
         String token1 = "token1";
 
-        when(reservationRepository.findByCheckInCode(token1)).thenReturn(Optional.empty());
+        when(reservationRepository.findByCheckInCodeIn(Collections.singletonList(token1)))
+                .thenReturn(Collections.emptyList());
 
         assertThrows(
                 CheckInTokenNotFoundException.class,
@@ -466,8 +469,8 @@ class CheckInServiceTest {
         reservation2.setSeat(seat);
         reservation2.setStatus(ReservationStatus.RESERVED);
 
-        when(reservationRepository.findByCheckInCode(token1)).thenReturn(Optional.of(reservation1));
-        when(reservationRepository.findByCheckInCode(token2)).thenReturn(Optional.of(reservation2));
+        when(reservationRepository.findByCheckInCodeIn(Arrays.asList(token1, token2)))
+                .thenReturn(Arrays.asList(reservation1, reservation2));
 
         CheckInInfoResponseDTO result =
                 checkInService.getReservationInfos(userId, eventId, Arrays.asList(token1, token2));
