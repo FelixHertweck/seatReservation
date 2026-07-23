@@ -21,15 +21,16 @@ package de.felixhertweck.seatreservation.model.repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.User;
-import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
 @ApplicationScoped
-public class ReservationRepository implements PanacheRepository<Reservation> {
+public class ReservationRepository implements PanacheRepositoryBase<Reservation, UUID> {
     /**
      * Finds all reservations for a given user that are not blocked.
      *
@@ -46,7 +47,7 @@ public class ReservationRepository implements PanacheRepository<Reservation> {
      * @param eventId the event ID to search for
      * @return a list of reservations for the specified event
      */
-    public List<Reservation> findByEventId(Long eventId) {
+    public List<Reservation> findByEventId(UUID eventId) {
         return find("event.id", eventId).list();
     }
 
@@ -57,7 +58,7 @@ public class ReservationRepository implements PanacheRepository<Reservation> {
      * @param seatIds the seat IDs to restrict the search to
      * @return a list of reservations for the specified event and seats
      */
-    public List<Reservation> findByEventIdAndSeatIds(Long eventId, List<Long> seatIds) {
+    public List<Reservation> findByEventIdAndSeatIds(UUID eventId, List<UUID> seatIds) {
         return find("event.id = ?1 and seat.id in ?2", eventId, seatIds).list();
     }
 
@@ -80,7 +81,7 @@ public class ReservationRepository implements PanacheRepository<Reservation> {
      * @param eventId the event ID to search for
      * @return a list of reservations for the specified user and event
      */
-    public List<Reservation> findByUserAndEventId(User user, Long eventId) {
+    public List<Reservation> findByUserAndEventId(User user, UUID eventId) {
         return find("user = ?1 and event.id = ?2", user, eventId).list();
     }
 
@@ -122,7 +123,7 @@ public class ReservationRepository implements PanacheRepository<Reservation> {
      * @return a list of reservations if found
      */
     public List<Reservation> findAllByIdUserIdAndEventId(
-            List<Long> ids, Long userId, Long eventId) {
+            List<UUID> ids, UUID userId, UUID eventId) {
         if (ids == null || ids.isEmpty()) {
             return List.of();
         }

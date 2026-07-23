@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.security.resource;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import jakarta.annotation.security.PermitAll;
 import jakarta.inject.Inject;
 import jakarta.validation.ConstraintViolation;
@@ -216,7 +217,7 @@ public class WebAuthnResource {
         User user =
                 webAuthnService.createUserWithCredential(
                         registration, record, defaultDeviceLabel(userAgent));
-        LOG.infof("Passkey account created and logged in: user ID %d", user.id);
+        LOG.infof("Passkey account created and logged in: user ID %s", user.id);
         return authCookieResponse(user);
     }
 
@@ -273,7 +274,7 @@ public class WebAuthnResource {
                     "No user associated with the presented passkey");
         }
         webAuthnService.recordSuccessfulLogin(user);
-        LOG.infof("User ID: %d logged in successfully via passkey.", user.id);
+        LOG.infof("User ID: %s logged in successfully via passkey.", user.id);
         return authCookieResponse(user);
     }
 
@@ -304,7 +305,7 @@ public class WebAuthnResource {
     @APIResponse(
             responseCode = "409",
             description = "Cannot delete the last passkey of a password-less account")
-    public Response deleteCredential(@PathParam("id") Long id) {
+    public Response deleteCredential(@PathParam("id") UUID id) {
         User user = userSecurityContext.getCurrentUser();
         boolean deleted = webAuthnService.deleteCredential(user, id);
         if (!deleted) {
@@ -326,7 +327,7 @@ public class WebAuthnResource {
     @APIResponse(responseCode = "200", description = "Passkey renamed")
     @APIResponse(responseCode = "404", description = "Passkey not found")
     public Response renameCredential(
-            @PathParam("id") Long id, @Valid WebAuthnCredentialUpdateDTO update) {
+            @PathParam("id") UUID id, @Valid WebAuthnCredentialUpdateDTO update) {
         User user = userSecurityContext.getCurrentUserReference();
         boolean renamed = webAuthnService.renameCredential(user, id, update.getLabel());
         if (!renamed) {

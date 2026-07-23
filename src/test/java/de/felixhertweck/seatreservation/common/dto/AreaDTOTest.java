@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.common.dto;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -39,12 +41,12 @@ class AreaDTOTest {
     @BeforeEach
     void setUp() {
         location = new EventLocation();
-        location.id = 1L;
+        location.id = id(1);
     }
 
     private EventLocationArea area(long id, String name) {
         EventLocationArea area = new EventLocationArea(name);
-        area.id = id;
+        area.id = id(id);
         area.setEventLocation(location);
         location.getAreas().add(area);
         return area;
@@ -52,7 +54,7 @@ class AreaDTOTest {
 
     private Seat seat(long id, String number, int x, int y, EventLocationArea area) {
         Seat seat = new Seat(number, location, "Row", x, y, null, area);
-        seat.id = id;
+        seat.id = id(id);
         location.getSeats().add(seat);
         return seat;
     }
@@ -84,7 +86,7 @@ class AreaDTOTest {
 
         assertEquals(1, areas.size());
         assertEquals("Balkon", areas.getFirst().name());
-        assertEquals(1L, areas.getFirst().id());
+        assertEquals(id(1), areas.getFirst().id());
         assertTrue(areas.getFirst().seatIds().isEmpty());
         assertEquals(3, areas.getFirst().boundary().size());
     }
@@ -101,7 +103,7 @@ class AreaDTOTest {
 
         assertEquals(1, areas.size());
         assertEquals("Balkon", areas.getFirst().name());
-        assertEquals(List.of(4L), areas.getFirst().seatIds());
+        assertEquals(List.of(id(4)), areas.getFirst().seatIds());
     }
 
     @Test
@@ -118,9 +120,9 @@ class AreaDTOTest {
         assertEquals(2, areas.size());
         // Order follows the location's areas, not the order the seats happen to be in.
         assertEquals("Parkett", areas.get(0).name());
-        assertEquals(List.of(2L, 4L), areas.get(0).seatIds());
+        assertEquals(List.of(id(2), id(4)), areas.get(0).seatIds());
         assertEquals("Balkon", areas.get(1).name());
-        assertEquals(List.of(1L, 3L), areas.get(1).seatIds());
+        assertEquals(List.of(id(1), id(3)), areas.get(1).seatIds());
     }
 
     @Test
@@ -167,14 +169,14 @@ class AreaDTOTest {
     void fromAreas_ignoresSeatsReferencingAnAreaOutsideTheGivenAreas() {
         EventLocationArea parkett = area(1, "Parkett");
         EventLocationArea foreign = new EventLocationArea("Foreign");
-        foreign.id = 99L;
+        foreign.id = id(99);
         Seat assigned = seat(1, "A1", 1, 1, parkett);
         Seat outsider = new Seat("X1", location, "Row", 9, 9, null, foreign);
-        outsider.id = 2L;
+        outsider.id = id(2);
 
         List<AreaDTO> areas = AreaDTO.fromAreas(List.of(parkett), List.of(assigned, outsider));
 
         assertEquals(1, areas.size());
-        assertEquals(List.of(1L), areas.getFirst().seatIds());
+        assertEquals(List.of(id(1)), areas.getFirst().seatIds());
     }
 }

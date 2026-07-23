@@ -20,28 +20,29 @@
 package de.felixhertweck.seatreservation.management.dto;
 
 import java.util.List;
+import java.util.UUID;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
 public class BlockSeatsRequestDTO {
 
-    private Long eventId;
-    private List<Long> seatIds;
+    private UUID eventId;
+    private List<UUID> seatIds;
 
-    public Long getEventId() {
+    public UUID getEventId() {
         return eventId;
     }
 
-    public void setEventId(Long eventId) {
+    public void setEventId(UUID eventId) {
         this.eventId = eventId;
     }
 
-    public List<Long> getSeatIds() {
+    public List<UUID> getSeatIds() {
         return seatIds;
     }
 
-    public void setSeatIds(List<Long> seatIds) {
+    public void setSeatIds(List<UUID> seatIds) {
         this.seatIds = seatIds;
     }
 }

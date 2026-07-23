@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.management.resource;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -78,7 +79,7 @@ public class SeatResource {
         AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         SeatDTO result = seatService.createSeatManager(seatRequestDTO, currentUser);
         LOG.debugf(
-                "Seat with ID %d created successfully for event location ID %d.",
+                "Seat with ID %s created successfully for event location ID %s.",
                 result.id(), result.locationId());
         return result;
     }
@@ -99,9 +100,9 @@ public class SeatResource {
             responseCode = "403",
             description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
     public List<SeatDTO> getSeatsByEventLocation(
-            @QueryParam("eventLocationId") Long eventLocationId) {
+            @QueryParam("eventLocationId") UUID eventLocationId) {
         LOG.debugf(
-                "Received GET request to /api/manager/seats?eventLocationId=%d", eventLocationId);
+                "Received GET request to /api/manager/seats?eventLocationId=%s", eventLocationId);
         if (eventLocationId == null) {
             throw new IllegalArgumentException("eventLocationId query parameter is required");
         }
@@ -126,14 +127,14 @@ public class SeatResource {
     @APIResponse(
             responseCode = "404",
             description = "Not Found: Seat with specified ID not found for the current manager")
-    public SeatDTO getManagerSeatById(@PathParam("id") Long id) {
-        LOG.debugf("Received GET request to /api/manager/seats/%d.", id);
+    public SeatDTO getManagerSeatById(@PathParam("id") UUID id) {
+        LOG.debugf("Received GET request to /api/manager/seats/%s.", id);
         AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         SeatDTO result = seatService.findSeatByIdForManager(id, currentUser);
         if (result != null) {
-            LOG.debugf("Successfully retrieved seat with ID %d.", id);
+            LOG.debugf("Successfully retrieved seat with ID %s.", id);
         } else {
-            LOG.warnf("Seat with ID %d not found.", id);
+            LOG.warnf("Seat with ID %s not found.", id);
         }
         return result;
     }
@@ -156,11 +157,11 @@ public class SeatResource {
             description =
                     "Conflict: Seat with this row and number already exists in this event location")
     public SeatDTO updateManagerSeat(
-            @PathParam("id") Long id, @Valid SeatRequestDTO seatUpdateDTO) {
-        LOG.debugf("Received PUT request to /api/manager/seats/%d to update seat.", id);
+            @PathParam("id") UUID id, @Valid SeatRequestDTO seatUpdateDTO) {
+        LOG.debugf("Received PUT request to /api/manager/seats/%s to update seat.", id);
         AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         SeatDTO result = seatService.updateSeatForManager(id, seatUpdateDTO, currentUser);
-        LOG.debugf("Seat with ID %d updated successfully.", id);
+        LOG.debugf("Seat with ID %s updated successfully.", id);
         return result;
     }
 
@@ -175,7 +176,7 @@ public class SeatResource {
     @APIResponse(
             responseCode = "404",
             description = "Not Found: Seat with specified ID not found for the current manager")
-    public void deleteManagerSeat(@QueryParam("ids") List<Long> ids) {
+    public void deleteManagerSeat(@QueryParam("ids") List<UUID> ids) {
         LOG.debugf(
                 "Received DELETE request to /api/manager/seats with IDs: %s",
                 ids != null ? ids : Collections.emptyList());

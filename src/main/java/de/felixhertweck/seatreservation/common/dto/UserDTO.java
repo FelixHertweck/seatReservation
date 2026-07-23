@@ -20,13 +20,14 @@
 package de.felixhertweck.seatreservation.common.dto;
 
 import java.util.Set;
+import java.util.UUID;
 
 import de.felixhertweck.seatreservation.model.entity.User;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
 public record UserDTO(
-        Long id,
+        UUID id,
         String username,
         String firstname,
         String lastname,

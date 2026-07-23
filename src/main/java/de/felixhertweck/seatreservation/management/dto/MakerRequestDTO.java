@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.management.dto;
 
+import java.util.UUID;
 import jakarta.validation.constraints.NotNull;
 
 import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
@@ -36,20 +37,20 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 public class MakerRequestDTO extends ImportMarkerDto {
 
     @NotNull(message = "EventLocation ID must not be null")
-    private Long eventLocationId;
+    private UUID eventLocationId;
 
     public MakerRequestDTO() {}
 
-    public MakerRequestDTO(Long eventLocationId, String label, CoordinateDTO coordinate) {
+    public MakerRequestDTO(UUID eventLocationId, String label, CoordinateDTO coordinate) {
         super(label, coordinate);
         this.eventLocationId = eventLocationId;
     }
 
-    public Long getEventLocationId() {
+    public UUID getEventLocationId() {
         return eventLocationId;
     }
 
-    public void setEventLocationId(Long eventLocationId) {
+    public void setEventLocationId(UUID eventLocationId) {
         this.eventLocationId = eventLocationId;
     }
 }

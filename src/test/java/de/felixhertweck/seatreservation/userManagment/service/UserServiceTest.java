@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.userManagment.service;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
@@ -28,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import jakarta.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -39,7 +42,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -337,7 +339,7 @@ public class UserServiceTest {
                         "User",
                         Collections.singleton(Roles.USER),
                         Set.of());
-        existingUser.id = 1L;
+        existingUser.id = id(1);
         final AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
                         "New",
@@ -349,9 +351,9 @@ public class UserServiceTest {
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
 
-        when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
+        when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existingUser));
 
-        UserDTO updatedUser = userService.updateUser(1L, dto);
+        UserDTO updatedUser = userService.updateUser(id(1), dto);
 
         assertNotNull(updatedUser);
         assertEquals("New", updatedUser.firstname());
@@ -380,7 +382,7 @@ public class UserServiceTest {
                         "Old",
                         Collections.singleton(Roles.USER),
                         Set.of());
-        existingUser.id = 1L;
+        existingUser.id = id(1);
         final AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
                         existingUser.getFirstname(),
@@ -392,9 +394,9 @@ public class UserServiceTest {
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
 
-        when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
+        when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existingUser));
 
-        UserDTO updatedUser = userService.updateUser(1L, dto);
+        UserDTO updatedUser = userService.updateUser(id(1), dto);
 
         assertNotNull(updatedUser);
         assertEquals("John", updatedUser.firstname());
@@ -423,7 +425,7 @@ public class UserServiceTest {
                         "Doe",
                         Collections.singleton(Roles.USER),
                         Set.of());
-        existingUser.id = 1L;
+        existingUser.id = id(1);
         final AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
                         existingUser.getFirstname(),
@@ -435,9 +437,9 @@ public class UserServiceTest {
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
 
-        when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
+        when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existingUser));
 
-        UserDTO updatedUser = userService.updateUser(1L, dto);
+        UserDTO updatedUser = userService.updateUser(id(1), dto);
 
         assertNotNull(updatedUser);
         assertTrue(
@@ -468,7 +470,7 @@ public class UserServiceTest {
                         "Doe",
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
-        existingUser.id = 1L;
+        existingUser.id = id(1);
         final AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
                         existingUser.getFirstname(),
@@ -480,9 +482,9 @@ public class UserServiceTest {
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
 
-        when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
+        when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existingUser));
 
-        userService.updateUser(1L, dto);
+        userService.updateUser(id(1), dto);
 
         verify(emailService, times(1)).sendPasswordChangedNotification(existingUser);
     }
@@ -506,7 +508,7 @@ public class UserServiceTest {
                         "Doe",
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
-        existingUser.id = 1L;
+        existingUser.id = id(1);
         final AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
                         existingUser.getFirstname(),
@@ -518,9 +520,9 @@ public class UserServiceTest {
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
 
-        when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
+        when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existingUser));
 
-        userService.updateUser(1L, dto);
+        userService.updateUser(id(1), dto);
 
         assertNotEquals(initialSalt, existingUser.getPasswordSalt());
         assertTrue(
@@ -547,7 +549,7 @@ public class UserServiceTest {
                         "Doe",
                         new HashSet<>(Collections.singletonList(Roles.USER)),
                         Collections.emptySet());
-        existingUser.id = 1L;
+        existingUser.id = id(1);
         Set<String> newRoles = new HashSet<>(Arrays.asList(Roles.USER, Roles.ADMIN));
         final AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
@@ -560,9 +562,9 @@ public class UserServiceTest {
                         newRoles,
                         Collections.emptySet());
 
-        when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
+        when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existingUser));
 
-        UserDTO updatedUser = userService.updateUser(1L, dto);
+        UserDTO updatedUser = userService.updateUser(id(1), dto);
 
         assertNotNull(updatedUser);
         assertEquals(newRoles, existingUser.getRoles());
@@ -589,7 +591,7 @@ public class UserServiceTest {
                         "Doe",
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
-        existingUser.id = 1L;
+        existingUser.id = id(1);
         final AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
                         "New",
@@ -601,9 +603,9 @@ public class UserServiceTest {
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
 
-        when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
+        when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existingUser));
 
-        UserDTO updatedUser = userService.updateUser(1L, dto);
+        UserDTO updatedUser = userService.updateUser(id(1), dto);
 
         assertNotNull(updatedUser);
         assertEquals("New", updatedUser.firstname());
@@ -636,7 +638,7 @@ public class UserServiceTest {
                         "Doe",
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
-        existingUser.id = 1L;
+        existingUser.id = id(1);
         final AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
                         null,
@@ -648,8 +650,8 @@ public class UserServiceTest {
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
 
-        when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
-        when(emailVerificationRepository.findByUserIdOptional(anyLong()))
+        when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existingUser));
+        when(emailVerificationRepository.findByUserIdOptional(any(UUID.class)))
                 .thenReturn(Optional.empty()); // No existing token
         when(emailService.createEmailVerification(any(User.class)))
                 .thenReturn(
@@ -668,7 +670,7 @@ public class UserServiceTest {
                                 "token",
                                 Instant.now()));
 
-        UserDTO updatedUser = userService.updateUser(1L, dto);
+        UserDTO updatedUser = userService.updateUser(id(1), dto);
 
         assertNotNull(updatedUser);
         assertEquals("new@example.com", updatedUser.email());
@@ -691,9 +693,9 @@ public class UserServiceTest {
                         false,
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
-        when(userRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
+        when(userRepository.findByIdOptional(any(UUID.class))).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> userService.updateUser(1L, dto));
+        assertThrows(UserNotFoundException.class, () -> userService.updateUser(id(1), dto));
         verify(userRepository, never()).persist(any(User.class));
         verify(emailService, never())
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
@@ -701,7 +703,7 @@ public class UserServiceTest {
 
     @Test
     void updateUser_InvalidUserException_NullDTO() throws IOException {
-        assertThrows(InvalidUserException.class, () -> userService.updateUser(1L, null));
+        assertThrows(InvalidUserException.class, () -> userService.updateUser(id(1), null));
         verify(userRepository, never()).persist(any(User.class));
         verify(emailService, never())
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
@@ -725,7 +727,7 @@ public class UserServiceTest {
                         "Doe",
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
-        existingUser.id = 1L;
+        existingUser.id = id(1);
         final AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
                         null,
@@ -737,8 +739,8 @@ public class UserServiceTest {
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
 
-        when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
-        when(emailVerificationRepository.findByUserIdOptional(anyLong()))
+        when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existingUser));
+        when(emailVerificationRepository.findByUserIdOptional(any(UUID.class)))
                 .thenReturn(Optional.empty()); // No existing token
         when(emailService.createEmailVerification(any(User.class)))
                 .thenReturn(
@@ -760,7 +762,7 @@ public class UserServiceTest {
         // Simulate another user already has this email, but it should not prevent update
         // (assuming email uniqueness is not enforced at this layer for update)
 
-        UserDTO updatedUser = userService.updateUser(1L, dto);
+        UserDTO updatedUser = userService.updateUser(id(1), dto);
 
         assertNotNull(updatedUser);
         assertEquals("duplicate@example.com", updatedUser.email());
@@ -784,7 +786,7 @@ public class UserServiceTest {
                         "Doe",
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
-        existingUser.id = 1L;
+        existingUser.id = id(1);
         AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
                         null,
@@ -796,8 +798,8 @@ public class UserServiceTest {
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
 
-        when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
-        when(emailVerificationRepository.findByUserIdOptional(anyLong()))
+        when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existingUser));
+        when(emailVerificationRepository.findByUserIdOptional(any(UUID.class)))
                 .thenReturn(Optional.empty());
         when(emailService.createEmailVerification(any(User.class)))
                 .thenReturn(
@@ -819,7 +821,7 @@ public class UserServiceTest {
                 .when(emailService)
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
 
-        assertThrows(RuntimeException.class, () -> userService.updateUser(1L, dto));
+        assertThrows(RuntimeException.class, () -> userService.updateUser(id(1), dto));
         verify(emailService, times(1)).createEmailVerification(any(User.class));
         verify(emailService, times(1))
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
@@ -840,7 +842,7 @@ public class UserServiceTest {
                         "Doe",
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
-        existingUser.id = 1L;
+        existingUser.id = id(1);
         final AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
                         null,
@@ -852,9 +854,9 @@ public class UserServiceTest {
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
 
-        when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
+        when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existingUser));
 
-        UserDTO updatedUser = userService.updateUser(1L, dto);
+        UserDTO updatedUser = userService.updateUser(id(1), dto);
 
         assertNotNull(updatedUser);
         assertEquals("new@example.com", updatedUser.email());
@@ -880,7 +882,7 @@ public class UserServiceTest {
                         "Doe",
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
-        existingUser.id = 1L;
+        existingUser.id = id(1);
         final AdminUserUpdateDTO dto =
                 new AdminUserUpdateDTO(
                         null,
@@ -892,9 +894,9 @@ public class UserServiceTest {
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
 
-        when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
+        when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existingUser));
 
-        UserDTO updatedUser = userService.updateUser(1L, dto);
+        UserDTO updatedUser = userService.updateUser(id(1), dto);
 
         assertNotNull(updatedUser);
         assertEquals("old@example.com", updatedUser.email());
@@ -919,25 +921,25 @@ public class UserServiceTest {
                         "Doe",
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
-        existingUser.id = 1L;
+        existingUser.id = id(1);
 
         PanacheQuery<User> mockQuery = Mockito.mock(PanacheQuery.class);
         when(mockQuery.list()).thenReturn(List.of(existingUser));
-        when(userRepository.find("id in ?1", List.of(1L))).thenReturn(mockQuery);
-        when(userRepository.delete("id in ?1", List.of(1L))).thenReturn(1L);
+        when(userRepository.find("id in ?1", List.of(id(1)))).thenReturn(mockQuery);
+        when(userRepository.delete("id in ?1", List.of(id(1)))).thenReturn(1L);
 
-        userService.deleteUser(List.of(1L));
+        userService.deleteUser(List.of(id(1)));
 
-        verify(userRepository, times(1)).delete("id in ?1", List.of(1L));
+        verify(userRepository, times(1)).delete("id in ?1", List.of(id(1)));
     }
 
     @Test
     void deleteUser_UserNotFoundException() throws UserNotFoundException {
         PanacheQuery<User> mockQuery = Mockito.mock(PanacheQuery.class);
         when(mockQuery.list()).thenReturn(Collections.emptyList());
-        when(userRepository.find("id in ?1", List.of(1L))).thenReturn(mockQuery);
+        when(userRepository.find("id in ?1", List.of(id(1)))).thenReturn(mockQuery);
 
-        assertThrows(UserNotFoundException.class, () -> userService.deleteUser(List.of(1L)));
+        assertThrows(UserNotFoundException.class, () -> userService.deleteUser(List.of(id(1))));
         verify(userRepository, never()).delete(any(User.class));
     }
 
@@ -955,11 +957,11 @@ public class UserServiceTest {
                         "Doe",
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
-        existingUser.id = 1L;
-        when(userRepository.findByIdOptional(1L)).thenReturn(Optional.of(existingUser));
-        when(userRepository.findById(1L)).thenReturn(existingUser); // Mock findById
+        existingUser.id = id(1);
+        when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existingUser));
+        when(userRepository.findById(id(1))).thenReturn(existingUser); // Mock findById
 
-        UserDTO foundUser = userService.getUserById(1L);
+        UserDTO foundUser = userService.getUserById(id(1));
 
         assertNotNull(foundUser);
         assertEquals(existingUser.id, foundUser.id());
@@ -967,10 +969,11 @@ public class UserServiceTest {
 
     @Test
     void getUserById_UserNotFoundException() throws UserNotFoundException {
-        when(userRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
-        when(userRepository.findById(anyLong())).thenReturn(null); // Mock findById to return null
+        when(userRepository.findByIdOptional(any(UUID.class))).thenReturn(Optional.empty());
+        when(userRepository.findById(any(UUID.class)))
+                .thenReturn(null); // Mock findById to return null
 
-        assertThrows(UserNotFoundException.class, () -> userService.getUserById(1L));
+        assertThrows(UserNotFoundException.class, () -> userService.getUserById(id(1)));
     }
 
     @Test
@@ -1175,7 +1178,7 @@ public class UserServiceTest {
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
-        when(emailVerificationRepository.findByUserIdOptional(anyLong()))
+        when(emailVerificationRepository.findByUserIdOptional(any(UUID.class)))
                 .thenReturn(Optional.empty());
         when(emailService.createEmailVerification(any(User.class)))
                 .thenReturn(
@@ -1253,7 +1256,7 @@ public class UserServiceTest {
                 .thenReturn(Optional.of(existingUser));
         when(userRepository.findByUsername("testuser"))
                 .thenReturn(existingUser); // Mock findByUsername
-        when(emailVerificationRepository.findByUserIdOptional(anyLong()))
+        when(emailVerificationRepository.findByUserIdOptional(any(UUID.class)))
                 .thenReturn(Optional.empty());
         when(emailService.createEmailVerification(any(User.class)))
                 .thenReturn(
@@ -1303,7 +1306,7 @@ public class UserServiceTest {
                 .thenReturn(Optional.of(existingUser));
         when(userRepository.findByUsername("testuser"))
                 .thenReturn(existingUser); // Mock findByUsername
-        when(emailVerificationRepository.findByUserIdOptional(anyLong()))
+        when(emailVerificationRepository.findByUserIdOptional(any(UUID.class)))
                 .thenReturn(Optional.empty());
         when(emailService.createEmailVerification(any(User.class)))
                 .thenReturn(
@@ -1546,13 +1549,13 @@ public class UserServiceTest {
                         "Doe",
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
-        user.id = 1L;
+        user.id = id(1);
         EmailVerification emailVerification =
                 new EmailVerification(
                         user,
                         "123456",
                         Instant.now().plusSeconds(Duration.ofMinutes(10).toSeconds()));
-        emailVerification.id = 100L;
+        emailVerification.id = id(100);
 
         when(emailVerificationRepository.findByToken("123456")).thenReturn(emailVerification);
 
@@ -1561,7 +1564,7 @@ public class UserServiceTest {
         assertEquals("test@example.com", result);
         assertTrue(user.isEmailVerified());
         verify(emailVerificationRepository, times(1)).findByToken("123456");
-        verify(emailVerificationRepository, times(1)).deleteById(100L);
+        verify(emailVerificationRepository, times(1)).deleteById(id(100));
         verify(userRepository, times(1)).persist(user);
     }
 
@@ -1613,13 +1616,13 @@ public class UserServiceTest {
                         "Doe",
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
-        user.id = 1L;
+        user.id = id(1);
         EmailVerification emailVerification =
                 new EmailVerification(
                         user,
                         "123456",
                         Instant.now().minusSeconds(Duration.ofMinutes(10).toSeconds())); // expired
-        emailVerification.id = 100L;
+        emailVerification.id = id(100);
 
         when(emailVerificationRepository.findByToken("123456")).thenReturn(emailVerification);
 
@@ -1629,7 +1632,7 @@ public class UserServiceTest {
         // Ensure user is not marked as verified
         assertFalse(user.isEmailVerified());
         verify(userRepository, never()).persist(any(User.class));
-        verify(emailVerificationRepository, never()).deleteById(any(Long.class));
+        verify(emailVerificationRepository, never()).deleteById(any(UUID.class));
     }
 
     @Test
@@ -1646,13 +1649,13 @@ public class UserServiceTest {
                         "Doe",
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
-        user.id = 1L;
+        user.id = id(1);
         EmailVerification emailVerification =
                 new EmailVerification(
                         user,
                         "123456",
                         Instant.now().plusSeconds(Duration.ofMinutes(10).toSeconds()));
-        emailVerification.id = 100L;
+        emailVerification.id = id(100);
 
         when(emailVerificationRepository.findByToken("123456"))
                 .thenReturn(emailVerification)
@@ -1660,7 +1663,7 @@ public class UserServiceTest {
 
         // First verification is successful
         assertDoesNotThrow(() -> userService.verifyEmailWithCode("123456"));
-        verify(emailVerificationRepository).deleteById(100L);
+        verify(emailVerificationRepository).deleteById(id(100));
 
         // Second verification should fail (code already used/deleted)
         assertThrows(

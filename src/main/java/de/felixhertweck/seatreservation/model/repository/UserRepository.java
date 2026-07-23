@@ -21,14 +21,15 @@ package de.felixhertweck.seatreservation.model.repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import de.felixhertweck.seatreservation.model.entity.User;
-import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
-public class UserRepository implements PanacheRepository<User> {
+public class UserRepository implements PanacheRepositoryBase<User, UUID> {
 
     private static final Logger LOG = Logger.getLogger(UserRepository.class);
 
@@ -104,7 +105,7 @@ public class UserRepository implements PanacheRepository<User> {
      * @param id the user ID
      * @return an uninitialized proxy for the user with the given ID
      */
-    public User getReference(Long id) {
+    public User getReference(UUID id) {
         return getEntityManager().getReference(User.class, id);
     }
 }

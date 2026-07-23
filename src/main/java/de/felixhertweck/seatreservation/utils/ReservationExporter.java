@@ -76,7 +76,7 @@ public class ReservationExporter {
             for (Reservation reservation : reservations) {
                 writer.write(
                         String.format(
-                                "%d,%s,%s,%s,%s,%s,%s,%s,%s\r\n",
+                                "%s,%s,%s,%s,%s,%s,%s,%s,%s\r\n",
                                 reservation.id,
                                 reservation.getStatus(),
                                 reservation.getSeat().getSeatNumber(),

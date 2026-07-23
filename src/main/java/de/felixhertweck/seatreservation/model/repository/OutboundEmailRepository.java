@@ -21,11 +21,12 @@ package de.felixhertweck.seatreservation.model.repository;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import de.felixhertweck.seatreservation.model.entity.EmailStatus;
 import de.felixhertweck.seatreservation.model.entity.OutboundEmail;
-import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import io.quarkus.panache.common.Page;
 
 /**
@@ -33,7 +34,7 @@ import io.quarkus.panache.common.Page;
  * by the dispatcher to pick up due messages and by the cleanup job to purge finished ones.
  */
 @ApplicationScoped
-public class OutboundEmailRepository implements PanacheRepository<OutboundEmail> {
+public class OutboundEmailRepository implements PanacheRepositoryBase<OutboundEmail, UUID> {
 
     /**
      * Atomically claims up to {@code limit} due messages by flipping them from {@link
@@ -50,8 +51,8 @@ public class OutboundEmailRepository implements PanacheRepository<OutboundEmail>
      * @return the ids of the claimed messages, oldest scheduled attempt first
      */
     @SuppressWarnings("unchecked")
-    public List<Long> claimDue(Instant now, int limit) {
-        List<Number> ids =
+    public List<UUID> claimDue(Instant now, int limit) {
+        List<Object> ids =
                 getEntityManager()
                         .createNativeQuery(
                                 "UPDATE outbound_emails SET status = 'SENDING', updated_at = ?1 "
@@ -66,7 +67,7 @@ public class OutboundEmailRepository implements PanacheRepository<OutboundEmail>
                         .setParameter(1, now)
                         .setParameter(2, limit)
                         .getResultList();
-        return ids.stream().map(Number::longValue).toList();
+        return ids.stream().map(id -> (UUID) id).toList();
     }
 
     /**

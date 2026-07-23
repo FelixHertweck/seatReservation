@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.management.resource;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -125,15 +126,15 @@ public class EventLocationResource {
             responseCode = "409",
             description = "Conflict: Event location with this name already exists")
     public EventLocationResponseDTO updateEventLocation(
-            @PathParam("id") Long id, @Valid EventLocationUpdateDTO dto) {
+            @PathParam("id") UUID id, @Valid EventLocationUpdateDTO dto) {
         LOG.debugf(
-                "Received PUT request to /api/manager/eventlocations/%d to update event location.",
+                "Received PUT request to /api/manager/eventlocations/%s to update event location.",
                 id);
-        LOG.debugf("EventLocationRequestDTO received for ID %d: %s", id, dto.toString());
+        LOG.debugf("EventLocationRequestDTO received for ID %s: %s", id, dto.toString());
         AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         EventLocationResponseDTO result =
                 eventLocationService.updateEventLocation(id, dto, currentUser);
-        LOG.infof("Event location with ID %d updated successfully.", id);
+        LOG.infof("Event location with ID %s updated successfully.", id);
         return result;
     }
 
@@ -148,7 +149,7 @@ public class EventLocationResource {
     @APIResponse(
             responseCode = "404",
             description = "Not Found: Event location with specified ID not found")
-    public void deleteEventLocation(@QueryParam("ids") List<Long> ids) {
+    public void deleteEventLocation(@QueryParam("ids") List<UUID> ids) {
         LOG.debugf(
                 "Received DELETE request to /api/manager/eventlocations with IDs: %s",
                 ids != null ? ids : Collections.emptyList());

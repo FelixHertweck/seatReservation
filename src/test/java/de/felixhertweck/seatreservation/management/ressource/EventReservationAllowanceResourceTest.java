@@ -19,13 +19,15 @@
  */
 package de.felixhertweck.seatreservation.management.ressource;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import java.util.Collections;
 import java.util.Set;
+import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
@@ -52,19 +54,19 @@ class EventReservationAllowanceResourceTest {
             user = "testUser",
             roles = {"MANAGER"})
     void getReservationAllowanceById_Success() {
-        EventUserAllowancesDto dto = new EventUserAllowancesDto(1L, 1L, 2L, 5);
+        EventUserAllowancesDto dto = new EventUserAllowancesDto(id(1), id(1), id(2), 5);
         when(userSecurityContext.getCurrentUser()).thenReturn(new User());
         when(eventReservationAllowanceService.getReservationAllowanceById(
-                        anyLong(), any(User.class)))
+                        any(UUID.class), any(User.class)))
                 .thenReturn(dto);
 
         given().when()
-                .get("/api/manager/reservationAllowance/1")
+                .get("/api/manager/reservationAllowance/" + id(1))
                 .then()
                 .statusCode(200)
-                .body("id", is(1))
-                .body("eventId", is(1))
-                .body("userId", is(2))
+                .body("id", is(id(1).toString()))
+                .body("eventId", is(id(1).toString()))
+                .body("userId", is(id(2).toString()))
                 .body("reservationsAllowedCount", is(5));
     }
 
@@ -75,10 +77,10 @@ class EventReservationAllowanceResourceTest {
     void getReservationAllowanceById_NotFound() {
         when(userSecurityContext.getCurrentUser()).thenReturn(new User());
         when(eventReservationAllowanceService.getReservationAllowanceById(
-                        anyLong(), any(User.class)))
+                        any(UUID.class), any(User.class)))
                 .thenThrow(new EventNotFoundException("Allowance not found"));
 
-        given().when().get("/api/manager/reservationAllowance/99").then().statusCode(404);
+        given().when().get("/api/manager/reservationAllowance/" + id(99)).then().statusCode(404);
     }
 
     @Test
@@ -86,7 +88,7 @@ class EventReservationAllowanceResourceTest {
             user = "testUser",
             roles = {"USER"})
     void getReservationAllowanceById_Forbidden() {
-        given().when().get("/api/manager/reservationAllowance/1").then().statusCode(403);
+        given().when().get("/api/manager/reservationAllowance/" + id(1)).then().statusCode(403);
     }
 
     @Test
@@ -96,7 +98,7 @@ class EventReservationAllowanceResourceTest {
     void deleteReservationAllowance_Success() {
         when(userSecurityContext.getCurrentUser()).thenReturn(new User());
         given().when()
-                .queryParam("ids", 1L)
+                .queryParam("ids", id(1).toString())
                 .delete("/api/manager/reservationAllowance")
                 .then()
                 .statusCode(204);
@@ -108,7 +110,7 @@ class EventReservationAllowanceResourceTest {
             roles = {"USER"})
     void deleteReservationAllowance_Forbidden() {
         given().when()
-                .queryParam("ids", 1L)
+                .queryParam("ids", id(1).toString())
                 .delete("/api/manager/reservationAllowance")
                 .then()
                 .statusCode(403);
@@ -121,9 +123,9 @@ class EventReservationAllowanceResourceTest {
     void deleteMultipleReservationAllowances_Success() {
         when(userSecurityContext.getCurrentUser()).thenReturn(new User());
         given().when()
-                .queryParam("ids", 1L)
-                .queryParam("ids", 2L)
-                .queryParam("ids", 3L)
+                .queryParam("ids", id(1).toString())
+                .queryParam("ids", id(2).toString())
+                .queryParam("ids", id(3).toString())
                 .delete("/api/manager/reservationAllowance")
                 .then()
                 .statusCode(204);
@@ -136,7 +138,7 @@ class EventReservationAllowanceResourceTest {
     void deleteReservationAllowance_NotFound() {
         when(userSecurityContext.getCurrentUser()).thenReturn(new User());
         given().when()
-                .queryParam("ids", 999L)
+                .queryParam("ids", id(999).toString())
                 .delete("/api/manager/reservationAllowance")
                 .then()
                 .statusCode(204); // Allowance service may not throw if ID doesn't exist
@@ -145,7 +147,7 @@ class EventReservationAllowanceResourceTest {
     @Test
     void deleteReservationAllowance_Unauthorized() {
         given().when()
-                .queryParam("ids", 1L)
+                .queryParam("ids", id(1).toString())
                 .delete("/api/manager/reservationAllowance")
                 .then()
                 .statusCode(401);
@@ -157,17 +159,19 @@ class EventReservationAllowanceResourceTest {
             roles = {"MANAGER"})
     void getReservationAllowances_Success() {
         when(userSecurityContext.getAuthenticatedUser())
-                .thenReturn(new AuthenticatedUser(1L, Set.of("MANAGER")));
+                .thenReturn(new AuthenticatedUser(id(1), Set.of("MANAGER")));
         when(eventReservationAllowanceService.getReservationAllowances(
                         any(AuthenticatedUser.class)))
-                .thenReturn(Collections.singletonList(new EventUserAllowancesDto(1L, 1L, 2L, 5)));
+                .thenReturn(
+                        Collections.singletonList(
+                                new EventUserAllowancesDto(id(1), id(1), id(2), 5)));
 
         given().when()
                 .get("/api/manager/reservationAllowance")
                 .then()
                 .statusCode(200)
-                .body("[0].eventId", is(1))
-                .body("[0].userId", is(2))
+                .body("[0].eventId", is(id(1).toString()))
+                .body("[0].userId", is(id(2).toString()))
                 .body("[0].reservationsAllowedCount", is(5));
     }
 
@@ -186,15 +190,17 @@ class EventReservationAllowanceResourceTest {
     void getReservationAllowancesByEventId_Success() {
         when(userSecurityContext.getCurrentUser()).thenReturn(new User());
         when(eventReservationAllowanceService.getReservationAllowancesByEventId(
-                        anyLong(), any(User.class)))
-                .thenReturn(Collections.singletonList(new EventUserAllowancesDto(1L, 1L, 2L, 5)));
+                        any(UUID.class), any(User.class)))
+                .thenReturn(
+                        Collections.singletonList(
+                                new EventUserAllowancesDto(id(1), id(1), id(2), 5)));
 
         given().when()
-                .get("/api/manager/reservationAllowance/event/1")
+                .get("/api/manager/reservationAllowance/event/" + id(1))
                 .then()
                 .statusCode(200)
-                .body("[0].eventId", is(1))
-                .body("[0].userId", is(2))
+                .body("[0].eventId", is(id(1).toString()))
+                .body("[0].userId", is(id(2).toString()))
                 .body("[0].reservationsAllowedCount", is(5));
     }
 
@@ -203,7 +209,10 @@ class EventReservationAllowanceResourceTest {
             user = "testUser",
             roles = {"USER"})
     void getReservationAllowancesByEventId_Forbidden() {
-        given().when().get("/api/manager/reservationAllowance/event/1").then().statusCode(403);
+        given().when()
+                .get("/api/manager/reservationAllowance/event/" + id(1))
+                .then()
+                .statusCode(403);
     }
 
     @Test
@@ -211,8 +220,9 @@ class EventReservationAllowanceResourceTest {
             user = "testUser",
             roles = {"MANAGER"})
     void updateReservationAllowance_Success() {
-        EventUserAllowanceUpdateDto requestDto = new EventUserAllowanceUpdateDto(1L, 1L, 2L, 10);
-        EventUserAllowancesDto responseDto = new EventUserAllowancesDto(1L, 1L, 2L, 10);
+        EventUserAllowanceUpdateDto requestDto =
+                new EventUserAllowanceUpdateDto(id(1), id(1), id(2), 10);
+        EventUserAllowancesDto responseDto = new EventUserAllowancesDto(id(1), id(1), id(2), 10);
 
         when(userSecurityContext.getCurrentUser()).thenReturn(new User());
         when(eventReservationAllowanceService.updateReservationAllowance(
@@ -225,9 +235,9 @@ class EventReservationAllowanceResourceTest {
                 .put("/api/manager/reservationAllowance")
                 .then()
                 .statusCode(200)
-                .body("id", is(1))
-                .body("eventId", is(1))
-                .body("userId", is(2))
+                .body("id", is(id(1).toString()))
+                .body("eventId", is(id(1).toString()))
+                .body("userId", is(id(2).toString()))
                 .body("reservationsAllowedCount", is(10));
     }
 
@@ -236,7 +246,8 @@ class EventReservationAllowanceResourceTest {
             user = "testUser",
             roles = {"MANAGER"})
     void updateReservationAllowance_NotFound() {
-        EventUserAllowanceUpdateDto requestDto = new EventUserAllowanceUpdateDto(99L, 1L, 2L, 10);
+        EventUserAllowanceUpdateDto requestDto =
+                new EventUserAllowanceUpdateDto(id(99), id(1), id(2), 10);
 
         when(userSecurityContext.getCurrentUser()).thenReturn(new User());
         when(eventReservationAllowanceService.updateReservationAllowance(
@@ -256,7 +267,8 @@ class EventReservationAllowanceResourceTest {
             user = "testUser",
             roles = {"USER"})
     void updateReservationAllowance_Forbidden() {
-        EventUserAllowanceUpdateDto requestDto = new EventUserAllowanceUpdateDto(1L, 1L, 2L, 10);
+        EventUserAllowanceUpdateDto requestDto =
+                new EventUserAllowanceUpdateDto(id(1), id(1), id(2), 10);
 
         given().contentType("application/json")
                 .body(requestDto)

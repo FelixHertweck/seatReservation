@@ -19,10 +19,13 @@
  */
 package de.felixhertweck.seatreservation.supervisor.service;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Stream;
 import jakarta.inject.Inject;
 
@@ -30,7 +33,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -72,7 +74,7 @@ class CheckInServiceTest {
     @BeforeEach
     void setup() {
         // Authorize the test user (id 1) for any event in these tests
-        when(eventRepository.isUserSupervisor(anyLong(), eq(1L))).thenReturn(true);
+        when(eventRepository.isUserSupervisor(any(UUID.class), eq(id(1)))).thenReturn(true);
     }
 
     private static AuthenticatedUser auth(User user) {
@@ -83,22 +85,22 @@ class CheckInServiceTest {
 
     @Test
     void testProcessCheckInByIds_successfulCheckIn() throws CheckInException {
-        long reservationId1 = 1L;
-        long reservationId2 = 2L;
-        long userId = 1L;
+        UUID reservationId1 = id(1);
+        UUID reservationId2 = id(2);
+        UUID userId = id(1);
         User user = new User();
         user.id = userId;
 
         // user already defined above
-        long eventId = 10L;
+        UUID eventId = id(10);
         Event event = new Event();
         event.id = eventId;
 
         EventLocation location = new EventLocation();
-        location.id = 1L;
+        location.id = id(1);
 
         Seat seat = new Seat("", "", location);
-        seat.id = 1L;
+        seat.id = id(1);
 
         Reservation reservation1 = new Reservation();
         reservation1.id = reservationId1;
@@ -134,9 +136,9 @@ class CheckInServiceTest {
 
     @Test
     void testProcessCheckInByIds_successfulCancel() throws CheckInException {
-        long reservationId1 = 1L;
-        long userId = 1L;
-        long eventId = 10L;
+        UUID reservationId1 = id(1);
+        UUID userId = id(1);
+        UUID eventId = id(10);
 
         User user = new User();
         user.id = userId;
@@ -144,10 +146,10 @@ class CheckInServiceTest {
         event.id = eventId;
 
         EventLocation location = new EventLocation();
-        location.id = 1L;
+        location.id = id(1);
 
         Seat seat = new Seat("", "", location);
-        seat.id = 1L;
+        seat.id = id(1);
 
         Reservation reservation1 = new Reservation();
         reservation1.id = reservationId1;
@@ -176,10 +178,10 @@ class CheckInServiceTest {
 
     @Test
     void testProcessCheckInByIds_mixedCheckInAndCancel() throws CheckInException {
-        long checkInId = 1L;
-        long cancelId = 2L;
-        long userId = 1L;
-        long eventId = 10L;
+        UUID checkInId = id(1);
+        UUID cancelId = id(2);
+        UUID userId = id(1);
+        UUID eventId = id(10);
 
         User user = new User();
         user.id = userId;
@@ -187,10 +189,10 @@ class CheckInServiceTest {
         event.id = eventId;
 
         EventLocation location = new EventLocation();
-        location.id = 1L;
+        location.id = id(1);
 
         Seat seat = new Seat("", "", location);
-        seat.id = 1L;
+        seat.id = id(1);
 
         Reservation checkInReservation = new Reservation();
         checkInReservation.id = checkInId;
@@ -228,9 +230,9 @@ class CheckInServiceTest {
 
     @Test
     void testProcessCheckInByIds_reservationNotFound() {
-        long reservationId = 999L;
-        long userId = 1L;
-        long eventId = 10L;
+        UUID reservationId = id(999);
+        UUID userId = id(1);
+        UUID eventId = id(10);
 
         when(reservationRepository.findAllByIdUserIdAndEventId(
                         Collections.singletonList(reservationId), userId, eventId))
@@ -250,8 +252,8 @@ class CheckInServiceTest {
 
     @Test
     void testProcessCheckInByIds_emptyLists() throws CheckInException {
-        long userId = 1L;
-        long eventId = 10L;
+        UUID userId = id(1);
+        UUID eventId = id(10);
         User user = new User();
         user.id = userId;
 
@@ -269,8 +271,8 @@ class CheckInServiceTest {
     @Test
     void testGetReservationInfos_successfulCheckIn()
             throws UserMismatchException, EventMismatchException, CheckInTokenNotFoundException {
-        long userId = 1L;
-        long eventId = 10L;
+        UUID userId = id(1);
+        UUID eventId = id(10);
         String token1 = "token1";
         String token2 = "token2";
 
@@ -280,10 +282,10 @@ class CheckInServiceTest {
         event.id = eventId;
 
         EventLocation location = new EventLocation();
-        location.id = 1L;
+        location.id = id(1);
 
         Seat seat = new Seat("", "", location);
-        seat.id = 1L;
+        seat.id = id(1);
 
         Reservation reservation1 = new Reservation();
         reservation1.setCheckInCode(token1);
@@ -314,8 +316,8 @@ class CheckInServiceTest {
     @Test
     void testGetReservationInfos_emptyTokenList()
             throws UserMismatchException, EventMismatchException, CheckInTokenNotFoundException {
-        long userId = 1L;
-        long eventId = 10L;
+        UUID userId = id(1);
+        UUID eventId = id(10);
         User user = new User();
         user.id = userId;
         when(userRepository.findById(userId)).thenReturn(user);
@@ -330,18 +332,18 @@ class CheckInServiceTest {
 
     @Test
     void testProcessCheckInByTokens_successfulCancel() throws CheckInException {
-        long reservationId = 1L;
+        UUID reservationId = id(1);
 
         User user = new User();
-        user.id = 1L;
+        user.id = id(1);
         Event event = new Event();
-        event.id = 10L;
+        event.id = id(10);
 
         EventLocation location = new EventLocation();
-        location.id = 1L;
+        location.id = id(1);
 
         Seat seat = new Seat("", "", location);
-        seat.id = 1L;
+        seat.id = id(1);
 
         Reservation reservation1 = new Reservation();
         reservation1.id = reservationId;
@@ -350,8 +352,8 @@ class CheckInServiceTest {
         reservation1.setSeat(seat);
         reservation1.setLiveStatus(ReservationLiveStatus.CHECKED_IN);
 
-        long userId = 1L;
-        long eventId = 10L;
+        UUID userId = id(1);
+        UUID eventId = id(10);
 
         when(reservationRepository.findAllByIdUserIdAndEventId(
                         Collections.singletonList(reservationId), userId, eventId))
@@ -373,12 +375,12 @@ class CheckInServiceTest {
 
     @Test
     void testGetReservationInfos_userMismatchException() {
-        long userId = 1L;
-        long eventId = 10L;
+        UUID userId = id(1);
+        UUID eventId = id(10);
         String token1 = "token1";
 
         User otherUser = new User();
-        otherUser.id = 2L;
+        otherUser.id = id(2);
         User user = new User();
         user.id = userId;
         Event event = new Event();
@@ -401,20 +403,20 @@ class CheckInServiceTest {
 
     @Test
     void testGetReservationInfos_eventMismatchException() {
-        long userId = 1L;
-        long eventId = 10L;
+        UUID userId = id(1);
+        UUID eventId = id(10);
         String token1 = "token1";
 
         User user = new User();
         user.id = userId;
         Event otherEvent = new Event();
-        otherEvent.id = 11L;
+        otherEvent.id = id(11);
 
         EventLocation location = new EventLocation();
-        location.id = 1L;
+        location.id = id(1);
 
         Seat seat = new Seat("", "", location);
-        seat.id = 1L;
+        seat.id = id(1);
 
         Reservation reservation1 = new Reservation();
         reservation1.setCheckInCode(token1);
@@ -435,8 +437,8 @@ class CheckInServiceTest {
 
     @Test
     void testGetReservationInfos_tokenNotFound() {
-        long userId = 1L;
-        long eventId = 10L;
+        UUID userId = id(1);
+        UUID eventId = id(10);
         String token1 = "token1";
 
         when(reservationRepository.findByCheckInCodeIn(Collections.singletonList(token1)))
@@ -452,8 +454,8 @@ class CheckInServiceTest {
     @Test
     void testGetReservationInfos_multipleTokens()
             throws UserMismatchException, EventMismatchException, CheckInTokenNotFoundException {
-        long userId = 1L;
-        long eventId = 10L;
+        UUID userId = id(1);
+        UUID eventId = id(10);
         String token1 = "token1";
         String token2 = "token2";
 
@@ -463,10 +465,10 @@ class CheckInServiceTest {
         event.id = eventId;
 
         EventLocation location = new EventLocation();
-        location.id = 1L;
+        location.id = id(1);
 
         Seat seat = new Seat("", "", location);
-        seat.id = 1L;
+        seat.id = id(1);
 
         Reservation reservation1 = new Reservation();
         reservation1.setCheckInCode(token1);
@@ -495,11 +497,11 @@ class CheckInServiceTest {
 
     @Test
     void testGetUsernamesWithReservations_SupervisorUnauthorized_Throws() {
-        long eventId = 20L;
+        UUID eventId = id(20);
         User user = new User();
-        user.id = 1L;
+        user.id = id(1);
         user.setRoles(Set.of(Roles.SUPERVISOR));
-        when(eventRepository.isUserSupervisor(eq(eventId), eq(1L))).thenReturn(false);
+        when(eventRepository.isUserSupervisor(eq(eventId), eq(id(1)))).thenReturn(false);
         assertThrows(
                 SecurityException.class,
                 () -> checkInService.getUsernamesWithReservations(auth(user), eventId));
@@ -507,9 +509,9 @@ class CheckInServiceTest {
 
     @Test
     void testGetUsernamesWithReservations_AdminAllowed() {
-        long eventId = 10L;
+        UUID eventId = id(10);
         User admin = new User();
-        admin.id = 2L;
+        admin.id = id(2);
         admin.setRoles(Set.of(Roles.ADMIN));
 
         // create reservations for event
@@ -534,11 +536,11 @@ class CheckInServiceTest {
     @Test
     void testGetAllEventsForSupervisor_filtersProperly() {
         User supervisor = new User();
-        supervisor.id = 1L;
+        supervisor.id = id(1);
         Event e1 = new Event();
-        e1.id = 10L;
+        e1.id = id(10);
         Event e2 = new Event();
-        e2.id = 20L;
+        e2.id = id(20);
         @SuppressWarnings("unchecked")
         io.quarkus.hibernate.orm.panache.PanacheQuery<Event> eq =
                 (io.quarkus.hibernate.orm.panache.PanacheQuery<Event>)

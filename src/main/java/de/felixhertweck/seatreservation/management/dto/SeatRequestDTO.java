@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.management.dto;
 
+import java.util.UUID;
 import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -32,7 +33,7 @@ public class SeatRequestDTO {
     private String seatNumber;
 
     @NotNull(message = "EventLocation ID must not be null")
-    private Long eventLocationId;
+    private UUID eventLocationId;
 
     @NotNull(message = "Coordinate must not be null")
     @Valid
@@ -41,9 +42,9 @@ public class SeatRequestDTO {
     @NotNull(message = "Row must not be null")
     private String seatRow;
 
-    @Nullable private Long entranceId;
+    @Nullable private UUID entranceId;
 
-    @Nullable private Long areaId;
+    @Nullable private UUID areaId;
 
     public SeatRequestDTO() {
         // Default constructor for serialization/deserialization
@@ -52,11 +53,11 @@ public class SeatRequestDTO {
     public SeatRequestDTO(
             String seatNumber,
             String seatRow,
-            Long eventLocationId,
+            UUID eventLocationId,
             int xCoordinate,
             int yCoordinate,
-            Long entranceId,
-            Long areaId) {
+            UUID entranceId,
+            UUID areaId) {
         this.seatNumber = seatNumber;
         this.eventLocationId = eventLocationId;
         this.coordinate = new CoordinateDTO(xCoordinate, yCoordinate);
@@ -69,7 +70,7 @@ public class SeatRequestDTO {
         return seatNumber;
     }
 
-    public Long getEventLocationId() {
+    public UUID getEventLocationId() {
         return eventLocationId;
     }
 
@@ -89,7 +90,7 @@ public class SeatRequestDTO {
         this.seatNumber = seatNumber;
     }
 
-    public void setEventLocationId(Long eventLocationId) {
+    public void setEventLocationId(UUID eventLocationId) {
         this.eventLocationId = eventLocationId;
     }
 
@@ -97,19 +98,19 @@ public class SeatRequestDTO {
         this.seatRow = seatRow;
     }
 
-    public Long getEntranceId() {
+    public UUID getEntranceId() {
         return entranceId;
     }
 
-    public void setEntranceId(Long entranceId) {
+    public void setEntranceId(UUID entranceId) {
         this.entranceId = entranceId;
     }
 
-    public Long getAreaId() {
+    public UUID getAreaId() {
         return areaId;
     }
 
-    public void setAreaId(Long areaId) {
+    public void setAreaId(UUID areaId) {
         this.areaId = areaId;
     }
 }

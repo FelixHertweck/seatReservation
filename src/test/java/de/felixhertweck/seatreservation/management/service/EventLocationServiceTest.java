@@ -19,10 +19,13 @@
  */
 package de.felixhertweck.seatreservation.management.service;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import jakarta.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -30,7 +33,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
@@ -96,7 +98,7 @@ public class EventLocationServiceTest {
                         "User",
                         Set.of(Roles.ADMIN),
                         Set.of());
-        adminUser.id = 1L;
+        adminUser.id = id(1);
         managerUser =
                 new User(
                         "manager",
@@ -109,7 +111,7 @@ public class EventLocationServiceTest {
                         "Manager",
                         Set.of(Roles.MANAGER),
                         Set.of());
-        managerUser.id = 3L;
+        managerUser.id = id(3);
         regularUser =
                 new User(
                         "user",
@@ -122,7 +124,7 @@ public class EventLocationServiceTest {
                         "User",
                         Set.of(Roles.USER),
                         Set.of());
-        regularUser.id = 2L;
+        regularUser.id = id(2);
 
         adminAuth = new AuthenticatedUser(adminUser.id, adminUser.getRoles());
         managerAuth = new AuthenticatedUser(managerUser.id, managerUser.getRoles());
@@ -132,7 +134,7 @@ public class EventLocationServiceTest {
         when(userRepository.getReference(regularUser.id)).thenReturn(regularUser);
 
         existingLocation = new EventLocation("Stadthalle", "Hauptstraße 1", managerUser, 100);
-        existingLocation.id = 1L;
+        existingLocation.id = id(1);
     }
 
     @Test
@@ -193,7 +195,7 @@ public class EventLocationServiceTest {
         doAnswer(
                         invocation -> {
                             EventLocation loc = invocation.getArgument(0);
-                            loc.id = 10L; // Simulate ID generation
+                            loc.id = id(10); // Simulate ID generation
                             return null;
                         })
                 .when(eventLocationRepository)
@@ -243,11 +245,11 @@ public class EventLocationServiceTest {
         dto.setAddress("Updated Street 1");
         dto.setCapacity(600);
 
-        when(eventLocationRepository.findByIdOptional(1L))
+        when(eventLocationRepository.findByIdOptional(id(1)))
                 .thenReturn(Optional.of(existingLocation));
 
         EventLocationResponseDTO updatedLocation =
-                eventLocationService.updateEventLocation(1L, dto, managerAuth);
+                eventLocationService.updateEventLocation(id(1), dto, managerAuth);
 
         assertNotNull(updatedLocation);
         assertEquals("Updated Hall", updatedLocation.name());
@@ -263,11 +265,12 @@ public class EventLocationServiceTest {
         dto.setAddress("Updated Street 1");
         dto.setCapacity(600);
 
-        when(eventLocationRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
+        when(eventLocationRepository.findByIdOptional(any(UUID.class)))
+                .thenReturn(Optional.empty());
 
         assertThrows(
                 EventLocationNotFoundException.class,
-                () -> eventLocationService.updateEventLocation(99L, dto, managerAuth));
+                () -> eventLocationService.updateEventLocation(id(99), dto, managerAuth));
         verify(eventLocationRepository, never()).persist(any(EventLocation.class));
     }
 
@@ -278,11 +281,11 @@ public class EventLocationServiceTest {
         dto.setAddress("Updated Street 1 by Admin");
         dto.setCapacity(700);
 
-        when(eventLocationRepository.findByIdOptional(1L))
+        when(eventLocationRepository.findByIdOptional(id(1)))
                 .thenReturn(Optional.of(existingLocation));
 
         EventLocationResponseDTO updatedLocation =
-                eventLocationService.updateEventLocation(1L, dto, adminAuth);
+                eventLocationService.updateEventLocation(id(1), dto, adminAuth);
 
         assertNotNull(updatedLocation);
         assertEquals("Updated Hall by Admin", updatedLocation.name());
@@ -298,55 +301,56 @@ public class EventLocationServiceTest {
         dto.setAddress("Updated Street 1");
         dto.setCapacity(600);
 
-        when(eventLocationRepository.findByIdOptional(1L))
+        when(eventLocationRepository.findByIdOptional(id(1)))
                 .thenReturn(Optional.of(existingLocation));
 
         assertThrows(
                 SecurityException.class,
-                () -> eventLocationService.updateEventLocation(1L, dto, regularAuth));
+                () -> eventLocationService.updateEventLocation(id(1), dto, regularAuth));
         verify(eventLocationRepository, never()).persist(any(EventLocation.class));
     }
 
     @Test
     void deleteEventLocation_Success_AsManager() {
-        when(eventLocationRepository.findByIdOptional(1L))
+        when(eventLocationRepository.findByIdOptional(id(1)))
                 .thenReturn(Optional.of(existingLocation));
         doNothing().when(eventLocationRepository).delete(any(EventLocation.class));
 
-        eventLocationService.deleteEventLocation(List.of(1L), managerAuth);
+        eventLocationService.deleteEventLocation(List.of(id(1)), managerAuth);
 
         verify(eventLocationRepository, times(1)).delete(existingLocation);
     }
 
     @Test
     void deleteEventLocation_NotFound() {
-        when(eventLocationRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
+        when(eventLocationRepository.findByIdOptional(any(UUID.class)))
+                .thenReturn(Optional.empty());
 
         assertThrows(
                 EventLocationNotFoundException.class,
-                () -> eventLocationService.deleteEventLocation(List.of(99L), managerAuth));
+                () -> eventLocationService.deleteEventLocation(List.of(id(99)), managerAuth));
         verify(eventLocationRepository, never()).delete(any(EventLocation.class));
     }
 
     @Test
     void deleteEventLocation_Success_AsAdmin() {
-        when(eventLocationRepository.findByIdOptional(1L))
+        when(eventLocationRepository.findByIdOptional(id(1)))
                 .thenReturn(Optional.of(existingLocation));
         doNothing().when(eventLocationRepository).delete(any(EventLocation.class));
 
-        eventLocationService.deleteEventLocation(List.of(1L), adminAuth);
+        eventLocationService.deleteEventLocation(List.of(id(1)), adminAuth);
 
         verify(eventLocationRepository, times(1)).delete(existingLocation);
     }
 
     @Test
     void deleteEventLocation_ForbiddenException_NotManagerOrAdmin() {
-        when(eventLocationRepository.findByIdOptional(1L))
+        when(eventLocationRepository.findByIdOptional(id(1)))
                 .thenReturn(Optional.of(existingLocation));
 
         assertThrows(
                 SecurityException.class,
-                () -> eventLocationService.deleteEventLocation(List.of(1L), regularAuth));
+                () -> eventLocationService.deleteEventLocation(List.of(id(1)), regularAuth));
         verify(eventLocationRepository, never()).delete(any(EventLocation.class));
     }
 
@@ -377,7 +381,7 @@ public class EventLocationServiceTest {
         doAnswer(
                         invocation -> {
                             EventLocation loc = invocation.getArgument(0);
-                            loc.id = 20L; // Simulate ID generation
+                            loc.id = id(20); // Simulate ID generation
                             return null;
                         })
                 .when(eventLocationRepository)
@@ -432,7 +436,7 @@ public class EventLocationServiceTest {
         doAnswer(
                         invocation -> {
                             EventLocation location = invocation.getArgument(0);
-                            location.id = 15L;
+                            location.id = id(15);
                             return null;
                         })
                 .when(eventLocationRepository)
@@ -471,7 +475,7 @@ public class EventLocationServiceTest {
         doAnswer(
                         invocation -> {
                             EventLocation location = invocation.getArgument(0);
-                            location.id = 16L;
+                            location.id = id(16);
                             return null;
                         })
                 .when(eventLocationRepository)
@@ -502,7 +506,7 @@ public class EventLocationServiceTest {
         doAnswer(
                         invocation -> {
                             EventLocation location = invocation.getArgument(0);
-                            location.id = 17L;
+                            location.id = id(17);
                             return null;
                         })
                 .when(eventLocationRepository)
@@ -535,7 +539,7 @@ public class EventLocationServiceTest {
         doAnswer(
                         invocation -> {
                             EventLocation location = invocation.getArgument(0);
-                            location.id = 18L;
+                            location.id = id(18);
                             return null;
                         })
                 .when(eventLocationRepository)
@@ -579,7 +583,7 @@ public class EventLocationServiceTest {
         doAnswer(
                         invocation -> {
                             EventLocation location = invocation.getArgument(0);
-                            location.id = 19L;
+                            location.id = id(19);
                             return null;
                         })
                 .when(eventLocationRepository)
@@ -621,7 +625,7 @@ public class EventLocationServiceTest {
         doAnswer(
                         invocation -> {
                             EventLocation location = invocation.getArgument(0);
-                            location.id = 20L;
+                            location.id = id(20);
                             return null;
                         })
                 .when(eventLocationRepository)

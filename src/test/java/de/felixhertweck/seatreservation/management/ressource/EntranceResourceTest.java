@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.management.ressource;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
@@ -106,7 +108,12 @@ public class EntranceResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testGetEntrancesByEventLocation() {
         given().when()
                 .queryParam("eventLocationId", testLocation.id)
@@ -150,7 +157,12 @@ public class EntranceResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testGetEntranceById() {
         given().when()
                 .get("/api/manager/entrances/" + testEntrance.id)
@@ -163,16 +175,26 @@ public class EntranceResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testGetEntranceByIdNotFound() {
-        given().when().get("/api/manager/entrances/999").then().statusCode(404);
+        given().when().get("/api/manager/entrances/" + id(999)).then().statusCode(404);
     }
 
     @Test
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testCreateEntrance() {
         given().contentType("application/json")
                 .body(new EntranceRequestDTO(testLocation.id, "B"))
@@ -187,7 +209,12 @@ public class EntranceResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testCreateEntranceInvalidData() {
         given().contentType("application/json")
                 .body("{\"name\":\"\"}")
@@ -201,7 +228,12 @@ public class EntranceResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testUpdateEntrance() {
         given().contentType("application/json")
                 .body(new EntranceRequestDTO(testLocation.id, "C"))
@@ -216,12 +248,17 @@ public class EntranceResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testUpdateEntranceNotFound() {
         given().contentType("application/json")
                 .body(new EntranceRequestDTO(testLocation.id, "C"))
                 .when()
-                .put("/api/manager/entrances/999")
+                .put("/api/manager/entrances/" + id(999))
                 .then()
                 .statusCode(404);
     }
@@ -230,7 +267,12 @@ public class EntranceResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testDeleteEntrance() {
         given().when()
                 .queryParam("ids", testEntrance.id)
@@ -243,10 +285,15 @@ public class EntranceResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testDeleteEntranceNotFound() {
         given().when()
-                .queryParam("ids", 999L)
+                .queryParam("ids", id(999).toString())
                 .delete("/api/manager/entrances")
                 .then()
                 .statusCode(404);
@@ -256,7 +303,12 @@ public class EntranceResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testDeleteEntranceConflictWhenReferencedBySeat() {
         Seat seat = new Seat("A1", "Row 1", testLocation);
         seat.setEntrance(testEntrance);

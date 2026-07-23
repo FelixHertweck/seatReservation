@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.management.service;
 
 import java.util.List;
+import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -54,7 +55,7 @@ public class EntranceService {
      * @return the entrances of the event location
      */
     public List<EntranceResponseDTO> findEntrancesByLocation(
-            Long eventLocationId, AuthenticatedUser manager) {
+            UUID eventLocationId, AuthenticatedUser manager) {
         EventLocation eventLocation =
                 eventLocationAccessService.findOwnedEventLocation(eventLocationId, manager);
         return entranceRepository.findByEventLocation(eventLocation).stream()
@@ -69,7 +70,7 @@ public class EntranceService {
      * @param manager the manager attempting to access the entrance
      * @return the entrance DTO
      */
-    public EntranceResponseDTO findEntranceByIdForManager(Long id, AuthenticatedUser manager) {
+    public EntranceResponseDTO findEntranceByIdForManager(UUID id, AuthenticatedUser manager) {
         return new EntranceResponseDTO(findEntranceEntityById(id, manager));
     }
 
@@ -93,7 +94,7 @@ public class EntranceService {
         entrance.setEventLocation(eventLocation);
         entranceRepository.persist(entrance);
         LOG.infof(
-                "Entrance ID: %d created successfully for event location ID %d",
+                "Entrance ID: %s created successfully for event location ID %s",
                 entrance.id, eventLocation.getId());
         return new EntranceResponseDTO(entrance);
     }
@@ -110,7 +111,7 @@ public class EntranceService {
      */
     @Transactional
     public EntranceResponseDTO updateEntrance(
-            Long id, EntranceRequestDTO dto, AuthenticatedUser manager) {
+            UUID id, EntranceRequestDTO dto, AuthenticatedUser manager) {
         EventLocationEntrance entrance = findEntranceEntityById(id, manager);
         EventLocation newEventLocation =
                 eventLocationAccessService.findOwnedEventLocation(
@@ -134,7 +135,7 @@ public class EntranceService {
         entrance.setName(dto.getName().trim());
         entrance.setEventLocation(newEventLocation);
         entranceRepository.persist(entrance);
-        LOG.infof("Entrance ID: %d updated successfully", entrance.id);
+        LOG.infof("Entrance ID: %s updated successfully", entrance.id);
         return new EntranceResponseDTO(entrance);
     }
 
@@ -146,18 +147,18 @@ public class EntranceService {
      * @param manager the manager attempting to delete the entrances
      */
     @Transactional
-    public void deleteEntrances(List<Long> ids, AuthenticatedUser manager) {
+    public void deleteEntrances(List<UUID> ids, AuthenticatedUser manager) {
         if (ids == null || ids.isEmpty()) {
             throw new IllegalArgumentException("No entrance IDs provided for deletion");
         }
-        for (Long id : ids) {
+        for (UUID id : ids) {
             EventLocationEntrance entrance = findEntranceEntityById(id, manager);
             if (seatRepository.countByEntrance(entrance) > 0) {
                 throw new EntranceInUseException(
                         "Entrance with id " + id + " is still referenced by at least one seat");
             }
             entranceRepository.delete(entrance);
-            LOG.infof("Entrance ID: %d deleted successfully", id);
+            LOG.infof("Entrance ID: %s deleted successfully", id);
         }
     }
 
@@ -168,7 +169,7 @@ public class EntranceService {
      * @param manager the manager attempting to access the entrance
      * @return the entrance entity
      */
-    private EventLocationEntrance findEntranceEntityById(Long id, AuthenticatedUser manager) {
+    private EventLocationEntrance findEntranceEntityById(UUID id, AuthenticatedUser manager) {
         EventLocationEntrance entrance =
                 entranceRepository
                         .findByIdWithEventLocation(id)

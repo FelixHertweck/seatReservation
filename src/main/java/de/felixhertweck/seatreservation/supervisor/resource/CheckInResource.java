@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.supervisor.resource;
 
 import java.util.List;
+import java.util.UUID;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -113,7 +114,7 @@ public class CheckInResource {
         int checkInCount = requestDTO.checkIn != null ? requestDTO.checkIn.size() : 0;
         int cancelCount = requestDTO.cancel != null ? requestDTO.cancel.size() : 0;
         LOG.infof(
-                "Received check-in process request for user %d, event %d with %d check-ins and %d"
+                "Received check-in process request for user %s, event %s with %d check-ins and %d"
                         + " cancellations.",
                 requestDTO.userId, requestDTO.eventId, checkInCount, cancelCount);
 
@@ -121,7 +122,7 @@ public class CheckInResource {
         checkInService.processCheckIn(requestDTO, currentUser);
 
         LOG.infof(
-                "Check-in process request for user %d, event %d processed successfully with %d"
+                "Check-in process request for user %s, event %s processed successfully with %d"
                         + " check-ins and %d cancellations.",
                 requestDTO.userId, requestDTO.eventId, checkInCount, cancelCount);
 
@@ -174,12 +175,12 @@ public class CheckInResource {
                                             implementation = String.class)))
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(responseCode = "404", description = "Event not found")
-    public List<String> getUsernamesWithReservations(@PathParam("eventId") Long eventId) {
-        LOG.debugf("Received request for usernames with reservations for event %d.", eventId);
+    public List<String> getUsernamesWithReservations(@PathParam("eventId") UUID eventId) {
+        LOG.debugf("Received request for usernames with reservations for event %s.", eventId);
         AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         List<String> usernames = checkInService.getUsernamesWithReservations(currentUser, eventId);
         LOG.debugf(
-                "Returning %d usernames with reservations for event %d.",
+                "Returning %d usernames with reservations for event %s.",
                 usernames.size(), eventId);
         return usernames;
     }

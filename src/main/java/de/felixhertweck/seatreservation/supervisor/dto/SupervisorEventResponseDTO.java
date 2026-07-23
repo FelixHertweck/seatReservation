@@ -20,13 +20,14 @@
 package de.felixhertweck.seatreservation.supervisor.dto;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import de.felixhertweck.seatreservation.model.entity.Event;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
 public record SupervisorEventResponseDTO(
-        Long id, String name, String description, Instant startTime, Instant endTime) {
+        UUID id, String name, String description, Instant startTime, Instant endTime) {
     public SupervisorEventResponseDTO(Event event, Integer reservationsAllowed) {
         this(
                 event.getId(),

@@ -22,6 +22,7 @@ package de.felixhertweck.seatreservation.reservation.resource;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.persistence.PersistenceException;
@@ -78,11 +79,11 @@ public class ReservationResource {
     public List<UserReservationResponseDTO> getMyReservations() {
         User currentUser = userSecurityContext.getCurrentUserReference();
         LOG.debugf(
-                "Received GET request to /api/user/reservations for user ID: %d", currentUser.id);
+                "Received GET request to /api/user/reservations for user ID: %s", currentUser.id);
         List<UserReservationResponseDTO> reservations =
                 reservationService.findReservationsByUser(currentUser);
         LOG.debugf(
-                "Returning %d reservations for user ID: %d", reservations.size(), currentUser.id);
+                "Returning %d reservations for user ID: %s", reservations.size(), currentUser.id);
         return reservations;
     }
 
@@ -99,14 +100,14 @@ public class ReservationResource {
     @APIResponse(
             responseCode = "404",
             description = "Not Found: Reservation with specified ID not found for the current user")
-    public UserReservationResponseDTO getMyReservationById(@PathParam("id") Long id) {
+    public UserReservationResponseDTO getMyReservationById(@PathParam("id") UUID id) {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.debugf(
-                "Received GET request to /api/user/reservations/%d for user ID: %d",
+                "Received GET request to /api/user/reservations/%s for user ID: %s",
                 id, currentUser.id);
         UserReservationResponseDTO reservation =
                 reservationService.findReservationByIdForUser(id, currentUser);
-        LOG.debugf("Returning reservation with ID %d for user ID: %d", id, currentUser.id);
+        LOG.debugf("Returning reservation with ID %s for user ID: %s", id, currentUser.id);
         return reservation;
     }
 
@@ -135,11 +136,11 @@ public class ReservationResource {
             @Valid UserReservationsRequestDTO dto) {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.debugf(
-                "Received POST request to /api/user/reservations for user ID: %d", currentUser.id);
+                "Received POST request to /api/user/reservations for user ID: %s", currentUser.id);
         List<UserReservationResponseDTO> createdReservations =
                 reservationService.createReservationForUser(dto, currentUser);
         LOG.debugf(
-                "Created %d reservations for user ID: %d",
+                "Created %d reservations for user ID: %s",
                 createdReservations.size(), currentUser.id);
         return createdReservations;
     }
@@ -157,18 +158,18 @@ public class ReservationResource {
     @APIResponse(
             responseCode = "500",
             description = "Internal Server Error: Database persistence error")
-    public void deleteReservation(@QueryParam("ids") List<Long> ids)
+    public void deleteReservation(@QueryParam("ids") List<UUID> ids)
             throws PersistenceException,
                     ReservationNotFoundException,
                     SecurityException,
                     IOException {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.debugf(
-                "Received DELETE request to /api/user/reservations with IDs: %s for user ID: %d",
+                "Received DELETE request to /api/user/reservations with IDs: %s for user ID: %s",
                 ids != null ? ids : Collections.emptyList(), currentUser.id);
         reservationService.deleteReservationForUser(ids, currentUser);
         LOG.debugf(
-                "Reservations with IDs %s deleted successfully for user ID: %d",
+                "Reservations with IDs %s deleted successfully for user ID: %s",
                 ids != null ? ids : Collections.emptyList(), currentUser.id);
     }
 }

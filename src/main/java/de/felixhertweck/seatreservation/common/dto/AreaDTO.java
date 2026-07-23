@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
@@ -41,7 +42,7 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
  * area's seats.
  */
 @RegisterForReflection
-public record AreaDTO(Long id, String name, List<Long> seatIds, List<CoordinateDTO> boundary) {
+public record AreaDTO(UUID id, String name, List<UUID> seatIds, List<CoordinateDTO> boundary) {
 
     /**
      * Maps an event location's areas to {@link AreaDTO}s, attaching the ids of the seats assigned
@@ -76,7 +77,7 @@ public record AreaDTO(Long id, String name, List<Long> seatIds, List<CoordinateD
             return List.of();
         }
 
-        Map<Long, List<Long>> seatIdsByAreaId = new LinkedHashMap<>();
+        Map<UUID, List<UUID>> seatIdsByAreaId = new LinkedHashMap<>();
         if (seats != null) {
             for (Seat seat : seats) {
                 EventLocationArea area = seat.getArea();

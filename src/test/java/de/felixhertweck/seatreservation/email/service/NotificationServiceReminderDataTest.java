@@ -22,6 +22,7 @@ package de.felixhertweck.seatreservation.email.service;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.UUID;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
@@ -76,7 +77,7 @@ class NotificationServiceReminderDataTest {
     @Inject EventRepository eventRepository;
     @Inject ReservationRepository reservationRepository;
 
-    private Long eventId;
+    private UUID eventId;
 
     @BeforeEach
     @Transactional

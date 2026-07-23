@@ -22,12 +22,13 @@ package de.felixhertweck.seatreservation.model.repository;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.model.entity.EmailSeatMapToken;
 import de.felixhertweck.seatreservation.model.entity.User;
-import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import org.jboss.logging.Logger;
 
 /**
@@ -35,7 +36,7 @@ import org.jboss.logging.Logger;
  * tokens used for accessing seat maps in email notifications.
  */
 @ApplicationScoped
-public class EmailSeatMapTokenRepository implements PanacheRepository<EmailSeatMapToken> {
+public class EmailSeatMapTokenRepository implements PanacheRepositoryBase<EmailSeatMapToken, UUID> {
 
     private static final Logger LOG = Logger.getLogger(EmailSeatMapTokenRepository.class);
 
@@ -78,9 +79,9 @@ public class EmailSeatMapTokenRepository implements PanacheRepository<EmailSeatM
      */
     @Transactional
     public long deleteByUser(User user) {
-        LOG.debugf("Deleting EmailSeatMapTokens for user ID: %d", user.id);
+        LOG.debugf("Deleting EmailSeatMapTokens for user ID: %s", user.id);
         long deletedCount = delete("user", user);
-        LOG.infof("Deleted %d EmailSeatMapTokens for user ID: %d", deletedCount, user.id);
+        LOG.infof("Deleted %d EmailSeatMapTokens for user ID: %s", deletedCount, user.id);
         return deletedCount;
     }
 

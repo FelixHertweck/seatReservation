@@ -19,12 +19,14 @@
  */
 package de.felixhertweck.seatreservation.common.dto;
 
+import java.util.UUID;
+
 import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
 public record EventLocationMakerDTO(
-        Long id, String label, CoordinateDTO coordinate, Long eventLocationId) {
+        UUID id, String label, CoordinateDTO coordinate, UUID eventLocationId) {
     public EventLocationMakerDTO(EventLocationMarker maker) {
         this(
                 maker.id,

@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.management.dto;
 
 import java.util.List;
+import java.util.UUID;
 
 import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
 import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
@@ -27,7 +28,7 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
 public record AreaResponseDTO(
-        Long id, String name, List<CoordinateDTO> boundary, Long eventLocationId) {
+        UUID id, String name, List<CoordinateDTO> boundary, UUID eventLocationId) {
     public AreaResponseDTO(EventLocationArea area) {
         this(
                 area.id,

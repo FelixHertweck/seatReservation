@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -56,7 +57,7 @@ public class LiveViewService {
     @Inject EventRepository eventRepository;
 
     // Map: eventId -> List of WebSocket Connections
-    private final Map<Long, List<WebSocketConnection>> eventSubscriptions =
+    private final Map<UUID, List<WebSocketConnection>> eventSubscriptions =
             new ConcurrentHashMap<>();
 
     // Configured ObjectMapper for JSON serialization
@@ -75,12 +76,12 @@ public class LiveViewService {
      *
      * @param eventIdStr the event ID as String to parse
      * @param connection the WebSocket connection
-     * @throws InvalidEventIdException if the event ID cannot be parsed as a Long
+     * @throws InvalidEventIdException if the event ID cannot be parsed as a UUID
      */
     @Lock
     public void registerConnection(String eventIdStr, WebSocketConnection connection)
             throws InvalidEventIdException {
-        long eventId = parseEventId(eventIdStr);
+        UUID eventId = parseEventId(eventIdStr);
         registerConnection(eventId, connection);
     }
 
@@ -95,7 +96,7 @@ public class LiveViewService {
     public void registerConnection(
             String eventIdStr, WebSocketConnection connection, AuthenticatedUser currentUser)
             throws InvalidEventIdException {
-        long eventId = parseEventId(eventIdStr);
+        UUID eventId = parseEventId(eventIdStr);
         if (!isAuthorizedForEvent(currentUser, eventId)) {
             throw new SecurityException("User is not authorized to access event " + eventId);
         }
@@ -107,19 +108,19 @@ public class LiveViewService {
      *
      * @param eventIdStr the event ID as String to parse
      * @param connection the WebSocket connection
-     * @throws InvalidEventIdException if the event ID cannot be parsed as a Long
+     * @throws InvalidEventIdException if the event ID cannot be parsed as a UUID
      */
     @Lock
     public void unregisterConnection(String eventIdStr, WebSocketConnection connection)
             throws InvalidEventIdException {
-        long eventId = parseEventId(eventIdStr);
+        UUID eventId = parseEventId(eventIdStr);
         unregisterConnection(eventId, connection);
     }
 
     public void unregisterConnection(
             String eventIdStr, WebSocketConnection connection, AuthenticatedUser currentUser)
             throws InvalidEventIdException {
-        long eventId = parseEventId(eventIdStr);
+        UUID eventId = parseEventId(eventIdStr);
         if (!isAuthorizedForEvent(currentUser, eventId)) {
             throw new SecurityException("User is not authorized to access event " + eventId);
         }
@@ -130,24 +131,18 @@ public class LiveViewService {
      * Parses the event ID from a String and validates it.
      *
      * @param eventIdStr the event ID as String
-     * @return the parsed event ID as Long
+     * @return the parsed event ID as UUID
      * @throws InvalidEventIdException if the event ID cannot be parsed or is invalid
      */
-    private long parseEventId(String eventIdStr) throws InvalidEventIdException {
+    private UUID parseEventId(String eventIdStr) throws InvalidEventIdException {
         if (eventIdStr == null || eventIdStr.isBlank()) {
             LOG.warnf("Event ID is null or blank");
             throw new InvalidEventIdException("Event ID cannot be null or blank");
         }
 
         try {
-            long eventId = Long.parseLong(eventIdStr);
-            if (eventId <= 0) {
-                LOG.warnf("Event ID must be positive, got: %s", eventIdStr);
-                throw new InvalidEventIdException(
-                        String.format("Event ID must be positive, got: %s", eventIdStr));
-            }
-            return eventId;
-        } catch (NumberFormatException e) {
+            return UUID.fromString(eventIdStr);
+        } catch (IllegalArgumentException e) {
             LOG.warnf(e, "Invalid event ID format: %s", eventIdStr);
             throw new InvalidEventIdException(
                     String.format("Invalid event ID format: %s", eventIdStr), e);
@@ -162,12 +157,12 @@ public class LiveViewService {
      * @param connection the WebSocket connection
      */
     @Lock
-    public void registerConnection(Long eventId, WebSocketConnection connection) {
-        LOG.debugf("Registering WebSocket connection for event %d", eventId);
+    public void registerConnection(UUID eventId, WebSocketConnection connection) {
+        LOG.debugf("Registering WebSocket connection for event %s", eventId);
 
         eventSubscriptions.computeIfAbsent(eventId, k -> new ArrayList<>()).add(connection);
         LOG.infof(
-                "Connection registered for event %d. Total connections: %d",
+                "Connection registered for event %s. Total connections: %d",
                 eventId, eventSubscriptions.get(eventId).size());
 
         // Send initial reservations
@@ -181,26 +176,26 @@ public class LiveViewService {
      * @param connection the WebSocket connection
      */
     @Lock
-    public void unregisterConnection(Long eventId, WebSocketConnection connection) {
-        LOG.debugf("Unregistering WebSocket connection for event %d", eventId);
+    public void unregisterConnection(UUID eventId, WebSocketConnection connection) {
+        LOG.debugf("Unregistering WebSocket connection for event %s", eventId);
 
         List<WebSocketConnection> connections = eventSubscriptions.get(eventId);
         if (connections != null) {
             connections.remove(connection);
             LOG.infof(
-                    "Connection unregistered for event %d. Remaining connections: %d",
+                    "Connection unregistered for event %s. Remaining connections: %d",
                     eventId, connections.size());
 
             // Remove event entry if no more connections
             if (connections.isEmpty()) {
                 eventSubscriptions.remove(eventId);
                 LOG.debugf(
-                        "No more connections for event %d, removing subscription entry.", eventId);
+                        "No more connections for event %s, removing subscription entry.", eventId);
             }
         }
     }
 
-    private boolean isAuthorizedForEvent(AuthenticatedUser user, long eventId) {
+    private boolean isAuthorizedForEvent(AuthenticatedUser user, UUID eventId) {
         if (user == null) return false;
         if (eventRepository.isUserSupervisor(eventId, user.id())) return true;
         Event event = eventRepository.findById(eventId);
@@ -216,8 +211,8 @@ public class LiveViewService {
      * @param eventId the event ID
      * @param connection the WebSocket connection to send to
      */
-    private void sendInitialReservations(Long eventId, WebSocketConnection connection) {
-        LOG.debugf("Sending initial reservations for event %d", eventId);
+    private void sendInitialReservations(UUID eventId, WebSocketConnection connection) {
+        LOG.debugf("Sending initial reservations for event %s", eventId);
 
         try {
             Event event = eventRepository.findById(eventId);
@@ -237,10 +232,10 @@ public class LiveViewService {
                     .indefinitely();
 
             LOG.debugf(
-                    "Sent %d initial reservations to connection for event %d",
+                    "Sent %d initial reservations to connection for event %s",
                     dtos.size(), eventId);
         } catch (IOException e) {
-            LOG.errorf(e, "Error sending initial reservations for event %d to connection", eventId);
+            LOG.errorf(e, "Error sending initial reservations for event %s to connection", eventId);
         }
     }
 
@@ -250,13 +245,13 @@ public class LiveViewService {
      * @param eventId the event ID
      * @param reservation the reservation that was checked in
      */
-    public void broadcastUpdate(Long eventId, Reservation reservation) {
+    public void broadcastUpdate(UUID eventId, Reservation reservation) {
         LOG.debugf(
-                "Broadcasting check-in update for event %d, reservation: %s", eventId, reservation);
+                "Broadcasting check-in update for event %s, reservation: %s", eventId, reservation);
 
         List<WebSocketConnection> connections = eventSubscriptions.get(eventId);
         if (connections == null || connections.isEmpty()) {
-            LOG.debugf("No active connections for event %d", eventId);
+            LOG.debugf("No active connections for event %s", eventId);
             return;
         }
 
@@ -272,7 +267,7 @@ public class LiveViewService {
      * @param eventId the event ID (for logging)
      */
     private void broadcastToConnections(
-            List<WebSocketConnection> connections, Object message, Long eventId) {
+            List<WebSocketConnection> connections, Object message, UUID eventId) {
         List<WebSocketConnection> failedConnections = new ArrayList<>();
 
         for (WebSocketConnection connection : connections) {
@@ -281,7 +276,7 @@ public class LiveViewService {
                         .sendText(objectMapper.writeValueAsString(message))
                         .await()
                         .indefinitely();
-                LOG.debugf("Message sent to connection for event %d", eventId);
+                LOG.debugf("Message sent to connection for event %s", eventId);
             } catch (IOException e) {
                 LOG.error("Error sending message to connection for event " + eventId, e);
                 failedConnections.add(connection);
@@ -291,7 +286,7 @@ public class LiveViewService {
         // Remove failed connections
         if (!failedConnections.isEmpty()) {
             LOG.debugf(
-                    "Removing %d failed connections for event %d",
+                    "Removing %d failed connections for event %s",
                     failedConnections.size(), eventId);
             connections.removeAll(failedConnections);
         }
@@ -303,7 +298,7 @@ public class LiveViewService {
      * @param eventId the event ID
      * @return the number of active connections
      */
-    public int getActiveConnectionCount(Long eventId) {
+    public int getActiveConnectionCount(UUID eventId) {
         List<WebSocketConnection> connections = eventSubscriptions.get(eventId);
         return connections == null ? 0 : connections.size();
     }

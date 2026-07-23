@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.management.dto;
 
 import java.time.Instant;
 import java.util.Set;
+import java.util.UUID;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
@@ -49,9 +50,9 @@ public class EventRequestDTO {
     @Nullable private Instant reminderSendDate;
 
     @NotNull(message = "EventLocation ID must not be null")
-    private Long eventLocationId;
+    private UUID eventLocationId;
 
-    @Nullable private Set<Long> supervisorIds;
+    @Nullable private Set<UUID> supervisorIds;
 
     public String getName() {
         return name;
@@ -77,7 +78,7 @@ public class EventRequestDTO {
         return bookingStartTime;
     }
 
-    public Long getEventLocationId() {
+    public UUID getEventLocationId() {
         return eventLocationId;
     }
 
@@ -113,15 +114,15 @@ public class EventRequestDTO {
         this.reminderSendDate = reminderSendDate;
     }
 
-    public void setEventLocationId(Long eventLocationId) {
+    public void setEventLocationId(UUID eventLocationId) {
         this.eventLocationId = eventLocationId;
     }
 
-    public Set<Long> getSupervisorIds() {
+    public Set<UUID> getSupervisorIds() {
         return supervisorIds;
     }
 
-    public void setSupervisorIds(Set<Long> supervisorIds) {
+    public void setSupervisorIds(Set<UUID> supervisorIds) {
         this.supervisorIds = supervisorIds;
     }
 }

@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -151,7 +152,7 @@ public class EmailService {
             return;
         }
 
-        LOG.debugf("User ID: %d, Username: %s", user.id, user.getUsername());
+        LOG.debugf("User ID: %s, Username: %s", user.id, user.getUsername());
 
         String htmlContent =
                 emailConfirmationTemplate
@@ -178,14 +179,14 @@ public class EmailService {
      * @return The newly created EmailVerification object.
      */
     public EmailVerification createEmailVerification(User user) {
-        LOG.debugf("Creating new email verification for user ID: %d", user.id);
+        LOG.debugf("Creating new email verification for user ID: %s", user.id);
         String verificationCode = VerificationCodeGenerator.generate();
         Instant expirationTime = Instant.now().plusSeconds(expirationMinutes * 60);
         EmailVerification emailVerification =
                 new EmailVerification(user, verificationCode, expirationTime);
         emailVerificationRepository.persist(emailVerification);
         LOG.debugf(
-                "Email verification entry persisted for user ID %d with verification code",
+                "Email verification entry persisted for user ID %s with verification code",
                 user.id);
         return emailVerification;
     }
@@ -201,7 +202,7 @@ public class EmailService {
         emailVerification.setExpirationTime(Instant.now().plusSeconds(expirationMinutes * 60));
         emailVerificationRepository.persist(emailVerification);
         LOG.debugf(
-                "Email verification entry ID %d expiration time updated to: %s",
+                "Email verification entry ID %s expiration time updated to: %s",
                 emailVerification.id, emailVerification.getExpirationTime());
         return emailVerification;
     }
@@ -265,7 +266,7 @@ public class EmailService {
      * @param eventId The ID of the event.
      * @return The complete event reservation link.
      */
-    private String generateEventLink(Long eventId) {
+    private String generateEventLink(UUID eventId) {
         return frontendBaseUrl.trim() + "/reservations?id=" + eventId;
     }
 
@@ -317,7 +318,7 @@ public class EmailService {
 
         LOG.debug(
                 String.format(
-                        "User ID: %d, Number of reservations: %d",
+                        "User ID: %s, Number of reservations: %d",
                         user.id, reservations != null ? reservations.size() : 0));
 
         if (reservations == null || reservations.isEmpty()) {
@@ -328,7 +329,7 @@ public class EmailService {
 
         Event event = reservations.getFirst().getEvent();
         String eventName = event.getName();
-        LOG.debugf("Event for reservation confirmation: %s (ID: %d)", eventName, event.id);
+        LOG.debugf("Event for reservation confirmation: %s (ID: %s)", eventName, event.id);
 
         // Create email seatmap token
         String seatmapToken =
@@ -447,11 +448,11 @@ public class EmailService {
 
         LOG.debug(
                 String.format(
-                        "User ID: %d, Number of reservations: %d",
+                        "User ID: %s, Number of reservations: %d",
                         user.id, activeReservations != null ? activeReservations.size() : 0));
         Log.debug(
                 String.format(
-                        "User ID: %d, Number of deleted reservations: %d",
+                        "User ID: %s, Number of deleted reservations: %d",
                         user.id, deletedReservations != null ? deletedReservations.size() : 0));
 
         if (deletedReservations == null || deletedReservations.isEmpty()) {
@@ -461,7 +462,7 @@ public class EmailService {
 
         Event event = deletedReservations.getFirst().getEvent();
         String eventName = event.getName();
-        LOG.debugf("Event for reservation confirmation: %s (ID: %d)", eventName, event.id);
+        LOG.debugf("Event for reservation confirmation: %s (ID: %s)", eventName, event.id);
 
         // Create email seatmap token with active reservations
         String seatmapToken =
@@ -547,7 +548,7 @@ public class EmailService {
             return;
         }
 
-        LOG.debugf("User ID: %d, Username: %s", user.id, user.getUsername());
+        LOG.debugf("User ID: %s, Username: %s", user.id, user.getUsername());
 
         String htmlContent =
                 passwordChangedTemplate
@@ -583,7 +584,7 @@ public class EmailService {
 
         LOG.debugf(
                 String.format(
-                        "User ID: %d, Event ID: %d, Number of reservations: %d",
+                        "User ID: %s, Event ID: %s, Number of reservations: %d",
                         user.id, event.id, reservations.size()));
 
         // Create email seatmap token
@@ -658,12 +659,12 @@ public class EmailService {
             LOG.warn("No valid email addresses provided to send CSV export.");
             return;
         }
-        LOG.debugf("Manager ID: %d, Event ID: %d", manager.id, event.id);
+        LOG.debugf("Manager ID: %s, Event ID: %s", manager.id, event.id);
 
         // Generate CSV data
         byte[] csvData = reservationService.exportReservationsToCsv(event.id, manager);
         LOG.debugf(
-                "Generated CSV data of size %d bytes for event ID: %d", csvData.length, event.id);
+                "Generated CSV data of size %d bytes for event ID: %s", csvData.length, event.id);
 
         String htmlContent =
                 managerExportTemplate

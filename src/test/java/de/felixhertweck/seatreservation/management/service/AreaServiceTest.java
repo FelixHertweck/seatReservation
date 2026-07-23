@@ -19,16 +19,18 @@
  */
 package de.felixhertweck.seatreservation.management.service;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import jakarta.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -90,7 +92,7 @@ public class AreaServiceTest {
                         "User",
                         Set.of(Roles.ADMIN),
                         Set.of());
-        adminUser.id = 1L;
+        adminUser.id = id(1);
         managerUser =
                 new User(
                         "manager",
@@ -103,7 +105,7 @@ public class AreaServiceTest {
                         "Manager",
                         Set.of(Roles.MANAGER),
                         Set.of());
-        managerUser.id = 3L;
+        managerUser.id = id(3);
         regularUser =
                 new User(
                         "user",
@@ -116,22 +118,22 @@ public class AreaServiceTest {
                         "User",
                         Set.of(Roles.USER),
                         Set.of());
-        regularUser.id = 2L;
+        regularUser.id = id(2);
 
         adminAuth = new AuthenticatedUser(adminUser.id, adminUser.getRoles());
         managerAuth = new AuthenticatedUser(managerUser.id, managerUser.getRoles());
         regularAuth = new AuthenticatedUser(regularUser.id, regularUser.getRoles());
 
         eventLocation = new EventLocation("Stadthalle", "Hauptstraße 1", managerUser, 100);
-        eventLocation.id = 1L;
+        eventLocation.id = id(1);
         otherLocation = new EventLocation("Other Hall", "Other Address", regularUser, 50);
-        otherLocation.id = 2L;
+        otherLocation.id = id(2);
 
         secondOwnedLocation = new EventLocation("Zweite Halle", "Nebenstraße 2", managerUser, 80);
-        secondOwnedLocation.id = 3L;
+        secondOwnedLocation.id = id(3);
 
         existingArea = new EventLocationArea("Parkett");
-        existingArea.id = 10L;
+        existingArea.id = id(10);
         existingArea.setEventLocation(eventLocation);
 
         when(eventLocationRepository.findByIdOptional(eventLocation.id))
@@ -184,8 +186,8 @@ public class AreaServiceTest {
 
     @Test
     void createArea_EventLocationNotFound() {
-        when(eventLocationRepository.findByIdOptional(999L)).thenReturn(Optional.empty());
-        AreaRequestDTO dto = new AreaRequestDTO(999L, "Balkon", List.of());
+        when(eventLocationRepository.findByIdOptional(id(999))).thenReturn(Optional.empty());
+        AreaRequestDTO dto = new AreaRequestDTO(id(999), "Balkon", List.of());
 
         assertThrows(
                 EventLocationNotFoundException.class,
@@ -221,11 +223,12 @@ public class AreaServiceTest {
 
     @Test
     void findAreasByLocation_NotFound() {
-        when(eventLocationRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
+        when(eventLocationRepository.findByIdOptional(any(UUID.class)))
+                .thenReturn(Optional.empty());
 
         assertThrows(
                 EventLocationNotFoundException.class,
-                () -> areaService.findAreasByLocation(999L, managerAuth));
+                () -> areaService.findAreasByLocation(id(999), managerAuth));
     }
 
     @Test
@@ -240,17 +243,18 @@ public class AreaServiceTest {
 
     @Test
     void findAreaByIdForManager_NotFound() {
-        when(areaRepository.findByIdWithEventLocation(anyLong())).thenReturn(Optional.empty());
+        when(areaRepository.findByIdWithEventLocation(any(UUID.class)))
+                .thenReturn(Optional.empty());
 
         assertThrows(
                 AreaNotFoundException.class,
-                () -> areaService.findAreaByIdForManager(999L, managerAuth));
+                () -> areaService.findAreaByIdForManager(id(999), managerAuth));
     }
 
     @Test
     void findAreaByIdForManager_Forbidden() {
         EventLocationArea areaInOtherLocation = new EventLocationArea("X");
-        areaInOtherLocation.id = 20L;
+        areaInOtherLocation.id = id(20);
         areaInOtherLocation.setEventLocation(otherLocation);
         when(areaRepository.findByIdWithEventLocation(areaInOtherLocation.id))
                 .thenReturn(Optional.of(areaInOtherLocation));
@@ -275,11 +279,13 @@ public class AreaServiceTest {
 
     @Test
     void updateArea_NotFound() {
-        when(areaRepository.findByIdWithEventLocation(anyLong())).thenReturn(Optional.empty());
+        when(areaRepository.findByIdWithEventLocation(any(UUID.class)))
+                .thenReturn(Optional.empty());
         AreaRequestDTO dto = new AreaRequestDTO(eventLocation.id, "Loge", List.of());
 
         assertThrows(
-                AreaNotFoundException.class, () -> areaService.updateArea(999L, dto, managerAuth));
+                AreaNotFoundException.class,
+                () -> areaService.updateArea(id(999), dto, managerAuth));
     }
 
     @Test
@@ -378,17 +384,18 @@ public class AreaServiceTest {
 
     @Test
     void deleteAreas_NotFound() {
-        when(areaRepository.findByIdWithEventLocation(anyLong())).thenReturn(Optional.empty());
+        when(areaRepository.findByIdWithEventLocation(any(UUID.class)))
+                .thenReturn(Optional.empty());
 
         assertThrows(
                 AreaNotFoundException.class,
-                () -> areaService.deleteAreas(List.of(999L), managerAuth));
+                () -> areaService.deleteAreas(List.of(id(999)), managerAuth));
     }
 
     @Test
     void deleteAreas_Forbidden() {
         EventLocationArea areaInOtherLocation = new EventLocationArea("X");
-        areaInOtherLocation.id = 20L;
+        areaInOtherLocation.id = id(20);
         areaInOtherLocation.setEventLocation(otherLocation);
         when(areaRepository.findByIdWithEventLocation(areaInOtherLocation.id))
                 .thenReturn(Optional.of(areaInOtherLocation));

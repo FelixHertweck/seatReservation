@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -189,7 +190,7 @@ public class UserService {
                 user.getTags());
 
         userRepository.persist(user);
-        LOG.debugf("User %s persisted successfully with ID: %d", user.getUsername(), user.id);
+        LOG.debugf("User %s persisted successfully with ID: %s", user.getUsername(), user.id);
 
         if (sendEmailVerification) {
             if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
@@ -210,7 +211,7 @@ public class UserService {
             } catch (IOException e) {
                 LOG.errorf(
                         e,
-                        "Failed to send email confirmation to %s for user ID %d: %s",
+                        "Failed to send email confirmation to %s for user ID %s: %s",
                         user.getEmail(),
                         user.id,
                         e.getMessage());
@@ -235,11 +236,11 @@ public class UserService {
             Set<String> tags,
             boolean sendEmailVerification,
             boolean markEmailAsVerified) {
-        LOG.debugf("Entering updateUserCore for user ID: %d", existingUser.id);
+        LOG.debugf("Entering updateUserCore for user ID: %s", existingUser.id);
 
         if (markEmailAsVerified != existingUser.isEmailVerified()) {
             LOG.debugf(
-                    "Updating emailVerified for user ID %d from %s to %s",
+                    "Updating emailVerified for user ID %s from %s to %s",
                     existingUser.id,
                     existingUser.isEmailVerified().toString(),
                     Boolean.toString(markEmailAsVerified));
@@ -248,7 +249,7 @@ public class UserService {
 
         if (!Objects.equals(email, existingUser.getEmail())) {
             LOG.debugf(
-                    "Updating email for user ID %d from %s to %s",
+                    "Updating email for user ID %s from %s to %s",
                     existingUser.id, existingUser.getEmail(), email);
             existingUser.setEmail(email);
             existingUser.setEmailVerificationSent(false);
@@ -260,19 +261,19 @@ public class UserService {
                     && sendEmailVerification) {
                 try {
                     LOG.debugf(
-                            "Sending email confirmation to %s for user ID %d due to email change.",
+                            "Sending email confirmation to %s for user ID %s due to email change.",
                             existingUser.getEmail(), existingUser.id);
                     EmailVerification emailVerification =
                             emailService.createEmailVerification(existingUser);
                     emailService.sendEmailConfirmation(existingUser, emailVerification);
                     existingUser.setEmailVerificationSent(true);
                     LOG.debugf(
-                            "Email confirmation sent to %s for user ID: %d",
+                            "Email confirmation sent to %s for user ID: %s",
                             existingUser.getEmail(), existingUser.id);
                 } catch (IOException e) {
                     LOG.errorf(
                             e,
-                            "Failed to send email confirmation to %s for user ID %d: %s",
+                            "Failed to send email confirmation to %s for user ID %s: %s",
                             existingUser.getEmail(),
                             existingUser.id,
                             e.getMessage());
@@ -286,17 +287,17 @@ public class UserService {
                 && sendEmailVerification) {
             try {
                 LOG.debugf(
-                        "Resending email confirmation to %s for user ID %d.",
+                        "Resending email confirmation to %s for user ID %s.",
                         existingUser.getEmail(), existingUser.id);
                 resendEmailConfirmation(existingUser.getUsername());
                 existingUser.setEmailVerificationSent(true);
                 LOG.debugf(
-                        "Email confirmation resent to %s for user ID: %d",
+                        "Email confirmation resent to %s for user ID: %s",
                         existingUser.getEmail(), existingUser.id);
             } catch (IOException e) {
                 LOG.errorf(
                         e,
-                        "Failed to resend email confirmation to %s for user ID %d: %s",
+                        "Failed to resend email confirmation to %s for user ID %s: %s",
                         existingUser.getEmail(),
                         existingUser.id,
                         e.getMessage());
@@ -308,7 +309,7 @@ public class UserService {
         // Update firstname
         if (!Objects.equals(firstname, existingUser.getFirstname())) {
             LOG.debugf(
-                    "Updating firstname for user ID %d from %s to %s",
+                    "Updating firstname for user ID %s from %s to %s",
                     existingUser.id, existingUser.getFirstname(), firstname);
             existingUser.setFirstname(firstname);
         }
@@ -316,14 +317,14 @@ public class UserService {
         // Update lastname
         if (!Objects.equals(lastname, existingUser.getLastname())) {
             LOG.debugf(
-                    "Updating lastname for user ID %d from %s to %s",
+                    "Updating lastname for user ID %s from %s to %s",
                     existingUser.id, existingUser.getLastname(), lastname);
             existingUser.setLastname(lastname);
         }
 
         // Update password if provided
         if (password != null && !password.trim().isEmpty()) {
-            LOG.debugf("Updating password for user ID %d.", existingUser.id);
+            LOG.debugf("Updating password for user ID %s.", existingUser.id);
             String newSalt = generateSalt();
             existingUser.setPasswordSalt(newSalt);
             existingUser.setPasswordHash(
@@ -332,16 +333,16 @@ public class UserService {
             // Send password changed notification email
             try {
                 LOG.debugf(
-                        "Sending password changed notification to %s for user ID %d.",
+                        "Sending password changed notification to %s for user ID %s.",
                         existingUser.getEmail(), existingUser.id);
                 emailService.sendPasswordChangedNotification(existingUser);
                 LOG.debugf(
-                        "Password changed notification sent to %s for user ID: %d",
+                        "Password changed notification sent to %s for user ID: %s",
                         existingUser.getEmail(), existingUser.id);
             } catch (IOException e) {
                 LOG.errorf(
                         e,
-                        "Failed to send password changed notification email to %s for user ID %d:"
+                        "Failed to send password changed notification email to %s for user ID %s:"
                                 + " %s",
                         existingUser.getEmail(),
                         existingUser.id,
@@ -354,11 +355,11 @@ public class UserService {
         // Update tags if changed
         if (!Objects.equals(tags, existingUser.getTags())) {
             LOG.debugf(
-                    "Updating tags for user ID %d from %s to %s",
+                    "Updating tags for user ID %s from %s to %s",
                     existingUser.id, existingUser.getTags(), tags);
             existingUser.setTags(tags);
         }
-        LOG.debugf("Exiting updateUserCore for user ID: %d", existingUser.id);
+        LOG.debugf("Exiting updateUserCore for user ID: %s", existingUser.id);
     }
 
     /**
@@ -373,20 +374,20 @@ public class UserService {
      * @throws SendEmailException If an error occurs while sending email confirmation.
      */
     @Transactional
-    public UserDTO updateUser(Long id, AdminUserUpdateDTO user) throws UserNotFoundException {
+    public UserDTO updateUser(UUID id, AdminUserUpdateDTO user) throws UserNotFoundException {
         if (user == null) {
-            LOG.warnf("AdminUserUpdateDTO is null for user ID: %d.", id);
+            LOG.warnf("AdminUserUpdateDTO is null for user ID: %s.", id);
             throw new InvalidUserException("User update data cannot be null.");
         }
 
-        LOG.debugf("AdminUserUpdateDTO for ID %d: %s", id, user.toString());
+        LOG.debugf("AdminUserUpdateDTO for ID %s: %s", id, user.toString());
 
         User existingUser =
                 userRepository
                         .findByIdOptional(id)
                         .orElseThrow(
                                 () -> {
-                                    LOG.warnf("User with ID %d not found for update.", id);
+                                    LOG.warnf("User with ID %s not found for update.", id);
                                     return new UserNotFoundException(
                                             "User with id " + id + " not found.");
                                 });
@@ -403,12 +404,12 @@ public class UserService {
 
         if (user.getRoles() != null) {
             LOG.debugf(
-                    "Updating roles for user ID %d from %s to %s",
+                    "Updating roles for user ID %s from %s to %s",
                     existingUser.id, existingUser.getRoles(), user.getRoles());
             existingUser.setRoles(user.getRoles());
         }
         userRepository.persist(existingUser);
-        LOG.infof("User with ID %d updated successfully by admin.", existingUser.id);
+        LOG.infof("User with ID %s updated successfully by admin.", existingUser.id);
         return new UserDTO(existingUser);
     }
 
@@ -419,7 +420,7 @@ public class UserService {
      * @throws UserNotFoundException If the user with the given ID does not exist.
      */
     @Transactional
-    public void deleteUser(List<Long> ids) throws UserNotFoundException {
+    public void deleteUser(List<UUID> ids) throws UserNotFoundException {
         if (ids == null || ids.isEmpty()) {
             return;
         }
@@ -430,12 +431,12 @@ public class UserService {
         List<User> users = userRepository.find("id in ?1", ids).list();
 
         // Map users by ID for quick lookup and to preserve iterative validation behavior
-        Map<Long, User> userMap = users.stream().collect(Collectors.toMap(u -> u.id, u -> u));
+        Map<UUID, User> userMap = users.stream().collect(Collectors.toMap(u -> u.id, u -> u));
 
-        for (Long id : ids) {
+        for (UUID id : ids) {
             User user = userMap.remove(id);
             if (user == null) {
-                LOG.warnf("User with ID %d not found for deletion.", id);
+                LOG.warnf("User with ID %s not found for deletion.", id);
                 throw new UserNotFoundException("User with id " + id + " not found.");
             }
         }
@@ -445,18 +446,18 @@ public class UserService {
         LOG.infof("Users with IDs %s deleted successfully.", ids);
     }
 
-    public UserDTO getUserById(Long id) {
-        LOG.debugf("Attempting to retrieve user with ID: %d.", id);
+    public UserDTO getUserById(UUID id) {
+        LOG.debugf("Attempting to retrieve user with ID: %s.", id);
         User user =
                 userRepository
                         .findByIdOptional(id)
                         .orElseThrow(
                                 () -> {
-                                    LOG.warnf("User with ID %d not found.", id);
+                                    LOG.warnf("User with ID %s not found.", id);
                                     return new UserNotFoundException(
                                             "User with id " + id + " not found.");
                                 });
-        LOG.infof("User with ID %d retrieved successfully.", id);
+        LOG.infof("User with ID %s retrieved successfully.", id);
         return new UserDTO(user);
     }
 
@@ -572,7 +573,7 @@ public class UserService {
         User user = emailVerification.getUser();
         user.setEmailVerified(true);
         userRepository.persist(user);
-        LOG.infof("Email for user ID %d (%s) marked as verified.", user.id, user.getEmail());
+        LOG.infof("Email for user ID %s (%s) marked as verified.", user.id, user.getEmail());
 
         return user.getEmail();
     }
@@ -614,17 +615,17 @@ public class UserService {
         if (emailVerification != null) {
             // Update existing token's expiration time
             emailService.updateEmailVerificationExpiration(emailVerification);
-            LOG.debugf("Existing email verification token for user ID %d updated.", user.id);
+            LOG.debugf("Existing email verification token for user ID %s updated.", user.id);
         } else {
             // Create a new email verification if none exists
             emailVerification = emailService.createEmailVerification(user);
-            LOG.debugf("New email verification token created for user ID %d.", user.id);
+            LOG.debugf("New email verification token created for user ID %s.", user.id);
         }
 
         // Send email confirmation with the (updated or new) email verification
         emailService.sendEmailConfirmation(user, emailVerification);
         user.setEmailVerificationSent(true);
-        LOG.infof("Email confirmation resent to %s for user ID: %d", user.getEmail(), user.id);
+        LOG.infof("Email confirmation resent to %s for user ID: %s", user.getEmail(), user.id);
     }
 
     private String generateSalt() {

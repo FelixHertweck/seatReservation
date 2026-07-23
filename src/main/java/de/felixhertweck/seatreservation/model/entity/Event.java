@@ -35,11 +35,9 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
-
 @Entity
 @Table(name = "events")
-public class Event extends PanacheEntity {
+public class Event extends AbstractEntity {
 
     private String name;
     private String description;
@@ -73,10 +71,6 @@ public class Event extends PanacheEntity {
     private Set<User> supervisors = new HashSet<>();
 
     public Event() {}
-
-    public Long getId() {
-        return id;
-    }
 
     public Event(
             String name,

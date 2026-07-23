@@ -22,6 +22,7 @@ package de.felixhertweck.seatreservation.management.resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -90,7 +91,7 @@ public class EventReservationAllowanceResource {
                 eventReservationAllowanceService.setReservationsAllowedForUser(
                         userReservationAllowanceDTO, currentUser);
         LOG.debugf(
-                "Reservation allowance set successfully for user IDs %s and event ID %d.",
+                "Reservation allowance set successfully for user IDs %s and event ID %s.",
                 userReservationAllowanceDTO.getUserIds(), userReservationAllowanceDTO.getEventId());
         return result;
     }
@@ -114,14 +115,14 @@ public class EventReservationAllowanceResource {
             @Valid EventUserAllowanceUpdateDto eventUserAllowanceUpdateDto) {
         LOG.debugf(
                 "Received PUT request to /api/manager/reservationAllowance to update reservation"
-                        + " allowance with ID %d.",
+                        + " allowance with ID %s.",
                 eventUserAllowanceUpdateDto.id());
         User currentUser = userSecurityContext.getCurrentUser();
         EventUserAllowancesDto result =
                 eventReservationAllowanceService.updateReservationAllowance(
                         eventUserAllowanceUpdateDto, currentUser);
         LOG.debugf(
-                "Reservation allowance with ID %d updated successfully.",
+                "Reservation allowance with ID %s updated successfully.",
                 eventUserAllowanceUpdateDto.id());
         return result;
     }
@@ -136,15 +137,15 @@ public class EventReservationAllowanceResource {
     @APIResponse(
             responseCode = "404",
             description = "Not Found: Allowance with specified ID not found")
-    public EventUserAllowancesDto getReservationAllowanceById(@PathParam("id") Long id) {
-        LOG.debugf("Received GET request to /api/manager/reservationAllowance/%d.", id);
+    public EventUserAllowancesDto getReservationAllowanceById(@PathParam("id") UUID id) {
+        LOG.debugf("Received GET request to /api/manager/reservationAllowance/%s.", id);
         User currentUser = userSecurityContext.getCurrentUser();
         EventUserAllowancesDto result =
                 eventReservationAllowanceService.getReservationAllowanceById(id, currentUser);
         if (result != null) {
-            LOG.debugf("Successfully retrieved reservation allowance with ID %d.", id);
+            LOG.debugf("Successfully retrieved reservation allowance with ID %s.", id);
         } else {
-            LOG.warnf("Reservation allowance with ID %d not found.", id);
+            LOG.warnf("Reservation allowance with ID %s not found.", id);
         }
         return result;
     }
@@ -179,14 +180,14 @@ public class EventReservationAllowanceResource {
             description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
     @APIResponse(responseCode = "404", description = "Not Found: Event with specified ID not found")
     public List<EventUserAllowancesDto> getReservationAllowancesByEventId(
-            @PathParam("eventId") Long eventId) {
-        LOG.debugf("Received GET request to /api/manager/reservationAllowance/event/%d.", eventId);
+            @PathParam("eventId") UUID eventId) {
+        LOG.debugf("Received GET request to /api/manager/reservationAllowance/event/%s.", eventId);
         User currentUser = userSecurityContext.getCurrentUser();
         List<EventUserAllowancesDto> result =
                 eventReservationAllowanceService.getReservationAllowancesByEventId(
                         eventId, currentUser);
         LOG.debugf(
-                "Successfully retrieved %d reservation allowances for event ID %d.",
+                "Successfully retrieved %d reservation allowances for event ID %s.",
                 result.size(), eventId);
         return result;
     }
@@ -201,7 +202,7 @@ public class EventReservationAllowanceResource {
     @APIResponse(
             responseCode = "404",
             description = "Not Found: Allowance with specified ID not found")
-    public void deleteReservationAllowance(@QueryParam("ids") List<Long> ids) {
+    public void deleteReservationAllowance(@QueryParam("ids") List<UUID> ids) {
         LOG.debugf(
                 "Received DELETE request to /api/manager/reservationAllowance with IDs: %s",
                 ids != null ? ids : Collections.emptyList());

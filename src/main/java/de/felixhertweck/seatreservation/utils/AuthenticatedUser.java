@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.utils;
 
 import java.util.Set;
+import java.util.UUID;
 
 import de.felixhertweck.seatreservation.model.entity.Roles;
 
@@ -29,7 +30,7 @@ import de.felixhertweck.seatreservation.model.entity.Roles;
  * logic only needs the user's ID and/or roles; fetch the full {@code User} entity (e.g. via {@code
  * UserSecurityContext#getCurrentUser()}) when other fields are required.
  */
-public record AuthenticatedUser(Long id, Set<String> roles) {
+public record AuthenticatedUser(UUID id, Set<String> roles) {
 
     public boolean isAdmin() {
         return roles != null && roles.contains(Roles.ADMIN);

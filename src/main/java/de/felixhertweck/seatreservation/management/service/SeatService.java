@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.management.service;
 
 import java.util.List;
+import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -63,8 +64,8 @@ public class SeatService {
     public SeatDTO createSeatManager(SeatRequestDTO dto, AuthenticatedUser manager)
             throws IllegalArgumentException, SecurityException {
         LOG.debugf(
-                "Attempting to create seat with number: %s for event location ID: %d by manager"
-                        + " ID: %d",
+                "Attempting to create seat with number: %s for event location ID: %s by manager"
+                        + " ID: %s",
                 dto.getSeatNumber(), dto.getEventLocationId(), manager.id());
         EventLocation eventLocation =
                 eventLocationAccessService.findOwnedEventLocation(
@@ -72,13 +73,13 @@ public class SeatService {
 
         if (dto.getSeatNumber() == null || dto.getSeatNumber().trim().isEmpty()) {
             LOG.warnf(
-                    "Invalid seat data: seat number is empty for event location ID %d.",
+                    "Invalid seat data: seat number is empty for event location ID %s.",
                     eventLocation.getId());
             throw new IllegalArgumentException("Seat number cannot be empty");
         }
         if (dto.getSeatRow() == null || dto.getSeatRow().trim().isEmpty()) {
             LOG.warnf(
-                    "Invalid seat data: seat row is empty for event location ID %d.",
+                    "Invalid seat data: seat row is empty for event location ID %s.",
                     eventLocation.getId());
             throw new IllegalArgumentException("Seat row cannot be empty");
         }
@@ -94,10 +95,10 @@ public class SeatService {
                         resolveArea(dto.getAreaId(), eventLocation));
         seatRepository.persist(seat);
         LOG.infof(
-                "Seat ID: %d created successfully for event location ID %d",
+                "Seat ID: %s created successfully for event location ID %s",
                 seat.id, eventLocation.getId());
         LOG.debugf(
-                "Seat with ID %d created successfully for event location ID %d by manager ID: %d",
+                "Seat with ID %s created successfully for event location ID %s by manager ID: %s",
                 seat.id, eventLocation.getId(), manager.id());
         return new SeatDTO(seat);
     }
@@ -111,9 +112,9 @@ public class SeatService {
      * @return a list of seat DTOs
      */
     public List<SeatDTO> findSeatsForManagerByLocation(
-            Long eventLocationId, AuthenticatedUser manager) {
+            UUID eventLocationId, AuthenticatedUser manager) {
         LOG.debugf(
-                "Attempting to retrieve seats for event location ID: %d for manager ID: %d",
+                "Attempting to retrieve seats for event location ID: %s for manager ID: %s",
                 eventLocationId, manager.id());
         EventLocation eventLocation =
                 eventLocationAccessService.findOwnedEventLocation(eventLocationId, manager);
@@ -122,7 +123,7 @@ public class SeatService {
                         .map(SeatDTO::new)
                         .toList();
         LOG.debugf(
-                "Retrieved %d seats for event location ID: %d for manager ID: %d",
+                "Retrieved %d seats for event location ID: %s for manager ID: %s",
                 result.size(), eventLocationId, manager.id());
         return result;
     }
@@ -137,11 +138,11 @@ public class SeatService {
      * @throws SeatNotFoundException if the seat is not found
      * @throws SecurityException if the manager does not have permission to access the seat
      */
-    public SeatDTO findSeatByIdForManager(Long id, AuthenticatedUser manager)
+    public SeatDTO findSeatByIdForManager(UUID id, AuthenticatedUser manager)
             throws SeatNotFoundException, SecurityException {
-        LOG.debugf("Attempting to retrieve seat with ID: %d for manager ID: %d", id, manager.id());
+        LOG.debugf("Attempting to retrieve seat with ID: %s for manager ID: %s", id, manager.id());
         Seat seat = findSeatEntityById(id, manager); // This already checks for ownership
-        LOG.debugf("Successfully retrieved seat with ID %d for manager ID: %d", id, manager.id());
+        LOG.debugf("Successfully retrieved seat with ID %s for manager ID: %s", id, manager.id());
         return new SeatDTO(seat);
     }
 
@@ -157,9 +158,9 @@ public class SeatService {
      * @throws IllegalArgumentException if the event location is not found or seat data is invalid
      */
     @Transactional
-    public SeatDTO updateSeatForManager(Long id, SeatRequestDTO dto, AuthenticatedUser manager)
+    public SeatDTO updateSeatForManager(UUID id, SeatRequestDTO dto, AuthenticatedUser manager)
             throws SeatNotFoundException, SecurityException, IllegalArgumentException {
-        LOG.debugf("Attempting to update seat with ID: %d for manager ID: %d", id, manager.id());
+        LOG.debugf("Attempting to update seat with ID: %s for manager ID: %s", id, manager.id());
         Seat seat = findSeatEntityById(id, manager);
 
         EventLocation newEventLocation =
@@ -167,16 +168,16 @@ public class SeatService {
                         dto.getEventLocationId(), manager);
 
         if (dto.getSeatNumber() == null || dto.getSeatNumber().trim().isEmpty()) {
-            LOG.warnf("Invalid seat data: seat number is empty for seat ID %d.", id);
+            LOG.warnf("Invalid seat data: seat number is empty for seat ID %s.", id);
             throw new IllegalArgumentException("Seat number cannot be empty");
         }
         if (dto.getSeatRow() == null || dto.getSeatRow().trim().isEmpty()) {
-            LOG.warnf("Invalid seat data: seat row is empty for seat ID %d.", id);
+            LOG.warnf("Invalid seat data: seat row is empty for seat ID %s.", id);
             throw new IllegalArgumentException("Seat row cannot be empty");
         }
 
         LOG.debugf(
-                "Updating seat ID %d: seatNumber='%s' -> '%s', location ID='%d' -> '%d',"
+                "Updating seat ID %s: seatNumber='%s' -> '%s', location ID='%s' -> '%s',"
                         + " coordinate='%s' -> '%s',"
                         + " seatRow='%s' -> '%s', entrance='%s' -> '%s', area='%s' -> '%s'",
                 id,
@@ -202,8 +203,8 @@ public class SeatService {
 
         seatRepository.persist(seat);
 
-        LOG.infof("Seat ID: %d updated successfully", seat.id);
-        LOG.debugf("Seat with ID %d updated successfully by manager ID: %d", id, manager.id());
+        LOG.infof("Seat ID: %s updated successfully", seat.id);
+        LOG.debugf("Seat with ID %s updated successfully by manager ID: %s", id, manager.id());
         return new SeatDTO(seat);
     }
 
@@ -217,7 +218,7 @@ public class SeatService {
      * @return The resolved area, or {@code null} if {@code areaId} is {@code null}
      * @throws IllegalArgumentException if the area does not exist or belongs to another location
      */
-    private EventLocationArea resolveArea(Long areaId, EventLocation eventLocation) {
+    private EventLocationArea resolveArea(UUID areaId, EventLocation eventLocation) {
         if (areaId == null) {
             return null;
         }
@@ -246,7 +247,7 @@ public class SeatService {
      * @throws IllegalArgumentException if the entrance does not exist or belongs to another
      *     location
      */
-    private EventLocationEntrance resolveEntrance(Long entranceId, EventLocation eventLocation) {
+    private EventLocationEntrance resolveEntrance(UUID entranceId, EventLocation eventLocation) {
         if (entranceId == null) {
             return null;
         }
@@ -274,20 +275,20 @@ public class SeatService {
      * @throws IllegalArgumentException if the ids list is null or empty
      */
     @Transactional
-    public void deleteSeatForManager(List<Long> ids, AuthenticatedUser manager)
+    public void deleteSeatForManager(List<UUID> ids, AuthenticatedUser manager)
             throws SecurityException, IllegalArgumentException {
         if (ids == null || ids.isEmpty()) {
-            LOG.warnf("No seat IDs provided for deletion by manager ID: %d", manager.id());
+            LOG.warnf("No seat IDs provided for deletion by manager ID: %s", manager.id());
             throw new IllegalArgumentException("No seat IDs provided for deletion");
         }
 
-        LOG.debugf("Attempting to delete seats with IDs: %s for manager ID: %d", ids, manager.id());
-        for (Long id : ids) {
+        LOG.debugf("Attempting to delete seats with IDs: %s for manager ID: %s", ids, manager.id());
+        for (UUID id : ids) {
             Seat seat = findSeatEntityById(id, manager); // This already checks for ownership
             seatRepository.delete(seat);
-            LOG.infof("Seat ID: %d deleted successfully", seat.id);
+            LOG.infof("Seat ID: %s deleted successfully", seat.id);
         }
-        LOG.debugf("Seats with IDs %s deleted successfully by manager ID: %d", ids, manager.id());
+        LOG.debugf("Seats with IDs %s deleted successfully by manager ID: %s", ids, manager.id());
     }
 
     /**
@@ -300,10 +301,10 @@ public class SeatService {
      * @throws SeatNotFoundException if the seat is not found
      * @throws SecurityException if the user does not have permission to access the seat
      */
-    public Seat findSeatEntityById(Long id, AuthenticatedUser currentUser)
+    public Seat findSeatEntityById(UUID id, AuthenticatedUser currentUser)
             throws SeatNotFoundException, SecurityException {
         LOG.debugf(
-                "Attempting to find seat entity by ID: %d for user ID: %d", id, currentUser.id());
+                "Attempting to find seat entity by ID: %s for user ID: %s", id, currentUser.id());
         // Check if user has access to linked location
         Seat seat =
                 seatRepository
@@ -311,24 +312,24 @@ public class SeatService {
                         .orElseThrow(
                                 () -> {
                                     LOG.warnf(
-                                            "Seat with ID %d not found for user ID: %d",
+                                            "Seat with ID %s not found for user ID: %s",
                                             id, currentUser.id());
                                     return new SeatNotFoundException(
                                             "Seat with id " + id + " not found");
                                 });
 
         if (currentUser.isAdmin()) {
-            LOG.debugf("User is ADMIN, allowing access to seat ID %d.", id);
+            LOG.debugf("User is ADMIN, allowing access to seat ID %s.", id);
             return seat; // Admin can access any seat
         }
 
         if (!seat.getLocation().getManager().getId().equals(currentUser.id())) {
             LOG.warnf(
-                    "user ID: %d does not have permission to access seat ID %d.",
+                    "user ID: %s does not have permission to access seat ID %s.",
                     currentUser.id(), id);
             throw new SecurityException("You do not have permission to access this seat");
         }
-        LOG.debugf("user ID: %d has permission to access seat ID %d.", currentUser.id(), id);
+        LOG.debugf("user ID: %s has permission to access seat ID %s.", currentUser.id(), id);
         return seat;
     }
 }

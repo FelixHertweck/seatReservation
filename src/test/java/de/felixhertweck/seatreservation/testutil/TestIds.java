@@ -17,17 +17,20 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.management.dto;
+package de.felixhertweck.seatreservation.testutil;
 
 import java.util.UUID;
-import jakarta.validation.constraints.NotNull;
 
-import io.quarkus.runtime.annotations.RegisterForReflection;
+/**
+ * Deterministically maps small integers to fixed UUIDs, so existing tests can keep using short,
+ * readable fixture ids (1, 2, 3, ...) now that entity primary keys are {@link UUID}s instead of
+ * sequential {@code Long}s. Distinct integers always map to distinct, stable UUIDs.
+ */
+public final class TestIds {
 
-@RegisterForReflection
-public record EventUserAllowanceUpdateDto(
-        @NotNull(message = "Allowance ID must not be null") UUID id,
-        @NotNull(message = "Event ID must not be null") UUID eventId,
-        @NotNull(message = "User ID must not be null") UUID userId,
-        @NotNull(message = "Reservations allowed count must not be null")
-                int reservationsAllowedCount) {}
+    private TestIds() {}
+
+    public static UUID id(long n) {
+        return new UUID(0L, n);
+    }
+}

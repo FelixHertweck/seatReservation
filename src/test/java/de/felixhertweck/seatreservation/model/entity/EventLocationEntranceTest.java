@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.model.entity;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
@@ -108,9 +110,9 @@ class EventLocationEntranceTest {
     @Test
     void testEquals_SameNameInDifferentLocations_NotEqual() {
         EventLocation locationA = new EventLocation();
-        locationA.id = 1L;
+        locationA.id = id(1);
         EventLocation locationB = new EventLocation();
-        locationB.id = 2L;
+        locationB.id = id(2);
 
         EventLocationEntrance entrance1 = new EventLocationEntrance("Entrance A");
         entrance1.setEventLocation(locationA);
@@ -123,10 +125,10 @@ class EventLocationEntranceTest {
     @Test
     void testEquals_PersistedComparesById() {
         EventLocationEntrance entrance1 = new EventLocationEntrance("Entrance A");
-        entrance1.id = 42L;
+        entrance1.id = id(42);
         // Differs in every other field: once persisted, only the id decides.
         EventLocationEntrance entrance2 = new EventLocationEntrance("Entrance B");
-        entrance2.id = 42L;
+        entrance2.id = id(42);
 
         assertEquals(entrance1, entrance2);
         assertEquals(entrance1.hashCode(), entrance2.hashCode());
@@ -135,9 +137,9 @@ class EventLocationEntranceTest {
     @Test
     void testEquals_DifferentIds_NotEqual() {
         EventLocationEntrance entrance1 = new EventLocationEntrance("Entrance A");
-        entrance1.id = 1L;
+        entrance1.id = id(1);
         EventLocationEntrance entrance2 = new EventLocationEntrance("Entrance A");
-        entrance2.id = 2L;
+        entrance2.id = id(2);
 
         assertNotEquals(entrance1, entrance2);
     }

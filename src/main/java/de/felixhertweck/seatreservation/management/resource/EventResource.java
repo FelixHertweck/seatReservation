@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.management.resource;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -77,7 +78,7 @@ public class EventResource {
         LOG.debugf("Received POST request to /api/manager/events to create a new event.");
         User currentUser = userSecurityContext.getCurrentUser();
         EventResponseDTO result = eventService.createEvent(dto, currentUser);
-        LOG.debugf("Event '%s' created successfully with ID %d.", result.name(), result.id());
+        LOG.debugf("Event '%s' created successfully with ID %s.", result.name(), result.id());
         return result;
     }
 
@@ -95,11 +96,11 @@ public class EventResource {
     @APIResponse(
             responseCode = "409",
             description = "Conflict: Event with this name already exists in this event location")
-    public EventResponseDTO updateEvent(@PathParam("id") Long id, @Valid EventRequestDTO dto) {
-        LOG.debugf("Received PUT request to /api/manager/events/%d to update event.", id);
+    public EventResponseDTO updateEvent(@PathParam("id") UUID id, @Valid EventRequestDTO dto) {
+        LOG.debugf("Received PUT request to /api/manager/events/%s to update event.", id);
         User currentUser = userSecurityContext.getCurrentUser();
         EventResponseDTO result = eventService.updateEvent(id, dto, currentUser);
-        LOG.debugf("Event with ID %d updated successfully.", id);
+        LOG.debugf("Event with ID %s updated successfully.", id);
         return result;
     }
 
@@ -139,14 +140,14 @@ public class EventResource {
     @APIResponse(
             responseCode = "404",
             description = "Not Found: Event with specified ID not found for the current manager")
-    public EventResponseDTO getEventById(@PathParam("id") Long id) {
-        LOG.debugf("Received GET request to /api/manager/events/%d.", id);
+    public EventResponseDTO getEventById(@PathParam("id") UUID id) {
+        LOG.debugf("Received GET request to /api/manager/events/%s.", id);
         User currentUser = userSecurityContext.getCurrentUser();
         EventResponseDTO result = eventService.getEventByIdForManager(id, currentUser);
         if (result != null) {
-            LOG.debugf("Successfully retrieved event with ID %d.", id);
+            LOG.debugf("Successfully retrieved event with ID %s.", id);
         } else {
-            LOG.warnf("Event with ID %d not found.", id);
+            LOG.warnf("Event with ID %s not found.", id);
         }
         return result;
     }
@@ -161,7 +162,7 @@ public class EventResource {
     @APIResponse(
             responseCode = "404",
             description = "Not Found: Event with specified ID not found for the current manager")
-    public void deleteEvent(@QueryParam("ids") List<Long> ids) {
+    public void deleteEvent(@QueryParam("ids") List<UUID> ids) {
         LOG.debugf(
                 "Received DELETE request to /api/manager/events with IDs: %s",
                 ids != null ? ids : Collections.emptyList());

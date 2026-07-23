@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.security.service;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -75,8 +76,8 @@ public class TokenService {
      */
     public String generateToken(User user) {
         LOG.debugf(
-                "User ID: %d, Roles: %s, Email: [HIDDEN], Expiration: %d minutes",
-                (Object) user.id, user.getRoles(), (Object) expirationMinutes);
+                "User ID: %s, Roles: %s, Email: [HIDDEN], Expiration: %d minutes",
+                user.id, user.getRoles(), (Object) expirationMinutes);
 
         String token =
                 Jwt.upn(user.getUsername())
@@ -86,7 +87,7 @@ public class TokenService {
                         .issuedAt(Instant.now())
                         .expiresIn(Duration.ofMinutes(expirationMinutes))
                         .sign();
-        LOG.debugf("JWT token generated successfully for user ID: %d", user.id);
+        LOG.debugf("JWT token generated successfully for user ID: %s", user.id);
         return token;
     }
 
@@ -116,7 +117,7 @@ public class TokenService {
      */
     @Transactional
     public String generateRefreshToken(User user) {
-        LOG.debugf("Generating refresh token for user: %d", user.id);
+        LOG.debugf("Generating refresh token for user: %s", user.id);
 
         // Use SecurityUtils.generateRandomBytes and encode to Base64
         String tokenValue =
@@ -160,10 +161,10 @@ public class TokenService {
         }
 
         // Extract token id and value from JWT
-        Long tokenId;
+        UUID tokenId;
         try {
-            tokenId = Long.valueOf(jwt.getClaim("token_id"));
-        } catch (NumberFormatException e) {
+            tokenId = UUID.fromString(jwt.getClaim("token_id"));
+        } catch (IllegalArgumentException e) {
             throw new JwtInvalidException("Invalid token_id in JWT", e);
         }
 
@@ -309,7 +310,7 @@ public class TokenService {
     @Transactional
     public void logoutAllDevices(User user) {
         refreshTokenRepository.deleteAllByUser(user);
-        LOG.debugf("All refresh tokens for user ID: %d have been deleted.", user.id);
+        LOG.debugf("All refresh tokens for user ID: %s have been deleted.", user.id);
     }
 
     /**
@@ -345,17 +346,17 @@ public class TokenService {
                 return;
             }
 
-            Long tokenId = Long.valueOf(tokenIdClaim.toString());
+            UUID tokenId = UUID.fromString(tokenIdClaim.toString());
 
             boolean deleted = refreshTokenRepository.deleteWithIdAndUser(tokenId, user);
             if (deleted) {
-                LOG.debugf("Refresh token with id %d has been deleted.", tokenId);
+                LOG.debugf("Refresh token with id %s has been deleted.", tokenId);
             } else {
-                LOG.debugf("Refresh token with id %d not found in database.", tokenId);
+                LOG.debugf("Refresh token with id %s not found in database.", tokenId);
             }
         } catch (ParseException e) {
             LOG.warnf("Failed to parse refresh token: %s", e.getMessage());
-        } catch (NumberFormatException e) {
+        } catch (IllegalArgumentException e) {
             LOG.warnf("Invalid token_id format: %s", e.getMessage());
         }
     }

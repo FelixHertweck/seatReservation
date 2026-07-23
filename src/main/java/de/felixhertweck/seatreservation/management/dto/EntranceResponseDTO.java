@@ -19,11 +19,13 @@
  */
 package de.felixhertweck.seatreservation.management.dto;
 
+import java.util.UUID;
+
 import de.felixhertweck.seatreservation.model.entity.EventLocationEntrance;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
-public record EntranceResponseDTO(Long id, String name, Long eventLocationId) {
+public record EntranceResponseDTO(UUID id, String name, UUID eventLocationId) {
     public EntranceResponseDTO(EventLocationEntrance entrance) {
         this(entrance.id, entrance.getName(), entrance.getEventLocation().getId());
     }

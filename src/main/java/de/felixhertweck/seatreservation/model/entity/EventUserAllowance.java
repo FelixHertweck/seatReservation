@@ -25,10 +25,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
-
 @Entity
-public class EventUserAllowance extends PanacheEntity {
+public class EventUserAllowance extends AbstractEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;

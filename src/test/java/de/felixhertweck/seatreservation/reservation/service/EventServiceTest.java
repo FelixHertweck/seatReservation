@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.reservation.service;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import java.util.Collections;
 import java.util.List;
 import jakarta.inject.Inject;
@@ -57,19 +59,19 @@ class EventServiceTest {
     @BeforeEach
     void setUp() {
         user = new User();
-        user.id = 1L;
+        user.id = id(1);
         user.setUsername("testuser");
 
         var location = new EventLocation();
-        location.id = 1L;
+        location.id = id(1);
 
         event1 = new Event();
-        event1.id = 1L;
+        event1.id = id(1);
         event1.setEventLocation(location);
         event1.setName("Event 1");
 
         event2 = new Event();
-        event2.id = 2L;
+        event2.id = id(2);
         event2.setEventLocation(location);
         event2.setName("Event 2");
 

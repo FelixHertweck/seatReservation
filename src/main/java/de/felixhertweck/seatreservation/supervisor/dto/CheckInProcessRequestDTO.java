@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.supervisor.dto;
 
 import java.util.List;
+import java.util.UUID;
 import jakarta.validation.constraints.NotNull;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
@@ -27,17 +28,17 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 @RegisterForReflection
 public class CheckInProcessRequestDTO {
     @NotNull(message = "userId must not be null")
-    public Long userId;
+    public UUID userId;
 
     @NotNull(message = "eventId must not be null")
-    public Long eventId;
+    public UUID eventId;
 
-    public List<Long> checkIn;
+    public List<UUID> checkIn;
 
-    public List<Long> cancel;
+    public List<UUID> cancel;
 
     public CheckInProcessRequestDTO(
-            Long eventId, Long userId, List<Long> checkIn, List<Long> cancel) {
+            UUID eventId, UUID userId, List<UUID> checkIn, List<UUID> cancel) {
         this.eventId = eventId;
         this.userId = userId;
         this.checkIn = checkIn;

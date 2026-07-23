@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.email.queue;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -89,14 +90,14 @@ public class EmailDispatcher {
      * @return the number of messages that were sent successfully
      */
     public int drainQueue() {
-        List<Long> claimed = self.claimDueIds(batchSize);
+        List<UUID> claimed = self.claimDueIds(batchSize);
         if (claimed.isEmpty()) {
             return 0;
         }
         LOG.debugf("Dispatching %d queued email(s)", claimed.size());
 
         int sent = 0;
-        for (Long id : claimed) {
+        for (UUID id : claimed) {
             if (dispatchOne(id)) {
                 sent++;
             }
@@ -114,7 +115,7 @@ public class EmailDispatcher {
      * @return the ids of the claimed messages
      */
     @Transactional
-    public List<Long> claimDueIds(int limit) {
+    public List<UUID> claimDueIds(int limit) {
         Instant now = Instant.now();
         // Recover messages left in SENDING by a previous crashed/aborted drain.
         long requeued =
@@ -133,7 +134,7 @@ public class EmailDispatcher {
      * @param id the outbox id
      * @return {@code true} if the message was sent successfully
      */
-    private boolean dispatchOne(Long id) {
+    private boolean dispatchOne(UUID id) {
         Mail mail = self.buildMail(id);
         if (mail == null) {
             // Message vanished between claim and load; nothing to do.
@@ -158,10 +159,10 @@ public class EmailDispatcher {
      * @return the ready-to-send mail, or {@code null} if the message no longer exists
      */
     @Transactional
-    public Mail buildMail(Long id) {
+    public Mail buildMail(UUID id) {
         OutboundEmail email = outboundEmailRepository.findById(id);
         if (email == null) {
-            LOG.warnf("Queued email id=%d disappeared before sending", id);
+            LOG.warnf("Queued email id=%s disappeared before sending", id);
             return null;
         }
 
@@ -195,7 +196,7 @@ public class EmailDispatcher {
      * @param id the outbox id
      */
     @Transactional
-    public void markSent(Long id) {
+    public void markSent(UUID id) {
         OutboundEmail email = outboundEmailRepository.findById(id);
         if (email == null) {
             return;
@@ -207,7 +208,7 @@ public class EmailDispatcher {
         email.setUpdatedAt(now);
         email.setLastError(null);
         LOG.infof(
-                "Email id=%d sent successfully to %s (attempt %d)",
+                "Email id=%s sent successfully to %s (attempt %d)",
                 id, email.getTo(), email.getAttempts());
     }
 
@@ -220,7 +221,7 @@ public class EmailDispatcher {
      * @param error the failure that occurred
      */
     @Transactional
-    public void markFailure(Long id, Exception error) {
+    public void markFailure(UUID id, Exception error) {
         OutboundEmail email = outboundEmailRepository.findById(id);
         if (email == null) {
             return;
@@ -235,7 +236,7 @@ public class EmailDispatcher {
             email.setStatus(EmailStatus.FAILED);
             LOG.errorf(
                     error,
-                    "Email id=%d permanently failed after %d attempt(s); moving to dead letter",
+                    "Email id=%s permanently failed after %d attempt(s); moving to dead letter",
                     id,
                     attempts);
         } else {
@@ -243,7 +244,7 @@ public class EmailDispatcher {
             email.setNextAttemptAt(now.plusSeconds(backoffSeconds(attempts)));
             LOG.warnf(
                     error,
-                    "Email id=%d failed (attempt %d/%d); retrying at %s",
+                    "Email id=%s failed (attempt %d/%d); retrying at %s",
                     id,
                     attempts,
                     email.getMaxAttempts(),

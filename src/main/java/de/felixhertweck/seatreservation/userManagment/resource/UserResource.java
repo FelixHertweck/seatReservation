@@ -22,6 +22,7 @@ package de.felixhertweck.seatreservation.userManagment.resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -147,10 +148,10 @@ public class UserResource {
     @APIResponse(
             responseCode = "500",
             description = "Internal Server Error: Error sending email confirmation")
-    public UserDTO updateUser(@PathParam("id") Long id, @Valid AdminUserUpdateDTO user) {
-        LOG.debugf("Received PUT request to /api/users/admin/%d for user update.", id);
+    public UserDTO updateUser(@PathParam("id") UUID id, @Valid AdminUserUpdateDTO user) {
+        LOG.debugf("Received PUT request to /api/users/admin/%s for user update.", id);
         UserDTO updatedUser = userService.updateUser(id, user);
-        LOG.debugf("User with ID %d updated successfully by admin.", id);
+        LOG.debugf("User with ID %s updated successfully by admin.", id);
         return updatedUser;
     }
 
@@ -168,13 +169,13 @@ public class UserResource {
             responseCode = "403",
             description = "Forbidden: Only ADMIN role can access this resource")
     @APIResponse(responseCode = "404", description = "Not Found: User with specified ID not found")
-    public void deleteUser(@QueryParam("ids") List<Long> ids) {
+    public void deleteUser(@QueryParam("ids") List<UUID> ids) {
         LOG.debugf(
-                "Received DELETE request to /api/users/admin/%d for user deletion.",
+                "Received DELETE request to /api/users/admin/%s for user deletion.",
                 ids != null ? ids : Collections.emptyList());
         userService.deleteUser(ids);
         LOG.debugf(
-                "User with ID %d deleted successfully by admin.",
+                "User with ID %s deleted successfully by admin.",
                 ids != null ? ids : Collections.emptyList());
     }
 

@@ -27,8 +27,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
-
 /**
  * EmailVerification entity with automatic expiration.
  *
@@ -39,7 +37,7 @@ import io.quarkus.hibernate.orm.panache.PanacheEntity;
  */
 @Entity
 @Table(name = "email_verification")
-public class EmailVerification extends PanacheEntity {
+public class EmailVerification extends AbstractEntity {
     @OneToOne(fetch = FetchType.LAZY)
     private User user;
 

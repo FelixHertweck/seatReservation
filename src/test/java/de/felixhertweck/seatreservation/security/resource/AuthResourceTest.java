@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.security.resource;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import java.util.Collections;
 import java.util.Map;
 import jakarta.inject.Inject;
@@ -75,7 +77,7 @@ public class AuthResourceTest {
         refreshTokenRepository.deleteAll();
 
         // Use existing test user from import-test.sql
-        testUser = userRepository.findById(1L); // admin user
+        testUser = userRepository.findById(id(1)); // admin user
         assertNotNull(testUser, "Test user should exist from import-test.sql");
     }
 

@@ -19,15 +19,18 @@
  */
 package de.felixhertweck.seatreservation.supervisor.resource;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -65,61 +68,61 @@ class CheckInResourceTest {
     public void setupUserRepositoryMock() {
         // Supervisor user
         User supervisorUser = new User();
-        supervisorUser.id = 1L;
+        supervisorUser.id = id(1);
         supervisorUser.setUsername("testUser");
         supervisorUser.setRoles(Set.of(Roles.SUPERVISOR));
         when(userRepository.findByUsername("testUser")).thenReturn(supervisorUser);
-        when(userRepository.findById(1L)).thenReturn(supervisorUser);
+        when(userRepository.findById(id(1))).thenReturn(supervisorUser);
 
         // Admin user
         User adminUser = new User();
-        adminUser.id = 2L;
+        adminUser.id = id(2);
         adminUser.setUsername("admin");
         adminUser.setRoles(Set.of(Roles.ADMIN));
         when(userRepository.findByUsername("admin")).thenReturn(adminUser);
-        when(userRepository.findById(2L)).thenReturn(adminUser);
+        when(userRepository.findById(id(2))).thenReturn(adminUser);
 
         // Manager user
         User managerUser = new User();
-        managerUser.id = 3L;
+        managerUser.id = id(3);
         managerUser.setUsername("manager");
         managerUser.setRoles(Set.of(Roles.MANAGER));
         when(userRepository.findByUsername("manager")).thenReturn(managerUser);
-        when(userRepository.findById(3L)).thenReturn(managerUser);
+        when(userRepository.findById(id(3))).thenReturn(managerUser);
 
         // Supervisor without access
         User otherSupervisor = new User();
-        otherSupervisor.id = 4L;
+        otherSupervisor.id = id(4);
         otherSupervisor.setUsername("otherSupervisor");
         otherSupervisor.setRoles(Set.of(Roles.SUPERVISOR));
         when(userRepository.findByUsername("otherSupervisor")).thenReturn(otherSupervisor);
-        when(userRepository.findById(4L)).thenReturn(otherSupervisor);
+        when(userRepository.findById(id(4))).thenReturn(otherSupervisor);
 
         // getReference is used instead of a full fetch for FK/query parameters
-        when(userRepository.getReference(1L)).thenReturn(supervisorUser);
-        when(userRepository.getReference(2L)).thenReturn(adminUser);
-        when(userRepository.getReference(3L)).thenReturn(managerUser);
-        when(userRepository.getReference(4L)).thenReturn(otherSupervisor);
+        when(userRepository.getReference(id(1))).thenReturn(supervisorUser);
+        when(userRepository.getReference(id(2))).thenReturn(adminUser);
+        when(userRepository.getReference(id(3))).thenReturn(managerUser);
+        when(userRepository.getReference(id(4))).thenReturn(otherSupervisor);
 
         // Build events
         Event event10 = new Event();
-        event10.id = 10L;
+        event10.id = id(10);
         event10.setManager(managerUser);
 
         Event event20 = new Event();
-        event20.id = 20L;
+        event20.id = id(20);
         // event20 has no manager and supervisorUser is not supervisor for it
 
         // Set the authorization matrix
-        when(eventRepository.isUserSupervisor(eq(10L), eq(1L))).thenReturn(true);
-        when(eventRepository.isUserSupervisor(eq(20L), eq(1L))).thenReturn(false);
-        when(eventRepository.isUserSupervisor(anyLong(), eq(2L))).thenReturn(false);
-        when(eventRepository.isUserSupervisor(anyLong(), eq(3L))).thenReturn(false);
-        when(eventRepository.isUserSupervisor(anyLong(), eq(4L))).thenReturn(false);
+        when(eventRepository.isUserSupervisor(eq(id(10)), eq(id(1)))).thenReturn(true);
+        when(eventRepository.isUserSupervisor(eq(id(20)), eq(id(1)))).thenReturn(false);
+        when(eventRepository.isUserSupervisor(any(UUID.class), eq(id(2)))).thenReturn(false);
+        when(eventRepository.isUserSupervisor(any(UUID.class), eq(id(3)))).thenReturn(false);
+        when(eventRepository.isUserSupervisor(any(UUID.class), eq(id(4)))).thenReturn(false);
 
         // eventRepository.findById to allow manager checks
-        when(eventRepository.findById(10L)).thenReturn(event10);
-        when(eventRepository.findById(20L)).thenReturn(event20);
+        when(eventRepository.findById(id(10))).thenReturn(event10);
+        when(eventRepository.findById(id(20))).thenReturn(event20);
 
         // Provide a PanacheQuery for findAll containing both events
         PanacheQuery<Event> eventsQuery = (PanacheQuery<Event>) mock(PanacheQuery.class);
@@ -141,12 +144,12 @@ class CheckInResourceTest {
         User r2 = new User();
         r2.setUsername("user2");
         Reservation res1 = new Reservation();
-        res1.id = 1L;
+        res1.id = id(1);
         res1.setUser(r1);
         res1.setEvent(event10);
         res1.setStatus(ReservationStatus.RESERVED);
         Reservation res2 = new Reservation();
-        res2.id = 2L;
+        res2.id = id(2);
         res2.setUser(r2);
         res2.setEvent(event10);
         res2.setStatus(ReservationStatus.RESERVED);
@@ -154,21 +157,26 @@ class CheckInResourceTest {
         PanacheQuery<Reservation> reservedQueryEvent10 =
                 (PanacheQuery<Reservation>) mock(PanacheQuery.class);
         when(reservedQueryEvent10.stream()).thenReturn(Stream.of(res1, res2));
-        when(reservationRepository.find("event.id", 10L)).thenReturn(reservedQueryEvent10);
+        when(reservationRepository.find("event.id", id(10))).thenReturn(reservedQueryEvent10);
 
         PanacheQuery<Reservation> reservedQueryEvent20 =
                 (PanacheQuery<Reservation>) mock(PanacheQuery.class);
         when(reservedQueryEvent20.stream()).thenReturn(Stream.empty());
-        when(reservationRepository.find("event.id", 20L)).thenReturn(reservedQueryEvent20);
+        when(reservationRepository.find("event.id", id(20))).thenReturn(reservedQueryEvent20);
     }
 
     @Test
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
-    @JwtSecurity(claims = @Claim(key = "uid", value = "1", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000001",
+                            type = ClaimType.STRING))
     void testPostCheckInInfoWithEmptyTokens() {
         CheckInInfoRequestDTO requestDTO = new CheckInInfoRequestDTO();
-        requestDTO.userId = 1L;
-        requestDTO.eventId = 10L;
+        requestDTO.userId = id(1);
+        requestDTO.eventId = id(10);
         requestDTO.checkInTokens = Collections.emptyList();
 
         given().contentType(ContentType.JSON)
@@ -182,11 +190,16 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
-    @JwtSecurity(claims = @Claim(key = "uid", value = "1", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000001",
+                            type = ClaimType.STRING))
     void testPostCheckInInfoWithInvalidTokens() {
         CheckInInfoRequestDTO requestDTO = new CheckInInfoRequestDTO();
-        requestDTO.userId = 1L;
-        requestDTO.eventId = 10L;
+        requestDTO.userId = id(1);
+        requestDTO.eventId = id(10);
         requestDTO.checkInTokens = List.of("invalidToken");
 
         given().contentType(ContentType.JSON)
@@ -199,11 +212,16 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
-    @JwtSecurity(claims = @Claim(key = "uid", value = "1", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000001",
+                            type = ClaimType.STRING))
     void testPostCheckInInfoWithMissingUserId() {
         CheckInInfoRequestDTO requestDTO = new CheckInInfoRequestDTO();
         requestDTO.userId = null;
-        requestDTO.eventId = 10L;
+        requestDTO.eventId = id(10);
         requestDTO.checkInTokens = Collections.emptyList();
 
         given().contentType(ContentType.JSON)
@@ -216,10 +234,15 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
-    @JwtSecurity(claims = @Claim(key = "uid", value = "1", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000001",
+                            type = ClaimType.STRING))
     void testPostCheckInInfoWithMissingEventId() {
         CheckInInfoRequestDTO requestDTO = new CheckInInfoRequestDTO();
-        requestDTO.userId = 1L;
+        requestDTO.userId = id(1);
         requestDTO.eventId = null;
         requestDTO.checkInTokens = Collections.emptyList();
 
@@ -233,11 +256,16 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
-    @JwtSecurity(claims = @Claim(key = "uid", value = "1", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000001",
+                            type = ClaimType.STRING))
     void testProcessCheckInWithEmptyLists() {
         CheckInProcessRequestDTO requestDTO =
                 new CheckInProcessRequestDTO(
-                        10L, 1L, Collections.emptyList(), Collections.emptyList());
+                        id(10), id(1), Collections.emptyList(), Collections.emptyList());
 
         given().contentType(ContentType.JSON)
                 .body(requestDTO)
@@ -249,10 +277,16 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
-    @JwtSecurity(claims = @Claim(key = "uid", value = "1", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000001",
+                            type = ClaimType.STRING))
     void testProcessCheckInWithNonExistentCheckInIds() {
         CheckInProcessRequestDTO requestDTO =
-                new CheckInProcessRequestDTO(10L, 1L, List.of(1L, 2L, 3L), Collections.emptyList());
+                new CheckInProcessRequestDTO(
+                        id(10), id(1), List.of(id(1), id(2), id(3)), Collections.emptyList());
 
         given().contentType(ContentType.JSON)
                 .body(requestDTO)
@@ -264,10 +298,16 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
-    @JwtSecurity(claims = @Claim(key = "uid", value = "1", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000001",
+                            type = ClaimType.STRING))
     void testProcessCheckInWithCancelListAndNonExistentCheckInIds() {
         CheckInProcessRequestDTO requestDTO =
-                new CheckInProcessRequestDTO(10L, 1L, Collections.emptyList(), List.of(4L, 5L));
+                new CheckInProcessRequestDTO(
+                        id(10), id(1), Collections.emptyList(), List.of(id(4), id(5)));
 
         given().contentType(ContentType.JSON)
                 .body(requestDTO)
@@ -279,10 +319,16 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
-    @JwtSecurity(claims = @Claim(key = "uid", value = "1", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000001",
+                            type = ClaimType.STRING))
     void testProcessCheckInWithNonExistentCheckInIdsInMixedList() {
         CheckInProcessRequestDTO requestDTO =
-                new CheckInProcessRequestDTO(10L, 1L, List.of(1L, 2L), List.of(3L, 4L));
+                new CheckInProcessRequestDTO(
+                        id(10), id(1), List.of(id(1), id(2)), List.of(id(3), id(4)));
 
         given().contentType(ContentType.JSON)
                 .body(requestDTO)
@@ -296,7 +342,7 @@ class CheckInResourceTest {
     void testProcessCheckInWithoutAuthentication() {
         CheckInProcessRequestDTO requestDTO =
                 new CheckInProcessRequestDTO(
-                        10L, 1L, Collections.emptyList(), Collections.emptyList());
+                        id(10), id(1), Collections.emptyList(), Collections.emptyList());
 
         given().contentType(ContentType.JSON)
                 .body(requestDTO)
@@ -309,8 +355,8 @@ class CheckInResourceTest {
     @Test
     void testPostCheckInInfoWithoutAuthentication() {
         CheckInInfoRequestDTO requestDTO = new CheckInInfoRequestDTO();
-        requestDTO.userId = 1L;
-        requestDTO.eventId = 10L;
+        requestDTO.userId = id(1);
+        requestDTO.eventId = id(10);
         requestDTO.checkInTokens = Collections.emptyList();
 
         given().contentType(ContentType.JSON)
@@ -323,11 +369,16 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
-    @JwtSecurity(claims = @Claim(key = "uid", value = "1", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000001",
+                            type = ClaimType.STRING))
     void testGetUsernamesWithReservations() {
         // Assuming event with ID 10 exists and has reservations
         given().when()
-                .get("/api/supervisor/checkin/usernames/10")
+                .get("/api/supervisor/checkin/usernames/" + id(10))
                 .then()
                 .statusCode(200)
                 .body("size()", is(2));
@@ -335,10 +386,15 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "admin", roles = Roles.ADMIN)
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testGetUsernamesWithReservations_AsAdmin() {
         given().when()
-                .get("/api/supervisor/checkin/usernames/10")
+                .get("/api/supervisor/checkin/usernames/" + id(10))
                 .then()
                 .statusCode(200)
                 .body("size()", is(2));
@@ -346,10 +402,15 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "manager", roles = Roles.MANAGER)
-    @JwtSecurity(claims = @Claim(key = "uid", value = "3", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000003",
+                            type = ClaimType.STRING))
     void testGetUsernamesWithReservations_AsManagerForEvent() {
         given().when()
-                .get("/api/supervisor/checkin/usernames/10")
+                .get("/api/supervisor/checkin/usernames/" + id(10))
                 .then()
                 .statusCode(200)
                 .body("size()", is(2));
@@ -357,17 +418,27 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "otherSupervisor", roles = Roles.SUPERVISOR)
-    @JwtSecurity(claims = @Claim(key = "uid", value = "4", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000004",
+                            type = ClaimType.STRING))
     void testGetUsernamesWithReservations_SupervisorNoAccess() {
-        given().when().get("/api/supervisor/checkin/usernames/20").then().statusCode(403);
+        given().when().get("/api/supervisor/checkin/usernames/" + id(20)).then().statusCode(403);
     }
 
     @Test
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
-    @JwtSecurity(claims = @Claim(key = "uid", value = "1", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000001",
+                            type = ClaimType.STRING))
     void testGetUsernamesWithReservations_SupervisorAccess() {
         given().when()
-                .get("/api/supervisor/checkin/usernames/10")
+                .get("/api/supervisor/checkin/usernames/" + id(10))
                 .then()
                 .statusCode(200)
                 .body("size()", is(2));
@@ -380,14 +451,24 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
-    @JwtSecurity(claims = @Claim(key = "uid", value = "1", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000001",
+                            type = ClaimType.STRING))
     void testGetAllEvents() {
         given().when().get("/api/supervisor/checkin/events").then().statusCode(200);
     }
 
     @Test
     @TestSecurity(user = "admin", roles = Roles.ADMIN)
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testGetAllEvents_AsAdmin_SeesAll() {
         given().when()
                 .get("/api/supervisor/checkin/events")
@@ -398,7 +479,12 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
-    @JwtSecurity(claims = @Claim(key = "uid", value = "1", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000001",
+                            type = ClaimType.STRING))
     void testGetAllEvents_AsSupervisor_SeesAuthorizedOnly() {
         given().when()
                 .get("/api/supervisor/checkin/events")
@@ -409,7 +495,12 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "otherSupervisor", roles = Roles.SUPERVISOR)
-    @JwtSecurity(claims = @Claim(key = "uid", value = "4", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000004",
+                            type = ClaimType.STRING))
     void testGetAllEvents_AsOtherSupervisor_SeesNone() {
         given().when()
                 .get("/api/supervisor/checkin/events")
@@ -420,7 +511,12 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "manager", roles = Roles.MANAGER)
-    @JwtSecurity(claims = @Claim(key = "uid", value = "3", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000003",
+                            type = ClaimType.STRING))
     void testGetAllEvents_AsManager_SeesManaged() {
         given().when()
                 .get("/api/supervisor/checkin/events")
@@ -436,7 +532,12 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
-    @JwtSecurity(claims = @Claim(key = "uid", value = "1", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000001",
+                            type = ClaimType.STRING))
     void testGetCheckInInfoByUsernameNotFound() {
         given().when().post("/api/supervisor/checkin/info/nonExistentUser").then().statusCode(404);
     }

@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.scheduler;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import jakarta.inject.Inject;
@@ -64,7 +66,7 @@ class DatabaseCleanupTest {
         loginAttemptRepository.deleteAll();
 
         // Use existing test user from import-test.sql (user with id=3)
-        testUser = userRepository.findById(3L);
+        testUser = userRepository.findById(id(3));
         assertNotNull(testUser, "Test user with id=3 should exist from import-test.sql");
     }
 
@@ -72,8 +74,8 @@ class DatabaseCleanupTest {
     @Transactional
     void testCleanupExpiredEmailVerifications() {
         // Use different users for expired and valid verifications (One-to-One relationship)
-        User user1 = userRepository.findById(1L); // admin user
-        User user2 = userRepository.findById(2L); // manager user
+        User user1 = userRepository.findById(id(1)); // admin user
+        User user2 = userRepository.findById(id(2)); // manager user
 
         // Create expired email verification for user1
         EmailVerification expiredVerification =

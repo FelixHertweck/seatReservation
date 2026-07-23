@@ -121,7 +121,7 @@ class WebAuthnServiceTest {
     void renameCredential_unknownId_returnsFalse() {
         User user = persistUser("service_rename_unknown", "hash");
 
-        assertFalse(webAuthnService.renameCredential(user, -1L, "New label"));
+        assertFalse(webAuthnService.renameCredential(user, UUID.randomUUID(), "New label"));
     }
 
     @Test
@@ -140,7 +140,7 @@ class WebAuthnServiceTest {
         User user = persistUser("service_delete_unknown", "hash");
         persistCredential(user); // keep the account above the "last credential" threshold
 
-        assertFalse(webAuthnService.deleteCredential(user, -1L));
+        assertFalse(webAuthnService.deleteCredential(user, UUID.randomUUID()));
     }
 
     @Test
@@ -149,7 +149,7 @@ class WebAuthnServiceTest {
         User user = persistUser("service_delete_unknown_passkeyonly", null);
         persistCredential(user); // account's only credential, but not the one being deleted
 
-        assertFalse(webAuthnService.deleteCredential(user, -1L));
+        assertFalse(webAuthnService.deleteCredential(user, UUID.randomUUID()));
     }
 
     @Test

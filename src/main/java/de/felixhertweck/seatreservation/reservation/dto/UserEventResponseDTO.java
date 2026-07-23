@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.reservation.dto;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 import de.felixhertweck.seatreservation.common.dto.SeatStatusDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;
@@ -28,7 +29,7 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
 public record UserEventResponseDTO(
-        Long id,
+        UUID id,
         String name,
         String description,
         Instant startTime,
@@ -36,7 +37,7 @@ public record UserEventResponseDTO(
         Instant bookingDeadline,
         Instant bookingStartTime,
         List<SeatStatusDTO> seatStatuses,
-        Long locationId,
+        UUID locationId,
         Integer reservationsAllowed) {
     public UserEventResponseDTO(Event event, Integer reservationsAllowed) {
         this(

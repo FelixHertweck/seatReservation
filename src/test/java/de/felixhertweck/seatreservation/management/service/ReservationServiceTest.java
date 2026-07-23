@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.management.service;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
@@ -26,6 +28,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import jakarta.inject.Inject;
 import jakarta.persistence.NoResultException;
 
@@ -118,7 +121,7 @@ public class ReservationServiceTest {
                         "User",
                         Set.of(Roles.ADMIN),
                         Set.of());
-        adminUser.id = 1L;
+        adminUser.id = id(1);
 
         regularUser =
                 new User(
@@ -132,7 +135,7 @@ public class ReservationServiceTest {
                         "User",
                         Set.of(Roles.USER),
                         Set.of());
-        regularUser.id = 2L;
+        regularUser.id = id(2);
 
         managerUser =
                 new User(
@@ -146,7 +149,7 @@ public class ReservationServiceTest {
                         "Manager",
                         Set.of(Roles.MANAGER),
                         Set.of());
-        managerUser.id = 3L;
+        managerUser.id = id(3);
 
         adminAuth = new AuthenticatedUser(adminUser.id, adminUser.getRoles());
         managerAuth = new AuthenticatedUser(managerUser.id, managerUser.getRoles());
@@ -156,10 +159,10 @@ public class ReservationServiceTest {
 
         EventLocation eventLocation =
                 new EventLocation("Stadthalle", "Hauptstraße 1", managerUser, 100);
-        eventLocation.id = 1L;
+        eventLocation.id = id(1);
 
         event = new Event();
-        event.id = 1L;
+        event.id = id(1);
         event.setName("Konzert");
         event.setEventLocation(eventLocation);
         event.setStartTime(Instant.now().plusSeconds(Duration.ofDays(10).toSeconds()));
@@ -179,7 +182,7 @@ public class ReservationServiceTest {
                         1,
                         new EventLocationEntrance("A"),
                         new EventLocationArea("Parkett"));
-        seat.id = 1L;
+        seat.id = id(1);
 
         reservation =
                 new Reservation(
@@ -189,26 +192,26 @@ public class ReservationServiceTest {
                         Instant.now(),
                         ReservationStatus.RESERVED,
                         CodeGenerator.generateRandomCode());
-        reservation.id = 1L;
+        reservation.id = id(1);
 
         allowance = new EventUserAllowance(regularUser, event, 1);
     }
 
-    private void mockSeatFind(Set<Long> seatIds, List<Seat> seats) {
+    private void mockSeatFind(Set<UUID> seatIds, List<Seat> seats) {
         @SuppressWarnings("unchecked")
         PanacheQuery<Seat> seatQuery = mock(PanacheQuery.class);
         when(seatQuery.list()).thenReturn(seats);
         when(seatRepository.find("id in ?1", seatIds)).thenReturn(seatQuery);
     }
 
-    private void mockSeatFind(List<Long> seatIds, List<Seat> seats) {
+    private void mockSeatFind(List<UUID> seatIds, List<Seat> seats) {
         @SuppressWarnings("unchecked")
         PanacheQuery<Seat> seatQuery = mock(PanacheQuery.class);
         when(seatQuery.list()).thenReturn(seats);
         when(seatRepository.find("id in ?1", seatIds)).thenReturn(seatQuery);
     }
 
-    private void mockReservationFind(List<Long> ids, List<Reservation> reservations) {
+    private void mockReservationFind(List<UUID> ids, List<Reservation> reservations) {
         @SuppressWarnings("unchecked")
         PanacheQuery<Reservation> reservationQuery = mock(PanacheQuery.class);
         when(reservationQuery.list()).thenReturn(reservations);
@@ -235,7 +238,7 @@ public class ReservationServiceTest {
         doAnswer(
                         inv -> {
                             Reservation res = inv.getArgument(0);
-                            res.id = 99L;
+                            res.id = id(99);
                             return null;
                         })
                 .when(reservationRepository)
@@ -266,7 +269,7 @@ public class ReservationServiceTest {
         doAnswer(
                         inv -> {
                             Reservation res = inv.getArgument(0);
-                            res.id = 99L;
+                            res.id = id(99);
                             return null;
                         })
                 .when(reservationRepository)
@@ -297,7 +300,7 @@ public class ReservationServiceTest {
         doAnswer(
                         inv -> {
                             Reservation res = inv.getArgument(0);
-                            res.id = 99L;
+                            res.id = id(99);
                             return null;
                         })
                 .when(reservationRepository)
@@ -428,7 +431,7 @@ public class ReservationServiceTest {
         when(reservationRepository.findByIdOptional(reservation.id))
                 .thenReturn(Optional.of(reservation));
         User otherManager = new User();
-        otherManager.id = 4L;
+        otherManager.id = id(4);
         otherManager.setRoles(Set.of(Roles.MANAGER));
         reservation.getEvent().setManager(otherManager);
 
@@ -517,7 +520,7 @@ public class ReservationServiceTest {
                         Instant.now(),
                         ReservationStatus.BLOCKED,
                         CodeGenerator.generateRandomCode());
-        blockedReservation.id = 2L;
+        blockedReservation.id = id(2);
 
         mockReservationFind(List.of(blockedReservation.id), List.of(blockedReservation));
 
@@ -532,7 +535,7 @@ public class ReservationServiceTest {
     void deleteReservation_Success_MultipleReservations_WithAllowanceIncrement() {
         // Create multiple reservations for the same user and event
         Seat seat2 = new Seat("A2", event.getEventLocation(), "2", 1, 2, null, null);
-        seat2.id = 2L;
+        seat2.id = id(2);
         Reservation reservation2 =
                 new Reservation(
                         regularUser,
@@ -541,7 +544,7 @@ public class ReservationServiceTest {
                         Instant.now(),
                         ReservationStatus.RESERVED,
                         CodeGenerator.generateRandomCode());
-        reservation2.id = 2L;
+        reservation2.id = id(2);
 
         // Set up allowance with initial count
         allowance.setReservationsAllowedCount(0);
@@ -572,7 +575,7 @@ public class ReservationServiceTest {
                         Instant.now(),
                         ReservationStatus.BLOCKED,
                         CodeGenerator.generateRandomCode());
-        blockedReservation.id = 2L;
+        blockedReservation.id = id(2);
 
         Seat seat2 =
                 new Seat(
@@ -583,7 +586,7 @@ public class ReservationServiceTest {
                         2,
                         new EventLocationEntrance("A"),
                         new EventLocationArea("Balkon"));
-        seat2.id = 3L;
+        seat2.id = id(3);
         Reservation reservedReservation =
                 new Reservation(
                         regularUser,
@@ -592,7 +595,7 @@ public class ReservationServiceTest {
                         Instant.now(),
                         ReservationStatus.RESERVED,
                         CodeGenerator.generateRandomCode());
-        reservedReservation.id = 3L;
+        reservedReservation.id = id(3);
 
         allowance.setReservationsAllowedCount(0);
 
@@ -702,18 +705,18 @@ public class ReservationServiceTest {
 
     @Test
     void findReservationById_NotFoundException() {
-        when(reservationRepository.findByIdOptional(99L)).thenReturn(Optional.empty());
+        when(reservationRepository.findByIdOptional(id(99))).thenReturn(Optional.empty());
 
         assertThrows(
                 ReservationNotFoundException.class,
-                () -> reservationService.findReservationById(99L, adminUser));
+                () -> reservationService.findReservationById(id(99), adminUser));
     }
 
     @Test
     void deleteReservation_Forbidden_NotManager() {
         mockReservationFind(List.of(reservation.id), List.of(reservation));
         User otherManager = new User();
-        otherManager.id = 4L;
+        otherManager.id = id(4);
         otherManager.setRoles(Set.of(Roles.MANAGER));
         reservation.getEvent().setManager(otherManager);
 
@@ -767,10 +770,10 @@ public class ReservationServiceTest {
 
     @Test
     void exportReservationsToPdf_EventNotFound() {
-        when(eventRepository.findByIdOptional(99L)).thenReturn(Optional.empty());
+        when(eventRepository.findByIdOptional(id(99))).thenReturn(Optional.empty());
 
         assertThrows(
                 de.felixhertweck.seatreservation.common.exception.EventNotFoundException.class,
-                () -> reservationService.exportReservationsToPdf(99L, adminUser));
+                () -> reservationService.exportReservationsToPdf(id(99), adminUser));
     }
 }

@@ -21,15 +21,17 @@ package de.felixhertweck.seatreservation.model.repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.User;
-import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
 @ApplicationScoped
-public class EventUserAllowanceRepository implements PanacheRepository<EventUserAllowance> {
+public class EventUserAllowanceRepository
+        implements PanacheRepositoryBase<EventUserAllowance, UUID> {
     /**
      * Finds all event user allowances for a specific user.
      *
@@ -46,7 +48,7 @@ public class EventUserAllowanceRepository implements PanacheRepository<EventUser
      * @param eventId the event ID to search for
      * @return a list of event user allowances for the specified event
      */
-    public List<EventUserAllowance> findByEventId(Long eventId) {
+    public List<EventUserAllowance> findByEventId(UUID eventId) {
         return find("event.id", eventId).list();
     }
 
@@ -78,7 +80,7 @@ public class EventUserAllowanceRepository implements PanacheRepository<EventUser
      * @param eventId the event ID to search for
      * @return Optional event user allowance entity
      */
-    public Optional<EventUserAllowance> findByUserAndEventId(User user, Long eventId) {
+    public Optional<EventUserAllowance> findByUserAndEventId(User user, UUID eventId) {
         return find("user = ?1 and event.id = ?2", user, eventId).firstResultOptional();
     }
 }

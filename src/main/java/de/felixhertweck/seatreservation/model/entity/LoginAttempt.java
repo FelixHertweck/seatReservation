@@ -27,15 +27,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
-
 /**
  * Entity to track login attempts for rate limiting purposes. Stores information about failed login
  * attempts to prevent brute force attacks.
  */
 @Entity
 @Table(name = "login_attempts")
-public class LoginAttempt extends PanacheEntity {
+public class LoginAttempt extends AbstractEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = true)

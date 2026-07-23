@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.management.resource;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -91,9 +92,9 @@ public class MarkerResource {
             responseCode = "403",
             description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
     public List<EventLocationMakerDTO> getMarkersByEventLocation(
-            @QueryParam("eventLocationId") Long eventLocationId) {
+            @QueryParam("eventLocationId") UUID eventLocationId) {
         LOG.debugf(
-                "Received GET request to /api/manager/markers?eventLocationId=%d", eventLocationId);
+                "Received GET request to /api/manager/markers?eventLocationId=%s", eventLocationId);
         if (eventLocationId == null) {
             throw new IllegalArgumentException("eventLocationId query parameter is required");
         }
@@ -114,8 +115,8 @@ public class MarkerResource {
     @APIResponse(
             responseCode = "404",
             description = "Not Found: Marker with specified ID not found for the current manager")
-    public EventLocationMakerDTO getManagerMarkerById(@PathParam("id") Long id) {
-        LOG.debugf("Received GET request to /api/manager/markers/%d.", id);
+    public EventLocationMakerDTO getManagerMarkerById(@PathParam("id") UUID id) {
+        LOG.debugf("Received GET request to /api/manager/markers/%s.", id);
         AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         return markerService.findMarkerByIdForManager(id, currentUser);
     }
@@ -134,8 +135,8 @@ public class MarkerResource {
             responseCode = "404",
             description = "Not Found: Marker with specified ID not found for the current manager")
     public EventLocationMakerDTO updateManagerMarker(
-            @PathParam("id") Long id, @Valid MakerRequestDTO markerRequestDTO) {
-        LOG.debugf("Received PUT request to /api/manager/markers/%d to update marker.", id);
+            @PathParam("id") UUID id, @Valid MakerRequestDTO markerRequestDTO) {
+        LOG.debugf("Received PUT request to /api/manager/markers/%s to update marker.", id);
         AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         return markerService.updateMarker(id, markerRequestDTO, currentUser);
     }
@@ -150,7 +151,7 @@ public class MarkerResource {
     @APIResponse(
             responseCode = "404",
             description = "Not Found: Marker with specified ID not found for the current manager")
-    public void deleteManagerMarker(@QueryParam("ids") List<Long> ids) {
+    public void deleteManagerMarker(@QueryParam("ids") List<UUID> ids) {
         LOG.debugf(
                 "Received DELETE request to /api/manager/markers with IDs: %s",
                 ids != null ? ids : Collections.emptyList());

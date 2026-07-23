@@ -101,8 +101,8 @@ public class AuthResource {
                 authService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
 
         LOG.debugf(
-                "user ID: %d logged in successfully. JWT and refresh token cookies set.", user.id);
-        LOG.infof("User ID: %d logged in successfully.", user.id);
+                "user ID: %s logged in successfully. JWT and refresh token cookies set.", user.id);
+        LOG.infof("User ID: %s logged in successfully.", user.id);
         return authCookieResponse(user);
     }
 
@@ -128,7 +128,7 @@ public class AuthResource {
         User user = authService.register(registerRequest);
 
         LOG.debugf(
-                "user ID: %d registered successfully. JWT and refresh token cookies set.", user.id);
+                "user ID: %s registered successfully. JWT and refresh token cookies set.", user.id);
 
         return authCookieResponse(user);
     }
@@ -161,8 +161,10 @@ public class AuthResource {
         NewCookie refreshTokenExpirationCookie =
                 tokenService.createNewNullCookie("refreshToken_expiration", false);
 
-        LOG.infof("User ID: %d logged out successfully.", currentUser.id);
-        LOG.debugf("User ID: %d logged out successfully. JWT and refresh token cookies cleared.");
+        LOG.infof("User ID: %s logged out successfully.", currentUser.id);
+        LOG.debugf(
+                "User ID: %s logged out successfully. JWT and refresh token cookies cleared.",
+                currentUser.id);
         return Response.ok()
                 .cookie(jwtAccessCookie)
                 .cookie(refreshTokenCookie)
@@ -195,7 +197,7 @@ public class AuthResource {
                 tokenService.createNewNullCookie("refreshToken_expiration", false);
 
         LOG.debugf(
-                "user ID: %d logged out from all devices successfully. JWT and refresh token"
+                "user ID: %s logged out from all devices successfully. JWT and refresh token"
                         + " cookies cleared.",
                 currentUser.id);
 
@@ -231,7 +233,7 @@ public class AuthResource {
         User user = tokenService.validateRefreshToken(refreshToken);
 
         LOG.debugf(
-                "Token refreshed successfully for user ID: %d. New JWT and refresh token cookies"
+                "Token refreshed successfully for user ID: %s. New JWT and refresh token cookies"
                         + " set.",
                 user.id);
         return authCookieResponse(user);

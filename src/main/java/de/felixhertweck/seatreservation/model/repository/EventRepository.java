@@ -21,14 +21,15 @@ package de.felixhertweck.seatreservation.model.repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.User;
-import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
 @ApplicationScoped
-public class EventRepository implements PanacheRepository<Event> {
+public class EventRepository implements PanacheRepositoryBase<Event, UUID> {
 
     /**
      * Finds all events managed by a specific user.
@@ -57,7 +58,7 @@ public class EventRepository implements PanacheRepository<Event> {
      * @param userId the user ID
      * @return true if the user is a supervisor for the event, false otherwise
      */
-    public boolean isUserSupervisor(Long eventId, Long userId) {
+    public boolean isUserSupervisor(UUID eventId, UUID userId) {
         if (eventId == null || userId == null) {
             return false;
         }

@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.management.dto;
 
+import java.util.UUID;
 import jakarta.validation.constraints.NotNull;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
@@ -30,23 +31,23 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 @RegisterForReflection
 public class EntranceRequestDTO {
     @NotNull(message = "EventLocation ID must not be null")
-    private Long eventLocationId;
+    private UUID eventLocationId;
 
     @NotNull(message = "Entrance name must not be null")
     private String name;
 
     public EntranceRequestDTO() {}
 
-    public EntranceRequestDTO(Long eventLocationId, String name) {
+    public EntranceRequestDTO(UUID eventLocationId, String name) {
         this.eventLocationId = eventLocationId;
         this.name = name;
     }
 
-    public Long getEventLocationId() {
+    public UUID getEventLocationId() {
         return eventLocationId;
     }
 
-    public void setEventLocationId(Long eventLocationId) {
+    public void setEventLocationId(UUID eventLocationId) {
         this.eventLocationId = eventLocationId;
     }
 

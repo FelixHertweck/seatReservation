@@ -21,19 +21,20 @@
 package de.felixhertweck.seatreservation.management.dto;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
 public class ReservationExportDTO {
-    private Long id;
+    private UUID id;
     private String seatNumber;
     private String firstName;
     private String lastName;
     private Instant reservationDate;
 
-    public ReservationExportDTO(Reservation reservation, Long exportId) {
+    public ReservationExportDTO(Reservation reservation, UUID exportId) {
         this.id = exportId;
         this.seatNumber = reservation.getSeat().getSeatNumber();
         this.firstName = reservation.getUser().getFirstname();
@@ -41,11 +42,11 @@ public class ReservationExportDTO {
         this.reservationDate = reservation.getReservationDate();
     }
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

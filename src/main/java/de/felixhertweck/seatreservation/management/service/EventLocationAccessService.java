@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.management.service;
 
+import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -47,7 +48,7 @@ public class EventLocationAccessService {
      * @throws EventLocationNotFoundException if no such event location exists
      * @throws SecurityException if the user neither is an ADMIN nor manages the location
      */
-    public EventLocation findOwnedEventLocation(Long eventLocationId, AuthenticatedUser user) {
+    public EventLocation findOwnedEventLocation(UUID eventLocationId, AuthenticatedUser user) {
         if (eventLocationId == null) {
             throw new IllegalArgumentException("EventLocation ID must not be null");
         }

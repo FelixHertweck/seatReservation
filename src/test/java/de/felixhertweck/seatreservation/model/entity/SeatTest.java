@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.model.entity;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
@@ -29,7 +31,7 @@ class SeatTest {
     @Test
     void equals_persistedSeatWithMatchingFields_isNotEqualToTransientSeat() {
         EventLocation location = new EventLocation();
-        location.id = 1L;
+        location.id = id(1);
 
         Seat persisted =
                 new Seat(
@@ -40,7 +42,7 @@ class SeatTest {
                         1,
                         new EventLocationEntrance("Entrance A"),
                         new EventLocationArea("Parkett"));
-        persisted.id = 5L;
+        persisted.id = id(5);
 
         Seat transientSeat =
                 new Seat(
@@ -59,7 +61,7 @@ class SeatTest {
     @Test
     void equals_sameId_isEqualRegardlessOfOtherFields() {
         EventLocation location = new EventLocation();
-        location.id = 1L;
+        location.id = id(1);
 
         Seat a =
                 new Seat(
@@ -70,7 +72,7 @@ class SeatTest {
                         1,
                         new EventLocationEntrance("Entrance A"),
                         new EventLocationArea("Parkett"));
-        a.id = 5L;
+        a.id = id(5);
         Seat b =
                 new Seat(
                         "B2",
@@ -80,7 +82,7 @@ class SeatTest {
                         2,
                         new EventLocationEntrance("Entrance B"),
                         new EventLocationArea("Balkon"));
-        b.id = 5L;
+        b.id = id(5);
 
         assertEquals(a, b);
         assertEquals(a.hashCode(), b.hashCode());
@@ -89,7 +91,7 @@ class SeatTest {
     @Test
     void equals_bothTransientWithSameFields_isEqual() {
         EventLocation location = new EventLocation();
-        location.id = 1L;
+        location.id = id(1);
 
         Seat a =
                 new Seat(
@@ -117,7 +119,7 @@ class SeatTest {
     @Test
     void hashCode_consistentWithEquals_forDifferentIds() {
         EventLocation location = new EventLocation();
-        location.id = 1L;
+        location.id = id(1);
 
         Seat a =
                 new Seat(
@@ -128,7 +130,7 @@ class SeatTest {
                         1,
                         new EventLocationEntrance("Entrance A"),
                         new EventLocationArea("Parkett"));
-        a.id = 5L;
+        a.id = id(5);
         Seat b =
                 new Seat(
                         "A1",
@@ -138,7 +140,7 @@ class SeatTest {
                         1,
                         new EventLocationEntrance("Entrance A"),
                         new EventLocationArea("Parkett"));
-        b.id = 6L;
+        b.id = id(6);
 
         assertNotEquals(a, b);
     }

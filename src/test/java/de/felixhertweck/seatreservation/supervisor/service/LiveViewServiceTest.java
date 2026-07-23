@@ -19,6 +19,9 @@
  */
 package de.felixhertweck.seatreservation.supervisor.service;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
+import java.util.UUID;
 import jakarta.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -50,7 +53,7 @@ public class LiveViewServiceTest {
 
     @InjectMock EventRepository eventRepository;
 
-    private final long eventId = 1L;
+    private final UUID eventId = id(1);
 
     @BeforeEach
     public void setUp() {
@@ -78,8 +81,8 @@ public class LiveViewServiceTest {
     @Test
     void testRegisterConnection_StringEventId_Success() {
         // Should successfully parse valid event ID string and register connection
-        String validEventIdStr = "123";
-        long parsedEventId = 123L;
+        UUID parsedEventId = id(123);
+        String validEventIdStr = parsedEventId.toString();
         WebSocketConnection mockConnection = Mockito.mock(WebSocketConnection.class);
 
         // Mock event and location
@@ -87,7 +90,7 @@ public class LiveViewServiceTest {
         mockEvent.id = parsedEventId;
         mockEvent.setName("Test Event");
         EventLocation mockLocation = new EventLocation();
-        mockLocation.id = 1L;
+        mockLocation.id = id(1);
         mockEvent.setEventLocation(mockLocation);
 
         Mockito.when(eventRepository.findById(parsedEventId)).thenReturn(mockEvent);
@@ -103,7 +106,7 @@ public class LiveViewServiceTest {
     @Test
     void testUnregisterConnection_StringEventId_Success() {
         // Should successfully parse valid event ID string and unregister connection
-        String validEventIdStr = "456";
+        String validEventIdStr = id(456).toString();
         WebSocketConnection mockConnection = Mockito.mock(WebSocketConnection.class);
         assertDoesNotThrow(
                 () -> {
@@ -174,14 +177,14 @@ public class LiveViewServiceTest {
         mapperField.set(realInstance, mockMapper);
 
         try {
-            Long testEventId = 999L;
+            UUID testEventId = id(999);
             WebSocketConnection mockConnection = Mockito.mock(WebSocketConnection.class);
 
             Event mockEvent = new Event();
             mockEvent.id = testEventId;
             mockEvent.setName("Test Exception Event");
             EventLocation mockLocation = new EventLocation();
-            mockLocation.id = 1L;
+            mockLocation.id = id(1);
             mockEvent.setEventLocation(mockLocation);
 
             Mockito.when(eventRepository.findById(testEventId)).thenReturn(mockEvent);
@@ -204,7 +207,7 @@ public class LiveViewServiceTest {
 
     @Test
     void testBroadcastUpdate_IOExceptionHandledAndConnectionRemoved() throws Exception {
-        Long testEventId = 100L;
+        UUID testEventId = id(100);
         Reservation mockReservation = createTestReservation();
 
         WebSocketConnection mockConnection = Mockito.mock(WebSocketConnection.class);
@@ -215,7 +218,7 @@ public class LiveViewServiceTest {
         mockEvent.id = testEventId;
         mockEvent.setName("Test Broadcast Event");
         EventLocation mockLocation = new EventLocation();
-        mockLocation.id = 1L;
+        mockLocation.id = id(1);
         mockEvent.setEventLocation(mockLocation);
         Mockito.when(eventRepository.findById(testEventId)).thenReturn(mockEvent);
         Mockito.when(reservationRepository.findByEventId(testEventId))
@@ -262,7 +265,7 @@ public class LiveViewServiceTest {
 
     private Reservation createTestReservation() {
         User user = new User();
-        user.id = 1L;
+        user.id = id(1);
         user.setUsername("testuser");
 
         Event event = new Event();
@@ -270,13 +273,13 @@ public class LiveViewServiceTest {
         event.setName("Test Event");
 
         EventLocation location = new EventLocation();
-        location.id = 1L;
+        location.id = id(1);
 
         Seat seat = new Seat("A1", "", location);
-        seat.id = 1L;
+        seat.id = id(1);
 
         Reservation reservation = new Reservation();
-        reservation.id = 1L;
+        reservation.id = id(1);
         reservation.setUser(user);
         reservation.setEvent(event);
         reservation.setSeat(seat);

@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.management.dto;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 import de.felixhertweck.seatreservation.common.dto.SeatStatusDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;
@@ -28,7 +29,7 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
 public record EventResponseDTO(
-        Long id,
+        UUID id,
         String name,
         String description,
         Instant startTime,
@@ -38,10 +39,10 @@ public record EventResponseDTO(
         Instant reminderSendDate,
         Boolean isReminderSent,
         List<SeatStatusDTO> seatStatuses,
-        List<Long> eventUserAllowancesIds,
-        Long eventLocationId,
-        Long managerId,
-        List<Long> supervisorIds) {
+        List<UUID> eventUserAllowancesIds,
+        UUID eventLocationId,
+        UUID managerId,
+        List<UUID> supervisorIds) {
     public EventResponseDTO(Event event) {
         this(
                 event.getId(),

@@ -20,16 +20,17 @@
 package de.felixhertweck.seatreservation.model.repository;
 
 import java.time.Instant;
+import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.model.entity.LoginAttempt;
 import de.felixhertweck.seatreservation.model.entity.User;
-import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
-public class LoginAttemptRepository implements PanacheRepository<LoginAttempt> {
+public class LoginAttemptRepository implements PanacheRepositoryBase<LoginAttempt, UUID> {
 
     private static final Logger LOG = Logger.getLogger(LoginAttemptRepository.class);
 
@@ -79,7 +80,7 @@ public class LoginAttemptRepository implements PanacheRepository<LoginAttempt> {
     @Transactional
     public void recordAttempt(User user, boolean successful) {
         LOG.debugf(
-                "Recording login attempt for user ID: %d, successful: %s",
+                "Recording login attempt for user ID: %s, successful: %s",
                 (Object) user.id, successful);
         LoginAttempt attempt = new LoginAttempt(user, Instant.now(), successful);
         persist(attempt);

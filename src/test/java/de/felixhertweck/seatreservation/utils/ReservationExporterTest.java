@@ -19,10 +19,13 @@
  */
 package de.felixhertweck.seatreservation.utils;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -37,7 +40,7 @@ import org.junit.jupiter.api.Test;
 class ReservationExporterTest {
 
     private Reservation createReservation(
-            long id,
+            UUID id,
             String seatNumber,
             String seatRow,
             String firstName,
@@ -61,7 +64,8 @@ class ReservationExporterTest {
     @Test
     void exportReservationsToPdf_createsNonEmptyPdf() throws IOException {
         Reservation reservation =
-                createReservation(1L, "A1", "1", "Max", "Mustermann", ReservationStatus.RESERVED);
+                createReservation(
+                        id(1), "A1", "1", "Max", "Mustermann", ReservationStatus.RESERVED);
         byte[] pdfBytes =
                 ReservationExporter.exportReservationsToPdf(List.of(reservation), "31.12.2025")
                         .toByteArray();
@@ -74,9 +78,11 @@ class ReservationExporterTest {
     @Test
     void exportReservationsToPdf_multipleReservations_createsMultiPagePdf() throws IOException {
         Reservation r1 =
-                createReservation(1L, "A1", "1", "Max", "Mustermann", ReservationStatus.RESERVED);
+                createReservation(
+                        id(1), "A1", "1", "Max", "Mustermann", ReservationStatus.RESERVED);
         Reservation r2 =
-                createReservation(2L, "B2", "2", "Erika", "Musterfrau", ReservationStatus.RESERVED);
+                createReservation(
+                        id(2), "B2", "2", "Erika", "Musterfrau", ReservationStatus.RESERVED);
         byte[] pdfBytes =
                 ReservationExporter.exportReservationsToPdf(List.of(r1, r2), "01.01.2026")
                         .toByteArray();
@@ -99,7 +105,8 @@ class ReservationExporterTest {
     @Test
     void exportReservationsToCsv_createsCsvWithHeaderAndRows() throws IOException {
         Reservation reservation =
-                createReservation(1L, "A1", "1", "Max", "Mustermann", ReservationStatus.RESERVED);
+                createReservation(
+                        id(1), "A1", "1", "Max", "Mustermann", ReservationStatus.RESERVED);
         byte[] csvBytes =
                 ReservationExporter.exportReservationsToCsv(List.of(reservation)).toByteArray();
         String csv = new String(csvBytes);
@@ -126,9 +133,11 @@ class ReservationExporterTest {
     void exportReservationsToCsv_multipleReservations_createsCsvWithMultipleRows()
             throws IOException {
         Reservation r1 =
-                createReservation(1L, "A1", "1", "Max", "Mustermann", ReservationStatus.RESERVED);
+                createReservation(
+                        id(1), "A1", "1", "Max", "Mustermann", ReservationStatus.RESERVED);
         Reservation r2 =
-                createReservation(2L, "B2", "2", "Erika", "Musterfrau", ReservationStatus.RESERVED);
+                createReservation(
+                        id(2), "B2", "2", "Erika", "Musterfrau", ReservationStatus.RESERVED);
         byte[] csvBytes =
                 ReservationExporter.exportReservationsToCsv(List.of(r1, r2)).toByteArray();
         String csv = new String(csvBytes);
@@ -144,7 +153,7 @@ class ReservationExporterTest {
 
     @Test
     void exportReservationsToPdf_withBlockedReservation_createsValidPdf() throws IOException {
-        Reservation r1 = createReservation(1L, "C1", "3", null, null, ReservationStatus.BLOCKED);
+        Reservation r1 = createReservation(id(1), "C1", "3", null, null, ReservationStatus.BLOCKED);
         byte[] pdfBytes =
                 ReservationExporter.exportReservationsToPdf(List.of(r1), null).toByteArray();
         assertNotNull(pdfBytes);
@@ -155,8 +164,9 @@ class ReservationExporterTest {
     @Test
     void exportReservationsToPdf_withMixedStatus_createsValidPdf() throws IOException {
         Reservation r1 =
-                createReservation(1L, "A1", "1", "Max", "Mustermann", ReservationStatus.RESERVED);
-        Reservation r2 = createReservation(2L, "C1", "3", null, null, ReservationStatus.BLOCKED);
+                createReservation(
+                        id(1), "A1", "1", "Max", "Mustermann", ReservationStatus.RESERVED);
+        Reservation r2 = createReservation(id(2), "C1", "3", null, null, ReservationStatus.BLOCKED);
         byte[] pdfBytes =
                 ReservationExporter.exportReservationsToPdf(List.of(r1, r2), "01.01.2026")
                         .toByteArray();

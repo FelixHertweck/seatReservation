@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -101,14 +102,14 @@ public class ReservationResource {
             responseCode = "404",
             description =
                     "Not Found: Reservation with specified ID not found for the current manager")
-    public ReservationResponseDTO getReservationById(@PathParam("id") Long id) {
-        LOG.debugf("Received GET request to /api/manager/reservations/%d.", id);
+    public ReservationResponseDTO getReservationById(@PathParam("id") UUID id) {
+        LOG.debugf("Received GET request to /api/manager/reservations/%s.", id);
         User currentUser = userSecurityContext.getCurrentUser();
         ReservationResponseDTO result = reservationService.findReservationById(id, currentUser);
         if (result != null) {
-            LOG.debugf("Successfully retrieved reservation with ID %d.", id);
+            LOG.debugf("Successfully retrieved reservation with ID %s.", id);
         } else {
-            LOG.warnf("Reservation with ID %d not found.", id);
+            LOG.warnf("Reservation with ID %s not found.", id);
         }
         return result;
     }
@@ -131,13 +132,13 @@ public class ReservationResource {
     @APIResponse(
             responseCode = "404",
             description = "Not Found: Event with specified ID not found for the current manager")
-    public List<ReservationResponseDTO> getReservationsByEventId(@PathParam("id") Long eventId) {
-        LOG.debugf("Received GET request to /api/manager/reservations/event/%d.", eventId);
+    public List<ReservationResponseDTO> getReservationsByEventId(@PathParam("id") UUID eventId) {
+        LOG.debugf("Received GET request to /api/manager/reservations/event/%s.", eventId);
         User currentUser = userSecurityContext.getCurrentUser();
         List<ReservationResponseDTO> result =
                 reservationService.findReservationsByEventId(eventId, currentUser);
         LOG.debugf(
-                "Successfully retrieved %d reservations for event ID %d.", result.size(), eventId);
+                "Successfully retrieved %d reservations for event ID %s.", result.size(), eventId);
         return result;
     }
 
@@ -167,7 +168,7 @@ public class ReservationResource {
         Set<ReservationResponseDTO> results =
                 reservationService.createReservations(dto, currentUser);
         LOG.debugf(
-                "Reservations created successfully for seat IDs %s and user ID %d.",
+                "Reservations created successfully for seat IDs %s and user ID %s.",
                 dto.getSeatIds(), dto.getUserId());
         return results;
     }
@@ -183,7 +184,7 @@ public class ReservationResource {
             responseCode = "404",
             description =
                     "Not Found: Reservation with specified ID not found for the current manager")
-    public void deleteReservation(@QueryParam("ids") List<Long> ids) {
+    public void deleteReservation(@QueryParam("ids") List<UUID> ids) {
         LOG.debugf(
                 "Received DELETE request to /api/manager/reservations with IDs: %s",
                 ids != null ? ids : Collections.emptyList());
@@ -215,12 +216,12 @@ public class ReservationResource {
     public Set<ReservationResponseDTO> blockSeats(@Valid BlockSeatsRequestDTO dto) {
         LOG.debugf(
                 "Received POST request to /api/manager/reservations/block to block seats for event"
-                        + " ID %d.",
+                        + " ID %s.",
                 dto.getEventId());
         User currentUser = userSecurityContext.getCurrentUser();
         Set<ReservationResponseDTO> results =
                 reservationService.blockSeats(dto.getEventId(), dto.getSeatIds(), currentUser);
-        LOG.debugf("Seats blocked successfully for event ID %d.", dto.getEventId());
+        LOG.debugf("Seats blocked successfully for event ID %s.", dto.getEventId());
         return results;
     }
 
@@ -236,14 +237,14 @@ public class ReservationResource {
     @APIResponse(responseCode = "404", description = "Not Found - Event not found")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(responseCode = "500", description = "Internal Server Error during CSV export")
-    public Response exportReservationsToCsv(@PathParam("eventId") Long eventId) throws IOException {
+    public Response exportReservationsToCsv(@PathParam("eventId") UUID eventId) throws IOException {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.debugf(
-                "Received GET request to /api/manager/reservations/export/%d/csv for user ID: %d",
+                "Received GET request to /api/manager/reservations/export/%s/csv for user ID: %s",
                 eventId, currentUser.id);
         byte[] csvData = reservationService.exportReservationsToCsv(eventId, currentUser);
         LOG.debugf(
-                "Successfully exported CSV for event ID %d for user ID: %d",
+                "Successfully exported CSV for event ID %s for user ID: %s",
                 eventId, currentUser.id);
         return Response.ok(csvData)
                 .header(
@@ -264,14 +265,14 @@ public class ReservationResource {
     @APIResponse(responseCode = "404", description = "Not Found - Event not found")
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(responseCode = "500", description = "Internal Server Error during PDF export")
-    public Response exportReservationsToPdf(@PathParam("eventId") Long eventId) throws IOException {
+    public Response exportReservationsToPdf(@PathParam("eventId") UUID eventId) throws IOException {
         User currentUser = userSecurityContext.getCurrentUser();
         LOG.debugf(
-                "Received GET request to /api/manager/reservations/export/%d/pdf for user ID: %d",
+                "Received GET request to /api/manager/reservations/export/%s/pdf for user ID: %s",
                 eventId, currentUser.id);
         byte[] pdfData = reservationService.exportReservationsToPdf(eventId, currentUser);
         LOG.debugf(
-                "Successfully exported PDF for event ID %d for user ID: %d",
+                "Successfully exported PDF for event ID %s for user ID: %s",
                 eventId, currentUser.id);
         return Response.ok(pdfData)
                 .header(

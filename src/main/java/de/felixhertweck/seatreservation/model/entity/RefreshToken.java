@@ -26,11 +26,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
-
 @Entity
 @Table(name = "refresh_tokens")
-public class RefreshToken extends PanacheEntity {
+public class RefreshToken extends AbstractEntity {
     private String tokenHash;
 
     @ManyToOne(fetch = FetchType.LAZY)
