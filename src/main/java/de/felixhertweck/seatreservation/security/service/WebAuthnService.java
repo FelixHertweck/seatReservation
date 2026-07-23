@@ -22,6 +22,7 @@ package de.felixhertweck.seatreservation.security.service;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -106,7 +107,7 @@ public class WebAuthnService {
      *     account
      */
     @Transactional
-    public boolean deleteCredential(User user, Long credentialId) {
+    public boolean deleteCredential(User user, UUID credentialId) {
         if (!webAuthnCredentialRepository.existsByIdAndUser(credentialId, user)) {
             return false;
         }
@@ -118,7 +119,7 @@ public class WebAuthnService {
         }
         boolean deleted = webAuthnCredentialRepository.deleteWithIdAndUser(credentialId, user);
         if (deleted) {
-            LOG.infof("Deleted passkey %d for user ID: %d", credentialId, user.id);
+            LOG.infof("Deleted passkey %s for user ID: %s", credentialId, user.id);
         }
         return deleted;
     }
@@ -133,7 +134,7 @@ public class WebAuthnService {
     @Transactional
     public void addCredentialToUser(User user, WebAuthnCredentialRecord record, String label) {
         persistCredential(user, record, label);
-        LOG.infof("Registered new passkey for user ID: %d", user.id);
+        LOG.infof("Registered new passkey for user ID: %s", user.id);
     }
 
     /**
@@ -145,13 +146,13 @@ public class WebAuthnService {
      * @return true if a passkey was renamed, false if none matched the user
      */
     @Transactional
-    public boolean renameCredential(User user, Long credentialId, String label) {
+    public boolean renameCredential(User user, UUID credentialId, String label) {
         WebAuthnCredential credential = webAuthnCredentialRepository.findById(credentialId);
         if (credential == null || !credential.getUser().id.equals(user.id)) {
             return false;
         }
         credential.setLabel(label);
-        LOG.infof("Renamed passkey %d for user ID: %d", credentialId, user.id);
+        LOG.infof("Renamed passkey %s for user ID: %s", credentialId, user.id);
         return true;
     }
 
@@ -193,7 +194,7 @@ public class WebAuthnService {
         }
 
         persistCredential(user, record, label);
-        LOG.infof("Created passkey account for user ID: %d", user.id);
+        LOG.infof("Created passkey account for user ID: %s", user.id);
         return user;
     }
 

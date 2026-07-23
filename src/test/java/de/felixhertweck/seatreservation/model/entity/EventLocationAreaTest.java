@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.model.entity;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -121,9 +123,9 @@ class EventLocationAreaTest {
     @Test
     void testEquals_SameNameInDifferentLocations_NotEqual() {
         EventLocation locationA = new EventLocation();
-        locationA.id = 1L;
+        locationA.id = id(1);
         EventLocation locationB = new EventLocation();
-        locationB.id = 2L;
+        locationB.id = id(2);
 
         EventLocationArea area1 = new EventLocationArea("Parkett");
         area1.setEventLocation(locationA);
@@ -136,10 +138,10 @@ class EventLocationAreaTest {
     @Test
     void testEquals_PersistedComparesById() {
         EventLocationArea area1 = new EventLocationArea("Parkett");
-        area1.id = 42L;
+        area1.id = id(42);
         // Differs in every other field: once persisted, only the id decides.
         EventLocationArea area2 = new EventLocationArea("Balkon");
-        area2.id = 42L;
+        area2.id = id(42);
         area2.setBoundary(List.of(new Coordinate(1, 2)));
 
         assertEquals(area1, area2);
@@ -149,9 +151,9 @@ class EventLocationAreaTest {
     @Test
     void testEquals_DifferentIds_NotEqual() {
         EventLocationArea area1 = new EventLocationArea("Parkett");
-        area1.id = 1L;
+        area1.id = id(1);
         EventLocationArea area2 = new EventLocationArea("Parkett");
-        area2.id = 2L;
+        area2.id = id(2);
 
         assertNotEquals(area1, area2);
     }

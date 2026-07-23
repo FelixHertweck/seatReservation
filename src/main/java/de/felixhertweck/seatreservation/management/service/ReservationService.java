@@ -29,6 +29,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -87,7 +88,7 @@ public class ReservationService {
      */
     public List<ReservationResponseDTO> findAllReservations(AuthenticatedUser currentUser)
             throws SecurityException, UserNotFoundException {
-        LOG.debugf("Attempting to retrieve all reservations for user ID: %d", currentUser.id());
+        LOG.debugf("Attempting to retrieve all reservations for user ID: %s", currentUser.id());
         if (currentUser.isAdmin()) {
             LOG.debug("User is ADMIN, listing all reservations.");
             return reservationRepository.listAll().stream()
@@ -101,7 +102,7 @@ public class ReservationService {
                         .stream()
                         .map(ReservationResponseDTO::new)
                         .toList();
-        LOG.debugf("Retrieved %d reservations for manager ID: %d", result.size(), currentUser.id());
+        LOG.debugf("Retrieved %d reservations for manager ID: %s", result.size(), currentUser.id());
         return result;
     }
 
@@ -115,10 +116,10 @@ public class ReservationService {
      * @throws SecurityException If the current user does not have the necessary permissions.
      * @throws UserNotFoundException If the current user cannot be found.
      */
-    public ReservationResponseDTO findReservationById(Long id, User currentUser)
+    public ReservationResponseDTO findReservationById(UUID id, User currentUser)
             throws SecurityException, UserNotFoundException {
         LOG.debugf(
-                "Attempting to retrieve reservation with ID: %d for user ID: %d (ID: %d)",
+                "Attempting to retrieve reservation with ID: %s for user ID: %s (ID: %s)",
                 id, currentUser.id, currentUser.getId());
         Reservation reservation =
                 reservationRepository
@@ -126,8 +127,8 @@ public class ReservationService {
                         .orElseThrow(
                                 () -> {
                                     LOG.warnf(
-                                            "Reservation with ID %d not found for user ID: %d (ID:"
-                                                    + " %d)",
+                                            "Reservation with ID %s not found for user ID: %s (ID:"
+                                                    + " %s)",
                                             id, currentUser.id, currentUser.getId());
                                     return new ReservationNotFoundException(
                                             "Reservation with id " + id + " not found");
@@ -136,20 +137,20 @@ public class ReservationService {
         // Admins können jede Reservierung sehen
         if (currentUser.getRoles().contains(Roles.ADMIN)) {
             LOG.debugf(
-                    "Successfully retrieved reservation with ID %d for ADMIN user ID: %d (ID: %d)",
+                    "Successfully retrieved reservation with ID %s for ADMIN user ID: %s (ID: %s)",
                     id, currentUser.id, currentUser.getId());
             return new ReservationResponseDTO(reservation);
         }
 
         if (isManagerAllowedToAccessEvent(currentUser, reservation.getEvent())) {
             LOG.debugf(
-                    "Successfully retrieved reservation with ID %d for manager: %s (ID: %d)",
+                    "Successfully retrieved reservation with ID %s for manager: %s (ID: %s)",
                     id, currentUser.id, currentUser.getId());
             return new ReservationResponseDTO(reservation);
         }
 
         LOG.warnf(
-                "user ID: %d (ID: %d) is not allowed to access reservation with ID %d.",
+                "user ID: %s (ID: %s) is not allowed to access reservation with ID %s.",
                 currentUser.id, currentUser.getId(), id);
         throw new SecurityException("You are not allowed to access this reservation.");
     }
@@ -165,9 +166,9 @@ public class ReservationService {
      * @throws SecurityException If the user is not authorized to access this event's reservations
      * @throws IllegalArgumentException If the event is not found
      */
-    public List<ReservationResponseDTO> findReservationsByEventId(Long eventId, User currentUser) {
+    public List<ReservationResponseDTO> findReservationsByEventId(UUID eventId, User currentUser) {
         LOG.debugf(
-                "Attempting to retrieve reservations for event ID: %d by user ID: %d (ID: %d)",
+                "Attempting to retrieve reservations for event ID: %s by user ID: %s (ID: %s)",
                 eventId, currentUser.id, currentUser.getId());
         Event event =
                 eventRepository
@@ -175,8 +176,8 @@ public class ReservationService {
                         .orElseThrow(
                                 () -> {
                                     LOG.warnf(
-                                            "Event with ID %d not found for retrieving reservations"
-                                                    + " by user: %s (ID: %d)",
+                                            "Event with ID %s not found for retrieving reservations"
+                                                    + " by user: %s (ID: %s)",
                                             eventId, currentUser.id, currentUser.getId());
                                     return new IllegalArgumentException(
                                             "Event with id " + eventId + " not found");
@@ -185,7 +186,7 @@ public class ReservationService {
         if (!currentUser.getRoles().contains(Roles.ADMIN)
                 && !isManagerAllowedToAccessEvent(currentUser, event)) {
             LOG.warnf(
-                    "user ID: %d (ID: %d) is not allowed to access event ID %d for retrieving"
+                    "user ID: %s (ID: %s) is not allowed to access event ID %s for retrieving"
                             + " reservations.",
                     currentUser.id, currentUser.getId(), eventId);
             throw new SecurityException("You are not allowed to access this event.");
@@ -196,7 +197,7 @@ public class ReservationService {
                         .map(ReservationResponseDTO::new)
                         .toList();
         LOG.debugf(
-                "Retrieved %d reservations for event ID %d by user ID: %d (ID: %d)",
+                "Retrieved %d reservations for event ID %s by user ID: %s (ID: %s)",
                 result.size(), eventId, currentUser.id, currentUser.getId());
         return result;
     }
@@ -217,8 +218,8 @@ public class ReservationService {
             ReservationRequestDTO dto, User managerUser)
             throws SecurityException, UserNotFoundException, IllegalArgumentException {
         LOG.debugf(
-                "Attempting to create reservation for seat ID: %d, user ID: %d, event ID: %d by"
-                        + " user: %s (ID: %d)",
+                "Attempting to create reservation for seat ID: %s, user ID: %s, event ID: %s by"
+                        + " user: %s (ID: %s)",
                 dto.getSeatIds(),
                 dto.getUserId(),
                 dto.getEventId(),
@@ -230,7 +231,7 @@ public class ReservationService {
                         .orElseThrow(
                                 () -> {
                                     LOG.warnf(
-                                            "Target user with ID %d not found for reservation"
+                                            "Target user with ID %s not found for reservation"
                                                     + " creation.",
                                             dto.getUserId());
                                     return new UserNotFoundException(
@@ -243,7 +244,7 @@ public class ReservationService {
                         .orElseThrow(
                                 () -> {
                                     LOG.warnf(
-                                            "Event with ID %d not found for reservation creation.",
+                                            "Event with ID %s not found for reservation creation.",
                                             dto.getEventId());
                                     return new IllegalArgumentException(
                                             "Event with id " + dto.getEventId() + " not found");
@@ -252,14 +253,14 @@ public class ReservationService {
         if (!isManagerAllowedToAccessEvent(managerUser, event)
                 && !managerUser.getRoles().contains(Roles.ADMIN)) {
             LOG.warnf(
-                    "user ID: %d (ID: %d) is not allowed to access this reservation for creation.",
+                    "user ID: %s (ID: %s) is not allowed to access this reservation for creation.",
                     targetUser.id, targetUser.getId());
             throw new SecurityException("You are not allowed to access this reservation.");
         }
 
         List<Reservation> existingReservations = new ArrayList<>();
 
-        Map<Long, Seat> seatMap =
+        Map<UUID, Seat> seatMap =
                 seatRepository.find(ID_IN_QUERY, dto.getSeatIds()).list().stream()
                         .collect(Collectors.toMap(s -> s.id, s -> s, (s1, s2) -> s1));
 
@@ -273,7 +274,7 @@ public class ReservationService {
             } catch (NoResultException e) {
                 LOG.warnf(
                         e,
-                        "User ID %d has no reservation allowance for event ID %d.",
+                        "User ID %s has no reservation allowance for event ID %s.",
                         targetUser.getId(),
                         event.getId());
                 throw new IllegalArgumentException(
@@ -281,21 +282,21 @@ public class ReservationService {
             }
         }
 
-        for (Long dtoSeatId : dto.getSeatIds()) {
+        for (UUID dtoSeatId : dto.getSeatIds()) {
             Seat seat = seatMap.get(dtoSeatId);
             if (seat == null) {
-                LOG.warnf("Seat with ID %d not found for reservation creation.", dtoSeatId);
+                LOG.warnf("Seat with ID %s not found for reservation creation.", dtoSeatId);
                 throw new IllegalArgumentException("Seat with id " + dtoSeatId + " not found");
             }
 
             if (!dto.isDeductAllowance()) {
                 LOG.debugf(
-                        "Allowance check skipped for user ID: %d (ID: %d).",
+                        "Allowance check skipped for user ID: %s (ID: %s).",
                         targetUser.id, targetUser.getId());
             } else {
                 if (allowance.getReservationsAllowedCount() <= 0) {
                     LOG.warnf(
-                            "No more reservations allowed for user ID %d and event ID %d.",
+                            "No more reservations allowed for user ID %s and event ID %s.",
                             targetUser.getId(), event.getId());
                     throw new IllegalArgumentException(
                             "No more reservations allowed for this user and event.");
@@ -304,8 +305,8 @@ public class ReservationService {
                 eventUserAllowanceRepository.persist(allowance);
                 LOG.debug(
                         String.format(
-                                "Decremented reservation allowance for user ID %d and event ID"
-                                        + " %d. New allowance: %d",
+                                "Decremented reservation allowance for user ID %s and event ID"
+                                        + " %s. New allowance: %d",
                                 targetUser.getId(),
                                 event.getId(),
                                 allowance.getReservationsAllowedCount()));
@@ -322,7 +323,7 @@ public class ReservationService {
             reservationRepository.persist(reservation);
             existingReservations.add(reservation);
             LOG.infof(
-                    "Reservation created successfully for seat ID %d, user ID %d, event ID %d.",
+                    "Reservation created successfully for seat ID %s, user ID %s, event ID %s.",
                     dtoSeatId, dto.getUserId(), dto.getEventId());
         }
 
@@ -330,13 +331,13 @@ public class ReservationService {
             emailService.sendReservationConfirmation(
                     targetUser, existingReservations, managerUser.getEmail());
             LOG.debugf(
-                    "Reservation confirmation email sent to user ID %d for reservation ID %d.",
+                    "Reservation confirmation email sent to user ID %s for reservation ID %s.",
                     targetUser.getId(), existingReservations.getFirst().getEvent().id);
         } catch (IOException | PersistenceException | IllegalStateException e) {
             LOG.errorf(
                     e,
-                    "Failed to send reservation confirmation email to user ID %d for reservation ID"
-                            + " %d.",
+                    "Failed to send reservation confirmation email to user ID %s for reservation ID"
+                            + " %s.",
                     targetUser.getId(),
                     existingReservations.getFirst().id);
         }
@@ -357,32 +358,32 @@ public class ReservationService {
      * @throws IllegalArgumentException If no IDs are provided.
      */
     @Transactional
-    public void deleteReservation(List<Long> ids, User managerUser)
+    public void deleteReservation(List<UUID> ids, User managerUser)
             throws SecurityException, UserNotFoundException, IllegalArgumentException {
         if (ids == null || ids.isEmpty()) {
             LOG.warnf(
-                    "No reservation IDs provided for deletion by user ID: %d (ID: %d)",
+                    "No reservation IDs provided for deletion by user ID: %s (ID: %s)",
                     managerUser.id, managerUser.getId());
             throw new IllegalArgumentException("No reservation IDs provided for deletion.");
         }
 
         LOG.debugf(
-                "Attempting to delete reservations with IDs: %s for user ID: %d (ID: %d)",
+                "Attempting to delete reservations with IDs: %s for user ID: %s (ID: %s)",
                 ids, managerUser.id, managerUser.getId());
 
         List<Reservation> deletedReservations = new ArrayList<>();
 
         List<Reservation> foundReservations = reservationRepository.find(ID_IN_QUERY, ids).list();
-        Map<Long, Reservation> foundReservationMap =
+        Map<UUID, Reservation> foundReservationMap =
                 foundReservations.stream()
                         .collect(Collectors.toMap(r -> r.id, r -> r, (r1, r2) -> r1));
 
-        for (Long id : ids) {
+        for (UUID id : ids) {
 
             Reservation reservation = foundReservationMap.get(id);
             if (reservation == null) {
                 LOG.warnf(
-                        "Reservation with ID %d not found for deletion by user: %s (ID: %d)",
+                        "Reservation with ID %s not found for deletion by user: %s (ID: %s)",
                         id, managerUser.id, managerUser.getId());
                 throw new ReservationNotFoundException("Reservation with id " + id + " not found");
             }
@@ -390,7 +391,7 @@ public class ReservationService {
             if (!managerUser.getRoles().contains(Roles.ADMIN)
                     && !isManagerAllowedToAccessEvent(managerUser, reservation.getEvent())) {
                 LOG.warnf(
-                        "user ID: %d (ID: %d) is not allowed to delete reservation with ID %d.",
+                        "user ID: %s (ID: %s) is not allowed to delete reservation with ID %s.",
                         managerUser.id, managerUser.getId(), id);
                 throw new SecurityException("You are not allowed to delete this reservation.");
             }
@@ -399,7 +400,7 @@ public class ReservationService {
 
             if (reservation.getStatus() == ReservationStatus.RESERVED) {
                 LOG.debugf(
-                        "Adding reservation ID %d to deleted reservations for email notification.",
+                        "Adding reservation ID %s to deleted reservations for email notification.",
                         reservation.id);
                 deletedReservations.add(reservation);
 
@@ -414,14 +415,14 @@ public class ReservationService {
                                     LOG.debug(
                                             String.format(
                                                     "Incremented reservation allowance for user ID"
-                                                        + " %d and event ID %d. New allowance: %d",
+                                                        + " %s and event ID %s. New allowance: %d",
                                                     reservation.getUser().getId(),
                                                     reservation.getEvent().getId(),
                                                     allowance.getReservationsAllowedCount()));
                                 },
                                 () -> {
                                     LOG.debugf(
-                                            "No allowance found for user ID %d and event ID %d,"
+                                            "No allowance found for user ID %s and event ID %s,"
                                                     + " skipping allowance increment.",
                                             reservation.getUser().getId(),
                                             reservation.getEvent().getId());
@@ -452,8 +453,8 @@ public class ReservationService {
                     emailService.sendUpdateReservationConfirmation(
                             user, reservations, activeReservations, managerUser.getEmail());
                     LOG.debugf(
-                            "Sent reservation deletion confirmation for user ID: %d"
-                                    + " (ID: %d) and event %s (ID: %d) with %d"
+                            "Sent reservation deletion confirmation for user ID: %s"
+                                    + " (ID: %s) and event %s (ID: %s) with %d"
                                     + " deleted reservations.",
                             user.id,
                             user.getId(),
@@ -464,7 +465,7 @@ public class ReservationService {
                     LOG.errorf(
                             e,
                             "Failed to send reservation deletion confirmation for"
-                                    + " user ID: %d (ID: %d) and event ID: %d (ID: %d).",
+                                    + " user ID: %s (ID: %s) and event ID: %s (ID: %s).",
                             user.id,
                             user.getId(),
                             event.id,
@@ -486,16 +487,16 @@ public class ReservationService {
      */
     public boolean isManagerAllowedToAccessEvent(User manager, Event event) {
         LOG.debugf(
-                "Checking if manager %s (ID: %d) is allowed to access event ID %d.",
+                "Checking if manager %s (ID: %s) is allowed to access event ID %s.",
                 manager.id, manager.getId(), event.getId());
         boolean isAllowed = event.getManager().equals(manager);
         if (isAllowed) {
             LOG.debugf(
-                    "Manager %s (ID: %d) is allowed to access event ID %d.",
+                    "Manager %s (ID: %s) is allowed to access event ID %s.",
                     manager.id, manager.getId(), event.getId());
         } else {
             LOG.debugf(
-                    "Manager %s (ID: %d) is NOT allowed to access event ID %d.",
+                    "Manager %s (ID: %s) is NOT allowed to access event ID %s.",
                     manager.id, manager.getId(), event.getId());
         }
         return isAllowed;
@@ -515,10 +516,10 @@ public class ReservationService {
      */
     @Transactional
     public Set<ReservationResponseDTO> blockSeats(
-            Long eventId, List<Long> seatIds, User currentUser)
+            UUID eventId, List<UUID> seatIds, User currentUser)
             throws IllegalArgumentException, SecurityException, IllegalStateException {
         LOG.debugf(
-                "Attempting to block seats for event ID: %d, seat IDs: %s by user ID: %d (ID: %d)",
+                "Attempting to block seats for event ID: %s, seat IDs: %s by user ID: %s (ID: %s)",
                 eventId, seatIds, currentUser.id, currentUser.getId());
         Event event =
                 eventRepository
@@ -526,7 +527,7 @@ public class ReservationService {
                         .orElseThrow(
                                 () -> {
                                     LOG.warnf(
-                                            "Event with ID %d not found for blocking seats.",
+                                            "Event with ID %s not found for blocking seats.",
                                             eventId);
                                     return new IllegalArgumentException(
                                             "Event with id " + eventId + " not found");
@@ -535,21 +536,21 @@ public class ReservationService {
         if (!isManagerAllowedToAccessEvent(currentUser, event)
                 && !currentUser.getRoles().contains(Roles.ADMIN)) {
             LOG.warnf(
-                    "user ID: %d (ID: %d) is not allowed to block seats for event ID %d.",
+                    "user ID: %s (ID: %s) is not allowed to block seats for event ID %s.",
                     currentUser.id, currentUser.getId(), eventId);
             throw new SecurityException("You are not allowed to block seats for this event.");
         }
 
-        Map<Long, Seat> seatMap =
+        Map<UUID, Seat> seatMap =
                 seatRepository.find(ID_IN_QUERY, seatIds).list().stream()
                         .collect(Collectors.toMap(s -> s.id, s -> s, (s1, s2) -> s1));
 
         List<Seat> seats = new ArrayList<>();
-        for (Long seatId : seatIds) {
+        for (UUID seatId : seatIds) {
             Seat seat = seatMap.get(seatId);
             if (seat == null) {
                 LOG.warnf(
-                        "Seat with ID %d not found for blocking seats in event ID %d.",
+                        "Seat with ID %s not found for blocking seats in event ID %s.",
                         seatId, eventId);
                 throw new IllegalArgumentException("Seat with id " + seatId + " not found");
             }
@@ -559,9 +560,9 @@ public class ReservationService {
         List<Reservation> conflictingReservations =
                 reservationRepository.findByEventIdAndSeatIds(eventId, seatIds);
         if (!conflictingReservations.isEmpty()) {
-            Long conflictingSeatId = conflictingReservations.getFirst().getSeat().id;
+            UUID conflictingSeatId = conflictingReservations.getFirst().getSeat().id;
             LOG.warnf(
-                    "Seat with ID %d is already reserved or blocked for event ID %d.",
+                    "Seat with ID %s is already reserved or blocked for event ID %s.",
                     conflictingSeatId, eventId);
             throw new IllegalStateException(
                     "Seat with id " + conflictingSeatId + " is already reserved or blocked.");
@@ -583,7 +584,7 @@ public class ReservationService {
         reservationRepository.persist(newReservations);
 
         LOG.debugf(
-                "Successfully blocked %d seats for event ID %d by user ID: %d (ID: %d)",
+                "Successfully blocked %d seats for event ID %s by user ID: %s (ID: %s)",
                 seats.size(), eventId, currentUser.id, currentUser.getId());
         return newReservations.stream()
                 .map(ReservationResponseDTO::new)
@@ -601,10 +602,10 @@ public class ReservationService {
      * @throws SecurityException If the user is not authorized to export this event
      * @throws IOException If an I/O error occurs during export
      */
-    public byte[] exportReservationsToCsv(Long eventId, User currentUser)
+    public byte[] exportReservationsToCsv(UUID eventId, User currentUser)
             throws EventNotFoundException, SecurityException, IOException {
         LOG.debugf(
-                "Attempting to export reservations for event ID %d by user ID: %d (ID: %d)",
+                "Attempting to export reservations for event ID %s by user ID: %s (ID: %s)",
                 eventId, currentUser.id, currentUser.getId());
 
         List<Reservation> reservations =
@@ -612,8 +613,8 @@ public class ReservationService {
         ByteArrayOutputStream baos = ReservationExporter.exportReservationsToCsv(reservations);
 
         LOG.debugf(
-                "Successfully exported %d reservations for event ID %d to CSV by user ID: %d (ID:"
-                        + " %d)",
+                "Successfully exported %d reservations for event ID %s to CSV by user ID: %s (ID:"
+                        + " %s)",
                 reservations.size(), eventId, currentUser.id, currentUser.getId());
         return baos.toByteArray();
     }
@@ -629,10 +630,10 @@ public class ReservationService {
      * @throws SecurityException If the user is not authorized to export this event
      * @throws IOException If an I/O error occurs during export
      */
-    public byte[] exportReservationsToPdf(Long eventId, User currentUser)
+    public byte[] exportReservationsToPdf(UUID eventId, User currentUser)
             throws EventNotFoundException, SecurityException, IOException {
         LOG.debugf(
-                "Attempting to export reservations for event ID %d by user ID: %d (ID: %d)",
+                "Attempting to export reservations for event ID %s by user ID: %s (ID: %s)",
                 eventId, currentUser.id, currentUser.getId());
 
         Event event = getSortedReservations(eventId, currentUser);
@@ -649,8 +650,8 @@ public class ReservationService {
                 ReservationExporter.exportReservationsToPdf(reservations, reservedUntilValue);
 
         LOG.debugf(
-                "Successfully exported %d reservations for event ID %d to PDF by user ID: %d (ID:"
-                        + " %d)",
+                "Successfully exported %d reservations for event ID %s to PDF by user ID: %s (ID:"
+                        + " %s)",
                 reservations.size(), eventId, currentUser.id, currentUser.getId());
 
         return baos.toByteArray();
@@ -666,14 +667,14 @@ public class ReservationService {
      * @throws EventNotFoundException If the event is not found
      * @throws SecurityException If the user is not authorized to export this event
      */
-    private Event getSortedReservations(Long eventId, User currentUser) {
+    private Event getSortedReservations(UUID eventId, User currentUser) {
         Event event =
                 eventRepository
                         .findByIdOptional(eventId)
                         .orElseThrow(
                                 () -> {
                                     LOG.warnf(
-                                            "Event with ID %d not found for CSV export.", eventId);
+                                            "Event with ID %s not found for CSV export.", eventId);
                                     return new EventNotFoundException(
                                             "Event with id " + eventId + " not found");
                                 });
@@ -681,8 +682,8 @@ public class ReservationService {
         if (!event.getManager().equals(currentUser)
                 && !currentUser.getRoles().contains(Roles.ADMIN)) {
             LOG.warnf(
-                    "user ID: %d (ID: %d) is not authorized to export reservations for event ID"
-                            + " %d.",
+                    "user ID: %s (ID: %s) is not authorized to export reservations for event ID"
+                            + " %s.",
                     currentUser.id, currentUser.getId(), eventId);
             throw new SecurityException(
                     "User is not authorized to export this event's reservations");

@@ -19,10 +19,12 @@
  */
 package de.felixhertweck.seatreservation.common.dto;
 
+import java.util.UUID;
+
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 
-public record SeatStatusDTO(Long seatId, ReservationStatus status) {
+public record SeatStatusDTO(UUID seatId, ReservationStatus status) {
     public SeatStatusDTO(Reservation reservation) {
         this(reservation.getSeat().getId(), reservation.getStatus());
     }

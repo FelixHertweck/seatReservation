@@ -22,6 +22,7 @@ package de.felixhertweck.seatreservation.reservation.service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -47,9 +48,9 @@ public class EventService {
      */
     @Transactional
     public List<UserEventResponseDTO> getEventsForCurrentUser(User user) {
-        LOG.debugf("Attempting to retrieve events for current user ID: %d", user.id);
+        LOG.debugf("Attempting to retrieve events for current user ID: %s", user.id);
 
-        Map<Long, UserEventResponseDTO> eventMap = new HashMap<>();
+        Map<UUID, UserEventResponseDTO> eventMap = new HashMap<>();
 
         // Add allowances
         eventUserAllowanceRepository
@@ -71,7 +72,7 @@ public class EventService {
                                         reservation.getEvent().getId(),
                                         new UserEventResponseDTO(reservation.getEvent(), 0)));
 
-        LOG.debugf("Returning %d events for user ID: %d", eventMap.size(), user.id);
+        LOG.debugf("Returning %d events for user ID: %s", eventMap.size(), user.id);
         return List.copyOf(eventMap.values());
     }
 }

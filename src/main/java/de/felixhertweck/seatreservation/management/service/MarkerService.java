@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.management.service;
 
 import java.util.List;
+import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -50,7 +51,7 @@ public class MarkerService {
      * @return the markers of the event location
      */
     public List<EventLocationMakerDTO> findMarkersByLocation(
-            Long eventLocationId, AuthenticatedUser manager) {
+            UUID eventLocationId, AuthenticatedUser manager) {
         EventLocation eventLocation =
                 eventLocationAccessService.findOwnedEventLocation(eventLocationId, manager);
         return markerRepository.findByEventLocation(eventLocation).stream()
@@ -65,7 +66,7 @@ public class MarkerService {
      * @param manager the manager attempting to access the marker
      * @return the marker DTO
      */
-    public EventLocationMakerDTO findMarkerByIdForManager(Long id, AuthenticatedUser manager) {
+    public EventLocationMakerDTO findMarkerByIdForManager(UUID id, AuthenticatedUser manager) {
         return new EventLocationMakerDTO(findMarkerEntityById(id, manager));
     }
 
@@ -93,7 +94,7 @@ public class MarkerService {
         marker.setEventLocation(eventLocation);
         markerRepository.persist(marker);
         LOG.infof(
-                "Marker ID: %d created successfully for event location ID %d",
+                "Marker ID: %s created successfully for event location ID %s",
                 marker.id, eventLocation.getId());
         return new EventLocationMakerDTO(marker);
     }
@@ -108,7 +109,7 @@ public class MarkerService {
      */
     @Transactional
     public EventLocationMakerDTO updateMarker(
-            Long id, MakerRequestDTO dto, AuthenticatedUser manager) {
+            UUID id, MakerRequestDTO dto, AuthenticatedUser manager) {
         EventLocationMarker marker = findMarkerEntityById(id, manager);
         EventLocation newEventLocation =
                 eventLocationAccessService.findOwnedEventLocation(
@@ -121,7 +122,7 @@ public class MarkerService {
         marker.setCoordinate(dto.getCoordinate().toEntity());
         marker.setEventLocation(newEventLocation);
         markerRepository.persist(marker);
-        LOG.infof("Marker ID: %d updated successfully", marker.id);
+        LOG.infof("Marker ID: %s updated successfully", marker.id);
         return new EventLocationMakerDTO(marker);
     }
 
@@ -133,14 +134,14 @@ public class MarkerService {
      * @param manager the manager attempting to delete the markers
      */
     @Transactional
-    public void deleteMarkers(List<Long> ids, AuthenticatedUser manager) {
+    public void deleteMarkers(List<UUID> ids, AuthenticatedUser manager) {
         if (ids == null || ids.isEmpty()) {
             throw new IllegalArgumentException("No marker IDs provided for deletion");
         }
-        for (Long id : ids) {
+        for (UUID id : ids) {
             EventLocationMarker marker = findMarkerEntityById(id, manager);
             markerRepository.delete(marker);
-            LOG.infof("Marker ID: %d deleted successfully", id);
+            LOG.infof("Marker ID: %s deleted successfully", id);
         }
     }
 
@@ -151,7 +152,7 @@ public class MarkerService {
      * @param manager the manager attempting to access the marker
      * @return the marker entity
      */
-    private EventLocationMarker findMarkerEntityById(Long id, AuthenticatedUser manager) {
+    private EventLocationMarker findMarkerEntityById(UUID id, AuthenticatedUser manager) {
         EventLocationMarker marker =
                 markerRepository
                         .findByIdWithEventLocation(id)

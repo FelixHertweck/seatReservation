@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.reservation.resource;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Set;
@@ -150,7 +152,12 @@ public class ReservationResourceTest {
     @TestSecurity(
             user = "user",
             roles = {"USER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "3", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000003",
+                            type = ClaimType.STRING))
     void testGetMyReservations_Success() {
         given().when()
                 .get("/api/user/reservations")
@@ -164,7 +171,12 @@ public class ReservationResourceTest {
     @TestSecurity(
             user = "admin",
             roles = {"USER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "1", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000001",
+                            type = ClaimType.STRING))
     void testGetMyReservations_EmptyList() {
         given().when().get("/api/user/reservations").then().statusCode(200).body("$", hasSize(0));
     }
@@ -191,7 +203,7 @@ public class ReservationResourceTest {
             user = "user",
             roles = {"USER"})
     void testGetMyReservationById_NotFound() {
-        given().when().get("/api/user/reservations/9999").then().statusCode(404);
+        given().when().get("/api/user/reservations/" + id(9999)).then().statusCode(404);
     }
 
     @Test
@@ -334,7 +346,7 @@ public class ReservationResourceTest {
             roles = {"USER"})
     void testDeleteReservation_NotFound() {
         given().when()
-                .queryParam("ids", 9999L)
+                .queryParam("ids", id(9999).toString())
                 .delete("/api/user/reservations")
                 .then()
                 .statusCode(404);
@@ -353,7 +365,12 @@ public class ReservationResourceTest {
     @TestSecurity(
             user = "user",
             roles = {"USER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "3", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000003",
+                            type = ClaimType.STRING))
     void testDeleteMultipleReservations_Success() {
         // Create additional reservations for bulk delete test
         var testUser = userRepository.findByUsernameOptional("user").orElseThrow();
@@ -387,7 +404,7 @@ public class ReservationResourceTest {
     void testDeleteMultipleReservations_PartialNotFound() {
         given().when()
                 .queryParam("ids", testReservation.id)
-                .queryParam("ids", 9999L)
+                .queryParam("ids", id(9999).toString())
                 .delete("/api/user/reservations")
                 .then()
                 .statusCode(404);

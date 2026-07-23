@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.email;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
@@ -118,26 +120,26 @@ class NotificationServiceTest {
         testEvent.setEventLocation(location);
         testReservation.setSeat(seat);
 
-        when(eventService.findById(1L)).thenReturn(testEvent);
+        when(eventService.findById(id(1))).thenReturn(testEvent);
         when(reservationService.findByEvent(testEvent)).thenReturn(List.of(testReservation));
 
         // Act & Assert
         NotificationService.ReminderData data =
-                assertDoesNotThrow(() -> notificationService.loadReminderData(1L));
+                assertDoesNotThrow(() -> notificationService.loadReminderData(id(1)));
         assertNotNull(data);
-        verify(eventService).findById(1L);
+        verify(eventService).findById(id(1));
         verify(reservationService).findByEvent(testEvent);
     }
 
     @Test
     void loadReminderData_WithNullEventLocation_DoesNotThrow() {
         // Arrange: testEvent has no location set (default from setUp()).
-        when(eventService.findById(2L)).thenReturn(testEvent);
+        when(eventService.findById(id(2))).thenReturn(testEvent);
         when(reservationService.findByEvent(testEvent)).thenReturn(List.of(testReservation));
 
         // Act & Assert
         NotificationService.ReminderData data =
-                assertDoesNotThrow(() -> notificationService.loadReminderData(2L));
+                assertDoesNotThrow(() -> notificationService.loadReminderData(id(2)));
         assertNotNull(data);
     }
 
@@ -147,12 +149,12 @@ class NotificationServiceTest {
         EventLocation location = new EventLocation("Empty Hall", "Test Street 2", null, 50);
         testEvent.setEventLocation(location);
 
-        when(eventService.findById(3L)).thenReturn(testEvent);
+        when(eventService.findById(id(3))).thenReturn(testEvent);
         when(reservationService.findByEvent(testEvent)).thenReturn(List.of(testReservation));
 
         // Act & Assert
         NotificationService.ReminderData data =
-                assertDoesNotThrow(() -> notificationService.loadReminderData(3L));
+                assertDoesNotThrow(() -> notificationService.loadReminderData(id(3)));
         assertNotNull(data);
     }
 

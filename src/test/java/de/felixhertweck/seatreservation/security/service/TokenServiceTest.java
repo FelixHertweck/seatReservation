@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.security.service;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
@@ -78,7 +80,7 @@ public class TokenServiceTest {
         refreshTokenRepository.deleteAll();
 
         // Use existing test user from import-test.sql
-        testUser = userRepository.findById(1L);
+        testUser = userRepository.findById(id(1));
         assertNotNull(testUser, "Test user should exist");
 
         // Reset mocks
@@ -104,7 +106,7 @@ public class TokenServiceTest {
     @Test
     void generateToken_ValidTokenContent() {
         User user = new User();
-        user.id = 1L;
+        user.id = id(1);
         user.setUsername("testuser");
         user.setEmail("test@example.com");
         user.setRoles(new HashSet<>(Arrays.asList("USER", "ADMIN")));
@@ -131,7 +133,7 @@ public class TokenServiceTest {
     @Test
     void generateToken_NullEmail_UsesEmptyString() {
         User user = new User();
-        user.id = 1L;
+        user.id = id(1);
         user.setUsername("testuser");
         user.setEmail(null); // Null email
         user.setRoles(new HashSet<>(Collections.singletonList("USER")));
@@ -157,7 +159,7 @@ public class TokenServiceTest {
     @Test
     void generateToken_EmptyRoles_HandlesCorrectly() {
         User user = new User();
-        user.id = 1L;
+        user.id = id(1);
         user.setUsername("testuser");
         user.setEmail("test@example.com");
         user.setRoles(new HashSet<>()); // Empty roles
@@ -205,7 +207,7 @@ public class TokenServiceTest {
     void generateToken_IntegrationTest_WithRealJwt() {
         // Integration test that actually calls the real Jwt library
         User user = new User();
-        user.id = 1L;
+        user.id = id(1);
         user.setUsername("integrationTestUser");
         user.setEmail("integration@test.com");
         user.setRoles(new HashSet<>(Arrays.asList("USER", "ADMIN")));
@@ -225,7 +227,7 @@ public class TokenServiceTest {
     @Test
     void generateToken_IntegrationTest_WithNullEmail() {
         User user = new User();
-        user.id = 2L;
+        user.id = id(2);
         user.setUsername("testUserNullEmail");
         user.setEmail(null);
         user.setRoles(new HashSet<>(Collections.singletonList("USER")));
@@ -242,7 +244,7 @@ public class TokenServiceTest {
     @Test
     void generateToken_IntegrationTest_WithEmptyRoles() {
         User user = new User();
-        user.id = 3L;
+        user.id = id(3);
         user.setUsername("testUserEmptyRoles");
         user.setEmail("empty@roles.com");
         user.setRoles(new HashSet<>());
@@ -527,7 +529,7 @@ public class TokenServiceTest {
     @Transactional
     void testLogoutAllDevices_DoesNotAffectOtherUsers() {
         // Given - Create tokens for two different users
-        User otherUser = userRepository.findById(2L);
+        User otherUser = userRepository.findById(id(2));
         assertNotNull(otherUser);
 
         tokenService.generateRefreshToken(testUser);
@@ -658,7 +660,7 @@ public class TokenServiceTest {
         assertEquals(1, refreshTokenRepository.count());
 
         // Get a different user
-        User otherUser = userRepository.findById(2L);
+        User otherUser = userRepository.findById(id(2));
         assertNotNull(otherUser);
 
         // Mock JWT parser to return the token ID

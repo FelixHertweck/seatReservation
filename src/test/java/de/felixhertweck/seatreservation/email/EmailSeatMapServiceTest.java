@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.email;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -75,29 +77,29 @@ class EmailSeatMapServiceTest {
     @SuppressWarnings("unused")
     void setUp() {
         testUser = new User();
-        testUser.id = 1L;
+        testUser.id = id(1);
         testUser.setUsername("testuser");
         testUser.setEmail("test@example.com");
 
         testLocation = new EventLocation();
-        testLocation.id = 100L;
+        testLocation.id = id(100);
         testLocation.setName("Test Location");
         testLocation.setCapacity(50);
 
         testSeat = new Seat("A1", "A", testLocation);
-        testSeat.id = 1000L;
+        testSeat.id = id(1000);
 
         testLocation.setSeats(Collections.singletonList(testSeat));
 
         testEvent = new Event();
-        testEvent.id = 10L;
+        testEvent.id = id(10);
         testEvent.setName("Test Event");
         testEvent.setStartTime(Instant.now().plus(7, ChronoUnit.DAYS));
         testEvent.setEndTime(Instant.now().plus(7, ChronoUnit.DAYS).plus(2, ChronoUnit.HOURS));
         testEvent.setEventLocation(testLocation);
 
         Reservation reservation = new Reservation();
-        reservation.id = 10000L;
+        reservation.id = id(10000);
         reservation.setUser(testUser);
         reservation.setEvent(testEvent);
         reservation.setSeat(testSeat);
@@ -134,10 +136,10 @@ class EmailSeatMapServiceTest {
     @Test
     void createEmailSeatMapToken_WithMultipleReservations() {
         Seat seat2 = new Seat("A2", "", testLocation);
-        seat2.id = 1001L;
+        seat2.id = id(1001);
 
         Reservation reservation2 = new Reservation();
-        reservation2.id = 10001L;
+        reservation2.id = id(10001);
         reservation2.setUser(testUser);
         reservation2.setEvent(testEvent);
         reservation2.setSeat(seat2);
@@ -247,7 +249,7 @@ class EmailSeatMapServiceTest {
     void getSvgImage_ReturnsEmpty_WhenEventLocationIsNull() {
         String token = UUID.randomUUID().toString();
         Event eventWithoutLocation = new Event();
-        eventWithoutLocation.id = 10L;
+        eventWithoutLocation.id = id(10);
         eventWithoutLocation.setName("Test Event");
         eventWithoutLocation.setEventLocation(null);
 
@@ -270,10 +272,10 @@ class EmailSeatMapServiceTest {
 
         // Add existing reservation
         Seat existingSeat = new Seat("B1", "B", testLocation);
-        existingSeat.id = 1001L;
+        existingSeat.id = id(1001);
 
         Reservation existingReservation = new Reservation();
-        existingReservation.id = 10001L;
+        existingReservation.id = id(10001);
         existingReservation.setUser(testUser);
         existingReservation.setEvent(testEvent);
         existingReservation.setSeat(existingSeat);
@@ -325,7 +327,7 @@ class EmailSeatMapServiceTest {
         String token = UUID.randomUUID().toString();
 
         EventLocationArea parkett = new EventLocationArea("Parkett");
-        parkett.id = 1L;
+        parkett.id = id(1);
         parkett.setEventLocation(testLocation);
         testLocation.setAreas(new ArrayList<>(List.of(parkett)));
         testSeat.setArea(parkett);

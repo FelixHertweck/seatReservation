@@ -27,6 +27,7 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -70,7 +71,7 @@ public class NotificationService {
      */
     public void scheduleEventReminder(Event event) {
         if (event.getReminderSendDate() == null) {
-            LOG.debugf("No reminder date set for event ID: %d, skipping", event.id);
+            LOG.debugf("No reminder date set for event ID: %s, skipping", event.id);
             return;
         }
 
@@ -82,7 +83,7 @@ public class NotificationService {
 
         if (reminderTime.isBefore(now)) {
             LOG.warnf(
-                    "Reminder date %s for event ID: %d is in the past, skipping",
+                    "Reminder date %s for event ID: %s is in the past, skipping",
                     reminderTime, event.id);
             return;
         }
@@ -90,7 +91,7 @@ public class NotificationService {
         long delaySeconds = Duration.between(now, reminderTime).getSeconds();
 
         LOG.infof(
-                "Scheduling reminder for event ID: %d at %s (in %d seconds)",
+                "Scheduling reminder for event ID: %s at %s (in %d seconds)",
                 event.id, reminderTime, delaySeconds);
 
         String jobId = "reminder-event-" + event.id;
@@ -116,9 +117,9 @@ public class NotificationService {
      *
      * @param eventId The ID of the event
      */
-    public void sendReminderForEvent(Long eventId) {
+    public void sendReminderForEvent(UUID eventId) {
         try {
-            LOG.infof("Executing reminder task for event ID: %d", eventId);
+            LOG.infof("Executing reminder task for event ID: %s", eventId);
 
             // Step 1: Load data in a SHORT transaction
             ReminderData data = self.loadReminderData(eventId);
@@ -131,7 +132,7 @@ public class NotificationService {
             // Check if there are no reservations
             if (data.reservations.isEmpty()) {
                 LOG.debugf(
-                        "No reservations for event ID: %d, marking reminder as sent",
+                        "No reservations for event ID: %s, marking reminder as sent",
                         data.event.id);
                 self.markReminderComplete(eventId);
                 cancelEventReminder(eventId);
@@ -146,11 +147,11 @@ public class NotificationService {
 
             cancelEventReminder(eventId);
             LOG.infof(
-                    "Reminder sent and marked for event: %s (ID: %d)",
+                    "Reminder sent and marked for event: %s (ID: %s)",
                     data.event.getName(), data.event.id);
         } catch (Exception e) {
             cancelEventReminder(eventId);
-            LOG.errorf(e, "Error processing reminder for event ID: %d", eventId);
+            LOG.errorf(e, "Error processing reminder for event ID: %s", eventId);
         }
     }
 
@@ -163,24 +164,24 @@ public class NotificationService {
      * @return ReminderData containing event and reservations, or null if not applicable
      */
     @Transactional
-    public ReminderData loadReminderData(Long eventId) {
+    public ReminderData loadReminderData(UUID eventId) {
         // Fetch fresh event data
         Event event = eventService.findById(eventId);
         if (event == null) {
-            LOG.warnf("Event with ID %d not found, skipping reminder", eventId);
+            LOG.warnf("Event with ID %s not found, skipping reminder", eventId);
             cancelEventReminder(eventId);
             return null;
         }
 
         // Skip if reminder already sent
         if (event.isReminderSent()) {
-            LOG.debugf("Skipping event ID: %d - reminder already sent", event.id);
+            LOG.debugf("Skipping event ID: %s - reminder already sent", event.id);
             return null;
         }
 
-        LOG.debugf("Processing event: %s (ID: %d)", event.getName(), event.id);
+        LOG.debugf("Processing event: %s (ID: %s)", event.getName(), event.id);
         List<Reservation> reservations = reservationService.findByEvent(event);
-        LOG.debugf("Found %d reservations for event ID: %d.", reservations.size(), event.id);
+        LOG.debugf("Found %d reservations for event ID: %s.", reservations.size(), event.id);
 
         // Return early if no reservations, but let the orchestration method handle marking as sent
         if (reservations.isEmpty()) {
@@ -254,7 +255,7 @@ public class NotificationService {
                 data.reservations.stream().collect(Collectors.groupingBy(Reservation::getUser));
 
         LOG.debugf(
-                "Sending reminders to %d users for event ID: %d",
+                "Sending reminders to %d users for event ID: %s",
                 reservationsByUser.size(), data.event.id);
 
         reservationsByUser.forEach(
@@ -267,7 +268,7 @@ public class NotificationService {
                     } catch (Exception e) {
                         LOG.errorf(
                                 e,
-                                "Error sending reminder email to user ID: %d for event ID: %d",
+                                "Error sending reminder email to user ID: %s for event ID: %s",
                                 user.id,
                                 data.event.id);
                     }
@@ -281,7 +282,7 @@ public class NotificationService {
      * @param eventId The ID of the event
      */
     @Transactional
-    public void markReminderComplete(Long eventId) {
+    public void markReminderComplete(UUID eventId) {
         Event event = eventService.findById(eventId);
         if (event != null) {
             eventService.markReminderAsSent(event);
@@ -307,17 +308,17 @@ public class NotificationService {
      *
      * @param eventId The ID of the event
      */
-    public void cancelEventReminder(Long eventId) {
+    public void cancelEventReminder(UUID eventId) {
         String jobId = "reminder-event-" + eventId;
 
         if (!scheduledJobIds.contains(jobId)) {
-            LOG.debugf("No existing reminder job for event ID: %d to cancel.", eventId);
+            LOG.debugf("No existing reminder job for event ID: %s to cancel.", eventId);
             return;
         }
 
         scheduler.unscheduleJob(jobId);
         scheduledJobIds.remove(jobId);
-        LOG.debugf("Cancelled reminder job for event ID: %d", eventId);
+        LOG.debugf("Cancelled reminder job for event ID: %s", eventId);
     }
 
     /** Sends daily reservation CSVs to event managers for events happening today. */
@@ -333,7 +334,7 @@ public class NotificationService {
         LOG.debugf("Found %d events for today.", eventsToday.size());
 
         for (Event event : eventsToday) {
-            LOG.debugf("Processing CSV export for event: %s (ID: %d)", event.getName(), event.id);
+            LOG.debugf("Processing CSV export for event: %s (ID: %s)", event.getName(), event.id);
 
             try {
                 // Get the event manager/owner
@@ -344,7 +345,7 @@ public class NotificationService {
                             manager.id, event.getName());
                     emailService.sendEventReservationsCsvToManager(manager, event);
                 } else {
-                    LOG.warnf("No manager found for event: %s (ID: %d)", event.getName(), event.id);
+                    LOG.warnf("No manager found for event: %s (ID: %s)", event.getName(), event.id);
                 }
             } catch (EventNotFoundException | SecurityException | IOException e) {
                 LOG.errorf(

@@ -33,8 +33,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
-
 /**
  * EmailSeatMapToken entity represents a token that allows access to a seat map image for a specific
  * user and event. This token is included in email notifications and enables users to view their
@@ -51,7 +49,7 @@ import io.quarkus.hibernate.orm.panache.PanacheEntity;
             @Index(name = "idx_expiration_time", columnList = "expiration_time"),
             @Index(name = "idx_user_event", columnList = "user_id, event_id")
         })
-public class EmailSeatMapToken extends PanacheEntity {
+public class EmailSeatMapToken extends AbstractEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

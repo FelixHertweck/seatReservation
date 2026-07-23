@@ -24,12 +24,11 @@ import java.util.List;
 import java.util.Objects;
 import jakarta.persistence.*;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Table(name = "eventlocations")
-public class EventLocation extends PanacheEntity {
+public class EventLocation extends AbstractEntity {
 
     private String name;
     private String address;
@@ -120,10 +119,6 @@ public class EventLocation extends PanacheEntity {
 
     public void setSeats(List<Seat> seats) {
         this.seats = seats;
-    }
-
-    public Long getId() {
-        return id;
     }
 
     public List<EventLocationMarker> getMarkers() {

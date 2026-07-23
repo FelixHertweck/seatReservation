@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.common.dto;
 
+import java.util.UUID;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import io.quarkus.runtime.annotations.RegisterForReflection;
@@ -34,15 +36,15 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @RegisterForReflection
 public record SeatDTO(
-        Long id,
+        UUID id,
         String seatNumber,
         String seatRow,
-        Long locationId,
+        UUID locationId,
         CoordinateDTO coordinate,
         String entrance,
         String area,
-        Long entranceId,
-        Long areaId) {
+        UUID entranceId,
+        UUID areaId) {
     public SeatDTO(Seat seat) {
         this(
                 seat.getId(),

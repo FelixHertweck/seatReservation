@@ -19,9 +19,12 @@
  */
 package de.felixhertweck.seatreservation.management.ressource;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
@@ -137,7 +140,12 @@ public class ReservationResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testGetAllReservations() {
         given().when()
                 .get("/api/manager/reservations")
@@ -155,7 +163,7 @@ public class ReservationResourceTest {
                 .get("/api/manager/reservations/" + testReservation.id)
                 .then()
                 .statusCode(200)
-                .body("id", is(testReservation.id.intValue()));
+                .body("id", is(testReservation.id.toString()));
     }
 
     @Test
@@ -163,7 +171,7 @@ public class ReservationResourceTest {
             user = "manager",
             roles = {"MANAGER"})
     void testGetReservationByIdNotFound() {
-        given().when().get("/api/manager/reservations/999").then().statusCode(404);
+        given().when().get("/api/manager/reservations/" + id(999)).then().statusCode(404);
     }
 
     @Test
@@ -219,7 +227,7 @@ public class ReservationResourceTest {
             roles = {"MANAGER"})
     void testDeleteReservationNotFound() {
         given().when()
-                .queryParam("ids", 999L)
+                .queryParam("ids", id(999).toString())
                 .delete("/api/manager/reservations")
                 .then()
                 .statusCode(404);
@@ -229,7 +237,12 @@ public class ReservationResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testDeleteMultipleReservations() {
         // Create additional reservations for bulk delete test
         var reservation2 = new Reservation();
@@ -271,7 +284,7 @@ public class ReservationResourceTest {
     void testDeleteMultipleReservations_PartialNotFound() {
         given().when()
                 .queryParam("ids", testReservation.id)
-                .queryParam("ids", 999L)
+                .queryParam("ids", id(999).toString())
                 .delete("/api/manager/reservations")
                 .then()
                 .statusCode(404);
@@ -323,7 +336,7 @@ public class ReservationResourceTest {
             user = "manager",
             roles = {"MANAGER"})
     void testGetReservationsByEventIdNotFound() {
-        given().when().get("/api/manager/reservations/event/999").then().statusCode(400);
+        given().when().get("/api/manager/reservations/event/" + id(999)).then().statusCode(400);
     }
 
     @Test
@@ -351,7 +364,7 @@ public class ReservationResourceTest {
             roles = {"MANAGER"})
     void testBlockSeats() {
         given().contentType("application/json")
-                .body(Map.of("eventId", testEvent.id, "seatIds", new Long[] {anotherSeat.id}))
+                .body(Map.of("eventId", testEvent.id, "seatIds", new UUID[] {anotherSeat.id}))
                 .when()
                 .post("/api/manager/reservations/block")
                 .then()
@@ -394,6 +407,9 @@ public class ReservationResourceTest {
             user = "manager",
             roles = {"MANAGER"})
     void testExportReservationsToPdfEventNotFound() {
-        given().when().get("/api/manager/reservations/export/999/pdf").then().statusCode(404);
+        given().when()
+                .get("/api/manager/reservations/export/" + id(999) + "/pdf")
+                .then()
+                .statusCode(404);
     }
 }

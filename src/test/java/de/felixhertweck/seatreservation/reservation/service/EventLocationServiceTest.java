@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.reservation.service;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,24 +60,24 @@ class EventLocationServiceTest {
     @BeforeEach
     void setUp() {
         user = new User();
-        user.id = 1L;
+        user.id = id(1);
         user.setUsername("testuser");
 
         locationA = new EventLocation();
-        locationA.id = 10L;
+        locationA.id = id(10);
         locationA.setName("Location A");
 
         locationB = new EventLocation();
-        locationB.id = 20L;
+        locationB.id = id(20);
         locationB.setName("Location B");
 
         eventA = new Event();
-        eventA.id = 100L;
+        eventA.id = id(100);
         eventA.setName("Event A");
         eventA.setEventLocation(locationA);
 
         eventB = new Event();
-        eventB.id = 200L;
+        eventB.id = id(200);
         eventB.setName("Event B");
         eventB.setEventLocation(locationB);
     }
@@ -292,7 +294,7 @@ class EventLocationServiceTest {
     void getLocationsForCurrentUser_OneLocationTwoEvents_OneAllowanceOneReservation() {
         // Create a new eventC for locationA
         Event eventC = new Event();
-        eventC.id = 300L;
+        eventC.id = id(300);
         eventC.setName("Event C");
         eventC.setEventLocation(locationA);
 
@@ -330,12 +332,12 @@ class EventLocationServiceTest {
     void getLocationsForCurrentUser_GroupsSeatsIntoAreas() {
         // Location A has two seats sharing an area, exposed via the allowance
         var parkett = new EventLocationArea("Parkett");
-        parkett.id = 1L;
+        parkett.id = id(1);
         var seat1 = new Seat("S1", "Row 1", locationA);
-        seat1.id = 1L;
+        seat1.id = id(1);
         seat1.setArea(parkett);
         var seat2 = new Seat("S2", "Row 1", locationA);
-        seat2.id = 2L;
+        seat2.id = id(2);
         seat2.setArea(parkett);
         locationA.setSeats(List.of(seat1, seat2));
         // Areas hang off the location in JPA; the response is derived from them, not from the

@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.supervisor.dto;
 
+import java.util.UUID;
+
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationLiveStatus;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
@@ -28,8 +30,8 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 @RegisterForReflection
 @Schema(description = "Seat reservation status for supervisor view")
 public record SupervisorSeatStatusDTO(
-        Long seatId,
-        Long reservationId,
+        UUID seatId,
+        UUID reservationId,
         ReservationStatus status,
         ReservationLiveStatus liveStatus) {
     public SupervisorSeatStatusDTO(Reservation reservation) {

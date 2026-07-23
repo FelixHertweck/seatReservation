@@ -19,16 +19,18 @@
  */
 package de.felixhertweck.seatreservation.management.service;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import jakarta.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -86,7 +88,7 @@ public class MarkerServiceTest {
                         "User",
                         Set.of(Roles.ADMIN),
                         Set.of());
-        adminUser.id = 1L;
+        adminUser.id = id(1);
         managerUser =
                 new User(
                         "manager",
@@ -99,7 +101,7 @@ public class MarkerServiceTest {
                         "Manager",
                         Set.of(Roles.MANAGER),
                         Set.of());
-        managerUser.id = 3L;
+        managerUser.id = id(3);
         regularUser =
                 new User(
                         "user",
@@ -112,19 +114,19 @@ public class MarkerServiceTest {
                         "User",
                         Set.of(Roles.USER),
                         Set.of());
-        regularUser.id = 2L;
+        regularUser.id = id(2);
 
         adminAuth = new AuthenticatedUser(adminUser.id, adminUser.getRoles());
         managerAuth = new AuthenticatedUser(managerUser.id, managerUser.getRoles());
         regularAuth = new AuthenticatedUser(regularUser.id, regularUser.getRoles());
 
         eventLocation = new EventLocation("Stadthalle", "Hauptstraße 1", managerUser, 100);
-        eventLocation.id = 1L;
+        eventLocation.id = id(1);
         otherLocation = new EventLocation("Other Hall", "Other Address", regularUser, 50);
-        otherLocation.id = 2L;
+        otherLocation.id = id(2);
 
         existingMarker = new EventLocationMarker("Main Entrance", 10, 20);
-        existingMarker.id = 10L;
+        existingMarker.id = id(10);
         existingMarker.setEventLocation(eventLocation);
 
         when(eventLocationRepository.findByIdOptional(eventLocation.id))
@@ -166,8 +168,8 @@ public class MarkerServiceTest {
 
     @Test
     void createMarker_EventLocationNotFound() {
-        when(eventLocationRepository.findByIdOptional(999L)).thenReturn(Optional.empty());
-        MakerRequestDTO dto = new MakerRequestDTO(999L, "Stage", new CoordinateDTO(5, 5));
+        when(eventLocationRepository.findByIdOptional(id(999))).thenReturn(Optional.empty());
+        MakerRequestDTO dto = new MakerRequestDTO(id(999), "Stage", new CoordinateDTO(5, 5));
 
         assertThrows(
                 EventLocationNotFoundException.class,
@@ -195,11 +197,12 @@ public class MarkerServiceTest {
 
     @Test
     void findMarkersByLocation_NotFound() {
-        when(eventLocationRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
+        when(eventLocationRepository.findByIdOptional(any(UUID.class)))
+                .thenReturn(Optional.empty());
 
         assertThrows(
                 EventLocationNotFoundException.class,
-                () -> markerService.findMarkersByLocation(999L, managerAuth));
+                () -> markerService.findMarkersByLocation(id(999), managerAuth));
     }
 
     @Test
@@ -215,11 +218,12 @@ public class MarkerServiceTest {
 
     @Test
     void findMarkerByIdForManager_NotFound() {
-        when(markerRepository.findByIdWithEventLocation(anyLong())).thenReturn(Optional.empty());
+        when(markerRepository.findByIdWithEventLocation(any(UUID.class)))
+                .thenReturn(Optional.empty());
 
         assertThrows(
                 MarkerNotFoundException.class,
-                () -> markerService.findMarkerByIdForManager(999L, managerAuth));
+                () -> markerService.findMarkerByIdForManager(id(999), managerAuth));
     }
 
     @Test
@@ -238,13 +242,14 @@ public class MarkerServiceTest {
 
     @Test
     void updateMarker_NotFound() {
-        when(markerRepository.findByIdWithEventLocation(anyLong())).thenReturn(Optional.empty());
+        when(markerRepository.findByIdWithEventLocation(any(UUID.class)))
+                .thenReturn(Optional.empty());
         MakerRequestDTO dto =
                 new MakerRequestDTO(eventLocation.id, "Updated", new CoordinateDTO(1, 1));
 
         assertThrows(
                 MarkerNotFoundException.class,
-                () -> markerService.updateMarker(999L, dto, managerAuth));
+                () -> markerService.updateMarker(id(999), dto, managerAuth));
     }
 
     @Test
@@ -291,17 +296,18 @@ public class MarkerServiceTest {
 
     @Test
     void deleteMarkers_NotFound() {
-        when(markerRepository.findByIdWithEventLocation(anyLong())).thenReturn(Optional.empty());
+        when(markerRepository.findByIdWithEventLocation(any(UUID.class)))
+                .thenReturn(Optional.empty());
 
         assertThrows(
                 MarkerNotFoundException.class,
-                () -> markerService.deleteMarkers(List.of(999L), managerAuth));
+                () -> markerService.deleteMarkers(List.of(id(999)), managerAuth));
     }
 
     @Test
     void deleteMarkers_Forbidden() {
         EventLocationMarker markerInOtherLocation = new EventLocationMarker("X", 1, 1);
-        markerInOtherLocation.id = 20L;
+        markerInOtherLocation.id = id(20);
         markerInOtherLocation.setEventLocation(otherLocation);
         when(markerRepository.findByIdWithEventLocation(markerInOtherLocation.id))
                 .thenReturn(Optional.of(markerInOtherLocation));

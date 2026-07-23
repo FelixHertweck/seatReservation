@@ -28,8 +28,6 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
-
 /**
  * A binary attachment belonging to an {@link OutboundEmail}. The rendered bytes (for example a
  * seat-map PNG or a QR code) are stored alongside the message so the dispatcher can send the mail
@@ -40,7 +38,7 @@ import io.quarkus.hibernate.orm.panache.PanacheEntity;
  */
 @Entity
 @Table(name = "outbound_email_attachments")
-public class OutboundEmailAttachment extends PanacheEntity {
+public class OutboundEmailAttachment extends AbstractEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "email_id", nullable = false)

@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.management.ressource;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -130,7 +132,12 @@ public class EventResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testGetEventsByCurrentManager() {
         given().when().get("/api/manager/events").then().statusCode(200).body("size()", is(1));
     }
@@ -258,7 +265,7 @@ public class EventResourceTest {
                                 "bookingStartTime", "2024-12-30T12:00:00Z",
                                 "eventLocationId", testLocation.getId()))
                 .when()
-                .put("/api/manager/events/999")
+                .put("/api/manager/events/" + id(999))
                 .then()
                 .statusCode(404);
     }
@@ -312,7 +319,12 @@ public class EventResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testDeleteMultipleEvents() {
         // Create additional events for bulk delete test
         var manager = userRepository.findByUsernameOptional("manager").orElseThrow();
@@ -359,7 +371,7 @@ public class EventResourceTest {
     void testDeleteMultipleEvents_PartialNotFound() {
         given().when()
                 .queryParam("ids", testEvent.getId())
-                .queryParam("ids", 999L)
+                .queryParam("ids", id(999).toString())
                 .delete("/api/manager/events")
                 .then()
                 .statusCode(404);
@@ -370,7 +382,11 @@ public class EventResourceTest {
             user = "manager",
             roles = {"MANAGER"})
     void testDeleteEvent_NotFound() {
-        given().when().queryParam("ids", 999L).delete("/api/manager/events").then().statusCode(404);
+        given().when()
+                .queryParam("ids", id(999).toString())
+                .delete("/api/manager/events")
+                .then()
+                .statusCode(404);
     }
 
     @Transactional

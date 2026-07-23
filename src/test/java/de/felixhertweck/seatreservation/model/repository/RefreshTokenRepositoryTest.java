@@ -19,9 +19,12 @@
  */
 package de.felixhertweck.seatreservation.model.repository;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
@@ -53,10 +56,10 @@ public class RefreshTokenRepositoryTest {
         refreshTokenRepository.deleteAll();
 
         // Use existing test users from import-test.sql
-        testUser = userRepository.findById(1L);
+        testUser = userRepository.findById(id(1));
         assertNotNull(testUser, "Test user 1 should exist");
 
-        otherUser = userRepository.findById(2L);
+        otherUser = userRepository.findById(id(2));
         assertNotNull(otherUser, "Test user 2 should exist");
     }
 
@@ -154,7 +157,7 @@ public class RefreshTokenRepositoryTest {
                         "hash1", testUser, Instant.now(), Instant.now().plus(Duration.ofDays(7)));
         token.persist();
 
-        Long tokenId = token.id;
+        UUID tokenId = token.id;
         assertEquals(1, refreshTokenRepository.count());
 
         // When - Delete token with correct ID and user
@@ -174,7 +177,7 @@ public class RefreshTokenRepositoryTest {
                         "hash1", testUser, Instant.now(), Instant.now().plus(Duration.ofDays(7)));
         token.persist();
 
-        Long tokenId = token.id;
+        UUID tokenId = token.id;
         assertEquals(1, refreshTokenRepository.count());
 
         // When - Try to delete with correct ID but wrong user
@@ -197,7 +200,7 @@ public class RefreshTokenRepositoryTest {
         assertEquals(1, refreshTokenRepository.count());
 
         // When - Try to delete with non-existent ID
-        boolean deleted = refreshTokenRepository.deleteWithIdAndUser(999999L, testUser);
+        boolean deleted = refreshTokenRepository.deleteWithIdAndUser(id(999999), testUser);
 
         // Then - Token should not be deleted
         assertFalse(deleted);

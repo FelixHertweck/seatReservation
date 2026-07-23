@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.management.dto;
 
 import java.util.List;
+import java.util.UUID;
 
 import de.felixhertweck.seatreservation.common.dto.AreaDTO;
 import de.felixhertweck.seatreservation.common.dto.EventLocationMakerDTO;
@@ -30,12 +31,12 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
 public record EventLocationResponseDTO(
-        Long id,
+        UUID id,
         String name,
         String address,
         Integer capacity,
         LimitedUserInfoDTO manager,
-        List<Long> seatIds,
+        List<UUID> seatIds,
         List<EventLocationMakerDTO> markers,
         List<AreaDTO> areas) {
     public EventLocationResponseDTO(EventLocation eventLocation) {

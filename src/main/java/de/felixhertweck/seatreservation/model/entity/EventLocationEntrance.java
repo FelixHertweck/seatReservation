@@ -20,13 +20,12 @@
 package de.felixhertweck.seatreservation.model.entity;
 
 import java.util.Objects;
+import java.util.UUID;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
 
 /**
  * A named entrance within an event location. Seats reference their entrance via {@link
@@ -35,7 +34,7 @@ import io.quarkus.hibernate.orm.panache.PanacheEntity;
  */
 @Entity
 @Table(name = "event_location_entrances")
-public class EventLocationEntrance extends PanacheEntity {
+public class EventLocationEntrance extends AbstractEntity {
 
     private String name;
 
@@ -91,7 +90,7 @@ public class EventLocationEntrance extends PanacheEntity {
         return Objects.hash(name, eventLocationId());
     }
 
-    private Long eventLocationId() {
+    private UUID eventLocationId() {
         return eventLocation == null ? null : eventLocation.getId();
     }
 }

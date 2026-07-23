@@ -21,14 +21,15 @@ package de.felixhertweck.seatreservation.model.repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
-import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
 @ApplicationScoped
-public class EventLocationAreaRepository implements PanacheRepository<EventLocationArea> {
+public class EventLocationAreaRepository implements PanacheRepositoryBase<EventLocationArea, UUID> {
     /**
      * Finds all areas belonging to a specific event location.
      *
@@ -46,7 +47,7 @@ public class EventLocationAreaRepository implements PanacheRepository<EventLocat
      * @param id the area ID to find
      * @return the area including its event location and manager, if it exists
      */
-    public Optional<EventLocationArea> findByIdWithEventLocation(Long id) {
+    public Optional<EventLocationArea> findByIdWithEventLocation(UUID id) {
         return find(
                         "select e from EventLocationArea e"
                                 + " join fetch e.eventLocation el"

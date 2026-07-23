@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.reservation.dto;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import de.felixhertweck.seatreservation.common.dto.SeatDTO;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
@@ -27,9 +28,9 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
 public record UserReservationResponseDTO(
-        Long id,
-        Long userId,
-        Long eventId,
+        UUID id,
+        UUID userId,
+        UUID eventId,
         SeatDTO seat,
         Instant reservationDateTime,
         String checkInCode) {

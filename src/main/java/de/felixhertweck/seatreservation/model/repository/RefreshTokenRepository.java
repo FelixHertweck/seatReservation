@@ -20,14 +20,15 @@
 package de.felixhertweck.seatreservation.model.repository;
 
 import java.util.List;
+import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import de.felixhertweck.seatreservation.model.entity.RefreshToken;
 import de.felixhertweck.seatreservation.model.entity.User;
-import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
 @ApplicationScoped
-public class RefreshTokenRepository implements PanacheRepository<RefreshToken> {
+public class RefreshTokenRepository implements PanacheRepositoryBase<RefreshToken, UUID> {
 
     /**
      * Find all refresh tokens for a specific user.
@@ -56,7 +57,7 @@ public class RefreshTokenRepository implements PanacheRepository<RefreshToken> {
      * @param user the user who owns the refresh token
      * @return true if the token was deleted, false otherwise
      */
-    public boolean deleteWithIdAndUser(Long id, User user) {
+    public boolean deleteWithIdAndUser(UUID id, User user) {
         return delete("id = ?1 and user = ?2", id, user) > 0;
     }
 }

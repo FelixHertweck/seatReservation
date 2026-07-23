@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.utils;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import java.util.List;
 import java.util.Set;
 
@@ -247,14 +249,14 @@ class SvgRendererTest {
     @Test
     void renderSeats_WithAreaWithoutBoundary_RendersBoundingBoxAndLabel() {
         Seat seat1 = new Seat("A1", "", null);
-        seat1.id = 1L;
+        seat1.id = id(1);
         seat1.setCoordinate(new Coordinate(1, 1));
 
         Seat seat2 = new Seat("A2", "", null);
-        seat2.id = 2L;
+        seat2.id = id(2);
         seat2.setCoordinate(new Coordinate(2, 1));
 
-        AreaDTO area = new AreaDTO(1L, "Parkett", List.of(1L, 2L), null);
+        AreaDTO area = new AreaDTO(id(1), "Parkett", List.of(id(1), id(2)), null);
 
         String result =
                 SvgRenderer.renderSeats(
@@ -270,7 +272,7 @@ class SvgRendererTest {
     @Test
     void renderSeats_WithAreaBoundary_RendersPolygonInsteadOfBoundingBox() {
         Seat seat = new Seat("A1", "", null);
-        seat.id = 1L;
+        seat.id = id(1);
         seat.setCoordinate(new Coordinate(1, 1));
 
         List<CoordinateDTO> boundary =
@@ -279,7 +281,7 @@ class SvgRendererTest {
                         new CoordinateDTO(3, 1),
                         new CoordinateDTO(3, 3),
                         new CoordinateDTO(1, 3));
-        AreaDTO area = new AreaDTO(2L, "Loge", List.of(1L), boundary);
+        AreaDTO area = new AreaDTO(id(2), "Loge", List.of(id(1)), boundary);
 
         String result =
                 SvgRenderer.renderSeats(List.of(seat), Set.of(), Set.of(), null, List.of(area));
@@ -293,12 +295,12 @@ class SvgRendererTest {
     @Test
     void renderSeats_WithAreaBoundaryOfLessThanThreePoints_FallsBackToBoundingBox() {
         Seat seat = new Seat("A1", "", null);
-        seat.id = 1L;
+        seat.id = id(1);
         seat.setCoordinate(new Coordinate(1, 1));
 
         List<CoordinateDTO> tooFewPoints =
                 List.of(new CoordinateDTO(1, 1), new CoordinateDTO(2, 1));
-        AreaDTO area = new AreaDTO(3L, "Loge", List.of(1L), tooFewPoints);
+        AreaDTO area = new AreaDTO(id(3), "Loge", List.of(id(1)), tooFewPoints);
 
         String result =
                 SvgRenderer.renderSeats(List.of(seat), Set.of(), Set.of(), null, List.of(area));
@@ -311,10 +313,10 @@ class SvgRendererTest {
     @Test
     void renderSeats_WithAreaReferencingUnknownSeatIds_SkipsZone() {
         Seat seat = new Seat("A1", "", null);
-        seat.id = 1L;
+        seat.id = id(1);
         seat.setCoordinate(new Coordinate(1, 1));
 
-        AreaDTO area = new AreaDTO(4L, "Parkett", List.of(999L), null);
+        AreaDTO area = new AreaDTO(id(4), "Parkett", List.of(id(999)), null);
 
         String result =
                 SvgRenderer.renderSeats(List.of(seat), Set.of(), Set.of(), null, List.of(area));
@@ -328,15 +330,15 @@ class SvgRendererTest {
     @Test
     void renderSeats_MultipleAreas_UseDifferentColors() {
         Seat seat1 = new Seat("A1", "", null);
-        seat1.id = 1L;
+        seat1.id = id(1);
         seat1.setCoordinate(new Coordinate(1, 1));
 
         Seat seat2 = new Seat("B1", "", null);
-        seat2.id = 2L;
+        seat2.id = id(2);
         seat2.setCoordinate(new Coordinate(1, 2));
 
-        AreaDTO parkett = new AreaDTO(5L, "Parkett", List.of(1L), null);
-        AreaDTO balkon = new AreaDTO(6L, "Balkon", List.of(2L), null);
+        AreaDTO parkett = new AreaDTO(id(5), "Parkett", List.of(id(1)), null);
+        AreaDTO balkon = new AreaDTO(id(6), "Balkon", List.of(id(2)), null);
 
         String result =
                 SvgRenderer.renderSeats(
@@ -351,7 +353,7 @@ class SvgRendererTest {
     @Test
     void renderSeats_WithAreaBoundaryOutsideSeatBounds_ExpandsViewBoxToIncludeIt() {
         Seat seat = new Seat("A1", "", null);
-        seat.id = 1L;
+        seat.id = id(1);
         seat.setCoordinate(new Coordinate(1, 1));
 
         // Boundary reaches far past the only seat (logical x/y 10 vs. the seat's 1,1), e.g. a
@@ -362,7 +364,7 @@ class SvgRendererTest {
                         new CoordinateDTO(10, 1),
                         new CoordinateDTO(10, 10),
                         new CoordinateDTO(1, 10));
-        AreaDTO area = new AreaDTO(7L, "Balkon", List.of(1L), boundary);
+        AreaDTO area = new AreaDTO(id(7), "Balkon", List.of(id(1)), boundary);
 
         String result =
                 SvgRenderer.renderSeats(List.of(seat), Set.of(), Set.of(), null, List.of(area));

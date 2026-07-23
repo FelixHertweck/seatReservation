@@ -28,8 +28,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
-
 /**
  * A WebAuthn (passkey) credential registered by a user. Mirrors the fields the Quarkus WebAuthn
  * extension needs to persist ({@code WebAuthnCredentialRecord.RequiredPersistedData}), plus
@@ -37,7 +35,7 @@ import io.quarkus.hibernate.orm.panache.PanacheEntity;
  */
 @Entity
 @Table(name = "webauthn_credentials")
-public class WebAuthnCredential extends PanacheEntity {
+public class WebAuthnCredential extends AbstractEntity {
 
     /** Base64url-encoded credential id, unique across all users. */
     @Column(nullable = false, unique = true, length = 1024)

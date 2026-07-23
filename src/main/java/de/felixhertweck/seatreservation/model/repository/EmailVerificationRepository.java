@@ -20,16 +20,17 @@
 package de.felixhertweck.seatreservation.model.repository;
 
 import java.util.Optional;
+import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.model.entity.EmailVerification;
 import de.felixhertweck.seatreservation.model.entity.User;
-import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
-public class EmailVerificationRepository implements PanacheRepository<EmailVerification> {
+public class EmailVerificationRepository implements PanacheRepositoryBase<EmailVerification, UUID> {
 
     private static final Logger LOG = Logger.getLogger(EmailVerificationRepository.class);
 
@@ -40,12 +41,12 @@ public class EmailVerificationRepository implements PanacheRepository<EmailVerif
      * @return Optional EmailVerification entity
      */
     public Optional<EmailVerification> findByUser(User user) {
-        LOG.debugf("Finding EmailVerification by user ID: %d", user.id);
+        LOG.debugf("Finding EmailVerification by user ID: %s", user.id);
         Optional<EmailVerification> result = find("user", user).firstResultOptional();
         if (result.isPresent()) {
-            LOG.debugf("EmailVerification found for user ID: %d", user.id);
+            LOG.debugf("EmailVerification found for user ID: %s", user.id);
         } else {
-            LOG.debugf("No EmailVerification found for user ID: %d", user.id);
+            LOG.debugf("No EmailVerification found for user ID: %s", user.id);
         }
         return result;
     }
@@ -56,12 +57,12 @@ public class EmailVerificationRepository implements PanacheRepository<EmailVerif
      * @param userId the user ID to delete the verification for
      */
     @Transactional(Transactional.TxType.REQUIRES_NEW)
-    public void deleteByUserId(Long userId) {
+    public void deleteByUserId(UUID userId) {
         LOG.debugf(
-                "Attempting to delete EmailVerification for user ID: %d in new transaction.",
+                "Attempting to delete EmailVerification for user ID: %s in new transaction.",
                 userId);
         long deletedCount = delete("user.id", userId);
-        LOG.infof("Deleted %d EmailVerification entries for user ID: %d.", deletedCount, userId);
+        LOG.infof("Deleted %d EmailVerification entries for user ID: %s.", deletedCount, userId);
     }
 
     /**
@@ -70,13 +71,13 @@ public class EmailVerificationRepository implements PanacheRepository<EmailVerif
      * @param userId the user ID to search for
      * @return Optional EmailVerification entity
      */
-    public Optional<EmailVerification> findByUserIdOptional(Long userId) {
-        LOG.debugf("Finding EmailVerification by user ID: %d", userId);
+    public Optional<EmailVerification> findByUserIdOptional(UUID userId) {
+        LOG.debugf("Finding EmailVerification by user ID: %s", userId);
         Optional<EmailVerification> result = find("user.id", userId).firstResultOptional();
         if (result.isPresent()) {
-            LOG.debugf("EmailVerification found for user ID: %d", userId);
+            LOG.debugf("EmailVerification found for user ID: %s", userId);
         } else {
-            LOG.debugf("No EmailVerification found for user ID: %d", userId);
+            LOG.debugf("No EmailVerification found for user ID: %s", userId);
         }
         return result;
     }

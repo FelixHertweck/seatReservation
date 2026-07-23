@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.management.service;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import java.util.List;
 import java.util.Set;
 
@@ -53,27 +55,27 @@ public class EventServiceDeleteEventTest {
         MockitoAnnotations.openMocks(this);
 
         adminUser = new User();
-        adminUser.id = 1L;
+        adminUser.id = id(1);
         adminUser.setRoles(Set.of(Roles.ADMIN));
 
         managerUser = new User();
-        managerUser.id = 2L;
+        managerUser.id = id(2);
         managerUser.setRoles(Set.of(Roles.USER));
 
         otherUser = new User();
-        otherUser.id = 3L;
+        otherUser.id = id(3);
         otherUser.setRoles(Set.of(Roles.USER));
     }
 
     @Test
     void deleteEvent_Success() {
         Event event1 = new Event();
-        event1.id = 101L;
+        event1.id = id(101);
         event1.setName("Event 1");
         event1.setManager(managerUser);
 
         Event event2 = new Event();
-        event2.id = 102L;
+        event2.id = id(102);
         event2.setName("Event 2");
         event2.setManager(managerUser);
 
@@ -81,10 +83,10 @@ public class EventServiceDeleteEventTest {
         when(queryMock.list()).thenReturn(List.of(event1, event2));
         when(eventRepository.find(
                         eq("from Event e left join fetch e.manager where e.id in ?1"),
-                        eq(List.of(101L, 102L))))
+                        eq(List.of(id(101), id(102)))))
                 .thenReturn(queryMock);
 
-        eventService.deleteEvent(List.of(101L, 102L), managerUser);
+        eventService.deleteEvent(List.of(id(101), id(102)), managerUser);
 
         verify(eventRepository, times(1)).delete(event1);
         verify(eventRepository, times(1)).delete(event2);
@@ -93,7 +95,7 @@ public class EventServiceDeleteEventTest {
     @Test
     void deleteEvent_NotFound_ThrowsAndDoesNotDeleteAny() {
         Event event1 = new Event();
-        event1.id = 101L;
+        event1.id = id(101);
         event1.setName("Event 1");
         event1.setManager(managerUser);
 
@@ -101,12 +103,12 @@ public class EventServiceDeleteEventTest {
         when(queryMock.list()).thenReturn(List.of(event1));
         when(eventRepository.find(
                         eq("from Event e left join fetch e.manager where e.id in ?1"),
-                        eq(List.of(101L, 999L))))
+                        eq(List.of(id(101), id(999)))))
                 .thenReturn(queryMock);
 
         assertThrows(
                 EventNotFoundException.class,
-                () -> eventService.deleteEvent(List.of(101L, 999L), managerUser));
+                () -> eventService.deleteEvent(List.of(id(101), id(999)), managerUser));
 
         verify(eventRepository, never()).delete(any());
     }
@@ -114,7 +116,7 @@ public class EventServiceDeleteEventTest {
     @Test
     void deleteEvent_NotAuthorized_ThrowsAndDoesNotDelete() {
         Event event1 = new Event();
-        event1.id = 101L;
+        event1.id = id(101);
         event1.setName("Event 1");
         event1.setManager(managerUser);
 
@@ -122,11 +124,12 @@ public class EventServiceDeleteEventTest {
         when(queryMock.list()).thenReturn(List.of(event1));
         when(eventRepository.find(
                         eq("from Event e left join fetch e.manager where e.id in ?1"),
-                        eq(List.of(101L))))
+                        eq(List.of(id(101)))))
                 .thenReturn(queryMock);
 
         assertThrows(
-                SecurityException.class, () -> eventService.deleteEvent(List.of(101L), otherUser));
+                SecurityException.class,
+                () -> eventService.deleteEvent(List.of(id(101)), otherUser));
 
         verify(eventRepository, never()).delete(any());
     }

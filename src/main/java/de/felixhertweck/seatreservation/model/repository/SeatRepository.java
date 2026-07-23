@@ -20,17 +20,18 @@
 package de.felixhertweck.seatreservation.model.repository;
 
 import java.util.List;
+import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
 import de.felixhertweck.seatreservation.model.entity.EventLocationEntrance;
 import de.felixhertweck.seatreservation.model.entity.Seat;
-import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
-public class SeatRepository implements PanacheRepository<Seat> {
+public class SeatRepository implements PanacheRepositoryBase<Seat, UUID> {
 
     private static final Logger LOG = Logger.getLogger(SeatRepository.class);
 
@@ -41,9 +42,9 @@ public class SeatRepository implements PanacheRepository<Seat> {
      * @return a list of seats for the specified event location
      */
     public List<Seat> findByEventLocation(EventLocation eventLocation) {
-        LOG.debugf("Finding seats by event location ID: %d", eventLocation.id);
+        LOG.debugf("Finding seats by event location ID: %s", eventLocation.id);
         List<Seat> seats = find("location", eventLocation).list();
-        LOG.debugf("Found %d seats for event location ID: %d", seats.size(), eventLocation.id);
+        LOG.debugf("Found %d seats for event location ID: %s", seats.size(), eventLocation.id);
         return seats;
     }
 

@@ -29,8 +29,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
-
 @Entity
 @Table(
         uniqueConstraints = {
@@ -38,7 +36,7 @@ import io.quarkus.hibernate.orm.panache.PanacheEntity;
             @UniqueConstraint(columnNames = {"event_id", "user_id", "checkInCode"})
         },
         name = "reservations")
-public class Reservation extends PanacheEntity {
+public class Reservation extends AbstractEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;

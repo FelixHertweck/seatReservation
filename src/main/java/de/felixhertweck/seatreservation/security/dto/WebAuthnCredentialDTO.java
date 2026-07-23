@@ -20,13 +20,14 @@
 package de.felixhertweck.seatreservation.security.dto;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import de.felixhertweck.seatreservation.model.entity.WebAuthnCredential;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 /** Management view of a registered passkey. Never exposes the public key or credential id. */
 @RegisterForReflection
-public record WebAuthnCredentialDTO(Long id, String label, Instant createdAt, Instant lastUsedAt) {
+public record WebAuthnCredentialDTO(UUID id, String label, Instant createdAt, Instant lastUsedAt) {
 
     public WebAuthnCredentialDTO(WebAuthnCredential credential) {
         this(

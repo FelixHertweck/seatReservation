@@ -20,14 +20,15 @@
 package de.felixhertweck.seatreservation.model.repository;
 
 import java.util.List;
+import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.User;
-import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
 @ApplicationScoped
-public class EventLocationRepository implements PanacheRepository<EventLocation> {
+public class EventLocationRepository implements PanacheRepositoryBase<EventLocation, UUID> {
     /**
      * Finds all event locations managed by a specific user.
      *

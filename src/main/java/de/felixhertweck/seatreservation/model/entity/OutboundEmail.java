@@ -36,8 +36,6 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
-
 /**
  * A single email queued in the transactional outbox.
  *
@@ -54,7 +52,7 @@ import io.quarkus.hibernate.orm.panache.PanacheEntity;
             @Index(name = "idx_outbound_email_status", columnList = "status"),
             @Index(name = "idx_outbound_email_next_attempt", columnList = "next_attempt_at")
         })
-public class OutboundEmail extends PanacheEntity {
+public class OutboundEmail extends AbstractEntity {
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(

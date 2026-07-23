@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.management.dto;
 
 import java.util.Set;
+import java.util.UUID;
 import jakarta.validation.constraints.NotNull;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
@@ -27,25 +28,25 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 @RegisterForReflection
 public class ReservationRequestDTO {
     @NotNull(message = "Event ID must not be null")
-    private Long eventId;
+    private UUID eventId;
 
     @NotNull(message = "User ID must not be null")
-    private Long userId;
+    private UUID userId;
 
     @NotNull(message = "Seat ID must not be null")
-    private Set<Long> seatIds;
+    private Set<UUID> seatIds;
 
     private boolean deductAllowance = true;
 
-    public Long getEventId() {
+    public UUID getEventId() {
         return eventId;
     }
 
-    public Long getUserId() {
+    public UUID getUserId() {
         return userId;
     }
 
-    public Set<Long> getSeatIds() {
+    public Set<UUID> getSeatIds() {
         return seatIds;
     }
 
@@ -57,15 +58,15 @@ public class ReservationRequestDTO {
         this.deductAllowance = deductAllowance;
     }
 
-    public void setEventId(Long eventId) {
+    public void setEventId(UUID eventId) {
         this.eventId = eventId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(UUID userId) {
         this.userId = userId;
     }
 
-    public void setSeatIds(Set<Long> seatIds) {
+    public void setSeatIds(Set<UUID> seatIds) {
         this.seatIds = seatIds;
     }
 }

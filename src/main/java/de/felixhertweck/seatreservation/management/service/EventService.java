@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -72,7 +73,7 @@ public class EventService {
     public EventResponseDTO createEvent(EventRequestDTO dto, User manager)
             throws IllegalArgumentException {
         LOG.debugf(
-                "Attempting to create event with name: %s for manager: %s (ID: %d)",
+                "Attempting to create event with name: %s for manager: %s (ID: %s)",
                 dto.getName(), manager.id, manager.getId());
         EventLocation location =
                 eventLocationRepository
@@ -80,7 +81,7 @@ public class EventService {
                         .orElseThrow(
                                 () -> {
                                     LOG.warnf(
-                                            "EventLocation with id %d not found for event"
+                                            "EventLocation with id %s not found for event"
                                                     + " creation.",
                                             dto.getEventLocationId());
                                     return new IllegalArgumentException(
@@ -106,9 +107,9 @@ public class EventService {
                         dto.getReminderSendDate(),
                         supervisors);
         eventRepository.persist(event);
-        LOG.infof("Event ID: %d created successfully.", event.getId());
+        LOG.infof("Event ID: %s created successfully.", event.getId());
         LOG.debugf(
-                "Event '%s' (ID: %d) created successfully by manager: %s (ID: %d) with %d"
+                "Event '%s' (ID: %s) created successfully by manager: %s (ID: %s) with %d"
                         + " assigned supervisors",
                 event.getName(), event.getId(), manager.id, manager.getId(), supervisors.size());
 
@@ -131,10 +132,10 @@ public class EventService {
      * @throws SecurityException If the user is not authorized to update the Event.
      */
     @Transactional
-    public EventResponseDTO updateEvent(Long id, EventRequestDTO dto, User manager)
+    public EventResponseDTO updateEvent(UUID id, EventRequestDTO dto, User manager)
             throws EventNotFoundException, IllegalArgumentException {
         LOG.debugf(
-                "Attempting to update event with ID: %d for manager: %s (ID: %d)",
+                "Attempting to update event with ID: %s for manager: %s (ID: %s)",
                 id, manager.id, manager.getId());
         Event event =
                 eventRepository
@@ -142,8 +143,8 @@ public class EventService {
                         .orElseThrow(
                                 () -> {
                                     LOG.warnf(
-                                            "Event with ID %d not found for update by manager: %s"
-                                                    + " (ID: %d)",
+                                            "Event with ID %s not found for update by manager: %s"
+                                                    + " (ID: %s)",
                                             id, manager.id, manager.getId());
                                     return new EventNotFoundException(
                                             "Event with id " + id + " not found");
@@ -153,7 +154,7 @@ public class EventService {
         // or if the user has the ADMIN role.
         if (!event.getManager().equals(manager) && !manager.getRoles().contains(Roles.ADMIN)) {
             LOG.warnf(
-                    "user ID: %d (ID: %d) is not authorized to update event with ID %d.",
+                    "user ID: %s (ID: %s) is not authorized to update event with ID %s.",
                     manager.id, manager.getId(), id);
             throw new SecurityException("User is not the manager of this event");
         }
@@ -164,7 +165,7 @@ public class EventService {
                         .orElseThrow(
                                 () -> {
                                     LOG.warnf(
-                                            "EventLocation with id %d not found for event update.",
+                                            "EventLocation with id %s not found for event update.",
                                             dto.getEventLocationId());
                                     return new IllegalArgumentException(
                                             "EventLocation with id "
@@ -180,9 +181,9 @@ public class EventService {
         int newSupervisorCount = supervisors == null ? 0 : supervisors.size();
 
         LOG.debugf(
-                "Updating event ID %d: name='%s' -> '%s', description='%s' -> '%s', startTime='%s'"
+                "Updating event ID %s: name='%s' -> '%s', description='%s' -> '%s', startTime='%s'"
                         + " -> '%s', endTime='%s' -> '%s', bookingDeadline='%s' -> '%s',"
-                        + " eventLocationId='%d' -> '%d' , supervisors=%d -> %d",
+                        + " eventLocationId='%s' -> '%s' , supervisors=%d -> %d",
                 id,
                 event.getName(),
                 dto.getName(),
@@ -210,9 +211,9 @@ public class EventService {
         event.setSupervisors(supervisors);
 
         eventRepository.persist(event);
-        LOG.infof("Event '%s' (ID: %d) updated successfully", event.getName(), event.getId());
+        LOG.infof("Event '%s' (ID: %s) updated successfully", event.getName(), event.getId());
         LOG.debugf(
-                "Event '%s' (ID: %d) updated successfully by manager: %s (ID: %d)",
+                "Event '%s' (ID: %s) updated successfully by manager: %s (ID: %s)",
                 event.getName(), event.getId(), manager.id, manager.getId());
 
         // Reschedule reminder when event is updated
@@ -234,7 +235,7 @@ public class EventService {
      * @return Set of User entities
      * @throws IllegalArgumentException if any supervisor ID is invalid
      */
-    private Set<User> getSupervisorsFromIds(Set<Long> supervisorIds)
+    private Set<User> getSupervisorsFromIds(Set<UUID> supervisorIds)
             throws IllegalArgumentException {
         Set<User> supervisors = new HashSet<>();
         if (supervisorIds == null || supervisorIds.isEmpty()) {
@@ -245,11 +246,11 @@ public class EventService {
         supervisors.addAll(foundSupervisors);
 
         if (supervisors.size() != supervisorIds.size()) {
-            Set<Long> foundIds =
+            Set<UUID> foundIds =
                     foundSupervisors.stream().map(u -> u.id).collect(Collectors.toSet());
-            for (Long supervisorId : supervisorIds) {
+            for (UUID supervisorId : supervisorIds) {
                 if (!foundIds.contains(supervisorId)) {
-                    LOG.warnf("User with id %d not found for event creation.", supervisorId);
+                    LOG.warnf("User with id %s not found for event creation.", supervisorId);
                     throw new IllegalArgumentException(
                             "User with id " + supervisorId + " not found");
                 }
@@ -289,7 +290,7 @@ public class EventService {
      * @return A list of DTOs representing the Events.
      */
     public List<EventResponseDTO> getEventsByCurrentManager(AuthenticatedUser manager) {
-        LOG.debugf("Attempting to retrieve events for manager ID: %d", manager.id());
+        LOG.debugf("Attempting to retrieve events for manager ID: %s", manager.id());
         List<Event> events;
         // Access control: If the user is an ADMIN, all Events are returned.
         // Otherwise, only Events belonging to this manager are returned.
@@ -297,7 +298,7 @@ public class EventService {
             LOG.debug("User is ADMIN, listing all events.");
             events = eventRepository.listAll();
         } else {
-            LOG.debugf("User is MANAGER, listing events for manager ID: %d", manager.id());
+            LOG.debugf("User is MANAGER, listing events for manager ID: %s", manager.id());
             events = eventRepository.findByManager(userRepository.getReference(manager.id()));
         }
         return events.stream().map(EventResponseDTO::new).collect(Collectors.toList());
@@ -316,17 +317,17 @@ public class EventService {
      * @throws IllegalArgumentException If no IDs are provided.
      */
     @Transactional
-    public void deleteEvent(List<Long> ids, User currentUser)
+    public void deleteEvent(List<UUID> ids, User currentUser)
             throws EventNotFoundException, SecurityException, IllegalArgumentException {
         if (ids == null || ids.isEmpty()) {
             LOG.warnf(
-                    "No events to delete for user ID: %d (ID: %d)",
+                    "No events to delete for user ID: %s (ID: %s)",
                     currentUser.id, currentUser.getId());
             throw new IllegalArgumentException("No event IDs provided for deletion.");
         }
 
         LOG.debugf(
-                "Attempting to delete events with IDs: %s for user ID: %d (ID: %d)",
+                "Attempting to delete events with IDs: %s for user ID: %s (ID: %s)",
                 ids, currentUser.id, currentUser.getId());
 
         List<Event> fetchedEvents =
@@ -334,16 +335,16 @@ public class EventService {
                         .find("from Event e left join fetch e.manager where e.id in ?1", ids)
                         .list();
 
-        Map<Long, Event> eventMap =
+        Map<UUID, Event> eventMap =
                 fetchedEvents.stream()
                         .collect(Collectors.toMap(e -> e.getId(), e -> e, (e1, e2) -> e1));
 
         List<Event> eventsToDelete = new ArrayList<>(ids.size());
-        for (Long id : ids) {
+        for (UUID id : ids) {
             Event event = eventMap.get(id);
             if (event == null) {
                 LOG.warnf(
-                        "Event with ID %d not found for deletion by user: %s (ID: %d)",
+                        "Event with ID %s not found for deletion by user: %s (ID: %s)",
                         id, currentUser.id, currentUser.getId());
                 throw new EventNotFoundException("Event with id " + id + " not found");
             }
@@ -351,7 +352,7 @@ public class EventService {
             if (!event.getManager().equals(currentUser)
                     && !currentUser.getRoles().contains(Roles.ADMIN)) {
                 LOG.warnf(
-                        "user ID: %d (ID: %d) is not authorized to delete event with ID %d.",
+                        "user ID: %s (ID: %s) is not authorized to delete event with ID %s.",
                         currentUser.id, currentUser.getId(), id);
                 throw new SecurityException("User is not authorized to delete this event");
             }
@@ -362,7 +363,7 @@ public class EventService {
         for (Event event : eventsToDelete) {
             eventRepository.delete(event);
             LOG.debugf(
-                    "Event '%s' (ID: %d) deleted successfully by user ID: %d (ID: %d)",
+                    "Event '%s' (ID: %s) deleted successfully by user ID: %s (ID: %s)",
                     event.getName(), event.getId(), currentUser.id, currentUser.getId());
         }
 
@@ -375,18 +376,18 @@ public class EventService {
      * @param id The ID of the event
      * @return The event if found, null otherwise
      */
-    public Event findById(Long id) {
-        LOG.debugf("Attempting to find event by ID: %d", id);
+    public Event findById(UUID id) {
+        LOG.debugf("Attempting to find event by ID: %s", id);
         return eventRepository.findByIdOptional(id).orElse(null);
     }
 
-    private Event getEventById(Long id) throws EventNotFoundException {
-        LOG.debugf("Attempting to find event by ID: %d", id);
+    private Event getEventById(UUID id) throws EventNotFoundException {
+        LOG.debugf("Attempting to find event by ID: %s", id);
         return eventRepository
                 .findByIdOptional(id)
                 .orElseThrow(
                         () -> {
-                            LOG.warnf("Event with ID %d not found.", id);
+                            LOG.warnf("Event with ID %s not found.", id);
                             return new EventNotFoundException("Event with id " + id + " not found");
                         });
     }
@@ -402,20 +403,20 @@ public class EventService {
      * @throws EventNotFoundException If the Event with the specified ID is not found.
      * @throws SecurityException If the user is not authorized to view the Event.
      */
-    public EventResponseDTO getEventByIdForManager(Long id, User manager)
+    public EventResponseDTO getEventByIdForManager(UUID id, User manager)
             throws EventNotFoundException, SecurityException {
         LOG.debugf(
-                "Attempting to retrieve event with ID: %d for manager: %s (ID: %d)",
+                "Attempting to retrieve event with ID: %s for manager: %s (ID: %s)",
                 id, manager.id, manager.getId());
         Event event = getEventById(id);
         if (!event.getManager().equals(manager) && !manager.getRoles().contains(Roles.ADMIN)) {
             LOG.warnf(
-                    "user ID: %d (ID: %d) is not authorized to view event with ID %d.",
+                    "user ID: %s (ID: %s) is not authorized to view event with ID %s.",
                     manager.id, manager.getId(), id);
             throw new SecurityException("User is not authorized to view this event");
         }
         LOG.debugf(
-                "Successfully retrieved event with ID %d for manager: %s (ID: %d)",
+                "Successfully retrieved event with ID %s for manager: %s (ID: %s)",
                 id, manager.id, manager.getId());
         return new EventResponseDTO(event);
     }
@@ -427,7 +428,7 @@ public class EventService {
      */
     @Transactional
     public void markReminderAsSent(Event event) {
-        LOG.debugf("Marking reminder as sent for event ID: %d", event.id);
+        LOG.debugf("Marking reminder as sent for event ID: %s", event.id);
         event.setReminderSent(true);
         eventRepository.persist(event);
     }

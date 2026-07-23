@@ -22,11 +22,9 @@ package de.felixhertweck.seatreservation.model.entity;
 import java.util.Objects;
 import jakarta.persistence.*;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
-
 @Entity
 @Table(name = "event_location_markers")
-public class EventLocationMarker extends PanacheEntity {
+public class EventLocationMarker extends AbstractEntity {
     private String label;
 
     @Embedded private Coordinate coordinate;

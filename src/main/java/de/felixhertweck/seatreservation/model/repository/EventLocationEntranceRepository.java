@@ -21,14 +21,16 @@ package de.felixhertweck.seatreservation.model.repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationEntrance;
-import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
 @ApplicationScoped
-public class EventLocationEntranceRepository implements PanacheRepository<EventLocationEntrance> {
+public class EventLocationEntranceRepository
+        implements PanacheRepositoryBase<EventLocationEntrance, UUID> {
     /**
      * Finds all entrances belonging to a specific event location.
      *
@@ -46,7 +48,7 @@ public class EventLocationEntranceRepository implements PanacheRepository<EventL
      * @param id the entrance ID to find
      * @return the entrance including its event location and manager, if it exists
      */
-    public Optional<EventLocationEntrance> findByIdWithEventLocation(Long id) {
+    public Optional<EventLocationEntrance> findByIdWithEventLocation(UUID id) {
         return find(
                         "select e from EventLocationEntrance e"
                                 + " join fetch e.eventLocation el"

@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.management.ressource;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
@@ -106,7 +108,12 @@ public class AreaResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testGetAreasByEventLocation() {
         given().when()
                 .queryParam("eventLocationId", testLocation.id)
@@ -150,7 +157,12 @@ public class AreaResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testGetAreaById() {
         given().when()
                 .get("/api/manager/areas/" + testArea.id)
@@ -163,16 +175,26 @@ public class AreaResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testGetAreaByIdNotFound() {
-        given().when().get("/api/manager/areas/999").then().statusCode(404);
+        given().when().get("/api/manager/areas/" + id(999)).then().statusCode(404);
     }
 
     @Test
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testCreateArea() {
         given().contentType("application/json")
                 .body(new AreaRequestDTO(testLocation.id, "Balkon", null))
@@ -187,7 +209,12 @@ public class AreaResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testCreateAreaInvalidData() {
         given().contentType("application/json")
                 .body("{\"name\":\"\"}")
@@ -201,7 +228,12 @@ public class AreaResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testUpdateArea() {
         given().contentType("application/json")
                 .body(new AreaRequestDTO(testLocation.id, "Loge", null))
@@ -216,12 +248,17 @@ public class AreaResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testUpdateAreaNotFound() {
         given().contentType("application/json")
                 .body(new AreaRequestDTO(testLocation.id, "Loge", null))
                 .when()
-                .put("/api/manager/areas/999")
+                .put("/api/manager/areas/" + id(999))
                 .then()
                 .statusCode(404);
     }
@@ -230,7 +267,12 @@ public class AreaResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testDeleteArea() {
         given().when()
                 .queryParam("ids", testArea.id)
@@ -243,16 +285,30 @@ public class AreaResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testDeleteAreaNotFound() {
-        given().when().queryParam("ids", 999L).delete("/api/manager/areas").then().statusCode(404);
+        given().when()
+                .queryParam("ids", id(999).toString())
+                .delete("/api/manager/areas")
+                .then()
+                .statusCode(404);
     }
 
     @Test
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testDeleteAreaConflictWhenReferencedBySeat() {
         Seat seat = new Seat("A1", "Row 1", testLocation);
         seat.setArea(testArea);

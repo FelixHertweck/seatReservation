@@ -102,7 +102,12 @@ public class EventResourceTest {
     @TestSecurity(
             user = "user",
             roles = {"USER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "3", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000003",
+                            type = ClaimType.STRING))
     void testGetEventsForCurrentUser_Success() {
         given().when()
                 .get("/api/user/events")
@@ -117,7 +122,12 @@ public class EventResourceTest {
     @TestSecurity(
             user = "admin",
             roles = {"USER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "1", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000001",
+                            type = ClaimType.STRING))
     void testGetEventsForCurrentUser_NoAllowances() {
         given().when().get("/api/user/events").then().statusCode(200).body("size()", is(0));
     }

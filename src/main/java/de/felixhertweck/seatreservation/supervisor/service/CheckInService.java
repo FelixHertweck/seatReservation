@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -77,14 +78,12 @@ public class CheckInService {
      */
     @Transactional
     public CheckInInfoResponseDTO getReservationInfos(
-            AuthenticatedUser currentUser, Long userId, Long eventId, List<String> checkInTokens)
+            AuthenticatedUser currentUser, UUID userId, UUID eventId, List<String> checkInTokens)
             throws UserMismatchException, EventMismatchException, CheckInTokenNotFoundException {
 
         LOG.debugf(
-                "Getting reservation infos for targetUser %d, event %d with %d check-in tokens.",
-                (Object) userId,
-                (Object) eventId,
-                (Object) (checkInTokens != null ? checkInTokens.size() : 0));
+                "Getting reservation infos for targetUser %s, event %s with %d check-in tokens.",
+                userId, eventId, (Object) (checkInTokens != null ? checkInTokens.size() : 0));
 
         if (currentUser != null && !isAuthorizedForEvent(currentUser, eventId)) {
             throw new SecurityException("User is not authorized to access event " + eventId);
@@ -116,7 +115,7 @@ public class CheckInService {
         }
 
         LOG.debugf(
-                "Processed %d reservations for user %d and event %d.",
+                "Processed %d reservations for user %s and event %s.",
                 processedReservations.size(), userId, eventId);
 
         return new CheckInInfoResponseDTO(processedReservations, new LimitedUserInfoDTO(user));
@@ -125,7 +124,7 @@ public class CheckInService {
     // Backwards-compatible overload for existing tests/usage that provide userId
     @Transactional
     public CheckInInfoResponseDTO getReservationInfos(
-            Long userId, Long eventId, List<String> checkInTokens)
+            UUID userId, UUID eventId, List<String> checkInTokens)
             throws UserMismatchException, EventMismatchException, CheckInTokenNotFoundException {
         // Skip authorization (useful for tests or internal calls) and use userId as the
         // reservation owner id to look up reservations
@@ -143,16 +142,16 @@ public class CheckInService {
     @Transactional
     public void processCheckIn(CheckInProcessRequestDTO requestDTO, AuthenticatedUser currentUser)
             throws CheckInException {
-        Long eventId = requestDTO.eventId;
+        UUID eventId = requestDTO.eventId;
         if (currentUser != null && !isAuthorizedForEvent(currentUser, eventId)) {
             throw new SecurityException("User is not authorized to access event " + eventId);
         }
-        Long userId = requestDTO.userId;
-        List<Long> checkInIds = requestDTO.checkIn;
-        List<Long> cancelIds = requestDTO.cancel;
+        UUID userId = requestDTO.userId;
+        List<UUID> checkInIds = requestDTO.checkIn;
+        List<UUID> cancelIds = requestDTO.cancel;
 
         LOG.debugf(
-                "Processing check-in for user %d, event %d with %d check-ins and %d cancellations.",
+                "Processing check-in for user %s, event %s with %d check-ins and %d cancellations.",
                 userId,
                 eventId,
                 checkInIds != null ? checkInIds.size() : 0,
@@ -161,31 +160,31 @@ public class CheckInService {
         if (checkInIds != null && !checkInIds.isEmpty()) {
             List<Reservation> checkInReservations =
                     reservationRepository.findAllByIdUserIdAndEventId(checkInIds, userId, eventId);
-            Map<Long, Reservation> reservationMap =
+            Map<UUID, Reservation> reservationMap =
                     checkInReservations.stream()
                             .collect(
                                     Collectors.toMap(
                                             r -> r.id, Function.identity(), (r1, r2) -> r1));
 
-            for (Long reservationId : checkInIds) {
+            for (UUID reservationId : checkInIds) {
                 Reservation reservation = reservationMap.get(reservationId);
 
                 if (reservation == null) {
                     LOG.warnf(
-                            "Reservation with ID %d not found or does not belong to user %d/event"
-                                    + " %d for check-in.",
+                            "Reservation with ID %s not found or does not belong to user %s/event"
+                                    + " %s for check-in.",
                             reservationId, userId, eventId);
                     throw new CheckInException(
                             String.format(
-                                    "Reservation with ID %d not found or does not belong to user"
-                                            + " %d/event %d for check-in.",
+                                    "Reservation with ID %s not found or does not belong to user"
+                                            + " %s/event %s for check-in.",
                                     reservationId, userId, eventId));
                 }
 
-                LOG.debugf("Setting reservation %d to CHECK_IN status.", reservationId);
+                LOG.debugf("Setting reservation %s to CHECK_IN status.", reservationId);
                 reservation.setLiveStatus(ReservationLiveStatus.CHECKED_IN);
                 reservationRepository.persist(reservation);
-                LOG.infof("Reservation %d successfully checked in.", reservationId);
+                LOG.infof("Reservation %s successfully checked in.", reservationId);
 
                 // Broadcast check-in update to WebSocket clients
                 webSocketService.broadcastUpdate(reservation.getEvent().getId(), reservation);
@@ -195,31 +194,31 @@ public class CheckInService {
         if (cancelIds != null && !cancelIds.isEmpty()) {
             List<Reservation> cancelReservations =
                     reservationRepository.findAllByIdUserIdAndEventId(cancelIds, userId, eventId);
-            Map<Long, Reservation> reservationMap =
+            Map<UUID, Reservation> reservationMap =
                     cancelReservations.stream()
                             .collect(
                                     Collectors.toMap(
                                             r -> r.id, Function.identity(), (r1, r2) -> r1));
 
-            for (Long reservationId : cancelIds) {
+            for (UUID reservationId : cancelIds) {
                 Reservation reservation = reservationMap.get(reservationId);
 
                 if (reservation == null) {
                     LOG.warnf(
-                            "Reservation with ID %d not found or does not belong to user %d/event"
-                                    + " %d for cancellation.",
+                            "Reservation with ID %s not found or does not belong to user %s/event"
+                                    + " %s for cancellation.",
                             reservationId, userId, eventId);
                     throw new CheckInException(
                             String.format(
-                                    "Reservation with ID %d not found or does not belong to user"
-                                            + " %d/event %d for cancellation.",
+                                    "Reservation with ID %s not found or does not belong to user"
+                                            + " %s/event %s for cancellation.",
                                     reservationId, userId, eventId));
                 }
 
-                LOG.debugf("Setting reservation %d to CANCEL status.", reservationId);
+                LOG.debugf("Setting reservation %s to CANCEL status.", reservationId);
                 reservation.setLiveStatus(ReservationLiveStatus.CANCELLED);
                 reservationRepository.persist(reservation);
-                LOG.infof("Reservation %d successfully cancelled.", reservationId);
+                LOG.infof("Reservation %s successfully cancelled.", reservationId);
 
                 // Broadcast cancellation update to WebSocket clients
                 webSocketService.broadcastUpdate(reservation.getEvent().getId(), reservation);
@@ -227,7 +226,7 @@ public class CheckInService {
         }
 
         LOG.debugf(
-                "Check-in processing completed for user %d, event %d with %d check-ins and %d"
+                "Check-in processing completed for user %s, event %s with %d check-ins and %d"
                         + " cancellations.",
                 userId,
                 eventId,
@@ -284,8 +283,8 @@ public class CheckInService {
      * @return A list of strings, where each string is a username.
      */
     @Transactional
-    public List<String> getUsernamesWithReservations(AuthenticatedUser currentUser, Long eventId) {
-        LOG.debugf("Retrieving usernames with reservations for event %d.", eventId);
+    public List<String> getUsernamesWithReservations(AuthenticatedUser currentUser, UUID eventId) {
+        LOG.debugf("Retrieving usernames with reservations for event %s.", eventId);
         if (currentUser != null && !isAuthorizedForEvent(currentUser, eventId)) {
             throw new SecurityException("User is not authorized to access event " + eventId);
         }
@@ -299,7 +298,7 @@ public class CheckInService {
     }
 
     // Backwards-compatible overload
-    public List<String> getUsernamesWithReservations(Long eventId) {
+    public List<String> getUsernamesWithReservations(UUID eventId) {
         return getUsernamesWithReservations(null, eventId);
     }
 
@@ -351,18 +350,18 @@ public class CheckInService {
         return getReservationInfosByUsername(null, username);
     }
 
-    private void validateReservation(Reservation reservation, Long userId, Long eventId)
+    private void validateReservation(Reservation reservation, UUID userId, UUID eventId)
             throws UserMismatchException, EventMismatchException {
         if (!Objects.equals(reservation.getUser().id, userId)) {
             throw new UserMismatchException(
                     String.format(
-                            "Reservation %s does not belong to user %d.",
+                            "Reservation %s does not belong to user %s.",
                             reservation.getCheckInCode(), userId));
         }
         if (!Objects.equals(reservation.getEvent().id, eventId)) {
             throw new EventMismatchException(
                     String.format(
-                            "Reservation %s does not belong to event %d.",
+                            "Reservation %s does not belong to event %s.",
                             reservation.getCheckInCode(), eventId));
         }
         if (reservation.getStatus() == ReservationStatus.BLOCKED) {
@@ -371,7 +370,7 @@ public class CheckInService {
         }
     }
 
-    private boolean isAuthorizedForEvent(AuthenticatedUser user, Long eventId) {
+    private boolean isAuthorizedForEvent(AuthenticatedUser user, UUID eventId) {
         if (user == null || eventId == null) return false;
         // If user is a supervisor for the event
         if (eventRepository.isUserSupervisor(eventId, user.id())) return true;

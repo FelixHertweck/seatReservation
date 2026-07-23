@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.supervisor.dto;
 
 import java.util.List;
+import java.util.UUID;
 
 import de.felixhertweck.seatreservation.common.dto.AreaDTO;
 import de.felixhertweck.seatreservation.common.dto.EventLocationMakerDTO;
@@ -31,7 +32,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 @RegisterForReflection
 @Schema(description = "Event location details for supervisor view")
 public record SupervisorEventLocationDTO(
-        Long id,
+        UUID id,
         String name,
         List<SeatDTO> seats,
         List<EventLocationMakerDTO> markers,

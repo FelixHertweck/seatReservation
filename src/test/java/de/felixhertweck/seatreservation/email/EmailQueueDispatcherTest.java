@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.email;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import jakarta.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -76,7 +77,7 @@ class EmailQueueDispatcherTest {
                         .build());
     }
 
-    private OutboundEmail reload(Long id) {
+    private OutboundEmail reload(UUID id) {
         return QuarkusTransaction.requiringNew().call(() -> outboundEmailRepository.findById(id));
     }
 
@@ -124,7 +125,7 @@ class EmailQueueDispatcherTest {
 
     @Test
     void repeatedFailures_areRetriedThenDeadLettered() {
-        Long id = enqueueSimple().id;
+        UUID id = enqueueSimple().id;
         RuntimeException error = new RuntimeException("SMTP unavailable");
 
         // First failure: still PENDING and scheduled for a retry.
@@ -148,7 +149,7 @@ class EmailQueueDispatcherTest {
     @Test
     void staleSendingMessage_isRequeuedAndSent() {
         // Simulate a message left in SENDING by a crashed dispatcher long ago.
-        Long id =
+        UUID id =
                 QuarkusTransaction.requiringNew()
                         .call(
                                 () -> {

@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.reservation.service;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
@@ -26,6 +28,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import jakarta.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -99,23 +102,23 @@ class ReservationServiceTest {
     @BeforeEach
     void setUp() {
         currentUser = new User();
-        currentUser.id = 1L;
+        currentUser.id = id(1);
         currentUser.setUsername("testuser");
         currentUser.setEmail("user@example.com");
         currentUser.setEmailVerified(true);
         currentUser.setEmailVerificationSent(false);
 
         otherUser = new User();
-        otherUser.id = 2L;
+        otherUser.id = id(2);
         otherUser.setUsername("otheruser");
 
         var location = new EventLocation();
-        location.id = 1L;
+        location.id = id(1);
         location.setName("Test Location");
         location.setAddress("Test Address");
 
         event = new Event();
-        event.id = 1L;
+        event.id = id(1);
         event.setName("Test Event for Reservation");
         event.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(1).toSeconds()));
         event.setStartTime(Instant.now().plusSeconds(Duration.ofDays(2).toSeconds()));
@@ -126,10 +129,10 @@ class ReservationServiceTest {
         event.setEventLocation(location);
 
         seat1 = new Seat("", "", location);
-        seat1.id = 1L;
+        seat1.id = id(1);
 
         seat2 = new Seat("", "", location);
-        seat2.id = 2L;
+        seat2.id = id(2);
 
         reservation =
                 new Reservation(
@@ -139,7 +142,7 @@ class ReservationServiceTest {
                         Instant.now(),
                         ReservationStatus.RESERVED,
                         CodeGenerator.generateRandomCode());
-        reservation.id = 1L;
+        reservation.id = id(1);
 
         allowance = new EventUserAllowance();
         allowance.setEvent(event);
@@ -147,7 +150,7 @@ class ReservationServiceTest {
         allowance.setReservationsAllowedCount(2);
     }
 
-    private void mockSeatFind(Set<Long> seatIds, List<Seat> seats) {
+    private void mockSeatFind(Set<UUID> seatIds, List<Seat> seats) {
         PanacheQuery<Seat> seatQueryMock = mock(PanacheQuery.class);
         when(seatRepository.find("id in ?1", seatIds)).thenReturn(seatQueryMock);
         when(seatQueryMock.list()).thenReturn(seats);
@@ -177,10 +180,10 @@ class ReservationServiceTest {
 
     @Test
     void findReservationByIdForUser_Success() {
-        when(reservationRepository.findByIdOptional(1L)).thenReturn(Optional.of(reservation));
+        when(reservationRepository.findByIdOptional(id(1))).thenReturn(Optional.of(reservation));
 
         UserReservationResponseDTO result =
-                reservationService.findReservationByIdForUser(1L, currentUser);
+                reservationService.findReservationByIdForUser(id(1), currentUser);
 
         assertNotNull(result);
         assertEquals(reservation.id, result.id());
@@ -188,20 +191,20 @@ class ReservationServiceTest {
 
     @Test
     void findReservationByIdForUser_NotFoundException() {
-        when(reservationRepository.findByIdOptional(1L)).thenReturn(Optional.empty());
+        when(reservationRepository.findByIdOptional(id(1))).thenReturn(Optional.empty());
 
         assertThrows(
                 ReservationNotFoundException.class,
-                () -> reservationService.findReservationByIdForUser(1L, currentUser));
+                () -> reservationService.findReservationByIdForUser(id(1), currentUser));
     }
 
     @Test
     void findReservationByIdForUser_ForbiddenException() {
-        when(reservationRepository.findByIdOptional(1L)).thenReturn(Optional.of(reservation));
+        when(reservationRepository.findByIdOptional(id(1))).thenReturn(Optional.of(reservation));
 
         assertThrows(
                 SecurityException.class,
-                () -> reservationService.findReservationByIdForUser(1L, otherUser));
+                () -> reservationService.findReservationByIdForUser(id(1), otherUser));
     }
 
     @Test
@@ -254,10 +257,10 @@ class ReservationServiceTest {
     @Test
     void createReservationForUser_NotFoundException_EventNotFound() {
         UserReservationsRequestDTO dto = new UserReservationsRequestDTO();
-        dto.setEventId(99L);
+        dto.setEventId(id(99));
         dto.setSeatIds(Set.of(seat1.id));
 
-        when(eventRepository.findByIdOptional(99L)).thenReturn(Optional.empty());
+        when(eventRepository.findByIdOptional(id(99))).thenReturn(Optional.empty());
 
         assertThrows(
                 EventNotFoundException.class,
@@ -268,7 +271,7 @@ class ReservationServiceTest {
     void createReservationForUser_NotFoundException_SeatNotFound() {
         UserReservationsRequestDTO dto = new UserReservationsRequestDTO();
         dto.setEventId(event.id);
-        dto.setSeatIds(Set.of(99L));
+        dto.setSeatIds(Set.of(id(99)));
 
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
         mockSeatFind(dto.getSeatIds(), Collections.emptyList());
@@ -298,12 +301,12 @@ class ReservationServiceTest {
     void createReservationForUser_NoSeatsAvailableException_LimitReached() {
         UserReservationsRequestDTO dto = new UserReservationsRequestDTO();
         dto.setEventId(event.id);
-        dto.setSeatIds(Set.of(seat1.id, seat2.id, 3L)); // 3 seats, but only 2 allowed
+        dto.setSeatIds(Set.of(seat1.id, seat2.id, id(3))); // 3 seats, but only 2 allowed
 
         allowance.setReservationsAllowedCount(2);
 
         Seat seat3 = new Seat("", "", null);
-        seat3.id = 3L;
+        seat3.id = id(3);
 
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
         mockSeatFind(dto.getSeatIds(), List.of(seat1, seat2, seat3));
@@ -387,7 +390,7 @@ class ReservationServiceTest {
         Reservation existingReservation =
                 new Reservation(
                         otherUser, event, seat1, Instant.now(), ReservationStatus.BLOCKED, "12345");
-        existingReservation.id = 2L;
+        existingReservation.id = id(2);
 
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
         mockSeatFind(dto.getSeatIds(), List.of(seat1));
@@ -406,7 +409,7 @@ class ReservationServiceTest {
     @Test
     void deleteReservationForUser_Success() {
         PanacheQuery<Reservation> queryMock = mock(PanacheQuery.class);
-        when(reservationRepository.find("id in ?1", List.of(1L))).thenReturn(queryMock);
+        when(reservationRepository.find("id in ?1", List.of(id(1)))).thenReturn(queryMock);
         when(queryMock.list()).thenReturn(List.of(reservation));
 
         when(eventUserAllowanceRepository.findByUser(currentUser)).thenReturn(List.of(allowance));
@@ -414,7 +417,7 @@ class ReservationServiceTest {
                 .thenReturn(Optional.of(allowance));
 
         assertDoesNotThrow(
-                () -> reservationService.deleteReservationForUser(List.of(1L), currentUser));
+                () -> reservationService.deleteReservationForUser(List.of(id(1)), currentUser));
         verify(eventUserAllowanceRepository, times(1)).persist(allowance);
         assertEquals(3, allowance.getReservationsAllowedCount());
     }
@@ -422,7 +425,7 @@ class ReservationServiceTest {
     @Test
     void deleteReservationForUser_IOException_EmailServiceFailure() throws IOException {
         PanacheQuery<Reservation> queryMock = mock(PanacheQuery.class);
-        when(reservationRepository.find("id in ?1", List.of(1L))).thenReturn(queryMock);
+        when(reservationRepository.find("id in ?1", List.of(id(1)))).thenReturn(queryMock);
         when(queryMock.list()).thenReturn(List.of(reservation));
 
         when(eventUserAllowanceRepository.findByUser(currentUser)).thenReturn(List.of(allowance));
@@ -434,44 +437,44 @@ class ReservationServiceTest {
                 .sendUpdateReservationConfirmation(any(), any(), any());
 
         assertDoesNotThrow(
-                () -> reservationService.deleteReservationForUser(List.of(1L), currentUser));
+                () -> reservationService.deleteReservationForUser(List.of(id(1)), currentUser));
         verify(eventUserAllowanceRepository, times(1)).persist(allowance);
     }
 
     @Test
     void deleteReservationForUser_Success_NoAllowanceExists() {
         PanacheQuery<Reservation> queryMock = mock(PanacheQuery.class);
-        when(reservationRepository.find("id in ?1", List.of(1L))).thenReturn(queryMock);
+        when(reservationRepository.find("id in ?1", List.of(id(1)))).thenReturn(queryMock);
         when(queryMock.list()).thenReturn(List.of(reservation));
 
         when(eventUserAllowanceRepository.findByUser(currentUser))
                 .thenReturn(Collections.emptyList());
 
         assertDoesNotThrow(
-                () -> reservationService.deleteReservationForUser(List.of(1L), currentUser));
+                () -> reservationService.deleteReservationForUser(List.of(id(1)), currentUser));
         verify(eventUserAllowanceRepository, never()).persist(any(EventUserAllowance.class));
     }
 
     @Test
     void deleteReservationForUser_NotFoundException() {
         PanacheQuery<Reservation> queryMock = mock(PanacheQuery.class);
-        when(reservationRepository.find("id in ?1", List.of(1L))).thenReturn(queryMock);
+        when(reservationRepository.find("id in ?1", List.of(id(1)))).thenReturn(queryMock);
         when(queryMock.list()).thenReturn(Collections.emptyList());
 
         assertThrows(
                 ReservationNotFoundException.class,
-                () -> reservationService.deleteReservationForUser(List.of(1L), currentUser));
+                () -> reservationService.deleteReservationForUser(List.of(id(1)), currentUser));
     }
 
     @Test
     void deleteReservationForUser_ForbiddenException_NotOwner() {
         PanacheQuery<Reservation> queryMock = mock(PanacheQuery.class);
-        when(reservationRepository.find("id in ?1", List.of(1L))).thenReturn(queryMock);
+        when(reservationRepository.find("id in ?1", List.of(id(1)))).thenReturn(queryMock);
         when(queryMock.list()).thenReturn(List.of(reservation));
 
         assertThrows(
                 SecurityException.class,
-                () -> reservationService.deleteReservationForUser(List.of(1L), otherUser));
+                () -> reservationService.deleteReservationForUser(List.of(id(1)), otherUser));
     }
 
     @Test

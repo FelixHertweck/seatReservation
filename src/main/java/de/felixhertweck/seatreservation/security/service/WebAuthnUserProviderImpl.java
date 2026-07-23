@@ -96,7 +96,7 @@ public class WebAuthnUserProviderImpl implements WebAuthnUserProvider {
                         null,
                         Instant.now());
         webAuthnCredentialRepository.persist(credential);
-        LOG.debugf("Stored passkey for user ID: %d", user.id);
+        LOG.debugf("Stored passkey for user ID: %s", user.id);
         return Uni.createFrom().voidItem();
     }
 

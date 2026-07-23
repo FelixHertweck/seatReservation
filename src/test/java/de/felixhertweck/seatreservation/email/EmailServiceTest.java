@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.email;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
@@ -85,7 +87,7 @@ class EmailServiceTest {
         user.setFirstname("Test");
         user.setLastname("User");
         user.setUsername("testuser");
-        user.id = 1L;
+        user.id = id(1);
         user.setEmailVerified(false);
         user.setEmailVerificationSent(false);
         return user;
@@ -93,7 +95,7 @@ class EmailServiceTest {
 
     private Event createTestEvent(EventLocation location) {
         Event event = new Event();
-        event.id = 10L;
+        event.id = id(10);
         event.setName("Test Event");
         event.setStartTime(Instant.now().plusSeconds(Duration.ofDays(1).toSeconds()));
         event.setEndTime(
@@ -106,7 +108,7 @@ class EmailServiceTest {
 
     private EventLocation createTestEventLocation() {
         EventLocation location = new EventLocation();
-        location.id = 100L;
+        location.id = id(100);
         location.setName("Test Location");
         location.setCapacity(100);
         return location;
@@ -114,14 +116,14 @@ class EmailServiceTest {
 
     private Seat createTestSeat(EventLocation location, String seatNumber) {
         Seat seat = new Seat(seatNumber, "", location);
-        seat.id = 1000L;
+        seat.id = id(1000);
         seat.setArea(new EventLocationArea("Parkett"));
         return seat;
     }
 
     private Reservation createTestReservation(User user, Event event, Seat seat) {
         Reservation reservation = new Reservation();
-        reservation.id = 10000L;
+        reservation.id = id(10000);
         reservation.setUser(user);
         reservation.setEvent(event);
         reservation.setSeat(seat);
@@ -206,7 +208,7 @@ class EmailServiceTest {
                         user,
                         "oldtoken",
                         Instant.now().minusSeconds(Duration.ofMinutes(10).toSeconds()));
-        emailVerification.id = 1L;
+        emailVerification.id = id(1);
 
         doNothing().when(emailVerificationRepository).persist(any(EmailVerification.class));
 
@@ -259,7 +261,8 @@ class EmailServiceTest {
         assertTrue(
                 sentMail.getHtml()
                         .contains("http://localhost:8080/email/seatmap?token=test-token-123"));
-        assertTrue(sentMail.getHtml().contains("http://localhost:8080/reservations?id=10"));
+        assertTrue(
+                sentMail.getHtml().contains("http://localhost:8080/reservations?id=" + event.id));
         assertTrue(sentMail.getHtml().contains("<img src=\"cid:qrcode-image\""));
         assertTrue(sentMail.getHtml().contains(user.getUsername()));
         // Verify that BCC is not added to event reminder emails

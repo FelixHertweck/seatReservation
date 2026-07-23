@@ -149,7 +149,7 @@ class WebAuthnFlowTest {
                 .statusCode(200);
 
         // 6. Both passkeys are listed; the second got a sensible default name from the User-Agent.
-        List<Integer> ids =
+        List<String> ids =
                 given().filter(loginCookies)
                         .when()
                         .get("/api/auth/webauthn/credentials")
@@ -174,7 +174,7 @@ class WebAuthnFlowTest {
                 .get("/api/auth/webauthn/credentials")
                 .then()
                 .statusCode(200)
-                .body("find { it.id == " + ids.get(0) + " }.label", equalTo("My work laptop"));
+                .body("find { it.id == '" + ids.get(0) + "' }.label", equalTo("My work laptop"));
 
         // 7. Deleting one succeeds; deleting the last of a password-less account is refused (409).
         given().filter(loginCookies)

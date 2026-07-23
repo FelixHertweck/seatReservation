@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import de.felixhertweck.seatreservation.common.dto.AreaDTO;
 import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
@@ -254,7 +255,7 @@ public class SvgRenderer {
             return;
         }
 
-        Map<Long, Seat> seatById = new HashMap<>();
+        Map<UUID, Seat> seatById = new HashMap<>();
         for (Seat seat : allSeats) {
             if (seat.id != null) {
                 seatById.put(seat.id, seat);
@@ -322,8 +323,8 @@ public class SvgRenderer {
     }
 
     private static void appendAreaBoundingBox(
-            StringBuilder sb, AreaDTO area, Map<Long, Seat> seatById, int scale, String color) {
-        List<Long> seatIds = area.seatIds();
+            StringBuilder sb, AreaDTO area, Map<UUID, Seat> seatById, int scale, String color) {
+        List<UUID> seatIds = area.seatIds();
         if (seatIds == null || seatIds.isEmpty()) {
             return;
         }
@@ -333,7 +334,7 @@ public class SvgRenderer {
         int maxX = Integer.MIN_VALUE;
         int maxY = Integer.MIN_VALUE;
         boolean found = false;
-        for (Long seatId : seatIds) {
+        for (UUID seatId : seatIds) {
             Seat seat = seatById.get(seatId);
             if (seat == null) continue;
             found = true;

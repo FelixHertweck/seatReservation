@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.management.dto;
 
 import java.util.Set;
+import java.util.UUID;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
@@ -29,27 +30,27 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 public class EventUserAllowancesCreateDto {
 
     @NotNull(message = "Event ID must not be null")
-    private Long eventId;
+    private UUID eventId;
 
     @NotNull(message = "User IDs must not be null")
     @NotEmpty(message = "User IDs must not be empty")
-    private Set<Long> userIds;
+    private Set<UUID> userIds;
 
     @NotNull(message = "Reservations allowed count must not be null")
     private int reservationsAllowedCount;
 
     public EventUserAllowancesCreateDto(
-            Set<Long> userIds, Long eventId, int reservationsAllowedCount) {
+            Set<UUID> userIds, UUID eventId, int reservationsAllowedCount) {
         this.userIds = userIds;
         this.eventId = eventId;
         this.reservationsAllowedCount = reservationsAllowedCount;
     }
 
-    public Long getEventId() {
+    public UUID getEventId() {
         return eventId;
     }
 
-    public Set<Long> getUserIds() {
+    public Set<UUID> getUserIds() {
         return userIds;
     }
 

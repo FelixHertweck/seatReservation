@@ -29,13 +29,11 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
-
 @Entity
 @Table(
         uniqueConstraints = {@UniqueConstraint(columnNames = {"seatNumber", "location_id"})},
         name = "seats")
-public class Seat extends PanacheEntity {
+public class Seat extends AbstractEntity {
 
     @Column(nullable = false)
     private String seatNumber;
@@ -102,10 +100,6 @@ public class Seat extends PanacheEntity {
 
     public void setLocation(EventLocation location) {
         this.location = location;
-    }
-
-    public Long getId() {
-        return id;
     }
 
     public String getSeatRow() {

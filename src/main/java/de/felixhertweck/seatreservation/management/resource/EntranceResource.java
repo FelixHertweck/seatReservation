@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.management.resource;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -91,9 +92,9 @@ public class EntranceResource {
             responseCode = "403",
             description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
     public List<EntranceResponseDTO> getEntrancesByEventLocation(
-            @QueryParam("eventLocationId") Long eventLocationId) {
+            @QueryParam("eventLocationId") UUID eventLocationId) {
         LOG.debugf(
-                "Received GET request to /api/manager/entrances?eventLocationId=%d",
+                "Received GET request to /api/manager/entrances?eventLocationId=%s",
                 eventLocationId);
         if (eventLocationId == null) {
             throw new IllegalArgumentException("eventLocationId query parameter is required");
@@ -115,8 +116,8 @@ public class EntranceResource {
     @APIResponse(
             responseCode = "404",
             description = "Not Found: Entrance with specified ID not found for the current manager")
-    public EntranceResponseDTO getManagerEntranceById(@PathParam("id") Long id) {
-        LOG.debugf("Received GET request to /api/manager/entrances/%d.", id);
+    public EntranceResponseDTO getManagerEntranceById(@PathParam("id") UUID id) {
+        LOG.debugf("Received GET request to /api/manager/entrances/%s.", id);
         AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         return entranceService.findEntranceByIdForManager(id, currentUser);
     }
@@ -135,8 +136,8 @@ public class EntranceResource {
             responseCode = "404",
             description = "Not Found: Entrance with specified ID not found for the current manager")
     public EntranceResponseDTO updateManagerEntrance(
-            @PathParam("id") Long id, @Valid EntranceRequestDTO entranceRequestDTO) {
-        LOG.debugf("Received PUT request to /api/manager/entrances/%d to update entrance.", id);
+            @PathParam("id") UUID id, @Valid EntranceRequestDTO entranceRequestDTO) {
+        LOG.debugf("Received PUT request to /api/manager/entrances/%s to update entrance.", id);
         AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         return entranceService.updateEntrance(id, entranceRequestDTO, currentUser);
     }
@@ -154,7 +155,7 @@ public class EntranceResource {
     @APIResponse(
             responseCode = "409",
             description = "Conflict: Entrance is still referenced by at least one seat")
-    public void deleteManagerEntrance(@QueryParam("ids") List<Long> ids) {
+    public void deleteManagerEntrance(@QueryParam("ids") List<UUID> ids) {
         LOG.debugf(
                 "Received DELETE request to /api/manager/entrances with IDs: %s",
                 ids != null ? ids : Collections.emptyList());

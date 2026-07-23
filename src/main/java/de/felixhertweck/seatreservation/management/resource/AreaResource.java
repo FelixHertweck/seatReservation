@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.management.resource;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -91,9 +92,9 @@ public class AreaResource {
             responseCode = "403",
             description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
     public List<AreaResponseDTO> getAreasByEventLocation(
-            @QueryParam("eventLocationId") Long eventLocationId) {
+            @QueryParam("eventLocationId") UUID eventLocationId) {
         LOG.debugf(
-                "Received GET request to /api/manager/areas?eventLocationId=%d", eventLocationId);
+                "Received GET request to /api/manager/areas?eventLocationId=%s", eventLocationId);
         if (eventLocationId == null) {
             throw new IllegalArgumentException("eventLocationId query parameter is required");
         }
@@ -114,8 +115,8 @@ public class AreaResource {
     @APIResponse(
             responseCode = "404",
             description = "Not Found: Area with specified ID not found for the current manager")
-    public AreaResponseDTO getManagerAreaById(@PathParam("id") Long id) {
-        LOG.debugf("Received GET request to /api/manager/areas/%d.", id);
+    public AreaResponseDTO getManagerAreaById(@PathParam("id") UUID id) {
+        LOG.debugf("Received GET request to /api/manager/areas/%s.", id);
         AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         return areaService.findAreaByIdForManager(id, currentUser);
     }
@@ -134,8 +135,8 @@ public class AreaResource {
             responseCode = "404",
             description = "Not Found: Area with specified ID not found for the current manager")
     public AreaResponseDTO updateManagerArea(
-            @PathParam("id") Long id, @Valid AreaRequestDTO areaRequestDTO) {
-        LOG.debugf("Received PUT request to /api/manager/areas/%d to update area.", id);
+            @PathParam("id") UUID id, @Valid AreaRequestDTO areaRequestDTO) {
+        LOG.debugf("Received PUT request to /api/manager/areas/%s to update area.", id);
         AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         return areaService.updateArea(id, areaRequestDTO, currentUser);
     }
@@ -153,7 +154,7 @@ public class AreaResource {
     @APIResponse(
             responseCode = "409",
             description = "Conflict: Area is still referenced by at least one seat")
-    public void deleteManagerArea(@QueryParam("ids") List<Long> ids) {
+    public void deleteManagerArea(@QueryParam("ids") List<UUID> ids) {
         LOG.debugf(
                 "Received DELETE request to /api/manager/areas with IDs: %s",
                 ids != null ? ids : Collections.emptyList());

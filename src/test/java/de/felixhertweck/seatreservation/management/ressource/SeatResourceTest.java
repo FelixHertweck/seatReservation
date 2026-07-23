@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.management.ressource;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
@@ -154,7 +156,12 @@ public class SeatResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testGetAllManagerSeats() {
         given().when()
                 .queryParam("eventLocationId", testLocation.id)
@@ -176,29 +183,44 @@ public class SeatResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testGetManagerSeatById() {
         given().when()
                 .get("/api/manager/seats/" + testSeat.id)
                 .then()
                 .statusCode(200)
-                .body("id", is(testSeat.id.intValue()));
+                .body("id", is(testSeat.id.toString()));
     }
 
     @Test
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testGetManagerSeatByIdNotFound() {
-        given().when().get("/api/manager/seats/999").then().statusCode(404);
+        given().when().get("/api/manager/seats/" + id(999)).then().statusCode(404);
     }
 
     @Test
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testCreateSeat() {
         given().contentType("application/json")
                 .body(
@@ -216,7 +238,12 @@ public class SeatResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testCreateSeatInvalidData() {
         given().contentType("application/json")
                 .body("{\"seatNumber\":\"\"}")
@@ -230,7 +257,12 @@ public class SeatResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testUpdateManagerSeat() {
         given().contentType("application/json")
                 .body(
@@ -247,7 +279,12 @@ public class SeatResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testUpdateManagerSeatEntranceAndRowArePersisted() {
         given().contentType("application/json")
                 .body(
@@ -267,24 +304,23 @@ public class SeatResourceTest {
                 .then()
                 .statusCode(200)
                 .body("size()", is(1))
-                .body(
-                        String.format("find { it.id == %d }.entrance", testSeat.id.intValue()),
-                        is("B"))
-                .body(
-                        String.format("find { it.id == %d }.area", testSeat.id.intValue()),
-                        is("Loge"))
-                .body(
-                        String.format("find { it.id == %d }.seatRow", testSeat.id.intValue()),
-                        is("R: 5"));
+                .body(String.format("find { it.id == '%s' }.entrance", testSeat.id), is("B"))
+                .body(String.format("find { it.id == '%s' }.area", testSeat.id), is("Loge"))
+                .body(String.format("find { it.id == '%s' }.seatRow", testSeat.id), is("R: 5"));
     }
 
     @Test
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testCreateUpdateAndRetrieveSeatLifecycle() {
-        int createdSeatId =
+        String createdSeatId =
                 given().contentType("application/json")
                         .body(
                                 new SeatRequestDTO(
@@ -328,22 +364,27 @@ public class SeatResourceTest {
                 .then()
                 .statusCode(200)
                 .body("size()", is(2))
-                .body(String.format("find { it.id == %d }.entrance", createdSeatId), is("C"))
-                .body(String.format("find { it.id == %d }.seatRow", createdSeatId), is("R: 9"));
+                .body(String.format("find { it.id == '%s' }.entrance", createdSeatId), is("C"))
+                .body(String.format("find { it.id == '%s' }.seatRow", createdSeatId), is("R: 9"));
     }
 
     @Test
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testUpdateManagerSeatNotFound() {
         given().contentType("application/json")
                 .body(
                         new SeatRequestDTO(
                                 "A3", "R: 2", testLocation.id, 1, 3, entranceA.id, areaBalkon.id))
                 .when()
-                .put("/api/manager/seats/999")
+                .put("/api/manager/seats/" + id(999))
                 .then()
                 .statusCode(404);
     }
@@ -352,7 +393,12 @@ public class SeatResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testDeleteManagerSeat() {
         given().when()
                 .queryParam("ids", testSeat.id)
@@ -365,16 +411,30 @@ public class SeatResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testDeleteManagerSeatNotFound() {
-        given().when().queryParam("ids", 999L).delete("/api/manager/seats").then().statusCode(404);
+        given().when()
+                .queryParam("ids", id(999).toString())
+                .delete("/api/manager/seats")
+                .then()
+                .statusCode(404);
     }
 
     @Test
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testDeleteMultipleSeats() {
         // Create additional seats for bulk delete test
         var seat2 = new Seat("A2", "R: 1", testLocation);
@@ -405,11 +465,16 @@ public class SeatResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testDeleteMultipleSeats_PartialNotFound() {
         given().when()
                 .queryParam("ids", testSeat.id)
-                .queryParam("ids", 999L)
+                .queryParam("ids", id(999).toString())
                 .delete("/api/manager/seats")
                 .then()
                 .statusCode(404);

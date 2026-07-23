@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.utils;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import java.security.Principal;
 import java.util.Set;
 
@@ -219,10 +221,10 @@ class UserSecurityContextTest {
     @Test
     void getCurrentUserReference_ValidUidClaim_ReturnsRepositoryReference() {
         // Arrange
-        when(jsonWebToken.getClaim("uid")).thenReturn("42");
+        when(jsonWebToken.getClaim("uid")).thenReturn(id(42).toString());
         User reference = new User();
-        reference.id = 42L;
-        when(userRepository.getReference(42L)).thenReturn(reference);
+        reference.id = id(42);
+        when(userRepository.getReference(id(42))).thenReturn(reference);
 
         // Act
         User result = userSecurityContext.getCurrentUserReference();
@@ -230,7 +232,7 @@ class UserSecurityContextTest {
         // Assert
         assertSame(reference, result);
         verify(jsonWebToken).getClaim("uid");
-        verify(userRepository).getReference(42L);
+        verify(userRepository).getReference(id(42));
         verifyNoInteractions(principal);
     }
 }

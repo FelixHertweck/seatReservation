@@ -91,7 +91,7 @@ public class EmailQueueService {
 
         outboundEmailRepository.persist(email);
         LOG.debugf(
-                "Queued email id=%d subject='%s' recipients=%d attachments=%d",
+                "Queued email id=%s subject='%s' recipients=%d attachments=%d",
                 email.id,
                 message.getSubject(),
                 message.getTo().size() + message.getCc().size() + message.getBcc().size(),

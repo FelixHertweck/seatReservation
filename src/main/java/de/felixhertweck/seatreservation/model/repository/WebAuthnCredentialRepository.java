@@ -20,14 +20,16 @@
 package de.felixhertweck.seatreservation.model.repository;
 
 import java.util.List;
+import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.entity.WebAuthnCredential;
-import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
 @ApplicationScoped
-public class WebAuthnCredentialRepository implements PanacheRepository<WebAuthnCredential> {
+public class WebAuthnCredentialRepository
+        implements PanacheRepositoryBase<WebAuthnCredential, UUID> {
 
     /**
      * Find a WebAuthn credential by its base64url-encoded credential id.
@@ -66,7 +68,7 @@ public class WebAuthnCredentialRepository implements PanacheRepository<WebAuthnC
      * @param user the user who owns the credential
      * @return true if the credential was deleted, false otherwise
      */
-    public boolean deleteWithIdAndUser(Long id, User user) {
+    public boolean deleteWithIdAndUser(UUID id, User user) {
         return delete("id = ?1 and user = ?2", id, user) > 0;
     }
 
@@ -77,7 +79,7 @@ public class WebAuthnCredentialRepository implements PanacheRepository<WebAuthnC
      * @param user the user who should own the credential
      * @return true if such a credential exists
      */
-    public boolean existsByIdAndUser(Long id, User user) {
+    public boolean existsByIdAndUser(UUID id, User user) {
         return count("id = ?1 and user = ?2", id, user) > 0;
     }
 }

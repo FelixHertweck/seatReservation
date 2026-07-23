@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.management.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -57,7 +58,7 @@ public class AreaService {
      * @return the areas of the event location
      */
     public List<AreaResponseDTO> findAreasByLocation(
-            Long eventLocationId, AuthenticatedUser manager) {
+            UUID eventLocationId, AuthenticatedUser manager) {
         EventLocation eventLocation =
                 eventLocationAccessService.findOwnedEventLocation(eventLocationId, manager);
         return areaRepository.findByEventLocation(eventLocation).stream()
@@ -72,7 +73,7 @@ public class AreaService {
      * @param manager the manager attempting to access the area
      * @return the area DTO
      */
-    public AreaResponseDTO findAreaByIdForManager(Long id, AuthenticatedUser manager) {
+    public AreaResponseDTO findAreaByIdForManager(UUID id, AuthenticatedUser manager) {
         return new AreaResponseDTO(findAreaEntityById(id, manager));
     }
 
@@ -102,7 +103,7 @@ public class AreaService {
                                 .collect(Collectors.toCollection(ArrayList::new)));
         areaRepository.persist(area);
         LOG.infof(
-                "Area ID: %d created successfully for event location ID %d",
+                "Area ID: %s created successfully for event location ID %s",
                 area.id, eventLocation.getId());
         return new AreaResponseDTO(area);
     }
@@ -118,7 +119,7 @@ public class AreaService {
      *     still referenced by at least one seat
      */
     @Transactional
-    public AreaResponseDTO updateArea(Long id, AreaRequestDTO dto, AuthenticatedUser manager) {
+    public AreaResponseDTO updateArea(UUID id, AreaRequestDTO dto, AuthenticatedUser manager) {
         EventLocationArea area = findAreaEntityById(id, manager);
         EventLocation newEventLocation =
                 eventLocationAccessService.findOwnedEventLocation(
@@ -147,7 +148,7 @@ public class AreaService {
                                 .map(CoordinateDTO::toEntity)
                                 .collect(Collectors.toCollection(ArrayList::new)));
         areaRepository.persist(area);
-        LOG.infof("Area ID: %d updated successfully", area.id);
+        LOG.infof("Area ID: %s updated successfully", area.id);
         return new AreaResponseDTO(area);
     }
 
@@ -159,18 +160,18 @@ public class AreaService {
      * @param manager the manager attempting to delete the areas
      */
     @Transactional
-    public void deleteAreas(List<Long> ids, AuthenticatedUser manager) {
+    public void deleteAreas(List<UUID> ids, AuthenticatedUser manager) {
         if (ids == null || ids.isEmpty()) {
             throw new IllegalArgumentException("No area IDs provided for deletion");
         }
-        for (Long id : ids) {
+        for (UUID id : ids) {
             EventLocationArea area = findAreaEntityById(id, manager);
             if (seatRepository.countByArea(area) > 0) {
                 throw new AreaInUseException(
                         "Area with id " + id + " is still referenced by at least one seat");
             }
             areaRepository.delete(area);
-            LOG.infof("Area ID: %d deleted successfully", id);
+            LOG.infof("Area ID: %s deleted successfully", id);
         }
     }
 
@@ -181,7 +182,7 @@ public class AreaService {
      * @param manager the manager attempting to access the area
      * @return the area entity
      */
-    private EventLocationArea findAreaEntityById(Long id, AuthenticatedUser manager) {
+    private EventLocationArea findAreaEntityById(UUID id, AuthenticatedUser manager) {
         EventLocationArea area =
                 areaRepository
                         .findByIdWithEventLocation(id)

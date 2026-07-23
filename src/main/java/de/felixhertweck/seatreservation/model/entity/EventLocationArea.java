@@ -22,9 +22,9 @@ package de.felixhertweck.seatreservation.model.entity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import jakarta.persistence.*;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import org.hibernate.annotations.BatchSize;
 
 /**
@@ -33,7 +33,7 @@ import org.hibernate.annotations.BatchSize;
  */
 @Entity
 @Table(name = "event_location_areas")
-public class EventLocationArea extends PanacheEntity {
+public class EventLocationArea extends AbstractEntity {
 
     private String name;
 
@@ -128,7 +128,7 @@ public class EventLocationArea extends PanacheEntity {
         return Objects.hash(name, eventLocationId(), boundary);
     }
 
-    private Long eventLocationId() {
+    private UUID eventLocationId() {
         return eventLocation == null ? null : eventLocation.getId();
     }
 }

@@ -33,11 +33,9 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
-
 @Entity
 @Table(name = "users")
-public class User extends PanacheEntity {
+public class User extends AbstractEntity {
 
     @Column(unique = true, nullable = false)
     private String username;
@@ -121,10 +119,6 @@ public class User extends PanacheEntity {
         if (tags != null) {
             this.tags = new HashSet<>(tags);
         }
-    }
-
-    public Long getId() {
-        return id;
     }
 
     public String getUsername() {

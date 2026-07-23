@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.management.ressource;
 
+import static de.felixhertweck.seatreservation.testutil.TestIds.id;
+
 import java.util.ArrayList;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -117,7 +119,12 @@ public class EventLocationResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testGetEventLocationsByCurrentManager() {
         given().when()
                 .get("/api/manager/eventlocations")
@@ -130,7 +137,12 @@ public class EventLocationResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testCreateEventLocation() {
         given().contentType("application/json")
                 .body("{\"name\":\"New Location\",\"address\":\"123 Main St\",\"capacity\":100}")
@@ -154,7 +166,12 @@ public class EventLocationResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testCreateEventLocationWithEmbeddedAreasAndMarkers() {
         given().contentType("application/json")
                 .body(
@@ -175,7 +192,12 @@ public class EventLocationResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testCreateEventLocationInvalidData() {
         given().contentType("application/json")
                 .body("{\"name\":\"\"}")
@@ -189,7 +211,12 @@ public class EventLocationResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testUpdateEventLocation() {
         given().contentType("application/json")
                 .body(
@@ -206,7 +233,12 @@ public class EventLocationResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testUpdateEventLocationInvalidData() {
         given().contentType("application/json")
                 .body("{\"name\":\"\"}")
@@ -220,14 +252,19 @@ public class EventLocationResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testUpdateEventLocationNotFound() {
         given().contentType("application/json")
                 .body(
                         "{\"name\":\"Updated Location\",\"address\":\"456 Main"
                                 + " St\",\"capacity\":150}")
                 .when()
-                .put("/api/manager/eventlocations/999")
+                .put("/api/manager/eventlocations/" + id(999))
                 .then()
                 .statusCode(404);
     }
@@ -236,7 +273,12 @@ public class EventLocationResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testDeleteEventLocation() {
         given().when()
                 .queryParam("ids", testLocation.getId())
@@ -249,10 +291,15 @@ public class EventLocationResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testDeleteEventLocationNotFound() {
         given().when()
-                .queryParam("ids", 999L)
+                .queryParam("ids", id(999).toString())
                 .delete("/api/manager/eventlocations")
                 .then()
                 .statusCode(404);
@@ -262,7 +309,12 @@ public class EventLocationResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testDeleteMultipleEventLocations() {
         // Create additional locations for bulk delete test
         var user = userRepository.findByUsernameOptional("manager").orElseThrow();
@@ -301,11 +353,16 @@ public class EventLocationResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testDeleteMultipleEventLocations_PartialNotFound() {
         given().when()
                 .queryParam("ids", testLocation.getId())
-                .queryParam("ids", 999L) // Non-existent ID
+                .queryParam("ids", id(999).toString()) // Non-existent ID
                 .delete("/api/manager/eventlocations")
                 .then()
                 .statusCode(404); // Should fail if any ID is not found
@@ -342,7 +399,12 @@ public class EventLocationResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
-    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000002",
+                            type = ClaimType.STRING))
     void testCreateEventLocationWithSeats() {
         String requestBody =
                 "{\"name\":\"New Location\",\"address\":\"123 Main"
