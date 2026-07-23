@@ -43,6 +43,7 @@ import de.felixhertweck.seatreservation.management.dto.ReservationResponseDTO;
 import de.felixhertweck.seatreservation.management.service.ReservationService;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -78,7 +79,7 @@ public class ReservationResource {
             description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
     public List<ReservationResponseDTO> getAllReservations() {
         LOG.debugf("Received GET request to /api/manager/reservations to get all reservations.");
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         List<ReservationResponseDTO> result = reservationService.findAllReservations(currentUser);
         LOG.debugf(
                 "Successfully responded to GET /api/manager/reservations with %d reservations.",

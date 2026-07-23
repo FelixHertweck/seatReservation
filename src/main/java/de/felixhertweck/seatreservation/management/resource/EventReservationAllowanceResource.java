@@ -42,6 +42,7 @@ import de.felixhertweck.seatreservation.management.dto.EventUserAllowancesDto;
 import de.felixhertweck.seatreservation.management.service.EventReservationAllowanceService;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -84,7 +85,7 @@ public class EventReservationAllowanceResource {
         LOG.debugf(
                 "Received POST request to /api/manager/reservationAllowance to set reservation"
                         + " allowance.");
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         Set<EventUserAllowancesDto> result =
                 eventReservationAllowanceService.setReservationsAllowedForUser(
                         userReservationAllowanceDTO, currentUser);
@@ -159,7 +160,7 @@ public class EventReservationAllowanceResource {
     public List<EventUserAllowancesDto> getReservationAllowances() {
         LOG.debugf(
                 "Received GET request to /api/manager/reservationAllowance to get all allowances.");
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         List<EventUserAllowancesDto> result =
                 eventReservationAllowanceService.getReservationAllowances(currentUser);
         LOG.debugf("Successfully retrieved %d reservation allowances.", result.size());

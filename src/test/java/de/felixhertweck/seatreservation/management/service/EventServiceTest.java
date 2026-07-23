@@ -58,6 +58,7 @@ import de.felixhertweck.seatreservation.model.repository.EventLocationRepository
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -82,6 +83,9 @@ public class EventServiceTest {
     private User managerUser;
     private User supervisorUser;
     private User regularUser;
+    private AuthenticatedUser adminAuth;
+    private AuthenticatedUser managerAuth;
+    private AuthenticatedUser regularAuth;
     private EventLocation eventLocation;
     private Event existingEvent;
 
@@ -146,6 +150,11 @@ public class EventServiceTest {
                         Set.of(Roles.USER),
                         Set.of());
         regularUser.id = 2L;
+
+        adminAuth = new AuthenticatedUser(adminUser.id, adminUser.getRoles());
+        managerAuth = new AuthenticatedUser(managerUser.id, managerUser.getRoles());
+        regularAuth = new AuthenticatedUser(regularUser.id, regularUser.getRoles());
+        when(userRepository.getReference(managerUser.id)).thenReturn(managerUser);
 
         eventLocation = new EventLocation("Stadthalle", "Hauptstraße 1", managerUser, 100);
         eventLocation.id = 1L;
@@ -405,7 +414,7 @@ public class EventServiceTest {
                                 Set.of(supervisorUser)));
         when(eventRepository.listAll()).thenReturn(allEvents);
 
-        List<EventResponseDTO> result = eventService.getEventsByCurrentManager(adminUser);
+        List<EventResponseDTO> result = eventService.getEventsByCurrentManager(adminAuth);
 
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -418,7 +427,7 @@ public class EventServiceTest {
         List<Event> managerEvents = List.of(existingEvent);
         when(eventRepository.findByManager(managerUser)).thenReturn(managerEvents);
 
-        List<EventResponseDTO> result = eventService.getEventsByCurrentManager(managerUser);
+        List<EventResponseDTO> result = eventService.getEventsByCurrentManager(managerAuth);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -431,7 +440,7 @@ public class EventServiceTest {
     void getEventsByCurrentManager_Success_NoEventsForManager() {
         when(eventRepository.findByManager(managerUser)).thenReturn(Collections.emptyList());
 
-        List<EventResponseDTO> result = eventService.getEventsByCurrentManager(managerUser);
+        List<EventResponseDTO> result = eventService.getEventsByCurrentManager(managerAuth);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
@@ -464,7 +473,7 @@ public class EventServiceTest {
                 .when(eventUserAllowanceRepository)
                 .persist(any(EventUserAllowance.class));
 
-        eventReservationAllowanceService.setReservationsAllowedForUser(dto, managerUser);
+        eventReservationAllowanceService.setReservationsAllowedForUser(dto, managerAuth);
 
         verify(eventUserAllowanceRepository, times(1)).persist(any(EventUserAllowance.class));
     }
@@ -489,7 +498,7 @@ public class EventServiceTest {
         when(mockQuery.firstResultOptional()).thenReturn(Optional.of(existingAllowance));
         doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
 
-        eventReservationAllowanceService.setReservationsAllowedForUser(dto, managerUser);
+        eventReservationAllowanceService.setReservationsAllowedForUser(dto, managerAuth);
 
         assertEquals(10, existingAllowance.getReservationsAllowedCount());
         verify(eventUserAllowanceRepository, times(1)).persist(existingAllowance);
@@ -515,7 +524,7 @@ public class EventServiceTest {
         when(mockQuery.firstResultOptional()).thenReturn(Optional.empty());
 
         // Act
-        eventReservationAllowanceService.setReservationsAllowedForUser(dto, adminUser);
+        eventReservationAllowanceService.setReservationsAllowedForUser(dto, adminAuth);
 
         // Assert
         verify(eventUserAllowanceRepository).persist(allowanceCaptor.capture());
@@ -538,7 +547,7 @@ public class EventServiceTest {
                 EventNotFoundException.class,
                 () ->
                         eventReservationAllowanceService.setReservationsAllowedForUser(
-                                dto, managerUser));
+                                dto, managerAuth));
         verify(eventUserAllowanceRepository, never()).persist(any(EventUserAllowance.class));
     }
 
@@ -555,7 +564,7 @@ public class EventServiceTest {
                 UserNotFoundException.class,
                 () ->
                         eventReservationAllowanceService.setReservationsAllowedForUser(
-                                dto, managerUser));
+                                dto, managerAuth));
         verify(eventUserAllowanceRepository, never()).persist(any(EventUserAllowance.class));
     }
 
@@ -572,7 +581,7 @@ public class EventServiceTest {
                 SecurityException.class,
                 () ->
                         eventReservationAllowanceService.setReservationsAllowedForUser(
-                                dto, regularUser));
+                                dto, regularAuth));
         verify(eventUserAllowanceRepository, never()).persist(any(EventUserAllowance.class));
     }
 

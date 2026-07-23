@@ -54,6 +54,7 @@ import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -73,6 +74,9 @@ public class EventLocationServiceTest {
     private User adminUser;
     private User managerUser;
     private User regularUser;
+    private AuthenticatedUser adminAuth;
+    private AuthenticatedUser managerAuth;
+    private AuthenticatedUser regularAuth;
     private EventLocation existingLocation;
 
     @BeforeEach
@@ -120,6 +124,13 @@ public class EventLocationServiceTest {
                         Set.of());
         regularUser.id = 2L;
 
+        adminAuth = new AuthenticatedUser(adminUser.id, adminUser.getRoles());
+        managerAuth = new AuthenticatedUser(managerUser.id, managerUser.getRoles());
+        regularAuth = new AuthenticatedUser(regularUser.id, regularUser.getRoles());
+
+        when(userRepository.getReference(managerUser.id)).thenReturn(managerUser);
+        when(userRepository.getReference(regularUser.id)).thenReturn(regularUser);
+
         existingLocation = new EventLocation("Stadthalle", "Hauptstraße 1", managerUser, 100);
         existingLocation.id = 1L;
     }
@@ -133,7 +144,7 @@ public class EventLocationServiceTest {
         when(eventLocationRepository.listAll()).thenReturn(allLocations);
 
         List<EventLocationResponseDTO> result =
-                eventLocationService.getEventLocationsByCurrentManager(adminUser);
+                eventLocationService.getEventLocationsByCurrentManager(adminAuth);
 
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -147,7 +158,7 @@ public class EventLocationServiceTest {
         when(eventLocationRepository.findByManager(managerUser)).thenReturn(managerLocations);
 
         List<EventLocationResponseDTO> result =
-                eventLocationService.getEventLocationsByCurrentManager(managerUser);
+                eventLocationService.getEventLocationsByCurrentManager(managerAuth);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -162,7 +173,7 @@ public class EventLocationServiceTest {
                 .thenReturn(Collections.emptyList());
 
         List<EventLocationResponseDTO> result =
-                eventLocationService.getEventLocationsByCurrentManager(managerUser);
+                eventLocationService.getEventLocationsByCurrentManager(managerAuth);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
@@ -189,7 +200,7 @@ public class EventLocationServiceTest {
                 .persist(any(EventLocation.class));
 
         EventLocationResponseDTO createdLocation =
-                eventLocationService.createEventLocation(dto, managerUser);
+                eventLocationService.createEventLocation(dto, managerAuth);
 
         assertNotNull(createdLocation);
         assertEquals("New Hall", createdLocation.name());
@@ -208,7 +219,7 @@ public class EventLocationServiceTest {
 
         assertThrows(
                 IllegalArgumentException.class,
-                () -> eventLocationService.createEventLocation(dto, managerUser));
+                () -> eventLocationService.createEventLocation(dto, managerAuth));
         verify(eventLocationRepository, never()).persist(any(EventLocation.class));
     }
 
@@ -221,7 +232,7 @@ public class EventLocationServiceTest {
 
         assertThrows(
                 IllegalArgumentException.class,
-                () -> eventLocationService.createEventLocation(dto, managerUser));
+                () -> eventLocationService.createEventLocation(dto, managerAuth));
         verify(eventLocationRepository, never()).persist(any(EventLocation.class));
     }
 
@@ -236,7 +247,7 @@ public class EventLocationServiceTest {
                 .thenReturn(Optional.of(existingLocation));
 
         EventLocationResponseDTO updatedLocation =
-                eventLocationService.updateEventLocation(1L, dto, managerUser);
+                eventLocationService.updateEventLocation(1L, dto, managerAuth);
 
         assertNotNull(updatedLocation);
         assertEquals("Updated Hall", updatedLocation.name());
@@ -256,7 +267,7 @@ public class EventLocationServiceTest {
 
         assertThrows(
                 EventLocationNotFoundException.class,
-                () -> eventLocationService.updateEventLocation(99L, dto, managerUser));
+                () -> eventLocationService.updateEventLocation(99L, dto, managerAuth));
         verify(eventLocationRepository, never()).persist(any(EventLocation.class));
     }
 
@@ -271,7 +282,7 @@ public class EventLocationServiceTest {
                 .thenReturn(Optional.of(existingLocation));
 
         EventLocationResponseDTO updatedLocation =
-                eventLocationService.updateEventLocation(1L, dto, adminUser);
+                eventLocationService.updateEventLocation(1L, dto, adminAuth);
 
         assertNotNull(updatedLocation);
         assertEquals("Updated Hall by Admin", updatedLocation.name());
@@ -292,7 +303,7 @@ public class EventLocationServiceTest {
 
         assertThrows(
                 SecurityException.class,
-                () -> eventLocationService.updateEventLocation(1L, dto, regularUser));
+                () -> eventLocationService.updateEventLocation(1L, dto, regularAuth));
         verify(eventLocationRepository, never()).persist(any(EventLocation.class));
     }
 
@@ -302,7 +313,7 @@ public class EventLocationServiceTest {
                 .thenReturn(Optional.of(existingLocation));
         doNothing().when(eventLocationRepository).delete(any(EventLocation.class));
 
-        eventLocationService.deleteEventLocation(List.of(1L), managerUser);
+        eventLocationService.deleteEventLocation(List.of(1L), managerAuth);
 
         verify(eventLocationRepository, times(1)).delete(existingLocation);
     }
@@ -313,7 +324,7 @@ public class EventLocationServiceTest {
 
         assertThrows(
                 EventLocationNotFoundException.class,
-                () -> eventLocationService.deleteEventLocation(List.of(99L), managerUser));
+                () -> eventLocationService.deleteEventLocation(List.of(99L), managerAuth));
         verify(eventLocationRepository, never()).delete(any(EventLocation.class));
     }
 
@@ -323,7 +334,7 @@ public class EventLocationServiceTest {
                 .thenReturn(Optional.of(existingLocation));
         doNothing().when(eventLocationRepository).delete(any(EventLocation.class));
 
-        eventLocationService.deleteEventLocation(List.of(1L), adminUser);
+        eventLocationService.deleteEventLocation(List.of(1L), adminAuth);
 
         verify(eventLocationRepository, times(1)).delete(existingLocation);
     }
@@ -335,7 +346,7 @@ public class EventLocationServiceTest {
 
         assertThrows(
                 SecurityException.class,
-                () -> eventLocationService.deleteEventLocation(List.of(1L), regularUser));
+                () -> eventLocationService.deleteEventLocation(List.of(1L), regularAuth));
         verify(eventLocationRepository, never()).delete(any(EventLocation.class));
     }
 
@@ -375,7 +386,7 @@ public class EventLocationServiceTest {
 
         // Act
         EventLocationResponseDTO result =
-                eventLocationService.createEventLocation(dto, managerUser);
+                eventLocationService.createEventLocation(dto, managerAuth);
 
         // Assert
         assertNotNull(result);
@@ -428,7 +439,7 @@ public class EventLocationServiceTest {
                 .persist(any(EventLocation.class));
 
         EventLocationResponseDTO result =
-                eventLocationService.createEventLocation(dto, managerUser);
+                eventLocationService.createEventLocation(dto, managerAuth);
 
         assertNotNull(result);
         assertEquals("Concert Hall", result.name());
@@ -467,7 +478,7 @@ public class EventLocationServiceTest {
                 .persist(any(EventLocation.class));
 
         EventLocationResponseDTO result =
-                eventLocationService.createEventLocation(dto, managerUser);
+                eventLocationService.createEventLocation(dto, managerAuth);
 
         assertNotNull(result);
         assertEquals("Simple Hall", result.name());
@@ -498,7 +509,7 @@ public class EventLocationServiceTest {
                 .persist(any(EventLocation.class));
 
         EventLocationResponseDTO result =
-                eventLocationService.createEventLocation(dto, managerUser);
+                eventLocationService.createEventLocation(dto, managerAuth);
 
         assertNotNull(result);
         assertEquals("Empty Markers Hall", result.name());
@@ -531,7 +542,7 @@ public class EventLocationServiceTest {
                 .persist(any(EventLocation.class));
 
         EventLocationResponseDTO result =
-                eventLocationService.createEventLocation(dto, managerUser);
+                eventLocationService.createEventLocation(dto, managerAuth);
 
         assertNotNull(result);
         assertEquals(3, result.markers().size());
@@ -574,7 +585,7 @@ public class EventLocationServiceTest {
                 .when(eventLocationRepository)
                 .persist(any(EventLocation.class));
 
-        eventLocationService.createEventLocation(dto, managerUser);
+        eventLocationService.createEventLocation(dto, managerAuth);
 
         ArgumentCaptor<EventLocation> locationCaptor = ArgumentCaptor.forClass(EventLocation.class);
         verify(eventLocationRepository, times(1)).persist(locationCaptor.capture());
@@ -616,7 +627,7 @@ public class EventLocationServiceTest {
                 .when(eventLocationRepository)
                 .persist(any(EventLocation.class));
 
-        eventLocationService.createEventLocation(dto, managerUser);
+        eventLocationService.createEventLocation(dto, managerAuth);
 
         ArgumentCaptor<EventLocation> locationCaptor = ArgumentCaptor.forClass(EventLocation.class);
         verify(eventLocationRepository, times(1)).persist(locationCaptor.capture());

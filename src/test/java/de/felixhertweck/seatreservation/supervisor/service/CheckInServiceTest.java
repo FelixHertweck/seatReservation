@@ -47,12 +47,14 @@ import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
+import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.supervisor.dto.CheckInInfoResponseDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.CheckInProcessRequestDTO;
 import de.felixhertweck.seatreservation.supervisor.exception.CheckInException;
 import de.felixhertweck.seatreservation.supervisor.exception.CheckInTokenNotFoundException;
 import de.felixhertweck.seatreservation.supervisor.exception.EventMismatchException;
 import de.felixhertweck.seatreservation.supervisor.exception.UserMismatchException;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -65,11 +67,16 @@ class CheckInServiceTest {
 
     @InjectMock ReservationRepository reservationRepository;
     @InjectMock de.felixhertweck.seatreservation.model.repository.EventRepository eventRepository;
+    @InjectMock UserRepository userRepository;
 
     @BeforeEach
     void setup() {
         // Authorize the test user (id 1) for any event in these tests
         when(eventRepository.isUserSupervisor(anyLong(), eq(1L))).thenReturn(true);
+    }
+
+    private static AuthenticatedUser auth(User user) {
+        return new AuthenticatedUser(user.id, user.getRoles());
     }
 
     // Tests for processCheckIn(CheckInProcessRequestDTO) method
@@ -117,7 +124,7 @@ class CheckInServiceTest {
                         Collections.emptyList());
 
         // current user is user with userId
-        checkInService.processCheckIn(requestDTO, user);
+        checkInService.processCheckIn(requestDTO, auth(user));
 
         assertEquals(ReservationLiveStatus.CHECKED_IN, reservation1.getLiveStatus());
         assertEquals(ReservationLiveStatus.CHECKED_IN, reservation2.getLiveStatus());
@@ -160,7 +167,7 @@ class CheckInServiceTest {
                         Collections.emptyList(),
                         Collections.singletonList(reservationId1));
 
-        checkInService.processCheckIn(requestDTO, user);
+        checkInService.processCheckIn(requestDTO, auth(user));
 
         assertEquals(ReservationLiveStatus.CANCELLED, reservation1.getLiveStatus());
 
@@ -211,7 +218,7 @@ class CheckInServiceTest {
                         Collections.singletonList(checkInId),
                         Collections.singletonList(cancelId));
 
-        checkInService.processCheckIn(requestDTO, user);
+        checkInService.processCheckIn(requestDTO, auth(user));
 
         assertEquals(ReservationLiveStatus.CHECKED_IN, checkInReservation.getLiveStatus());
         assertEquals(ReservationLiveStatus.CANCELLED, cancelReservation.getLiveStatus());
@@ -252,7 +259,7 @@ class CheckInServiceTest {
                 new CheckInProcessRequestDTO(
                         eventId, userId, Collections.emptyList(), Collections.emptyList());
 
-        checkInService.processCheckIn(requestDTO, user);
+        checkInService.processCheckIn(requestDTO, auth(user));
 
         verify(reservationRepository, never()).persist(any(Reservation.class));
     }
@@ -294,10 +301,11 @@ class CheckInServiceTest {
 
         when(reservationRepository.findByCheckInCodeIn(Arrays.asList(token1, token2)))
                 .thenReturn(Arrays.asList(reservation1, reservation2));
+        when(userRepository.findById(userId)).thenReturn(user);
 
         CheckInInfoResponseDTO result =
                 checkInService.getReservationInfos(
-                        user, userId, eventId, Arrays.asList(token1, token2));
+                        auth(user), userId, eventId, Arrays.asList(token1, token2));
 
         assertNotNull(result);
         assertEquals(2, result.reservations().size());
@@ -310,9 +318,11 @@ class CheckInServiceTest {
         long eventId = 10L;
         User user = new User();
         user.id = userId;
+        when(userRepository.findById(userId)).thenReturn(user);
 
         CheckInInfoResponseDTO result =
-                checkInService.getReservationInfos(user, userId, eventId, Collections.emptyList());
+                checkInService.getReservationInfos(
+                        auth(user), userId, eventId, Collections.emptyList());
 
         assertNotNull(result);
         assertEquals(0, result.reservations().size());
@@ -354,7 +364,7 @@ class CheckInServiceTest {
                         Collections.emptyList(),
                         Collections.singletonList(reservationId));
 
-        checkInService.processCheckIn(requestDTO, user);
+        checkInService.processCheckIn(requestDTO, auth(user));
 
         assertEquals(ReservationLiveStatus.CANCELLED, reservation1.getLiveStatus());
 
@@ -386,7 +396,7 @@ class CheckInServiceTest {
                 UserMismatchException.class,
                 () ->
                         checkInService.getReservationInfos(
-                                user, userId, eventId, Collections.singletonList(token1)));
+                                auth(user), userId, eventId, Collections.singletonList(token1)));
     }
 
     @Test
@@ -474,6 +484,7 @@ class CheckInServiceTest {
 
         when(reservationRepository.findByCheckInCodeIn(Arrays.asList(token1, token2)))
                 .thenReturn(Arrays.asList(reservation1, reservation2));
+        when(userRepository.findById(userId)).thenReturn(user);
 
         CheckInInfoResponseDTO result =
                 checkInService.getReservationInfos(userId, eventId, Arrays.asList(token1, token2));
@@ -491,7 +502,7 @@ class CheckInServiceTest {
         when(eventRepository.isUserSupervisor(eq(eventId), eq(1L))).thenReturn(false);
         assertThrows(
                 SecurityException.class,
-                () -> checkInService.getUsernamesWithReservations(user, eventId));
+                () -> checkInService.getUsernamesWithReservations(auth(user), eventId));
     }
 
     @Test
@@ -516,7 +527,7 @@ class CheckInServiceTest {
         when(q.stream()).thenReturn(Stream.of(r1));
         when(reservationRepository.find("event.id", eventId)).thenReturn(q);
 
-        List<String> usernames = checkInService.getUsernamesWithReservations(admin, eventId);
+        List<String> usernames = checkInService.getUsernamesWithReservations(auth(admin), eventId);
         assertEquals(1, usernames.size());
     }
 
@@ -535,10 +546,11 @@ class CheckInServiceTest {
         when(eq.stream()).thenReturn(Stream.of(e1, e2));
         when(eq.list()).thenReturn(List.of(e1, e2));
         when(eventRepository.findAll()).thenReturn(eq);
+        when(userRepository.getReference(supervisor.id)).thenReturn(supervisor);
         when(eventRepository.findAuthorizedEvents(supervisor)).thenReturn(List.of(e1));
 
         List<de.felixhertweck.seatreservation.supervisor.dto.SupervisorEventResponseDTO> events =
-                checkInService.getAllEventsForSupervisor(supervisor);
+                checkInService.getAllEventsForSupervisor(auth(supervisor));
         assertEquals(1, events.size());
     }
 }

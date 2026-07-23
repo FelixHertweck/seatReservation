@@ -287,7 +287,7 @@ public class WebAuthnResource {
     @Authenticated
     @APIResponse(responseCode = "200", description = "Passkeys listed")
     public List<WebAuthnCredentialDTO> listCredentials() {
-        return webAuthnService.listCredentials(userSecurityContext.getCurrentUser());
+        return webAuthnService.listCredentials(userSecurityContext.getCurrentUserReference());
     }
 
     /**
@@ -327,7 +327,7 @@ public class WebAuthnResource {
     @APIResponse(responseCode = "404", description = "Passkey not found")
     public Response renameCredential(
             @PathParam("id") Long id, @Valid WebAuthnCredentialUpdateDTO update) {
-        User user = userSecurityContext.getCurrentUser();
+        User user = userSecurityContext.getCurrentUserReference();
         boolean renamed = webAuthnService.renameCredential(user, id, update.getLabel());
         if (!renamed) {
             return Response.status(Response.Status.NOT_FOUND).build();

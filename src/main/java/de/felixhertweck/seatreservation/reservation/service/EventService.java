@@ -26,11 +26,9 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
-import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
-import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.reservation.dto.UserEventResponseDTO;
 import org.jboss.logging.Logger;
 
@@ -39,21 +37,17 @@ public class EventService {
 
     private static final Logger LOG = Logger.getLogger(EventService.class);
 
-    @Inject UserRepository userRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
     @Inject ReservationRepository reservationRepository;
 
+    /**
+     * @param user a reference to the current user (id only, e.g. from {@code
+     *     UserSecurityContext#getCurrentUserReference()}); only used as a foreign-key query
+     *     parameter, never dereferenced beyond its ID
+     */
     @Transactional
-    public List<UserEventResponseDTO> getEventsForCurrentUser(String username)
-            throws UserNotFoundException {
-        LOG.debug("Attempting to retrieve events for current user.");
-        User user = userRepository.findByUsername(username);
-
-        if (user == null) {
-            LOG.warn("User not found.");
-            throw new UserNotFoundException("User not found");
-        }
-        LOG.debugf("User %s found. Retrieving event allowances.", username);
+    public List<UserEventResponseDTO> getEventsForCurrentUser(User user) {
+        LOG.debugf("Attempting to retrieve events for current user ID: %d", user.id);
 
         Map<Long, UserEventResponseDTO> eventMap = new HashMap<>();
 
@@ -77,7 +71,7 @@ public class EventService {
                                         reservation.getEvent().getId(),
                                         new UserEventResponseDTO(reservation.getEvent(), 0)));
 
-        LOG.debugf("Returning %d events for user: %s", eventMap.size(), username);
+        LOG.debugf("Returning %d events for user ID: %d", eventMap.size(), user.id);
         return List.copyOf(eventMap.values());
     }
 }

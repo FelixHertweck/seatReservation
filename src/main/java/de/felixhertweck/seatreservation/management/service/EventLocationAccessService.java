@@ -24,9 +24,8 @@ import jakarta.inject.Inject;
 
 import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
-import de.felixhertweck.seatreservation.model.entity.Roles;
-import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 
 /**
  * Central ownership check for event locations, shared by the area, entrance, marker and seat
@@ -48,7 +47,7 @@ public class EventLocationAccessService {
      * @throws EventLocationNotFoundException if no such event location exists
      * @throws SecurityException if the user neither is an ADMIN nor manages the location
      */
-    public EventLocation findOwnedEventLocation(Long eventLocationId, User user) {
+    public EventLocation findOwnedEventLocation(Long eventLocationId, AuthenticatedUser user) {
         if (eventLocationId == null) {
             throw new IllegalArgumentException("EventLocation ID must not be null");
         }
@@ -72,13 +71,13 @@ public class EventLocationAccessService {
      * @param user the user attempting to access the event location
      * @throws SecurityException if the user neither is an ADMIN nor manages the location
      */
-    public void requireAccess(EventLocation eventLocation, User user) {
-        if (user.getRoles().contains(Roles.ADMIN)) {
+    public void requireAccess(EventLocation eventLocation, AuthenticatedUser user) {
+        if (user.isAdmin()) {
             return;
         }
         // Compare by ID rather than by User#equals: the manager is a lazy association and its
         // proxy's equals() semantics are not something the authorization check should depend on.
-        if (!eventLocation.getManager().getId().equals(user.getId())) {
+        if (!eventLocation.getManager().getId().equals(user.id())) {
             throw new SecurityException("Manager does not own this EventLocation");
         }
     }

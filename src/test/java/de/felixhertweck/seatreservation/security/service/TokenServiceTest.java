@@ -104,6 +104,7 @@ public class TokenServiceTest {
     @Test
     void generateToken_ValidTokenContent() {
         User user = new User();
+        user.id = 1L;
         user.setUsername("testuser");
         user.setEmail("test@example.com");
         user.setRoles(new HashSet<>(Arrays.asList("USER", "ADMIN")));
@@ -114,6 +115,7 @@ public class TokenServiceTest {
             mockedJwt.when(() -> Jwt.upn(user.getUsername())).thenReturn(claimsBuilder);
             when(claimsBuilder.groups(user.getRoles())).thenReturn(claimsBuilder);
             when(claimsBuilder.claim(Claims.email, user.getEmail())).thenReturn(claimsBuilder);
+            when(claimsBuilder.claim("uid", user.id)).thenReturn(claimsBuilder);
             when(claimsBuilder.issuedAt(any())).thenReturn(claimsBuilder);
             when(claimsBuilder.expiresIn(any(Duration.class))).thenReturn(claimsBuilder);
             when(claimsBuilder.sign()).thenReturn("mockedToken");
@@ -129,6 +131,7 @@ public class TokenServiceTest {
     @Test
     void generateToken_NullEmail_UsesEmptyString() {
         User user = new User();
+        user.id = 1L;
         user.setUsername("testuser");
         user.setEmail(null); // Null email
         user.setRoles(new HashSet<>(Collections.singletonList("USER")));
@@ -139,6 +142,7 @@ public class TokenServiceTest {
             mockedJwt.when(() -> Jwt.upn(user.getUsername())).thenReturn(claimsBuilder);
             when(claimsBuilder.groups(user.getRoles())).thenReturn(claimsBuilder);
             when(claimsBuilder.claim(Claims.email, "")).thenReturn(claimsBuilder);
+            when(claimsBuilder.claim("uid", user.id)).thenReturn(claimsBuilder);
             when(claimsBuilder.issuedAt(any())).thenReturn(claimsBuilder);
             when(claimsBuilder.expiresIn(any(Duration.class))).thenReturn(claimsBuilder);
             when(claimsBuilder.sign()).thenReturn("mockedToken");
@@ -153,6 +157,7 @@ public class TokenServiceTest {
     @Test
     void generateToken_EmptyRoles_HandlesCorrectly() {
         User user = new User();
+        user.id = 1L;
         user.setUsername("testuser");
         user.setEmail("test@example.com");
         user.setRoles(new HashSet<>()); // Empty roles
@@ -163,6 +168,7 @@ public class TokenServiceTest {
             mockedJwt.when(() -> Jwt.upn(user.getUsername())).thenReturn(claimsBuilder);
             when(claimsBuilder.groups(user.getRoles())).thenReturn(claimsBuilder);
             when(claimsBuilder.claim(Claims.email, user.getEmail())).thenReturn(claimsBuilder);
+            when(claimsBuilder.claim("uid", user.id)).thenReturn(claimsBuilder);
             when(claimsBuilder.issuedAt(any())).thenReturn(claimsBuilder);
             when(claimsBuilder.expiresIn(any(Duration.class))).thenReturn(claimsBuilder);
             when(claimsBuilder.sign()).thenReturn("mockedToken");
@@ -199,6 +205,7 @@ public class TokenServiceTest {
     void generateToken_IntegrationTest_WithRealJwt() {
         // Integration test that actually calls the real Jwt library
         User user = new User();
+        user.id = 1L;
         user.setUsername("integrationTestUser");
         user.setEmail("integration@test.com");
         user.setRoles(new HashSet<>(Arrays.asList("USER", "ADMIN")));
@@ -218,6 +225,7 @@ public class TokenServiceTest {
     @Test
     void generateToken_IntegrationTest_WithNullEmail() {
         User user = new User();
+        user.id = 2L;
         user.setUsername("testUserNullEmail");
         user.setEmail(null);
         user.setRoles(new HashSet<>(Collections.singletonList("USER")));
@@ -234,6 +242,7 @@ public class TokenServiceTest {
     @Test
     void generateToken_IntegrationTest_WithEmptyRoles() {
         User user = new User();
+        user.id = 3L;
         user.setUsername("testUserEmptyRoles");
         user.setEmail("empty@roles.com");
         user.setRoles(new HashSet<>());

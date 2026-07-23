@@ -45,6 +45,7 @@ import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventLocationMarkerRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,6 +63,9 @@ public class MarkerServiceTest {
     private User adminUser;
     private User managerUser;
     private User regularUser;
+    private AuthenticatedUser adminAuth;
+    private AuthenticatedUser managerAuth;
+    private AuthenticatedUser regularAuth;
     private EventLocation eventLocation;
     private EventLocation otherLocation;
     private EventLocationMarker existingMarker;
@@ -110,6 +114,10 @@ public class MarkerServiceTest {
                         Set.of());
         regularUser.id = 2L;
 
+        adminAuth = new AuthenticatedUser(adminUser.id, adminUser.getRoles());
+        managerAuth = new AuthenticatedUser(managerUser.id, managerUser.getRoles());
+        regularAuth = new AuthenticatedUser(regularUser.id, regularUser.getRoles());
+
         eventLocation = new EventLocation("Stadthalle", "Hauptstraße 1", managerUser, 100);
         eventLocation.id = 1L;
         otherLocation = new EventLocation("Other Hall", "Other Address", regularUser, 50);
@@ -130,7 +138,7 @@ public class MarkerServiceTest {
         MakerRequestDTO dto =
                 new MakerRequestDTO(eventLocation.id, "Stage", new CoordinateDTO(5, 5));
 
-        EventLocationMakerDTO result = markerService.createMarker(dto, managerUser);
+        EventLocationMakerDTO result = markerService.createMarker(dto, managerAuth);
 
         assertNotNull(result);
         assertEquals("Stage", result.label());
@@ -143,7 +151,7 @@ public class MarkerServiceTest {
         MakerRequestDTO dto =
                 new MakerRequestDTO(eventLocation.id, "Stage", new CoordinateDTO(5, 5));
 
-        assertThrows(SecurityException.class, () -> markerService.createMarker(dto, regularUser));
+        assertThrows(SecurityException.class, () -> markerService.createMarker(dto, regularAuth));
         verify(markerRepository, never()).persist(any(EventLocationMarker.class));
     }
 
@@ -152,7 +160,7 @@ public class MarkerServiceTest {
         MakerRequestDTO dto = new MakerRequestDTO(eventLocation.id, "  ", new CoordinateDTO(5, 5));
 
         assertThrows(
-                IllegalArgumentException.class, () -> markerService.createMarker(dto, managerUser));
+                IllegalArgumentException.class, () -> markerService.createMarker(dto, managerAuth));
         verify(markerRepository, never()).persist(any(EventLocationMarker.class));
     }
 
@@ -163,7 +171,7 @@ public class MarkerServiceTest {
 
         assertThrows(
                 EventLocationNotFoundException.class,
-                () -> markerService.createMarker(dto, managerUser));
+                () -> markerService.createMarker(dto, managerAuth));
     }
 
     @Test
@@ -172,7 +180,7 @@ public class MarkerServiceTest {
                 .thenReturn(List.of(existingMarker));
 
         List<EventLocationMakerDTO> result =
-                markerService.findMarkersByLocation(eventLocation.id, managerUser);
+                markerService.findMarkersByLocation(eventLocation.id, managerAuth);
 
         assertEquals(1, result.size());
         assertEquals("Main Entrance", result.getFirst().label());
@@ -182,7 +190,7 @@ public class MarkerServiceTest {
     void findMarkersByLocation_Forbidden_NotOwner() {
         assertThrows(
                 SecurityException.class,
-                () -> markerService.findMarkersByLocation(otherLocation.id, managerUser));
+                () -> markerService.findMarkersByLocation(otherLocation.id, managerAuth));
     }
 
     @Test
@@ -191,7 +199,7 @@ public class MarkerServiceTest {
 
         assertThrows(
                 EventLocationNotFoundException.class,
-                () -> markerService.findMarkersByLocation(999L, managerUser));
+                () -> markerService.findMarkersByLocation(999L, managerAuth));
     }
 
     @Test
@@ -200,7 +208,7 @@ public class MarkerServiceTest {
                 .thenReturn(Optional.of(existingMarker));
 
         EventLocationMakerDTO result =
-                markerService.findMarkerByIdForManager(existingMarker.id, managerUser);
+                markerService.findMarkerByIdForManager(existingMarker.id, managerAuth);
 
         assertEquals("Main Entrance", result.label());
     }
@@ -211,7 +219,7 @@ public class MarkerServiceTest {
 
         assertThrows(
                 MarkerNotFoundException.class,
-                () -> markerService.findMarkerByIdForManager(999L, managerUser));
+                () -> markerService.findMarkerByIdForManager(999L, managerAuth));
     }
 
     @Test
@@ -222,7 +230,7 @@ public class MarkerServiceTest {
                 new MakerRequestDTO(eventLocation.id, "Updated", new CoordinateDTO(1, 1));
 
         EventLocationMakerDTO result =
-                markerService.updateMarker(existingMarker.id, dto, managerUser);
+                markerService.updateMarker(existingMarker.id, dto, managerAuth);
 
         assertEquals("Updated", result.label());
         verify(markerRepository, times(1)).persist(existingMarker);
@@ -236,7 +244,7 @@ public class MarkerServiceTest {
 
         assertThrows(
                 MarkerNotFoundException.class,
-                () -> markerService.updateMarker(999L, dto, managerUser));
+                () -> markerService.updateMarker(999L, dto, managerAuth));
     }
 
     @Test
@@ -248,7 +256,7 @@ public class MarkerServiceTest {
 
         assertThrows(
                 SecurityException.class,
-                () -> markerService.updateMarker(existingMarker.id, dto, managerUser));
+                () -> markerService.updateMarker(existingMarker.id, dto, managerAuth));
     }
 
     @Test
@@ -259,7 +267,7 @@ public class MarkerServiceTest {
 
         assertThrows(
                 IllegalArgumentException.class,
-                () -> markerService.updateMarker(existingMarker.id, dto, managerUser));
+                () -> markerService.updateMarker(existingMarker.id, dto, managerAuth));
         verify(markerRepository, never()).persist(any(EventLocationMarker.class));
     }
 
@@ -267,7 +275,7 @@ public class MarkerServiceTest {
     void deleteMarkers_InvalidInput_EmptyIds() {
         assertThrows(
                 IllegalArgumentException.class,
-                () -> markerService.deleteMarkers(List.of(), managerUser));
+                () -> markerService.deleteMarkers(List.of(), managerAuth));
         verify(markerRepository, never()).delete(any(EventLocationMarker.class));
     }
 
@@ -276,7 +284,7 @@ public class MarkerServiceTest {
         when(markerRepository.findByIdWithEventLocation(existingMarker.id))
                 .thenReturn(Optional.of(existingMarker));
 
-        markerService.deleteMarkers(List.of(existingMarker.id), managerUser);
+        markerService.deleteMarkers(List.of(existingMarker.id), managerAuth);
 
         verify(markerRepository, times(1)).delete(existingMarker);
     }
@@ -287,7 +295,7 @@ public class MarkerServiceTest {
 
         assertThrows(
                 MarkerNotFoundException.class,
-                () -> markerService.deleteMarkers(List.of(999L), managerUser));
+                () -> markerService.deleteMarkers(List.of(999L), managerAuth));
     }
 
     @Test
@@ -300,6 +308,6 @@ public class MarkerServiceTest {
 
         assertThrows(
                 SecurityException.class,
-                () -> markerService.deleteMarkers(List.of(markerInOtherLocation.id), managerUser));
+                () -> markerService.deleteMarkers(List.of(markerInOtherLocation.id), managerAuth));
     }
 }

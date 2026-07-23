@@ -41,6 +41,9 @@ import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
+import io.quarkus.test.security.jwt.Claim;
+import io.quarkus.test.security.jwt.ClaimType;
+import io.quarkus.test.security.jwt.JwtSecurity;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -106,6 +109,7 @@ public class MarkerResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testGetMarkersByEventLocation() {
         given().when()
                 .queryParam("eventLocationId", testLocation.id)
@@ -149,6 +153,7 @@ public class MarkerResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testGetMarkerById() {
         given().when()
                 .get("/api/manager/markers/" + testMarker.id)
@@ -161,6 +166,7 @@ public class MarkerResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testGetMarkerByIdNotFound() {
         given().when().get("/api/manager/markers/999").then().statusCode(404);
     }
@@ -169,6 +175,7 @@ public class MarkerResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testCreateMarker() {
         given().contentType("application/json")
                 .body(new MakerRequestDTO(testLocation.id, "Stage", new CoordinateDTO(5, 5)))
@@ -183,6 +190,7 @@ public class MarkerResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testCreateMarkerInvalidData() {
         given().contentType("application/json")
                 .body("{\"label\":\"\"}")
@@ -196,6 +204,7 @@ public class MarkerResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testUpdateMarker() {
         given().contentType("application/json")
                 .body(new MakerRequestDTO(testLocation.id, "Updated", new CoordinateDTO(1, 1)))
@@ -210,6 +219,7 @@ public class MarkerResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testUpdateMarkerNotFound() {
         given().contentType("application/json")
                 .body(new MakerRequestDTO(testLocation.id, "Updated", new CoordinateDTO(1, 1)))
@@ -223,6 +233,7 @@ public class MarkerResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testDeleteMarker() {
         given().when()
                 .queryParam("ids", testMarker.id)
@@ -235,6 +246,7 @@ public class MarkerResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testDeleteMarkerNotFound() {
         given().when()
                 .queryParam("ids", 999L)

@@ -39,7 +39,7 @@ import de.felixhertweck.seatreservation.common.dto.EventLocationMakerDTO;
 import de.felixhertweck.seatreservation.management.dto.MakerRequestDTO;
 import de.felixhertweck.seatreservation.management.service.MarkerService;
 import de.felixhertweck.seatreservation.model.entity.Roles;
-import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -71,7 +71,7 @@ public class MarkerResource {
     @APIResponse(responseCode = "404", description = "Not Found: Event location not found")
     public EventLocationMakerDTO createMarker(@Valid MakerRequestDTO markerRequestDTO) {
         LOG.debugf("Received POST request to /api/manager/markers to create a new marker.");
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         return markerService.createMarker(markerRequestDTO, currentUser);
     }
 
@@ -97,7 +97,7 @@ public class MarkerResource {
         if (eventLocationId == null) {
             throw new IllegalArgumentException("eventLocationId query parameter is required");
         }
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         return markerService.findMarkersByLocation(eventLocationId, currentUser);
     }
 
@@ -116,7 +116,7 @@ public class MarkerResource {
             description = "Not Found: Marker with specified ID not found for the current manager")
     public EventLocationMakerDTO getManagerMarkerById(@PathParam("id") Long id) {
         LOG.debugf("Received GET request to /api/manager/markers/%d.", id);
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         return markerService.findMarkerByIdForManager(id, currentUser);
     }
 
@@ -136,7 +136,7 @@ public class MarkerResource {
     public EventLocationMakerDTO updateManagerMarker(
             @PathParam("id") Long id, @Valid MakerRequestDTO markerRequestDTO) {
         LOG.debugf("Received PUT request to /api/manager/markers/%d to update marker.", id);
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         return markerService.updateMarker(id, markerRequestDTO, currentUser);
     }
 
@@ -154,7 +154,7 @@ public class MarkerResource {
         LOG.debugf(
                 "Received DELETE request to /api/manager/markers with IDs: %s",
                 ids != null ? ids : Collections.emptyList());
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         markerService.deleteMarkers(ids, currentUser);
     }
 }

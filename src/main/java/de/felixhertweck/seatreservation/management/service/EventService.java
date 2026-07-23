@@ -41,6 +41,7 @@ import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
@@ -287,19 +288,17 @@ public class EventService {
      *
      * @return A list of DTOs representing the Events.
      */
-    public List<EventResponseDTO> getEventsByCurrentManager(User manager) {
-        LOG.debugf(
-                "Attempting to retrieve events for manager: %s (ID: %d)",
-                manager.id, manager.getId());
+    public List<EventResponseDTO> getEventsByCurrentManager(AuthenticatedUser manager) {
+        LOG.debugf("Attempting to retrieve events for manager ID: %d", manager.id());
         List<Event> events;
         // Access control: If the user is an ADMIN, all Events are returned.
         // Otherwise, only Events belonging to this manager are returned.
-        if (manager.getRoles().contains(Roles.ADMIN)) {
+        if (manager.isAdmin()) {
             LOG.debug("User is ADMIN, listing all events.");
             events = eventRepository.listAll();
         } else {
-            LOG.debugf("User is MANAGER, listing events for manager ID: %d", manager.getId());
-            events = eventRepository.findByManager(manager);
+            LOG.debugf("User is MANAGER, listing events for manager ID: %d", manager.id());
+            events = eventRepository.findByManager(userRepository.getReference(manager.id()));
         }
         return events.stream().map(EventResponseDTO::new).collect(Collectors.toList());
     }

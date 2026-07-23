@@ -2558,10 +2558,6 @@ export type GetApiUserEventsErrors = {
      * Forbidden: Only authenticated users can access this resource
      */
     403: unknown;
-    /**
-     * Not Found: User not found
-     */
-    404: unknown;
 };
 
 export type GetApiUserEventsResponses = {

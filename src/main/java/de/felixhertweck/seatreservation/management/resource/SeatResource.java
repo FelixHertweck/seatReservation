@@ -39,7 +39,7 @@ import de.felixhertweck.seatreservation.common.dto.SeatDTO;
 import de.felixhertweck.seatreservation.management.dto.SeatRequestDTO;
 import de.felixhertweck.seatreservation.management.service.SeatService;
 import de.felixhertweck.seatreservation.model.entity.Roles;
-import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -75,7 +75,7 @@ public class SeatResource {
                     "Conflict: Seat with this row and number already exists in this event location")
     public SeatDTO createSeat(@Valid SeatRequestDTO seatRequestDTO) {
         LOG.debugf("Received POST request to /api/manager/seats to create a new seat.");
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         SeatDTO result = seatService.createSeatManager(seatRequestDTO, currentUser);
         LOG.debugf(
                 "Seat with ID %d created successfully for event location ID %d.",
@@ -105,7 +105,7 @@ public class SeatResource {
         if (eventLocationId == null) {
             throw new IllegalArgumentException("eventLocationId query parameter is required");
         }
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         List<SeatDTO> result =
                 seatService.findSeatsForManagerByLocation(eventLocationId, currentUser);
         LOG.debugf(
@@ -128,7 +128,7 @@ public class SeatResource {
             description = "Not Found: Seat with specified ID not found for the current manager")
     public SeatDTO getManagerSeatById(@PathParam("id") Long id) {
         LOG.debugf("Received GET request to /api/manager/seats/%d.", id);
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         SeatDTO result = seatService.findSeatByIdForManager(id, currentUser);
         if (result != null) {
             LOG.debugf("Successfully retrieved seat with ID %d.", id);
@@ -158,7 +158,7 @@ public class SeatResource {
     public SeatDTO updateManagerSeat(
             @PathParam("id") Long id, @Valid SeatRequestDTO seatUpdateDTO) {
         LOG.debugf("Received PUT request to /api/manager/seats/%d to update seat.", id);
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         SeatDTO result = seatService.updateSeatForManager(id, seatUpdateDTO, currentUser);
         LOG.debugf("Seat with ID %d updated successfully.", id);
         return result;
@@ -179,7 +179,7 @@ public class SeatResource {
         LOG.debugf(
                 "Received DELETE request to /api/manager/seats with IDs: %s",
                 ids != null ? ids : Collections.emptyList());
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         seatService.deleteSeatForManager(ids, currentUser);
         LOG.debugf(
                 "Seats with IDs %s deleted successfully.",

@@ -44,6 +44,9 @@ import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
+import io.quarkus.test.security.jwt.Claim;
+import io.quarkus.test.security.jwt.ClaimType;
+import io.quarkus.test.security.jwt.JwtSecurity;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -134,6 +137,7 @@ public class ReservationResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testGetAllReservations() {
         given().when()
                 .get("/api/manager/reservations")
@@ -225,6 +229,7 @@ public class ReservationResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testDeleteMultipleReservations() {
         // Create additional reservations for bulk delete test
         var reservation2 = new Reservation();

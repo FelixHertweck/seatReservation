@@ -41,6 +41,9 @@ import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepos
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
+import io.quarkus.test.security.jwt.Claim;
+import io.quarkus.test.security.jwt.ClaimType;
+import io.quarkus.test.security.jwt.JwtSecurity;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -127,6 +130,7 @@ public class EventResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testGetEventsByCurrentManager() {
         given().when().get("/api/manager/events").then().statusCode(200).body("size()", is(1));
     }
@@ -308,6 +312,7 @@ public class EventResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testDeleteMultipleEvents() {
         // Create additional events for bulk delete test
         var manager = userRepository.findByUsernameOptional("manager").orElseThrow();

@@ -30,9 +30,9 @@ import de.felixhertweck.seatreservation.management.exception.EntranceInUseExcept
 import de.felixhertweck.seatreservation.management.exception.EntranceNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationEntrance;
-import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventLocationEntranceRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
@@ -53,7 +53,8 @@ public class EntranceService {
      * @param manager the manager attempting to access the entrances
      * @return the entrances of the event location
      */
-    public List<EntranceResponseDTO> findEntrancesByLocation(Long eventLocationId, User manager) {
+    public List<EntranceResponseDTO> findEntrancesByLocation(
+            Long eventLocationId, AuthenticatedUser manager) {
         EventLocation eventLocation =
                 eventLocationAccessService.findOwnedEventLocation(eventLocationId, manager);
         return entranceRepository.findByEventLocation(eventLocation).stream()
@@ -68,7 +69,7 @@ public class EntranceService {
      * @param manager the manager attempting to access the entrance
      * @return the entrance DTO
      */
-    public EntranceResponseDTO findEntranceByIdForManager(Long id, User manager) {
+    public EntranceResponseDTO findEntranceByIdForManager(Long id, AuthenticatedUser manager) {
         return new EntranceResponseDTO(findEntranceEntityById(id, manager));
     }
 
@@ -80,7 +81,7 @@ public class EntranceService {
      * @return the created entrance DTO
      */
     @Transactional
-    public EntranceResponseDTO createEntrance(EntranceRequestDTO dto, User manager) {
+    public EntranceResponseDTO createEntrance(EntranceRequestDTO dto, AuthenticatedUser manager) {
         EventLocation eventLocation =
                 eventLocationAccessService.findOwnedEventLocation(
                         dto.getEventLocationId(), manager);
@@ -108,7 +109,8 @@ public class EntranceService {
      *     while still referenced by at least one seat
      */
     @Transactional
-    public EntranceResponseDTO updateEntrance(Long id, EntranceRequestDTO dto, User manager) {
+    public EntranceResponseDTO updateEntrance(
+            Long id, EntranceRequestDTO dto, AuthenticatedUser manager) {
         EventLocationEntrance entrance = findEntranceEntityById(id, manager);
         EventLocation newEventLocation =
                 eventLocationAccessService.findOwnedEventLocation(
@@ -144,7 +146,7 @@ public class EntranceService {
      * @param manager the manager attempting to delete the entrances
      */
     @Transactional
-    public void deleteEntrances(List<Long> ids, User manager) {
+    public void deleteEntrances(List<Long> ids, AuthenticatedUser manager) {
         if (ids == null || ids.isEmpty()) {
             throw new IllegalArgumentException("No entrance IDs provided for deletion");
         }
@@ -166,7 +168,7 @@ public class EntranceService {
      * @param manager the manager attempting to access the entrance
      * @return the entrance entity
      */
-    private EventLocationEntrance findEntranceEntityById(Long id, User manager) {
+    private EventLocationEntrance findEntranceEntityById(Long id, AuthenticatedUser manager) {
         EventLocationEntrance entrance =
                 entranceRepository
                         .findByIdWithEventLocation(id)

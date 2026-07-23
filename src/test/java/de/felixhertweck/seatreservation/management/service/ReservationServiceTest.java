@@ -63,6 +63,7 @@ import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepos
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.CodeGenerator;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.test.InjectMock;
@@ -86,6 +87,9 @@ public class ReservationServiceTest {
     private User adminUser;
     private User regularUser;
     private User managerUser;
+    private AuthenticatedUser adminAuth;
+    private AuthenticatedUser managerAuth;
+    private AuthenticatedUser regularAuth;
     private Event event;
     private Seat seat;
     private Reservation reservation;
@@ -143,6 +147,12 @@ public class ReservationServiceTest {
                         Set.of(Roles.MANAGER),
                         Set.of());
         managerUser.id = 3L;
+
+        adminAuth = new AuthenticatedUser(adminUser.id, adminUser.getRoles());
+        managerAuth = new AuthenticatedUser(managerUser.id, managerUser.getRoles());
+        regularAuth = new AuthenticatedUser(regularUser.id, regularUser.getRoles());
+        when(userRepository.getReference(managerUser.id)).thenReturn(managerUser);
+        when(userRepository.getReference(regularUser.id)).thenReturn(regularUser);
 
         EventLocation eventLocation =
                 new EventLocation("Stadthalle", "Hauptstraße 1", managerUser, 100);
@@ -644,7 +654,7 @@ public class ReservationServiceTest {
     void findAllReservations_Success_AsAdmin() {
         when(reservationRepository.listAll()).thenReturn(List.of(reservation));
 
-        var result = reservationService.findAllReservations(adminUser);
+        var result = reservationService.findAllReservations(adminAuth);
 
         assertNotNull(result);
         assertFalse(result.isEmpty());
@@ -659,7 +669,7 @@ public class ReservationServiceTest {
         when(reservationQuery.list()).thenReturn(List.of(reservation));
         when(reservationRepository.find("event.manager", managerUser)).thenReturn(reservationQuery);
 
-        var result = reservationService.findAllReservations(managerUser);
+        var result = reservationService.findAllReservations(managerAuth);
 
         assertNotNull(result);
         assertFalse(result.isEmpty());
@@ -673,7 +683,7 @@ public class ReservationServiceTest {
         when(reservationQuery.list()).thenReturn(Collections.emptyList());
         when(reservationRepository.find("event.manager", managerUser)).thenReturn(reservationQuery);
 
-        var result = reservationService.findAllReservations(managerUser);
+        var result = reservationService.findAllReservations(managerAuth);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
@@ -686,7 +696,7 @@ public class ReservationServiceTest {
         when(reservationQuery.list()).thenReturn(Collections.emptyList());
         when(reservationRepository.find("event.manager", regularUser)).thenReturn(reservationQuery);
 
-        var result = reservationService.findAllReservations(regularUser);
+        var result = reservationService.findAllReservations(regularAuth);
         assertTrue(result.isEmpty());
     }
 

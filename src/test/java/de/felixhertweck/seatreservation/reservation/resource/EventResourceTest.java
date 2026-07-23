@@ -31,6 +31,9 @@ import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.repository.*;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
+import io.quarkus.test.security.jwt.Claim;
+import io.quarkus.test.security.jwt.ClaimType;
+import io.quarkus.test.security.jwt.JwtSecurity;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -99,6 +102,7 @@ public class EventResourceTest {
     @TestSecurity(
             user = "user",
             roles = {"USER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "3", type = ClaimType.LONG))
     void testGetEventsForCurrentUser_Success() {
         given().when()
                 .get("/api/user/events")
@@ -113,6 +117,7 @@ public class EventResourceTest {
     @TestSecurity(
             user = "admin",
             roles = {"USER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "1", type = ClaimType.LONG))
     void testGetEventsForCurrentUser_NoAllowances() {
         given().when().get("/api/user/events").then().statusCode(200).body("size()", is(0));
     }

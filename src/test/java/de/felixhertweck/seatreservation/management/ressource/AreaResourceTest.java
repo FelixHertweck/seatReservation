@@ -40,6 +40,9 @@ import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
+import io.quarkus.test.security.jwt.Claim;
+import io.quarkus.test.security.jwt.ClaimType;
+import io.quarkus.test.security.jwt.JwtSecurity;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -103,6 +106,7 @@ public class AreaResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testGetAreasByEventLocation() {
         given().when()
                 .queryParam("eventLocationId", testLocation.id)
@@ -146,6 +150,7 @@ public class AreaResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testGetAreaById() {
         given().when()
                 .get("/api/manager/areas/" + testArea.id)
@@ -158,6 +163,7 @@ public class AreaResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testGetAreaByIdNotFound() {
         given().when().get("/api/manager/areas/999").then().statusCode(404);
     }
@@ -166,6 +172,7 @@ public class AreaResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testCreateArea() {
         given().contentType("application/json")
                 .body(new AreaRequestDTO(testLocation.id, "Balkon", null))
@@ -180,6 +187,7 @@ public class AreaResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testCreateAreaInvalidData() {
         given().contentType("application/json")
                 .body("{\"name\":\"\"}")
@@ -193,6 +201,7 @@ public class AreaResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testUpdateArea() {
         given().contentType("application/json")
                 .body(new AreaRequestDTO(testLocation.id, "Loge", null))
@@ -207,6 +216,7 @@ public class AreaResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testUpdateAreaNotFound() {
         given().contentType("application/json")
                 .body(new AreaRequestDTO(testLocation.id, "Loge", null))
@@ -220,6 +230,7 @@ public class AreaResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testDeleteArea() {
         given().when()
                 .queryParam("ids", testArea.id)
@@ -232,6 +243,7 @@ public class AreaResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testDeleteAreaNotFound() {
         given().when().queryParam("ids", 999L).delete("/api/manager/areas").then().statusCode(404);
     }
@@ -240,6 +252,7 @@ public class AreaResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testDeleteAreaConflictWhenReferencedBySeat() {
         Seat seat = new Seat("A1", "Row 1", testLocation);
         seat.setArea(testArea);

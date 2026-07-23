@@ -405,6 +405,7 @@ public class AuthResourceTest {
     void testLogoutAllDevices_Success() throws Exception {
         // Mock the security context to return the test user when getCurrentUser is called
         Mockito.when(userSecurityContext.getCurrentUser()).thenReturn(testUser);
+        Mockito.when(userSecurityContext.getCurrentUserReference()).thenReturn(testUser);
         Mockito.doNothing().when(tokenService).logoutAllDevices(testUser);
 
         // Mock cookie clearing
@@ -466,6 +467,7 @@ public class AuthResourceTest {
             roles = {"USER"})
     void testLogout_Success() {
         Mockito.when(userSecurityContext.getCurrentUser()).thenReturn(testUser);
+        Mockito.when(userSecurityContext.getCurrentUserReference()).thenReturn(testUser);
 
         // Mock deleteRefreshToken to do nothing (success case)
         Mockito.doNothing().when(tokenService).deleteRefreshToken("someRefreshToken", testUser);
@@ -527,6 +529,7 @@ public class AuthResourceTest {
             roles = {"USER"})
     void testLogout_NoRefreshTokenCookie() {
         Mockito.when(userSecurityContext.getCurrentUser()).thenReturn(testUser);
+        Mockito.when(userSecurityContext.getCurrentUserReference()).thenReturn(testUser);
 
         // Mock deleteRefreshToken to handle null/empty token gracefully
         Mockito.doNothing().when(tokenService).deleteRefreshToken(null, testUser);
@@ -570,6 +573,7 @@ public class AuthResourceTest {
             roles = {"USER"})
     void testLogout_WithDifferentUser() {
         Mockito.when(userSecurityContext.getCurrentUser()).thenReturn(testUser);
+        Mockito.when(userSecurityContext.getCurrentUserReference()).thenReturn(testUser);
 
         // Mock deleteRefreshToken to do nothing
         Mockito.doNothing().when(tokenService).deleteRefreshToken("someRefreshToken", testUser);

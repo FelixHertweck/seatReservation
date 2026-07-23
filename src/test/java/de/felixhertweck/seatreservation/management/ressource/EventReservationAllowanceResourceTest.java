@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.management.ressource;
 
 import java.util.Collections;
+import java.util.Set;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
@@ -32,6 +33,7 @@ import de.felixhertweck.seatreservation.management.dto.EventUserAllowanceUpdateD
 import de.felixhertweck.seatreservation.management.dto.EventUserAllowancesDto;
 import de.felixhertweck.seatreservation.management.service.EventReservationAllowanceService;
 import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -154,8 +156,10 @@ class EventReservationAllowanceResourceTest {
             user = "testUser",
             roles = {"MANAGER"})
     void getReservationAllowances_Success() {
-        when(userSecurityContext.getCurrentUser()).thenReturn(new User());
-        when(eventReservationAllowanceService.getReservationAllowances(any(User.class)))
+        when(userSecurityContext.getAuthenticatedUser())
+                .thenReturn(new AuthenticatedUser(1L, Set.of("MANAGER")));
+        when(eventReservationAllowanceService.getReservationAllowances(
+                        any(AuthenticatedUser.class)))
                 .thenReturn(Collections.singletonList(new EventUserAllowancesDto(1L, 1L, 2L, 5)));
 
         given().when()

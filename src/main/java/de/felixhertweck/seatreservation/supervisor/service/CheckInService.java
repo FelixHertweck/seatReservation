@@ -36,7 +36,6 @@ import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationLiveStatus;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
-import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
@@ -49,6 +48,7 @@ import de.felixhertweck.seatreservation.supervisor.exception.CheckInException;
 import de.felixhertweck.seatreservation.supervisor.exception.CheckInTokenNotFoundException;
 import de.felixhertweck.seatreservation.supervisor.exception.EventMismatchException;
 import de.felixhertweck.seatreservation.supervisor.exception.UserMismatchException;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
@@ -77,7 +77,7 @@ public class CheckInService {
      */
     @Transactional
     public CheckInInfoResponseDTO getReservationInfos(
-            User currentUser, Long userId, Long eventId, List<String> checkInTokens)
+            AuthenticatedUser currentUser, Long userId, Long eventId, List<String> checkInTokens)
             throws UserMismatchException, EventMismatchException, CheckInTokenNotFoundException {
 
         LOG.debugf(
@@ -141,7 +141,7 @@ public class CheckInService {
      *     user/event
      */
     @Transactional
-    public void processCheckIn(CheckInProcessRequestDTO requestDTO, User currentUser)
+    public void processCheckIn(CheckInProcessRequestDTO requestDTO, AuthenticatedUser currentUser)
             throws CheckInException {
         Long eventId = requestDTO.eventId;
         if (currentUser != null && !isAuthorizedForEvent(currentUser, eventId)) {
@@ -248,7 +248,8 @@ public class CheckInService {
      * @return A list of SupervisorEventResponseDTO.
      */
     @Transactional
-    public List<SupervisorEventResponseDTO> getAllEventsForSupervisor(User currentUser) {
+    public List<SupervisorEventResponseDTO> getAllEventsForSupervisor(
+            AuthenticatedUser currentUser) {
         LOG.debug("Retrieving all events for supervisor view.");
         if (currentUser == null) {
             return eventRepository.findAll().stream()
@@ -256,12 +257,12 @@ public class CheckInService {
                     .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
         }
 
-        boolean isAdmin =
-                currentUser.getRoles() != null && currentUser.getRoles().contains(Roles.ADMIN);
         Stream<Event> authorizedEvents =
-                isAdmin
+                currentUser.isAdmin()
                         ? eventRepository.findAll().stream()
-                        : eventRepository.findAuthorizedEvents(currentUser).stream();
+                        : eventRepository
+                                .findAuthorizedEvents(userRepository.getReference(currentUser.id()))
+                                .stream();
 
         return authorizedEvents
                 .map(SupervisorEventResponseDTO::new)
@@ -283,7 +284,7 @@ public class CheckInService {
      * @return A list of strings, where each string is a username.
      */
     @Transactional
-    public List<String> getUsernamesWithReservations(User currentUser, Long eventId) {
+    public List<String> getUsernamesWithReservations(AuthenticatedUser currentUser, Long eventId) {
         LOG.debugf("Retrieving usernames with reservations for event %d.", eventId);
         if (currentUser != null && !isAuthorizedForEvent(currentUser, eventId)) {
             throw new SecurityException("User is not authorized to access event " + eventId);
@@ -310,8 +311,8 @@ public class CheckInService {
      * @throws ReservationNotFoundException if no reservations are found for the user
      */
     @Transactional
-    public CheckInInfoResponseDTO getReservationInfosByUsername(User currentUser, String username)
-            throws ReservationNotFoundException {
+    public CheckInInfoResponseDTO getReservationInfosByUsername(
+            AuthenticatedUser currentUser, String username) throws ReservationNotFoundException {
         LOG.debug("Getting reservation infos for user.");
 
         User user = userRepository.findByUsername(username);
@@ -370,18 +371,18 @@ public class CheckInService {
         }
     }
 
-    private boolean isAuthorizedForEvent(User user, Long eventId) {
+    private boolean isAuthorizedForEvent(AuthenticatedUser user, Long eventId) {
         if (user == null || eventId == null) return false;
         // If user is a supervisor for the event
-        if (eventRepository.isUserSupervisor(eventId, user.id)) return true;
+        if (eventRepository.isUserSupervisor(eventId, user.id())) return true;
         // If user is manager for the event
         Event event = eventRepository.findById(eventId);
         if (event != null
                 && event.getManager() != null
-                && Objects.equals(event.getManager().id, user.id)) {
+                && Objects.equals(event.getManager().id, user.id())) {
             return true;
         }
         // If user is admin
-        return user.getRoles() != null && user.getRoles().contains(Roles.ADMIN);
+        return user.isAdmin();
     }
 }

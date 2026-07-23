@@ -26,7 +26,6 @@ import jakarta.inject.Inject;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
-import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
@@ -34,7 +33,6 @@ import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
-import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.reservation.dto.UserEventResponseDTO;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -46,7 +44,6 @@ class EventServiceTest {
 
     @Inject EventService eventService;
 
-    @InjectMock UserRepository userRepository;
     @InjectMock EventUserAllowanceRepository eventUserAllowanceRepository;
     @InjectMock ReservationRepository reservationRepository;
 
@@ -92,11 +89,10 @@ class EventServiceTest {
 
     @Test
     void getEventsForCurrentUser_Success_OnlyAllowances() {
-        when(userRepository.findByUsername("testuser")).thenReturn(user);
         when(eventUserAllowanceRepository.findByUser(user)).thenReturn(List.of(allowance1));
         when(reservationRepository.findByUser(user)).thenReturn(Collections.emptyList());
 
-        List<UserEventResponseDTO> result = eventService.getEventsForCurrentUser("testuser");
+        List<UserEventResponseDTO> result = eventService.getEventsForCurrentUser(user);
 
         assertFalse(result.isEmpty());
         assertEquals(1, result.size());
@@ -106,11 +102,10 @@ class EventServiceTest {
 
     @Test
     void getEventsForCurrentUser_Success_OnlyReservations() {
-        when(userRepository.findByUsername("testuser")).thenReturn(user);
         when(eventUserAllowanceRepository.findByUser(user)).thenReturn(Collections.emptyList());
         when(reservationRepository.findByUser(user)).thenReturn(List.of(reservation2));
 
-        List<UserEventResponseDTO> result = eventService.getEventsForCurrentUser("testuser");
+        List<UserEventResponseDTO> result = eventService.getEventsForCurrentUser(user);
 
         assertFalse(result.isEmpty());
         assertEquals(1, result.size());
@@ -121,11 +116,10 @@ class EventServiceTest {
 
     @Test
     void getEventsForCurrentUser_Success_AllowancesAndDifferentReservations() {
-        when(userRepository.findByUsername("testuser")).thenReturn(user);
         when(eventUserAllowanceRepository.findByUser(user)).thenReturn(List.of(allowance1));
         when(reservationRepository.findByUser(user)).thenReturn(List.of(reservation2));
 
-        List<UserEventResponseDTO> result = eventService.getEventsForCurrentUser("testuser");
+        List<UserEventResponseDTO> result = eventService.getEventsForCurrentUser(user);
 
         assertFalse(result.isEmpty());
         assertEquals(2, result.size());
@@ -148,12 +142,11 @@ class EventServiceTest {
 
     @Test
     void getEventsForCurrentUser_Success_AllowancesAndSameEventReservations() {
-        when(userRepository.findByUsername("testuser")).thenReturn(user);
         when(eventUserAllowanceRepository.findByUser(user)).thenReturn(List.of(allowance1));
         when(reservationRepository.findByUser(user))
                 .thenReturn(List.of(reservation1)); // reservation for event1
 
-        List<UserEventResponseDTO> result = eventService.getEventsForCurrentUser("testuser");
+        List<UserEventResponseDTO> result = eventService.getEventsForCurrentUser(user);
 
         assertFalse(result.isEmpty());
         assertEquals(1, result.size());
@@ -163,21 +156,11 @@ class EventServiceTest {
     }
 
     @Test
-    void getEventsForCurrentUser_UserNotFoundException() {
-        when(userRepository.findByUsername("unknownuser")).thenReturn(null);
-
-        assertThrows(
-                UserNotFoundException.class,
-                () -> eventService.getEventsForCurrentUser("unknownuser"));
-    }
-
-    @Test
     void getEventsForCurrentUser_Success_NoEvents() {
-        when(userRepository.findByUsername("testuser")).thenReturn(user);
         when(eventUserAllowanceRepository.findByUser(user)).thenReturn(Collections.emptyList());
         when(reservationRepository.findByUser(user)).thenReturn(Collections.emptyList());
 
-        List<UserEventResponseDTO> result = eventService.getEventsForCurrentUser("testuser");
+        List<UserEventResponseDTO> result = eventService.getEventsForCurrentUser(user);
 
         assertTrue(result.isEmpty());
     }
