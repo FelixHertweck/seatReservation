@@ -42,6 +42,9 @@ import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
+import io.quarkus.test.security.jwt.Claim;
+import io.quarkus.test.security.jwt.ClaimType;
+import io.quarkus.test.security.jwt.JwtSecurity;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -151,6 +154,7 @@ public class SeatResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testGetAllManagerSeats() {
         given().when()
                 .queryParam("eventLocationId", testLocation.id)
@@ -172,6 +176,7 @@ public class SeatResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testGetManagerSeatById() {
         given().when()
                 .get("/api/manager/seats/" + testSeat.id)
@@ -184,6 +189,7 @@ public class SeatResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testGetManagerSeatByIdNotFound() {
         given().when().get("/api/manager/seats/999").then().statusCode(404);
     }
@@ -192,6 +198,7 @@ public class SeatResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testCreateSeat() {
         given().contentType("application/json")
                 .body(
@@ -209,6 +216,7 @@ public class SeatResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testCreateSeatInvalidData() {
         given().contentType("application/json")
                 .body("{\"seatNumber\":\"\"}")
@@ -222,6 +230,7 @@ public class SeatResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testUpdateManagerSeat() {
         given().contentType("application/json")
                 .body(
@@ -238,6 +247,7 @@ public class SeatResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testUpdateManagerSeatEntranceAndRowArePersisted() {
         given().contentType("application/json")
                 .body(
@@ -272,6 +282,7 @@ public class SeatResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testCreateUpdateAndRetrieveSeatLifecycle() {
         int createdSeatId =
                 given().contentType("application/json")
@@ -325,6 +336,7 @@ public class SeatResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testUpdateManagerSeatNotFound() {
         given().contentType("application/json")
                 .body(
@@ -340,6 +352,7 @@ public class SeatResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testDeleteManagerSeat() {
         given().when()
                 .queryParam("ids", testSeat.id)
@@ -352,6 +365,7 @@ public class SeatResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testDeleteManagerSeatNotFound() {
         given().when().queryParam("ids", 999L).delete("/api/manager/seats").then().statusCode(404);
     }
@@ -360,6 +374,7 @@ public class SeatResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testDeleteMultipleSeats() {
         // Create additional seats for bulk delete test
         var seat2 = new Seat("A2", "R: 1", testLocation);
@@ -390,6 +405,7 @@ public class SeatResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testDeleteMultipleSeats_PartialNotFound() {
         given().when()
                 .queryParam("ids", testSeat.id)

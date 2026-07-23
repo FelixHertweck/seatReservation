@@ -23,8 +23,8 @@ import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 
 import de.felixhertweck.seatreservation.model.entity.Roles;
-import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.supervisor.service.LiveViewService;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import io.quarkus.websockets.next.OnClose;
 import io.quarkus.websockets.next.OnOpen;
@@ -52,13 +52,12 @@ public class LiveViewResource {
      */
     @OnOpen
     public void onOpen(WebSocketConnection connection, @PathParam("eventId") String eventIdStr) {
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         LOG.debugf(
                 "WebSocket connection opened for event %s by user ID: %d",
-                eventIdStr, currentUser.getId());
+                eventIdStr, currentUser.id());
 
-        // Register the connection with username for authorization checks
-        webSocketService.registerConnection(eventIdStr, connection, currentUser.getUsername());
+        webSocketService.registerConnection(eventIdStr, connection, currentUser);
 
         LOG.infof("WebSocket connection successfully registered for event %s", eventIdStr);
     }
@@ -71,13 +70,12 @@ public class LiveViewResource {
      */
     @OnClose
     public void onClose(WebSocketConnection connection, @PathParam("eventId") String eventIdStr) {
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         LOG.infof(
                 "WebSocket connection closed for event %s by user ID: %d",
-                eventIdStr, currentUser.getId());
+                eventIdStr, currentUser.id());
 
-        // Unregister the connection with username for authorization checks
-        webSocketService.unregisterConnection(eventIdStr, connection, currentUser.getUsername());
+        webSocketService.unregisterConnection(eventIdStr, connection, currentUser);
 
         LOG.infof("WebSocket connection unregistered for event %s", eventIdStr);
     }

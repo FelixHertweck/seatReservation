@@ -82,6 +82,7 @@ public class TokenService {
                 Jwt.upn(user.getUsername())
                         .groups(user.getRoles())
                         .claim(Claims.email, user.getEmail() != null ? user.getEmail() : "")
+                        .claim("uid", user.id)
                         .issuedAt(Instant.now())
                         .expiresIn(Duration.ofMinutes(expirationMinutes))
                         .sign();

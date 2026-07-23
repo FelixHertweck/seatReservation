@@ -47,6 +47,7 @@ import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -65,6 +66,9 @@ public class AreaServiceTest {
     private User adminUser;
     private User managerUser;
     private User regularUser;
+    private AuthenticatedUser adminAuth;
+    private AuthenticatedUser managerAuth;
+    private AuthenticatedUser regularAuth;
     private EventLocation eventLocation;
     private EventLocation otherLocation;
     private EventLocation secondOwnedLocation;
@@ -114,6 +118,10 @@ public class AreaServiceTest {
                         Set.of());
         regularUser.id = 2L;
 
+        adminAuth = new AuthenticatedUser(adminUser.id, adminUser.getRoles());
+        managerAuth = new AuthenticatedUser(managerUser.id, managerUser.getRoles());
+        regularAuth = new AuthenticatedUser(regularUser.id, regularUser.getRoles());
+
         eventLocation = new EventLocation("Stadthalle", "Hauptstraße 1", managerUser, 100);
         eventLocation.id = 1L;
         otherLocation = new EventLocation("Other Hall", "Other Address", regularUser, 50);
@@ -139,7 +147,7 @@ public class AreaServiceTest {
         AreaRequestDTO dto =
                 new AreaRequestDTO(eventLocation.id, "Balkon", List.of(new CoordinateDTO(1, 1)));
 
-        AreaResponseDTO result = areaService.createArea(dto, managerUser);
+        AreaResponseDTO result = areaService.createArea(dto, managerAuth);
 
         assertNotNull(result);
         assertEquals("Balkon", result.name());
@@ -151,7 +159,7 @@ public class AreaServiceTest {
     void createArea_Success_AsAdmin() {
         AreaRequestDTO dto = new AreaRequestDTO(eventLocation.id, "Balkon", List.of());
 
-        AreaResponseDTO result = areaService.createArea(dto, adminUser);
+        AreaResponseDTO result = areaService.createArea(dto, adminAuth);
 
         assertNotNull(result);
         verify(areaRepository, times(1)).persist(any(EventLocationArea.class));
@@ -161,7 +169,7 @@ public class AreaServiceTest {
     void createArea_Forbidden_NotManagerOfLocation() {
         AreaRequestDTO dto = new AreaRequestDTO(eventLocation.id, "Balkon", List.of());
 
-        assertThrows(SecurityException.class, () -> areaService.createArea(dto, regularUser));
+        assertThrows(SecurityException.class, () -> areaService.createArea(dto, regularAuth));
         verify(areaRepository, never()).persist(any(EventLocationArea.class));
     }
 
@@ -170,7 +178,7 @@ public class AreaServiceTest {
         AreaRequestDTO dto = new AreaRequestDTO(eventLocation.id, "  ", List.of());
 
         assertThrows(
-                IllegalArgumentException.class, () -> areaService.createArea(dto, managerUser));
+                IllegalArgumentException.class, () -> areaService.createArea(dto, managerAuth));
         verify(areaRepository, never()).persist(any(EventLocationArea.class));
     }
 
@@ -181,7 +189,7 @@ public class AreaServiceTest {
 
         assertThrows(
                 EventLocationNotFoundException.class,
-                () -> areaService.createArea(dto, managerUser));
+                () -> areaService.createArea(dto, managerAuth));
     }
 
     @Test
@@ -189,7 +197,7 @@ public class AreaServiceTest {
         when(areaRepository.findByEventLocation(eventLocation)).thenReturn(List.of(existingArea));
 
         List<AreaResponseDTO> result =
-                areaService.findAreasByLocation(eventLocation.id, managerUser);
+                areaService.findAreasByLocation(eventLocation.id, managerAuth);
 
         assertEquals(1, result.size());
         assertEquals("Parkett", result.getFirst().name());
@@ -199,7 +207,7 @@ public class AreaServiceTest {
     void findAreasByLocation_Success_AsAdmin() {
         when(areaRepository.findByEventLocation(eventLocation)).thenReturn(List.of(existingArea));
 
-        List<AreaResponseDTO> result = areaService.findAreasByLocation(eventLocation.id, adminUser);
+        List<AreaResponseDTO> result = areaService.findAreasByLocation(eventLocation.id, adminAuth);
 
         assertEquals(1, result.size());
     }
@@ -208,7 +216,7 @@ public class AreaServiceTest {
     void findAreasByLocation_Forbidden_NotOwner() {
         assertThrows(
                 SecurityException.class,
-                () -> areaService.findAreasByLocation(otherLocation.id, managerUser));
+                () -> areaService.findAreasByLocation(otherLocation.id, managerAuth));
     }
 
     @Test
@@ -217,7 +225,7 @@ public class AreaServiceTest {
 
         assertThrows(
                 EventLocationNotFoundException.class,
-                () -> areaService.findAreasByLocation(999L, managerUser));
+                () -> areaService.findAreasByLocation(999L, managerAuth));
     }
 
     @Test
@@ -225,7 +233,7 @@ public class AreaServiceTest {
         when(areaRepository.findByIdWithEventLocation(existingArea.id))
                 .thenReturn(Optional.of(existingArea));
 
-        AreaResponseDTO result = areaService.findAreaByIdForManager(existingArea.id, managerUser);
+        AreaResponseDTO result = areaService.findAreaByIdForManager(existingArea.id, managerAuth);
 
         assertEquals("Parkett", result.name());
     }
@@ -236,7 +244,7 @@ public class AreaServiceTest {
 
         assertThrows(
                 AreaNotFoundException.class,
-                () -> areaService.findAreaByIdForManager(999L, managerUser));
+                () -> areaService.findAreaByIdForManager(999L, managerAuth));
     }
 
     @Test
@@ -249,7 +257,7 @@ public class AreaServiceTest {
 
         assertThrows(
                 SecurityException.class,
-                () -> areaService.findAreaByIdForManager(areaInOtherLocation.id, managerUser));
+                () -> areaService.findAreaByIdForManager(areaInOtherLocation.id, managerAuth));
     }
 
     @Test
@@ -259,7 +267,7 @@ public class AreaServiceTest {
         AreaRequestDTO dto =
                 new AreaRequestDTO(eventLocation.id, "Loge", List.of(new CoordinateDTO(2, 2)));
 
-        AreaResponseDTO result = areaService.updateArea(existingArea.id, dto, managerUser);
+        AreaResponseDTO result = areaService.updateArea(existingArea.id, dto, managerAuth);
 
         assertEquals("Loge", result.name());
         verify(areaRepository, times(1)).persist(existingArea);
@@ -271,7 +279,7 @@ public class AreaServiceTest {
         AreaRequestDTO dto = new AreaRequestDTO(eventLocation.id, "Loge", List.of());
 
         assertThrows(
-                AreaNotFoundException.class, () -> areaService.updateArea(999L, dto, managerUser));
+                AreaNotFoundException.class, () -> areaService.updateArea(999L, dto, managerAuth));
     }
 
     @Test
@@ -282,7 +290,7 @@ public class AreaServiceTest {
 
         assertThrows(
                 SecurityException.class,
-                () -> areaService.updateArea(existingArea.id, dto, managerUser));
+                () -> areaService.updateArea(existingArea.id, dto, managerAuth));
     }
 
     @Test
@@ -293,7 +301,7 @@ public class AreaServiceTest {
 
         assertThrows(
                 IllegalArgumentException.class,
-                () -> areaService.updateArea(existingArea.id, dto, managerUser));
+                () -> areaService.updateArea(existingArea.id, dto, managerAuth));
         verify(areaRepository, never()).persist(any(EventLocationArea.class));
     }
 
@@ -310,7 +318,7 @@ public class AreaServiceTest {
 
         assertThrows(
                 AreaInUseException.class,
-                () -> areaService.updateArea(existingArea.id, dto, managerUser));
+                () -> areaService.updateArea(existingArea.id, dto, managerAuth));
         verify(areaRepository, never()).persist(any(EventLocationArea.class));
         assertEquals(eventLocation.id, existingArea.getEventLocation().id);
     }
@@ -326,7 +334,7 @@ public class AreaServiceTest {
         dto.setName("Parkett");
         dto.setBoundary(List.of());
 
-        AreaResponseDTO result = areaService.updateArea(existingArea.id, dto, managerUser);
+        AreaResponseDTO result = areaService.updateArea(existingArea.id, dto, managerAuth);
 
         assertEquals(secondOwnedLocation.id, result.eventLocationId());
         verify(areaRepository, times(1)).persist(existingArea);
@@ -343,7 +351,7 @@ public class AreaServiceTest {
         dto.setName("Parkett umbenannt");
         dto.setBoundary(List.of());
 
-        AreaResponseDTO result = areaService.updateArea(existingArea.id, dto, managerUser);
+        AreaResponseDTO result = areaService.updateArea(existingArea.id, dto, managerAuth);
 
         assertEquals("Parkett umbenannt", result.name());
         verify(areaRepository, times(1)).persist(existingArea);
@@ -353,7 +361,7 @@ public class AreaServiceTest {
     void deleteAreas_InvalidInput_EmptyIds() {
         assertThrows(
                 IllegalArgumentException.class,
-                () -> areaService.deleteAreas(List.of(), managerUser));
+                () -> areaService.deleteAreas(List.of(), managerAuth));
         verify(areaRepository, never()).delete(any(EventLocationArea.class));
     }
 
@@ -363,7 +371,7 @@ public class AreaServiceTest {
                 .thenReturn(Optional.of(existingArea));
         when(seatRepository.countByArea(existingArea)).thenReturn(0L);
 
-        areaService.deleteAreas(List.of(existingArea.id), managerUser);
+        areaService.deleteAreas(List.of(existingArea.id), managerAuth);
 
         verify(areaRepository, times(1)).delete(existingArea);
     }
@@ -374,7 +382,7 @@ public class AreaServiceTest {
 
         assertThrows(
                 AreaNotFoundException.class,
-                () -> areaService.deleteAreas(List.of(999L), managerUser));
+                () -> areaService.deleteAreas(List.of(999L), managerAuth));
     }
 
     @Test
@@ -387,7 +395,7 @@ public class AreaServiceTest {
 
         assertThrows(
                 SecurityException.class,
-                () -> areaService.deleteAreas(List.of(areaInOtherLocation.id), managerUser));
+                () -> areaService.deleteAreas(List.of(areaInOtherLocation.id), managerAuth));
     }
 
     @Test
@@ -398,7 +406,7 @@ public class AreaServiceTest {
 
         assertThrows(
                 AreaInUseException.class,
-                () -> areaService.deleteAreas(List.of(existingArea.id), managerUser));
+                () -> areaService.deleteAreas(List.of(existingArea.id), managerAuth));
         verify(areaRepository, never()).delete(any(EventLocationArea.class));
     }
 }

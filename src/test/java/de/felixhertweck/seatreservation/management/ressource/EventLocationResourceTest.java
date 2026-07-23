@@ -37,6 +37,9 @@ import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
+import io.quarkus.test.security.jwt.Claim;
+import io.quarkus.test.security.jwt.ClaimType;
+import io.quarkus.test.security.jwt.JwtSecurity;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -114,6 +117,7 @@ public class EventLocationResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testGetEventLocationsByCurrentManager() {
         given().when()
                 .get("/api/manager/eventlocations")
@@ -126,6 +130,7 @@ public class EventLocationResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testCreateEventLocation() {
         given().contentType("application/json")
                 .body("{\"name\":\"New Location\",\"address\":\"123 Main St\",\"capacity\":100}")
@@ -149,6 +154,7 @@ public class EventLocationResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testCreateEventLocationWithEmbeddedAreasAndMarkers() {
         given().contentType("application/json")
                 .body(
@@ -169,6 +175,7 @@ public class EventLocationResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testCreateEventLocationInvalidData() {
         given().contentType("application/json")
                 .body("{\"name\":\"\"}")
@@ -182,6 +189,7 @@ public class EventLocationResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testUpdateEventLocation() {
         given().contentType("application/json")
                 .body(
@@ -198,6 +206,7 @@ public class EventLocationResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testUpdateEventLocationInvalidData() {
         given().contentType("application/json")
                 .body("{\"name\":\"\"}")
@@ -211,6 +220,7 @@ public class EventLocationResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testUpdateEventLocationNotFound() {
         given().contentType("application/json")
                 .body(
@@ -226,6 +236,7 @@ public class EventLocationResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testDeleteEventLocation() {
         given().when()
                 .queryParam("ids", testLocation.getId())
@@ -238,6 +249,7 @@ public class EventLocationResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testDeleteEventLocationNotFound() {
         given().when()
                 .queryParam("ids", 999L)
@@ -250,6 +262,7 @@ public class EventLocationResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testDeleteMultipleEventLocations() {
         // Create additional locations for bulk delete test
         var user = userRepository.findByUsernameOptional("manager").orElseThrow();
@@ -288,6 +301,7 @@ public class EventLocationResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testDeleteMultipleEventLocations_PartialNotFound() {
         given().when()
                 .queryParam("ids", testLocation.getId())
@@ -328,6 +342,7 @@ public class EventLocationResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testCreateEventLocationWithSeats() {
         String requestBody =
                 "{\"name\":\"New Location\",\"address\":\"123 Main"

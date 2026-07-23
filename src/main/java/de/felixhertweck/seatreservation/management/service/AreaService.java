@@ -33,9 +33,9 @@ import de.felixhertweck.seatreservation.management.exception.AreaInUseException;
 import de.felixhertweck.seatreservation.management.exception.AreaNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
-import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
@@ -56,7 +56,8 @@ public class AreaService {
      * @param manager the manager attempting to access the areas
      * @return the areas of the event location
      */
-    public List<AreaResponseDTO> findAreasByLocation(Long eventLocationId, User manager) {
+    public List<AreaResponseDTO> findAreasByLocation(
+            Long eventLocationId, AuthenticatedUser manager) {
         EventLocation eventLocation =
                 eventLocationAccessService.findOwnedEventLocation(eventLocationId, manager);
         return areaRepository.findByEventLocation(eventLocation).stream()
@@ -71,7 +72,7 @@ public class AreaService {
      * @param manager the manager attempting to access the area
      * @return the area DTO
      */
-    public AreaResponseDTO findAreaByIdForManager(Long id, User manager) {
+    public AreaResponseDTO findAreaByIdForManager(Long id, AuthenticatedUser manager) {
         return new AreaResponseDTO(findAreaEntityById(id, manager));
     }
 
@@ -83,7 +84,7 @@ public class AreaService {
      * @return the created area DTO
      */
     @Transactional
-    public AreaResponseDTO createArea(AreaRequestDTO dto, User manager) {
+    public AreaResponseDTO createArea(AreaRequestDTO dto, AuthenticatedUser manager) {
         EventLocation eventLocation =
                 eventLocationAccessService.findOwnedEventLocation(
                         dto.getEventLocationId(), manager);
@@ -117,7 +118,7 @@ public class AreaService {
      *     still referenced by at least one seat
      */
     @Transactional
-    public AreaResponseDTO updateArea(Long id, AreaRequestDTO dto, User manager) {
+    public AreaResponseDTO updateArea(Long id, AreaRequestDTO dto, AuthenticatedUser manager) {
         EventLocationArea area = findAreaEntityById(id, manager);
         EventLocation newEventLocation =
                 eventLocationAccessService.findOwnedEventLocation(
@@ -158,7 +159,7 @@ public class AreaService {
      * @param manager the manager attempting to delete the areas
      */
     @Transactional
-    public void deleteAreas(List<Long> ids, User manager) {
+    public void deleteAreas(List<Long> ids, AuthenticatedUser manager) {
         if (ids == null || ids.isEmpty()) {
             throw new IllegalArgumentException("No area IDs provided for deletion");
         }
@@ -180,7 +181,7 @@ public class AreaService {
      * @param manager the manager attempting to access the area
      * @return the area entity
      */
-    private EventLocationArea findAreaEntityById(Long id, User manager) {
+    private EventLocationArea findAreaEntityById(Long id, AuthenticatedUser manager) {
         EventLocationArea area =
                 areaRepository
                         .findByIdWithEventLocation(id)

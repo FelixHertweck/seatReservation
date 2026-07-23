@@ -39,7 +39,7 @@ import de.felixhertweck.seatreservation.management.dto.EntranceRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EntranceResponseDTO;
 import de.felixhertweck.seatreservation.management.service.EntranceService;
 import de.felixhertweck.seatreservation.model.entity.Roles;
-import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -71,7 +71,7 @@ public class EntranceResource {
     @APIResponse(responseCode = "404", description = "Not Found: Event location not found")
     public EntranceResponseDTO createEntrance(@Valid EntranceRequestDTO entranceRequestDTO) {
         LOG.debugf("Received POST request to /api/manager/entrances to create a new entrance.");
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         return entranceService.createEntrance(entranceRequestDTO, currentUser);
     }
 
@@ -98,7 +98,7 @@ public class EntranceResource {
         if (eventLocationId == null) {
             throw new IllegalArgumentException("eventLocationId query parameter is required");
         }
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         return entranceService.findEntrancesByLocation(eventLocationId, currentUser);
     }
 
@@ -117,7 +117,7 @@ public class EntranceResource {
             description = "Not Found: Entrance with specified ID not found for the current manager")
     public EntranceResponseDTO getManagerEntranceById(@PathParam("id") Long id) {
         LOG.debugf("Received GET request to /api/manager/entrances/%d.", id);
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         return entranceService.findEntranceByIdForManager(id, currentUser);
     }
 
@@ -137,7 +137,7 @@ public class EntranceResource {
     public EntranceResponseDTO updateManagerEntrance(
             @PathParam("id") Long id, @Valid EntranceRequestDTO entranceRequestDTO) {
         LOG.debugf("Received PUT request to /api/manager/entrances/%d to update entrance.", id);
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         return entranceService.updateEntrance(id, entranceRequestDTO, currentUser);
     }
 
@@ -158,7 +158,7 @@ public class EntranceResource {
         LOG.debugf(
                 "Received DELETE request to /api/manager/entrances with IDs: %s",
                 ids != null ? ids : Collections.emptyList());
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         entranceService.deleteEntrances(ids, currentUser);
     }
 }

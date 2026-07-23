@@ -40,7 +40,7 @@ import de.felixhertweck.seatreservation.management.dto.EventLocationResponseDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationUpdateDTO;
 import de.felixhertweck.seatreservation.management.service.EventLocationService;
 import de.felixhertweck.seatreservation.model.entity.Roles;
-import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -76,7 +76,7 @@ public class EventLocationResource {
             description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
     public List<EventLocationResponseDTO> getEventLocationsByCurrentManager() {
         LOG.debugf("Received GET request to /api/manager/eventlocations");
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         List<EventLocationResponseDTO> result =
                 eventLocationService.getEventLocationsByCurrentManager(currentUser);
         LOG.debugf(
@@ -101,7 +101,7 @@ public class EventLocationResource {
     public EventLocationResponseDTO createEventLocation(@Valid EventLocationRequestDTO dto) {
         LOG.debugf("Received POST request to /api/manager/eventlocations for new event location.");
         LOG.debugf("EventLocationRequestDTO received: %s", dto.toString());
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         EventLocationResponseDTO result =
                 eventLocationService.createEventLocation(dto, currentUser);
         LOG.infof("Event location '%s' created successfully.", result.name());
@@ -130,7 +130,7 @@ public class EventLocationResource {
                 "Received PUT request to /api/manager/eventlocations/%d to update event location.",
                 id);
         LOG.debugf("EventLocationRequestDTO received for ID %d: %s", id, dto.toString());
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         EventLocationResponseDTO result =
                 eventLocationService.updateEventLocation(id, dto, currentUser);
         LOG.infof("Event location with ID %d updated successfully.", id);
@@ -152,7 +152,7 @@ public class EventLocationResource {
         LOG.debugf(
                 "Received DELETE request to /api/manager/eventlocations with IDs: %s",
                 ids != null ? ids : Collections.emptyList());
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         eventLocationService.deleteEventLocation(ids, currentUser);
         LOG.debugf(
                 "Event location with IDs %s deleted successfully.",

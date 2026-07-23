@@ -46,6 +46,7 @@ import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventLocationEntranceRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -64,6 +65,9 @@ public class EntranceServiceTest {
     private User adminUser;
     private User managerUser;
     private User regularUser;
+    private AuthenticatedUser adminAuth;
+    private AuthenticatedUser managerAuth;
+    private AuthenticatedUser regularAuth;
     private EventLocation eventLocation;
     private EventLocation otherLocation;
     private EventLocation secondOwnedLocation;
@@ -113,6 +117,10 @@ public class EntranceServiceTest {
                         Set.of());
         regularUser.id = 2L;
 
+        adminAuth = new AuthenticatedUser(adminUser.id, adminUser.getRoles());
+        managerAuth = new AuthenticatedUser(managerUser.id, managerUser.getRoles());
+        regularAuth = new AuthenticatedUser(regularUser.id, regularUser.getRoles());
+
         eventLocation = new EventLocation("Stadthalle", "Hauptstraße 1", managerUser, 100);
         eventLocation.id = 1L;
         otherLocation = new EventLocation("Other Hall", "Other Address", regularUser, 50);
@@ -137,7 +145,7 @@ public class EntranceServiceTest {
     void createEntrance_Success_AsManager() {
         EntranceRequestDTO dto = new EntranceRequestDTO(eventLocation.id, "B");
 
-        EntranceResponseDTO result = entranceService.createEntrance(dto, managerUser);
+        EntranceResponseDTO result = entranceService.createEntrance(dto, managerAuth);
 
         assertNotNull(result);
         assertEquals("B", result.name());
@@ -149,7 +157,7 @@ public class EntranceServiceTest {
     void createEntrance_Success_AsAdmin() {
         EntranceRequestDTO dto = new EntranceRequestDTO(eventLocation.id, "B");
 
-        EntranceResponseDTO result = entranceService.createEntrance(dto, adminUser);
+        EntranceResponseDTO result = entranceService.createEntrance(dto, adminAuth);
 
         assertNotNull(result);
         verify(entranceRepository, times(1)).persist(any(EventLocationEntrance.class));
@@ -160,7 +168,7 @@ public class EntranceServiceTest {
         EntranceRequestDTO dto = new EntranceRequestDTO(eventLocation.id, "B");
 
         assertThrows(
-                SecurityException.class, () -> entranceService.createEntrance(dto, regularUser));
+                SecurityException.class, () -> entranceService.createEntrance(dto, regularAuth));
         verify(entranceRepository, never()).persist(any(EventLocationEntrance.class));
     }
 
@@ -170,7 +178,7 @@ public class EntranceServiceTest {
 
         assertThrows(
                 IllegalArgumentException.class,
-                () -> entranceService.createEntrance(dto, managerUser));
+                () -> entranceService.createEntrance(dto, managerAuth));
         verify(entranceRepository, never()).persist(any(EventLocationEntrance.class));
     }
 
@@ -181,7 +189,7 @@ public class EntranceServiceTest {
 
         assertThrows(
                 EventLocationNotFoundException.class,
-                () -> entranceService.createEntrance(dto, managerUser));
+                () -> entranceService.createEntrance(dto, managerAuth));
     }
 
     @Test
@@ -190,7 +198,7 @@ public class EntranceServiceTest {
                 .thenReturn(List.of(existingEntrance));
 
         List<EntranceResponseDTO> result =
-                entranceService.findEntrancesByLocation(eventLocation.id, managerUser);
+                entranceService.findEntrancesByLocation(eventLocation.id, managerAuth);
 
         assertEquals(1, result.size());
         assertEquals("A", result.getFirst().name());
@@ -200,7 +208,7 @@ public class EntranceServiceTest {
     void findEntrancesByLocation_Forbidden_NotOwner() {
         assertThrows(
                 SecurityException.class,
-                () -> entranceService.findEntrancesByLocation(otherLocation.id, managerUser));
+                () -> entranceService.findEntrancesByLocation(otherLocation.id, managerAuth));
     }
 
     @Test
@@ -209,7 +217,7 @@ public class EntranceServiceTest {
 
         assertThrows(
                 EventLocationNotFoundException.class,
-                () -> entranceService.findEntrancesByLocation(999L, managerUser));
+                () -> entranceService.findEntrancesByLocation(999L, managerAuth));
     }
 
     @Test
@@ -218,7 +226,7 @@ public class EntranceServiceTest {
                 .thenReturn(Optional.of(existingEntrance));
 
         EntranceResponseDTO result =
-                entranceService.findEntranceByIdForManager(existingEntrance.id, managerUser);
+                entranceService.findEntranceByIdForManager(existingEntrance.id, managerAuth);
 
         assertEquals("A", result.name());
     }
@@ -229,7 +237,7 @@ public class EntranceServiceTest {
 
         assertThrows(
                 EntranceNotFoundException.class,
-                () -> entranceService.findEntranceByIdForManager(999L, managerUser));
+                () -> entranceService.findEntranceByIdForManager(999L, managerAuth));
     }
 
     @Test
@@ -244,7 +252,7 @@ public class EntranceServiceTest {
                 SecurityException.class,
                 () ->
                         entranceService.findEntranceByIdForManager(
-                                entranceInOtherLocation.id, managerUser));
+                                entranceInOtherLocation.id, managerAuth));
     }
 
     @Test
@@ -254,7 +262,7 @@ public class EntranceServiceTest {
         EntranceRequestDTO dto = new EntranceRequestDTO(eventLocation.id, "C");
 
         EntranceResponseDTO result =
-                entranceService.updateEntrance(existingEntrance.id, dto, managerUser);
+                entranceService.updateEntrance(existingEntrance.id, dto, managerAuth);
 
         assertEquals("C", result.name());
         verify(entranceRepository, times(1)).persist(existingEntrance);
@@ -267,7 +275,7 @@ public class EntranceServiceTest {
 
         assertThrows(
                 EntranceNotFoundException.class,
-                () -> entranceService.updateEntrance(999L, dto, managerUser));
+                () -> entranceService.updateEntrance(999L, dto, managerAuth));
     }
 
     @Test
@@ -278,7 +286,7 @@ public class EntranceServiceTest {
 
         assertThrows(
                 SecurityException.class,
-                () -> entranceService.updateEntrance(existingEntrance.id, dto, managerUser));
+                () -> entranceService.updateEntrance(existingEntrance.id, dto, managerAuth));
     }
 
     @Test
@@ -289,7 +297,7 @@ public class EntranceServiceTest {
 
         assertThrows(
                 IllegalArgumentException.class,
-                () -> entranceService.updateEntrance(existingEntrance.id, dto, managerUser));
+                () -> entranceService.updateEntrance(existingEntrance.id, dto, managerAuth));
         verify(entranceRepository, never()).persist(any(EventLocationEntrance.class));
     }
 
@@ -305,7 +313,7 @@ public class EntranceServiceTest {
 
         assertThrows(
                 EntranceInUseException.class,
-                () -> entranceService.updateEntrance(existingEntrance.id, dto, managerUser));
+                () -> entranceService.updateEntrance(existingEntrance.id, dto, managerAuth));
         verify(entranceRepository, never()).persist(any(EventLocationEntrance.class));
         assertEquals(eventLocation.id, existingEntrance.getEventLocation().id);
     }
@@ -321,7 +329,7 @@ public class EntranceServiceTest {
         dto.setName("A");
 
         EntranceResponseDTO result =
-                entranceService.updateEntrance(existingEntrance.id, dto, managerUser);
+                entranceService.updateEntrance(existingEntrance.id, dto, managerAuth);
 
         assertEquals(secondOwnedLocation.id, result.eventLocationId());
         verify(entranceRepository, times(1)).persist(existingEntrance);
@@ -338,7 +346,7 @@ public class EntranceServiceTest {
         dto.setName("A umbenannt");
 
         EntranceResponseDTO result =
-                entranceService.updateEntrance(existingEntrance.id, dto, managerUser);
+                entranceService.updateEntrance(existingEntrance.id, dto, managerAuth);
 
         assertEquals("A umbenannt", result.name());
         verify(entranceRepository, times(1)).persist(existingEntrance);
@@ -348,7 +356,7 @@ public class EntranceServiceTest {
     void deleteEntrances_InvalidInput_EmptyIds() {
         assertThrows(
                 IllegalArgumentException.class,
-                () -> entranceService.deleteEntrances(List.of(), managerUser));
+                () -> entranceService.deleteEntrances(List.of(), managerAuth));
         verify(entranceRepository, never()).delete(any(EventLocationEntrance.class));
     }
 
@@ -358,7 +366,7 @@ public class EntranceServiceTest {
                 .thenReturn(Optional.of(existingEntrance));
         when(seatRepository.countByEntrance(existingEntrance)).thenReturn(0L);
 
-        entranceService.deleteEntrances(List.of(existingEntrance.id), managerUser);
+        entranceService.deleteEntrances(List.of(existingEntrance.id), managerAuth);
 
         verify(entranceRepository, times(1)).delete(existingEntrance);
     }
@@ -369,7 +377,7 @@ public class EntranceServiceTest {
 
         assertThrows(
                 EntranceNotFoundException.class,
-                () -> entranceService.deleteEntrances(List.of(999L), managerUser));
+                () -> entranceService.deleteEntrances(List.of(999L), managerAuth));
     }
 
     @Test
@@ -380,7 +388,7 @@ public class EntranceServiceTest {
 
         assertThrows(
                 EntranceInUseException.class,
-                () -> entranceService.deleteEntrances(List.of(existingEntrance.id), managerUser));
+                () -> entranceService.deleteEntrances(List.of(existingEntrance.id), managerAuth));
         verify(entranceRepository, never()).delete(any(EventLocationEntrance.class));
     }
 }

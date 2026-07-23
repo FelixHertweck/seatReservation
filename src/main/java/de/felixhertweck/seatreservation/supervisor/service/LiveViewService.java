@@ -35,15 +35,13 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
-import de.felixhertweck.seatreservation.model.entity.Roles;
-import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
-import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.supervisor.dto.SupervisorReservationResponseDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.WebsocketInitialDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.WebsocketUpdateDTO;
 import de.felixhertweck.seatreservation.supervisor.exception.InvalidEventIdException;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import io.quarkus.arc.Lock;
 import io.quarkus.websockets.next.WebSocketConnection;
 import org.jboss.logging.Logger;
@@ -56,7 +54,6 @@ public class LiveViewService {
     @Inject ReservationRepository reservationRepository;
 
     @Inject EventRepository eventRepository;
-    @Inject UserRepository userRepository;
 
     // Map: eventId -> List of WebSocket Connections
     private final Map<Long, List<WebSocketConnection>> eventSubscriptions =
@@ -88,19 +85,18 @@ public class LiveViewService {
     }
 
     /**
-     * Registers a websocket connection with authorization check by username.
+     * Registers a websocket connection with an authorization check for the given user.
      *
      * @param eventIdStr the event id as string
      * @param connection websocket connection
-     * @param username current user's username
+     * @param currentUser the currently authenticated user
      * @throws InvalidEventIdException if id invalid
      */
     public void registerConnection(
-            String eventIdStr, WebSocketConnection connection, String username)
+            String eventIdStr, WebSocketConnection connection, AuthenticatedUser currentUser)
             throws InvalidEventIdException {
         long eventId = parseEventId(eventIdStr);
-        User user = userRepository.findByUsername(username);
-        if (!isAuthorizedForEvent(user, eventId)) {
+        if (!isAuthorizedForEvent(currentUser, eventId)) {
             throw new SecurityException("User is not authorized to access event " + eventId);
         }
         registerConnection(eventId, connection);
@@ -121,11 +117,10 @@ public class LiveViewService {
     }
 
     public void unregisterConnection(
-            String eventIdStr, WebSocketConnection connection, String username)
+            String eventIdStr, WebSocketConnection connection, AuthenticatedUser currentUser)
             throws InvalidEventIdException {
         long eventId = parseEventId(eventIdStr);
-        User user = userRepository.findByUsername(username);
-        if (!isAuthorizedForEvent(user, eventId)) {
+        if (!isAuthorizedForEvent(currentUser, eventId)) {
             throw new SecurityException("User is not authorized to access event " + eventId);
         }
         unregisterConnection(eventId, connection);
@@ -205,14 +200,14 @@ public class LiveViewService {
         }
     }
 
-    private boolean isAuthorizedForEvent(User user, long eventId) {
+    private boolean isAuthorizedForEvent(AuthenticatedUser user, long eventId) {
         if (user == null) return false;
-        if (eventRepository.isUserSupervisor(eventId, user.id)) return true;
+        if (eventRepository.isUserSupervisor(eventId, user.id())) return true;
         Event event = eventRepository.findById(eventId);
         if (event != null
                 && event.getManager() != null
-                && Objects.equals(event.getManager().id, user.id)) return true;
-        return user.getRoles() != null && user.getRoles().contains(Roles.ADMIN);
+                && Objects.equals(event.getManager().id, user.id())) return true;
+        return user.isAdmin();
     }
 
     /**

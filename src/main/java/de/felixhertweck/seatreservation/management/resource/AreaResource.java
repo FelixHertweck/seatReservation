@@ -39,7 +39,7 @@ import de.felixhertweck.seatreservation.management.dto.AreaRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.AreaResponseDTO;
 import de.felixhertweck.seatreservation.management.service.AreaService;
 import de.felixhertweck.seatreservation.model.entity.Roles;
-import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -71,7 +71,7 @@ public class AreaResource {
     @APIResponse(responseCode = "404", description = "Not Found: Event location not found")
     public AreaResponseDTO createArea(@Valid AreaRequestDTO areaRequestDTO) {
         LOG.debugf("Received POST request to /api/manager/areas to create a new area.");
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         return areaService.createArea(areaRequestDTO, currentUser);
     }
 
@@ -97,7 +97,7 @@ public class AreaResource {
         if (eventLocationId == null) {
             throw new IllegalArgumentException("eventLocationId query parameter is required");
         }
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         return areaService.findAreasByLocation(eventLocationId, currentUser);
     }
 
@@ -116,7 +116,7 @@ public class AreaResource {
             description = "Not Found: Area with specified ID not found for the current manager")
     public AreaResponseDTO getManagerAreaById(@PathParam("id") Long id) {
         LOG.debugf("Received GET request to /api/manager/areas/%d.", id);
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         return areaService.findAreaByIdForManager(id, currentUser);
     }
 
@@ -136,7 +136,7 @@ public class AreaResource {
     public AreaResponseDTO updateManagerArea(
             @PathParam("id") Long id, @Valid AreaRequestDTO areaRequestDTO) {
         LOG.debugf("Received PUT request to /api/manager/areas/%d to update area.", id);
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         return areaService.updateArea(id, areaRequestDTO, currentUser);
     }
 
@@ -157,7 +157,7 @@ public class AreaResource {
         LOG.debugf(
                 "Received DELETE request to /api/manager/areas with IDs: %s",
                 ids != null ? ids : Collections.emptyList());
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         areaService.deleteAreas(ids, currentUser);
     }
 }

@@ -40,11 +40,11 @@ import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
 import de.felixhertweck.seatreservation.model.entity.EventLocationEntrance;
 import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
-import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.Seat;
-import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
+import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
@@ -54,6 +54,7 @@ public class EventLocationService {
 
     @Inject EventLocationRepository eventLocationRepository;
     @Inject SeatRepository seatRepository;
+    @Inject UserRepository userRepository;
 
     /**
      * Validates that the user has permission to manage the given event location. Permission is
@@ -63,9 +64,8 @@ public class EventLocationService {
      * @param manager The user attempting the operation
      * @throws SecurityException If the user is not authorized
      */
-    private void validateManagerPermission(EventLocation location, User manager) {
-        if (!location.getManager().id.equals(manager.getId())
-                && !manager.getRoles().contains(Roles.ADMIN)) {
+    private void validateManagerPermission(EventLocation location, AuthenticatedUser manager) {
+        if (!location.getManager().id.equals(manager.id()) && !manager.isAdmin()) {
             throw new SecurityException("User is not the manager of this location");
         }
     }
@@ -77,22 +77,22 @@ public class EventLocationService {
      *
      * @return A list of DTOs representing the EventLocations.
      */
-    public List<EventLocationResponseDTO> getEventLocationsByCurrentManager(User manager) {
-        LOG.debugf(
-                "Attempting to retrieve event locations for manager: %s (ID: %d)",
-                manager.id, manager.getId());
+    public List<EventLocationResponseDTO> getEventLocationsByCurrentManager(
+            AuthenticatedUser manager) {
+        LOG.debugf("Attempting to retrieve event locations for manager ID: %d", manager.id());
         List<EventLocation> eventLocations;
-        if (manager.getRoles().contains(Roles.ADMIN)) {
+        if (manager.isAdmin()) {
             LOG.debug("User is ADMIN, listing all event locations.");
             eventLocations = eventLocationRepository.listAll();
         } else {
-            LOG.debugf(
-                    "User is MANAGER, listing event locations for manager ID: %d", manager.getId());
-            eventLocations = eventLocationRepository.findByManager(manager);
+            LOG.debugf("User is MANAGER, listing event locations for manager ID: %d", manager.id());
+            eventLocations =
+                    eventLocationRepository.findByManager(
+                            userRepository.getReference(manager.id()));
         }
         LOG.debugf(
-                "Retrieved %d event locations for manager: %s (ID: %d)",
-                eventLocations.size(), manager.id, manager.getId());
+                "Retrieved %d event locations for manager ID: %d",
+                eventLocations.size(), manager.id());
         return eventLocations.stream()
                 .map(EventLocationResponseDTO::new)
                 .collect(Collectors.toList());
@@ -105,26 +105,29 @@ public class EventLocationService {
      * @return A DTO representing the newly created EventLocation.
      */
     @Transactional
-    public EventLocationResponseDTO createEventLocation(EventLocationRequestDTO dto, User manager)
+    public EventLocationResponseDTO createEventLocation(
+            EventLocationRequestDTO dto, AuthenticatedUser manager)
             throws IllegalArgumentException {
         LOG.debugf(
                 "Attempting to create event location with name: %s, address: %s, capacity: %d for"
-                        + " manager: %s (ID: %d)",
-                dto.getName(), dto.getAddress(), dto.getCapacity(), manager.id, manager.getId());
+                        + " manager ID: %d",
+                dto.getName(), dto.getAddress(), dto.getCapacity(), manager.id());
         if (dto.getName() == null
                 || dto.getName().trim().isEmpty()
                 || dto.getAddress() == null
                 || dto.getAddress().trim().isEmpty()
                 || dto.getCapacity() == null
                 || dto.getCapacity() <= 0) {
-            LOG.warnf(
-                    "Invalid EventLocation data provided by manager: %s (ID: %d)",
-                    manager.id, manager.getId());
+            LOG.warnf("Invalid EventLocation data provided by manager ID: %d", manager.id());
             throw new IllegalArgumentException("Invalid EventLocation data provided.");
         }
 
         EventLocation location =
-                new EventLocation(dto.getName(), dto.getAddress(), manager, dto.getCapacity());
+                new EventLocation(
+                        dto.getName(),
+                        dto.getAddress(),
+                        userRepository.getReference(manager.id()),
+                        dto.getCapacity());
         // Set markers after location is created to avoid circular dependency
         location.setMarkers(convertToMarkerEntities(dto.getmarkers(), location));
         Map<String, EventLocationArea> areasByName = new LinkedHashMap<>();
@@ -161,8 +164,8 @@ public class EventLocationService {
         }
 
         LOG.infof(
-                "Event location '%s' (ID: %d) created successfully by manager: %s (ID: %d)",
-                location.getName(), location.getId(), manager.id, manager.getId());
+                "Event location '%s' (ID: %d) created successfully by manager ID: %d",
+                location.getName(), location.getId(), manager.id());
         return new EventLocationResponseDTO(location);
     }
 
@@ -178,11 +181,11 @@ public class EventLocationService {
      */
     @Transactional
     public EventLocationResponseDTO updateEventLocation(
-            Long id, EventLocationUpdateDTO dto, User manager)
+            Long id, EventLocationUpdateDTO dto, AuthenticatedUser manager)
             throws IllegalArgumentException, SecurityException {
         LOG.debugf(
-                "Attempting to update event location with ID: %d for manager: %s (ID: %d)",
-                id, manager.id, manager.getId());
+                "Attempting to update event location with ID: %d for manager ID: %d",
+                id, manager.id());
         EventLocation location =
                 eventLocationRepository
                         .findByIdOptional(id)
@@ -190,8 +193,8 @@ public class EventLocationService {
                                 () -> {
                                     LOG.warnf(
                                             "EventLocation with ID %d not found for update by"
-                                                    + " manager: %s (ID: %d)",
-                                            id, manager.id, manager.getId());
+                                                    + " manager ID: %d",
+                                            id, manager.id());
                                     return new EventLocationNotFoundException(
                                             "EventLocation with id " + id + " not found");
                                 });
@@ -200,8 +203,8 @@ public class EventLocationService {
             validateManagerPermission(location, manager);
         } catch (SecurityException e) {
             LOG.warnf(
-                    "user ID: %d (ID: %d) is not authorized to update event location with ID %d.",
-                    manager.id, manager.getId(), id);
+                    "manager ID: %d is not authorized to update event location with ID %d.",
+                    manager.id(), id);
             throw e;
         }
 
@@ -221,8 +224,8 @@ public class EventLocationService {
 
         eventLocationRepository.persist(location);
         LOG.infof(
-                "Event location '%s' (ID: %d) updated successfully by manager: %s (ID: %d)",
-                location.getName(), location.getId(), manager.id, manager.getId());
+                "Event location '%s' (ID: %d) updated successfully by manager ID: %d",
+                location.getName(), location.getId(), manager.id());
         return new EventLocationResponseDTO(location);
     }
 
@@ -363,18 +366,16 @@ public class EventLocationService {
      * @throws SecurityException If the user is not authorized to delete the EventLocation.
      */
     @Transactional
-    public void deleteEventLocation(List<Long> ids, User manager)
+    public void deleteEventLocation(List<Long> ids, AuthenticatedUser manager)
             throws IllegalArgumentException, SecurityException {
         if (ids == null || ids.isEmpty()) {
-            LOG.warnf(
-                    "No event locations to delete for manager: %s (ID: %d)",
-                    manager.id, manager.getId());
+            LOG.warnf("No event locations to delete for manager ID: %d", manager.id());
             throw new IllegalArgumentException("No event location IDs provided for deletion.");
         }
 
         LOG.debugf(
-                "Attempting to delete event locations with IDs: %s for manager: %s (ID: %d)",
-                ids, manager.id, manager.getId());
+                "Attempting to delete event locations with IDs: %s for manager ID: %d",
+                ids, manager.id());
 
         for (Long id : ids) {
             EventLocation location =
@@ -384,8 +385,8 @@ public class EventLocationService {
                                     () -> {
                                         LOG.warnf(
                                                 "EventLocation with ID %d not found for deletion by"
-                                                        + " manager: %s (ID: %d)",
-                                                id, manager.id, manager.getId());
+                                                        + " manager ID: %d",
+                                                id, manager.id());
                                         return new EventLocationNotFoundException(
                                                 "EventLocation with id " + id + " not found");
                                     });
@@ -394,14 +395,13 @@ public class EventLocationService {
                 validateManagerPermission(location, manager);
             } catch (SecurityException e) {
                 LOG.warnf(
-                        "user ID: %d (ID: %d) is not authorized to delete event location with ID"
-                                + " %d.",
-                        manager.id, manager.getId(), id);
+                        "manager ID: %d is not authorized to delete event location with ID %d.",
+                        manager.id(), id);
                 throw e;
             }
 
             eventLocationRepository.delete(location);
         }
-        LOG.infof("Event locations %s deleted successfully by manager: %s", ids, manager.id);
+        LOG.infof("Event locations %s deleted successfully by manager ID: %d", ids, manager.id());
     }
 }

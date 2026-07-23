@@ -40,6 +40,7 @@ import de.felixhertweck.seatreservation.management.dto.EventResponseDTO;
 import de.felixhertweck.seatreservation.management.service.EventService;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -118,7 +119,7 @@ public class EventResource {
             description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
     public List<EventResponseDTO> getEventsByCurrentManager() {
         LOG.debugf("Received GET request to /api/manager/events to get events by current manager.");
-        User currentUser = userSecurityContext.getCurrentUser();
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         List<EventResponseDTO> result = eventService.getEventsByCurrentManager(currentUser);
         LOG.debugf(
                 "Successfully responded to GET /api/manager/events with %d events.", result.size());

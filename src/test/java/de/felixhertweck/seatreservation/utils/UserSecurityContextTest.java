@@ -24,6 +24,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -36,6 +37,7 @@ import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import io.quarkus.security.identity.SecurityIdentity;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,6 +53,8 @@ class UserSecurityContextTest {
     @Mock private UserRepository userRepository;
 
     @Mock private Principal principal;
+
+    @Mock private JsonWebToken jsonWebToken;
 
     @InjectMocks private UserSecurityContext userSecurityContext;
 
@@ -210,5 +214,23 @@ class UserSecurityContextTest {
         verify(securityContext, times(2)).getPrincipal();
         verify(userRepository).findByUsername("testuser");
         verify(userRepository).findByUsername("seconduser");
+    }
+
+    @Test
+    void getCurrentUserReference_ValidUidClaim_ReturnsRepositoryReference() {
+        // Arrange
+        when(jsonWebToken.getClaim("uid")).thenReturn("42");
+        User reference = new User();
+        reference.id = 42L;
+        when(userRepository.getReference(42L)).thenReturn(reference);
+
+        // Act
+        User result = userSecurityContext.getCurrentUserReference();
+
+        // Assert
+        assertSame(reference, result);
+        verify(jsonWebToken).getClaim("uid");
+        verify(userRepository).getReference(42L);
+        verifyNoInteractions(principal);
     }
 }

@@ -76,7 +76,7 @@ public class ReservationResource {
             responseCode = "403",
             description = "Forbidden: Only authenticated users can access this resource")
     public List<UserReservationResponseDTO> getMyReservations() {
-        User currentUser = userSecurityContext.getCurrentUser();
+        User currentUser = userSecurityContext.getCurrentUserReference();
         LOG.debugf(
                 "Received GET request to /api/user/reservations for user ID: %d", currentUser.id);
         List<UserReservationResponseDTO> reservations =

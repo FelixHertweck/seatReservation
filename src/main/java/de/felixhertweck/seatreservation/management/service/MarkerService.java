@@ -29,8 +29,8 @@ import de.felixhertweck.seatreservation.management.dto.MakerRequestDTO;
 import de.felixhertweck.seatreservation.management.exception.MarkerNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
-import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventLocationMarkerRepository;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
@@ -49,7 +49,8 @@ public class MarkerService {
      * @param manager the manager attempting to access the markers
      * @return the markers of the event location
      */
-    public List<EventLocationMakerDTO> findMarkersByLocation(Long eventLocationId, User manager) {
+    public List<EventLocationMakerDTO> findMarkersByLocation(
+            Long eventLocationId, AuthenticatedUser manager) {
         EventLocation eventLocation =
                 eventLocationAccessService.findOwnedEventLocation(eventLocationId, manager);
         return markerRepository.findByEventLocation(eventLocation).stream()
@@ -64,7 +65,7 @@ public class MarkerService {
      * @param manager the manager attempting to access the marker
      * @return the marker DTO
      */
-    public EventLocationMakerDTO findMarkerByIdForManager(Long id, User manager) {
+    public EventLocationMakerDTO findMarkerByIdForManager(Long id, AuthenticatedUser manager) {
         return new EventLocationMakerDTO(findMarkerEntityById(id, manager));
     }
 
@@ -76,7 +77,7 @@ public class MarkerService {
      * @return the created marker DTO
      */
     @Transactional
-    public EventLocationMakerDTO createMarker(MakerRequestDTO dto, User manager) {
+    public EventLocationMakerDTO createMarker(MakerRequestDTO dto, AuthenticatedUser manager) {
         EventLocation eventLocation =
                 eventLocationAccessService.findOwnedEventLocation(
                         dto.getEventLocationId(), manager);
@@ -106,7 +107,8 @@ public class MarkerService {
      * @return the updated marker DTO
      */
     @Transactional
-    public EventLocationMakerDTO updateMarker(Long id, MakerRequestDTO dto, User manager) {
+    public EventLocationMakerDTO updateMarker(
+            Long id, MakerRequestDTO dto, AuthenticatedUser manager) {
         EventLocationMarker marker = findMarkerEntityById(id, manager);
         EventLocation newEventLocation =
                 eventLocationAccessService.findOwnedEventLocation(
@@ -131,7 +133,7 @@ public class MarkerService {
      * @param manager the manager attempting to delete the markers
      */
     @Transactional
-    public void deleteMarkers(List<Long> ids, User manager) {
+    public void deleteMarkers(List<Long> ids, AuthenticatedUser manager) {
         if (ids == null || ids.isEmpty()) {
             throw new IllegalArgumentException("No marker IDs provided for deletion");
         }
@@ -149,7 +151,7 @@ public class MarkerService {
      * @param manager the manager attempting to access the marker
      * @return the marker entity
      */
-    private EventLocationMarker findMarkerEntityById(Long id, User manager) {
+    private EventLocationMarker findMarkerEntityById(Long id, AuthenticatedUser manager) {
         EventLocationMarker marker =
                 markerRepository
                         .findByIdWithEventLocation(id)

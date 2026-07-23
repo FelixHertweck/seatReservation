@@ -3722,9 +3722,6 @@
           },
           "403" : {
             "description" : "Forbidden: Only authenticated users can access this resource"
-          },
-          "404" : {
-            "description" : "Not Found: User not found"
           }
         },
         "summary" : "Get Events",

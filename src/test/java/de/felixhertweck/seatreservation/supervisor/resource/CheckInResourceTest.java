@@ -46,6 +46,9 @@ import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
+import io.quarkus.test.security.jwt.Claim;
+import io.quarkus.test.security.jwt.ClaimType;
+import io.quarkus.test.security.jwt.JwtSecurity;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -91,6 +94,12 @@ class CheckInResourceTest {
         otherSupervisor.setRoles(Set.of(Roles.SUPERVISOR));
         when(userRepository.findByUsername("otherSupervisor")).thenReturn(otherSupervisor);
         when(userRepository.findById(4L)).thenReturn(otherSupervisor);
+
+        // getReference is used instead of a full fetch for FK/query parameters
+        when(userRepository.getReference(1L)).thenReturn(supervisorUser);
+        when(userRepository.getReference(2L)).thenReturn(adminUser);
+        when(userRepository.getReference(3L)).thenReturn(managerUser);
+        when(userRepository.getReference(4L)).thenReturn(otherSupervisor);
 
         // Build events
         Event event10 = new Event();
@@ -155,6 +164,7 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
+    @JwtSecurity(claims = @Claim(key = "uid", value = "1", type = ClaimType.LONG))
     void testPostCheckInInfoWithEmptyTokens() {
         CheckInInfoRequestDTO requestDTO = new CheckInInfoRequestDTO();
         requestDTO.userId = 1L;
@@ -172,6 +182,7 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
+    @JwtSecurity(claims = @Claim(key = "uid", value = "1", type = ClaimType.LONG))
     void testPostCheckInInfoWithInvalidTokens() {
         CheckInInfoRequestDTO requestDTO = new CheckInInfoRequestDTO();
         requestDTO.userId = 1L;
@@ -188,6 +199,7 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
+    @JwtSecurity(claims = @Claim(key = "uid", value = "1", type = ClaimType.LONG))
     void testPostCheckInInfoWithMissingUserId() {
         CheckInInfoRequestDTO requestDTO = new CheckInInfoRequestDTO();
         requestDTO.userId = null;
@@ -204,6 +216,7 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
+    @JwtSecurity(claims = @Claim(key = "uid", value = "1", type = ClaimType.LONG))
     void testPostCheckInInfoWithMissingEventId() {
         CheckInInfoRequestDTO requestDTO = new CheckInInfoRequestDTO();
         requestDTO.userId = 1L;
@@ -220,6 +233,7 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
+    @JwtSecurity(claims = @Claim(key = "uid", value = "1", type = ClaimType.LONG))
     void testProcessCheckInWithEmptyLists() {
         CheckInProcessRequestDTO requestDTO =
                 new CheckInProcessRequestDTO(
@@ -235,6 +249,7 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
+    @JwtSecurity(claims = @Claim(key = "uid", value = "1", type = ClaimType.LONG))
     void testProcessCheckInWithNonExistentCheckInIds() {
         CheckInProcessRequestDTO requestDTO =
                 new CheckInProcessRequestDTO(10L, 1L, List.of(1L, 2L, 3L), Collections.emptyList());
@@ -249,6 +264,7 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
+    @JwtSecurity(claims = @Claim(key = "uid", value = "1", type = ClaimType.LONG))
     void testProcessCheckInWithCancelListAndNonExistentCheckInIds() {
         CheckInProcessRequestDTO requestDTO =
                 new CheckInProcessRequestDTO(10L, 1L, Collections.emptyList(), List.of(4L, 5L));
@@ -263,6 +279,7 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
+    @JwtSecurity(claims = @Claim(key = "uid", value = "1", type = ClaimType.LONG))
     void testProcessCheckInWithNonExistentCheckInIdsInMixedList() {
         CheckInProcessRequestDTO requestDTO =
                 new CheckInProcessRequestDTO(10L, 1L, List.of(1L, 2L), List.of(3L, 4L));
@@ -306,6 +323,7 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
+    @JwtSecurity(claims = @Claim(key = "uid", value = "1", type = ClaimType.LONG))
     void testGetUsernamesWithReservations() {
         // Assuming event with ID 10 exists and has reservations
         given().when()
@@ -317,6 +335,7 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "admin", roles = Roles.ADMIN)
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testGetUsernamesWithReservations_AsAdmin() {
         given().when()
                 .get("/api/supervisor/checkin/usernames/10")
@@ -327,6 +346,7 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "manager", roles = Roles.MANAGER)
+    @JwtSecurity(claims = @Claim(key = "uid", value = "3", type = ClaimType.LONG))
     void testGetUsernamesWithReservations_AsManagerForEvent() {
         given().when()
                 .get("/api/supervisor/checkin/usernames/10")
@@ -337,12 +357,14 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "otherSupervisor", roles = Roles.SUPERVISOR)
+    @JwtSecurity(claims = @Claim(key = "uid", value = "4", type = ClaimType.LONG))
     void testGetUsernamesWithReservations_SupervisorNoAccess() {
         given().when().get("/api/supervisor/checkin/usernames/20").then().statusCode(403);
     }
 
     @Test
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
+    @JwtSecurity(claims = @Claim(key = "uid", value = "1", type = ClaimType.LONG))
     void testGetUsernamesWithReservations_SupervisorAccess() {
         given().when()
                 .get("/api/supervisor/checkin/usernames/10")
@@ -358,12 +380,14 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
+    @JwtSecurity(claims = @Claim(key = "uid", value = "1", type = ClaimType.LONG))
     void testGetAllEvents() {
         given().when().get("/api/supervisor/checkin/events").then().statusCode(200);
     }
 
     @Test
     @TestSecurity(user = "admin", roles = Roles.ADMIN)
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testGetAllEvents_AsAdmin_SeesAll() {
         given().when()
                 .get("/api/supervisor/checkin/events")
@@ -374,6 +398,7 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
+    @JwtSecurity(claims = @Claim(key = "uid", value = "1", type = ClaimType.LONG))
     void testGetAllEvents_AsSupervisor_SeesAuthorizedOnly() {
         given().when()
                 .get("/api/supervisor/checkin/events")
@@ -384,6 +409,7 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "otherSupervisor", roles = Roles.SUPERVISOR)
+    @JwtSecurity(claims = @Claim(key = "uid", value = "4", type = ClaimType.LONG))
     void testGetAllEvents_AsOtherSupervisor_SeesNone() {
         given().when()
                 .get("/api/supervisor/checkin/events")
@@ -394,6 +420,7 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "manager", roles = Roles.MANAGER)
+    @JwtSecurity(claims = @Claim(key = "uid", value = "3", type = ClaimType.LONG))
     void testGetAllEvents_AsManager_SeesManaged() {
         given().when()
                 .get("/api/supervisor/checkin/events")
@@ -409,6 +436,7 @@ class CheckInResourceTest {
 
     @Test
     @TestSecurity(user = "testUser", roles = Roles.SUPERVISOR)
+    @JwtSecurity(claims = @Claim(key = "uid", value = "1", type = ClaimType.LONG))
     void testGetCheckInInfoByUsernameNotFound() {
         given().when().post("/api/supervisor/checkin/info/nonExistentUser").then().statusCode(404);
     }

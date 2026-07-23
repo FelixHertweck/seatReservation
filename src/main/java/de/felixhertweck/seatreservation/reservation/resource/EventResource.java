@@ -28,9 +28,10 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
 import de.felixhertweck.seatreservation.model.entity.Roles;
+import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.reservation.dto.UserEventResponseDTO;
 import de.felixhertweck.seatreservation.reservation.service.EventService;
-import io.quarkus.security.identity.SecurityIdentity;
+import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -46,7 +47,7 @@ public class EventResource {
 
     @Inject EventService eventService;
 
-    @Inject SecurityIdentity securityIdentity;
+    @Inject UserSecurityContext userSecurityContext;
 
     @GET
     @APIResponse(
@@ -62,11 +63,10 @@ public class EventResource {
     @APIResponse(
             responseCode = "403",
             description = "Forbidden: Only authenticated users can access this resource")
-    @APIResponse(responseCode = "404", description = "Not Found: User not found")
     public List<UserEventResponseDTO> getEvents() {
-        String username = securityIdentity.getPrincipal().getName();
+        User currentUser = userSecurityContext.getCurrentUserReference();
         LOG.debug("Received GET request to /api/user/events.");
-        List<UserEventResponseDTO> events = eventService.getEventsForCurrentUser(username);
+        List<UserEventResponseDTO> events = eventService.getEventsForCurrentUser(currentUser);
         LOG.debugf("Returning %d events.", events.size());
         return events;
     }

@@ -40,6 +40,9 @@ import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
+import io.quarkus.test.security.jwt.Claim;
+import io.quarkus.test.security.jwt.ClaimType;
+import io.quarkus.test.security.jwt.JwtSecurity;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -103,6 +106,7 @@ public class EntranceResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testGetEntrancesByEventLocation() {
         given().when()
                 .queryParam("eventLocationId", testLocation.id)
@@ -146,6 +150,7 @@ public class EntranceResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testGetEntranceById() {
         given().when()
                 .get("/api/manager/entrances/" + testEntrance.id)
@@ -158,6 +163,7 @@ public class EntranceResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testGetEntranceByIdNotFound() {
         given().when().get("/api/manager/entrances/999").then().statusCode(404);
     }
@@ -166,6 +172,7 @@ public class EntranceResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testCreateEntrance() {
         given().contentType("application/json")
                 .body(new EntranceRequestDTO(testLocation.id, "B"))
@@ -180,6 +187,7 @@ public class EntranceResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testCreateEntranceInvalidData() {
         given().contentType("application/json")
                 .body("{\"name\":\"\"}")
@@ -193,6 +201,7 @@ public class EntranceResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testUpdateEntrance() {
         given().contentType("application/json")
                 .body(new EntranceRequestDTO(testLocation.id, "C"))
@@ -207,6 +216,7 @@ public class EntranceResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testUpdateEntranceNotFound() {
         given().contentType("application/json")
                 .body(new EntranceRequestDTO(testLocation.id, "C"))
@@ -220,6 +230,7 @@ public class EntranceResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testDeleteEntrance() {
         given().when()
                 .queryParam("ids", testEntrance.id)
@@ -232,6 +243,7 @@ public class EntranceResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testDeleteEntranceNotFound() {
         given().when()
                 .queryParam("ids", 999L)
@@ -244,6 +256,7 @@ public class EntranceResourceTest {
     @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = "2", type = ClaimType.LONG))
     void testDeleteEntranceConflictWhenReferencedBySeat() {
         Seat seat = new Seat("A1", "Row 1", testLocation);
         seat.setEntrance(testEntrance);

@@ -95,4 +95,16 @@ public class UserRepository implements PanacheRepository<User> {
         LOG.debugf("Found %d users with specified email.", users.size());
         return users;
     }
+
+    /**
+     * Returns a lazy reference to the user with the given ID, without hitting the database. Safe to
+     * use for ID comparisons and as a foreign-key parameter in queries/relations; accessing any
+     * other field triggers a full load.
+     *
+     * @param id the user ID
+     * @return an uninitialized proxy for the user with the given ID
+     */
+    public User getReference(Long id) {
+        return getEntityManager().getReference(User.class, id);
+    }
 }

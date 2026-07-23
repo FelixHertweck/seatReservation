@@ -54,6 +54,7 @@ import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepos
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.CodeGenerator;
 import de.felixhertweck.seatreservation.utils.ReservationExporter;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -84,24 +85,23 @@ public class ReservationService {
      * @throws SecurityException If the current user does not have the necessary permissions.
      * @throws UserNotFoundException If the current user cannot be found.
      */
-    public List<ReservationResponseDTO> findAllReservations(User currentUser)
+    public List<ReservationResponseDTO> findAllReservations(AuthenticatedUser currentUser)
             throws SecurityException, UserNotFoundException {
-        LOG.debugf(
-                "Attempting to retrieve all reservations for user ID: %d (ID: %d)",
-                currentUser.id, currentUser.getId());
-        if (currentUser.getRoles().contains(Roles.ADMIN)) {
+        LOG.debugf("Attempting to retrieve all reservations for user ID: %d", currentUser.id());
+        if (currentUser.isAdmin()) {
             LOG.debug("User is ADMIN, listing all reservations.");
             return reservationRepository.listAll().stream()
                     .map(ReservationResponseDTO::new)
                     .toList();
         }
         List<ReservationResponseDTO> result =
-                reservationRepository.find("event.manager", currentUser).list().stream()
+                reservationRepository
+                        .find("event.manager", userRepository.getReference(currentUser.id()))
+                        .list()
+                        .stream()
                         .map(ReservationResponseDTO::new)
                         .toList();
-        LOG.debugf(
-                "Retrieved %d reservations for manager: %s (ID: %d)",
-                result.size(), currentUser.id, currentUser.getId());
+        LOG.debugf("Retrieved %d reservations for manager ID: %d", result.size(), currentUser.id());
         return result;
     }
 

@@ -151,7 +151,7 @@ public class AuthResource {
             description = "Forbidden: Only authenticated users can access this resource")
     public Response logout(@CookieParam("refreshToken") String refreshToken) {
         LOG.debugf("Received logout request.");
-        User currentUser = userSecurityContext.getCurrentUser();
+        User currentUser = userSecurityContext.getCurrentUserReference();
 
         // Delete the refresh token from database
         tokenService.deleteRefreshToken(refreshToken, currentUser);
@@ -186,7 +186,7 @@ public class AuthResource {
     public Response logoutAllDevices() {
         LOG.debugf("Received logout all devices request.");
 
-        User currentUser = userSecurityContext.getCurrentUser();
+        User currentUser = userSecurityContext.getCurrentUserReference();
         tokenService.logoutAllDevices(currentUser);
 
         NewCookie jwtAccessCookie = tokenService.createNewNullCookie("jwt", true);
