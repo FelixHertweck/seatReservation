@@ -79,6 +79,13 @@ export default function SeatmapLegend({
         label={t("seatStatus.blocked")}
         bar={bar}
       />
+      {variant === "selection" && (
+        <LegendSwatch
+          color="bg-amber-500"
+          label={t("seatStatus.pending")}
+          bar={bar}
+        />
+      )}
       {variant === "supervisor" && (
         <>
           <LegendSwatch

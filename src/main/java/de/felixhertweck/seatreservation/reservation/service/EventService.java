@@ -19,14 +19,19 @@
  */
 package de.felixhertweck.seatreservation.reservation.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import de.felixhertweck.seatreservation.common.dto.SeatStatusDTO;
+import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
@@ -40,6 +45,7 @@ public class EventService {
 
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
     @Inject ReservationRepository reservationRepository;
+    @Inject SeatCartService seatCartService;
 
     /**
      * @param user a reference to the current user (id only, e.g. from {@code
@@ -73,6 +79,43 @@ public class EventService {
                                         new UserEventResponseDTO(reservation.getEvent(), 0)));
 
         LOG.debugf("Returning %d events for user ID: %s", eventMap.size(), user.id);
-        return List.copyOf(eventMap.values());
+        return eventMap.values().stream().map(this::withPendingSeatStatuses).toList();
+    }
+
+    /**
+     * Merges seats currently held in another user's Redis cart into the event's seat statuses as
+     * {@link ReservationStatus#PENDING}, so the requesting user sees them as temporarily
+     * unavailable. A seat already covered by a persisted {@link
+     * de.felixhertweck.seatreservation.model.entity.Reservation} keeps that status.
+     */
+    private UserEventResponseDTO withPendingSeatStatuses(UserEventResponseDTO dto) {
+        Set<UUID> pendingSeatIds = seatCartService.findPendingSeatIds(dto.id());
+        if (pendingSeatIds.isEmpty()) {
+            return dto;
+        }
+
+        List<SeatStatusDTO> seatStatuses =
+                dto.seatStatuses() == null
+                        ? new ArrayList<>()
+                        : new ArrayList<>(dto.seatStatuses());
+        Set<UUID> alreadyStatused =
+                seatStatuses.stream().map(SeatStatusDTO::seatId).collect(Collectors.toSet());
+        for (UUID seatId : pendingSeatIds) {
+            if (!alreadyStatused.contains(seatId)) {
+                seatStatuses.add(new SeatStatusDTO(seatId, ReservationStatus.PENDING));
+            }
+        }
+
+        return new UserEventResponseDTO(
+                dto.id(),
+                dto.name(),
+                dto.description(),
+                dto.startTime(),
+                dto.endTime(),
+                dto.bookingDeadline(),
+                dto.bookingStartTime(),
+                seatStatuses,
+                dto.locationId(),
+                dto.reservationsAllowed());
     }
 }

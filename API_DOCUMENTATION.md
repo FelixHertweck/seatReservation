@@ -16,6 +16,7 @@ This is the API documentation for the seat reservation system.
 - [Event Locations (User)](#event-locations-user)
 - [Events (User)](#events-user)
 - [Reservations (User)](#reservations-user)
+- [Seat Cart (User)](#seat-cart-user)
 
 ---
 
@@ -963,7 +964,7 @@ Creates one or more new reservations for the current user.
     -   `400 Bad Request`: Invalid request (e.g., more seats than allowed).
     -   `403 Forbidden`: No permission for the event.
     -   `404 Not Found`: Event or seat not found.
-    -   `409 Conflict`: Seat already reserved.
+    -   `409 Conflict`: Seat already reserved, blocked, or held by another user's selection cart (see [SeatPendingException](#seatpendingexception)).
     -   `401 Unauthorized`: Not authenticated.
  
 ---
@@ -977,6 +978,43 @@ Deletes one or more reservations of the current user.
 -   **Responses:**
     -   `204 No Content`: Reservation(s) successfully deleted.
     -   `404 Not Found`: One or more reservations do not belong to the user or do not exist.
+    -   `401 Unauthorized`: Not authenticated.
+    -   `403 Forbidden`: Access denied.
+
+---
+
+## Seat Cart (User)
+
+### SeatCartResource
+
+Base path: `/api/user/seatcart`
+
+Temporary, Redis-backed hold on a seat while a user has it selected in the reservation dialog but hasn't submitted the reservation yet. This prevents two users from both selecting the same seat and only discovering the conflict when one of them submits. Holds expire automatically after `seatcart.ttl-seconds` (default `300`s) and are cleared immediately once the seat is actually reserved.
+
+---
+
+#### POST /{eventId}/{seatId}
+
+Adds a seat to the current user's selection cart, or refreshes the hold's TTL if the user already holds it.
+
+-   **Roles:** `USER`
+-   **Path Parameters:** `eventId` (UUID), `seatId` (UUID)
+-   **Responses:**
+    -   `200 OK`: Returns `SeatCartEntryDTO` (`seatId`, `expiresAt`).
+    -   `401 Unauthorized`: Not authenticated.
+    -   `403 Forbidden`: Access denied.
+    -   `409 Conflict`: Seat is already reserved, already blocked, or currently held by another user's cart.
+
+---
+
+#### DELETE /{eventId}/{seatId}
+
+Releases the seat from the current user's selection cart. A no-op if the seat isn't held by the current user (e.g. already released, expired, or held by someone else).
+
+-   **Roles:** `USER`
+-   **Path Parameters:** `eventId` (UUID), `seatId` (UUID)
+-   **Responses:**
+    -   `204 No Content`: Seat released (or was not held by this user).
     -   `401 Unauthorized`: Not authenticated.
     -   `403 Forbidden`: Access denied.
 
@@ -1029,6 +1067,24 @@ registration:
 
 ---
 
+### Seat Selection Cart TTL
+
+Controls how long a seat stays held in a user's Redis-backed selection cart (see [Seat Cart (User)](#seat-cart-user)) before it's released automatically.
+
+**Property:** `seatcart.ttl-seconds`
+**Type:** `long`
+**Default Value:** `300`
+
+**Example Configuration (application.yaml):**
+```yaml
+seatcart:
+  ttl-seconds: 300
+```
+
+Requires the `quarkus-redis-client` extension to be configured (`quarkus.redis.hosts`); in Docker Compose this points at the bundled `redis` service, in dev/test Quarkus Dev Services provisions a disposable Redis container automatically.
+
+---
+
 ## Error Handling
 
 ### RegistrationDisabledException
@@ -1050,3 +1106,24 @@ registration:
 - Check the application's configuration to verify the `registration.enabled` setting
 - If registration should be enabled, update the configuration and restart the application
 - If registration should remain disabled, contact the application administrator
+
+---
+
+### SeatPendingException
+
+**HTTP Status Code:** `409 Conflict`
+
+**Message:** "Seat is currently selected by another user" (on `POST /api/user/seatcart/{eventId}/{seatId}`) or "One or more seats are currently being selected by another user" (on `POST /api/user/reservations`)
+
+**Description:** Thrown when a client tries to add a seat to their cart, or directly reserve it, while it's already held in another user's selection cart (see [Seat Cart (User)](#seat-cart-user)). The hold is temporary, so retrying after it expires (or after the other user releases/completes their reservation) will succeed if the seat is still free.
+
+**Response Example:**
+```json
+{
+  "message": "Seat is currently selected by another user"
+}
+```
+
+**When Encountered:**
+- Refetch the current seat statuses (`GET /api/user/events`) - the seat will show as `PENDING` until the hold clears
+- Retry the request once the seat is no longer `PENDING`

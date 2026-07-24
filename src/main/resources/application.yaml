@@ -9,6 +9,11 @@ login:
   # Duration in seconds for which account remains locked after max failed attempts
   lockout-duration-seconds: 300
 
+# Redis-backed seat selection cart (soft-lock while a user has a seat selected
+# but hasn't completed the reservation yet).
+seatcart:
+  ttl-seconds: 300
+
 smallrye:
   jwt:
     token:

@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useCallback, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -17,8 +19,10 @@ import type {
   SeatDto,
   UserEventLocationResponseDto,
 } from "@/api";
+import { getApiUserEventsQueryKey } from "@/api/@tanstack/react-query.gen";
 import { useT } from "@/lib/i18n/hooks";
 import { findSeatStatus } from "@/lib/reservationSeat";
+import { useSeatCart } from "@/hooks/use-seat-cart";
 
 interface EventReservationModalProps {
   event: UserEventResponseDto;
@@ -39,9 +43,59 @@ export function EventReservationModal({
   onReserve,
 }: EventReservationModalProps) {
   const t = useT();
+  const queryClient = useQueryClient();
+  const { addSeatToCart, removeSeatFromCart } = useSeatCart();
 
   const [selectedSeats, setSelectedSeats] = useState<SeatDto[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Mirrors selectedSeats so the unmount cleanup effect below can release the
+  // latest held seats without depending on (and re-running for) every selection change.
+  const selectedSeatsRef = useRef<SeatDto[]>(selectedSeats);
+  const expiryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    selectedSeatsRef.current = selectedSeats;
+  }, [selectedSeats]);
+
+  // Releases every currently held seat's cart entry and cancels the TTL timer.
+  // Called on unmount (modal closed, with or without a completed reservation).
+  useEffect(() => {
+    return () => {
+      if (expiryTimerRef.current) {
+        clearTimeout(expiryTimerRef.current);
+      }
+      if (!event.id) return;
+      selectedSeatsRef.current.forEach((seat) => {
+        if (seat.id) {
+          removeSeatFromCart(event.id!, seat.id).catch(() => {
+            // Best-effort release; the Redis TTL will clean this up regardless.
+          });
+        }
+      });
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [event.id]);
+
+  const scheduleExpiry = useCallback(
+    (expiresAt: Date | null | undefined) => {
+      if (!expiresAt) return;
+      if (expiryTimerRef.current) {
+        clearTimeout(expiryTimerRef.current);
+      }
+      const delayMs = Math.max(0, expiresAt.getTime() - Date.now());
+      expiryTimerRef.current = setTimeout(() => {
+        setSelectedSeats([]);
+        toast.info(t("eventReservationModal.cart.expired.title"), {
+          description: t("eventReservationModal.cart.expired.description"),
+        });
+        queryClient.invalidateQueries({
+          queryKey: getApiUserEventsQueryKey(),
+        });
+      }, delayMs);
+    },
+    [t, queryClient],
+  );
 
   const seats: SeatDto[] = useMemo(
     () => location?.seats ?? [],
@@ -53,21 +107,36 @@ export function EventReservationModal({
     .map((reservation) => reservation.seat)
     .filter((seat): seat is SeatDto => seat !== null && seat !== undefined);
 
-  const handleSeatSelect = (seat: SeatDto) => {
-    const seatStatus = findSeatStatus(seat.id!, event.seatStatuses);
+  const handleSeatSelect = async (seat: SeatDto) => {
+    if (!event.id || !seat.id) return;
 
-    if (seatStatus) return; // Can't select reserved or blocked seats
+    const isSelected = selectedSeats.some((s) => s.id === seat.id);
 
-    setSelectedSeats((prev) => {
-      const isSelected = prev.some((s) => s.id === seat.id);
-      if (isSelected) {
-        return prev.filter((s) => s.id !== seat.id);
-      } else {
-        const availableSeats = event.reservationsAllowed ?? 0;
-        if (prev.length >= availableSeats) return prev;
-        return [...prev, seat];
-      }
-    });
+    if (isSelected) {
+      // Always allow deselecting our own selection, even if a refetch made the
+      // seat map report it as PENDING - that PENDING is this cart's own hold.
+      setSelectedSeats((prev) => prev.filter((s) => s.id !== seat.id));
+      removeSeatFromCart(event.id, seat.id).catch(() => {
+        // Best-effort release; the Redis TTL will clean this up regardless.
+      });
+      return;
+    }
+
+    const seatStatus = findSeatStatus(seat.id, event.seatStatuses);
+    if (seatStatus) return; // Can't select reserved, blocked, or pending seats
+
+    const availableSeats = event.reservationsAllowed ?? 0;
+    if (selectedSeats.length >= availableSeats) return;
+
+    setSelectedSeats((prev) => [...prev, seat]);
+    try {
+      const entry = await addSeatToCart(event.id, seat.id);
+      scheduleExpiry(entry.expiresAt);
+    } catch {
+      // Seat is unavailable (already reserved/blocked, or held by another user's
+      // cart) - roll back the optimistic selection. useSeatCart already toasted.
+      setSelectedSeats((prev) => prev.filter((s) => s.id !== seat.id));
+    }
   };
 
   const handleReserve = async () => {
@@ -79,6 +148,7 @@ export function EventReservationModal({
         .map((seat) => seat.id!)
         .filter((id) => id !== undefined);
       await onReserve(event.id, seatIds);
+      selectedSeatsRef.current = [];
       onClose();
     } finally {
       setIsLoading(false);

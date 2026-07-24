@@ -847,8 +847,21 @@ export const ReservationStatusSchema = {
     type: 'string',
     enum: [
         'RESERVED',
-        'BLOCKED'
+        'BLOCKED',
+        'PENDING'
     ]
+} as const;
+
+export const SeatCartEntryDTOSchema = {
+    type: 'object',
+    properties: {
+        seatId: {
+            $ref: '#/components/schemas/UUID'
+        },
+        expiresAt: {
+            $ref: '#/components/schemas/Instant'
+        }
+    }
 } as const;
 
 export const SeatDTOSchema = {
