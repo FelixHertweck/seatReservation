@@ -35,6 +35,8 @@ import jakarta.ws.rs.core.Response;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.security.dto.LoginLockedDTO;
 import de.felixhertweck.seatreservation.security.dto.LoginRequestDTO;
+import de.felixhertweck.seatreservation.security.dto.PasswordResetConfirmDTO;
+import de.felixhertweck.seatreservation.security.dto.PasswordResetRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.RegistrationStatusDTO;
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
@@ -42,6 +44,7 @@ import de.felixhertweck.seatreservation.security.service.AuthService;
 import de.felixhertweck.seatreservation.security.service.TokenService;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import io.quarkus.security.Authenticated;
+import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
@@ -250,5 +253,36 @@ public class AuthResource {
                 .cookie(cookies.refreshToken())
                 .cookie(cookies.refreshTokenExpiration())
                 .build();
+    }
+
+    @POST
+    @Path("/password-reset")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Operation(
+            summary = "Request a password reset",
+            description =
+                    "Initiates a password reset process by sending an email with a reset link if"
+                            + " the account exists.")
+    @APIResponse(
+            responseCode = "200",
+            description =
+                    "If the account exists, an email has been sent. Generic response to prevent"
+                            + " enumeration.")
+    public Response requestPasswordReset(PasswordResetRequestDTO requestDTO) {
+        authService.requestPasswordReset(requestDTO);
+        return Response.ok().build();
+    }
+
+    @POST
+    @Path("/password-reset/confirm")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Operation(
+            summary = "Confirm a password reset",
+            description = "Sets a new password using a valid reset token.")
+    @APIResponse(responseCode = "200", description = "Password successfully reset.")
+    @APIResponse(responseCode = "400", description = "Invalid or expired token.")
+    public Response confirmPasswordReset(PasswordResetConfirmDTO confirmDTO) {
+        authService.confirmPasswordReset(confirmDTO);
+        return Response.ok().build();
     }
 }

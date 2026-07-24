@@ -71,7 +71,8 @@
       "accountLocked": "Konto gesperrt bis {{time}} ({{duration}})",
       "tooManyAttemptsDescription": "Zu viele fehlgeschlagene Anmeldeversuche. Ihr Konto wurde vorübergehend gesperrt."
     },
-    "or": "oder"
+    "or": "oder",
+    "forgotPassword": "Passwort vergessen?"
   },
   "register": {
     "success": {
@@ -1202,6 +1203,32 @@
       "renameButton": "Umbenennen",
       "saveRename": "Speichern",
       "renameSuccess": "Passkey umbenannt."
+    }
+  },
+  "forgotPassword": {
+    "title": "Passwort vergessen",
+    "description": "Geben Sie Ihren Benutzernamen und Ihre E-Mail-Adresse ein, um einen Link zum Zurücksetzen zu erhalten.",
+    "successMessage": "Wenn Ihr Konto existiert und die E-Mail-Adresse übereinstimmt, erhalten Sie in Kürze einen Link zum Zurücksetzen.",
+    "sending": "Wird gesendet...",
+    "sendLink": "Link anfordern",
+    "backToLogin": "Zurück zum Login",
+    "error": "Fehler beim Anfordern des Links. Bitte versuchen Sie es erneut."
+  },
+  "resetPassword": {
+    "title": "Passwort zurücksetzen",
+    "description": "Geben Sie ein neues Passwort für Ihr Konto ein.",
+    "newPassword": "Neues Passwort",
+    "enterNewPassword": "Neues Passwort eingeben",
+    "confirmPassword": "Passwort bestätigen",
+    "enterConfirmPassword": "Neues Passwort bestätigen",
+    "submitting": "Wird zurückgesetzt...",
+    "submit": "Passwort speichern",
+    "successMessage": "Ihr Passwort wurde erfolgreich zurückgesetzt. Sie können sich nun anmelden.",
+    "error": {
+      "missingToken": "Ungültiger oder fehlender Token.",
+      "mismatch": "Die Passwörter stimmen nicht überein.",
+      "invalidToken": "Ungültiger oder abgelaufener Token.",
+      "general": "Fehler beim Zurücksetzen des Passworts. Bitte versuchen Sie es erneut."
     }
   }
 }
