@@ -754,6 +754,44 @@ export const MakerRequestDTOSchema = {
     }
 } as const;
 
+export const PasswordResetConfirmDTOSchema = {
+    description: 'Request DTO for confirming a password reset',
+    type: 'object',
+    required: [
+        'token',
+        'newPassword'
+    ],
+    properties: {
+        token: {
+            type: 'string',
+            description: 'The password reset token'
+        },
+        newPassword: {
+            type: 'string',
+            description: 'The new password'
+        }
+    }
+} as const;
+
+export const PasswordResetRequestDTOSchema = {
+    description: 'Request DTO for initiating a password reset',
+    type: 'object',
+    required: [
+        'username',
+        'email'
+    ],
+    properties: {
+        username: {
+            type: 'string',
+            description: 'The username of the account'
+        },
+        email: {
+            type: 'string',
+            description: 'The email address associated with the account'
+        }
+    }
+} as const;
+
 export const RegisterRequestDTOSchema = {
     type: 'object',
     required: [

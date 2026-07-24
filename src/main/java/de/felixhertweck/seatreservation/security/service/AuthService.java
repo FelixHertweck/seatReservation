@@ -19,20 +19,29 @@
  */
 package de.felixhertweck.seatreservation.security.service;
 
+import java.io.IOException;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.Set;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.BadRequestException;
 
 import de.felixhertweck.seatreservation.common.exception.DuplicateUserException;
 import de.felixhertweck.seatreservation.common.exception.InvalidUserException;
 import de.felixhertweck.seatreservation.common.exception.RegistrationDisabledException;
+import de.felixhertweck.seatreservation.email.service.EmailService;
+import de.felixhertweck.seatreservation.model.entity.PasswordResetToken;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.LoginAttemptRepository;
+import de.felixhertweck.seatreservation.model.repository.PasswordResetTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.security.dto.PasswordResetConfirmDTO;
+import de.felixhertweck.seatreservation.security.dto.PasswordResetRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
 import de.felixhertweck.seatreservation.security.exceptions.AccountLockedException;
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
@@ -51,6 +60,10 @@ public class AuthService {
     @Inject UserRepository userRepository;
 
     @Inject UserService userService;
+
+    @Inject PasswordResetTokenRepository passwordResetTokenRepository;
+
+    @Inject EmailService emailService;
 
     @Inject LoginAttemptRepository loginAttemptRepository;
 
@@ -218,5 +231,83 @@ public class AuthService {
         LOG.infof("User %s registered successfully", registerRequest.getUsername());
 
         return user;
+    }
+
+    @Transactional
+    public void requestPasswordReset(PasswordResetRequestDTO requestDTO) {
+        User user = userRepository.findByUsernameOptional(requestDTO.getUsername()).orElse(null);
+        if (user == null
+                || user.getEmail() == null
+                || !user.getEmail().equalsIgnoreCase(requestDTO.getEmail())) {
+            // To prevent account enumeration, we do not throw an error if the user/email mismatch.
+            LOG.infof(
+                    "Password reset requested for username %s, but user not found or email"
+                            + " mismatch.",
+                    requestDTO.getUsername());
+            return;
+        }
+
+        // Remove any existing tokens for this user
+        passwordResetTokenRepository.delete("user", user);
+
+        String token =
+                Base64.getUrlEncoder()
+                        .withoutPadding()
+                        .encodeToString(SecurityUtils.generateRandomBytes(32));
+        Instant expirationTime = Instant.now().plus(1, ChronoUnit.HOURS);
+
+        PasswordResetToken resetToken = new PasswordResetToken(user, token, expirationTime);
+        passwordResetTokenRepository.persist(resetToken);
+
+        try {
+            emailService.sendPasswordResetEmail(user, resetToken);
+            LOG.infof(
+                    "Password reset email sent to %s for username %s.",
+                    requestDTO.getEmail(), requestDTO.getUsername());
+        } catch (IOException e) {
+            LOG.errorf(e, "Failed to send password reset email to %s", requestDTO.getEmail());
+        }
+    }
+
+    @Transactional
+    public void confirmPasswordReset(PasswordResetConfirmDTO confirmDTO) {
+        PasswordResetToken resetToken =
+                passwordResetTokenRepository.find("token", confirmDTO.getToken()).firstResult();
+        if (resetToken == null) {
+            throw new BadRequestException("Invalid or expired password reset token.");
+        }
+        if (resetToken.getExpirationTime().isBefore(Instant.now())) {
+            passwordResetTokenRepository.delete(resetToken);
+            throw new BadRequestException("Invalid or expired password reset token.");
+        }
+
+        User user = resetToken.getUser();
+
+        String salt = generateSalt();
+        String passwordHash = BcryptUtil.bcryptHash(confirmDTO.getNewPassword() + salt);
+
+        user.setPasswordSalt(salt);
+        user.setPasswordHash(passwordHash);
+
+        if (!Boolean.TRUE.equals(user.isEmailVerified())) {
+            user.setEmailVerified(true);
+        }
+
+        userRepository.persist(user);
+        passwordResetTokenRepository.delete(resetToken);
+
+        try {
+            emailService.sendPasswordChangedNotification(user);
+        } catch (IOException e) {
+            LOG.errorf(e, "Failed to send password changed notification to %s", user.getEmail());
+        }
+
+        LOG.infof("Password successfully reset for user %s.", user.getUsername());
+    }
+
+    private String generateSalt() {
+        return Base64.getUrlEncoder()
+                .withoutPadding()
+                .encodeToString(SecurityUtils.generateRandomBytes(32));
     }
 }

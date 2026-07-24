@@ -41,6 +41,7 @@ import de.felixhertweck.seatreservation.email.queue.EmailQueueService;
 import de.felixhertweck.seatreservation.management.service.ReservationService;
 import de.felixhertweck.seatreservation.model.entity.EmailVerification;
 import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.PasswordResetToken;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
@@ -61,6 +62,9 @@ import org.jboss.logging.Logger;
  */
 @ApplicationScoped
 public class EmailService {
+    @ConfigProperty(name = "email.header.password-reset", defaultValue = "Password Reset Request")
+    String EMAIL_HEADER_PASSWORD_RESET;
+
     @ConfigProperty(name = "email.header.confirmation", defaultValue = "Email Confirmation")
     String EMAIL_HEADER_CONFIRMATION;
 
@@ -109,7 +113,9 @@ public class EmailService {
     @ConfigProperty(name = "email.entrance-info-template")
     String entranceInfoTemplate;
 
-    @Inject
+    @Location("email/password-reset")
+    Template passwordResetTemplate;
+
     @Location("email/email-confirmation")
     Template emailConfirmationTemplate;
 
@@ -140,6 +146,49 @@ public class EmailService {
      * @param emailVerification the EmailVerification object to use for the link
      * @throws IOException if the email template cannot be read
      */
+    /**
+     * Sends a password reset email to the specified user.
+     *
+     * @param user the user to whom the password reset email will be sent
+     * @param passwordResetToken the PasswordResetToken object to use for the link
+     * @throws IOException if the email template cannot be read
+     */
+    public void sendPasswordResetEmail(User user, PasswordResetToken passwordResetToken)
+            throws IOException {
+        if (skipForNullOrEmptyAddress(user.getEmail())) {
+            LOG.warn("No valid email addresses provided for password reset.");
+            return;
+        }
+        if (skipForLocalhostAddress(user.getEmail())) {
+            LOG.warn("No valid email addresses provided for password reset.");
+            return;
+        }
+
+        LOG.debugf("User ID: %d, Username: %s", user.id, user.getUsername());
+
+        String resetLink =
+                frontendBaseUrl + "/reset-password?token=" + passwordResetToken.getToken();
+
+        String htmlContent =
+                passwordResetTemplate
+                        .data("fullName", fullName(user))
+                        .data("resetLink", resetLink)
+                        .data(
+                                "expirationTime",
+                                formatDateTime(passwordResetToken.getExpirationTime()))
+                        .data("currentYear", currentYear())
+                        .render();
+
+        // Queue the email for asynchronous, retried delivery
+        LOG.debugf("Password reset subject: %s", EMAIL_HEADER_PASSWORD_RESET);
+        enqueue(
+                List.of(user.getEmail()),
+                EMAIL_HEADER_PASSWORD_RESET,
+                htmlContent,
+                List.of(),
+                false);
+    }
+
     public void sendEmailConfirmation(User user, EmailVerification emailVerification)
             throws IOException {
         if (skipForNullOrEmptyAddress(user.getEmail())) {

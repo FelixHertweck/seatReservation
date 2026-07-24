@@ -1,30 +1,26 @@
 "use client";
 
-import type React from "react";
-
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useAuth } from "@/hooks/use-auth";
-import { useWebAuthn } from "@/hooks/use-webauthn";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle, User as UserIcon } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useT } from "@/lib/i18n/hooks";
-import { ErrorWithResponse } from "@/components/init-query-client";
-import { redirectUser } from "@/lib/redirect-User";
-import { KeyRound } from "lucide-react";
+import { useWebAuthn } from "@/hooks/use-webauthn";
 
 export default function LoginPage() {
-  const params = useParams();
-  const locale = params.locale as string;
   const t = useT();
   const searchParams = useSearchParams();
 
@@ -35,71 +31,39 @@ export default function LoginPage() {
   const { user, isLoggedIn, login, logout, retryAfter } = useAuth();
   const { isSupported: isPasskeySupported, loginWithPasskey } = useWebAuthn();
   const [isPasskeyLoading, setIsPasskeyLoading] = useState(false);
-  const router = useRouter();
   const [currentlyLoggingIn, setCurrentlyLoggingIn] = useState(false);
-  const [remainingTime, setRemainingTime] = useState<number>(0);
-  const [isRetryAfterActive, setIsRetryAfterActive] = useState(false);
+
+  const isRetryAfterActive =
+    retryAfter !== null && new Date(retryAfter) > new Date();
+
+  const [timeRemaining, setTimeRemaining] = useState<number>(0);
 
   useEffect(() => {
-    if (!retryAfter) {
-      setIsRetryAfterActive(false);
-      setRemainingTime(0);
-      return;
-    }
-
-    const retryAfterDate = new Date(retryAfter).getTime();
-    const now = new Date().getTime();
-
-    if (retryAfterDate > now) {
-      setIsRetryAfterActive(true);
-      const calculateRemaining = () => {
-        const current = new Date().getTime();
+    if (retryAfter) {
+      const updateTimer = () => {
         const remaining = Math.max(
           0,
-          Math.ceil((retryAfterDate - current) / 1000),
+          new Date(retryAfter).getTime() - new Date().getTime(),
         );
-        setRemainingTime(remaining);
-        return remaining > 0;
+        setTimeRemaining(remaining);
       };
 
-      calculateRemaining();
-      const interval = setInterval(() => {
-        if (!calculateRemaining()) {
-          clearInterval(interval);
-          setIsRetryAfterActive(false);
-        }
-      }, 1000);
-
+      updateTimer();
+      const interval = setInterval(updateTimer, 1000);
       return () => clearInterval(interval);
-    } else {
-      setIsRetryAfterActive(false);
-      setRemainingTime(0);
     }
   }, [retryAfter]);
 
-  const formatRetryTime = (): string => {
-    const hours = Math.floor(remainingTime / 3600);
-    const minutes = Math.floor((remainingTime % 3600) / 60);
-    const seconds = remainingTime % 60;
-
-    let duration = "";
-    if (hours > 0) duration += `${hours}h `;
-    if (minutes > 0) duration += `${minutes}m `;
-    duration += `${seconds}s`;
-
-    if (retryAfter) {
-      const retryDate = new Date(retryAfter);
-      const timeString = retryDate.toLocaleTimeString(locale);
-      return t("login.error.accountLocked", {
-        time: timeString,
-        duration: duration.trim(),
-      });
-    }
-    return "";
+  const formatTimeRemaining = (ms: number) => {
+    const totalSeconds = Math.ceil(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleFormLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isRetryAfterActive) return;
     setIsLoadingForm(true);
     setLoginError(null);
     try {
@@ -108,57 +72,49 @@ export default function LoginPage() {
 
       await login(username.trim(), password, returnToUrl);
       setCurrentlyLoggingIn(false);
-    } catch (error) {
-      if ((error as ErrorWithResponse).response?.status === 401) {
+    } catch (error: unknown) {
+      if ((error as { status?: number }).status === 401) {
         setLoginError(t("login.error.invalidCredentials"));
       }
-      setCurrentlyLoggingIn(false);
-    } finally {
       setIsLoadingForm(false);
+      setCurrentlyLoggingIn(false);
     }
   };
 
   const handlePasskeyLogin = async () => {
+    if (isRetryAfterActive) return;
     setIsPasskeyLoading(true);
     setLoginError(null);
     try {
       setCurrentlyLoggingIn(true);
       await loginWithPasskey(username.trim(), searchParams.get("returnTo"));
       setCurrentlyLoggingIn(false);
-    } catch {
-      // Errors are surfaced via toast inside the hook; keep the form usable.
-      setCurrentlyLoggingIn(false);
-    } finally {
+    } catch (error) {
+      console.error("Passkey login failed:", error);
+      setLoginError(t("login.error.passkeyFailed"));
       setIsPasskeyLoading(false);
+      setCurrentlyLoggingIn(false);
     }
-  };
-
-  const handleContinue = () => {
-    redirectUser(router, locale, user, searchParams.get("returnTo"));
-  };
-
-  const handleLogout = async () => {
-    await logout();
   };
 
   if (isLoggedIn && !currentlyLoggingIn) {
     return (
-      <div className="flex min-h-screen w-full items-center justify-center bg-background">
-        <Card className="w-full max-w-md mx-4">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold">
-              {t("login.welcomeBack")}
-            </CardTitle>
+      <div className="flex h-screen w-full items-center justify-center px-4">
+        <Card className="w-full max-w-sm">
+          <CardHeader>
+            <CardTitle className="text-2xl">{t("login.welcomeBack")}</CardTitle>
             <CardDescription>{t("login.alreadyLoggedIn")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Button onClick={handleContinue} className="w-full">
-              {t("login.continueWithUser", { username: user?.username })}
+            <Button asChild className="w-full" variant="default">
+              <Link href="/">
+                {t("login.continueWithUser", { username: user?.username })}
+              </Link>
             </Button>
             <Button
-              onClick={handleLogout}
+              onClick={() => logout()}
               variant="outline"
-              className="w-full bg-transparent"
+              className="w-full"
             >
               {t("login.logoutButton")}
             </Button>
@@ -169,16 +125,14 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-background">
-      <Card className="w-full max-w-md mx-4">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">
-            {t("login.signIn")}
-          </CardTitle>
+    <div className="flex h-screen w-full items-center justify-center px-4">
+      <Card className="w-full max-w-sm">
+        <CardHeader>
+          <CardTitle className="text-2xl">{t("login.signIn")}</CardTitle>
           <CardDescription>{t("login.enterCredentials")}</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleFormLogin} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="username">{t("login.username")}</Label>
               <Input
@@ -196,7 +150,15 @@ export default function LoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">{t("login.password")}</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">{t("login.password")}</Label>
+                <Link
+                  href="/forgot-password"
+                  className="text-sm text-primary hover:underline"
+                >
+                  {t("login.forgotPassword")}
+                </Link>
+              </div>
               <Input
                 id="password"
                 type="password"
@@ -211,21 +173,43 @@ export default function LoginPage() {
                 required
               />
             </div>
+
+            {loginError && (
+              <Alert
+                variant={loginError ? "destructive" : "default"}
+                className={
+                  loginError
+                    ? ""
+                    : "border-yellow-500 bg-yellow-50 text-yellow-900"
+                }
+              >
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>{t("login.error.title")}</AlertTitle>
+                <AlertDescription>{loginError}</AlertDescription>
+              </Alert>
+            )}
+
+            {isRetryAfterActive && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>{t("login.error.title")}</AlertTitle>
+                <AlertDescription>
+                  {t("login.error.accountLocked", {
+                    timeRemaining: formatTimeRemaining(timeRemaining),
+                  })}
+                </AlertDescription>
+              </Alert>
+            )}
+
             <Button
               type="submit"
               className="w-full"
-              variant={loginError ? "destructive" : "default"}
               disabled={isLoadingForm || isRetryAfterActive || !!loginError}
             >
-              {loginError
-                ? loginError
-                : isRetryAfterActive
-                  ? formatRetryTime()
-                  : isLoadingForm
-                    ? t("login.signingIn")
-                    : t("login.signInButton")}
+              {isLoadingForm ? t("login.signingIn") : t("login.signInButton")}
             </Button>
           </form>
+
           {isPasskeySupported && (
             <>
               <div className="relative my-4">
@@ -238,27 +222,52 @@ export default function LoginPage() {
                   </span>
                 </div>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={handlePasskeyLogin}
-                disabled={isPasskeyLoading || isRetryAfterActive}
-              >
-                <KeyRound className="mr-2 h-4 w-4" />
-                {isPasskeyLoading
-                  ? t("webauthn.login.signingIn")
-                  : t("webauthn.login.button")}
-              </Button>
+
+              <div className="space-y-2">
+                <Label htmlFor="passkey-username" className="sr-only">
+                  {t("login.username")}
+                </Label>
+                <Input
+                  id="passkey-username"
+                  type="text"
+                  placeholder={t("login.enterUsernameForPasskey")}
+                  value={username}
+                  onChange={(e) => {
+                    setUsername(e.target.value);
+                    setLoginError(null);
+                  }}
+                  autoCapitalize="none"
+                  autoComplete="username webauthn"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={handlePasskeyLogin}
+                  disabled={
+                    isPasskeyLoading ||
+                    isRetryAfterActive ||
+                    !username.trim() ||
+                    !!loginError
+                  }
+                >
+                  <UserIcon className="mr-2 h-4 w-4" />
+                  {isPasskeyLoading
+                    ? t("login.signingIn")
+                    : t("login.signInWithPasskey")}
+                </Button>
+              </div>
             </>
           )}
-          <div className="mt-4 text-center text-sm">
-            {t("login.noAccount")}
+        </CardContent>
+        <CardFooter className="flex flex-col space-y-2">
+          <div className="text-center text-sm">
+            {t("login.noAccount")}{" "}
             <Link href="/register" className="text-primary hover:underline">
-              {t("login.register")}
+              {t("login.registerHere")}
             </Link>
           </div>
-        </CardContent>
+        </CardFooter>
       </Card>
     </div>
   );

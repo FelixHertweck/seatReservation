@@ -71,7 +71,8 @@
       "accountLocked": "Account locked until {{time}} ({{duration}})",
       "tooManyAttemptsDescription": "Too many failed login attempts. Your account has been temporarily locked."
     },
-    "or": "or"
+    "or": "or",
+    "forgotPassword": "Forgot Password?"
   },
   "register": {
     "success": {
@@ -1202,6 +1203,32 @@
       "renameButton": "Rename",
       "saveRename": "Save",
       "renameSuccess": "Passkey renamed."
+    }
+  },
+  "forgotPassword": {
+    "title": "Forgot Password",
+    "description": "Enter your username and email to receive a password reset link.",
+    "successMessage": "If your account exists and the email matches, you will receive a reset link shortly.",
+    "sending": "Sending...",
+    "sendLink": "Send Reset Link",
+    "backToLogin": "Back to Login",
+    "error": "Failed to request password reset. Please try again."
+  },
+  "resetPassword": {
+    "title": "Reset Password",
+    "description": "Enter a new password for your account.",
+    "newPassword": "New Password",
+    "enterNewPassword": "Enter new password",
+    "confirmPassword": "Confirm Password",
+    "enterConfirmPassword": "Confirm new password",
+    "submitting": "Resetting...",
+    "submit": "Reset Password",
+    "successMessage": "Your password has been successfully reset. You can now login.",
+    "error": {
+      "missingToken": "Invalid or missing reset token.",
+      "mismatch": "Passwords do not match.",
+      "invalidToken": "Invalid or expired password reset token.",
+      "general": "Failed to reset password. Please try again."
     }
   }
 }
