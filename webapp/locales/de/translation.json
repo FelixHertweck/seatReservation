@@ -7,7 +7,8 @@
     "noShow": "Nicht erschienen",
     "cancelled": "Storniert",
     "selected": "Ausgewählt",
-    "myReserved": "Meine Reservierung"
+    "myReserved": "Meine Reservierung",
+    "pending": "Von anderem Nutzer ausgewählt"
   },
   "validation": {
     "usernameHint": "3-64 Zeichen: Buchstaben, Zahlen, Punkte, Unterstriche, Bindestriche"
@@ -573,7 +574,17 @@
     "cancelButton": "Abbrechen",
     "reservingButton": "Reserviere...",
     "reserveSeatsButton": "Reserviere {{count}} Plätze",
-    "reserveSeatButton": "Reserviere den Platz"
+    "reserveSeatButton": "Reserviere den Platz",
+    "cart": {
+      "conflict": {
+        "title": "Platz nicht mehr verfügbar",
+        "description": "Dieser Platz wurde soeben von einem anderen Nutzer ausgewählt."
+      },
+      "expired": {
+        "title": "Auswahl abgelaufen",
+        "description": "Ihre Sitzplatzauswahl ist abgelaufen und wurde zurückgesetzt. Bitte wählen Sie Ihre Plätze erneut aus."
+      }
+    }
   },
   "reservation": {
     "delete": {
