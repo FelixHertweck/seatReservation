@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import { useT } from "@/lib/i18n/hooks";
 import { useEvents } from "@/hooks/use-events";
-import { UserEventResponseDto } from "@/api";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { EventCardSkeleton } from "@/components/events/event-card-skeleton";
 import { EventReservationModal } from "@/components/events/event-reservation-modal";
@@ -20,9 +19,16 @@ export default function EventsPage() {
     createReservation,
   } = useEvents();
   const { isLoading: reservationsLoading, reservations } = useReservations();
-  const [selectedEvent, setSelectedEvent] =
-    useState<UserEventResponseDto | null>(null);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [eventSearchQuery, setEventSearchQuery] = useState<string>("");
+
+  // Derived from the live query data (rather than a snapshot captured on click) so that
+  // seatStatuses - e.g. a seat another user just put on PENDING hold - stay up to date
+  // while the reservation modal is open.
+  const selectedEvent = useMemo(
+    () => events.find((event) => event.id === selectedEventId) ?? null,
+    [events, selectedEventId],
+  );
 
   const filteredEvents = useMemo(() => {
     if (!events) return [];
@@ -88,7 +94,7 @@ export default function EventsPage() {
               key={event.id?.toString()}
               event={event}
               location={getLocation(event.locationId)}
-              onReserve={() => setSelectedEvent(event)}
+              onReserve={() => setSelectedEventId(event.id ?? null)}
             />
           ))}
         </div>
@@ -99,7 +105,7 @@ export default function EventsPage() {
           event={selectedEvent}
           location={getLocation(selectedEvent.locationId)}
           userReservations={getReservationsForEvent(selectedEvent.id)}
-          onClose={() => setSelectedEvent(null)}
+          onClose={() => setSelectedEventId(null)}
           onReserve={createReservation}
         />
       )}
