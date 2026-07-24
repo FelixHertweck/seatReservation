@@ -45,8 +45,8 @@ export interface ReservationAllowanceManagementProps {
   updateReservationAllowance: (
     allowance: EventUserAllowanceUpdateDto,
   ) => Promise<EventUserAllowancesDto>;
-  deleteReservationAllowance: (ids: bigint[]) => Promise<void>;
-  onNavigateToEvent?: (eventId: bigint) => void;
+  deleteReservationAllowance: (ids: string[]) => Promise<void>;
+  onNavigateToEvent?: (eventId: string) => void;
   initialFilter?: Record<string, string>;
   isLoading?: boolean;
 }
@@ -71,7 +71,7 @@ export function ReservationAllowanceManagement({
     useState<EventUserAllowancesDto | null>(null);
   const [currentFilters, setCurrentFilters] =
     useState<Record<string, string>>(initialFilter);
-  const [selectedIds, setSelectedIds] = useState<Set<bigint>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const { sortedData, sortKey, sortDirection, handleSort } = useSortableData(
     filteredAllowances,
@@ -167,7 +167,7 @@ export function ReservationAllowanceManagement({
     }
   };
 
-  const handleEventClick = (eventId: bigint) => {
+  const handleEventClick = (eventId: string) => {
     if (onNavigateToEvent) {
       onNavigateToEvent(eventId);
     }
@@ -189,7 +189,7 @@ export function ReservationAllowanceManagement({
     }
   };
 
-  const handleToggleSelect = (id: bigint) => {
+  const handleToggleSelect = (id: string) => {
     const newSelectedIds = new Set(selectedIds);
     if (newSelectedIds.has(id)) {
       newSelectedIds.delete(id);

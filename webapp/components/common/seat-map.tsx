@@ -353,7 +353,7 @@ export function SeatMap({
 
     // Create a map for O(1) seat lookup
     const seatPositionMap = new Map<string, SeatDto>();
-    const seatById = new Map<bigint, SeatDto>();
+    const seatById = new Map<string, SeatDto>();
     seats.forEach((seat) => {
       if (
         seat.coordinate?.xCoordinate != null &&

@@ -101,8 +101,8 @@ export function ReservationFormModal({
 
     try {
       const reservationData: ReservationRequestDto = {
-        eventId: BigInt(formData.eventId),
-        userId: BigInt(formData.userId),
+        eventId: formData.eventId,
+        userId: formData.userId,
         seatIds: selectedSeats.map((seat) => seat.id!),
         deductAllowance: formData.deductAllowance,
       };

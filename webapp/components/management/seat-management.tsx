@@ -33,9 +33,9 @@ export interface SeatManagementProps {
   seats: SeatDto[];
   locations: EventLocationResponseDto[];
   createSeat: (seat: SeatRequestDto) => Promise<SeatDto>;
-  updateSeat: (id: bigint, seat: SeatRequestDto) => Promise<SeatDto>;
-  deleteSeat: (ids: bigint[]) => Promise<unknown>;
-  onNavigateToLocation?: (locationId: bigint) => void;
+  updateSeat: (id: string, seat: SeatRequestDto) => Promise<SeatDto>;
+  deleteSeat: (ids: string[]) => Promise<unknown>;
+  onNavigateToLocation?: (locationId: string) => void;
   initialFilter?: Record<string, string>;
   isLoading?: boolean;
 }
@@ -58,7 +58,7 @@ export function SeatManagement({
   const [isCreating, setIsCreating] = useState(false);
   const [currentFilters, setCurrentFilters] =
     useState<Record<string, string>>(initialFilter);
-  const [selectedIds, setSelectedIds] = useState<Set<bigint>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const { sortedData, sortKey, sortDirection, handleSort } = useSortableData(
     filteredSeats,
@@ -147,7 +147,7 @@ export function SeatManagement({
     }
   };
 
-  const handleLocationClick = (locationId: bigint) => {
+  const handleLocationClick = (locationId: string) => {
     if (onNavigateToLocation) {
       onNavigateToLocation(locationId);
     }
@@ -169,7 +169,7 @@ export function SeatManagement({
     }
   };
 
-  const handleToggleSelect = (id: bigint) => {
+  const handleToggleSelect = (id: string) => {
     const newSelectedIds = new Set(selectedIds);
     if (newSelectedIds.has(id)) {
       newSelectedIds.delete(id);

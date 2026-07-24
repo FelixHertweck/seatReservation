@@ -23,7 +23,7 @@ import { LiveviewStatus } from "@/components/liveview/liveview-status";
 
 export default function LiveViewPage() {
   const t = useT();
-  const [selectedEventId, setSelectedEventId] = useState<bigint | null>(null);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [selectedSeats, setSelectedSeats] = useState<SeatDto[]>([]);
   const [expandedAccordion, setExpandedAccordion] = useState<string[]>([]);
 
@@ -40,7 +40,7 @@ export default function LiveViewPage() {
   } = useLiveView(selectedEventId, !!selectedEventId);
 
   const handleEventSelect = (eventId: string) => {
-    setSelectedEventId(BigInt(eventId));
+    setSelectedEventId(eventId);
     setSelectedSeats([]);
   };
 

@@ -100,8 +100,7 @@ export const AreaDTOSchema = {
     type: 'object',
     properties: {
         id: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         name: {
             type: 'string'
@@ -109,8 +108,9 @@ export const AreaDTOSchema = {
         seatIds: {
             type: 'array',
             items: {
-                type: 'integer',
-                format: 'int64'
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
             }
         },
         boundary: {
@@ -139,8 +139,7 @@ export const AreaRequestDTOSchema = {
             }
         },
         eventLocationId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         }
     }
 } as const;
@@ -149,8 +148,7 @@ export const AreaResponseDTOSchema = {
     type: 'object',
     properties: {
         id: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         name: {
             type: 'string'
@@ -162,8 +160,7 @@ export const AreaResponseDTOSchema = {
             }
         },
         eventLocationId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         }
     }
 } as const;
@@ -172,14 +169,14 @@ export const BlockSeatsRequestDTOSchema = {
     type: 'object',
     properties: {
         eventId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         seatIds: {
             type: 'array',
             items: {
-                type: 'integer',
-                format: 'int64'
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
             }
         }
     }
@@ -193,12 +190,10 @@ export const CheckInInfoRequestDTOSchema = {
     ],
     properties: {
         userId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         eventId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         checkInTokens: {
             type: 'array',
@@ -232,25 +227,25 @@ export const CheckInProcessRequestDTOSchema = {
     ],
     properties: {
         userId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         eventId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         checkIn: {
             type: 'array',
             items: {
-                type: 'integer',
-                format: 'int64'
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
             }
         },
         cancel: {
             type: 'array',
             items: {
-                type: 'integer',
-                format: 'int64'
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
             }
         }
     }
@@ -280,8 +275,7 @@ export const EntranceRequestDTOSchema = {
     ],
     properties: {
         eventLocationId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         name: {
             type: 'string'
@@ -293,15 +287,13 @@ export const EntranceResponseDTOSchema = {
     type: 'object',
     properties: {
         id: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         name: {
             type: 'string'
         },
         eventLocationId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         }
     }
 } as const;
@@ -310,8 +302,7 @@ export const EventLocationMakerDTOSchema = {
     type: 'object',
     properties: {
         id: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         label: {
             type: 'string'
@@ -320,8 +311,7 @@ export const EventLocationMakerDTOSchema = {
             $ref: '#/components/schemas/CoordinateDTO'
         },
         eventLocationId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         }
     }
 } as const;
@@ -369,8 +359,7 @@ export const EventLocationResponseDTOSchema = {
     type: 'object',
     properties: {
         id: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         name: {
             type: 'string'
@@ -388,8 +377,9 @@ export const EventLocationResponseDTOSchema = {
         seatIds: {
             type: 'array',
             items: {
-                type: 'integer',
-                format: 'int64'
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
             }
         },
         markers: {
@@ -462,15 +452,15 @@ export const EventRequestDTOSchema = {
             $ref: '#/components/schemas/Instant'
         },
         eventLocationId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         supervisorIds: {
             type: 'array',
             uniqueItems: true,
             items: {
-                type: 'integer',
-                format: 'int64'
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
             }
         }
     }
@@ -480,8 +470,7 @@ export const EventResponseDTOSchema = {
     type: 'object',
     properties: {
         id: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         name: {
             type: 'string'
@@ -516,23 +505,23 @@ export const EventResponseDTOSchema = {
         eventUserAllowancesIds: {
             type: 'array',
             items: {
-                type: 'integer',
-                format: 'int64'
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
             }
         },
         eventLocationId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         managerId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         supervisorIds: {
             type: 'array',
             items: {
-                type: 'integer',
-                format: 'int64'
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
             }
         }
     }
@@ -548,16 +537,13 @@ export const EventUserAllowanceUpdateDtoSchema = {
     ],
     properties: {
         id: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         eventId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         userId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         reservationsAllowedCount: {
             type: 'integer',
@@ -575,15 +561,15 @@ export const EventUserAllowancesCreateDtoSchema = {
     ],
     properties: {
         eventId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         userIds: {
             type: 'array',
             uniqueItems: true,
             items: {
-                type: 'integer',
-                format: 'int64'
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
             },
             minItems: 1
         },
@@ -598,16 +584,13 @@ export const EventUserAllowancesDtoSchema = {
     type: 'object',
     properties: {
         id: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         eventId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         userId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         reservationsAllowedCount: {
             type: 'integer',
@@ -687,8 +670,7 @@ export const LimitedUserInfoDTOSchema = {
     type: 'object',
     properties: {
         id: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         username: {
             type: 'string'
@@ -748,8 +730,7 @@ export const MakerRequestDTOSchema = {
             $ref: '#/components/schemas/CoordinateDTO'
         },
         eventLocationId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         }
     }
 } as const;
@@ -815,19 +796,18 @@ export const ReservationRequestDTOSchema = {
     ],
     properties: {
         eventId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         userId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         seatIds: {
             type: 'array',
             uniqueItems: true,
             items: {
-                type: 'integer',
-                format: 'int64'
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
             }
         },
         deductAllowance: {
@@ -840,15 +820,13 @@ export const ReservationResponseDTOSchema = {
     type: 'object',
     properties: {
         id: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         user: {
             $ref: '#/components/schemas/UserDTO'
         },
         eventId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         seat: {
             $ref: '#/components/schemas/SeatDTO'
@@ -877,8 +855,7 @@ export const SeatDTOSchema = {
     type: 'object',
     properties: {
         id: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         seatNumber: {
             type: 'string'
@@ -887,8 +864,7 @@ export const SeatDTOSchema = {
             type: 'string'
         },
         locationId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         coordinate: {
             $ref: '#/components/schemas/CoordinateDTO'
@@ -900,12 +876,10 @@ export const SeatDTOSchema = {
             type: 'string'
         },
         entranceId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         areaId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         }
     }
 } as const;
@@ -923,8 +897,7 @@ export const SeatRequestDTOSchema = {
             type: 'string'
         },
         eventLocationId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         coordinate: {
             $ref: '#/components/schemas/CoordinateDTO'
@@ -933,12 +906,10 @@ export const SeatRequestDTOSchema = {
             type: 'string'
         },
         entranceId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         areaId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         }
     }
 } as const;
@@ -947,8 +918,7 @@ export const SeatStatusDTOSchema = {
     type: 'object',
     properties: {
         seatId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         status: {
             $ref: '#/components/schemas/ReservationStatus'
@@ -961,8 +931,7 @@ export const SupervisorEventLocationDTOSchema = {
     type: 'object',
     properties: {
         id: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         name: {
             type: 'string'
@@ -992,8 +961,7 @@ export const SupervisorEventResponseDTOSchema = {
     type: 'object',
     properties: {
         id: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         name: {
             type: 'string'
@@ -1014,19 +982,16 @@ export const SupervisorReservationResponseDTOSchema = {
     type: 'object',
     properties: {
         id: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         userId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         username: {
             type: 'string'
         },
         eventId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         seat: {
             $ref: '#/components/schemas/SeatDTO'
@@ -1051,12 +1016,10 @@ export const SupervisorSeatStatusDTOSchema = {
     type: 'object',
     properties: {
         seatId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         reservationId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         status: {
             $ref: '#/components/schemas/ReservationStatus'
@@ -1067,12 +1030,17 @@ export const SupervisorSeatStatusDTOSchema = {
     }
 } as const;
 
+export const UUIDSchema = {
+    type: 'string',
+    format: 'uuid',
+    pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+} as const;
+
 export const UserDTOSchema = {
     type: 'object',
     properties: {
         id: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         username: {
             type: 'string'
@@ -1113,8 +1081,7 @@ export const UserEventLocationResponseDTOSchema = {
     type: 'object',
     properties: {
         id: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         name: {
             type: 'string'
@@ -1154,8 +1121,7 @@ export const UserEventResponseDTOSchema = {
     type: 'object',
     properties: {
         id: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         name: {
             type: 'string'
@@ -1182,8 +1148,7 @@ export const UserEventResponseDTOSchema = {
             }
         },
         locationId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         reservationsAllowed: {
             type: 'integer',
@@ -1228,16 +1193,13 @@ export const UserReservationResponseDTOSchema = {
     type: 'object',
     properties: {
         id: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         userId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         eventId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         seat: {
             $ref: '#/components/schemas/SeatDTO'
@@ -1259,15 +1221,15 @@ export const UserReservationsRequestDTOSchema = {
     ],
     properties: {
         eventId: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         seatIds: {
             type: 'array',
             uniqueItems: true,
             items: {
-                type: 'integer',
-                format: 'int64'
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
             },
             minItems: 1
         }
@@ -1291,8 +1253,7 @@ export const WebAuthnCredentialDTOSchema = {
     type: 'object',
     properties: {
         id: {
-            type: 'integer',
-            format: 'int64'
+            $ref: '#/components/schemas/UUID'
         },
         label: {
             type: 'string'

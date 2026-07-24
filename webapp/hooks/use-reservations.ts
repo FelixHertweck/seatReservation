@@ -33,14 +33,14 @@ export function useReservations() {
         ): UserReservationResponseDto[] => {
           const idsSet = new Set(variables.query?.ids);
           return (oldData ?? []).filter(
-            (reservation) => !idsSet.has(reservation.id ?? BigInt(-1)),
+            (reservation) => !idsSet.has(reservation.id ?? ""),
           );
         },
       );
     },
   });
 
-  const deleteReservation = async (ids: bigint[]) => {
+  const deleteReservation = async (ids: string[]) => {
     const request = deleteMutation.mutateAsync({
       query: {
         ids,

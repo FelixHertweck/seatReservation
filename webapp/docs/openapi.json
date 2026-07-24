@@ -85,8 +85,7 @@
         "type" : "object",
         "properties" : {
           "id" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "name" : {
             "type" : "string"
@@ -94,8 +93,9 @@
           "seatIds" : {
             "type" : "array",
             "items" : {
-              "type" : "integer",
-              "format" : "int64"
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
             }
           },
           "boundary" : {
@@ -120,8 +120,7 @@
             }
           },
           "eventLocationId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         }
       },
@@ -129,8 +128,7 @@
         "type" : "object",
         "properties" : {
           "id" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "name" : {
             "type" : "string"
@@ -142,8 +140,7 @@
             }
           },
           "eventLocationId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         }
       },
@@ -151,14 +148,14 @@
         "type" : "object",
         "properties" : {
           "eventId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "seatIds" : {
             "type" : "array",
             "items" : {
-              "type" : "integer",
-              "format" : "int64"
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
             }
           }
         }
@@ -168,12 +165,10 @@
         "required" : [ "userId", "eventId" ],
         "properties" : {
           "userId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "eventId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "checkInTokens" : {
             "type" : "array",
@@ -202,25 +197,25 @@
         "required" : [ "userId", "eventId" ],
         "properties" : {
           "userId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "eventId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "checkIn" : {
             "type" : "array",
             "items" : {
-              "type" : "integer",
-              "format" : "int64"
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
             }
           },
           "cancel" : {
             "type" : "array",
             "items" : {
-              "type" : "integer",
-              "format" : "int64"
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
             }
           }
         }
@@ -245,8 +240,7 @@
         "required" : [ "eventLocationId", "name" ],
         "properties" : {
           "eventLocationId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "name" : {
             "type" : "string"
@@ -257,15 +251,13 @@
         "type" : "object",
         "properties" : {
           "id" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "name" : {
             "type" : "string"
           },
           "eventLocationId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         }
       },
@@ -273,8 +265,7 @@
         "type" : "object",
         "properties" : {
           "id" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "label" : {
             "type" : "string"
@@ -283,8 +274,7 @@
             "$ref" : "#/components/schemas/CoordinateDTO"
           },
           "eventLocationId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         }
       },
@@ -326,8 +316,7 @@
         "type" : "object",
         "properties" : {
           "id" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "name" : {
             "type" : "string"
@@ -345,8 +334,9 @@
           "seatIds" : {
             "type" : "array",
             "items" : {
-              "type" : "integer",
-              "format" : "int64"
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
             }
           },
           "markers" : {
@@ -405,15 +395,15 @@
             "$ref" : "#/components/schemas/Instant"
           },
           "eventLocationId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "supervisorIds" : {
             "type" : "array",
             "uniqueItems" : true,
             "items" : {
-              "type" : "integer",
-              "format" : "int64"
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
             }
           }
         }
@@ -422,8 +412,7 @@
         "type" : "object",
         "properties" : {
           "id" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "name" : {
             "type" : "string"
@@ -458,23 +447,23 @@
           "eventUserAllowancesIds" : {
             "type" : "array",
             "items" : {
-              "type" : "integer",
-              "format" : "int64"
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
             }
           },
           "eventLocationId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "managerId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "supervisorIds" : {
             "type" : "array",
             "items" : {
-              "type" : "integer",
-              "format" : "int64"
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
             }
           }
         }
@@ -484,16 +473,13 @@
         "required" : [ "id", "eventId", "userId", "reservationsAllowedCount" ],
         "properties" : {
           "id" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "eventId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "userId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "reservationsAllowedCount" : {
             "type" : "integer",
@@ -506,15 +492,15 @@
         "required" : [ "eventId", "userIds", "reservationsAllowedCount" ],
         "properties" : {
           "eventId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "userIds" : {
             "type" : "array",
             "uniqueItems" : true,
             "items" : {
-              "type" : "integer",
-              "format" : "int64"
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
             },
             "minItems" : 1
           },
@@ -528,16 +514,13 @@
         "type" : "object",
         "properties" : {
           "id" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "eventId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "userId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "reservationsAllowedCount" : {
             "type" : "integer",
@@ -602,8 +585,7 @@
         "type" : "object",
         "properties" : {
           "id" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "username" : {
             "type" : "string"
@@ -653,8 +635,7 @@
             "$ref" : "#/components/schemas/CoordinateDTO"
           },
           "eventLocationId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         }
       },
@@ -702,19 +683,18 @@
         "required" : [ "eventId", "userId", "seatIds" ],
         "properties" : {
           "eventId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "userId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "seatIds" : {
             "type" : "array",
             "uniqueItems" : true,
             "items" : {
-              "type" : "integer",
-              "format" : "int64"
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
             }
           },
           "deductAllowance" : {
@@ -726,15 +706,13 @@
         "type" : "object",
         "properties" : {
           "id" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "user" : {
             "$ref" : "#/components/schemas/UserDTO"
           },
           "eventId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "seat" : {
             "$ref" : "#/components/schemas/SeatDTO"
@@ -758,8 +736,7 @@
         "type" : "object",
         "properties" : {
           "id" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "seatNumber" : {
             "type" : "string"
@@ -768,8 +745,7 @@
             "type" : "string"
           },
           "locationId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "coordinate" : {
             "$ref" : "#/components/schemas/CoordinateDTO"
@@ -781,12 +757,10 @@
             "type" : "string"
           },
           "entranceId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "areaId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         }
       },
@@ -798,8 +772,7 @@
             "type" : "string"
           },
           "eventLocationId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "coordinate" : {
             "$ref" : "#/components/schemas/CoordinateDTO"
@@ -808,12 +781,10 @@
             "type" : "string"
           },
           "entranceId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "areaId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         }
       },
@@ -821,8 +792,7 @@
         "type" : "object",
         "properties" : {
           "seatId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "status" : {
             "$ref" : "#/components/schemas/ReservationStatus"
@@ -834,8 +804,7 @@
         "type" : "object",
         "properties" : {
           "id" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "name" : {
             "type" : "string"
@@ -864,8 +833,7 @@
         "type" : "object",
         "properties" : {
           "id" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "name" : {
             "type" : "string"
@@ -885,19 +853,16 @@
         "type" : "object",
         "properties" : {
           "id" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "userId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "username" : {
             "type" : "string"
           },
           "eventId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "seat" : {
             "$ref" : "#/components/schemas/SeatDTO"
@@ -921,12 +886,10 @@
         "type" : "object",
         "properties" : {
           "seatId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "reservationId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "status" : {
             "$ref" : "#/components/schemas/ReservationStatus"
@@ -936,12 +899,16 @@
           }
         }
       },
+      "UUID" : {
+        "type" : "string",
+        "format" : "uuid",
+        "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+      },
       "UserDTO" : {
         "type" : "object",
         "properties" : {
           "id" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "username" : {
             "type" : "string"
@@ -981,8 +948,7 @@
         "type" : "object",
         "properties" : {
           "id" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "name" : {
             "type" : "string"
@@ -1021,8 +987,7 @@
         "type" : "object",
         "properties" : {
           "id" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "name" : {
             "type" : "string"
@@ -1049,8 +1014,7 @@
             }
           },
           "locationId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "reservationsAllowed" : {
             "type" : "integer",
@@ -1088,16 +1052,13 @@
         "type" : "object",
         "properties" : {
           "id" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "userId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "eventId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "seat" : {
             "$ref" : "#/components/schemas/SeatDTO"
@@ -1115,15 +1076,15 @@
         "required" : [ "eventId", "seatIds" ],
         "properties" : {
           "eventId" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "seatIds" : {
             "type" : "array",
             "uniqueItems" : true,
             "items" : {
-              "type" : "integer",
-              "format" : "int64"
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
             },
             "minItems" : 1
           }
@@ -1143,8 +1104,7 @@
         "type" : "object",
         "properties" : {
           "id" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           },
           "label" : {
             "type" : "string"
@@ -1427,8 +1387,7 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "requestBody" : {
@@ -1475,8 +1434,7 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "responses" : {
@@ -1762,8 +1720,7 @@
           "name" : "eventLocationId",
           "in" : "query",
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "responses" : {
@@ -1803,8 +1760,9 @@
           "schema" : {
             "type" : "array",
             "items" : {
-              "type" : "integer",
-              "format" : "int64"
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
             }
           }
         } ],
@@ -1883,8 +1841,7 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "requestBody" : {
@@ -1933,8 +1890,7 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "responses" : {
@@ -1971,8 +1927,7 @@
           "name" : "eventLocationId",
           "in" : "query",
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "responses" : {
@@ -2012,8 +1967,9 @@
           "schema" : {
             "type" : "array",
             "items" : {
-              "type" : "integer",
-              "format" : "int64"
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
             }
           }
         } ],
@@ -2092,8 +2048,7 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "requestBody" : {
@@ -2142,8 +2097,7 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "responses" : {
@@ -2210,8 +2164,9 @@
           "schema" : {
             "type" : "array",
             "items" : {
-              "type" : "integer",
-              "format" : "int64"
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
             }
           }
         } ],
@@ -2290,8 +2245,7 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "requestBody" : {
@@ -2374,8 +2328,9 @@
           "schema" : {
             "type" : "array",
             "items" : {
-              "type" : "integer",
-              "format" : "int64"
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
             }
           }
         } ],
@@ -2454,8 +2409,7 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "requestBody" : {
@@ -2507,8 +2461,7 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "responses" : {
@@ -2545,8 +2498,7 @@
           "name" : "eventLocationId",
           "in" : "query",
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "responses" : {
@@ -2586,8 +2538,9 @@
           "schema" : {
             "type" : "array",
             "items" : {
-              "type" : "integer",
-              "format" : "int64"
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
             }
           }
         } ],
@@ -2663,8 +2616,7 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "requestBody" : {
@@ -2713,8 +2665,7 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "responses" : {
@@ -2872,8 +2823,9 @@
           "schema" : {
             "type" : "array",
             "items" : {
-              "type" : "integer",
-              "format" : "int64"
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
             }
           }
         } ],
@@ -2908,8 +2860,7 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "responses" : {
@@ -2950,8 +2901,7 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "responses" : {
@@ -3018,8 +2968,9 @@
           "schema" : {
             "type" : "array",
             "items" : {
-              "type" : "integer",
-              "format" : "int64"
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
             }
           }
         } ],
@@ -3150,8 +3101,7 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "responses" : {
@@ -3192,8 +3142,7 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "responses" : {
@@ -3230,8 +3179,7 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "responses" : {
@@ -3268,8 +3216,7 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "responses" : {
@@ -3306,8 +3253,7 @@
           "name" : "eventLocationId",
           "in" : "query",
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "responses" : {
@@ -3347,8 +3293,9 @@
           "schema" : {
             "type" : "array",
             "items" : {
-              "type" : "integer",
-              "format" : "int64"
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
             }
           }
         } ],
@@ -3430,8 +3377,7 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "requestBody" : {
@@ -3483,8 +3429,7 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "responses" : {
@@ -3666,8 +3611,7 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "responses" : {
@@ -3827,8 +3771,9 @@
           "schema" : {
             "type" : "array",
             "items" : {
-              "type" : "integer",
-              "format" : "int64"
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
             }
           }
         } ],
@@ -3913,8 +3858,7 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "responses" : {
@@ -4100,8 +4044,7 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "$ref" : "#/components/schemas/UUID"
           }
         } ],
         "requestBody" : {
@@ -4157,8 +4100,9 @@
           "schema" : {
             "type" : "array",
             "items" : {
-              "type" : "integer",
-              "format" : "int64"
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
             }
           }
         } ],

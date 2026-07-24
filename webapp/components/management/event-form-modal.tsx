@@ -69,7 +69,7 @@ export function EventFormModal({
       : "",
     eventLocationId: event?.eventLocationId?.toString() || "",
     supervisorIds:
-      event?.supervisorIds?.map((id: bigint) => id.toString()) || [],
+      event?.supervisorIds?.map((id: string) => id.toString()) || [],
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -90,13 +90,12 @@ export function EventFormModal({
         reminderSendDate: formData.reminderSendDate
           ? new Date(formData.reminderSendDate)
           : undefined,
-        eventLocationId: BigInt(formData.eventLocationId),
+        eventLocationId: formData.eventLocationId,
       };
       // Attach supervisors if provided
       const payload: EventRequestDto = {
         ...eventData,
-        supervisorIds:
-          formData.supervisorIds?.map((id: string) => BigInt(id)) || [],
+        supervisorIds: formData.supervisorIds || [],
       };
       await onSubmit(payload);
     } finally {

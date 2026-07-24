@@ -120,7 +120,7 @@ export function useManager(): UseManagerReturn {
         (oldData: EventResponseDto[] | undefined) => {
           const idsSet = createIdsSet(variables.query);
           return oldData
-            ? oldData.filter((event) => !idsSet.has(event.id ?? BigInt(-1)))
+            ? oldData.filter((event) => !idsSet.has(event.id ?? ""))
             : [];
         },
       );
@@ -168,9 +168,7 @@ export function useManager(): UseManagerReturn {
         (oldData: EventLocationResponseDto[] | undefined) => {
           const idsSet = createIdsSet(variables.query);
           return oldData
-            ? oldData.filter(
-                (location) => !idsSet.has(location.id ?? BigInt(-1)),
-              )
+            ? oldData.filter((location) => !idsSet.has(location.id ?? ""))
             : [];
         },
       );
@@ -257,9 +255,7 @@ export function useManager(): UseManagerReturn {
         (oldData: ReservationResponseDto[] | undefined) => {
           const idsSet = createIdsSet(variables.query);
           return oldData
-            ? oldData.filter(
-                (reservation) => !idsSet.has(reservation.id ?? BigInt(-1)),
-              )
+            ? oldData.filter((reservation) => !idsSet.has(reservation.id ?? ""))
             : [];
         },
       );
@@ -323,18 +319,16 @@ export function useManager(): UseManagerReturn {
         (oldData: EventUserAllowancesDto[] | undefined) => {
           const idsSet = createIdsSet(variables.query);
           return oldData
-            ? oldData.filter(
-                (allowance) => !idsSet.has(allowance.id ?? BigInt(-1)),
-              )
+            ? oldData.filter((allowance) => !idsSet.has(allowance.id ?? ""))
             : [];
         },
       );
     },
   });
 
-  const exportReservationsToCsv = async (eventId: bigint): Promise<Blob> => {
+  const exportReservationsToCsv = async (eventId: string): Promise<Blob> => {
     const response = await getApiManagerReservationsExportByEventIdCsv({
-      path: { eventId: BigInt(eventId) },
+      path: { eventId },
     });
 
     return new Blob([response.data as string], {
@@ -342,9 +336,9 @@ export function useManager(): UseManagerReturn {
     });
   };
 
-  const exportReservationsToPDF = async (eventId: bigint): Promise<Blob> => {
+  const exportReservationsToPDF = async (eventId: string): Promise<Blob> => {
     const response = await getApiManagerReservationsExportByEventIdPdf({
-      path: { eventId: BigInt(eventId) },
+      path: { eventId },
     });
 
     return new Blob([response.data as File], {
@@ -366,7 +360,7 @@ export function useManager(): UseManagerReturn {
     return request;
   };
 
-  const handleUpdateEvent = async (id: bigint, event: EventRequestDto) => {
+  const handleUpdateEvent = async (id: string, event: EventRequestDto) => {
     const request = updateEventMutation.mutateAsync({
       path: { id },
       body: event,
@@ -382,7 +376,7 @@ export function useManager(): UseManagerReturn {
     return request;
   };
 
-  const handleDeleteEvent = async (ids: bigint[]) => {
+  const handleDeleteEvent = async (ids: string[]) => {
     const request = deleteEventMutation.mutateAsync({ query: { ids } });
     toast.promise(request, {
       loading: t("common.loading"),
@@ -409,7 +403,7 @@ export function useManager(): UseManagerReturn {
   };
 
   const handleUpdateLocation = async (
-    id: bigint,
+    id: string,
     location: EventLocationRequestDto,
   ) => {
     const request = updateLocationMutation.mutateAsync({
@@ -427,7 +421,7 @@ export function useManager(): UseManagerReturn {
     return request;
   };
 
-  const handleDeleteLocation = async (ids: bigint[]) => {
+  const handleDeleteLocation = async (ids: string[]) => {
     const request = deleteLocationMutation.mutateAsync({ query: { ids } });
     toast.promise(request, {
       loading: t("common.loading"),
@@ -470,7 +464,7 @@ export function useManager(): UseManagerReturn {
     return request;
   };
 
-  const handleUpdateSeat = async (id: bigint, seat: SeatRequestDto) => {
+  const handleUpdateSeat = async (id: string, seat: SeatRequestDto) => {
     const request = updateSeatMutation.mutateAsync({
       path: { id },
       body: seat,
@@ -486,7 +480,7 @@ export function useManager(): UseManagerReturn {
     return request;
   };
 
-  const handleDeleteSeat = async (ids: bigint[]) => {
+  const handleDeleteSeat = async (ids: string[]) => {
     const request = deleteSeatMutation.mutateAsync({ query: { ids } });
     toast.promise(request, {
       loading: t("common.loading"),
@@ -516,7 +510,7 @@ export function useManager(): UseManagerReturn {
     return request;
   };
 
-  const handleDeleteReservation = async (ids: bigint[]) => {
+  const handleDeleteReservation = async (ids: string[]) => {
     const request = deleteReservationMutation.mutateAsync({ query: { ids } });
     toast.promise(request, {
       loading: t("common.loading"),
@@ -576,7 +570,7 @@ export function useManager(): UseManagerReturn {
     return request;
   };
 
-  const handleDeleteReservationAllowance = async (ids: bigint[]) => {
+  const handleDeleteReservationAllowance = async (ids: string[]) => {
     const request = deleteReservationAllowanceMutation.mutateAsync({
       query: { ids },
     });
@@ -647,6 +641,6 @@ export function useManager(): UseManagerReturn {
   };
 }
 
-function createIdsSet(query: { ids?: bigint[] } | undefined): Set<bigint> {
+function createIdsSet(query: { ids?: string[] } | undefined): Set<string> {
   return new Set(query?.ids ?? []);
 }

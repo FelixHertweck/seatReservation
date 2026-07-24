@@ -23,7 +23,7 @@ interface QRCodeModalProps {
   eventName: string | undefined;
   onClose: () => void;
   reservations: UserReservationResponseDto[];
-  userId: bigint | undefined;
+  userId: string | undefined;
 }
 
 export function QRCodeModal({

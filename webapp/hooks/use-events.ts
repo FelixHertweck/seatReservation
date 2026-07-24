@@ -21,11 +21,11 @@ import type {
 interface UseEventsReturn {
   events: UserEventResponseDto[];
   locations: UserEventLocationResponseDto[];
-  getEventById: (id: bigint) => Promise<UserEventResponseDto>;
+  getEventById: (id: string) => Promise<UserEventResponseDto>;
   isLoading: boolean;
   createReservation: (
-    eventId: bigint,
-    seatIds: bigint[],
+    eventId: string,
+    seatIds: string[],
   ) => Promise<UserReservationResponseDto[]>;
 }
 
@@ -46,8 +46,8 @@ export function useEvents(): UseEventsReturn {
   });
 
   const createReservation = async (
-    eventId: bigint,
-    seatIds: bigint[],
+    eventId: string,
+    seatIds: string[],
   ): Promise<UserReservationResponseDto[]> => {
     const data: UserReservationsRequestDto = {
       eventId,
@@ -76,10 +76,10 @@ export function useEvents(): UseEventsReturn {
     return request;
   };
 
-  const getEventById = (eventId: bigint) => {
+  const getEventById = (eventId: string) => {
     return queryClient.fetchQuery({
       ...getApiManagerEventsByIdOptions({
-        path: { id: BigInt(eventId.toString()) },
+        path: { id: eventId },
       }),
     });
   };

@@ -15,7 +15,7 @@ import type { SupervisorEventResponseDto } from "@/api";
 type Props = {
   events?: SupervisorEventResponseDto[] | null;
   isLoadingEvents?: boolean;
-  selectedEventId?: bigint | null;
+  selectedEventId?: string | null;
   onEventSelect: (eventId: string) => void;
   labelKey?: string; // translation key for label
   placeholderKey?: string; // translation key for select placeholder

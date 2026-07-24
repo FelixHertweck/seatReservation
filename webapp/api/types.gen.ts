@@ -27,33 +27,33 @@ export type AdminUserUpdateDto = {
 };
 
 export type AreaDto = {
-    id?: bigint;
+    id?: Uuid;
     name?: string;
-    seatIds?: Array<bigint>;
+    seatIds?: Array<string>;
     boundary?: Array<CoordinateDto>;
 };
 
 export type AreaRequestDto = {
     name: string;
     boundary?: Array<CoordinateDto>;
-    eventLocationId: bigint;
+    eventLocationId: Uuid;
 };
 
 export type AreaResponseDto = {
-    id?: bigint;
+    id?: Uuid;
     name?: string;
     boundary?: Array<CoordinateDto>;
-    eventLocationId?: bigint;
+    eventLocationId?: Uuid;
 };
 
 export type BlockSeatsRequestDto = {
-    eventId?: bigint;
-    seatIds?: Array<bigint>;
+    eventId?: Uuid;
+    seatIds?: Array<string>;
 };
 
 export type CheckInInfoRequestDto = {
-    userId: bigint;
-    eventId: bigint;
+    userId: Uuid;
+    eventId: Uuid;
     checkInTokens?: Array<string>;
 };
 
@@ -63,10 +63,10 @@ export type CheckInInfoResponseDto = {
 };
 
 export type CheckInProcessRequestDto = {
-    userId: bigint;
-    eventId: bigint;
-    checkIn?: Array<bigint>;
-    cancel?: Array<bigint>;
+    userId: Uuid;
+    eventId: Uuid;
+    checkIn?: Array<string>;
+    cancel?: Array<string>;
 };
 
 export type CoordinateDto = {
@@ -75,21 +75,21 @@ export type CoordinateDto = {
 };
 
 export type EntranceRequestDto = {
-    eventLocationId: bigint;
+    eventLocationId: Uuid;
     name: string;
 };
 
 export type EntranceResponseDto = {
-    id?: bigint;
+    id?: Uuid;
     name?: string;
-    eventLocationId?: bigint;
+    eventLocationId?: Uuid;
 };
 
 export type EventLocationMakerDto = {
-    id?: bigint;
+    id?: Uuid;
     label?: string;
     coordinate?: CoordinateDto;
-    eventLocationId?: bigint;
+    eventLocationId?: Uuid;
 };
 
 export type EventLocationRequestDto = {
@@ -102,12 +102,12 @@ export type EventLocationRequestDto = {
 };
 
 export type EventLocationResponseDto = {
-    id?: bigint;
+    id?: Uuid;
     name?: string;
     address?: string;
     capacity?: number;
     manager?: LimitedUserInfoDto;
-    seatIds?: Array<bigint>;
+    seatIds?: Array<string>;
     markers?: Array<EventLocationMakerDto>;
     areas?: Array<AreaDto>;
 };
@@ -126,12 +126,12 @@ export type EventRequestDto = {
     bookingDeadline: Instant;
     bookingStartTime: Instant;
     reminderSendDate?: Instant;
-    eventLocationId: bigint;
-    supervisorIds?: Array<bigint>;
+    eventLocationId: Uuid;
+    supervisorIds?: Array<string>;
 };
 
 export type EventResponseDto = {
-    id?: bigint;
+    id?: Uuid;
     name?: string;
     description?: string;
     startTime?: Instant;
@@ -141,29 +141,29 @@ export type EventResponseDto = {
     reminderSendDate?: Instant;
     isReminderSent?: boolean;
     seatStatuses?: Array<SeatStatusDto>;
-    eventUserAllowancesIds?: Array<bigint>;
-    eventLocationId?: bigint;
-    managerId?: bigint;
-    supervisorIds?: Array<bigint>;
+    eventUserAllowancesIds?: Array<string>;
+    eventLocationId?: Uuid;
+    managerId?: Uuid;
+    supervisorIds?: Array<string>;
 };
 
 export type EventUserAllowanceUpdateDto = {
-    id: bigint;
-    eventId: bigint;
-    userId: bigint;
+    id: Uuid;
+    eventId: Uuid;
+    userId: Uuid;
     reservationsAllowedCount: number;
 };
 
 export type EventUserAllowancesCreateDto = {
-    eventId: bigint;
-    userIds: Array<bigint>;
+    eventId: Uuid;
+    userIds: Array<string>;
     reservationsAllowedCount: number;
 };
 
 export type EventUserAllowancesDto = {
-    id?: bigint;
-    eventId?: bigint;
-    userId?: bigint;
+    id?: Uuid;
+    eventId?: Uuid;
+    userId?: Uuid;
     reservationsAllowedCount?: number;
 };
 
@@ -188,7 +188,7 @@ export type ImportSeatDto = {
 export type Instant = Date;
 
 export type LimitedUserInfoDto = {
-    id?: bigint;
+    id?: Uuid;
     username?: string;
     tags?: Array<string>;
 };
@@ -206,7 +206,7 @@ export type LoginRequestDto = {
 export type MakerRequestDto = {
     label: string;
     coordinate: CoordinateDto;
-    eventLocationId: bigint;
+    eventLocationId: Uuid;
 };
 
 export type RegisterRequestDto = {
@@ -230,16 +230,16 @@ export const ReservationLiveStatus = {
 export type ReservationLiveStatus = typeof ReservationLiveStatus[keyof typeof ReservationLiveStatus];
 
 export type ReservationRequestDto = {
-    eventId: bigint;
-    userId: bigint;
-    seatIds: Array<bigint>;
+    eventId: Uuid;
+    userId: Uuid;
+    seatIds: Array<string>;
     deductAllowance?: boolean;
 };
 
 export type ReservationResponseDto = {
-    id?: bigint;
+    id?: Uuid;
     user?: UserDto;
-    eventId?: bigint;
+    eventId?: Uuid;
     seat?: SeatDto;
     reservationDateTime?: Instant;
     status?: ReservationStatus;
@@ -251,28 +251,28 @@ export const ReservationStatus = { RESERVED: 'RESERVED', BLOCKED: 'BLOCKED' } as
 export type ReservationStatus = typeof ReservationStatus[keyof typeof ReservationStatus];
 
 export type SeatDto = {
-    id?: bigint;
+    id?: Uuid;
     seatNumber?: string;
     seatRow?: string;
-    locationId?: bigint;
+    locationId?: Uuid;
     coordinate?: CoordinateDto;
     entrance?: string;
     area?: string;
-    entranceId?: bigint;
-    areaId?: bigint;
+    entranceId?: Uuid;
+    areaId?: Uuid;
 };
 
 export type SeatRequestDto = {
     seatNumber: string;
-    eventLocationId: bigint;
+    eventLocationId: Uuid;
     coordinate: CoordinateDto;
     seatRow: string;
-    entranceId?: bigint;
-    areaId?: bigint;
+    entranceId?: Uuid;
+    areaId?: Uuid;
 };
 
 export type SeatStatusDto = {
-    seatId?: bigint;
+    seatId?: Uuid;
     status?: ReservationStatus;
 };
 
@@ -280,7 +280,7 @@ export type SeatStatusDto = {
  * Event location details for supervisor view
  */
 export type SupervisorEventLocationDto = {
-    id?: bigint;
+    id?: Uuid;
     name?: string;
     seats?: Array<SeatDto>;
     markers?: Array<EventLocationMakerDto>;
@@ -288,7 +288,7 @@ export type SupervisorEventLocationDto = {
 };
 
 export type SupervisorEventResponseDto = {
-    id?: bigint;
+    id?: Uuid;
     name?: string;
     description?: string;
     startTime?: Instant;
@@ -296,10 +296,10 @@ export type SupervisorEventResponseDto = {
 };
 
 export type SupervisorReservationResponseDto = {
-    id?: bigint;
-    userId?: bigint;
+    id?: Uuid;
+    userId?: Uuid;
     username?: string;
-    eventId?: bigint;
+    eventId?: Uuid;
     seat?: SeatDto;
     reservationDateTime?: Instant;
     status?: ReservationStatus;
@@ -311,14 +311,16 @@ export type SupervisorReservationResponseDto = {
  * Seat reservation status for supervisor view
  */
 export type SupervisorSeatStatusDto = {
-    seatId?: bigint;
-    reservationId?: bigint;
+    seatId?: Uuid;
+    reservationId?: Uuid;
     status?: ReservationStatus;
     liveStatus?: ReservationLiveStatus;
 };
 
+export type Uuid = string;
+
 export type UserDto = {
-    id?: bigint;
+    id?: Uuid;
     username?: string;
     firstname?: string;
     lastname?: string;
@@ -330,7 +332,7 @@ export type UserDto = {
 };
 
 export type UserEventLocationResponseDto = {
-    id?: bigint;
+    id?: Uuid;
     name?: string;
     address?: string;
     capacity?: number;
@@ -341,7 +343,7 @@ export type UserEventLocationResponseDto = {
 };
 
 export type UserEventResponseDto = {
-    id?: bigint;
+    id?: Uuid;
     name?: string;
     description?: string;
     startTime?: Instant;
@@ -349,7 +351,7 @@ export type UserEventResponseDto = {
     bookingDeadline?: Instant;
     bookingStartTime?: Instant;
     seatStatuses?: Array<SeatStatusDto>;
-    locationId?: bigint;
+    locationId?: Uuid;
     reservationsAllowed?: number;
 };
 
@@ -362,17 +364,17 @@ export type UserProfileUpdateDto = {
 };
 
 export type UserReservationResponseDto = {
-    id?: bigint;
-    userId?: bigint;
-    eventId?: bigint;
+    id?: Uuid;
+    userId?: Uuid;
+    eventId?: Uuid;
     seat?: SeatDto;
     reservationDateTime?: Instant;
     checkInCode?: string;
 };
 
 export type UserReservationsRequestDto = {
-    eventId: bigint;
-    seatIds: Array<bigint>;
+    eventId: Uuid;
+    seatIds: Array<string>;
 };
 
 export type VerifyEmailCodeRequestDto = {
@@ -380,7 +382,7 @@ export type VerifyEmailCodeRequestDto = {
 };
 
 export type WebAuthnCredentialDto = {
-    id?: bigint;
+    id?: Uuid;
     label?: string;
     createdAt?: Instant;
     lastUsedAt?: Instant;
@@ -579,7 +581,7 @@ export type GetApiAuthWebauthnCredentialsResponse = GetApiAuthWebauthnCredential
 export type DeleteApiAuthWebauthnCredentialsByIdData = {
     body?: never;
     path: {
-        id: bigint;
+        id: Uuid;
     };
     query?: never;
     url: '/api/auth/webauthn/credentials/{id}';
@@ -616,7 +618,7 @@ export type DeleteApiAuthWebauthnCredentialsByIdResponse = DeleteApiAuthWebauthn
 export type PutApiAuthWebauthnCredentialsByIdData = {
     body: WebAuthnCredentialUpdateDto;
     path: {
-        id: bigint;
+        id: Uuid;
     };
     query?: never;
     url: '/api/auth/webauthn/credentials/{id}';
@@ -858,7 +860,7 @@ export type DeleteApiManagerAreasData = {
     body?: never;
     path?: never;
     query?: {
-        ids?: Array<bigint>;
+        ids?: Array<string>;
     };
     url: '/api/manager/areas';
 };
@@ -899,7 +901,7 @@ export type GetApiManagerAreasData = {
     body?: never;
     path?: never;
     query?: {
-        eventLocationId?: bigint;
+        eventLocationId?: Uuid;
     };
     url: '/api/manager/areas';
 };
@@ -966,7 +968,7 @@ export type PostApiManagerAreasResponse = PostApiManagerAreasResponses[keyof Pos
 export type GetApiManagerAreasByIdData = {
     body?: never;
     path: {
-        id: bigint;
+        id: Uuid;
     };
     query?: never;
     url: '/api/manager/areas/{id}';
@@ -999,7 +1001,7 @@ export type GetApiManagerAreasByIdResponse = GetApiManagerAreasByIdResponses[key
 export type PutApiManagerAreasByIdData = {
     body: AreaRequestDto;
     path: {
-        id: bigint;
+        id: Uuid;
     };
     query?: never;
     url: '/api/manager/areas/{id}';
@@ -1037,7 +1039,7 @@ export type DeleteApiManagerEntrancesData = {
     body?: never;
     path?: never;
     query?: {
-        ids?: Array<bigint>;
+        ids?: Array<string>;
     };
     url: '/api/manager/entrances';
 };
@@ -1078,7 +1080,7 @@ export type GetApiManagerEntrancesData = {
     body?: never;
     path?: never;
     query?: {
-        eventLocationId?: bigint;
+        eventLocationId?: Uuid;
     };
     url: '/api/manager/entrances';
 };
@@ -1145,7 +1147,7 @@ export type PostApiManagerEntrancesResponse = PostApiManagerEntrancesResponses[k
 export type GetApiManagerEntrancesByIdData = {
     body?: never;
     path: {
-        id: bigint;
+        id: Uuid;
     };
     query?: never;
     url: '/api/manager/entrances/{id}';
@@ -1178,7 +1180,7 @@ export type GetApiManagerEntrancesByIdResponse = GetApiManagerEntrancesByIdRespo
 export type PutApiManagerEntrancesByIdData = {
     body: EntranceRequestDto;
     path: {
-        id: bigint;
+        id: Uuid;
     };
     query?: never;
     url: '/api/manager/entrances/{id}';
@@ -1216,7 +1218,7 @@ export type DeleteApiManagerEventlocationsData = {
     body?: never;
     path?: never;
     query?: {
-        ids?: Array<bigint>;
+        ids?: Array<string>;
     };
     url: '/api/manager/eventlocations';
 };
@@ -1318,7 +1320,7 @@ export type PostApiManagerEventlocationsResponse = PostApiManagerEventlocationsR
 export type PutApiManagerEventlocationsByIdData = {
     body: EventLocationUpdateDto;
     path: {
-        id: bigint;
+        id: Uuid;
     };
     query?: never;
     url: '/api/manager/eventlocations/{id}';
@@ -1360,7 +1362,7 @@ export type DeleteApiManagerEventsData = {
     body?: never;
     path?: never;
     query?: {
-        ids?: Array<bigint>;
+        ids?: Array<string>;
     };
     url: '/api/manager/events';
 };
@@ -1462,7 +1464,7 @@ export type PostApiManagerEventsResponse = PostApiManagerEventsResponses[keyof P
 export type GetApiManagerEventsByIdData = {
     body?: never;
     path: {
-        id: bigint;
+        id: Uuid;
     };
     query?: never;
     url: '/api/manager/events/{id}';
@@ -1495,7 +1497,7 @@ export type GetApiManagerEventsByIdResponse = GetApiManagerEventsByIdResponses[k
 export type PutApiManagerEventsByIdData = {
     body: EventRequestDto;
     path: {
-        id: bigint;
+        id: Uuid;
     };
     query?: never;
     url: '/api/manager/events/{id}';
@@ -1537,7 +1539,7 @@ export type DeleteApiManagerMarkersData = {
     body?: never;
     path?: never;
     query?: {
-        ids?: Array<bigint>;
+        ids?: Array<string>;
     };
     url: '/api/manager/markers';
 };
@@ -1574,7 +1576,7 @@ export type GetApiManagerMarkersData = {
     body?: never;
     path?: never;
     query?: {
-        eventLocationId?: bigint;
+        eventLocationId?: Uuid;
     };
     url: '/api/manager/markers';
 };
@@ -1641,7 +1643,7 @@ export type PostApiManagerMarkersResponse = PostApiManagerMarkersResponses[keyof
 export type GetApiManagerMarkersByIdData = {
     body?: never;
     path: {
-        id: bigint;
+        id: Uuid;
     };
     query?: never;
     url: '/api/manager/markers/{id}';
@@ -1674,7 +1676,7 @@ export type GetApiManagerMarkersByIdResponse = GetApiManagerMarkersByIdResponses
 export type PutApiManagerMarkersByIdData = {
     body: MakerRequestDto;
     path: {
-        id: bigint;
+        id: Uuid;
     };
     query?: never;
     url: '/api/manager/markers/{id}';
@@ -1712,7 +1714,7 @@ export type DeleteApiManagerReservationAllowanceData = {
     body?: never;
     path?: never;
     query?: {
-        ids?: Array<bigint>;
+        ids?: Array<string>;
     };
     url: '/api/manager/reservationAllowance';
 };
@@ -1853,7 +1855,7 @@ export type PutApiManagerReservationAllowanceResponse = PutApiManagerReservation
 export type GetApiManagerReservationAllowanceEventByEventIdData = {
     body?: never;
     path: {
-        eventId: bigint;
+        eventId: Uuid;
     };
     query?: never;
     url: '/api/manager/reservationAllowance/event/{eventId}';
@@ -1886,7 +1888,7 @@ export type GetApiManagerReservationAllowanceEventByEventIdResponse = GetApiMana
 export type GetApiManagerReservationAllowanceByIdData = {
     body?: never;
     path: {
-        id: bigint;
+        id: Uuid;
     };
     query?: never;
     url: '/api/manager/reservationAllowance/{id}';
@@ -1920,7 +1922,7 @@ export type DeleteApiManagerReservationsData = {
     body?: never;
     path?: never;
     query?: {
-        ids?: Array<bigint>;
+        ids?: Array<string>;
     };
     url: '/api/manager/reservations';
 };
@@ -2061,7 +2063,7 @@ export type PostApiManagerReservationsBlockResponse = PostApiManagerReservations
 export type GetApiManagerReservationsEventByIdData = {
     body?: never;
     path: {
-        id: bigint;
+        id: Uuid;
     };
     query?: never;
     url: '/api/manager/reservations/event/{id}';
@@ -2094,7 +2096,7 @@ export type GetApiManagerReservationsEventByIdResponse = GetApiManagerReservatio
 export type GetApiManagerReservationsExportByEventIdCsvData = {
     body?: never;
     path: {
-        eventId: bigint;
+        eventId: Uuid;
     };
     query?: never;
     url: '/api/manager/reservations/export/{eventId}/csv';
@@ -2129,7 +2131,7 @@ export type GetApiManagerReservationsExportByEventIdCsvResponses = {
 export type GetApiManagerReservationsExportByEventIdPdfData = {
     body?: never;
     path: {
-        eventId: bigint;
+        eventId: Uuid;
     };
     query?: never;
     url: '/api/manager/reservations/export/{eventId}/pdf';
@@ -2166,7 +2168,7 @@ export type GetApiManagerReservationsExportByEventIdPdfResponse = GetApiManagerR
 export type GetApiManagerReservationsByIdData = {
     body?: never;
     path: {
-        id: bigint;
+        id: Uuid;
     };
     query?: never;
     url: '/api/manager/reservations/{id}';
@@ -2200,7 +2202,7 @@ export type DeleteApiManagerSeatsData = {
     body?: never;
     path?: never;
     query?: {
-        ids?: Array<bigint>;
+        ids?: Array<string>;
     };
     url: '/api/manager/seats';
 };
@@ -2241,7 +2243,7 @@ export type GetApiManagerSeatsData = {
     body?: never;
     path?: never;
     query?: {
-        eventLocationId?: bigint;
+        eventLocationId?: Uuid;
     };
     url: '/api/manager/seats';
 };
@@ -2312,7 +2314,7 @@ export type PostApiManagerSeatsResponse = PostApiManagerSeatsResponses[keyof Pos
 export type GetApiManagerSeatsByIdData = {
     body?: never;
     path: {
-        id: bigint;
+        id: Uuid;
     };
     query?: never;
     url: '/api/manager/seats/{id}';
@@ -2345,7 +2347,7 @@ export type GetApiManagerSeatsByIdResponse = GetApiManagerSeatsByIdResponses[key
 export type PutApiManagerSeatsByIdData = {
     body: SeatRequestDto;
     path: {
-        id: bigint;
+        id: Uuid;
     };
     query?: never;
     url: '/api/manager/seats/{id}';
@@ -2512,7 +2514,7 @@ export type PostApiSupervisorCheckinProcessResponse = PostApiSupervisorCheckinPr
 export type GetApiSupervisorCheckinUsernamesByEventIdData = {
     body?: never;
     path: {
-        eventId: bigint;
+        eventId: Uuid;
     };
     query?: never;
     url: '/api/supervisor/checkin/usernames/{eventId}';
@@ -2639,7 +2641,7 @@ export type DeleteApiUserReservationsData = {
     body?: never;
     path?: never;
     query?: {
-        ids?: Array<bigint>;
+        ids?: Array<string>;
     };
     url: '/api/user/reservations';
 };
@@ -2745,7 +2747,7 @@ export type PostApiUserReservationsResponse = PostApiUserReservationsResponses[k
 export type GetApiUserReservationsByIdData = {
     body?: never;
     path: {
-        id: bigint;
+        id: Uuid;
     };
     query?: never;
     url: '/api/user/reservations/{id}';
@@ -2899,7 +2901,7 @@ export type DeleteApiUsersAdminByIdData = {
     body?: never;
     path?: never;
     query?: {
-        ids?: Array<bigint>;
+        ids?: Array<string>;
     };
     url: '/api/users/admin/{id}';
 };
@@ -2931,7 +2933,7 @@ export type DeleteApiUsersAdminByIdResponse = DeleteApiUsersAdminByIdResponses[k
 export type PutApiUsersAdminByIdData = {
     body: AdminUserUpdateDto;
     path: {
-        id: bigint;
+        id: Uuid;
     };
     query?: never;
     url: '/api/users/admin/{id}';

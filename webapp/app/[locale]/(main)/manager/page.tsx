@@ -38,7 +38,7 @@ export default function ManagerPage() {
 
   const navigateToTab = (
     tab: string,
-    filterId?: bigint,
+    filterId?: string,
     filterType?: string,
   ) => {
     setActiveTab(tab);

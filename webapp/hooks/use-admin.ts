@@ -88,7 +88,7 @@ export function useAdmin(): UserManagementProps {
   };
 
   const updateUser = async (
-    id: bigint,
+    id: string,
     userData: AdminUserUpdateDto,
   ): Promise<void> => {
     const request = updateMutation({ body: userData, path: { id } });
@@ -113,7 +113,7 @@ export function useAdmin(): UserManagementProps {
     });
   };
 
-  const deleteUser = async (ids: bigint[]): Promise<void> => {
+  const deleteUser = async (ids: string[]): Promise<void> => {
     const request = deleteMutation({ query: { ids } });
     toast.promise(request, {
       loading: t("common.loading"),
@@ -122,7 +122,7 @@ export function useAdmin(): UserManagementProps {
           { queryKey: getApiUsersAdminQueryKey() },
           (oldData: UserDto[] | undefined) => {
             return oldData
-              ? oldData.filter((user) => !ids.includes(user.id ?? BigInt(-1)))
+              ? oldData.filter((user) => !ids.includes(user.id ?? ""))
               : [];
           },
         );

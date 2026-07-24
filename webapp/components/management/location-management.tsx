@@ -50,14 +50,14 @@ export interface LocationManagementProps {
     location: EventLocationRequestDto,
   ) => Promise<EventLocationResponseDto>;
   updateLocation: (
-    id: bigint,
+    id: string,
     location: EventLocationRequestDto,
   ) => Promise<EventLocationResponseDto>;
-  deleteLocation: (ids: bigint[]) => Promise<unknown>;
+  deleteLocation: (ids: string[]) => Promise<unknown>;
   importLocationWithSeats: (
     data: EventLocationRequestDto,
   ) => Promise<EventLocationResponseDto>;
-  onNavigateToSeats?: (locationId: bigint) => void;
+  onNavigateToSeats?: (locationId: string) => void;
   initialFilter?: Record<string, string>;
   isLoading?: boolean;
 }
@@ -83,7 +83,7 @@ export function LocationManagement({
   const [isCreating, setIsCreating] = useState(false);
   const [currentFilters, setCurrentFilters] =
     useState<Record<string, string>>(initialFilter);
-  const [selectedIds, setSelectedIds] = useState<Set<bigint>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const { sortedData, sortKey, sortDirection, handleSort } = useSortableData(
     filteredLocations,
@@ -165,7 +165,7 @@ export function LocationManagement({
     }
   };
 
-  const handleSeatsClick = (locationId: bigint) => {
+  const handleSeatsClick = (locationId: string) => {
     if (onNavigateToSeats) {
       onNavigateToSeats(locationId);
     }
@@ -178,7 +178,7 @@ export function LocationManagement({
     if (seatIds && seatIds.length > 0) {
       seats = seatIds
         .map((seatId) => {
-          return seatDtos.find((seat) => seat.id === BigInt(seatId));
+          return seatDtos.find((seat) => seat.id === seatId);
         })
         .filter((seat): seat is SeatDto => seat !== undefined);
     }
@@ -220,7 +220,7 @@ export function LocationManagement({
     setSelectedIds(newSelectedIds);
   };
 
-  const handleToggleSelect = (id: bigint) => {
+  const handleToggleSelect = (id: string) => {
     const newSelectedIds = new Set(selectedIds);
     if (newSelectedIds.has(id)) {
       newSelectedIds.delete(id);
@@ -673,7 +673,7 @@ export function LocationManagement({
             if (isCreating) {
               await createLocation(locationData);
             } else if (selectedLocation?.id !== undefined) {
-              await updateLocation(BigInt(selectedLocation.id), locationData);
+              await updateLocation(selectedLocation.id, locationData);
             }
             setIsModalOpen(false);
           }}

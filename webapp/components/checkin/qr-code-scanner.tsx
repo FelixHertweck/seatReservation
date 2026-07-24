@@ -136,11 +136,10 @@ export function QrCodeScanner({
       const userId = parts[0];
       const eventId = parts[1];
 
-      // Validate that userId and eventId are valid numbers (will throw if invalid)
-      try {
-        BigInt(userId);
-        BigInt(eventId);
-      } catch {
+      // Validate that userId and eventId are valid UUIDs
+      const uuidPattern =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidPattern.test(userId) || !uuidPattern.test(eventId)) {
         throw new Error(t("checkin.error.invalidUserOrEventId"));
       }
 

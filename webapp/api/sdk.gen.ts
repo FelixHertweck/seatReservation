@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import { getApiAuthWebauthnCredentialsResponseTransformer, getApiManagerAreasByIdResponseTransformer, getApiManagerAreasResponseTransformer, getApiManagerEntrancesByIdResponseTransformer, getApiManagerEntrancesResponseTransformer, getApiManagerEventlocationsResponseTransformer, getApiManagerEventsByIdResponseTransformer, getApiManagerEventsResponseTransformer, getApiManagerMarkersByIdResponseTransformer, getApiManagerMarkersResponseTransformer, getApiManagerReservationAllowanceByIdResponseTransformer, getApiManagerReservationAllowanceEventByEventIdResponseTransformer, getApiManagerReservationAllowanceResponseTransformer, getApiManagerReservationsByIdResponseTransformer, getApiManagerReservationsEventByIdResponseTransformer, getApiManagerReservationsResponseTransformer, getApiManagerSeatsByIdResponseTransformer, getApiManagerSeatsResponseTransformer, getApiSupervisorCheckinEventsResponseTransformer, getApiUserEventsResponseTransformer, getApiUserLocationsResponseTransformer, getApiUserReservationsByIdResponseTransformer, getApiUserReservationsResponseTransformer, getApiUsersAdminResponseTransformer, getApiUsersManagerResponseTransformer, getApiUsersMeResponseTransformer, postApiManagerAreasResponseTransformer, postApiManagerEntrancesResponseTransformer, postApiManagerEventlocationsResponseTransformer, postApiManagerEventsResponseTransformer, postApiManagerMarkersResponseTransformer, postApiManagerReservationAllowanceResponseTransformer, postApiManagerReservationsBlockResponseTransformer, postApiManagerReservationsResponseTransformer, postApiManagerSeatsResponseTransformer, postApiSupervisorCheckinInfoByUsernameResponseTransformer, postApiSupervisorCheckinInfoResponseTransformer, postApiUserReservationsResponseTransformer, postApiUsersAdminImportResponseTransformer, putApiManagerAreasByIdResponseTransformer, putApiManagerEntrancesByIdResponseTransformer, putApiManagerEventlocationsByIdResponseTransformer, putApiManagerEventsByIdResponseTransformer, putApiManagerMarkersByIdResponseTransformer, putApiManagerReservationAllowanceResponseTransformer, putApiManagerSeatsByIdResponseTransformer, putApiUsersAdminByIdResponseTransformer, putApiUsersMeResponseTransformer } from './transformers.gen';
+import { getApiAuthWebauthnCredentialsResponseTransformer, getApiManagerEventsByIdResponseTransformer, getApiManagerEventsResponseTransformer, getApiManagerReservationsByIdResponseTransformer, getApiManagerReservationsEventByIdResponseTransformer, getApiManagerReservationsResponseTransformer, getApiSupervisorCheckinEventsResponseTransformer, getApiUserEventsResponseTransformer, getApiUserReservationsByIdResponseTransformer, getApiUserReservationsResponseTransformer, postApiManagerEventsResponseTransformer, postApiManagerReservationsBlockResponseTransformer, postApiManagerReservationsResponseTransformer, postApiSupervisorCheckinInfoByUsernameResponseTransformer, postApiSupervisorCheckinInfoResponseTransformer, postApiUserReservationsResponseTransformer, putApiManagerEventsByIdResponseTransformer } from './transformers.gen';
 import type { DeleteApiAuthWebauthnCredentialsByIdData, DeleteApiAuthWebauthnCredentialsByIdErrors, DeleteApiAuthWebauthnCredentialsByIdResponses, DeleteApiManagerAreasData, DeleteApiManagerAreasErrors, DeleteApiManagerAreasResponses, DeleteApiManagerEntrancesData, DeleteApiManagerEntrancesErrors, DeleteApiManagerEntrancesResponses, DeleteApiManagerEventlocationsData, DeleteApiManagerEventlocationsErrors, DeleteApiManagerEventlocationsResponses, DeleteApiManagerEventsData, DeleteApiManagerEventsErrors, DeleteApiManagerEventsResponses, DeleteApiManagerMarkersData, DeleteApiManagerMarkersErrors, DeleteApiManagerMarkersResponses, DeleteApiManagerReservationAllowanceData, DeleteApiManagerReservationAllowanceErrors, DeleteApiManagerReservationAllowanceResponses, DeleteApiManagerReservationsData, DeleteApiManagerReservationsErrors, DeleteApiManagerReservationsResponses, DeleteApiManagerSeatsData, DeleteApiManagerSeatsErrors, DeleteApiManagerSeatsResponses, DeleteApiUserReservationsData, DeleteApiUserReservationsErrors, DeleteApiUserReservationsResponses, DeleteApiUsersAdminByIdData, DeleteApiUsersAdminByIdErrors, DeleteApiUsersAdminByIdResponses, GetApiAuthRegistrationStatusData, GetApiAuthRegistrationStatusResponses, GetApiAuthWebauthnCredentialsData, GetApiAuthWebauthnCredentialsErrors, GetApiAuthWebauthnCredentialsResponses, GetApiAuthWebauthnStatusData, GetApiAuthWebauthnStatusErrors, GetApiAuthWebauthnStatusResponses, GetApiEmailSeatmapData, GetApiEmailSeatmapResponses, GetApiManagerAreasByIdData, GetApiManagerAreasByIdErrors, GetApiManagerAreasByIdResponses, GetApiManagerAreasData, GetApiManagerAreasErrors, GetApiManagerAreasResponses, GetApiManagerEntrancesByIdData, GetApiManagerEntrancesByIdErrors, GetApiManagerEntrancesByIdResponses, GetApiManagerEntrancesData, GetApiManagerEntrancesErrors, GetApiManagerEntrancesResponses, GetApiManagerEventlocationsData, GetApiManagerEventlocationsErrors, GetApiManagerEventlocationsResponses, GetApiManagerEventsByIdData, GetApiManagerEventsByIdErrors, GetApiManagerEventsByIdResponses, GetApiManagerEventsData, GetApiManagerEventsErrors, GetApiManagerEventsResponses, GetApiManagerMarkersByIdData, GetApiManagerMarkersByIdErrors, GetApiManagerMarkersByIdResponses, GetApiManagerMarkersData, GetApiManagerMarkersErrors, GetApiManagerMarkersResponses, GetApiManagerReservationAllowanceByIdData, GetApiManagerReservationAllowanceByIdErrors, GetApiManagerReservationAllowanceByIdResponses, GetApiManagerReservationAllowanceData, GetApiManagerReservationAllowanceErrors, GetApiManagerReservationAllowanceEventByEventIdData, GetApiManagerReservationAllowanceEventByEventIdErrors, GetApiManagerReservationAllowanceEventByEventIdResponses, GetApiManagerReservationAllowanceResponses, GetApiManagerReservationsByIdData, GetApiManagerReservationsByIdErrors, GetApiManagerReservationsByIdResponses, GetApiManagerReservationsData, GetApiManagerReservationsErrors, GetApiManagerReservationsEventByIdData, GetApiManagerReservationsEventByIdErrors, GetApiManagerReservationsEventByIdResponses, GetApiManagerReservationsExportByEventIdCsvData, GetApiManagerReservationsExportByEventIdCsvErrors, GetApiManagerReservationsExportByEventIdCsvResponses, GetApiManagerReservationsExportByEventIdPdfData, GetApiManagerReservationsExportByEventIdPdfErrors, GetApiManagerReservationsExportByEventIdPdfResponses, GetApiManagerReservationsResponses, GetApiManagerSeatsByIdData, GetApiManagerSeatsByIdErrors, GetApiManagerSeatsByIdResponses, GetApiManagerSeatsData, GetApiManagerSeatsErrors, GetApiManagerSeatsResponses, GetApiSupervisorCheckinEventsData, GetApiSupervisorCheckinEventsErrors, GetApiSupervisorCheckinEventsResponses, GetApiSupervisorCheckinUsernamesByEventIdData, GetApiSupervisorCheckinUsernamesByEventIdErrors, GetApiSupervisorCheckinUsernamesByEventIdResponses, GetApiUserEventsData, GetApiUserEventsErrors, GetApiUserEventsResponses, GetApiUserLocationsData, GetApiUserLocationsErrors, GetApiUserLocationsResponses, GetApiUserReservationsByIdData, GetApiUserReservationsByIdErrors, GetApiUserReservationsByIdResponses, GetApiUserReservationsData, GetApiUserReservationsErrors, GetApiUserReservationsResponses, GetApiUsersAdminData, GetApiUsersAdminErrors, GetApiUsersAdminResponses, GetApiUsersManagerData, GetApiUsersManagerErrors, GetApiUsersManagerResponses, GetApiUsersMeData, GetApiUsersMeErrors, GetApiUsersMeResponses, GetApiUsersRolesData, GetApiUsersRolesErrors, GetApiUsersRolesResponses, PostApiAuthLoginData, PostApiAuthLoginErrors, PostApiAuthLoginResponses, PostApiAuthLogoutAllDevicesData, PostApiAuthLogoutAllDevicesErrors, PostApiAuthLogoutAllDevicesResponses, PostApiAuthLogoutData, PostApiAuthLogoutErrors, PostApiAuthLogoutResponses, PostApiAuthRefreshData, PostApiAuthRefreshErrors, PostApiAuthRefreshResponses, PostApiAuthRegisterData, PostApiAuthRegisterErrors, PostApiAuthRegisterResponses, PostApiAuthWebauthnLoginData, PostApiAuthWebauthnLoginErrors, PostApiAuthWebauthnLoginOptionsData, PostApiAuthWebauthnLoginOptionsResponses, PostApiAuthWebauthnLoginResponses, PostApiAuthWebauthnRegisterData, PostApiAuthWebauthnRegisterErrors, PostApiAuthWebauthnRegisterNewData, PostApiAuthWebauthnRegisterNewErrors, PostApiAuthWebauthnRegisterNewOptionsData, PostApiAuthWebauthnRegisterNewOptionsErrors, PostApiAuthWebauthnRegisterNewOptionsResponses, PostApiAuthWebauthnRegisterNewResponses, PostApiAuthWebauthnRegisterOptionsData, PostApiAuthWebauthnRegisterOptionsErrors, PostApiAuthWebauthnRegisterOptionsResponses, PostApiAuthWebauthnRegisterResponses, PostApiManagerAreasData, PostApiManagerAreasErrors, PostApiManagerAreasResponses, PostApiManagerEntrancesData, PostApiManagerEntrancesErrors, PostApiManagerEntrancesResponses, PostApiManagerEventlocationsData, PostApiManagerEventlocationsErrors, PostApiManagerEventlocationsResponses, PostApiManagerEventsData, PostApiManagerEventsErrors, PostApiManagerEventsResponses, PostApiManagerMarkersData, PostApiManagerMarkersErrors, PostApiManagerMarkersResponses, PostApiManagerReservationAllowanceData, PostApiManagerReservationAllowanceErrors, PostApiManagerReservationAllowanceResponses, PostApiManagerReservationsBlockData, PostApiManagerReservationsBlockErrors, PostApiManagerReservationsBlockResponses, PostApiManagerReservationsData, PostApiManagerReservationsErrors, PostApiManagerReservationsResponses, PostApiManagerSeatsData, PostApiManagerSeatsErrors, PostApiManagerSeatsResponses, PostApiSupervisorCheckinInfoByUsernameData, PostApiSupervisorCheckinInfoByUsernameErrors, PostApiSupervisorCheckinInfoByUsernameResponses, PostApiSupervisorCheckinInfoData, PostApiSupervisorCheckinInfoErrors, PostApiSupervisorCheckinInfoResponses, PostApiSupervisorCheckinProcessData, PostApiSupervisorCheckinProcessErrors, PostApiSupervisorCheckinProcessResponses, PostApiUserResendEmailConfirmationData, PostApiUserResendEmailConfirmationErrors, PostApiUserResendEmailConfirmationResponses, PostApiUserReservationsData, PostApiUserReservationsErrors, PostApiUserReservationsResponses, PostApiUsersAdminData, PostApiUsersAdminErrors, PostApiUsersAdminImportData, PostApiUsersAdminImportErrors, PostApiUsersAdminImportResponses, PostApiUsersAdminResponses, PostApiUserVerifyEmailCodeData, PostApiUserVerifyEmailCodeErrors, PostApiUserVerifyEmailCodeResponses, PutApiAuthWebauthnCredentialsByIdData, PutApiAuthWebauthnCredentialsByIdErrors, PutApiAuthWebauthnCredentialsByIdResponses, PutApiManagerAreasByIdData, PutApiManagerAreasByIdErrors, PutApiManagerAreasByIdResponses, PutApiManagerEntrancesByIdData, PutApiManagerEntrancesByIdErrors, PutApiManagerEntrancesByIdResponses, PutApiManagerEventlocationsByIdData, PutApiManagerEventlocationsByIdErrors, PutApiManagerEventlocationsByIdResponses, PutApiManagerEventsByIdData, PutApiManagerEventsByIdErrors, PutApiManagerEventsByIdResponses, PutApiManagerMarkersByIdData, PutApiManagerMarkersByIdErrors, PutApiManagerMarkersByIdResponses, PutApiManagerReservationAllowanceData, PutApiManagerReservationAllowanceErrors, PutApiManagerReservationAllowanceResponses, PutApiManagerSeatsByIdData, PutApiManagerSeatsByIdErrors, PutApiManagerSeatsByIdResponses, PutApiUsersAdminByIdData, PutApiUsersAdminByIdErrors, PutApiUsersAdminByIdResponses, PutApiUsersMeData, PutApiUsersMeErrors, PutApiUsersMeResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
@@ -193,7 +193,6 @@ export const deleteApiManagerAreas = <ThrowOnError extends boolean = false>(opti
  * Get Areas By Event Location
  */
 export const getApiManagerAreas = <ThrowOnError extends boolean = false>(options?: Options<GetApiManagerAreasData, ThrowOnError>): RequestResult<GetApiManagerAreasResponses, GetApiManagerAreasErrors, ThrowOnError> => (options?.client ?? client).get<GetApiManagerAreasResponses, GetApiManagerAreasErrors, ThrowOnError>({
-    responseTransformer: getApiManagerAreasResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/manager/areas',
     ...options
@@ -203,7 +202,6 @@ export const getApiManagerAreas = <ThrowOnError extends boolean = false>(options
  * Create Area
  */
 export const postApiManagerAreas = <ThrowOnError extends boolean = false>(options: Options<PostApiManagerAreasData, ThrowOnError>): RequestResult<PostApiManagerAreasResponses, PostApiManagerAreasErrors, ThrowOnError> => (options.client ?? client).post<PostApiManagerAreasResponses, PostApiManagerAreasErrors, ThrowOnError>({
-    responseTransformer: postApiManagerAreasResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/manager/areas',
     ...options,
@@ -217,7 +215,6 @@ export const postApiManagerAreas = <ThrowOnError extends boolean = false>(option
  * Get Manager Area By Id
  */
 export const getApiManagerAreasById = <ThrowOnError extends boolean = false>(options: Options<GetApiManagerAreasByIdData, ThrowOnError>): RequestResult<GetApiManagerAreasByIdResponses, GetApiManagerAreasByIdErrors, ThrowOnError> => (options.client ?? client).get<GetApiManagerAreasByIdResponses, GetApiManagerAreasByIdErrors, ThrowOnError>({
-    responseTransformer: getApiManagerAreasByIdResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/manager/areas/{id}',
     ...options
@@ -227,7 +224,6 @@ export const getApiManagerAreasById = <ThrowOnError extends boolean = false>(opt
  * Update Manager Area
  */
 export const putApiManagerAreasById = <ThrowOnError extends boolean = false>(options: Options<PutApiManagerAreasByIdData, ThrowOnError>): RequestResult<PutApiManagerAreasByIdResponses, PutApiManagerAreasByIdErrors, ThrowOnError> => (options.client ?? client).put<PutApiManagerAreasByIdResponses, PutApiManagerAreasByIdErrors, ThrowOnError>({
-    responseTransformer: putApiManagerAreasByIdResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/manager/areas/{id}',
     ...options,
@@ -250,7 +246,6 @@ export const deleteApiManagerEntrances = <ThrowOnError extends boolean = false>(
  * Get Entrances By Event Location
  */
 export const getApiManagerEntrances = <ThrowOnError extends boolean = false>(options?: Options<GetApiManagerEntrancesData, ThrowOnError>): RequestResult<GetApiManagerEntrancesResponses, GetApiManagerEntrancesErrors, ThrowOnError> => (options?.client ?? client).get<GetApiManagerEntrancesResponses, GetApiManagerEntrancesErrors, ThrowOnError>({
-    responseTransformer: getApiManagerEntrancesResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/manager/entrances',
     ...options
@@ -260,7 +255,6 @@ export const getApiManagerEntrances = <ThrowOnError extends boolean = false>(opt
  * Create Entrance
  */
 export const postApiManagerEntrances = <ThrowOnError extends boolean = false>(options: Options<PostApiManagerEntrancesData, ThrowOnError>): RequestResult<PostApiManagerEntrancesResponses, PostApiManagerEntrancesErrors, ThrowOnError> => (options.client ?? client).post<PostApiManagerEntrancesResponses, PostApiManagerEntrancesErrors, ThrowOnError>({
-    responseTransformer: postApiManagerEntrancesResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/manager/entrances',
     ...options,
@@ -274,7 +268,6 @@ export const postApiManagerEntrances = <ThrowOnError extends boolean = false>(op
  * Get Manager Entrance By Id
  */
 export const getApiManagerEntrancesById = <ThrowOnError extends boolean = false>(options: Options<GetApiManagerEntrancesByIdData, ThrowOnError>): RequestResult<GetApiManagerEntrancesByIdResponses, GetApiManagerEntrancesByIdErrors, ThrowOnError> => (options.client ?? client).get<GetApiManagerEntrancesByIdResponses, GetApiManagerEntrancesByIdErrors, ThrowOnError>({
-    responseTransformer: getApiManagerEntrancesByIdResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/manager/entrances/{id}',
     ...options
@@ -284,7 +277,6 @@ export const getApiManagerEntrancesById = <ThrowOnError extends boolean = false>
  * Update Manager Entrance
  */
 export const putApiManagerEntrancesById = <ThrowOnError extends boolean = false>(options: Options<PutApiManagerEntrancesByIdData, ThrowOnError>): RequestResult<PutApiManagerEntrancesByIdResponses, PutApiManagerEntrancesByIdErrors, ThrowOnError> => (options.client ?? client).put<PutApiManagerEntrancesByIdResponses, PutApiManagerEntrancesByIdErrors, ThrowOnError>({
-    responseTransformer: putApiManagerEntrancesByIdResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/manager/entrances/{id}',
     ...options,
@@ -307,7 +299,6 @@ export const deleteApiManagerEventlocations = <ThrowOnError extends boolean = fa
  * Get Event Locations By Current Manager
  */
 export const getApiManagerEventlocations = <ThrowOnError extends boolean = false>(options?: Options<GetApiManagerEventlocationsData, ThrowOnError>): RequestResult<GetApiManagerEventlocationsResponses, GetApiManagerEventlocationsErrors, ThrowOnError> => (options?.client ?? client).get<GetApiManagerEventlocationsResponses, GetApiManagerEventlocationsErrors, ThrowOnError>({
-    responseTransformer: getApiManagerEventlocationsResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/manager/eventlocations',
     ...options
@@ -317,7 +308,6 @@ export const getApiManagerEventlocations = <ThrowOnError extends boolean = false
  * Create Event Location
  */
 export const postApiManagerEventlocations = <ThrowOnError extends boolean = false>(options: Options<PostApiManagerEventlocationsData, ThrowOnError>): RequestResult<PostApiManagerEventlocationsResponses, PostApiManagerEventlocationsErrors, ThrowOnError> => (options.client ?? client).post<PostApiManagerEventlocationsResponses, PostApiManagerEventlocationsErrors, ThrowOnError>({
-    responseTransformer: postApiManagerEventlocationsResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/manager/eventlocations',
     ...options,
@@ -331,7 +321,6 @@ export const postApiManagerEventlocations = <ThrowOnError extends boolean = fals
  * Update Event Location
  */
 export const putApiManagerEventlocationsById = <ThrowOnError extends boolean = false>(options: Options<PutApiManagerEventlocationsByIdData, ThrowOnError>): RequestResult<PutApiManagerEventlocationsByIdResponses, PutApiManagerEventlocationsByIdErrors, ThrowOnError> => (options.client ?? client).put<PutApiManagerEventlocationsByIdResponses, PutApiManagerEventlocationsByIdErrors, ThrowOnError>({
-    responseTransformer: putApiManagerEventlocationsByIdResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/manager/eventlocations/{id}',
     ...options,
@@ -411,7 +400,6 @@ export const deleteApiManagerMarkers = <ThrowOnError extends boolean = false>(op
  * Get Markers By Event Location
  */
 export const getApiManagerMarkers = <ThrowOnError extends boolean = false>(options?: Options<GetApiManagerMarkersData, ThrowOnError>): RequestResult<GetApiManagerMarkersResponses, GetApiManagerMarkersErrors, ThrowOnError> => (options?.client ?? client).get<GetApiManagerMarkersResponses, GetApiManagerMarkersErrors, ThrowOnError>({
-    responseTransformer: getApiManagerMarkersResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/manager/markers',
     ...options
@@ -421,7 +409,6 @@ export const getApiManagerMarkers = <ThrowOnError extends boolean = false>(optio
  * Create Marker
  */
 export const postApiManagerMarkers = <ThrowOnError extends boolean = false>(options: Options<PostApiManagerMarkersData, ThrowOnError>): RequestResult<PostApiManagerMarkersResponses, PostApiManagerMarkersErrors, ThrowOnError> => (options.client ?? client).post<PostApiManagerMarkersResponses, PostApiManagerMarkersErrors, ThrowOnError>({
-    responseTransformer: postApiManagerMarkersResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/manager/markers',
     ...options,
@@ -435,7 +422,6 @@ export const postApiManagerMarkers = <ThrowOnError extends boolean = false>(opti
  * Get Manager Marker By Id
  */
 export const getApiManagerMarkersById = <ThrowOnError extends boolean = false>(options: Options<GetApiManagerMarkersByIdData, ThrowOnError>): RequestResult<GetApiManagerMarkersByIdResponses, GetApiManagerMarkersByIdErrors, ThrowOnError> => (options.client ?? client).get<GetApiManagerMarkersByIdResponses, GetApiManagerMarkersByIdErrors, ThrowOnError>({
-    responseTransformer: getApiManagerMarkersByIdResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/manager/markers/{id}',
     ...options
@@ -445,7 +431,6 @@ export const getApiManagerMarkersById = <ThrowOnError extends boolean = false>(o
  * Update Manager Marker
  */
 export const putApiManagerMarkersById = <ThrowOnError extends boolean = false>(options: Options<PutApiManagerMarkersByIdData, ThrowOnError>): RequestResult<PutApiManagerMarkersByIdResponses, PutApiManagerMarkersByIdErrors, ThrowOnError> => (options.client ?? client).put<PutApiManagerMarkersByIdResponses, PutApiManagerMarkersByIdErrors, ThrowOnError>({
-    responseTransformer: putApiManagerMarkersByIdResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/manager/markers/{id}',
     ...options,
@@ -468,7 +453,6 @@ export const deleteApiManagerReservationAllowance = <ThrowOnError extends boolea
  * Get Reservation Allowances
  */
 export const getApiManagerReservationAllowance = <ThrowOnError extends boolean = false>(options?: Options<GetApiManagerReservationAllowanceData, ThrowOnError>): RequestResult<GetApiManagerReservationAllowanceResponses, GetApiManagerReservationAllowanceErrors, ThrowOnError> => (options?.client ?? client).get<GetApiManagerReservationAllowanceResponses, GetApiManagerReservationAllowanceErrors, ThrowOnError>({
-    responseTransformer: getApiManagerReservationAllowanceResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/manager/reservationAllowance',
     ...options
@@ -478,7 +462,6 @@ export const getApiManagerReservationAllowance = <ThrowOnError extends boolean =
  * Set Reservations Allowed For User
  */
 export const postApiManagerReservationAllowance = <ThrowOnError extends boolean = false>(options: Options<PostApiManagerReservationAllowanceData, ThrowOnError>): RequestResult<PostApiManagerReservationAllowanceResponses, PostApiManagerReservationAllowanceErrors, ThrowOnError> => (options.client ?? client).post<PostApiManagerReservationAllowanceResponses, PostApiManagerReservationAllowanceErrors, ThrowOnError>({
-    responseTransformer: postApiManagerReservationAllowanceResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/manager/reservationAllowance',
     ...options,
@@ -492,7 +475,6 @@ export const postApiManagerReservationAllowance = <ThrowOnError extends boolean 
  * Update Reservation Allowance
  */
 export const putApiManagerReservationAllowance = <ThrowOnError extends boolean = false>(options: Options<PutApiManagerReservationAllowanceData, ThrowOnError>): RequestResult<PutApiManagerReservationAllowanceResponses, PutApiManagerReservationAllowanceErrors, ThrowOnError> => (options.client ?? client).put<PutApiManagerReservationAllowanceResponses, PutApiManagerReservationAllowanceErrors, ThrowOnError>({
-    responseTransformer: putApiManagerReservationAllowanceResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/manager/reservationAllowance',
     ...options,
@@ -506,7 +488,6 @@ export const putApiManagerReservationAllowance = <ThrowOnError extends boolean =
  * Get Reservation Allowances By Event Id
  */
 export const getApiManagerReservationAllowanceEventByEventId = <ThrowOnError extends boolean = false>(options: Options<GetApiManagerReservationAllowanceEventByEventIdData, ThrowOnError>): RequestResult<GetApiManagerReservationAllowanceEventByEventIdResponses, GetApiManagerReservationAllowanceEventByEventIdErrors, ThrowOnError> => (options.client ?? client).get<GetApiManagerReservationAllowanceEventByEventIdResponses, GetApiManagerReservationAllowanceEventByEventIdErrors, ThrowOnError>({
-    responseTransformer: getApiManagerReservationAllowanceEventByEventIdResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/manager/reservationAllowance/event/{eventId}',
     ...options
@@ -516,7 +497,6 @@ export const getApiManagerReservationAllowanceEventByEventId = <ThrowOnError ext
  * Get Reservation Allowance By Id
  */
 export const getApiManagerReservationAllowanceById = <ThrowOnError extends boolean = false>(options: Options<GetApiManagerReservationAllowanceByIdData, ThrowOnError>): RequestResult<GetApiManagerReservationAllowanceByIdResponses, GetApiManagerReservationAllowanceByIdErrors, ThrowOnError> => (options.client ?? client).get<GetApiManagerReservationAllowanceByIdResponses, GetApiManagerReservationAllowanceByIdErrors, ThrowOnError>({
-    responseTransformer: getApiManagerReservationAllowanceByIdResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/manager/reservationAllowance/{id}',
     ...options
@@ -620,7 +600,6 @@ export const deleteApiManagerSeats = <ThrowOnError extends boolean = false>(opti
  * Get Seats By Event Location
  */
 export const getApiManagerSeats = <ThrowOnError extends boolean = false>(options?: Options<GetApiManagerSeatsData, ThrowOnError>): RequestResult<GetApiManagerSeatsResponses, GetApiManagerSeatsErrors, ThrowOnError> => (options?.client ?? client).get<GetApiManagerSeatsResponses, GetApiManagerSeatsErrors, ThrowOnError>({
-    responseTransformer: getApiManagerSeatsResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/manager/seats',
     ...options
@@ -630,7 +609,6 @@ export const getApiManagerSeats = <ThrowOnError extends boolean = false>(options
  * Create Seat
  */
 export const postApiManagerSeats = <ThrowOnError extends boolean = false>(options: Options<PostApiManagerSeatsData, ThrowOnError>): RequestResult<PostApiManagerSeatsResponses, PostApiManagerSeatsErrors, ThrowOnError> => (options.client ?? client).post<PostApiManagerSeatsResponses, PostApiManagerSeatsErrors, ThrowOnError>({
-    responseTransformer: postApiManagerSeatsResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/manager/seats',
     ...options,
@@ -644,7 +622,6 @@ export const postApiManagerSeats = <ThrowOnError extends boolean = false>(option
  * Get Manager Seat By Id
  */
 export const getApiManagerSeatsById = <ThrowOnError extends boolean = false>(options: Options<GetApiManagerSeatsByIdData, ThrowOnError>): RequestResult<GetApiManagerSeatsByIdResponses, GetApiManagerSeatsByIdErrors, ThrowOnError> => (options.client ?? client).get<GetApiManagerSeatsByIdResponses, GetApiManagerSeatsByIdErrors, ThrowOnError>({
-    responseTransformer: getApiManagerSeatsByIdResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/manager/seats/{id}',
     ...options
@@ -654,7 +631,6 @@ export const getApiManagerSeatsById = <ThrowOnError extends boolean = false>(opt
  * Update Manager Seat
  */
 export const putApiManagerSeatsById = <ThrowOnError extends boolean = false>(options: Options<PutApiManagerSeatsByIdData, ThrowOnError>): RequestResult<PutApiManagerSeatsByIdResponses, PutApiManagerSeatsByIdErrors, ThrowOnError> => (options.client ?? client).put<PutApiManagerSeatsByIdResponses, PutApiManagerSeatsByIdErrors, ThrowOnError>({
-    responseTransformer: putApiManagerSeatsByIdResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/manager/seats/{id}',
     ...options,
@@ -734,7 +710,6 @@ export const getApiUserEvents = <ThrowOnError extends boolean = false>(options?:
  * Get Locations
  */
 export const getApiUserLocations = <ThrowOnError extends boolean = false>(options?: Options<GetApiUserLocationsData, ThrowOnError>): RequestResult<GetApiUserLocationsResponses, GetApiUserLocationsErrors, ThrowOnError> => (options?.client ?? client).get<GetApiUserLocationsResponses, GetApiUserLocationsErrors, ThrowOnError>({
-    responseTransformer: getApiUserLocationsResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/user/locations',
     ...options
@@ -812,7 +787,6 @@ export const postApiUserVerifyEmailCode = <ThrowOnError extends boolean = false>
  * Get All Users As Admin
  */
 export const getApiUsersAdmin = <ThrowOnError extends boolean = false>(options?: Options<GetApiUsersAdminData, ThrowOnError>): RequestResult<GetApiUsersAdminResponses, GetApiUsersAdminErrors, ThrowOnError> => (options?.client ?? client).get<GetApiUsersAdminResponses, GetApiUsersAdminErrors, ThrowOnError>({
-    responseTransformer: getApiUsersAdminResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/users/admin',
     ...options
@@ -835,7 +809,6 @@ export const postApiUsersAdmin = <ThrowOnError extends boolean = false>(options:
  * Import Users
  */
 export const postApiUsersAdminImport = <ThrowOnError extends boolean = false>(options: Options<PostApiUsersAdminImportData, ThrowOnError>): RequestResult<PostApiUsersAdminImportResponses, PostApiUsersAdminImportErrors, ThrowOnError> => (options.client ?? client).post<PostApiUsersAdminImportResponses, PostApiUsersAdminImportErrors, ThrowOnError>({
-    responseTransformer: postApiUsersAdminImportResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/users/admin/import',
     ...options,
@@ -858,7 +831,6 @@ export const deleteApiUsersAdminById = <ThrowOnError extends boolean = false>(op
  * Update User
  */
 export const putApiUsersAdminById = <ThrowOnError extends boolean = false>(options: Options<PutApiUsersAdminByIdData, ThrowOnError>): RequestResult<PutApiUsersAdminByIdResponses, PutApiUsersAdminByIdErrors, ThrowOnError> => (options.client ?? client).put<PutApiUsersAdminByIdResponses, PutApiUsersAdminByIdErrors, ThrowOnError>({
-    responseTransformer: putApiUsersAdminByIdResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/users/admin/{id}',
     ...options,
@@ -872,7 +844,6 @@ export const putApiUsersAdminById = <ThrowOnError extends boolean = false>(optio
  * Get All Users
  */
 export const getApiUsersManager = <ThrowOnError extends boolean = false>(options?: Options<GetApiUsersManagerData, ThrowOnError>): RequestResult<GetApiUsersManagerResponses, GetApiUsersManagerErrors, ThrowOnError> => (options?.client ?? client).get<GetApiUsersManagerResponses, GetApiUsersManagerErrors, ThrowOnError>({
-    responseTransformer: getApiUsersManagerResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/users/manager',
     ...options
@@ -882,7 +853,6 @@ export const getApiUsersManager = <ThrowOnError extends boolean = false>(options
  * Get Current User
  */
 export const getApiUsersMe = <ThrowOnError extends boolean = false>(options?: Options<GetApiUsersMeData, ThrowOnError>): RequestResult<GetApiUsersMeResponses, GetApiUsersMeErrors, ThrowOnError> => (options?.client ?? client).get<GetApiUsersMeResponses, GetApiUsersMeErrors, ThrowOnError>({
-    responseTransformer: getApiUsersMeResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/users/me',
     ...options
@@ -892,7 +862,6 @@ export const getApiUsersMe = <ThrowOnError extends boolean = false>(options?: Op
  * Update Current User Profile
  */
 export const putApiUsersMe = <ThrowOnError extends boolean = false>(options: Options<PutApiUsersMeData, ThrowOnError>): RequestResult<PutApiUsersMeResponses, PutApiUsersMeErrors, ThrowOnError> => (options.client ?? client).put<PutApiUsersMeResponses, PutApiUsersMeErrors, ThrowOnError>({
-    responseTransformer: putApiUsersMeResponseTransformer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/users/me',
     ...options,
