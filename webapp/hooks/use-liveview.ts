@@ -47,7 +47,7 @@ export interface LiveViewState {
  * @returns LiveViewState object with connection and data information
  */
 export const useLiveView = (
-  eventId: bigint | null,
+  eventId: string | null,
   enabled: boolean = true,
 ): LiveViewState => {
   const [isConnecting, setIsConnecting] = useState(false);

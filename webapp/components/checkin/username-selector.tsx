@@ -7,8 +7,8 @@ import { cn } from "@/lib/utils";
 
 interface UsernameSelectorProps {
   onSelectUsername: (username: string) => void;
-  eventId: bigint;
-  getUsernamesByEventId: (eventId: bigint) => Promise<string[] | undefined>;
+  eventId: string;
+  getUsernamesByEventId: (eventId: string) => Promise<string[] | undefined>;
   resetTrigger: boolean;
 }
 

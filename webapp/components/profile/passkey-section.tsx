@@ -43,7 +43,7 @@ export function PasskeySection() {
   const [pendingDelete, setPendingDelete] =
     useState<WebAuthnCredentialDto | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [editingId, setEditingId] = useState<bigint | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const [isRenaming, setIsRenaming] = useState(false);
 

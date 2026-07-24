@@ -54,7 +54,7 @@ export function SeatFormModal({
 
   const { data: entrances = [] } = useQuery({
     ...getApiManagerEntrancesOptions({
-      query: { eventLocationId: BigInt(formData.eventLocationId || 0) },
+      query: { eventLocationId: formData.eventLocationId },
     }),
     enabled: !!formData.eventLocationId,
   });
@@ -69,14 +69,12 @@ export function SeatFormModal({
       const seatData: SeatRequestDto = {
         seatNumber: formData.seatNumber,
         seatRow: formData.seatRow,
-        eventLocationId: BigInt(formData.eventLocationId),
+        eventLocationId: formData.eventLocationId,
         coordinate: {
           xCoordinate: Number.parseInt(formData.xCoordinate),
           yCoordinate: Number.parseInt(formData.yCoordinate),
         },
-        entranceId: formData.entranceId
-          ? BigInt(formData.entranceId)
-          : undefined,
+        entranceId: formData.entranceId || undefined,
       };
       await onSubmit(seatData);
     } finally {

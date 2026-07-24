@@ -24,11 +24,11 @@ export default function CheckInPage() {
   const t = useT();
   const [isScanning, setIsScanning] = useState(false);
   const [scannedData, setScannedData] = useState<ScannedData | null>(null);
-  const [selectedReservations, setSelectedReservations] = useState<Set<bigint>>(
+  const [selectedReservations, setSelectedReservations] = useState<Set<string>>(
     new Set(),
   );
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [selectedEventId, setSelectedEventId] = useState<bigint | null>(null);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [resetUsernameSelector, setResetUsernameSelector] =
     useState<boolean>(false);
   const isMobile = useIsMobile();
@@ -65,8 +65,8 @@ export default function CheckInPage() {
           lastScannedDataRef.current = scannedDataKey;
 
           const checkInInfoRequest: CheckInInfoRequestDto = {
-            userId: BigInt(data.userId),
-            eventId: BigInt(data.eventId),
+            userId: data.userId,
+            eventId: data.eventId,
             checkInTokens: data.checkInTokens,
           };
           fetchCheckInInfo(checkInInfoRequest).then((info) => {
@@ -79,11 +79,11 @@ export default function CheckInPage() {
   );
 
   // Handle check-in submission
-  const handleSubmit = async (userId: bigint, eventId: bigint) => {
+  const handleSubmit = async (userId: string, eventId: string) => {
     if (!checkInInfo?.reservations) return;
 
-    const checkIn: bigint[] = [];
-    const cancel: bigint[] = [];
+    const checkIn: string[] = [];
+    const cancel: string[] = [];
 
     checkInInfo.reservations.forEach((reservation) => {
       if (reservation.id) {
@@ -127,7 +127,7 @@ export default function CheckInPage() {
   };
 
   const handleEventSelect = (eventId: string) => {
-    setSelectedEventId(BigInt(eventId));
+    setSelectedEventId(eventId);
     setCheckInInfo(null);
     setScannedData(null);
     setResetUsernameSelector((prev) => !prev);

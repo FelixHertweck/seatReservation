@@ -65,14 +65,14 @@ export interface ReservationManagementProps {
   createReservation: (
     reservation: ReservationRequestDto,
   ) => Promise<ReservationResponseDto[]>;
-  deleteReservation: (ids: bigint[]) => Promise<unknown>;
+  deleteReservation: (ids: string[]) => Promise<unknown>;
   blockSeats: (
     request: BlockSeatsRequestDto,
   ) => Promise<ReservationResponseDto[]>;
-  exportCSV: (eventId: bigint) => Promise<Blob>;
-  exportPDF: (eventId: bigint) => Promise<Blob>;
-  onNavigateToEvent?: (eventId: bigint) => void;
-  onNavigateToSeat?: (seatId: bigint) => void;
+  exportCSV: (eventId: string) => Promise<Blob>;
+  exportPDF: (eventId: string) => Promise<Blob>;
+  onNavigateToEvent?: (eventId: string) => void;
+  onNavigateToSeat?: (seatId: string) => void;
   initialFilter?: Record<string, string>;
   isLoading?: boolean;
 }
@@ -105,7 +105,7 @@ export function ReservationManagement({
   const [selectedFormat, setSelectedFormat] = useState<string>("");
   const [currentFilters, setCurrentFilters] =
     useState<Record<string, string>>(initialFilter);
-  const [selectedIds, setSelectedIds] = useState<Set<bigint>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const { sortedData, sortKey, sortDirection, handleSort } = useSortableData(
     filteredReservations,
@@ -192,13 +192,13 @@ export function ReservationManagement({
     }
   };
 
-  const handleEventClick = (eventId: bigint) => {
+  const handleEventClick = (eventId: string) => {
     if (onNavigateToEvent) {
       onNavigateToEvent(eventId);
     }
   };
 
-  const handleSeatClick = (seatId: bigint) => {
+  const handleSeatClick = (seatId: string) => {
     if (onNavigateToSeat) {
       onNavigateToSeat(seatId);
     }
@@ -207,7 +207,7 @@ export function ReservationManagement({
   const handleExportReservations = async () => {
     if (!selectedEventForExport) return;
 
-    const eventId = BigInt(selectedEventForExport);
+    const eventId = selectedEventForExport;
     const event = events.find((e) => e.id === eventId);
 
     let blob: Blob;
@@ -262,7 +262,7 @@ export function ReservationManagement({
     }
   };
 
-  const handleToggleSelect = (id: bigint) => {
+  const handleToggleSelect = (id: string) => {
     const newSelectedIds = new Set(selectedIds);
     if (newSelectedIds.has(id)) {
       newSelectedIds.delete(id);

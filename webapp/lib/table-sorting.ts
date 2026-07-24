@@ -51,8 +51,6 @@ export function useSortableData<T>(
         comparison = aValue - bValue;
       } else if (aValue instanceof Date && bValue instanceof Date) {
         comparison = aValue.getTime() - bValue.getTime();
-      } else if (typeof aValue === "bigint" && typeof bValue === "bigint") {
-        comparison = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
       } else if (typeof aValue === "boolean" && typeof bValue === "boolean") {
         comparison = aValue === bValue ? 0 : aValue ? 1 : -1;
       } else if (typeof aValue === "string" && typeof bValue === "string") {

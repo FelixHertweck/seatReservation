@@ -6,7 +6,7 @@ import {
 } from "@/api";
 
 export function findSeatStatus(
-  seatId: bigint | undefined,
+  seatId: string | undefined,
   seatStatuses: SeatStatusDto[] | undefined,
 ): ReservationStatus | undefined {
   if (!seatId || !seatStatuses) return undefined;
@@ -24,7 +24,7 @@ export function isSupervisorSeatStatus(
 
 // Helper to find supervisor seat status and get live status
 export function findSupervisorSeatStatus(
-  seatId: bigint | undefined,
+  seatId: string | undefined,
   seatStatuses: SupervisorSeatStatusDto[] | undefined,
 ): SupervisorSeatStatusDto | undefined {
   if (!seatId || !seatStatuses) return undefined;
@@ -33,7 +33,7 @@ export function findSupervisorSeatStatus(
 
 // Helper to get live status from supervisor seat statuses
 export function findLiveStatus(
-  seatId: bigint | undefined,
+  seatId: string | undefined,
   seatStatuses: SupervisorSeatStatusDto[] | undefined,
 ): ReservationLiveStatus | undefined {
   const status = findSupervisorSeatStatus(seatId, seatStatuses);

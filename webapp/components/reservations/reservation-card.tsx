@@ -25,7 +25,7 @@ interface ReservationCardProps {
   locationName?: string;
   bookingDeadline?: Date;
   onViewSeats: (reservation: UserReservationResponseDto) => void;
-  onDelete: (reservationIds: bigint[]) => void;
+  onDelete: (reservationIds: string[]) => void;
 }
 
 export function ReservationCard({
@@ -40,7 +40,7 @@ export function ReservationCard({
   const { user } = useAuth();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [qrCodeModalOpen, setQrCodeModalOpen] = useState(false);
-  const [selectedReservations, setSelectedReservations] = useState<Set<bigint>>(
+  const [selectedReservations, setSelectedReservations] = useState<Set<string>>(
     new Set(),
   );
 
@@ -51,7 +51,7 @@ export function ReservationCard({
     selectedReservations.has(r.id!),
   );
 
-  const toggleReservationSelection = (reservationId: bigint) => {
+  const toggleReservationSelection = (reservationId: string) => {
     setSelectedReservations((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(reservationId)) {

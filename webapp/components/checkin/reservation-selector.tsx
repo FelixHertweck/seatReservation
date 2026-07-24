@@ -17,15 +17,15 @@ import type { CheckInInfoResponseDto } from "@/api";
 
 interface ReservationSelectorProps {
   checkInInfo: CheckInInfoResponseDto | null | undefined;
-  eventId: bigint | undefined;
+  eventId: string | undefined;
   isLoadingInfo: boolean;
   isLoading: boolean;
   isMobile: boolean;
   isDrawerOpen: boolean;
   setIsDrawerOpen: (isOpen: boolean) => void;
-  selectedReservations: Set<bigint>;
-  setSelectedReservations: Dispatch<SetStateAction<Set<bigint>>>;
-  onSubmit: (userId: bigint, eventId: bigint) => void;
+  selectedReservations: Set<string>;
+  setSelectedReservations: Dispatch<SetStateAction<Set<string>>>;
+  onSubmit: (userId: string, eventId: string) => void;
   onClear: () => void;
 }
 
@@ -47,7 +47,7 @@ export function ReservationSelector({
   // Initialize selected reservations when check-in info loads
   useEffect(() => {
     if (checkInInfo?.reservations && checkInInfo.reservations.length > 0) {
-      const initialSelected = new Set<bigint>();
+      const initialSelected = new Set<string>();
       checkInInfo.reservations.forEach((reservation) => {
         if (reservation.id) {
           initialSelected.add(reservation.id);
@@ -63,8 +63,8 @@ export function ReservationSelector({
   }, [checkInInfo, isMobile, setIsDrawerOpen, setSelectedReservations]);
 
   // Toggle reservation selection
-  const toggleReservation = (reservationId: bigint) => {
-    setSelectedReservations((prev: Set<bigint>) => {
+  const toggleReservation = (reservationId: string) => {
+    setSelectedReservations((prev: Set<string>) => {
       const newSet = new Set(prev);
       if (newSet.has(reservationId)) {
         newSet.delete(reservationId);

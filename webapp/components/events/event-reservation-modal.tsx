@@ -26,8 +26,8 @@ interface EventReservationModalProps {
   userReservations: UserReservationResponseDto[];
   onClose: () => void;
   onReserve: (
-    eventId: bigint,
-    seatIds: bigint[],
+    eventId: string,
+    seatIds: string[],
   ) => Promise<UserReservationResponseDto[]>;
 }
 

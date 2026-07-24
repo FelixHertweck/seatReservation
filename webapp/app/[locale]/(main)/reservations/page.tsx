@@ -42,8 +42,7 @@ export default function EventsPage() {
   const reservationSearchQuery = useMemo(() => {
     const eventIdFromUrl = searchParams.get("id");
     if (eventIdFromUrl && events && !eventsLoading && isLoggedIn) {
-      const eventId = BigInt(eventIdFromUrl);
-      const event = events.find((e) => e.id === eventId);
+      const event = events.find((e) => e.id === eventIdFromUrl);
       if (event) {
         return event.name || "";
       } else {
@@ -92,7 +91,7 @@ export default function EventsPage() {
     setUserSearchQuery(query);
   };
 
-  const handleDeleteReservation = async (reservationIds: bigint[]) => {
+  const handleDeleteReservation = async (reservationIds: string[]) => {
     await deleteReservation(reservationIds);
   };
 

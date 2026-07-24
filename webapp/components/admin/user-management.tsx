@@ -35,8 +35,8 @@ export interface UserManagementProps {
   users: UserDto[];
   availableRoles: string[];
   createUser: (user: AdminUserCreationDto) => Promise<void>;
-  updateUser: (id: bigint, user: AdminUserUpdateDto) => Promise<void>;
-  deleteUser: (ids: bigint[]) => Promise<void>;
+  updateUser: (id: string, user: AdminUserUpdateDto) => Promise<void>;
+  deleteUser: (ids: string[]) => Promise<void>;
   importUsers?: (users: AdminUserCreationDto[]) => Promise<void>;
   isLoading: boolean;
 }
@@ -57,7 +57,7 @@ export function UserManagement({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<Set<bigint>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const { sortedData, sortKey, sortDirection, handleSort } = useSortableData(
     filteredUsers,
@@ -132,7 +132,7 @@ export function UserManagement({
     }
   };
 
-  const handleToggleSelect = (id: bigint) => {
+  const handleToggleSelect = (id: string) => {
     const newSelectedIds = new Set(selectedIds);
     if (newSelectedIds.has(id)) {
       newSelectedIds.delete(id);

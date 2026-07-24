@@ -154,7 +154,7 @@ export function useWebAuthn() {
     });
   };
 
-  const deleteCredential = async (id: bigint) => {
+  const deleteCredential = async (id: string) => {
     try {
       await deleteApiAuthWebauthnCredentialsById({ path: { id } });
       await queryClient.invalidateQueries({
@@ -177,7 +177,7 @@ export function useWebAuthn() {
     }
   };
 
-  const renameCredential = async (id: bigint, label: string) => {
+  const renameCredential = async (id: string, label: string) => {
     try {
       await putApiAuthWebauthnCredentialsById({
         path: { id },

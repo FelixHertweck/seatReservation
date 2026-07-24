@@ -24,7 +24,7 @@ export interface UseCheckinReturn {
   isLoadingEvents: boolean;
 
   // Usernames by event ID
-  getUsernamesByEventId: (eventId: bigint) => Promise<string[] | undefined>;
+  getUsernamesByEventId: (eventId: string) => Promise<string[] | undefined>;
 
   // Check-in info
   fetchCheckInInfo: (
@@ -63,7 +63,7 @@ export function useCheckin(): UseCheckinReturn {
     ...getApiSupervisorCheckinEventsOptions(),
   });
 
-  const getUsernamesByEventId = (eventId: bigint) => {
+  const getUsernamesByEventId = (eventId: string) => {
     return queryClient.fetchQuery({
       ...getApiSupervisorCheckinUsernamesByEventIdOptions({
         path: { eventId },

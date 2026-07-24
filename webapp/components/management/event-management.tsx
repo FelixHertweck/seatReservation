@@ -41,11 +41,11 @@ export interface EventManagementProps {
   users?: LimitedUserInfoDto[];
   createEvent: (event: EventRequestDto) => Promise<EventResponseDto>;
   updateEvent: (
-    id: bigint,
+    id: string,
     event: EventRequestDto,
   ) => Promise<EventResponseDto>;
-  deleteEvent: (ids: bigint[]) => Promise<void>;
-  onNavigateToLocation?: (locationId: bigint) => void;
+  deleteEvent: (ids: string[]) => Promise<void>;
+  onNavigateToLocation?: (locationId: string) => void;
   initialFilter?: Record<string, string>;
   isLoading?: boolean;
 }
@@ -71,7 +71,7 @@ export function EventManagement({
   const [isCreating, setIsCreating] = useState(false);
   const [currentFilters, setCurrentFilters] =
     useState<Record<string, string>>(initialFilter);
-  const [selectedIds, setSelectedIds] = useState<Set<bigint>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const { sortedData, sortKey, sortDirection, handleSort } = useSortableData(
     filteredEvents,
@@ -168,7 +168,7 @@ export function EventManagement({
     }
   };
 
-  const handleLocationClick = (locationId: bigint) => {
+  const handleLocationClick = (locationId: string) => {
     if (onNavigateToLocation) {
       onNavigateToLocation(locationId);
     }
@@ -190,7 +190,7 @@ export function EventManagement({
     }
   };
 
-  const handleToggleSelect = (id: bigint) => {
+  const handleToggleSelect = (id: string) => {
     const newSelectedIds = new Set(selectedIds);
     if (newSelectedIds.has(id)) {
       newSelectedIds.delete(id);

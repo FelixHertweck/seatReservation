@@ -49,12 +49,12 @@ export default function EventsPage() {
     setEventSearchQuery(query);
   };
 
-  const getLocation = (locationId: bigint | undefined) => {
+  const getLocation = (locationId: string | undefined) => {
     if (!locationId) return null;
     return locations?.find((l) => l.id === locationId) || null;
   };
 
-  const getReservationsForEvent = (eventId: bigint | undefined) => {
+  const getReservationsForEvent = (eventId: string | undefined) => {
     if (!eventId) return [];
     return reservations.filter((r) => r.eventId === eventId);
   };

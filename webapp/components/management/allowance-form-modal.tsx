@@ -86,7 +86,7 @@ export function AllowanceFormModal({
 
     setIsLoading(true);
     try {
-      const eventId = BigInt(selectedEventId);
+      const eventId = selectedEventId;
       const reservations = Number.parseInt(allowedReservations, 10);
 
       if (isCreating) {
@@ -98,7 +98,7 @@ export function AllowanceFormModal({
         }
         const allowanceData: EventUserAllowancesCreateDto = {
           eventId,
-          userIds: selectedUserIds.map((id) => BigInt(id)),
+          userIds: selectedUserIds,
           reservationsAllowedCount: reservations,
         };
         await onSubmit(allowanceData);
@@ -112,7 +112,7 @@ export function AllowanceFormModal({
         const allowanceData: EventUserAllowanceUpdateDto = {
           id: allowance.id,
           eventId,
-          userId: BigInt(selectedUserIds[0]),
+          userId: selectedUserIds[0],
           reservationsAllowedCount: reservations,
         };
         await onSubmit(allowanceData);
