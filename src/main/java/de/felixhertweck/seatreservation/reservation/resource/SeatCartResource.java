@@ -60,12 +60,11 @@ public class SeatCartResource {
             responseCode = "403",
             description = "Forbidden: Only authenticated users can access this resource")
     @APIResponse(
-            responseCode = "404",
-            description = "Not Found: Event does not exist or the user has no allowance for it")
-    @APIResponse(
             responseCode = "409",
             description =
-                    "Conflict: Seat is already reserved, blocked, or held by another user's cart")
+                    "Conflict: Seat is already reserved, blocked, or held by another user's cart,"
+                            + " or the seat cart access grant for this event is missing or"
+                            + " expired (refresh GET /api/user/events and retry)")
     public SeatCartEntryDTO addSeatToCart(
             @PathParam("eventId") UUID eventId, @PathParam("seatId") UUID seatId) {
         UUID userId = userSecurityContext.getAuthenticatedUser().id();

@@ -1003,7 +1003,7 @@ Adds a seat to the current user's selection cart, or refreshes the hold's TTL if
     -   `200 OK`: Returns `SeatCartEntryDTO` (`seatId`, `expiresAt`).
     -   `401 Unauthorized`: Not authenticated.
     -   `403 Forbidden`: Access denied.
-    -   `409 Conflict`: Seat is already reserved, already blocked, or currently held by another user's cart.
+    -   `409 Conflict`: Seat is already reserved, already blocked, or currently held by another user's cart, or the seat cart access grant for this event is missing or expired (refresh `GET /api/user/events` and retry).
 
 ---
 

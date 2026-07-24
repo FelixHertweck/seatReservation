@@ -58,16 +58,19 @@ public class EventService {
 
         Map<UUID, UserEventResponseDTO> eventMap = new HashMap<>();
 
-        // Add allowances
+        // Add allowances. Also grants seat-cart access for each event here, reusing this query
+        // instead of SeatCartService doing its own DB lookup on every cart write.
         eventUserAllowanceRepository
                 .findByUser(user)
                 .forEach(
-                        allowance ->
-                                eventMap.put(
-                                        allowance.getEvent().getId(),
-                                        new UserEventResponseDTO(
-                                                allowance.getEvent(),
-                                                allowance.getReservationsAllowedCount())));
+                        allowance -> {
+                            eventMap.put(
+                                    allowance.getEvent().getId(),
+                                    new UserEventResponseDTO(
+                                            allowance.getEvent(),
+                                            allowance.getReservationsAllowedCount()));
+                            seatCartService.grantAccess(allowance.getEvent().getId(), user.id);
+                        });
 
         // Reservations only add if event not already exists
         reservationRepository
