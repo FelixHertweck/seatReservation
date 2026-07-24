@@ -18,7 +18,13 @@ quarkus:
 
   hibernate-orm:
     schema-management:
-      strategy: update
+      strategy: validate
+
+  flyway:
+    migrate-at-start: true
+    baseline-on-migrate: true
+    baseline-version: "1"
+    baseline-description: "pre-UUID schema (bigint/bigserial primary keys)"
 
 jwt:
   cookie:

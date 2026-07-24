@@ -135,9 +135,12 @@ public class TokenService {
 
         refreshToken.persist();
 
+        // @UuidGenerator assigns the id synchronously during persist(), so it is never null here.
+        String tokenId = refreshToken.id.toString(); // NOSONAR: never null, set in persist()
+
         return Jwt.upn(user.getUsername())
                 .claim("token_type", "refresh")
-                .claim("token_id", refreshToken.id.toString())
+                .claim("token_id", tokenId)
                 .claim("token_value", tokenValue)
                 .issuedAt(Instant.now())
                 .expiresIn(Duration.ofDays(refreshExpirationDays))

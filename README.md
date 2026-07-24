@@ -117,6 +117,20 @@ image: ghcr.io/felixhertweck/seatreservation-backend-native:latest
 
 The Dockerfiles live in [`src/main/docker/`](src/main/docker/) (`Dockerfile.jvm`, `Dockerfile.native`) for the backend and [`webapp/Dockerfile`](webapp/Dockerfile) for the frontend, in case you want to build the images yourself instead of pulling from GHCR.
 
+### Updating & Database Backups
+
+The backend applies database schema migrations automatically on startup (via Flyway). These migrations are not automatically reversible, so back up the database before pulling a new backend image:
+
+```shell script
+docker compose exec -T db pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" > backup-$(date +%Y%m%d-%H%M%S).sql
+```
+
+To restore a backup if something goes wrong:
+
+```shell script
+docker compose exec -T db psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" < backup-YYYYMMDD-HHMMSS.sql
+```
+
 ## Initial Setup
 
 Before running the application (locally or via Docker), ensure the following setup steps are completed:
