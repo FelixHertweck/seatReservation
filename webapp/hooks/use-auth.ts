@@ -24,6 +24,8 @@ import { ErrorWithResponse } from "@/components/init-query-client";
 import { useState } from "react";
 import { redirectUser } from "@/lib/redirect-User";
 
+const EMAIL_VERIFICATION_REDIRECT_DELAY_MS = 2000;
+
 export function useAuth() {
   const t = useT();
   const params = useParams();
@@ -167,6 +169,9 @@ export function useAuth() {
       loading: t("common.loading"),
       success: async () => {
         await queryClient.invalidateQueries();
+        await new Promise((resolve) =>
+          setTimeout(resolve, EMAIL_VERIFICATION_REDIRECT_DELAY_MS),
+        );
         redirectUser(router, locale, user, returnToUrl);
         return t("emailVerification.success.title");
       },
