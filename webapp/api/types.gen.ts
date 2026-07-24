@@ -246,9 +246,18 @@ export type ReservationResponseDto = {
     liveStatus?: ReservationLiveStatus;
 };
 
-export const ReservationStatus = { RESERVED: 'RESERVED', BLOCKED: 'BLOCKED' } as const;
+export const ReservationStatus = {
+    RESERVED: 'RESERVED',
+    BLOCKED: 'BLOCKED',
+    PENDING: 'PENDING'
+} as const;
 
 export type ReservationStatus = typeof ReservationStatus[keyof typeof ReservationStatus];
+
+export type SeatCartEntryDto = {
+    seatId?: Uuid;
+    expiresAt?: Instant;
+};
 
 export type SeatDto = {
     id?: Uuid;
@@ -2776,6 +2785,70 @@ export type GetApiUserReservationsByIdResponses = {
 };
 
 export type GetApiUserReservationsByIdResponse = GetApiUserReservationsByIdResponses[keyof GetApiUserReservationsByIdResponses];
+
+export type DeleteApiUserSeatcartByEventIdBySeatIdData = {
+    body?: never;
+    path: {
+        eventId: Uuid;
+        seatId: Uuid;
+    };
+    query?: never;
+    url: '/api/user/seatcart/{eventId}/{seatId}';
+};
+
+export type DeleteApiUserSeatcartByEventIdBySeatIdErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Forbidden: Only authenticated users can access this resource
+     */
+    403: unknown;
+};
+
+export type DeleteApiUserSeatcartByEventIdBySeatIdResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type DeleteApiUserSeatcartByEventIdBySeatIdResponse = DeleteApiUserSeatcartByEventIdBySeatIdResponses[keyof DeleteApiUserSeatcartByEventIdBySeatIdResponses];
+
+export type PostApiUserSeatcartByEventIdBySeatIdData = {
+    body?: never;
+    path: {
+        eventId: Uuid;
+        seatId: Uuid;
+    };
+    query?: never;
+    url: '/api/user/seatcart/{eventId}/{seatId}';
+};
+
+export type PostApiUserSeatcartByEventIdBySeatIdErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Forbidden: Only authenticated users can access this resource
+     */
+    403: unknown;
+    /**
+     * Conflict: Seat is already reserved, blocked, or held by another user's cart
+     */
+    409: unknown;
+};
+
+export type PostApiUserSeatcartByEventIdBySeatIdResponses = {
+    /**
+     * OK
+     */
+    200: SeatCartEntryDto;
+};
+
+export type PostApiUserSeatcartByEventIdBySeatIdResponse = PostApiUserSeatcartByEventIdBySeatIdResponses[keyof PostApiUserSeatcartByEventIdBySeatIdResponses];
 
 export type PostApiUserVerifyEmailCodeData = {
     body: VerifyEmailCodeRequestDto;

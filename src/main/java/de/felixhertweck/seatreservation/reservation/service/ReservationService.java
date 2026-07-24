@@ -52,6 +52,7 @@ import de.felixhertweck.seatreservation.reservation.exception.EventBookingClosed
 import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatBlockedException;
+import de.felixhertweck.seatreservation.reservation.exception.SeatPendingException;
 import de.felixhertweck.seatreservation.utils.CodeGenerator;
 import org.jboss.logging.Logger;
 
@@ -66,6 +67,7 @@ public class ReservationService {
     @Inject SeatRepository seatRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
     @Inject EmailService emailService;
+    @Inject SeatCartService seatCartService;
 
     /**
      * Retrieves all reservations for the currently authenticated user.
@@ -271,6 +273,12 @@ public class ReservationService {
             } else if (blockedSeatIds.contains(seat.id)) {
                 LOG.warnf("Seat ID: %s is blocked for event ID: %s.", seat.id, event.id);
                 throw new SeatBlockedException("One or more seats are blocked");
+            } else if (seatCartService.isHeldByAnotherUser(event.id, seat.id, currentUser.id)) {
+                LOG.warnf(
+                        "Seat ID: %s for event ID: %s is held by another user's cart.",
+                        seat.id, event.id);
+                throw new SeatPendingException(
+                        "One or more seats are currently being selected" + " by another user");
             }
             String checkInCode = CodeGenerator.generateRandomCode();
             newReservations.add(
@@ -292,6 +300,10 @@ public class ReservationService {
         LOG.debugf(
                 "Persisted %d new reservations for user ID: %s and event ID: %s.",
                 newReservations.size(), currentUser.id, event.id);
+
+        // Mirror the new reservations into Redis so the seat cart never needs to re-check
+        // Postgres for these seats again.
+        seatCartService.markSeatsReserved(event.id, dto.getSeatIds(), event.getEndTime());
 
         // Update the user's allowance
         eventUserAllowance.setReservationsAllowedCount(
@@ -416,6 +428,10 @@ public class ReservationService {
             LOG.infof(
                     "Deleted reservations with IDs %s for user ID: %s.",
                     reservationIdsToDelete, currentUser.id);
+
+            // Free these seats in Redis so they become selectable again.
+            seatCartService.freeSeats(
+                    entry.getKey(), entry.getValue().stream().map(r -> r.getSeat().id).toList());
 
             // Send email update confirmation for each event
             List<Reservation> activeReservations =

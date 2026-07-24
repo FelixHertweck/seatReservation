@@ -7,7 +7,8 @@
     "noShow": "No Show",
     "cancelled": "Cancelled",
     "selected": "Selected",
-    "myReserved": "My Reservation"
+    "myReserved": "My Reservation",
+    "pending": "Selected by another user"
   },
   "validation": {
     "usernameHint": "3-64 characters: letters, numbers, dots, underscores, hyphens"
@@ -718,7 +719,17 @@
     "cancelButton": "Cancel",
     "reservingButton": "Reserving...",
     "reserveSeatsButton": "Reserve {{count}} Seats",
-    "reserveSeatButton": "Reserve Seat"
+    "reserveSeatButton": "Reserve Seat",
+    "cart": {
+      "conflict": {
+        "title": "Seat No Longer Available",
+        "description": "This seat was just taken by another user."
+      },
+      "expired": {
+        "title": "Selection Expired",
+        "description": "Your seat selection has expired and was cleared. Please select your seats again."
+      }
+    }
   },
   "reservation": {
     "delete": {

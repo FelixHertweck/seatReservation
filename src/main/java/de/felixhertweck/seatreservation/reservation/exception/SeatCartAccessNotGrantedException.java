@@ -17,18 +17,10 @@
  * limitations under the License.
  * #L%
  */
-package de.felixhertweck.seatreservation.model.entity;
+package de.felixhertweck.seatreservation.reservation.exception;
 
-public enum ReservationStatus {
-    /** A seat booked by a user via {@code createReservationForUser}. Persisted. */
-    RESERVED,
-
-    /** A seat manually blocked by a manager via {@code blockSeats}. Persisted. */
-    BLOCKED,
-
-    /**
-     * Transient status for a seat currently held in another user's Redis-backed selection cart.
-     * Never persisted to the database, only computed on read.
-     */
-    PENDING
+public class SeatCartAccessNotGrantedException extends RuntimeException {
+    public SeatCartAccessNotGrantedException(String message) {
+        super(message);
+    }
 }
