@@ -66,6 +66,7 @@ import de.felixhertweck.seatreservation.reservation.exception.EventBookingClosed
 import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatBlockedException;
+import de.felixhertweck.seatreservation.reservation.exception.SeatPendingException;
 import de.felixhertweck.seatreservation.utils.CodeGenerator;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.test.InjectMock;
@@ -90,6 +91,8 @@ class ReservationServiceTest {
     @InjectMock EmailSeatMapTokenRepository emailSeatMapTokenRepository;
 
     @InjectMock EmailService emailService;
+
+    @InjectMock SeatCartService seatCartService;
 
     private User currentUser;
     private User otherUser;
@@ -224,6 +227,26 @@ class ReservationServiceTest {
 
         assertFalse(result.isEmpty());
         assertEquals(1, result.size());
+        verify(seatCartService, times(1)).releaseSeats(event.id, dto.getSeatIds());
+    }
+
+    @Test
+    void createReservationForUser_SeatPendingException_HeldByAnotherUsersCart() {
+        UserReservationsRequestDTO dto = new UserReservationsRequestDTO();
+        dto.setEventId(event.id);
+        dto.setSeatIds(Set.of(seat1.id));
+
+        when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
+        mockSeatFind(dto.getSeatIds(), List.of(seat1));
+        when(eventUserAllowanceRepository.findByUser(currentUser)).thenReturn(List.of(allowance));
+        when(reservationRepository.findByEventId(event.id)).thenReturn(Collections.emptyList());
+        when(seatCartService.isHeldByAnotherUser(event.id, seat1.id, currentUser.id))
+                .thenReturn(true);
+
+        assertThrows(
+                SeatPendingException.class,
+                () -> reservationService.createReservationForUser(dto, currentUser));
+        verify(seatCartService, never()).releaseSeats(any(), any());
     }
 
     @Test

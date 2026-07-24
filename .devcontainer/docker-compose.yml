@@ -30,6 +30,15 @@ services:
         condition: service_started
       mail:
         condition: service_started
+      redis:
+        condition: service_started
+    networks:
+      - devcontainer-network
+
+  redis:
+    image: redis:7-alpine
+    hostname: redis
+    restart: unless-stopped
     networks:
       - devcontainer-network
 

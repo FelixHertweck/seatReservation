@@ -547,6 +547,8 @@ export function SeatMap({
             return "bg-red-500 dark:bg-red-600";
           case "BLOCKED":
             return "bg-gray-500 dark:bg-gray-600";
+          case "PENDING":
+            return "bg-amber-500 dark:bg-amber-600";
           default:
             return "bg-green-500 dark:bg-green-600";
         }
