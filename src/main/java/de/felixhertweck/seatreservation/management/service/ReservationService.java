@@ -26,6 +26,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -55,6 +56,7 @@ import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepos
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.reservation.service.SeatCartService;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.CodeGenerator;
 import de.felixhertweck.seatreservation.utils.ReservationExporter;
@@ -76,6 +78,7 @@ public class ReservationService {
     @Inject SeatRepository seatRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
     @Inject EmailService emailService;
+    @Inject SeatCartService seatCartService;
 
     /**
      * Retrieves all reservations. Access is restricted based on user roles: - ADMIN: Returns all
@@ -327,6 +330,11 @@ public class ReservationService {
                     dtoSeatId, dto.getUserId(), dto.getEventId());
         }
 
+        seatCartService.markSeatsReserved(
+                event.id,
+                existingReservations.stream().map(r -> r.getSeat().id).toList(),
+                event.getEndTime());
+
         try {
             emailService.sendReservationConfirmation(
                     targetUser, existingReservations, managerUser.getEmail());
@@ -372,6 +380,7 @@ public class ReservationService {
                 ids, managerUser.id, managerUser.getId());
 
         List<Reservation> deletedReservations = new ArrayList<>();
+        Map<UUID, List<UUID>> freedSeatIdsByEvent = new HashMap<>();
 
         List<Reservation> foundReservations = reservationRepository.find(ID_IN_QUERY, ids).list();
         Map<UUID, Reservation> foundReservationMap =
@@ -397,6 +406,10 @@ public class ReservationService {
             }
 
             reservationRepository.delete(reservation);
+
+            freedSeatIdsByEvent
+                    .computeIfAbsent(reservation.getEvent().id, k -> new ArrayList<>())
+                    .add(reservation.getSeat().id);
 
             if (reservation.getStatus() == ReservationStatus.RESERVED) {
                 LOG.debugf(
@@ -429,6 +442,8 @@ public class ReservationService {
                                 });
             }
         }
+
+        freedSeatIdsByEvent.forEach(seatCartService::freeSeats);
 
         // Group by user and event
         Map<User, Map<Event, List<Reservation>>> groupedReservations =
@@ -582,6 +597,8 @@ public class ReservationService {
                         .toList();
 
         reservationRepository.persist(newReservations);
+
+        seatCartService.markSeatsBlocked(eventId, seatIds, event.getEndTime());
 
         LOG.debugf(
                 "Successfully blocked %d seats for event ID %s by user ID: %s (ID: %s)",
