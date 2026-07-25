@@ -712,4 +712,22 @@ public class TokenServiceTest {
         // Then - Original token should still exist
         assertEquals(1, refreshTokenRepository.count());
     }
+
+    @Test
+    @Transactional
+    void testDeleteRefreshToken_RuntimeException() throws Exception {
+        // Given - Create a token in database
+        createTestRefreshToken("test-token", testUser);
+        assertEquals(1, refreshTokenRepository.count());
+
+        // Mock parser to throw RuntimeException
+        when(jwtParser.parse("runtime.exception.token"))
+                .thenThrow(new NullPointerException("Simulated NPE"));
+
+        // When - Delete with a token that triggers a RuntimeException (should not throw exception)
+        tokenService.deleteRefreshToken("runtime.exception.token", testUser);
+
+        // Then - Original token should still exist
+        assertEquals(1, refreshTokenRepository.count());
+    }
 }
