@@ -451,7 +451,7 @@ public class ReservationServiceTest {
 
         reservationService.deleteReservation(List.of(reservation.id), adminUser);
 
-        verify(reservationRepository, times(1)).delete(reservation);
+        verify(reservationRepository, times(1)).delete("id in ?1", List.of(reservation.id));
     }
 
     @Test
@@ -465,7 +465,7 @@ public class ReservationServiceTest {
 
         reservationService.deleteReservation(List.of(reservation.id), managerUser);
 
-        verify(reservationRepository, times(1)).delete(reservation);
+        verify(reservationRepository, times(1)).delete("id in ?1", List.of(reservation.id));
     }
 
     @Test
@@ -475,7 +475,7 @@ public class ReservationServiceTest {
         assertThrows(
                 SecurityException.class,
                 () -> reservationService.deleteReservation(List.of(reservation.id), regularUser));
-        verify(reservationRepository, never()).delete(any(Reservation.class));
+        verify(reservationRepository, never()).delete(any(String.class), any(List.class));
     }
 
     @Test
@@ -490,7 +490,7 @@ public class ReservationServiceTest {
 
         reservationService.deleteReservation(List.of(reservation.id), managerUser);
 
-        verify(reservationRepository, times(1)).delete(reservation);
+        verify(reservationRepository, times(1)).delete("id in ?1", List.of(reservation.id));
         verify(eventUserAllowanceRepository, times(1)).persist(allowance);
         assertEquals(1, allowance.getReservationsAllowedCount()); // Allowance should be incremented
     }
@@ -504,7 +504,7 @@ public class ReservationServiceTest {
         // Should not throw exception when no allowance exists
         reservationService.deleteReservation(List.of(reservation.id), managerUser);
 
-        verify(reservationRepository, times(1)).delete(reservation);
+        verify(reservationRepository, times(1)).delete("id in ?1", List.of(reservation.id));
         verify(eventUserAllowanceRepository, never())
                 .persist(any(EventUserAllowance.class)); // Should not persist allowance
     }
@@ -526,7 +526,7 @@ public class ReservationServiceTest {
 
         reservationService.deleteReservation(List.of(blockedReservation.id), managerUser);
 
-        verify(reservationRepository, times(1)).delete(blockedReservation);
+        verify(reservationRepository, times(1)).delete("id in ?1", List.of(blockedReservation.id));
         // Verify allowance was never updated for blocked reservations
         verify(eventUserAllowanceRepository, never()).persist(any(EventUserAllowance.class));
     }
@@ -557,10 +557,10 @@ public class ReservationServiceTest {
 
         reservationService.deleteReservation(List.of(reservation.id, reservation2.id), managerUser);
 
-        verify(reservationRepository, times(1)).delete(reservation);
-        verify(reservationRepository, times(1)).delete(reservation2);
+        verify(reservationRepository, times(1))
+                .delete("id in ?1", List.of(reservation.id, reservation2.id));
         // Allowance should be incremented twice (once for each reservation)
-        verify(eventUserAllowanceRepository, times(2)).persist(allowance);
+        verify(eventUserAllowanceRepository, times(1)).persist(allowance);
         assertEquals(2, allowance.getReservationsAllowedCount());
     }
 
@@ -609,8 +609,8 @@ public class ReservationServiceTest {
         reservationService.deleteReservation(
                 List.of(blockedReservation.id, reservedReservation.id), managerUser);
 
-        verify(reservationRepository, times(1)).delete(blockedReservation);
-        verify(reservationRepository, times(1)).delete(reservedReservation);
+        verify(reservationRepository, times(1))
+                .delete("id in ?1", List.of(blockedReservation.id, reservedReservation.id));
         // Allowance should be incremented only once (for the reserved reservation)
         verify(eventUserAllowanceRepository, times(1)).persist(allowance);
         assertEquals(1, allowance.getReservationsAllowedCount());
@@ -628,7 +628,7 @@ public class ReservationServiceTest {
 
         reservationService.deleteReservation(List.of(reservation.id), managerUser);
 
-        verify(reservationRepository, times(1)).delete(reservation);
+        verify(reservationRepository, times(1)).delete("id in ?1", List.of(reservation.id));
         verify(eventUserAllowanceRepository, times(1)).persist(allowance);
         assertEquals(6, allowance.getReservationsAllowedCount());
     }
@@ -648,7 +648,7 @@ public class ReservationServiceTest {
 
         reservationService.deleteReservation(List.of(reservation.id), adminUser);
 
-        verify(reservationRepository, times(1)).delete(reservation);
+        verify(reservationRepository, times(1)).delete("id in ?1", List.of(reservation.id));
         verify(emailService, times(1))
                 .sendUpdateReservationConfirmation(any(), any(), any(), any());
     }
