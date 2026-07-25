@@ -49,6 +49,13 @@ public class CSVToDto {
     private static final String DEFAULT_JSON = "importer/output.json";
 
     public static void main(String[] args) {
+        int status = run(args);
+        if (status != 0) {
+            System.exit(status);
+        }
+    }
+
+    public static int run(String[] args) {
         String input =
                 args.length > 0 ? args[0] : System.getProperty("importer.input", DEFAULT_CSV);
         String output =
@@ -59,7 +66,7 @@ public class CSVToDto {
         Path inputPath = Path.of(input);
         if (!Files.exists(inputPath)) {
             LOG.errorf("Input file does not exist: %s", inputPath.toAbsolutePath());
-            System.exit(2);
+            return 2;
         }
 
         CSVFormat format =
@@ -92,7 +99,7 @@ public class CSVToDto {
 
         } catch (IOException e) {
             LOG.error("Error reading CSV", e);
-            System.exit(3);
+            return 3;
         }
 
         // Write JSON using Jackson
@@ -105,8 +112,9 @@ public class CSVToDto {
             LOG.infof("Wrote %d users to %s", users.size(), outPath.toAbsolutePath());
         } catch (IOException e) {
             LOG.error("Error writing JSON", e);
-            System.exit(4);
+            return 4;
         }
+        return 0;
     }
 
     private static String safeGet(CSVRecord record, String header, int index) {
