@@ -378,19 +378,28 @@ public class EventLocationService {
                 "Attempting to delete event locations with IDs: %s for manager ID: %s",
                 ids, manager.id());
 
+        List<EventLocation> fetchedLocations =
+                eventLocationRepository
+                        .find(
+                                "from EventLocation el left join fetch el.manager where el.id in"
+                                        + " ?1",
+                                ids)
+                        .list();
+
+        Map<UUID, EventLocation> locationMap =
+                fetchedLocations.stream()
+                        .collect(Collectors.toMap(el -> el.getId(), el -> el, (el1, el2) -> el1));
+
+        List<EventLocation> locationsToDelete = new ArrayList<>(ids.size());
         for (UUID id : ids) {
-            EventLocation location =
-                    eventLocationRepository
-                            .findByIdOptional(id)
-                            .orElseThrow(
-                                    () -> {
-                                        LOG.warnf(
-                                                "EventLocation with ID %s not found for deletion by"
-                                                        + " manager ID: %s",
-                                                id, manager.id());
-                                        return new EventLocationNotFoundException(
-                                                "EventLocation with id " + id + " not found");
-                                    });
+            EventLocation location = locationMap.get(id);
+            if (location == null) {
+                LOG.warnf(
+                        "EventLocation with ID %s not found for deletion by" + " manager ID: %s",
+                        id, manager.id());
+                throw new EventLocationNotFoundException(
+                        "EventLocation with id " + id + " not found");
+            }
 
             try {
                 validateManagerPermission(location, manager);
@@ -401,6 +410,10 @@ public class EventLocationService {
                 throw e;
             }
 
+            locationsToDelete.add(location);
+        }
+
+        for (EventLocation location : locationsToDelete) {
             eventLocationRepository.delete(location);
         }
         LOG.infof("Event locations %s deleted successfully by manager ID: %s", ids, manager.id());
