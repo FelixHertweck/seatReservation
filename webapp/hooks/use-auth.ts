@@ -13,6 +13,7 @@ import {
   postApiAuthRegisterMutation,
   postApiUserResendEmailConfirmationMutation,
   postApiUserVerifyEmailCodeMutation,
+  postApiAuth2FaVerifyMutation,
 } from "@/api/@tanstack/react-query.gen";
 import {
   Instant,
@@ -33,6 +34,10 @@ export function useAuth() {
   const queryClient = useQueryClient();
 
   const [retryAfter, setRetryAfter] = useState<Instant | null>(null);
+  const [requiresTwoFactor, setRequiresTwoFactor] = useState<{
+    required: boolean;
+    preAuthToken?: string;
+  }>({ required: false });
 
   const {
     data: user,
@@ -45,6 +50,10 @@ export function useAuth() {
     ...postApiAuthLoginMutation(),
   });
 
+  const { mutateAsync: verify2FaMutation } = useMutation({
+    ...postApiAuth2FaVerifyMutation(),
+  });
+
   const login = async (
     username: string,
     password: string,
@@ -53,8 +62,19 @@ export function useAuth() {
     const request = loginMutation({ body: { username, password } });
     toast.promise(request, {
       loading: t("common.loading"),
-      success: async () => {
+      success: async (res) => {
         setRetryAfter(null);
+        const data = res as unknown as {
+          twoFactorRequired?: boolean;
+          preAuthToken?: string;
+        };
+        if (data && data.twoFactorRequired) {
+          setRequiresTwoFactor({
+            required: true,
+            preAuthToken: data.preAuthToken,
+          });
+          return t("login.twoFactorRequired");
+        }
         await queryClient.invalidateQueries();
         await refetchUser();
         redirectUser(router, locale, user, returnToUrl);
@@ -85,6 +105,26 @@ export function useAuth() {
       },
     });
 
+    return request;
+  };
+
+  const verifyTwoFactor = async (
+    code: string,
+    preAuthToken: string,
+    returnToUrl?: string | null,
+  ) => {
+    const request = verify2FaMutation({ body: { code, preAuthToken } });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: async () => {
+        setRequiresTwoFactor({ required: false });
+        await queryClient.invalidateQueries();
+        await refetchUser();
+        redirectUser(router, locale, user, returnToUrl);
+        return t("login.success.title");
+      },
+      error: () => t("login.error.invalidTwoFactorCode"),
+    });
     return request;
   };
 
@@ -215,6 +255,9 @@ export function useAuth() {
       isSuccess: isSuccessRegistrationStatus,
     } as RegistrationStatus,
     login,
+    requiresTwoFactor,
+    setRequiresTwoFactor,
+    verifyTwoFactor,
     register,
     logout,
     logoutAll,

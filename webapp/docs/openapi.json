@@ -936,6 +936,45 @@
           }
         }
       },
+      "TwoFactorSettingsDTO" : {
+        "type" : "object",
+        "properties" : {
+          "twoFactorEnabled" : {
+            "type" : "boolean"
+          },
+          "twoFactorType" : {
+            "type" : "string"
+          },
+          "passkeyRequiresTwoFactor" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "TwoFactorSetupDTO" : {
+        "type" : "object",
+        "properties" : {
+          "secret" : {
+            "type" : "string"
+          },
+          "qrCodeUri" : {
+            "type" : "string"
+          }
+        }
+      },
+      "TwoFactorVerifyRequestDTO" : {
+        "type" : "object",
+        "required" : [ "preAuthToken", "code" ],
+        "properties" : {
+          "preAuthToken" : {
+            "type" : "string",
+            "pattern" : "\\S"
+          },
+          "code" : {
+            "type" : "string",
+            "pattern" : "\\S"
+          }
+        }
+      },
       "UserDTO" : {
         "type" : "object",
         "properties" : {
@@ -1212,6 +1251,35 @@
     }
   },
   "paths" : {
+    "/api/auth/2fa/verify" : {
+      "post" : {
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TwoFactorVerifyRequestDTO"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Login successful, JWT cookie set",
+            "content" : {
+              "application/json" : {
+                "schema" : { }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad Request: Invalid token or code"
+          }
+        },
+        "summary" : "Verify Two Factor",
+        "tags" : [ "Auth Resource" ]
+      }
+    },
     "/api/auth/login" : {
       "post" : {
         "requestBody" : {
@@ -3698,6 +3766,159 @@
         "tags" : [ "Check In Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "SUPERVISOR", "ADMIN", "MANAGER" ]
+        } ]
+      }
+    },
+    "/api/user/2fa/disable" : {
+      "delete" : {
+        "responses" : {
+          "204" : {
+            "description" : "2FA disabled"
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Disable Two Factor",
+        "tags" : [ "Two Factor Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ ]
+        } ]
+      }
+    },
+    "/api/user/2fa/enable" : {
+      "post" : {
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "additionalProperties" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "2FA enabled, returns backup codes",
+            "content" : {
+              "application/json" : {
+                "schema" : { }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid code"
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Enable Two Factor",
+        "tags" : [ "Two Factor Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ ]
+        } ]
+      }
+    },
+    "/api/user/2fa/settings" : {
+      "put" : {
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TwoFactorSettingsDTO"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "2FA settings updated",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TwoFactorSettingsDTO"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          },
+          "400" : {
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "Update Settings",
+        "tags" : [ "Two Factor Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ ]
+        } ]
+      },
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "2FA settings retrieved",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TwoFactorSettingsDTO"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Get Settings",
+        "tags" : [ "Two Factor Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ ]
+        } ]
+      }
+    },
+    "/api/user/2fa/setup/totp" : {
+      "post" : {
+        "responses" : {
+          "200" : {
+            "description" : "TOTP setup initiated",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TwoFactorSetupDTO"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not Authorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Setup Totp",
+        "tags" : [ "Two Factor Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ ]
         } ]
       }
     },

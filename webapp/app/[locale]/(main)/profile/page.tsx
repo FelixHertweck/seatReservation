@@ -17,6 +17,7 @@ import { useT } from "@/lib/i18n/hooks";
 import { useProfileUnsavedChanges } from "@/hooks/use-profile-unsaved-changes";
 import { useRouter, useParams } from "next/navigation";
 import { PasskeySection } from "@/components/profile/passkey-section";
+import { TwoFactorSection } from "@/components/profile/two-factor-section";
 
 interface FormData {
   firstname: string;
@@ -351,6 +352,8 @@ export default function ProfilePage() {
             </div>
 
             <PasskeySection />
+
+            <TwoFactorSection />
 
             <div>
               <Label htmlFor="tags" className="pb-2">

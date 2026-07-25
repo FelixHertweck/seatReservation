@@ -45,6 +45,11 @@
       "title": "Anmeldung erfolgreich",
       "description": "Sie wurden erfolgreich angemeldet."
     },
+    "twoFactorRequired": "Zwei-Faktor-Authentifizierung erforderlich",
+    "twoFactorTitle": "Zwei-Faktor-Authentifizierung",
+    "twoFactorDescription": "Bitte geben Sie Ihren Authentifizierungscode ein",
+    "twoFactorCode": "Authentifizierungscode",
+    "verifyButton": "Bestätigen",
     "welcomeBack": "Willkommen zurück!",
     "alreadyLoggedIn": "Sie sind bereits angemeldet.",
     "continueWithUser": "Mit angemeldetem Benutzer fortfahren ({{username}})",

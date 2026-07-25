@@ -45,6 +45,11 @@
       "title": "Login successful",
       "description": "You have been successfully logged in."
     },
+    "twoFactorRequired": "Two-factor authentication required",
+    "twoFactorTitle": "Two-Factor Authentication",
+    "twoFactorDescription": "Please enter your authentication code",
+    "twoFactorCode": "Authentication Code",
+    "verifyButton": "Verify",
     "welcomeBack": "Welcome back!",
     "alreadyLoggedIn": "You are already logged in.",
     "continueWithUser": "Continue with logged in user ({{username}})",

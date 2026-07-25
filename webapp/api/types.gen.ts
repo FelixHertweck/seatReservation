@@ -317,6 +317,22 @@ export type SupervisorSeatStatusDto = {
     liveStatus?: ReservationLiveStatus;
 };
 
+export type TwoFactorSettingsDto = {
+    twoFactorEnabled?: boolean;
+    twoFactorType?: string;
+    passkeyRequiresTwoFactor?: boolean;
+};
+
+export type TwoFactorSetupDto = {
+    secret?: string;
+    qrCodeUri?: string;
+};
+
+export type TwoFactorVerifyRequestDto = {
+    preAuthToken: string;
+    code: string;
+};
+
 export type UserDto = {
     id?: bigint;
     username?: string;
@@ -400,6 +416,27 @@ export type WebAuthnRegistrationStartDto = {
 export type WebAuthnStatusDto = {
     hasPasskey?: boolean;
     hasPassword?: boolean;
+};
+
+export type PostApiAuth2FaVerifyData = {
+    body: TwoFactorVerifyRequestDto;
+    path?: never;
+    query?: never;
+    url: '/api/auth/2fa/verify';
+};
+
+export type PostApiAuth2FaVerifyErrors = {
+    /**
+     * Bad Request: Invalid token or code
+     */
+    400: unknown;
+};
+
+export type PostApiAuth2FaVerifyResponses = {
+    /**
+     * Login successful, JWT cookie set
+     */
+    200: unknown;
 };
 
 export type PostApiAuthLoginData = {
@@ -2541,6 +2578,149 @@ export type GetApiSupervisorCheckinUsernamesByEventIdResponses = {
 };
 
 export type GetApiSupervisorCheckinUsernamesByEventIdResponse = GetApiSupervisorCheckinUsernamesByEventIdResponses[keyof GetApiSupervisorCheckinUsernamesByEventIdResponses];
+
+export type DeleteApiUser2FaDisableData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/user/2fa/disable';
+};
+
+export type DeleteApiUser2FaDisableErrors = {
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type DeleteApiUser2FaDisableResponses = {
+    /**
+     * 2FA disabled
+     */
+    204: void;
+};
+
+export type DeleteApiUser2FaDisableResponse = DeleteApiUser2FaDisableResponses[keyof DeleteApiUser2FaDisableResponses];
+
+export type PostApiUser2FaEnableData = {
+    body: {
+        [key: string]: string;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/user/2fa/enable';
+};
+
+export type PostApiUser2FaEnableErrors = {
+    /**
+     * Invalid code
+     */
+    400: unknown;
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type PostApiUser2FaEnableResponses = {
+    /**
+     * 2FA enabled, returns backup codes
+     */
+    200: unknown;
+};
+
+export type GetApiUser2FaSettingsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/user/2fa/settings';
+};
+
+export type GetApiUser2FaSettingsErrors = {
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type GetApiUser2FaSettingsResponses = {
+    /**
+     * 2FA settings retrieved
+     */
+    200: TwoFactorSettingsDto;
+};
+
+export type GetApiUser2FaSettingsResponse = GetApiUser2FaSettingsResponses[keyof GetApiUser2FaSettingsResponses];
+
+export type PutApiUser2FaSettingsData = {
+    body: TwoFactorSettingsDto;
+    path?: never;
+    query?: never;
+    url: '/api/user/2fa/settings';
+};
+
+export type PutApiUser2FaSettingsErrors = {
+    /**
+     * Bad Request
+     */
+    400: unknown;
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type PutApiUser2FaSettingsResponses = {
+    /**
+     * 2FA settings updated
+     */
+    200: TwoFactorSettingsDto;
+};
+
+export type PutApiUser2FaSettingsResponse = PutApiUser2FaSettingsResponses[keyof PutApiUser2FaSettingsResponses];
+
+export type PostApiUser2FaSetupTotpData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/user/2fa/setup/totp';
+};
+
+export type PostApiUser2FaSetupTotpErrors = {
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type PostApiUser2FaSetupTotpResponses = {
+    /**
+     * TOTP setup initiated
+     */
+    200: TwoFactorSetupDto;
+};
+
+export type PostApiUser2FaSetupTotpResponse = PostApiUser2FaSetupTotpResponses[keyof PostApiUser2FaSetupTotpResponses];
 
 export type GetApiUserEventsData = {
     body?: never;

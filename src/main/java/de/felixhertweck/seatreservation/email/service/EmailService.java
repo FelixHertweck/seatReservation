@@ -133,6 +133,10 @@ public class EmailService {
     @Location("email/manager-reservation-export")
     Template managerExportTemplate;
 
+    @Inject
+    @Location("email/two-factor-code")
+    Template twoFactorCodeTemplate;
+
     /**
      * Sends an email confirmation to the specified user.
      *
@@ -287,6 +291,35 @@ public class EmailService {
      */
     private String generateVerificationLink(String verificationCode) {
         return frontendBaseUrl.trim() + "/verify?code=" + verificationCode;
+    }
+
+    /**
+     * Sends a two-factor authentication code email to the specified user.
+     *
+     * @param user the user to whom the email will be sent
+     * @param code the verification code
+     * @throws IOException if the email template cannot be read
+     */
+    public void sendTwoFactorCode(User user, String code) throws IOException {
+        if (skipForNullOrEmptyAddress(user.getEmail())) {
+            LOG.warn("No valid email addresses provided for two factor code.");
+            return;
+        }
+        if (skipForLocalhostAddress(user.getEmail())) {
+            LOG.warn("No valid email addresses provided for two factor code.");
+            return;
+        }
+
+        LOG.debugf("User ID: %d, Username: %s", user.id, user.getUsername());
+
+        String htmlContent =
+                twoFactorCodeTemplate
+                        .data("fullName", fullName(user))
+                        .data("code", code)
+                        .data("currentYear", currentYear())
+                        .render();
+
+        enqueue(List.of(user.getEmail()), "Your Authentication Code", htmlContent, null, false);
     }
 
     /**

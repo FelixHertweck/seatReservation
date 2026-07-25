@@ -37,9 +37,12 @@ import de.felixhertweck.seatreservation.security.dto.LoginLockedDTO;
 import de.felixhertweck.seatreservation.security.dto.LoginRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.RegistrationStatusDTO;
+import de.felixhertweck.seatreservation.security.dto.TwoFactorRequiredDTO;
+import de.felixhertweck.seatreservation.security.dto.TwoFactorVerifyRequestDTO;
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
 import de.felixhertweck.seatreservation.security.service.AuthService;
 import de.felixhertweck.seatreservation.security.service.TokenService;
+import de.felixhertweck.seatreservation.security.service.TwoFactorService;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import io.quarkus.security.Authenticated;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -61,6 +64,7 @@ public class AuthResource {
     @Inject AuthService authService;
     @Inject TokenService tokenService;
     @Inject UserSecurityContext userSecurityContext;
+    @Inject TwoFactorService twoFactorService;
 
     /**
      * Gets the current registration status.
@@ -100,9 +104,36 @@ public class AuthResource {
         User user =
                 authService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
 
+        if (twoFactorService.isTwoFactorEnabled(user)) {
+            LOG.infof("User ID: %d requires 2FA.", user.id);
+            String preAuthToken = tokenService.generatePreAuthToken(user);
+            twoFactorService.sendEmailCodeIfApplicable(user, preAuthToken);
+            return Response.ok().entity(new TwoFactorRequiredDTO(preAuthToken)).build();
+        }
+
         LOG.debugf(
                 "user ID: %d logged in successfully. JWT and refresh token cookies set.", user.id);
         LOG.infof("User ID: %d logged in successfully.", user.id);
+        return authCookieResponse(user);
+    }
+
+    /**
+     * Verifies the 2FA code and returns JWT and refresh token cookies.
+     *
+     * @param verifyRequest the 2FA code and pre-auth token
+     * @return Response with JWT and refresh token cookies
+     * @throws JwtInvalidException if JWT generation fails
+     */
+    @POST
+    @Path("/2fa/verify")
+    @PermitAll
+    @APIResponse(responseCode = "200", description = "Login successful, JWT cookie set")
+    @APIResponse(responseCode = "400", description = "Bad Request: Invalid token or code")
+    public Response verifyTwoFactor(@Valid TwoFactorVerifyRequestDTO verifyRequest)
+            throws JwtInvalidException {
+        User user = tokenService.validatePreAuthToken(verifyRequest.getPreAuthToken());
+        twoFactorService.verifyCode(user, verifyRequest.getCode());
+        LOG.infof("User ID: %d passed 2FA and logged in successfully.", user.id);
         return authCookieResponse(user);
     }
 

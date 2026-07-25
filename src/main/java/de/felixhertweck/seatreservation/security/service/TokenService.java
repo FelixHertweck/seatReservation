@@ -26,8 +26,10 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.NewCookie;
 
+import de.felixhertweck.seatreservation.model.entity.PreAuthToken;
 import de.felixhertweck.seatreservation.model.entity.RefreshToken;
 import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.PreAuthTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.RefreshTokenRepository;
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
 import de.felixhertweck.seatreservation.utils.SecurityUtils;
@@ -55,6 +57,8 @@ public class TokenService {
     boolean cookieSecure;
 
     @Inject RefreshTokenRepository refreshTokenRepository;
+
+    @Inject PreAuthTokenRepository preAuthTokenRepository;
 
     @Inject JWTParser parser;
 
@@ -141,6 +145,101 @@ public class TokenService {
                 .issuedAt(Instant.now())
                 .expiresIn(Duration.ofDays(refreshExpirationDays))
                 .sign();
+    }
+
+    /**
+     * Generates a PreAuth token for the given user, indicating that they have successfully
+     * completed the first factor of authentication but require a second factor.
+     *
+     * @param user the user to generate the token for
+     * @return a short-lived JWT
+     */
+    @Transactional
+    public String generatePreAuthToken(User user) {
+        LOG.debugf("Generating PreAuth token for user: %d", user.id);
+
+        String tokenValue =
+                java.util.Base64.getUrlEncoder()
+                        .withoutPadding()
+                        .encodeToString(SecurityUtils.generateRandomBytes(32));
+        String tokenHash = BcryptUtil.bcryptHash(tokenValue);
+
+        int preAuthMinutes = 10;
+
+        PreAuthToken preAuthToken =
+                new PreAuthToken(
+                        user, tokenHash, Instant.now().plus(Duration.ofMinutes(preAuthMinutes)));
+
+        preAuthTokenRepository.persist(preAuthToken);
+
+        return Jwt.upn(user.getUsername())
+                .claim("token_type", "pre_auth")
+                .claim("token_id", preAuthToken.id.toString())
+                .claim("token_value", tokenValue)
+                .issuedAt(Instant.now())
+                .expiresIn(Duration.ofMinutes(preAuthMinutes))
+                .sign();
+    }
+
+    @Transactional
+    public void setEmailCodeForPreAuthToken(String token, String emailCodeHash)
+            throws JwtInvalidException {
+        JsonWebToken jwt;
+        try {
+            jwt = parser.parse(token);
+        } catch (Exception e) {
+            throw new JwtInvalidException("Invalid PreAuth JWT", e);
+        }
+        Long tokenId = Long.valueOf(jwt.getClaim("token_id").toString());
+        PreAuthToken preAuthToken = preAuthTokenRepository.findById(tokenId);
+        if (preAuthToken != null) {
+            preAuthToken.setEmailCodeHash(emailCodeHash);
+        }
+    }
+
+    /**
+     * Validates a PreAuth token and returns the associated user.
+     *
+     * @param token the JWT
+     * @return the associated User
+     * @throws JwtInvalidException if the token is invalid or expired
+     */
+    @Transactional
+    public User validatePreAuthToken(String token) throws JwtInvalidException {
+        JsonWebToken jwt;
+        try {
+            jwt = parser.parse(token);
+        } catch (ParseException | RuntimeException e) {
+            throw new JwtInvalidException("Invalid PreAuth JWT", e);
+        }
+
+        if (!"pre_auth".equals(jwt.getClaim("token_type"))) {
+            throw new JwtInvalidException("Invalid token_type in JWT");
+        }
+
+        Long tokenId;
+        try {
+            tokenId = Long.valueOf(jwt.getClaim("token_id").toString());
+        } catch (NumberFormatException | NullPointerException e) {
+            throw new JwtInvalidException("Invalid or missing token_id in JWT", e);
+        }
+        String tokenValue = jwt.getClaim("token_value");
+
+        PreAuthToken storedToken = preAuthTokenRepository.findById(tokenId);
+        if (storedToken == null) {
+            throw new JwtInvalidException("PreAuth token not found");
+        }
+
+        boolean isValid =
+                BcryptUtil.matches(tokenValue, storedToken.getTokenHash())
+                        && storedToken.getExpiresAt().isAfter(Instant.now());
+        if (!isValid) {
+            throw new JwtInvalidException("PreAuth token is invalid or expired");
+        }
+
+        preAuthTokenRepository.delete(storedToken);
+
+        return storedToken.getUser();
     }
 
     /**

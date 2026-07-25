@@ -1067,6 +1067,51 @@ export const SupervisorSeatStatusDTOSchema = {
     }
 } as const;
 
+export const TwoFactorSettingsDTOSchema = {
+    type: 'object',
+    properties: {
+        twoFactorEnabled: {
+            type: 'boolean'
+        },
+        twoFactorType: {
+            type: 'string'
+        },
+        passkeyRequiresTwoFactor: {
+            type: 'boolean'
+        }
+    }
+} as const;
+
+export const TwoFactorSetupDTOSchema = {
+    type: 'object',
+    properties: {
+        secret: {
+            type: 'string'
+        },
+        qrCodeUri: {
+            type: 'string'
+        }
+    }
+} as const;
+
+export const TwoFactorVerifyRequestDTOSchema = {
+    type: 'object',
+    required: [
+        'preAuthToken',
+        'code'
+    ],
+    properties: {
+        preAuthToken: {
+            type: 'string',
+            pattern: '\\S'
+        },
+        code: {
+            type: 'string',
+            pattern: '\\S'
+        }
+    }
+} as const;
+
 export const UserDTOSchema = {
     type: 'object',
     properties: {

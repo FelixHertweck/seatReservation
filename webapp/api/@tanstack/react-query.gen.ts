@@ -3,8 +3,25 @@
 import { type DefaultError, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { deleteApiAuthWebauthnCredentialsById, deleteApiManagerAreas, deleteApiManagerEntrances, deleteApiManagerEventlocations, deleteApiManagerEvents, deleteApiManagerMarkers, deleteApiManagerReservationAllowance, deleteApiManagerReservations, deleteApiManagerSeats, deleteApiUserReservations, deleteApiUsersAdminById, getApiAuthRegistrationStatus, getApiAuthWebauthnCredentials, getApiAuthWebauthnStatus, getApiEmailSeatmap, getApiManagerAreas, getApiManagerAreasById, getApiManagerEntrances, getApiManagerEntrancesById, getApiManagerEventlocations, getApiManagerEvents, getApiManagerEventsById, getApiManagerMarkers, getApiManagerMarkersById, getApiManagerReservationAllowance, getApiManagerReservationAllowanceById, getApiManagerReservationAllowanceEventByEventId, getApiManagerReservations, getApiManagerReservationsById, getApiManagerReservationsEventById, getApiManagerReservationsExportByEventIdCsv, getApiManagerReservationsExportByEventIdPdf, getApiManagerSeats, getApiManagerSeatsById, getApiSupervisorCheckinEvents, getApiSupervisorCheckinUsernamesByEventId, getApiUserEvents, getApiUserLocations, getApiUserReservations, getApiUserReservationsById, getApiUsersAdmin, getApiUsersManager, getApiUsersMe, getApiUsersRoles, type Options, postApiAuthLogin, postApiAuthLogout, postApiAuthLogoutAllDevices, postApiAuthRefresh, postApiAuthRegister, postApiAuthWebauthnLogin, postApiAuthWebauthnLoginOptions, postApiAuthWebauthnRegister, postApiAuthWebauthnRegisterNew, postApiAuthWebauthnRegisterNewOptions, postApiAuthWebauthnRegisterOptions, postApiManagerAreas, postApiManagerEntrances, postApiManagerEventlocations, postApiManagerEvents, postApiManagerMarkers, postApiManagerReservationAllowance, postApiManagerReservations, postApiManagerReservationsBlock, postApiManagerSeats, postApiSupervisorCheckinInfo, postApiSupervisorCheckinInfoByUsername, postApiSupervisorCheckinProcess, postApiUserResendEmailConfirmation, postApiUserReservations, postApiUsersAdmin, postApiUsersAdminImport, postApiUserVerifyEmailCode, putApiAuthWebauthnCredentialsById, putApiManagerAreasById, putApiManagerEntrancesById, putApiManagerEventlocationsById, putApiManagerEventsById, putApiManagerMarkersById, putApiManagerReservationAllowance, putApiManagerSeatsById, putApiUsersAdminById, putApiUsersMe } from '../sdk.gen';
-import type { DeleteApiAuthWebauthnCredentialsByIdData, DeleteApiAuthWebauthnCredentialsByIdResponse, DeleteApiManagerAreasData, DeleteApiManagerAreasResponse, DeleteApiManagerEntrancesData, DeleteApiManagerEntrancesResponse, DeleteApiManagerEventlocationsData, DeleteApiManagerEventlocationsResponse, DeleteApiManagerEventsData, DeleteApiManagerEventsResponse, DeleteApiManagerMarkersData, DeleteApiManagerMarkersResponse, DeleteApiManagerReservationAllowanceData, DeleteApiManagerReservationAllowanceResponse, DeleteApiManagerReservationsData, DeleteApiManagerReservationsResponse, DeleteApiManagerSeatsData, DeleteApiManagerSeatsResponse, DeleteApiUserReservationsData, DeleteApiUserReservationsResponse, DeleteApiUsersAdminByIdData, DeleteApiUsersAdminByIdResponse, GetApiAuthRegistrationStatusData, GetApiAuthRegistrationStatusResponse, GetApiAuthWebauthnCredentialsData, GetApiAuthWebauthnCredentialsResponse, GetApiAuthWebauthnStatusData, GetApiAuthWebauthnStatusResponse, GetApiEmailSeatmapData, GetApiEmailSeatmapResponse, GetApiManagerAreasByIdData, GetApiManagerAreasByIdResponse, GetApiManagerAreasData, GetApiManagerAreasResponse, GetApiManagerEntrancesByIdData, GetApiManagerEntrancesByIdResponse, GetApiManagerEntrancesData, GetApiManagerEntrancesResponse, GetApiManagerEventlocationsData, GetApiManagerEventlocationsResponse, GetApiManagerEventsByIdData, GetApiManagerEventsByIdResponse, GetApiManagerEventsData, GetApiManagerEventsResponse, GetApiManagerMarkersByIdData, GetApiManagerMarkersByIdResponse, GetApiManagerMarkersData, GetApiManagerMarkersResponse, GetApiManagerReservationAllowanceByIdData, GetApiManagerReservationAllowanceByIdResponse, GetApiManagerReservationAllowanceData, GetApiManagerReservationAllowanceEventByEventIdData, GetApiManagerReservationAllowanceEventByEventIdResponse, GetApiManagerReservationAllowanceResponse, GetApiManagerReservationsByIdData, GetApiManagerReservationsByIdResponse, GetApiManagerReservationsData, GetApiManagerReservationsEventByIdData, GetApiManagerReservationsEventByIdResponse, GetApiManagerReservationsExportByEventIdCsvData, GetApiManagerReservationsExportByEventIdPdfData, GetApiManagerReservationsExportByEventIdPdfResponse, GetApiManagerReservationsResponse, GetApiManagerSeatsByIdData, GetApiManagerSeatsByIdResponse, GetApiManagerSeatsData, GetApiManagerSeatsResponse, GetApiSupervisorCheckinEventsData, GetApiSupervisorCheckinEventsResponse, GetApiSupervisorCheckinUsernamesByEventIdData, GetApiSupervisorCheckinUsernamesByEventIdResponse, GetApiUserEventsData, GetApiUserEventsResponse, GetApiUserLocationsData, GetApiUserLocationsResponse, GetApiUserReservationsByIdData, GetApiUserReservationsByIdResponse, GetApiUserReservationsData, GetApiUserReservationsResponse, GetApiUsersAdminData, GetApiUsersAdminResponse, GetApiUsersManagerData, GetApiUsersManagerResponse, GetApiUsersMeData, GetApiUsersMeResponse, GetApiUsersRolesData, GetApiUsersRolesResponse, PostApiAuthLoginData, PostApiAuthLoginError, PostApiAuthLogoutAllDevicesData, PostApiAuthLogoutData, PostApiAuthRefreshData, PostApiAuthRegisterData, PostApiAuthWebauthnLoginData, PostApiAuthWebauthnLoginOptionsData, PostApiAuthWebauthnLoginOptionsResponse, PostApiAuthWebauthnRegisterData, PostApiAuthWebauthnRegisterNewData, PostApiAuthWebauthnRegisterNewOptionsData, PostApiAuthWebauthnRegisterNewOptionsResponse, PostApiAuthWebauthnRegisterOptionsData, PostApiAuthWebauthnRegisterOptionsResponse, PostApiManagerAreasData, PostApiManagerAreasResponse, PostApiManagerEntrancesData, PostApiManagerEntrancesResponse, PostApiManagerEventlocationsData, PostApiManagerEventlocationsResponse, PostApiManagerEventsData, PostApiManagerEventsResponse, PostApiManagerMarkersData, PostApiManagerMarkersResponse, PostApiManagerReservationAllowanceData, PostApiManagerReservationAllowanceResponse, PostApiManagerReservationsBlockData, PostApiManagerReservationsBlockResponse, PostApiManagerReservationsData, PostApiManagerReservationsResponse, PostApiManagerSeatsData, PostApiManagerSeatsResponse, PostApiSupervisorCheckinInfoByUsernameData, PostApiSupervisorCheckinInfoByUsernameResponse, PostApiSupervisorCheckinInfoData, PostApiSupervisorCheckinInfoResponse, PostApiSupervisorCheckinProcessData, PostApiSupervisorCheckinProcessResponse, PostApiUserResendEmailConfirmationData, PostApiUserResendEmailConfirmationResponse, PostApiUserReservationsData, PostApiUserReservationsResponse, PostApiUsersAdminData, PostApiUsersAdminImportData, PostApiUsersAdminImportResponse, PostApiUserVerifyEmailCodeData, PutApiAuthWebauthnCredentialsByIdData, PutApiManagerAreasByIdData, PutApiManagerAreasByIdResponse, PutApiManagerEntrancesByIdData, PutApiManagerEntrancesByIdResponse, PutApiManagerEventlocationsByIdData, PutApiManagerEventlocationsByIdResponse, PutApiManagerEventsByIdData, PutApiManagerEventsByIdResponse, PutApiManagerMarkersByIdData, PutApiManagerMarkersByIdResponse, PutApiManagerReservationAllowanceData, PutApiManagerReservationAllowanceResponse, PutApiManagerSeatsByIdData, PutApiManagerSeatsByIdResponse, PutApiUsersAdminByIdData, PutApiUsersAdminByIdResponse, PutApiUsersMeData, PutApiUsersMeResponse } from '../types.gen';
+import { deleteApiAuthWebauthnCredentialsById, deleteApiManagerAreas, deleteApiManagerEntrances, deleteApiManagerEventlocations, deleteApiManagerEvents, deleteApiManagerMarkers, deleteApiManagerReservationAllowance, deleteApiManagerReservations, deleteApiManagerSeats, deleteApiUser2FaDisable, deleteApiUserReservations, deleteApiUsersAdminById, getApiAuthRegistrationStatus, getApiAuthWebauthnCredentials, getApiAuthWebauthnStatus, getApiEmailSeatmap, getApiManagerAreas, getApiManagerAreasById, getApiManagerEntrances, getApiManagerEntrancesById, getApiManagerEventlocations, getApiManagerEvents, getApiManagerEventsById, getApiManagerMarkers, getApiManagerMarkersById, getApiManagerReservationAllowance, getApiManagerReservationAllowanceById, getApiManagerReservationAllowanceEventByEventId, getApiManagerReservations, getApiManagerReservationsById, getApiManagerReservationsEventById, getApiManagerReservationsExportByEventIdCsv, getApiManagerReservationsExportByEventIdPdf, getApiManagerSeats, getApiManagerSeatsById, getApiSupervisorCheckinEvents, getApiSupervisorCheckinUsernamesByEventId, getApiUser2FaSettings, getApiUserEvents, getApiUserLocations, getApiUserReservations, getApiUserReservationsById, getApiUsersAdmin, getApiUsersManager, getApiUsersMe, getApiUsersRoles, type Options, postApiAuth2FaVerify, postApiAuthLogin, postApiAuthLogout, postApiAuthLogoutAllDevices, postApiAuthRefresh, postApiAuthRegister, postApiAuthWebauthnLogin, postApiAuthWebauthnLoginOptions, postApiAuthWebauthnRegister, postApiAuthWebauthnRegisterNew, postApiAuthWebauthnRegisterNewOptions, postApiAuthWebauthnRegisterOptions, postApiManagerAreas, postApiManagerEntrances, postApiManagerEventlocations, postApiManagerEvents, postApiManagerMarkers, postApiManagerReservationAllowance, postApiManagerReservations, postApiManagerReservationsBlock, postApiManagerSeats, postApiSupervisorCheckinInfo, postApiSupervisorCheckinInfoByUsername, postApiSupervisorCheckinProcess, postApiUser2FaEnable, postApiUser2FaSetupTotp, postApiUserResendEmailConfirmation, postApiUserReservations, postApiUsersAdmin, postApiUsersAdminImport, postApiUserVerifyEmailCode, putApiAuthWebauthnCredentialsById, putApiManagerAreasById, putApiManagerEntrancesById, putApiManagerEventlocationsById, putApiManagerEventsById, putApiManagerMarkersById, putApiManagerReservationAllowance, putApiManagerSeatsById, putApiUser2FaSettings, putApiUsersAdminById, putApiUsersMe } from '../sdk.gen';
+import type { DeleteApiAuthWebauthnCredentialsByIdData, DeleteApiAuthWebauthnCredentialsByIdResponse, DeleteApiManagerAreasData, DeleteApiManagerAreasResponse, DeleteApiManagerEntrancesData, DeleteApiManagerEntrancesResponse, DeleteApiManagerEventlocationsData, DeleteApiManagerEventlocationsResponse, DeleteApiManagerEventsData, DeleteApiManagerEventsResponse, DeleteApiManagerMarkersData, DeleteApiManagerMarkersResponse, DeleteApiManagerReservationAllowanceData, DeleteApiManagerReservationAllowanceResponse, DeleteApiManagerReservationsData, DeleteApiManagerReservationsResponse, DeleteApiManagerSeatsData, DeleteApiManagerSeatsResponse, DeleteApiUser2FaDisableData, DeleteApiUser2FaDisableResponse, DeleteApiUserReservationsData, DeleteApiUserReservationsResponse, DeleteApiUsersAdminByIdData, DeleteApiUsersAdminByIdResponse, GetApiAuthRegistrationStatusData, GetApiAuthRegistrationStatusResponse, GetApiAuthWebauthnCredentialsData, GetApiAuthWebauthnCredentialsResponse, GetApiAuthWebauthnStatusData, GetApiAuthWebauthnStatusResponse, GetApiEmailSeatmapData, GetApiEmailSeatmapResponse, GetApiManagerAreasByIdData, GetApiManagerAreasByIdResponse, GetApiManagerAreasData, GetApiManagerAreasResponse, GetApiManagerEntrancesByIdData, GetApiManagerEntrancesByIdResponse, GetApiManagerEntrancesData, GetApiManagerEntrancesResponse, GetApiManagerEventlocationsData, GetApiManagerEventlocationsResponse, GetApiManagerEventsByIdData, GetApiManagerEventsByIdResponse, GetApiManagerEventsData, GetApiManagerEventsResponse, GetApiManagerMarkersByIdData, GetApiManagerMarkersByIdResponse, GetApiManagerMarkersData, GetApiManagerMarkersResponse, GetApiManagerReservationAllowanceByIdData, GetApiManagerReservationAllowanceByIdResponse, GetApiManagerReservationAllowanceData, GetApiManagerReservationAllowanceEventByEventIdData, GetApiManagerReservationAllowanceEventByEventIdResponse, GetApiManagerReservationAllowanceResponse, GetApiManagerReservationsByIdData, GetApiManagerReservationsByIdResponse, GetApiManagerReservationsData, GetApiManagerReservationsEventByIdData, GetApiManagerReservationsEventByIdResponse, GetApiManagerReservationsExportByEventIdCsvData, GetApiManagerReservationsExportByEventIdPdfData, GetApiManagerReservationsExportByEventIdPdfResponse, GetApiManagerReservationsResponse, GetApiManagerSeatsByIdData, GetApiManagerSeatsByIdResponse, GetApiManagerSeatsData, GetApiManagerSeatsResponse, GetApiSupervisorCheckinEventsData, GetApiSupervisorCheckinEventsResponse, GetApiSupervisorCheckinUsernamesByEventIdData, GetApiSupervisorCheckinUsernamesByEventIdResponse, GetApiUser2FaSettingsData, GetApiUser2FaSettingsResponse, GetApiUserEventsData, GetApiUserEventsResponse, GetApiUserLocationsData, GetApiUserLocationsResponse, GetApiUserReservationsByIdData, GetApiUserReservationsByIdResponse, GetApiUserReservationsData, GetApiUserReservationsResponse, GetApiUsersAdminData, GetApiUsersAdminResponse, GetApiUsersManagerData, GetApiUsersManagerResponse, GetApiUsersMeData, GetApiUsersMeResponse, GetApiUsersRolesData, GetApiUsersRolesResponse, PostApiAuth2FaVerifyData, PostApiAuthLoginData, PostApiAuthLoginError, PostApiAuthLogoutAllDevicesData, PostApiAuthLogoutData, PostApiAuthRefreshData, PostApiAuthRegisterData, PostApiAuthWebauthnLoginData, PostApiAuthWebauthnLoginOptionsData, PostApiAuthWebauthnLoginOptionsResponse, PostApiAuthWebauthnRegisterData, PostApiAuthWebauthnRegisterNewData, PostApiAuthWebauthnRegisterNewOptionsData, PostApiAuthWebauthnRegisterNewOptionsResponse, PostApiAuthWebauthnRegisterOptionsData, PostApiAuthWebauthnRegisterOptionsResponse, PostApiManagerAreasData, PostApiManagerAreasResponse, PostApiManagerEntrancesData, PostApiManagerEntrancesResponse, PostApiManagerEventlocationsData, PostApiManagerEventlocationsResponse, PostApiManagerEventsData, PostApiManagerEventsResponse, PostApiManagerMarkersData, PostApiManagerMarkersResponse, PostApiManagerReservationAllowanceData, PostApiManagerReservationAllowanceResponse, PostApiManagerReservationsBlockData, PostApiManagerReservationsBlockResponse, PostApiManagerReservationsData, PostApiManagerReservationsResponse, PostApiManagerSeatsData, PostApiManagerSeatsResponse, PostApiSupervisorCheckinInfoByUsernameData, PostApiSupervisorCheckinInfoByUsernameResponse, PostApiSupervisorCheckinInfoData, PostApiSupervisorCheckinInfoResponse, PostApiSupervisorCheckinProcessData, PostApiSupervisorCheckinProcessResponse, PostApiUser2FaEnableData, PostApiUser2FaSetupTotpData, PostApiUser2FaSetupTotpResponse, PostApiUserResendEmailConfirmationData, PostApiUserResendEmailConfirmationResponse, PostApiUserReservationsData, PostApiUserReservationsResponse, PostApiUsersAdminData, PostApiUsersAdminImportData, PostApiUsersAdminImportResponse, PostApiUserVerifyEmailCodeData, PutApiAuthWebauthnCredentialsByIdData, PutApiManagerAreasByIdData, PutApiManagerAreasByIdResponse, PutApiManagerEntrancesByIdData, PutApiManagerEntrancesByIdResponse, PutApiManagerEventlocationsByIdData, PutApiManagerEventlocationsByIdResponse, PutApiManagerEventsByIdData, PutApiManagerEventsByIdResponse, PutApiManagerMarkersByIdData, PutApiManagerMarkersByIdResponse, PutApiManagerReservationAllowanceData, PutApiManagerReservationAllowanceResponse, PutApiManagerSeatsByIdData, PutApiManagerSeatsByIdResponse, PutApiUser2FaSettingsData, PutApiUser2FaSettingsResponse, PutApiUsersAdminByIdData, PutApiUsersAdminByIdResponse, PutApiUsersMeData, PutApiUsersMeResponse } from '../types.gen';
+
+/**
+ * Verify Two Factor
+ */
+export const postApiAuth2FaVerifyMutation = (options?: Partial<Options<PostApiAuth2FaVerifyData>>): UseMutationOptions<unknown, DefaultError, Options<PostApiAuth2FaVerifyData>> => {
+    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<PostApiAuth2FaVerifyData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await postApiAuth2FaVerify({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 /**
  * Login
@@ -1168,6 +1185,92 @@ export const getApiSupervisorCheckinUsernamesByEventIdOptions = (options: Option
     },
     queryKey: getApiSupervisorCheckinUsernamesByEventIdQueryKey(options)
 });
+
+/**
+ * Disable Two Factor
+ */
+export const deleteApiUser2FaDisableMutation = (options?: Partial<Options<DeleteApiUser2FaDisableData>>): UseMutationOptions<DeleteApiUser2FaDisableResponse, DefaultError, Options<DeleteApiUser2FaDisableData>> => {
+    const mutationOptions: UseMutationOptions<DeleteApiUser2FaDisableResponse, DefaultError, Options<DeleteApiUser2FaDisableData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await deleteApiUser2FaDisable({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Enable Two Factor
+ */
+export const postApiUser2FaEnableMutation = (options?: Partial<Options<PostApiUser2FaEnableData>>): UseMutationOptions<unknown, DefaultError, Options<PostApiUser2FaEnableData>> => {
+    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<PostApiUser2FaEnableData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await postApiUser2FaEnable({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const getApiUser2FaSettingsQueryKey = (options?: Options<GetApiUser2FaSettingsData>) => createQueryKey('getApiUser2FaSettings', options);
+
+/**
+ * Get Settings
+ */
+export const getApiUser2FaSettingsOptions = (options?: Options<GetApiUser2FaSettingsData>) => queryOptions<GetApiUser2FaSettingsResponse, DefaultError, GetApiUser2FaSettingsResponse, ReturnType<typeof getApiUser2FaSettingsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getApiUser2FaSettings({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getApiUser2FaSettingsQueryKey(options)
+});
+
+/**
+ * Update Settings
+ */
+export const putApiUser2FaSettingsMutation = (options?: Partial<Options<PutApiUser2FaSettingsData>>): UseMutationOptions<PutApiUser2FaSettingsResponse, DefaultError, Options<PutApiUser2FaSettingsData>> => {
+    const mutationOptions: UseMutationOptions<PutApiUser2FaSettingsResponse, DefaultError, Options<PutApiUser2FaSettingsData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await putApiUser2FaSettings({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Setup Totp
+ */
+export const postApiUser2FaSetupTotpMutation = (options?: Partial<Options<PostApiUser2FaSetupTotpData>>): UseMutationOptions<PostApiUser2FaSetupTotpResponse, DefaultError, Options<PostApiUser2FaSetupTotpData>> => {
+    const mutationOptions: UseMutationOptions<PostApiUser2FaSetupTotpResponse, DefaultError, Options<PostApiUser2FaSetupTotpData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await postApiUser2FaSetupTotp({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const getApiUserEventsQueryKey = (options?: Options<GetApiUserEventsData>) => createQueryKey('getApiUserEvents', options);
 

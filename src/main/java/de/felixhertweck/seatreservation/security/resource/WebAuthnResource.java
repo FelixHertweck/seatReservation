@@ -44,6 +44,7 @@ import de.felixhertweck.seatreservation.common.exception.DuplicateUserException;
 import de.felixhertweck.seatreservation.common.exception.RegistrationDisabledException;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.security.dto.TwoFactorRequiredDTO;
 import de.felixhertweck.seatreservation.security.dto.WebAuthnCredentialDTO;
 import de.felixhertweck.seatreservation.security.dto.WebAuthnCredentialUpdateDTO;
 import de.felixhertweck.seatreservation.security.dto.WebAuthnRegistrationStartDTO;
@@ -52,6 +53,7 @@ import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailed
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
 import de.felixhertweck.seatreservation.security.service.AuthService;
 import de.felixhertweck.seatreservation.security.service.TokenService;
+import de.felixhertweck.seatreservation.security.service.TwoFactorService;
 import de.felixhertweck.seatreservation.security.service.WebAuthnService;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import io.quarkus.security.Authenticated;
@@ -93,6 +95,7 @@ public class WebAuthnResource {
     @Inject WebAuthnService webAuthnService;
     @Inject AuthService authService;
     @Inject TokenService tokenService;
+    @Inject TwoFactorService twoFactorService;
     @Inject UserSecurityContext userSecurityContext;
     @Inject UserRepository userRepository;
     @Inject CurrentVertxRequest currentVertxRequest;
@@ -273,6 +276,14 @@ public class WebAuthnResource {
                     "No user associated with the presented passkey");
         }
         webAuthnService.recordSuccessfulLogin(user);
+
+        if (twoFactorService.isPasskeyTwoFactorRequired(user)) {
+            LOG.infof("User ID: %d requires 2FA after Passkey.", user.id);
+            String preAuthToken = tokenService.generatePreAuthToken(user);
+            twoFactorService.sendEmailCodeIfApplicable(user, preAuthToken);
+            return Response.ok().entity(new TwoFactorRequiredDTO(preAuthToken)).build();
+        }
+
         LOG.infof("User ID: %d logged in successfully via passkey.", user.id);
         return authCookieResponse(user);
     }

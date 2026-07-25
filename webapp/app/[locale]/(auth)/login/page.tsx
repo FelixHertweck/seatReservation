@@ -30,9 +30,18 @@ export default function LoginPage() {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [twoFactorCode, setTwoFactorCode] = useState("");
   const [isLoadingForm, setIsLoadingForm] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
-  const { user, isLoggedIn, login, logout, retryAfter } = useAuth();
+  const {
+    user,
+    isLoggedIn,
+    login,
+    logout,
+    retryAfter,
+    requiresTwoFactor,
+    verifyTwoFactor,
+  } = useAuth();
   const { isSupported: isPasskeySupported, loginWithPasskey } = useWebAuthn();
   const [isPasskeyLoading, setIsPasskeyLoading] = useState(false);
   const router = useRouter();
@@ -118,6 +127,23 @@ export default function LoginPage() {
     }
   };
 
+  const handleTwoFactorSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoadingForm(true);
+    setLoginError(null);
+    try {
+      await verifyTwoFactor(
+        twoFactorCode,
+        requiresTwoFactor.preAuthToken!,
+        searchParams.get("returnTo"),
+      );
+    } catch {
+      setLoginError(t("login.error.invalidTwoFactorCode"));
+    } finally {
+      setIsLoadingForm(false);
+    }
+  };
+
   const handlePasskeyLogin = async () => {
     setIsPasskeyLoading(true);
     setLoginError(null);
@@ -140,6 +166,51 @@ export default function LoginPage() {
   const handleLogout = async () => {
     await logout();
   };
+
+  if (requiresTwoFactor.required) {
+    return (
+      <div className="flex min-h-screen w-full items-center justify-center bg-background">
+        <Card className="w-full max-w-md mx-4">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl font-bold">
+              {t("login.twoFactorTitle")}
+            </CardTitle>
+            <CardDescription>{t("login.twoFactorDescription")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleTwoFactorSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="code">{t("login.twoFactorCode")}</Label>
+                <Input
+                  id="code"
+                  type="text"
+                  placeholder="123456"
+                  value={twoFactorCode}
+                  onChange={(e) => {
+                    setTwoFactorCode(e.target.value);
+                    setLoginError(null);
+                  }}
+                  required
+                />
+              </div>
+              <Button
+                type="submit"
+                className="w-full"
+                variant={loginError ? "destructive" : "default"}
+                disabled={isLoadingForm || !!loginError}
+              >
+                {loginError
+                  ? loginError
+                  : isLoadingForm
+                    ? t("common.loading")
+                    : t("login.verifyButton")}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (isLoggedIn && !currentlyLoggingIn) {
     return (

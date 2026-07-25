@@ -30,6 +30,7 @@ import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenReposi
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
 import de.felixhertweck.seatreservation.model.repository.LoginAttemptRepository;
 import de.felixhertweck.seatreservation.model.repository.OutboundEmailRepository;
+import de.felixhertweck.seatreservation.model.repository.PreAuthTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.RefreshTokenRepository;
 import io.quarkus.scheduler.Scheduled;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -52,6 +53,8 @@ public class DatabaseCleanup {
     @Inject EmailSeatMapTokenRepository emailSeatMapTokenRepository;
 
     @Inject LoginAttemptRepository loginAttemptRepository;
+
+    @Inject PreAuthTokenRepository preAuthTokenRepository;
 
     @Inject OutboundEmailRepository outboundEmailRepository;
 
@@ -219,6 +222,27 @@ public class DatabaseCleanup {
             LOG.infof("Successfully cleaned up %d old login attempts.", deletedCount);
         } else {
             LOG.debug("No old login attempts found to clean up.");
+        }
+    }
+
+    /**
+     * Cleans up expired PreAuthTokens.
+     *
+     * <p>Runs daily at 2:30 AM.
+     */
+    @Scheduled(cron = "0 30 2 * * ?") // Every day at 2:30 AM
+    @Transactional
+    public void cleanupExpiredPreAuthTokens() {
+        LOG.info("Starting scheduled cleanup of expired PreAuthTokens.");
+        try {
+            long deletedCount = preAuthTokenRepository.deleteExpired();
+            if (deletedCount > 0) {
+                LOG.infof("Successfully cleaned up %d expired PreAuthTokens.", deletedCount);
+            } else {
+                LOG.debug("No expired PreAuthTokens found to clean up.");
+            }
+        } catch (Exception e) {
+            LOG.error("Error during PreAuthToken cleanup", e);
         }
     }
 
