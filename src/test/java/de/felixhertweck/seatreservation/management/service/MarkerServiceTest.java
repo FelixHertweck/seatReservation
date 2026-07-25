@@ -281,23 +281,22 @@ public class MarkerServiceTest {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> markerService.deleteMarkers(List.of(), managerAuth));
-        verify(markerRepository, never()).delete(any(EventLocationMarker.class));
+        verify(markerRepository, never()).delete(any(String.class), any(Object[].class));
     }
 
     @Test
     void deleteMarkers_Success() {
-        when(markerRepository.findByIdWithEventLocation(existingMarker.id))
-                .thenReturn(Optional.of(existingMarker));
+        when(markerRepository.findByIdsWithEventLocation(List.of(existingMarker.id)))
+                .thenReturn(List.of(existingMarker));
 
         markerService.deleteMarkers(List.of(existingMarker.id), managerAuth);
 
-        verify(markerRepository, times(1)).delete(existingMarker);
+        verify(markerRepository, times(1)).delete("id in ?1", List.of(existingMarker.id));
     }
 
     @Test
     void deleteMarkers_NotFound() {
-        when(markerRepository.findByIdWithEventLocation(any(UUID.class)))
-                .thenReturn(Optional.empty());
+        when(markerRepository.findByIdsWithEventLocation(List.of(id(999)))).thenReturn(List.of());
 
         assertThrows(
                 MarkerNotFoundException.class,
@@ -309,8 +308,8 @@ public class MarkerServiceTest {
         EventLocationMarker markerInOtherLocation = new EventLocationMarker("X", 1, 1);
         markerInOtherLocation.id = id(20);
         markerInOtherLocation.setEventLocation(otherLocation);
-        when(markerRepository.findByIdWithEventLocation(markerInOtherLocation.id))
-                .thenReturn(Optional.of(markerInOtherLocation));
+        when(markerRepository.findByIdsWithEventLocation(List.of(markerInOtherLocation.id)))
+                .thenReturn(List.of(markerInOtherLocation));
 
         assertThrows(
                 SecurityException.class,

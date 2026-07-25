@@ -20,7 +20,9 @@
 package de.felixhertweck.seatreservation.management.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -138,9 +140,23 @@ public class MarkerService {
         if (ids == null || ids.isEmpty()) {
             throw new IllegalArgumentException("No marker IDs provided for deletion");
         }
+
+        List<EventLocationMarker> markers = markerRepository.findByIdsWithEventLocation(ids);
+
+        Map<UUID, EventLocationMarker> markerMap =
+                markers.stream().collect(Collectors.toMap(m -> m.id, m -> m));
+
         for (UUID id : ids) {
-            EventLocationMarker marker = findMarkerEntityById(id, manager);
-            markerRepository.delete(marker);
+            EventLocationMarker marker = markerMap.get(id);
+            if (marker == null) {
+                throw new MarkerNotFoundException("Marker with id " + id + " not found");
+            }
+            eventLocationAccessService.requireAccess(marker.getEventLocation(), manager);
+        }
+
+        markerRepository.delete("id in ?1", ids);
+
+        for (UUID id : ids) {
             LOG.infof("Marker ID: %s deleted successfully", id);
         }
     }

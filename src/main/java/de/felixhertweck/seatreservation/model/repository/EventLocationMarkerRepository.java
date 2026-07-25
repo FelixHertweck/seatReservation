@@ -57,4 +57,21 @@ public class EventLocationMarkerRepository
                         id)
                 .firstResultOptional();
     }
+
+    /**
+     * Finds multiple markers by their IDs, eagerly fetching their event locations and those
+     * locations' managers to optimize bulk checks.
+     *
+     * @param ids the list of marker IDs to find
+     * @return the list of markers found including their event locations and managers
+     */
+    public List<EventLocationMarker> findByIdsWithEventLocation(List<UUID> ids) {
+        return find(
+                        "select e from EventLocationMarker e"
+                                + " join fetch e.eventLocation el"
+                                + " join fetch el.manager"
+                                + " where e.id in ?1",
+                        ids)
+                .list();
+    }
 }
