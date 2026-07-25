@@ -164,9 +164,13 @@ public class TokenService {
         }
 
         // Extract token id and value from JWT
+        String tokenIdStr = jwt.getClaim("token_id");
+        if (tokenIdStr == null) {
+            throw new JwtInvalidException("Invalid token_id in JWT");
+        }
         UUID tokenId;
         try {
-            tokenId = UUID.fromString(jwt.getClaim("token_id"));
+            tokenId = UUID.fromString(tokenIdStr);
         } catch (IllegalArgumentException e) {
             throw new JwtInvalidException("Invalid token_id in JWT", e);
         }
