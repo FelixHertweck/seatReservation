@@ -379,7 +379,6 @@ public class ReservationService {
                         .collect(Collectors.toMap(r -> r.id, r -> r, (r1, r2) -> r1));
 
         for (UUID id : ids) {
-
             Reservation reservation = foundReservationMap.get(id);
             if (reservation == null) {
                 LOG.warnf(
@@ -396,39 +395,15 @@ public class ReservationService {
                 throw new SecurityException("You are not allowed to delete this reservation.");
             }
 
-            reservationRepository.delete(reservation);
-
             if (reservation.getStatus() == ReservationStatus.RESERVED) {
                 LOG.debugf(
                         "Adding reservation ID %s to deleted reservations for email notification.",
                         reservation.id);
                 deletedReservations.add(reservation);
-
-                // Restore allowance count if it exists
-                eventUserAllowanceRepository
-                        .findByUserAndEvent(reservation.getUser(), reservation.getEvent())
-                        .ifPresentOrElse(
-                                allowance -> {
-                                    allowance.setReservationsAllowedCount(
-                                            allowance.getReservationsAllowedCount() + 1);
-                                    eventUserAllowanceRepository.persist(allowance);
-                                    LOG.debug(
-                                            String.format(
-                                                    "Incremented reservation allowance for user ID"
-                                                        + " %s and event ID %s. New allowance: %d",
-                                                    reservation.getUser().getId(),
-                                                    reservation.getEvent().getId(),
-                                                    allowance.getReservationsAllowedCount()));
-                                },
-                                () -> {
-                                    LOG.debugf(
-                                            "No allowance found for user ID %s and event ID %s,"
-                                                    + " skipping allowance increment.",
-                                            reservation.getUser().getId(),
-                                            reservation.getEvent().getId());
-                                });
             }
         }
+
+        reservationRepository.delete(ID_IN_QUERY, ids);
 
         // Group by user and event
         Map<User, Map<Event, List<Reservation>>> groupedReservations =
@@ -438,7 +413,7 @@ public class ReservationService {
                                         Reservation::getUser,
                                         Collectors.groupingBy(Reservation::getEvent)));
 
-        // Send an email for each user and event
+        // Send an email for each user and event and restore allowance
         for (Map.Entry<User, Map<Event, List<Reservation>>> userEntry :
                 groupedReservations.entrySet()) {
             User user = userEntry.getKey();
@@ -446,6 +421,32 @@ public class ReservationService {
             for (Map.Entry<Event, List<Reservation>> eventEntry : eventReservations.entrySet()) {
                 Event event = eventEntry.getKey();
                 List<Reservation> reservations = eventEntry.getValue();
+
+                // Restore allowance count if it exists (batched update outside the initial
+                // reservation loop)
+                eventUserAllowanceRepository
+                        .findByUserAndEvent(user, event)
+                        .ifPresentOrElse(
+                                allowance -> {
+                                    allowance.setReservationsAllowedCount(
+                                            allowance.getReservationsAllowedCount()
+                                                    + reservations.size());
+                                    eventUserAllowanceRepository.persist(allowance);
+                                    LOG.debug(
+                                            String.format(
+                                                    "Incremented reservation allowance for user ID"
+                                                        + " %s and event ID %s. New allowance: %d",
+                                                    user.getId(),
+                                                    event.getId(),
+                                                    allowance.getReservationsAllowedCount()));
+                                },
+                                () -> {
+                                    LOG.debugf(
+                                            "No allowance found for user ID %s and event ID %s,"
+                                                    + " skipping allowance increment.",
+                                            user.getId(), event.getId());
+                                });
+
                 List<Reservation> activeReservations =
                         reservationRepository.findByUserAndEvent(user, event);
 
