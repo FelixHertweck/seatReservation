@@ -1,4 +1,3 @@
-cat << 'PATCH' > patch.diff
 --- src/test/java/de/felixhertweck/seatreservation/management/service/EventLocationServiceTest.java
 +++ src/test/java/de/felixhertweck/seatreservation/management/service/EventLocationServiceTest.java
 @@ -314,7 +314,7 @@
@@ -36,6 +35,3 @@ cat << 'PATCH' > patch.diff
 +        when(eventLocationRepository.find(Mockito.anyString(), Mockito.any(Object.class)))
                  .thenReturn(query);
          when(query.list()).thenReturn(List.of(existingLocation));
-
-PATCH
-patch src/test/java/de/felixhertweck/seatreservation/management/service/EventLocationServiceTest.java patch.diff

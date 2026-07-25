@@ -314,7 +314,7 @@ public class EventLocationServiceTest {
     @Test
     void deleteEventLocation_Success_AsManager() {
         PanacheQuery<EventLocation> query = Mockito.mock(PanacheQuery.class);
-        when(eventLocationRepository.find(Mockito.anyString(), Mockito.any(List.class)))
+        when(eventLocationRepository.find(Mockito.anyString(), Mockito.any(Object.class)))
                 .thenReturn(query);
         when(query.list()).thenReturn(List.of(existingLocation));
         doNothing().when(eventLocationRepository).delete(any(EventLocation.class));
@@ -327,7 +327,7 @@ public class EventLocationServiceTest {
     @Test
     void deleteEventLocation_NotFound() {
         PanacheQuery<EventLocation> query = Mockito.mock(PanacheQuery.class);
-        when(eventLocationRepository.find(Mockito.anyString(), Mockito.any(List.class)))
+        when(eventLocationRepository.find(Mockito.anyString(), Mockito.any(Object.class)))
                 .thenReturn(query);
         when(query.list()).thenReturn(List.of());
 
@@ -340,7 +340,7 @@ public class EventLocationServiceTest {
     @Test
     void deleteEventLocation_Success_AsAdmin() {
         PanacheQuery<EventLocation> query = Mockito.mock(PanacheQuery.class);
-        when(eventLocationRepository.find(Mockito.anyString(), Mockito.any(List.class)))
+        when(eventLocationRepository.find(Mockito.anyString(), Mockito.any(Object.class)))
                 .thenReturn(query);
         when(query.list()).thenReturn(List.of(existingLocation));
         doNothing().when(eventLocationRepository).delete(any(EventLocation.class));
@@ -353,7 +353,7 @@ public class EventLocationServiceTest {
     @Test
     void deleteEventLocation_ForbiddenException_NotManagerOrAdmin() {
         PanacheQuery<EventLocation> query = Mockito.mock(PanacheQuery.class);
-        when(eventLocationRepository.find(Mockito.anyString(), Mockito.any(List.class)))
+        when(eventLocationRepository.find(Mockito.anyString(), Mockito.any(Object.class)))
                 .thenReturn(query);
         when(query.list()).thenReturn(List.of(existingLocation));
 
