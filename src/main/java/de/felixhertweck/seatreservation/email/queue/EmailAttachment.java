@@ -44,19 +44,14 @@ public record EmailAttachment(String fileName, String contentType, String conten
         if (this == o) {
             return true;
         }
-        if (!(o
-                instanceof
-                EmailAttachment(
-                        String oFileName,
-                        String oContentType,
-                        String oContentId,
-                        byte[] oData))) {
+        if (!(o instanceof EmailAttachment)) {
             return false;
         }
-        return Objects.equals(fileName, oFileName)
-                && Objects.equals(contentType, oContentType)
-                && Objects.equals(contentId, oContentId)
-                && Arrays.equals(data, oData);
+        EmailAttachment that = (EmailAttachment) o;
+        return Objects.equals(fileName, that.fileName)
+                && Objects.equals(contentType, that.contentType)
+                && Objects.equals(contentId, that.contentId)
+                && Arrays.equals(data, that.data);
     }
 
     /** Overridden to stay consistent with the content-based {@link #equals(Object)}. */

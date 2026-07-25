@@ -378,6 +378,8 @@ public class ReservationService {
                 foundReservations.stream()
                         .collect(Collectors.toMap(r -> r.id, r -> r, (r1, r2) -> r1));
 
+        List<Reservation> reservationsToDelete = new ArrayList<>(ids.size());
+
         for (UUID id : ids) {
 
             Reservation reservation = foundReservationMap.get(id);
@@ -396,6 +398,10 @@ public class ReservationService {
                 throw new SecurityException("You are not allowed to delete this reservation.");
             }
 
+            reservationsToDelete.add(reservation);
+        }
+
+        for (Reservation reservation : reservationsToDelete) {
             reservationRepository.delete(reservation);
 
             if (reservation.getStatus() == ReservationStatus.RESERVED) {
