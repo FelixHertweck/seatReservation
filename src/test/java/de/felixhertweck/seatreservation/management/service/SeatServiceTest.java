@@ -32,8 +32,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -59,6 +60,7 @@ import de.felixhertweck.seatreservation.model.repository.EventLocationRepository
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -662,12 +664,19 @@ public class SeatServiceTest {
         verify(seatRepository, never()).persist(any(Seat.class));
     }
 
+    private void mockSeatFind(List<UUID> seatIds, List<Seat> seats) {
+        @SuppressWarnings("unchecked")
+        PanacheQuery<Seat> seatQuery = mock(PanacheQuery.class);
+        when(seatQuery.list()).thenReturn(seats);
+        when(seatRepository.find("id in ?1", seatIds)).thenReturn(seatQuery);
+    }
+
     @Test
     void deleteSeat_InvalidInput_EmptyIds() {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> seatService.deleteSeatForManager(List.of(), managerAuth));
-        verify(seatRepository, never()).delete(any(Seat.class));
+        verify(seatRepository, never()).delete(anyString(), any(Object[].class));
     }
 
     @Test
@@ -718,34 +727,32 @@ public class SeatServiceTest {
 
     @Test
     void deleteSeat_Success_AsManager() {
-        when(seatRepository.findByIdOptional(existingSeat.id))
-                .thenReturn(Optional.of(existingSeat));
-        doNothing().when(seatRepository).delete(any(Seat.class));
+        mockSeatFind(List.of(existingSeat.id), List.of(existingSeat));
+        when(seatRepository.delete("id in ?1", List.of(existingSeat.id))).thenReturn(1L);
 
         seatService.deleteSeatForManager(List.of(existingSeat.id), managerAuth);
 
-        verify(seatRepository, times(1)).delete(existingSeat);
+        verify(seatRepository, times(1)).delete("id in ?1", List.of(existingSeat.id));
     }
 
     @Test
     void deleteSeat_Success_AsAdmin() {
-        when(seatRepository.findByIdOptional(existingSeat.id))
-                .thenReturn(Optional.of(existingSeat));
-        doNothing().when(seatRepository).delete(any(Seat.class));
+        mockSeatFind(List.of(existingSeat.id), List.of(existingSeat));
+        when(seatRepository.delete("id in ?1", List.of(existingSeat.id))).thenReturn(1L);
 
         seatService.deleteSeatForManager(List.of(existingSeat.id), adminAuth);
 
-        verify(seatRepository, times(1)).delete(existingSeat);
+        verify(seatRepository, times(1)).delete("id in ?1", List.of(existingSeat.id));
     }
 
     @Test
     void deleteSeat_NotFound() {
-        when(seatRepository.findByIdOptional(any(UUID.class))).thenReturn(Optional.empty());
+        mockSeatFind(List.of(id(99)), List.of());
 
         assertThrows(
                 SeatNotFoundException.class,
                 () -> seatService.deleteSeatForManager(List.of(id(99)), managerAuth));
-        verify(seatRepository, never()).delete(any(Seat.class));
+        verify(seatRepository, never()).delete("id in ?1", List.of(id(99)));
     }
 
     @Test
@@ -756,15 +763,14 @@ public class SeatServiceTest {
         Seat seatInOtherLocation = new Seat("X1", "", otherLocation);
         seatInOtherLocation.id = id(2);
 
-        when(seatRepository.findByIdOptional(seatInOtherLocation.id))
-                .thenReturn(Optional.of(seatInOtherLocation));
+        mockSeatFind(List.of(seatInOtherLocation.id), List.of(seatInOtherLocation));
 
         assertThrows(
                 SecurityException.class,
                 () ->
                         seatService.deleteSeatForManager(
                                 List.of(seatInOtherLocation.id), managerAuth));
-        verify(seatRepository, never()).delete(any(Seat.class));
+        verify(seatRepository, never()).delete("id in ?1", List.of(seatInOtherLocation.id));
     }
 
     @Test

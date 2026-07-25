@@ -20,7 +20,9 @@
 package de.felixhertweck.seatreservation.management.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -283,10 +285,41 @@ public class SeatService {
         }
 
         LOG.debugf("Attempting to delete seats with IDs: %s for manager ID: %s", ids, manager.id());
+
+        // Fetch all seats in a single query to avoid the N+1 problem
+        List<Seat> seats = seatRepository.find("id in ?1", ids).list();
+
+        // Map seats by ID for quick lookup and to preserve iterative validation and exception
+        // behavior
+        Map<UUID, Seat> seatMap = seats.stream().collect(Collectors.toMap(s -> s.id, s -> s));
+
         for (UUID id : ids) {
-            Seat seat = findSeatEntityById(id, manager); // This already checks for ownership
-            seatRepository.delete(seat);
-            LOG.infof("Seat ID: %s deleted successfully", seat.id);
+            LOG.debugf(
+                    "Attempting to find seat entity by ID: %s for user ID: %s", id, manager.id());
+            Seat seat = seatMap.get(id);
+            if (seat == null) {
+                LOG.warnf("Seat with ID %s not found for user ID: %s", id, manager.id());
+                throw new SeatNotFoundException("Seat with id " + id + " not found");
+            }
+
+            if (manager.isAdmin()) {
+                LOG.debugf("User is ADMIN, allowing access to seat ID %s.", id);
+            } else {
+                if (!seat.getLocation().getManager().getId().equals(manager.id())) {
+                    LOG.warnf(
+                            "user ID: %s does not have permission to access seat ID %s.",
+                            manager.id(), id);
+                    throw new SecurityException("You do not have permission to access this seat");
+                }
+                LOG.debugf("user ID: %s has permission to access seat ID %s.", manager.id(), id);
+            }
+        }
+
+        // Batch delete the seats
+        seatRepository.delete("id in ?1", ids);
+
+        for (UUID id : ids) {
+            LOG.infof("Seat ID: %s deleted successfully", id);
         }
         LOG.debugf("Seats with IDs %s deleted successfully by manager ID: %s", ids, manager.id());
     }
