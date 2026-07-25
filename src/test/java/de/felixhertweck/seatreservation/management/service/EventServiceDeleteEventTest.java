@@ -23,6 +23,8 @@ import static de.felixhertweck.seatreservation.testutil.TestIds.id;
 
 import java.util.List;
 import java.util.Set;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
@@ -32,7 +34,10 @@ import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
+import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
+import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,6 +48,12 @@ import org.mockito.MockitoAnnotations;
 public class EventServiceDeleteEventTest {
 
     @Mock EventRepository eventRepository;
+
+    @Mock ReservationRepository reservationRepository;
+
+    @Mock EventUserAllowanceRepository eventUserAllowanceRepository;
+
+    @Mock EmailSeatMapTokenRepository emailSeatMapTokenRepository;
 
     @InjectMocks EventService eventService;
 
@@ -86,10 +97,22 @@ public class EventServiceDeleteEventTest {
                         eq(List.of(id(101), id(102)))))
                 .thenReturn(queryMock);
 
+        EntityManager entityManagerMock = mock(EntityManager.class);
+        Query nativeQueryMock = mock(Query.class);
+        when(entityManagerMock.createNativeQuery(anyString())).thenReturn(nativeQueryMock);
+        when(nativeQueryMock.setParameter(anyString(), any())).thenReturn(nativeQueryMock);
+        when(eventRepository.getEntityManager()).thenReturn(entityManagerMock);
+
         eventService.deleteEvent(List.of(id(101), id(102)), managerUser);
 
-        verify(eventRepository, times(1)).delete(event1);
-        verify(eventRepository, times(1)).delete(event2);
+        verify(eventRepository, times(1)).delete(eq("id in ?1"), eq(List.of(id(101), id(102))));
+        verify(reservationRepository, times(1))
+                .delete(eq("event.id in ?1"), eq(List.of(id(101), id(102))));
+        verify(eventUserAllowanceRepository, times(1))
+                .delete(eq("event.id in ?1"), eq(List.of(id(101), id(102))));
+        verify(emailSeatMapTokenRepository, times(1))
+                .delete(eq("event.id in ?1"), eq(List.of(id(101), id(102))));
+        verify(entityManagerMock, times(2)).createNativeQuery(anyString());
     }
 
     @Test

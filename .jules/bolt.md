@@ -1,0 +1,3 @@
+## 2026-07-25 - Safe Parent Entity Bulk Deletion with JPA Cascades
+**Learning:** In Quarkus/Panache Hibernate, performing a bulk delete (such as `repository.delete("id in ?1", ids)`) bypasses JPA lifecycle events and cascades (e.g., `CascadeType.ALL`, `orphanRemoval = true`). If the underlying database does not have `ON DELETE CASCADE` constraints on the foreign keys, executing a direct parent bulk delete will fail with foreign key constraint violations.
+**Action:** Before bulk-deleting parent entities, manually delete all cascading and dependent child entities using bulk delete operations (HQL deletes or native SQL queries for element collections and join tables) in the correct topological order.

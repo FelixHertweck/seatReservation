@@ -39,8 +39,11 @@ import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
+import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
+import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import org.jboss.logging.Logger;
@@ -57,6 +60,12 @@ public class EventService {
     @Inject UserRepository userRepository;
 
     @Inject NotificationService notificationService;
+
+    @Inject ReservationRepository reservationRepository;
+
+    @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
+
+    @Inject EmailSeatMapTokenRepository emailSeatMapTokenRepository;
 
     /**
      * Creates a new Event and assigns the currently authenticated manager as its creator. Access
@@ -360,8 +369,35 @@ public class EventService {
             eventsToDelete.add(event);
         }
 
+        // 1. Delete associated email_seat_map_token_seats
+        eventRepository
+                .getEntityManager()
+                .createNativeQuery(
+                        "DELETE FROM email_seat_map_token_seats WHERE token_id IN (SELECT id"
+                                + " FROM email_seat_map_tokens WHERE event_id IN :ids)")
+                .setParameter("ids", ids)
+                .executeUpdate();
+
+        // 2. Delete email_seat_map_tokens
+        emailSeatMapTokenRepository.delete("event.id in ?1", ids);
+
+        // 3. Delete reservations
+        reservationRepository.delete("event.id in ?1", ids);
+
+        // 4. Delete eventuserallowance
+        eventUserAllowanceRepository.delete("event.id in ?1", ids);
+
+        // 5. Delete event_supervisors join table entries
+        eventRepository
+                .getEntityManager()
+                .createNativeQuery("DELETE FROM event_supervisors WHERE event_id IN :ids")
+                .setParameter("ids", ids)
+                .executeUpdate();
+
+        // 6. Bulk delete events
+        eventRepository.delete("id in ?1", ids);
+
         for (Event event : eventsToDelete) {
-            eventRepository.delete(event);
             LOG.debugf(
                     "Event '%s' (ID: %s) deleted successfully by user ID: %s (ID: %s)",
                     event.getName(), event.getId(), currentUser.id, currentUser.getId());
