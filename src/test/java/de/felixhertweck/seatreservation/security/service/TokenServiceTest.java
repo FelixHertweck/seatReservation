@@ -26,6 +26,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.UUID;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.NewCookie;
@@ -439,6 +440,49 @@ public class TokenServiceTest {
                 JwtInvalidException.class,
                 () -> tokenService.validateRefreshToken(refreshTokenJwt),
                 "Should throw JwtInvalidException for wrong token value");
+    }
+
+    @Test
+    @Transactional
+    void testValidateRefreshToken_MissingTokenId() throws Exception {
+        String token = "valid.token";
+        JsonWebToken mockJwt = mock(JsonWebToken.class);
+        when(mockJwt.getClaim("token_id")).thenReturn(null);
+        when(jwtParser.parse(token)).thenReturn(mockJwt);
+
+        assertThrows(
+                JwtInvalidException.class,
+                () -> tokenService.validateRefreshToken(token),
+                "Should throw JwtInvalidException when token_id is missing");
+    }
+
+    @Test
+    @Transactional
+    void testValidateRefreshToken_MalformedTokenId() throws Exception {
+        String token = "valid.token";
+        JsonWebToken mockJwt = mock(JsonWebToken.class);
+        when(mockJwt.getClaim("token_id")).thenReturn("not-a-valid-uuid");
+        when(jwtParser.parse(token)).thenReturn(mockJwt);
+
+        assertThrows(
+                JwtInvalidException.class,
+                () -> tokenService.validateRefreshToken(token),
+                "Should throw JwtInvalidException when token_id is malformed");
+    }
+
+    @Test
+    @Transactional
+    void testValidateRefreshToken_MissingTokenValue() throws Exception {
+        String token = "valid.token";
+        JsonWebToken mockJwt = mock(JsonWebToken.class);
+        when(mockJwt.getClaim("token_id")).thenReturn(UUID.randomUUID().toString());
+        when(mockJwt.getClaim("token_value")).thenReturn(null);
+        when(jwtParser.parse(token)).thenReturn(mockJwt);
+
+        assertThrows(
+                JwtInvalidException.class,
+                () -> tokenService.validateRefreshToken(token),
+                "Should throw JwtInvalidException when token_value is missing");
     }
 
     @Test
