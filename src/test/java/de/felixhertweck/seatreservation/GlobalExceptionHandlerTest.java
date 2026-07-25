@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation;
 
+import java.time.Instant;
 import java.util.Map;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
@@ -41,6 +42,8 @@ import de.felixhertweck.seatreservation.reservation.exception.EventBookingClosed
 import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatBlockedException;
+import de.felixhertweck.seatreservation.security.dto.LoginLockedDTO;
+import de.felixhertweck.seatreservation.security.exceptions.AccountLockedException;
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
 import de.felixhertweck.seatreservation.security.service.TokenService;
@@ -307,5 +310,18 @@ class GlobalExceptionHandlerTest {
         assertTrue(response.getEntity() instanceof ErrorResponseDTO);
         ErrorResponseDTO errorResponse = (ErrorResponseDTO) response.getEntity();
         assertEquals(customMessage, errorResponse.getMessage());
+    }
+
+    @Test
+    void testAccountLockedException() {
+        Instant retryAfter = Instant.ofEpochSecond(1700000000L);
+        AccountLockedException exception = new AccountLockedException("Account locked", retryAfter);
+        Response response = exceptionHandler.toResponse(exception);
+
+        assertEquals(Response.Status.TOO_MANY_REQUESTS.getStatusCode(), response.getStatus());
+        assertTrue(response.getEntity() instanceof LoginLockedDTO);
+        LoginLockedDTO errorResponse = (LoginLockedDTO) response.getEntity();
+        assertEquals("Account locked", errorResponse.getMessage());
+        assertEquals(retryAfter, errorResponse.getRetryAfter());
     }
 }

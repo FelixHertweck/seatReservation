@@ -78,59 +78,16 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
      */
     @Override
     public Response toResponse(Exception exception) {
+        if (exception instanceof AccountLockedException accountLockedException) {
+            return handleAccountLocked(accountLockedException);
+        }
+
         ErrorResponseDTO errorResponse = new ErrorResponseDTO(exception.getMessage());
-        Response.Status status;
+        Response.Status status = determineStatus(exception);
         List<NewCookie> cookies = new ArrayList<>();
 
-        switch (exception) {
-            case EventBookingClosedException ignored -> status = Response.Status.BAD_REQUEST;
-            case EventNotFoundException ignored -> status = Response.Status.NOT_FOUND;
-            case EventLocationNotFoundException ignored -> status = Response.Status.NOT_FOUND;
-            case ReservationNotFoundException ignored -> status = Response.Status.NOT_FOUND;
-            case SeatNotFoundException ignored -> status = Response.Status.NOT_FOUND;
-            case AreaNotFoundException ignored -> status = Response.Status.NOT_FOUND;
-            case EntranceNotFoundException ignored -> status = Response.Status.NOT_FOUND;
-            case MarkerNotFoundException ignored -> status = Response.Status.NOT_FOUND;
-            case AreaInUseException ignored -> status = Response.Status.CONFLICT;
-            case EntranceInUseException ignored -> status = Response.Status.CONFLICT;
-            case NoSeatsAvailableException ignored -> status = Response.Status.BAD_REQUEST;
-            case SeatAlreadyReservedException ignored -> status = Response.Status.CONFLICT;
-            case SeatBlockedException ignored -> status = Response.Status.CONFLICT;
-            case CheckInTokenNotFoundException ignored -> status = Response.Status.NOT_FOUND;
-            case CheckInException ignored -> status = Response.Status.BAD_REQUEST;
-            case JwtInvalidException ignored -> {
-                NewCookie jwtAccessCookie = tokenService.createNewNullCookie("jwt", true);
-                NewCookie refreshTokenCookie =
-                        tokenService.createNewNullCookie("refreshToken", true);
-                NewCookie refreshTokenExpirationCookie =
-                        tokenService.createNewNullCookie("refreshToken_expiration", false);
-                cookies.add(jwtAccessCookie);
-                cookies.add(refreshTokenCookie);
-                cookies.add(refreshTokenExpirationCookie);
-                status = Response.Status.UNAUTHORIZED;
-            }
-            case AuthenticationFailedException ignored -> status = Response.Status.UNAUTHORIZED;
-            case LastCredentialException ignored -> status = Response.Status.CONFLICT;
-            case DuplicateUserException ignored -> status = Response.Status.CONFLICT;
-            case InvalidUserException ignored -> status = Response.Status.BAD_REQUEST;
-            case RegistrationDisabledException ignored -> status = Response.Status.FORBIDDEN;
-            case VerificationCodeNotFoundException ignored -> status = Response.Status.BAD_REQUEST;
-            case VerifyTokenExpiredException ignored -> status = Response.Status.GONE;
-            case UserNotFoundException ignored -> status = Response.Status.NOT_FOUND;
-            case IllegalArgumentException ignored -> status = Response.Status.BAD_REQUEST;
-            case SecurityException ignored -> status = Response.Status.FORBIDDEN;
-            case IllegalStateException ignored -> status = Response.Status.BAD_REQUEST;
-            case AccountLockedException accountLockedException -> {
-                status = Response.Status.TOO_MANY_REQUESTS;
-                LoginLockedDTO errorResponseLogin =
-                        new LoginLockedDTO(
-                                accountLockedException.getMessage(),
-                                accountLockedException.getRetryAfter());
-                return Response.status(status).entity(errorResponseLogin).build();
-            }
-            default -> {
-                status = Response.Status.INTERNAL_SERVER_ERROR;
-            }
+        if (exception instanceof JwtInvalidException) {
+            cookies.addAll(clearJwtCookies());
         }
 
         LOG.warnf(
@@ -140,5 +97,59 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
                 .entity(errorResponse)
                 .cookie(cookies.toArray(NewCookie[]::new))
                 .build();
+    }
+
+    private Response.Status determineStatus(Exception exception) {
+        return switch (exception) {
+            case EventBookingClosedException ignored -> Response.Status.BAD_REQUEST;
+            case EventNotFoundException ignored -> Response.Status.NOT_FOUND;
+            case EventLocationNotFoundException ignored -> Response.Status.NOT_FOUND;
+            case ReservationNotFoundException ignored -> Response.Status.NOT_FOUND;
+            case SeatNotFoundException ignored -> Response.Status.NOT_FOUND;
+            case AreaNotFoundException ignored -> Response.Status.NOT_FOUND;
+            case EntranceNotFoundException ignored -> Response.Status.NOT_FOUND;
+            case MarkerNotFoundException ignored -> Response.Status.NOT_FOUND;
+            case AreaInUseException ignored -> Response.Status.CONFLICT;
+            case EntranceInUseException ignored -> Response.Status.CONFLICT;
+            case NoSeatsAvailableException ignored -> Response.Status.BAD_REQUEST;
+            case SeatAlreadyReservedException ignored -> Response.Status.CONFLICT;
+            case SeatBlockedException ignored -> Response.Status.CONFLICT;
+            case CheckInTokenNotFoundException ignored -> Response.Status.NOT_FOUND;
+            case CheckInException ignored -> Response.Status.BAD_REQUEST;
+            case JwtInvalidException ignored -> Response.Status.UNAUTHORIZED;
+            case AuthenticationFailedException ignored -> Response.Status.UNAUTHORIZED;
+            case LastCredentialException ignored -> Response.Status.CONFLICT;
+            case DuplicateUserException ignored -> Response.Status.CONFLICT;
+            case InvalidUserException ignored -> Response.Status.BAD_REQUEST;
+            case RegistrationDisabledException ignored -> Response.Status.FORBIDDEN;
+            case VerificationCodeNotFoundException ignored -> Response.Status.BAD_REQUEST;
+            case VerifyTokenExpiredException ignored -> Response.Status.GONE;
+            case UserNotFoundException ignored -> Response.Status.NOT_FOUND;
+            case IllegalArgumentException ignored -> Response.Status.BAD_REQUEST;
+            case SecurityException ignored -> Response.Status.FORBIDDEN;
+            case IllegalStateException ignored -> Response.Status.BAD_REQUEST;
+            default -> Response.Status.INTERNAL_SERVER_ERROR;
+        };
+    }
+
+    private List<NewCookie> clearJwtCookies() {
+        List<NewCookie> cookies = new ArrayList<>();
+        NewCookie jwtAccessCookie = tokenService.createNewNullCookie("jwt", true);
+        NewCookie refreshTokenCookie = tokenService.createNewNullCookie("refreshToken", true);
+        NewCookie refreshTokenExpirationCookie =
+                tokenService.createNewNullCookie("refreshToken_expiration", false);
+        cookies.add(jwtAccessCookie);
+        cookies.add(refreshTokenCookie);
+        cookies.add(refreshTokenExpirationCookie);
+        return cookies;
+    }
+
+    private Response handleAccountLocked(AccountLockedException accountLockedException) {
+        Response.Status status = Response.Status.TOO_MANY_REQUESTS;
+        LoginLockedDTO errorResponseLogin =
+                new LoginLockedDTO(
+                        accountLockedException.getMessage(),
+                        accountLockedException.getRetryAfter());
+        return Response.status(status).entity(errorResponseLogin).build();
     }
 }
