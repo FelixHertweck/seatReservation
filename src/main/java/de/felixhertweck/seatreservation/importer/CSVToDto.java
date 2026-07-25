@@ -54,13 +54,37 @@ public class CSVToDto {
         String output =
                 args.length > 1 ? args[1] : System.getProperty("importer.output", DEFAULT_JSON);
 
-        List<AdminUserCreationDto> users = new ArrayList<>();
-
         Path inputPath = Path.of(input);
         if (!Files.exists(inputPath)) {
             LOG.errorf("Input file does not exist: %s", inputPath.toAbsolutePath());
             System.exit(2);
         }
+
+        List<AdminUserCreationDto> users;
+        try {
+            users = parseCsv(inputPath);
+        } catch (IOException e) {
+            LOG.error("Error reading CSV", e);
+            System.exit(3);
+            return;
+        }
+
+        // Write JSON using Jackson
+        ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+        Path outPath = Path.of(output);
+        try {
+            Files.createDirectories(
+                    outPath.getParent() == null ? Path.of(".") : outPath.getParent());
+            mapper.writeValue(outPath.toFile(), users);
+            LOG.infof("Wrote %d users to %s", users.size(), outPath.toAbsolutePath());
+        } catch (IOException e) {
+            LOG.error("Error writing JSON", e);
+            System.exit(4);
+        }
+    }
+
+    public static List<AdminUserCreationDto> parseCsv(Path inputPath) throws IOException {
+        List<AdminUserCreationDto> users = new ArrayList<>();
 
         CSVFormat format =
                 CSVFormat.Builder.create(CSVFormat.DEFAULT)
@@ -89,24 +113,9 @@ public class CSVToDto {
                 // Expecting at least firstname, lastname, password; optional email
                 processRecord(record, users);
             }
-
-        } catch (IOException e) {
-            LOG.error("Error reading CSV", e);
-            System.exit(3);
         }
 
-        // Write JSON using Jackson
-        ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
-        Path outPath = Path.of(output);
-        try {
-            Files.createDirectories(
-                    outPath.getParent() == null ? Path.of(".") : outPath.getParent());
-            mapper.writeValue(outPath.toFile(), users);
-            LOG.infof("Wrote %d users to %s", users.size(), outPath.toAbsolutePath());
-        } catch (IOException e) {
-            LOG.error("Error writing JSON", e);
-            System.exit(4);
-        }
+        return users;
     }
 
     private static String safeGet(CSVRecord record, String header, int index) {
