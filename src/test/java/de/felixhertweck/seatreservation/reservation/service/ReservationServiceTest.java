@@ -401,7 +401,7 @@ class ReservationServiceTest {
         mockSeatFind(dto.getSeatIds(), List.of(seat1));
         when(eventUserAllowanceRepository.findByUserAndEventId(currentUser, event.id))
                 .thenReturn(Optional.of(allowance));
-        when(reservationRepository.findByEventId(event.id))
+        when(reservationRepository.findByEventIdAndSeatIds(eq(event.id), anyList()))
                 .thenReturn(List.of(existingReservation));
 
         SeatAlreadyReservedException exception =
@@ -427,7 +427,7 @@ class ReservationServiceTest {
         mockSeatFind(dto.getSeatIds(), List.of(seat1));
         when(eventUserAllowanceRepository.findByUserAndEventId(currentUser, event.id))
                 .thenReturn(Optional.of(allowance));
-        when(reservationRepository.findByEventId(event.id))
+        when(reservationRepository.findByEventIdAndSeatIds(eq(event.id), anyList()))
                 .thenReturn(List.of(existingReservation));
 
         SeatBlockedException exception =
