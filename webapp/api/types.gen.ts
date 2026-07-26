@@ -2828,6 +2828,10 @@ export type PostApiUserSeatcartByEventIdBySeatIdData = {
 
 export type PostApiUserSeatcartByEventIdBySeatIdErrors = {
     /**
+     * Bad Request: You have reached your reservation limit for this event
+     */
+    400: unknown;
+    /**
      * Unauthorized
      */
     401: unknown;
@@ -2836,7 +2840,7 @@ export type PostApiUserSeatcartByEventIdBySeatIdErrors = {
      */
     403: unknown;
     /**
-     * Conflict: Seat is already reserved, blocked, or held by another user's cart
+     * Conflict: Seat is already reserved, blocked, or held by another user's cart, or you have no reservation allowance for this event at all
      */
     409: unknown;
 };

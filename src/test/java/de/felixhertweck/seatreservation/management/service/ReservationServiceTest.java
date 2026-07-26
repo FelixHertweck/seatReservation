@@ -66,7 +66,6 @@ import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepos
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
-import de.felixhertweck.seatreservation.reservation.service.SeatCartService;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.CodeGenerator;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
@@ -85,7 +84,6 @@ public class ReservationServiceTest {
     @InjectMock UserRepository userRepository;
     @InjectMock EventUserAllowanceRepository eventUserAllowanceRepository;
     @InjectMock EmailService emailService;
-    @InjectMock SeatCartService seatCartService;
 
     @Inject ReservationService reservationService;
 
@@ -110,7 +108,6 @@ public class ReservationServiceTest {
         Mockito.reset(userRepository);
         Mockito.reset(eventUserAllowanceRepository);
         Mockito.reset(emailService);
-        Mockito.reset(seatCartService);
 
         adminUser =
                 new User(
@@ -254,8 +251,6 @@ public class ReservationServiceTest {
         verify(reservationRepository).persist(any(Reservation.class));
         verify(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
         assertEquals(0, allowance.getReservationsAllowedCount()); // Allowance should be decremented
-        verify(seatCartService, times(1))
-                .markSeatsReserved(event.id, List.of(seat.id), event.getEndTime());
     }
 
     @Test
@@ -457,7 +452,6 @@ public class ReservationServiceTest {
         reservationService.deleteReservation(List.of(reservation.id), adminUser);
 
         verify(reservationRepository, times(1)).delete(reservation);
-        verify(seatCartService, times(1)).freeSeats(event.id, List.of(seat.id));
     }
 
     @Test
@@ -535,8 +529,6 @@ public class ReservationServiceTest {
         verify(reservationRepository, times(1)).delete(blockedReservation);
         // Verify allowance was never updated for blocked reservations
         verify(eventUserAllowanceRepository, never()).persist(any(EventUserAllowance.class));
-        // Redis marker is still freed even though it was never a "reserved" allowance-holder.
-        verify(seatCartService, times(1)).freeSeats(event.id, List.of(seat.id));
     }
 
     @Test
@@ -570,7 +562,6 @@ public class ReservationServiceTest {
         // Allowance should be incremented twice (once for each reservation)
         verify(eventUserAllowanceRepository, times(2)).persist(allowance);
         assertEquals(2, allowance.getReservationsAllowedCount());
-        verify(seatCartService, times(1)).freeSeats(event.id, List.of(seat.id, seat2.id));
     }
 
     @Test
@@ -744,8 +735,6 @@ public class ReservationServiceTest {
         reservationService.blockSeats(event.id, List.of(seat.id), managerUser);
 
         verify(reservationRepository).persist(any(Iterable.class));
-        verify(seatCartService, times(1))
-                .markSeatsBlocked(event.id, List.of(seat.id), event.getEndTime());
     }
 
     @Test

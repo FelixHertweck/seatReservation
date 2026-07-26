@@ -69,7 +69,10 @@ public class EventService {
                                     new UserEventResponseDTO(
                                             allowance.getEvent(),
                                             allowance.getReservationsAllowedCount()));
-                            seatCartService.grantAccess(allowance.getEvent().getId(), user.id);
+                            seatCartService.grantAccess(
+                                    allowance.getEvent().getId(),
+                                    user.id,
+                                    allowance.getReservationsAllowedCount());
                         });
 
         // Reservations only add if event not already exists

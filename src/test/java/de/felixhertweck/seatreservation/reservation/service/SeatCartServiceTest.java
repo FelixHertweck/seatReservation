@@ -43,13 +43,14 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.Seat;
-import de.felixhertweck.seatreservation.model.repository.EventRepository;
+import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.reservation.dto.SeatCartEntryDTO;
+import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatBlockedException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatCartAccessNotGrantedException;
@@ -65,10 +66,13 @@ import org.junit.jupiter.api.Test;
 class SeatCartServiceTest {
 
     private static final long TTL_SECONDS = 300;
-    private static final long ACCESS_GRANT_TTL_SECONDS = TTL_SECONDS + 30;
+    private static final long ACCESS_GRANT_TTL_BUFFER_SECONDS = 30;
+    private static final long ACCESS_GRANT_TTL_SECONDS =
+            TTL_SECONDS + ACCESS_GRANT_TTL_BUFFER_SECONDS;
+    private static final int ALLOWED_COUNT = 2;
 
     private ReservationRepository reservationRepository;
-    private EventRepository eventRepository;
+    private EventUserAllowanceRepository eventUserAllowanceRepository;
     private ValueCommands<String, String> valueCommands;
     private KeyCommands<String> keyCommands;
     private SetCommands<String, String> setCommands;
@@ -83,7 +87,7 @@ class SeatCartServiceTest {
     @BeforeEach
     void setUp() {
         reservationRepository = mock(ReservationRepository.class);
-        eventRepository = mock(EventRepository.class);
+        eventUserAllowanceRepository = mock(EventUserAllowanceRepository.class);
         valueCommands = mock(ValueCommands.class);
         keyCommands = mock(KeyCommands.class);
         setCommands = mock(SetCommands.class);
@@ -95,13 +99,15 @@ class SeatCartServiceTest {
 
         seatCartService = new SeatCartService(redisDataSource);
         seatCartService.reservationRepository = reservationRepository;
-        seatCartService.eventRepository = eventRepository;
+        seatCartService.eventUserAllowanceRepository = eventUserAllowanceRepository;
         seatCartService.ttlSeconds = TTL_SECONDS;
+        seatCartService.accessGrantTtlBufferSeconds = ACCESS_GRANT_TTL_BUFFER_SECONDS;
 
-        // Default: access already granted, event already seeded - most tests exercise only the
-        // Redis-only hot path. Tests that care about seeding/access-denial override this.
-        when(valueCommands.get(accessKey())).thenReturn("1");
-        when(valueCommands.get(seededKey())).thenReturn("1");
+        // Default: access already granted with an allowance of ALLOWED_COUNT, seat not persisted
+        // as unavailable - most tests exercise only the Redis-only hot path plus this one DB read.
+        when(valueCommands.get(accessKey())).thenReturn(String.valueOf(ALLOWED_COUNT));
+        when(reservationRepository.findByEventIdAndSeatIds(any(), any()))
+                .thenReturn(Collections.emptyList());
     }
 
     private String key() {
@@ -120,12 +126,8 @@ class SeatCartServiceTest {
         return "seatcart:idx:" + eventId;
     }
 
-    private String seededKey() {
-        return "seatcart:seeded:" + eventId;
-    }
-
-    private String seedingLockKey() {
-        return "seatcart:seeding:" + eventId;
+    private String userIndexKey() {
+        return "seatcart:useridx:" + eventId + ":" + userId;
     }
 
     private static Reservation reservationWith(UUID seatId, ReservationStatus status) {
@@ -141,6 +143,8 @@ class SeatCartServiceTest {
     void addSeatToCart_Success_NewHold() {
         when(valueCommands.setGet(eq(key()), eq(userId.toString()), any(SetArgs.class)))
                 .thenReturn(null);
+        when(setCommands.smembers(userIndexKey())).thenReturn(Set.of(seatId.toString()));
+        when(valueCommands.mget(any(String[].class))).thenReturn(Map.of(key(), userId.toString()));
 
         SeatCartEntryDTO result = seatCartService.addSeatToCart(eventId, seatId, userId);
 
@@ -148,6 +152,7 @@ class SeatCartServiceTest {
         assertTrue(result.expiresAt().isAfter(Instant.now()));
         // No TTL-refresh call for the seat hold itself (new hold, NX already set it).
         verify(valueCommands, never()).set(eq(key()), anyString(), any(SetArgs.class));
+        verify(setCommands, times(1)).sadd(userIndexKey(), seatId.toString());
         verify(setCommands, times(1)).sadd(indexKey(), seatId.toString());
         // Sliding window: access grant TTL pushed out again on every successful cart write.
         verify(keyCommands, times(1))
@@ -163,6 +168,8 @@ class SeatCartServiceTest {
 
         assertEquals(seatId, result.seatId());
         verify(valueCommands, times(1)).set(eq(key()), eq(userId.toString()), any(SetArgs.class));
+        // Refreshing an existing hold never needs the quota check.
+        verify(setCommands, never()).sadd(userIndexKey(), seatId.toString());
     }
 
     @Test
@@ -176,32 +183,34 @@ class SeatCartServiceTest {
     }
 
     @Test
-    void addSeatToCart_ReservedSentinel_ThrowsWithoutTouchingDb() {
-        when(valueCommands.setGet(eq(key()), eq(userId.toString()), any(SetArgs.class)))
-                .thenReturn("RESERVED");
+    void addSeatToCart_SeatAlreadyReserved_ThrowsFromDbCheck() {
+        Reservation reserved = reservationWith(seatId, ReservationStatus.RESERVED);
+        when(reservationRepository.findByEventIdAndSeatIds(eventId, List.of(seatId)))
+                .thenReturn(List.of(reserved));
 
         assertThrows(
                 SeatAlreadyReservedException.class,
                 () -> seatCartService.addSeatToCart(eventId, seatId, userId));
-        verify(reservationRepository, never()).findByEventIdAndSeatIds(any(), any());
-        verify(reservationRepository, never()).findByEventId(any());
+        verify(valueCommands, never()).setGet(anyString(), anyString(), any(SetArgs.class));
     }
 
     @Test
-    void addSeatToCart_BlockedSentinel_ThrowsWithoutTouchingDb() {
-        when(valueCommands.setGet(eq(key()), eq(userId.toString()), any(SetArgs.class)))
-                .thenReturn("BLOCKED");
+    void addSeatToCart_SeatBlocked_ThrowsFromDbCheck() {
+        Reservation blocked = reservationWith(seatId, ReservationStatus.BLOCKED);
+        when(reservationRepository.findByEventIdAndSeatIds(eventId, List.of(seatId)))
+                .thenReturn(List.of(blocked));
 
         assertThrows(
                 SeatBlockedException.class,
                 () -> seatCartService.addSeatToCart(eventId, seatId, userId));
-        verify(reservationRepository, never()).findByEventIdAndSeatIds(any(), any());
-        verify(reservationRepository, never()).findByEventId(any());
+        verify(valueCommands, never()).setGet(anyString(), anyString(), any(SetArgs.class));
     }
 
     @Test
-    void addSeatToCart_AccessNotGranted_ThrowsWithoutTouchingRedisHold() {
+    void addSeatToCart_AccessNotGranted_NoAllowanceInDb_Throws() {
         when(valueCommands.get(accessKey())).thenReturn(null);
+        when(eventUserAllowanceRepository.findByUserIdAndEventId(userId, eventId))
+                .thenReturn(Optional.empty());
 
         assertThrows(
                 SeatCartAccessNotGrantedException.class,
@@ -210,72 +219,81 @@ class SeatCartServiceTest {
     }
 
     @Test
-    void addSeatToCart_EventNotYetSeeded_SeedsFromDatabaseThenServesFromRedis() {
-        when(valueCommands.get(seededKey())).thenReturn(null);
-        when(valueCommands.setnx(seedingLockKey(), "1")).thenReturn(true);
-
-        Event event = mock(Event.class);
-        when(event.getEndTime()).thenReturn(Instant.now().plusSeconds(3600));
-        when(eventRepository.findByIdOptional(eventId)).thenReturn(Optional.of(event));
-
-        UUID reservedSeatId = id(10);
-        UUID blockedSeatId = id(11);
-        List<Reservation> seededReservations =
-                List.of(
-                        reservationWith(reservedSeatId, ReservationStatus.RESERVED),
-                        reservationWith(blockedSeatId, ReservationStatus.BLOCKED));
-        when(reservationRepository.findByEventId(eventId)).thenReturn(seededReservations);
-
+    void addSeatToCart_AccessGrantExpired_SelfHealsFromDatabaseAndMintsNewGrant() {
+        when(valueCommands.get(accessKey())).thenReturn(null);
+        EventUserAllowance allowance = mock(EventUserAllowance.class);
+        when(allowance.getReservationsAllowedCount()).thenReturn(ALLOWED_COUNT);
+        when(eventUserAllowanceRepository.findByUserIdAndEventId(userId, eventId))
+                .thenReturn(Optional.of(allowance));
         when(valueCommands.setGet(eq(key()), eq(userId.toString()), any(SetArgs.class)))
                 .thenReturn(null);
-
-        seatCartService.addSeatToCart(eventId, seatId, userId);
-
-        verify(valueCommands, times(1))
-                .set(eq(key(reservedSeatId)), eq("RESERVED"), any(SetArgs.class));
-        verify(valueCommands, times(1))
-                .set(eq(key(blockedSeatId)), eq("BLOCKED"), any(SetArgs.class));
-        verify(valueCommands, times(1)).set(eq(seededKey()), eq("1"), any(SetArgs.class));
-        verify(keyCommands, times(1)).expire(eq(seedingLockKey()), any(Duration.class));
-        verify(keyCommands, times(1)).del(seedingLockKey());
-    }
-
-    @Test
-    void addSeatToCart_EventAlreadySeeded_DoesNotReseed() {
-        // seededKey() already returns "1" via setUp's default stub.
-        when(valueCommands.setGet(eq(key()), eq(userId.toString()), any(SetArgs.class)))
-                .thenReturn(null);
-
-        seatCartService.addSeatToCart(eventId, seatId, userId);
-
-        verify(reservationRepository, never()).findByEventId(any());
-        verify(valueCommands, never()).setnx(anyString(), anyString());
-    }
-
-    @Test
-    void addSeatToCart_SeedingLockContended_FallsBackToSingleSeatDbCheck() {
-        when(valueCommands.get(seededKey())).thenReturn(null);
-        when(valueCommands.setnx(seedingLockKey(), "1")).thenReturn(false);
-        when(reservationRepository.findByEventIdAndSeatIds(eventId, List.of(seatId)))
-                .thenReturn(Collections.emptyList());
-        when(valueCommands.setGet(eq(key()), eq(userId.toString()), any(SetArgs.class)))
-                .thenReturn(null);
+        when(setCommands.smembers(userIndexKey())).thenReturn(Set.of(seatId.toString()));
+        when(valueCommands.mget(any(String[].class))).thenReturn(Map.of(key(), userId.toString()));
 
         SeatCartEntryDTO result = seatCartService.addSeatToCart(eventId, seatId, userId);
 
         assertEquals(seatId, result.seatId());
-        verify(reservationRepository, times(1)).findByEventIdAndSeatIds(eventId, List.of(seatId));
-        verify(reservationRepository, never()).findByEventId(any());
+        verify(valueCommands, times(1))
+                .set(eq(accessKey()), eq(String.valueOf(ALLOWED_COUNT)), any(SetArgs.class));
     }
 
     @Test
-    void removeSeatFromCart_OwnedByUser_DeletesKey() {
+    void addSeatToCart_QuotaExceeded_RollsBackHoldAndThrows() {
+        when(valueCommands.setGet(eq(key()), eq(userId.toString()), any(SetArgs.class)))
+                .thenReturn(null);
+        UUID otherHeldSeat1 = id(7);
+        UUID otherHeldSeat2 = id(8);
+        // ALLOWED_COUNT is 2, but the user (including the seat just added) would hold 3.
+        when(setCommands.smembers(userIndexKey()))
+                .thenReturn(
+                        Set.of(
+                                seatId.toString(),
+                                otherHeldSeat1.toString(),
+                                otherHeldSeat2.toString()));
+        when(valueCommands.mget(any(String[].class)))
+                .thenReturn(
+                        Map.of(
+                                key(), userId.toString(),
+                                key(otherHeldSeat1), userId.toString(),
+                                key(otherHeldSeat2), userId.toString()));
+
+        assertThrows(
+                NoSeatsAvailableException.class,
+                () -> seatCartService.addSeatToCart(eventId, seatId, userId));
+
+        verify(keyCommands, times(1)).del(key());
+        verify(setCommands, times(1)).srem(userIndexKey(), seatId.toString());
+        verify(setCommands, never()).sadd(indexKey(), seatId.toString());
+    }
+
+    @Test
+    void addSeatToCart_AtQuotaLimit_Succeeds() {
+        when(valueCommands.setGet(eq(key()), eq(userId.toString()), any(SetArgs.class)))
+                .thenReturn(null);
+        UUID otherHeldSeat = id(7);
+        when(setCommands.smembers(userIndexKey()))
+                .thenReturn(Set.of(seatId.toString(), otherHeldSeat.toString()));
+        when(valueCommands.mget(any(String[].class)))
+                .thenReturn(
+                        Map.of(
+                                key(), userId.toString(),
+                                key(otherHeldSeat), userId.toString()));
+
+        SeatCartEntryDTO result = seatCartService.addSeatToCart(eventId, seatId, userId);
+
+        assertEquals(seatId, result.seatId());
+        verify(keyCommands, never()).del(key());
+    }
+
+    @Test
+    void removeSeatFromCart_OwnedByUser_DeletesKeyAndIndexes() {
         when(valueCommands.get(key())).thenReturn(userId.toString());
 
         seatCartService.removeSeatFromCart(eventId, seatId, userId);
 
         verify(keyCommands, times(1)).del(key());
         verify(setCommands, times(1)).srem(indexKey(), seatId.toString());
+        verify(setCommands, times(1)).srem(userIndexKey(), seatId.toString());
     }
 
     @Test
@@ -299,48 +317,18 @@ class SeatCartServiceTest {
     }
 
     @Test
-    void markSeatsReserved_EmptyList_DoesNotCallRedis() {
-        seatCartService.markSeatsReserved(eventId, Collections.emptyList(), Instant.now());
-
-        verify(valueCommands, never()).set(anyString(), anyString(), any(SetArgs.class));
-        verify(setCommands, never()).srem(anyString(), anyString());
-    }
-
-    @Test
-    void markSeatsReserved_WithSeats_SetsReservedSentinelAndPrunesIndex() {
-        UUID seat2 = id(5);
-        Instant eventEndTime = Instant.now().plusSeconds(3600);
-
-        seatCartService.markSeatsReserved(eventId, List.of(seatId, seat2), eventEndTime);
-
-        verify(valueCommands, times(1)).set(eq(key()), eq("RESERVED"), any(SetArgs.class));
-        verify(valueCommands, times(1)).set(eq(key(seat2)), eq("RESERVED"), any(SetArgs.class));
-        verify(setCommands, times(1)).srem(indexKey(), seatId.toString(), seat2.toString());
-    }
-
-    @Test
-    void markSeatsBlocked_WithSeats_SetsBlockedSentinelAndPrunesIndex() {
-        Instant eventEndTime = Instant.now().plusSeconds(3600);
-
-        seatCartService.markSeatsBlocked(eventId, List.of(seatId), eventEndTime);
-
-        verify(valueCommands, times(1)).set(eq(key()), eq("BLOCKED"), any(SetArgs.class));
-        verify(setCommands, times(1)).srem(indexKey(), seatId.toString());
-    }
-
-    @Test
-    void freeSeats_EmptyList_DoesNotCallRedis() {
-        seatCartService.freeSeats(eventId, Collections.emptyList());
+    void releaseSeats_EmptyList_DoesNotCallRedis() {
+        seatCartService.releaseSeats(eventId, Collections.emptyList());
 
         verify(keyCommands, never()).del(any(String[].class));
         verify(setCommands, never()).srem(anyString(), anyString());
     }
 
     @Test
-    void freeSeats_WithSeats_DeletesAllKeys() {
+    void releaseSeats_WithSeats_DeletesKeysAndPrunesIndex() {
         UUID seat2 = id(5);
 
-        seatCartService.freeSeats(eventId, List.of(seatId, seat2));
+        seatCartService.releaseSeats(eventId, List.of(seatId, seat2));
 
         verify(keyCommands, times(1)).del(eq(key()), eq(key(seat2)));
         verify(setCommands, times(1)).srem(indexKey(), seatId.toString(), seat2.toString());
@@ -411,9 +399,10 @@ class SeatCartServiceTest {
     }
 
     @Test
-    void grantAccess_SetsAccessKeyWithSlidingTtl() {
-        seatCartService.grantAccess(eventId, userId);
+    void grantAccess_SetsAccessKeyWithAllowedCountAndSlidingTtl() {
+        seatCartService.grantAccess(eventId, userId, ALLOWED_COUNT);
 
-        verify(valueCommands, times(1)).set(eq(accessKey()), eq("1"), any(SetArgs.class));
+        verify(valueCommands, times(1))
+                .set(eq(accessKey()), eq(String.valueOf(ALLOWED_COUNT)), any(SetArgs.class));
     }
 }

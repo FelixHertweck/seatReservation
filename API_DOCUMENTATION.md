@@ -1001,9 +1001,10 @@ Adds a seat to the current user's selection cart, or refreshes the hold's TTL if
 -   **Path Parameters:** `eventId` (UUID), `seatId` (UUID)
 -   **Responses:**
     -   `200 OK`: Returns `SeatCartEntryDTO` (`seatId`, `expiresAt`).
+    -   `400 Bad Request`: You have reached your reservation limit for this event (based on active cart holds, not just persisted reservations).
     -   `401 Unauthorized`: Not authenticated.
     -   `403 Forbidden`: Access denied.
-    -   `409 Conflict`: Seat is already reserved, already blocked, or currently held by another user's cart, or the seat cart access grant for this event is missing or expired (refresh `GET /api/user/events` and retry).
+    -   `409 Conflict`: Seat is already reserved, already blocked, or held by another user's cart, or you have no reservation allowance for this event at all.
 
 ---
 
@@ -1075,10 +1076,13 @@ Controls how long a seat stays held in a user's Redis-backed selection cart (see
 **Type:** `long`
 **Default Value:** `300`
 
+A related property, `seatcart.access-grant-ttl-buffer-seconds` (default `30`), controls how much longer a user's seat-cart access grant (minted on `GET /api/user/events`) outlives `seatcart.ttl-seconds` - it should stay slightly longer than the seat holds it protects so the grant never expires mid-session.
+
 **Example Configuration (application.yaml):**
 ```yaml
 seatcart:
   ttl-seconds: 300
+  access-grant-ttl-buffer-seconds: 30
 ```
 
 Requires the `quarkus-redis-client` extension to be configured (`quarkus.redis.hosts`); in Docker Compose this points at the bundled `redis` service, in dev/test Quarkus Dev Services provisions a disposable Redis container automatically.
