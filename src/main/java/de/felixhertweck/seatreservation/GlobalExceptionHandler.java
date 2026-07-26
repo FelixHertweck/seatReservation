@@ -99,7 +99,7 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
             case SeatAlreadyReservedException ignored -> status = Response.Status.CONFLICT;
             case SeatBlockedException ignored -> status = Response.Status.CONFLICT;
             case SeatPendingException ignored -> status = Response.Status.CONFLICT;
-            case SeatCartAccessNotGrantedException ignored -> status = Response.Status.CONFLICT;
+            case SeatCartAccessNotGrantedException ignored -> status = Response.Status.FORBIDDEN;
             case CheckInTokenNotFoundException ignored -> status = Response.Status.NOT_FOUND;
             case CheckInException ignored -> status = Response.Status.BAD_REQUEST;
             case JwtInvalidException ignored -> {

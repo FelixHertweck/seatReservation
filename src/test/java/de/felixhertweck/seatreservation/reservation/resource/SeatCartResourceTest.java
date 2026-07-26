@@ -30,6 +30,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
@@ -45,6 +46,7 @@ import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepos
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.reservation.exception.SeatCartAccessNotGrantedException;
 import de.felixhertweck.seatreservation.reservation.service.SeatCartService;
 import de.felixhertweck.seatreservation.utils.CodeGenerator;
 import io.quarkus.test.junit.QuarkusTest;
@@ -202,15 +204,16 @@ public class SeatCartResourceTest {
             user = "user",
             roles = {"USER"})
     @JwtSecurity(claims = @Claim(key = "uid", value = USER_UID, type = ClaimType.STRING))
-    void testAddSeatToCart_NoAllowanceForEvent_ReturnsConflict() {
+    void testAddSeatToCart_NoAllowanceForEvent_ReturnsForbidden() {
         // Fetching events mints a grant only for events the user has an allowance for. The
-        // self-healing DB fallback also finds no allowance for this event, so it's still rejected.
+        // self-healing DB fallback also finds no allowance for this event, so it's still rejected -
+        // this is an authorization gap, not a resource-state conflict, hence 403 not 409.
         fetchEventsAsUser();
 
         given().when()
                 .post("/api/user/seatcart/" + eventWithoutAllowance.id + "/" + testSeat2.id)
                 .then()
-                .statusCode(409);
+                .statusCode(403);
     }
 
     @Test
@@ -218,13 +221,15 @@ public class SeatCartResourceTest {
             user = "user",
             roles = {"USER"})
     @JwtSecurity(claims = @Claim(key = "uid", value = USER_UID, type = ClaimType.STRING))
-    void testAddSeatToCart_EventNotFound_ReturnsConflict() {
+    void testAddSeatToCart_EventNotFound_ReturnsForbidden() {
+        // No allowance exists for a nonexistent event either, so this is the same
+        // no-access-grant path as testAddSeatToCart_NoAllowanceForEvent_ReturnsForbidden.
         fetchEventsAsUser();
 
         given().when()
                 .post("/api/user/seatcart/" + id(9999) + "/" + testSeat2.id)
                 .then()
-                .statusCode(409);
+                .statusCode(403);
     }
 
     @Test
@@ -283,6 +288,30 @@ public class SeatCartResourceTest {
                 .post("/api/user/seatcart/" + testEvent.id + "/" + testSeat4.id)
                 .then()
                 .statusCode(400);
+    }
+
+    @Test
+    @TestSecurity(
+            user = "user",
+            roles = {"USER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = USER_UID, type = ClaimType.STRING))
+    @Transactional
+    void testAddSeatToCart_AllowanceRevoked_InvalidatesCachedGrantAndDeniesAccess() {
+        var testUser = userRepository.findByUsernameOptional("user").orElseThrow();
+        // Simulates a prior GET /api/user/events that minted an access grant for this user/event.
+        seatCartService.grantAccess(testEvent.id, testUser.id, 2);
+
+        // A manager revokes the user's allowance entirely (EventReservationAllowanceService
+        // ultimately calls the same repository method under the hood).
+        EventUserAllowance allowance =
+                eventUserAllowanceRepository.findByUserAndEvent(testUser, testEvent).orElseThrow();
+        eventUserAllowanceRepository.delete(allowance);
+
+        // Without EventUserAllowanceRepository invalidating the cached grant on delete, this would
+        // still succeed from the stale grant for up to the grant's TTL.
+        assertThrows(
+                SeatCartAccessNotGrantedException.class,
+                () -> seatCartService.addSeatToCart(testEvent.id, testSeat2.id, testUser.id));
     }
 
     @Test

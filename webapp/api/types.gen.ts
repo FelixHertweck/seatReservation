@@ -2836,11 +2836,11 @@ export type PostApiUserSeatcartByEventIdBySeatIdErrors = {
      */
     401: unknown;
     /**
-     * Forbidden: Only authenticated users can access this resource
+     * Forbidden: Only authenticated users can access this resource, or you have no reservation allowance for this event at all
      */
     403: unknown;
     /**
-     * Conflict: Seat is already reserved, blocked, or held by another user's cart, or you have no reservation allowance for this event at all
+     * Conflict: Seat is already reserved, blocked, or held by another user's cart
      */
     409: unknown;
 };

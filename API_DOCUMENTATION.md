@@ -1003,8 +1003,8 @@ Adds a seat to the current user's selection cart, or refreshes the hold's TTL if
     -   `200 OK`: Returns `SeatCartEntryDTO` (`seatId`, `expiresAt`).
     -   `400 Bad Request`: You have reached your reservation limit for this event (based on active cart holds, not just persisted reservations).
     -   `401 Unauthorized`: Not authenticated.
-    -   `403 Forbidden`: Access denied.
-    -   `409 Conflict`: Seat is already reserved, already blocked, or held by another user's cart, or you have no reservation allowance for this event at all.
+    -   `403 Forbidden`: Access denied, or you have no reservation allowance for this event at all (see [SeatCartAccessNotGrantedException](#seatcartaccessnotgrantedexception)).
+    -   `409 Conflict`: Seat is already reserved, already blocked, or held by another user's cart.
 
 ---
 
@@ -1076,7 +1076,7 @@ Controls how long a seat stays held in a user's Redis-backed selection cart (see
 **Type:** `long`
 **Default Value:** `300`
 
-A related property, `seatcart.access-grant-ttl-buffer-seconds` (default `30`), controls how much longer a user's seat-cart access grant (minted on `GET /api/user/events`) outlives `seatcart.ttl-seconds` - it should stay slightly longer than the seat holds it protects so the grant never expires mid-session.
+A related property, `seatcart.access-grant-ttl-buffer-seconds` (default `30`), controls how much longer a user's seat-cart access grant (minted on `GET /api/user/events`, see [SeatCartAccessNotGrantedException](#seatcartaccessnotgrantedexception)) outlives `seatcart.ttl-seconds` - it should stay slightly longer than the seat holds it protects so the grant never expires mid-session. An expired grant self-heals transparently via a direct Postgres allowance check rather than surfacing an error.
 
 **Example Configuration (application.yaml):**
 ```yaml
@@ -1131,3 +1131,23 @@ Requires the `quarkus-redis-client` extension to be configured (`quarkus.redis.h
 **When Encountered:**
 - Refetch the current seat statuses (`GET /api/user/events`) - the seat will show as `PENDING` until the hold clears
 - Retry the request once the seat is no longer `PENDING`
+
+---
+
+### SeatCartAccessNotGrantedException
+
+**HTTP Status Code:** `403 Forbidden`
+
+**Message:** "You are not allowed to select seats for this event"
+
+**Description:** Thrown by `POST /api/user/seatcart/{eventId}/{seatId}` when the user has no `EventUserAllowance` for the event, so they were never allowed to reserve seats there in the first place. Note this is distinct from a merely expired seat-cart access grant (see [Seat Selection Cart TTL](#seat-selection-cart-ttl)) - an expired grant self-heals transparently via a direct allowance check and does not surface this error.
+
+**Response Example:**
+```json
+{
+  "message": "You are not allowed to select seats for this event"
+}
+```
+
+**When Encountered:**
+- Verify the user actually has an `EventUserAllowance` for this event before allowing them to open the seat selection UI
