@@ -561,6 +561,10 @@ export function SeatMap({
     (seat: SeatDto | undefined) => {
       if (!seat || readonly) return false;
 
+      // Own selection stays clickable (to deselect), even if refetched as e.g. PENDING -
+      // mirrors getSeatColor's isSelected priority.
+      if (selectedSeatIds.has(seat.id)) return true;
+
       const isUserReserved = userReservedSeatIds.has(seat.id);
       if (isUserReserved) return true;
 
@@ -580,7 +584,7 @@ export function SeatMap({
         return !seatStatus; // Can only select seats without status (available)
       }
     },
-    [readonly, userReservedSeatIds, seatStatuses],
+    [readonly, selectedSeatIds, userReservedSeatIds, seatStatuses],
   );
 
   const gridStructure = useMemo(() => {

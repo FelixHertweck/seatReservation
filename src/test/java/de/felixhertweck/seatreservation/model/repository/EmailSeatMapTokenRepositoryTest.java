@@ -40,6 +40,7 @@ import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.User;
 import io.quarkus.test.junit.QuarkusTest;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -86,6 +87,28 @@ class EmailSeatMapTokenRepositoryTest {
         testEvent.setEventLocation(location);
         testEvent.setManager(testUser);
         eventRepository.persist(testEvent);
+    }
+
+    @AfterEach
+    @Transactional
+    @SuppressWarnings("unused")
+    void tearDown() {
+        // Without this, the last test method's Event/User/EmailSeatMapToken combo is never
+        // cleaned up (the next setUp() only clears tokens, not events/users), leaking into other
+        // @QuarkusTest classes that share the same dev-services Postgres instance and bulk-delete
+        // every Event in their own setUp - which fails with a FK violation against the leftover
+        // email_seat_map_tokens row (bulk deleteAll() doesn't cascade like entity-level delete
+        // does).
+        //
+        // Deletes only the entities this test created (by reference), not a blanket
+        // eventRepository/eventLocationRepository.deleteAll() - other test classes use fixed,
+        // deterministic IDs (e.g. TestIds.id(1)) for their own EventLocation/Event fixtures, and a
+        // blanket wipe here previously collided with one of those, failing on its
+        // event_location_areas rows instead.
+        tokenRepository.deleteAll();
+        eventRepository.delete(testEvent);
+        eventLocationRepository.delete(testEvent.getEventLocation());
+        userRepository.delete(testUser);
     }
 
     @Test

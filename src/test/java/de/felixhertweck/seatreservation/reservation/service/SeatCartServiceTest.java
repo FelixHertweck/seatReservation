@@ -24,6 +24,7 @@ import static de.felixhertweck.seatreservation.testutil.TestIds.id;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -355,7 +356,24 @@ class SeatCartServiceTest {
     }
 
     @Test
-    void findPendingSeatIds_AllStillHeld_ReturnsAllSeatIds() {
+    void findPendingSeatIds_AllHeldByOthers_ReturnsAllSeatIds() {
+        UUID seat2 = id(6);
+        when(setCommands.smembers(indexKey()))
+                .thenReturn(Set.of(seatId.toString(), seat2.toString()));
+        when(valueCommands.mget(any(String[].class)))
+                .thenReturn(
+                        Map.of(
+                                "seatcart:" + eventId + ":" + seatId, otherUserId.toString(),
+                                "seatcart:" + eventId + ":" + seat2, otherUserId.toString()));
+
+        Set<UUID> result = seatCartService.findPendingSeatIds(eventId, userId);
+
+        assertEquals(Set.of(seatId, seat2), result);
+        verify(setCommands, never()).srem(anyString(), anyString());
+    }
+
+    @Test
+    void findPendingSeatIds_ExcludesRequestingUsersOwnHold() {
         UUID seat2 = id(6);
         when(setCommands.smembers(indexKey()))
                 .thenReturn(Set.of(seatId.toString(), seat2.toString()));
@@ -365,9 +383,12 @@ class SeatCartServiceTest {
                                 "seatcart:" + eventId + ":" + seatId, userId.toString(),
                                 "seatcart:" + eventId + ":" + seat2, otherUserId.toString()));
 
-        Set<UUID> result = seatCartService.findPendingSeatIds(eventId);
+        Set<UUID> result = seatCartService.findPendingSeatIds(eventId, userId);
 
-        assertEquals(Set.of(seatId, seat2), result);
+        // seatId is held by the requesting user themselves - it's their own in-progress
+        // selection, not something blocking them, so only seat2 (held by someone else) comes
+        // back.
+        assertEquals(Set.of(seat2), result);
         verify(setCommands, never()).srem(anyString(), anyString());
     }
 
@@ -376,12 +397,18 @@ class SeatCartServiceTest {
         UUID seat2 = id(6);
         when(setCommands.smembers(indexKey()))
                 .thenReturn(Set.of(seatId.toString(), seat2.toString()));
-        // Only seatId's hold key is still present - seat2's hold expired via TTL but the index
-        // entry survived (Redis sets have no per-member TTL).
-        when(valueCommands.mget(any(String[].class)))
-                .thenReturn(Map.of("seatcart:" + eventId + ":" + seatId, userId.toString()));
+        // Mirrors the real ValueCommands#mget contract: the returned map always contains an
+        // entry for every requested key, using null as the value for keys missing in Redis
+        // (Map.of() rejects null values, so a mutable HashMap is required to reproduce that).
+        // seat2's hold expired via TTL but the index entry survived (Redis sets have no
+        // per-member TTL) - it must be detected via the null value, not via containsKey (which
+        // would be true for every requested key regardless of whether it still exists).
+        Map<String, String> mgetResult = new HashMap<>();
+        mgetResult.put("seatcart:" + eventId + ":" + seatId, otherUserId.toString());
+        mgetResult.put("seatcart:" + eventId + ":" + seat2, null);
+        when(valueCommands.mget(any(String[].class))).thenReturn(mgetResult);
 
-        Set<UUID> result = seatCartService.findPendingSeatIds(eventId);
+        Set<UUID> result = seatCartService.findPendingSeatIds(eventId, userId);
 
         assertEquals(Set.of(seatId), result);
         verify(setCommands, times(1)).srem(indexKey(), seat2.toString());
@@ -391,7 +418,7 @@ class SeatCartServiceTest {
     void findPendingSeatIds_NoHolds_ReturnsEmptySet() {
         when(setCommands.smembers(indexKey())).thenReturn(Collections.emptySet());
 
-        Set<UUID> result = seatCartService.findPendingSeatIds(eventId);
+        Set<UUID> result = seatCartService.findPendingSeatIds(eventId, userId);
 
         assertTrue(result.isEmpty());
         verify(valueCommands, never()).mget(any(String[].class));

@@ -54,26 +54,25 @@ public class EventUserAllowanceRepositoryTest {
     @Inject EventLocationRepository eventLocationRepository;
 
     private User testUser;
+    private EventLocation testLocation;
     private Event testEvent;
 
     @BeforeEach
     @Transactional
     void setUp() {
         eventUserAllowanceRepository.deleteAll();
-        eventRepository.deleteAll();
-        eventLocationRepository.deleteAll();
 
         User manager = userRepository.findByUsernameOptional("manager").orElseThrow();
         testUser = userRepository.findByUsernameOptional("user").orElseThrow();
 
-        EventLocation location = new EventLocation();
-        location.setName("Test Location for Allowance Repository Test");
-        location.setManager(manager);
-        eventLocationRepository.persist(location);
+        testLocation = new EventLocation();
+        testLocation.setName("Test Location for Allowance Repository Test");
+        testLocation.setManager(manager);
+        eventLocationRepository.persist(testLocation);
 
         testEvent = new Event();
         testEvent.setName("Test Event for Allowance Repository Test");
-        testEvent.setEventLocation(location);
+        testEvent.setEventLocation(testLocation);
         testEvent.setStartTime(Instant.now().plusSeconds(Duration.ofDays(2).toSeconds()));
         testEvent.setEndTime(
                 Instant.now()
@@ -85,9 +84,13 @@ public class EventUserAllowanceRepositoryTest {
     @AfterEach
     @Transactional
     void tearDown() {
+        // Targeted deletes only - a blanket eventLocationRepository.deleteAll() also tries to
+        // remove the permanently seeded "City Hall" EventLocation (import.sql, fixed ID
+        // 00000000-0000-0000-0000-000000000001), which always has its own event_location_areas
+        // rows and can never be deleted this way.
         eventUserAllowanceRepository.deleteAll();
-        eventRepository.deleteAll();
-        eventLocationRepository.deleteAll();
+        eventRepository.delete(testEvent);
+        eventLocationRepository.delete(testLocation);
     }
 
     @Test

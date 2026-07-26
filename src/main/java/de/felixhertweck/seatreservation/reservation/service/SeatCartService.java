@@ -23,6 +23,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -139,6 +140,10 @@ public class SeatCartService {
         if (previousOwner == null) {
             // Brand-new hold (not a refresh of one already owned by this user): only this case can
             // push the user over their per-event quota, so only check and roll back here.
+            //
+            // Known race, accepted as-is: this check isn't atomic with the SET NX above, so two
+            // concurrent calls for different seats can both pass it. Not a booking-integrity risk
+            // since createReservationForUser re-enforces the real allowance from Postgres.
             setCommands.sadd(userIndexKey(eventId, userId), seatId.toString());
             if (countHeldSeats(eventId, userId) > allowedCount) {
                 keyCommands.del(key);
@@ -200,45 +205,29 @@ public class SeatCartService {
     }
 
     /**
-     * Finds every seat ID in this event that currently has an active cart hold, regardless of
-     * owner. Used to surface a transient {@link ReservationStatus#PENDING} status to other users.
+     * Finds every seat ID in this event that currently has an active cart hold owned by someone
+     * other than {@code requestingUserId}. Used to surface a transient {@link
+     * ReservationStatus#PENDING} status to other users - a seat the requesting user holds
+     * themselves is their own in-progress selection, not something blocking them.
      *
      * <p>Backed by the per-event index set rather than a keyspace-wide {@code KEYS} scan (which
      * would block Redis for O(total keys) on every call to this method - and this is called on
      * every {@code GET /api/user/events}). The index can contain stale entries for holds that
-     * already expired via TTL (Redis has no per-set-member expiry), so each candidate is verified
-     * with a single {@code MGET} and stale entries are opportunistically pruned from the index.
+     * already expired via TTL (Redis has no per-set-member expiry); {@link #resolveLiveHolds}
+     * verifies each candidate with a single {@code MGET} and opportunistically prunes those stale
+     * entries from the index.
      */
-    public Set<UUID> findPendingSeatIds(UUID eventId) {
-        Set<String> candidateSeatIdStrs = setCommands.smembers(indexKey(eventId));
-        if (candidateSeatIdStrs.isEmpty()) {
-            return Set.of();
-        }
-
-        Map<String, String> holdKeyToSeatIdStr =
-                candidateSeatIdStrs.stream()
-                        .collect(
-                                Collectors.toMap(
-                                        seatIdStr -> key(eventId, UUID.fromString(seatIdStr)),
-                                        seatIdStr -> seatIdStr));
-        Map<String, String> stillHeld =
-                valueCommands.mget(holdKeyToSeatIdStr.keySet().toArray(new String[0]));
+    public Set<UUID> findPendingSeatIds(UUID eventId, UUID requestingUserId) {
+        String requestingUserIdStr = requestingUserId.toString();
+        Map<UUID, String> liveHolds = resolveLiveHolds(eventId, indexKey(eventId));
 
         Set<UUID> pendingSeatIds = new HashSet<>();
-        List<String> expiredSeatIdStrs = new ArrayList<>();
-        holdKeyToSeatIdStr.forEach(
-                (holdKey, seatIdStr) -> {
-                    if (stillHeld.containsKey(holdKey)) {
-                        pendingSeatIds.add(UUID.fromString(seatIdStr));
-                    } else {
-                        expiredSeatIdStrs.add(seatIdStr);
+        liveHolds.forEach(
+                (seatId, owner) -> {
+                    if (!owner.equals(requestingUserIdStr)) {
+                        pendingSeatIds.add(seatId);
                     }
                 });
-
-        if (!expiredSeatIdStrs.isEmpty()) {
-            setCommands.srem(indexKey(eventId), expiredSeatIdStrs.toArray(new String[0]));
-        }
-
         return pendingSeatIds;
     }
 
@@ -294,14 +283,52 @@ public class SeatCartService {
 
     /**
      * Counts how many seats {@code userId} currently holds in {@code eventId}'s cart. Backed by the
-     * per-(event,user) index set, verified against live hold keys the same way {@link
-     * #findPendingSeatIds} verifies the per-event index - stale entries (TTL-expired holds) are
-     * opportunistically pruned rather than counted.
+     * per-(event,user) index set, verified against live hold keys via {@link #resolveLiveHolds} -
+     * an entry that isn't actually owned by {@code userId} (expired, or - defensively, though not
+     * reachable via any current write path - held by someone else) is pruned from the index rather
+     * than counted.
      */
     private int countHeldSeats(UUID eventId, UUID userId) {
-        Set<String> candidateSeatIdStrs = setCommands.smembers(userIndexKey(eventId, userId));
+        String userIdStr = userId.toString();
+        Map<UUID, String> liveHolds = resolveLiveHolds(eventId, userIndexKey(eventId, userId));
+
+        int heldCount = 0;
+        List<String> staleSeatIdStrs = new ArrayList<>();
+        for (Map.Entry<UUID, String> entry : liveHolds.entrySet()) {
+            if (userIdStr.equals(entry.getValue())) {
+                heldCount++;
+            } else {
+                staleSeatIdStrs.add(entry.getKey().toString());
+            }
+        }
+
+        if (!staleSeatIdStrs.isEmpty()) {
+            setCommands.srem(userIndexKey(eventId, userId), staleSeatIdStrs.toArray(new String[0]));
+        }
+
+        return heldCount;
+    }
+
+    /**
+     * Resolves the seat IDs tracked in {@code indexSetKey} against their live hold keys via a
+     * single {@code MGET}, and opportunistically prunes stale entries - holds that already expired
+     * via TTL but are still listed in the index, since Redis has no per-set-member expiry - from
+     * that same index. Returns every seat ID that still has an active hold, mapped to its holding
+     * user's ID.
+     *
+     * <p>Note: {@link ValueCommands#mget} always returns an entry for every requested key, using
+     * {@code null} as the value for keys that don't exist in Redis (per its own javadoc) - so
+     * checking {@code stillHeld.containsKey(holdKey)} would always be {@code true} regardless of
+     * whether the hold actually expired. Expiry must be detected via {@code stillHeld.get(holdKey)
+     * == null} instead.
+     *
+     * <p>Shared by {@link #findPendingSeatIds} (index = the per-event set) and {@link
+     * #countHeldSeats} (index = the per-(event,user) set).
+     */
+    private Map<UUID, String> resolveLiveHolds(UUID eventId, String indexSetKey) {
+        Set<String> candidateSeatIdStrs = setCommands.smembers(indexSetKey);
         if (candidateSeatIdStrs.isEmpty()) {
-            return 0;
+            return Map.of();
         }
 
         Map<String, String> holdKeyToSeatIdStr =
@@ -313,23 +340,23 @@ public class SeatCartService {
         Map<String, String> stillHeld =
                 valueCommands.mget(holdKeyToSeatIdStr.keySet().toArray(new String[0]));
 
-        int heldCount = 0;
-        List<String> staleSeatIdStrs = new ArrayList<>();
-        String userIdStr = userId.toString();
-        for (Map.Entry<String, String> entry : holdKeyToSeatIdStr.entrySet()) {
-            String owner = stillHeld.get(entry.getKey());
-            if (userIdStr.equals(owner)) {
-                heldCount++;
-            } else {
-                staleSeatIdStrs.add(entry.getValue());
-            }
+        Map<UUID, String> liveHolds = new HashMap<>();
+        List<String> expiredSeatIdStrs = new ArrayList<>();
+        holdKeyToSeatIdStr.forEach(
+                (holdKey, seatIdStr) -> {
+                    String owner = stillHeld.get(holdKey);
+                    if (owner == null) {
+                        expiredSeatIdStrs.add(seatIdStr);
+                    } else {
+                        liveHolds.put(UUID.fromString(seatIdStr), owner);
+                    }
+                });
+
+        if (!expiredSeatIdStrs.isEmpty()) {
+            setCommands.srem(indexSetKey, expiredSeatIdStrs.toArray(new String[0]));
         }
 
-        if (!staleSeatIdStrs.isEmpty()) {
-            setCommands.srem(userIndexKey(eventId, userId), staleSeatIdStrs.toArray(new String[0]));
-        }
-
-        return heldCount;
+        return liveHolds;
     }
 
     private void assertSeatNotPersistedAsUnavailable(UUID eventId, UUID seatId) {
