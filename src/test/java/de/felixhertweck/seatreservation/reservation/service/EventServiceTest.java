@@ -28,6 +28,8 @@ import java.util.UUID;
 import jakarta.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.model.entity.Event;
@@ -166,7 +168,8 @@ class EventServiceTest {
         UUID pendingSeatId = id(10);
         when(eventUserAllowanceRepository.findByUser(user)).thenReturn(List.of(allowance1));
         when(reservationRepository.findByUser(user)).thenReturn(Collections.emptyList());
-        when(seatCartService.findPendingSeatIds(event1.id)).thenReturn(Set.of(pendingSeatId));
+        when(seatCartService.findPendingSeatIds(event1.id, user.id))
+                .thenReturn(Set.of(pendingSeatId));
 
         List<UserEventResponseDTO> result = eventService.getEventsForCurrentUser(user);
 
@@ -185,7 +188,8 @@ class EventServiceTest {
     void getEventsForCurrentUser_NoCartHolds_SeatStatusesUnchanged() {
         when(eventUserAllowanceRepository.findByUser(user)).thenReturn(List.of(allowance1));
         when(reservationRepository.findByUser(user)).thenReturn(Collections.emptyList());
-        when(seatCartService.findPendingSeatIds(event1.id)).thenReturn(Collections.emptySet());
+        when(seatCartService.findPendingSeatIds(event1.id, user.id))
+                .thenReturn(Collections.emptySet());
 
         List<UserEventResponseDTO> result = eventService.getEventsForCurrentUser(user);
 
@@ -193,6 +197,22 @@ class EventServiceTest {
         // Event.reservations defaults to an empty list (never null), so seatStatuses() is an
         // empty list rather than null when there are no reservations or cart holds.
         assertTrue(result.getFirst().seatStatuses().isEmpty());
+    }
+
+    @Test
+    void getEventsForCurrentUser_PassesCurrentUserIdToExcludeOwnHoldsFromPending() {
+        // SeatCartService.findPendingSeatIds is responsible for excluding the requesting user's
+        // own cart holds - EventService must pass the current user's ID through so that a seat
+        // the user themselves is holding never shows up as PENDING in their own event list (it
+        // would otherwise make the seat look blocked/unselectable to the very user holding it).
+        when(eventUserAllowanceRepository.findByUser(user)).thenReturn(List.of(allowance1));
+        when(reservationRepository.findByUser(user)).thenReturn(Collections.emptyList());
+        when(seatCartService.findPendingSeatIds(event1.id, user.id))
+                .thenReturn(Collections.emptySet());
+
+        eventService.getEventsForCurrentUser(user);
+
+        verify(seatCartService, times(1)).findPendingSeatIds(event1.id, user.id);
     }
 
     @Test

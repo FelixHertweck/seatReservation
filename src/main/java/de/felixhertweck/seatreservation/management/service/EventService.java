@@ -310,6 +310,19 @@ public class EventService {
      * all associated user allowances and reservations due to cascading settings in the Event
      * entity.
      *
+     * <p>Known limitation: this cascading delete of {@code EventUserAllowance} happens directly
+     * through JPA/Hibernate and never calls {@link
+     * de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository#delete}, so
+     * its usual seat-cart access-grant invalidation (see {@link
+     * de.felixhertweck.seatreservation.reservation.service.SeatCartAccessGrantStore}) is bypassed
+     * here. A user can therefore keep adding seats to their cart for an already-deleted event until
+     * the grant's TTL runs out. Deliberately not chased with an explicit invalidation call here -
+     * the seat cart is a best-effort cache by design (see {@link
+     * de.felixhertweck.seatreservation.reservation.service.SeatCartService} class docs), the
+     * exposure is bounded by the (short) grant TTL, and no reservation can ever actually complete
+     * against a deleted event anyway, so this is accepted rather than adding another invalidation
+     * call site outside {@code EventUserAllowanceRepository}.
+     *
      * @param ids The IDs of the Events to be deleted.
      * @param currentUser The currently authenticated user.
      * @throws EventNotFoundException If the Event with the specified ID is not found.

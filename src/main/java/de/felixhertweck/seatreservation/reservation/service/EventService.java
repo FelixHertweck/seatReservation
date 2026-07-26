@@ -85,17 +85,21 @@ public class EventService {
                                         new UserEventResponseDTO(reservation.getEvent(), 0)));
 
         LOG.debugf("Returning %d events for user ID: %s", eventMap.size(), user.id);
-        return eventMap.values().stream().map(this::withPendingSeatStatuses).toList();
+        return eventMap.values().stream()
+                .map(dto -> withPendingSeatStatuses(dto, user.id))
+                .toList();
     }
 
     /**
      * Merges seats currently held in another user's Redis cart into the event's seat statuses as
      * {@link ReservationStatus#PENDING}, so the requesting user sees them as temporarily
      * unavailable. A seat already covered by a persisted {@link
-     * de.felixhertweck.seatreservation.model.entity.Reservation} keeps that status.
+     * de.felixhertweck.seatreservation.model.entity.Reservation} keeps that status. Seats the
+     * requesting user holds themselves are excluded - those are the user's own in-progress
+     * selection, not something blocking them, so they must stay selectable.
      */
-    private UserEventResponseDTO withPendingSeatStatuses(UserEventResponseDTO dto) {
-        Set<UUID> pendingSeatIds = seatCartService.findPendingSeatIds(dto.id());
+    private UserEventResponseDTO withPendingSeatStatuses(UserEventResponseDTO dto, UUID userId) {
+        Set<UUID> pendingSeatIds = seatCartService.findPendingSeatIds(dto.id(), userId);
         if (pendingSeatIds.isEmpty()) {
             return dto;
         }

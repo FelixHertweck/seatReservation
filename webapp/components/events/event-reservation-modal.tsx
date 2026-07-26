@@ -219,6 +219,8 @@ export function EventReservationModal({
                     {selectedSeats.map((seat) => (
                       <button
                         key={seat.id?.toString()}
+                        type="button"
+                        onClick={() => handleSeatSelect(seat)}
                         className="flex-shrink-0 px-2 py-1.5 md:px-3 md:py-2 text-sm rounded-md border bg-seatmap border rounded shadow-xs hover:bg-secondary"
                       >
                         {seat.seatNumber +

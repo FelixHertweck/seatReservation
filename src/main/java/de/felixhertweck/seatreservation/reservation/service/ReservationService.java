@@ -278,7 +278,7 @@ public class ReservationService {
                         "Seat ID: %s for event ID: %s is held by another user's cart.",
                         seat.id, event.id);
                 throw new SeatPendingException(
-                        "One or more seats are currently being selected" + " by another user");
+                        "One or more seats are currently being selected by another user");
             }
             String checkInCode = CodeGenerator.generateRandomCode();
             newReservations.add(
