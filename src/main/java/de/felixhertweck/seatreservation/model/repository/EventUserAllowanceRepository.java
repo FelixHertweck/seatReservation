@@ -83,4 +83,16 @@ public class EventUserAllowanceRepository
     public Optional<EventUserAllowance> findByUserAndEventId(User user, UUID eventId) {
         return find("user = ?1 and event.id = ?2", user, eventId).firstResultOptional();
     }
+
+    /**
+     * Finds an event user allowance by user ID and event ID, without needing a loaded {@link User}
+     * reference.
+     *
+     * @param userId the user ID to search for
+     * @param eventId the event ID to search for
+     * @return Optional event user allowance entity
+     */
+    public Optional<EventUserAllowance> findByUserIdAndEventId(UUID userId, UUID eventId) {
+        return find("user.id = ?1 and event.id = ?2", userId, eventId).firstResultOptional();
+    }
 }

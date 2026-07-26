@@ -13,6 +13,9 @@ login:
 # but hasn't completed the reservation yet).
 seatcart:
   ttl-seconds: 300
+  # Extra time added on top of ttl-seconds for the seat-cart access grant's sliding TTL window,
+  # so the grant outlives the seat holds it protects.
+  access-grant-ttl-buffer-seconds: 30
 
 smallrye:
   jwt:

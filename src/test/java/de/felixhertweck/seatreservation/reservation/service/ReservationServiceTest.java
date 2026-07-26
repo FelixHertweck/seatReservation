@@ -227,8 +227,7 @@ class ReservationServiceTest {
 
         assertFalse(result.isEmpty());
         assertEquals(1, result.size());
-        verify(seatCartService, times(1))
-                .markSeatsReserved(event.id, dto.getSeatIds(), event.getEndTime());
+        verify(seatCartService, times(1)).releaseSeats(event.id, dto.getSeatIds());
     }
 
     @Test
@@ -247,7 +246,7 @@ class ReservationServiceTest {
         assertThrows(
                 SeatPendingException.class,
                 () -> reservationService.createReservationForUser(dto, currentUser));
-        verify(seatCartService, never()).markSeatsReserved(any(), any(), any());
+        verify(seatCartService, never()).releaseSeats(any(), any());
     }
 
     @Test
@@ -444,7 +443,6 @@ class ReservationServiceTest {
                 () -> reservationService.deleteReservationForUser(List.of(id(1)), currentUser));
         verify(eventUserAllowanceRepository, times(1)).persist(allowance);
         assertEquals(3, allowance.getReservationsAllowedCount());
-        verify(seatCartService, times(1)).freeSeats(event.id, List.of(seat1.id));
     }
 
     @Test

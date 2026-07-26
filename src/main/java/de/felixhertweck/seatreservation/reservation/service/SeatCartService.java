@@ -32,12 +32,13 @@ import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
-import de.felixhertweck.seatreservation.model.repository.EventRepository;
+import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.reservation.dto.SeatCartEntryDTO;
+import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatBlockedException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatCartAccessNotGrantedException;
@@ -51,30 +52,28 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 /**
- * Redis-backed cache for a seat's cart/availability state, and for whether a user is currently
- * allowed to touch a given event's cart at all. Postgres remains the source of truth for
- * reservations; this cache is allowed to be wrong in rare edge cases (see class-level notes on each
- * method) - the frontend re-fetches {@code GET /api/user/events} and retries on conflict.
+ * Temporary, Redis-backed soft-lock on seats a user has selected but not yet reserved, plus whether
+ * a user is currently allowed to touch a given event's cart at all. Postgres remains the source of
+ * truth for reservations; this cache is allowed to be wrong in rare edge cases (see class-level
+ * notes on each method) - the frontend re-fetches {@code GET /api/user/events} and retries on
+ * conflict.
  *
- * <p>Each seat has a single string key {@code seatcart:<eventId>:<seatId>} whose value is one of:
+ * <p>Each held seat is a single string key {@code seatcart:<eventId>:<seatId>} -> holding user's
+ * ID, with a fixed TTL, so an unfinished selection releases itself automatically.
  *
- * <ul>
- *   <li>{@code "RESERVED"} / {@code "BLOCKED"} - mirrors a persisted {@link Reservation#status},
- *       set by the write paths that persist that status (see {@link #markSeatsReserved}, {@link
- *       #markSeatsBlocked}), cleared by {@link #freeSeats} on cancellation/unblock.
- *   <li>{@code <userId>} - a temporary cart hold with a TTL, as before.
- *   <li>absent - the seat is free.
- * </ul>
+ * <p>A per-event Redis set ({@code seatcart:idx:<eventId>}) indexes every currently held seat ID so
+ * {@link #findPendingSeatIds} doesn't require a keyspace-wide scan. A second, per-(event,user) set
+ * ({@code seatcart:useridx:<eventId>:<userId>}) indexes just that user's holds, so the per-event
+ * seat quota (see {@link #assertQuotaNotExceeded}) can be checked without scanning every held seat
+ * in the event.
  *
- * A per-event Redis set ({@code seatcart:idx:<eventId>}) indexes which seat IDs currently have a
- * temporary hold (never RESERVED/BLOCKED seats), so {@link #findPendingSeatIds} doesn't require a
- * keyspace-wide scan.
- *
- * <p>A separate per-(event,user) key ({@code seatcart:access:<eventId>:<userId>}) records whether
- * the user is currently allowed to write to this event's cart at all - minted by {@link
- * #grantAccess} when the user fetches their event list (where the allowance check already runs for
- * other reasons) and refreshed on every successful cart write, so it never expires out from under
- * an actively-selecting user.
+ * <p>A separate per-(event,user) key ({@code seatcart:access:<eventId>:<userId>}), whose value is
+ * the user's allowed seat count, records whether the user is currently allowed to write to this
+ * event's cart at all - minted by {@link #grantAccess} when the user fetches their event list
+ * (where the allowance check already runs for other reasons) and refreshed on every successful cart
+ * write, so it never expires out from under an actively-selecting user. If it has expired, {@link
+ * #assertAccessGranted} self-heals with a single direct Postgres check rather than forcing the
+ * frontend into a full resync.
  */
 @ApplicationScoped
 public class SeatCartService {
@@ -83,26 +82,17 @@ public class SeatCartService {
     private static final String KEY_PREFIX = "seatcart:";
     private static final String ACCESS_CACHE_PREFIX = "seatcart:access:";
     private static final String INDEX_KEY_PREFIX = "seatcart:idx:";
-    private static final String SEEDED_KEY_PREFIX = "seatcart:seeded:";
-    private static final String SEEDING_LOCK_KEY_PREFIX = "seatcart:seeding:";
-
-    private static final String RESERVED_SENTINEL = "RESERVED";
-    private static final String BLOCKED_SENTINEL = "BLOCKED";
-
-    /** Buffer added on top of {@code ttlSeconds} for the access-grant's sliding TTL window. */
-    private static final long ACCESS_GRANT_TTL_BUFFER_SECONDS = 30;
-
-    /** Buffer added on top of an event's remaining lifetime for RESERVED/BLOCKED marker TTLs. */
-    private static final Duration MARKER_TTL_BUFFER = Duration.ofDays(1);
-
-    private static final Duration MIN_MARKER_TTL = Duration.ofSeconds(60);
-    private static final Duration SEEDING_LOCK_TTL = Duration.ofSeconds(10);
+    private static final String USER_INDEX_KEY_PREFIX = "seatcart:useridx:";
 
     @Inject ReservationRepository reservationRepository;
-    @Inject EventRepository eventRepository;
+    @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
 
     @ConfigProperty(name = "seatcart.ttl-seconds")
     long ttlSeconds;
+
+    /** Buffer added on top of {@code ttlSeconds} for the access-grant's sliding TTL window. */
+    @ConfigProperty(name = "seatcart.access-grant-ttl-buffer-seconds")
+    long accessGrantTtlBufferSeconds;
 
     private final ValueCommands<String, String> valueCommands;
     private final KeyCommands<String> keyCommands;
@@ -116,40 +106,26 @@ public class SeatCartService {
     }
 
     /**
-     * Attempts to hold the given seat in the current user's cart. Entirely Redis-based in the
-     * common case - no Postgres read - except for a one-off per-event seeding read the very first
-     * time any seat in that event is touched (see {@link #ensureEventSeeded}), and the rare case
-     * where a concurrent seeding run is already in flight (falls back to a single direct DB check
-     * for just this seat, see {@link #assertSeatNotPersistedAsUnavailable}).
+     * Attempts to hold the given seat in the current user's cart.
      *
-     * @throws SeatCartAccessNotGrantedException if the user has no (or an expired) access grant for
-     *     this event - the caller must refresh {@code GET /api/user/events} and retry
+     * @throws SeatCartAccessNotGrantedException if the user has no allowance for this event at all
      * @throws SeatAlreadyReservedException if the seat is already persisted as reserved
      * @throws SeatBlockedException if the seat is persisted as blocked
      * @throws SeatPendingException if the seat is currently held by a different user's cart
+     * @throws NoSeatsAvailableException if the user has already reached their allowed seat count
+     *     for this event with other active cart holds
      */
     public SeatCartEntryDTO addSeatToCart(UUID eventId, UUID seatId, UUID userId) {
-        assertAccessGranted(eventId, userId);
-
-        if (!ensureEventSeeded(eventId)) {
-            // A concurrent request is seeding this event right now; answer this one request
-            // directly from Postgres rather than waiting on the seeding run to finish.
-            assertSeatNotPersistedAsUnavailable(eventId, seatId);
-        }
+        int allowedCount = assertAccessGranted(eventId, userId);
+        assertSeatNotPersistedAsUnavailable(eventId, seatId);
 
         String key = key(eventId, seatId);
         String userIdStr = userId.toString();
-        String previousValue =
+        String previousOwner =
                 valueCommands.setGet(
                         key, userIdStr, new SetArgs().nx().ex(Duration.ofSeconds(ttlSeconds)));
 
-        if (RESERVED_SENTINEL.equals(previousValue)) {
-            throw new SeatAlreadyReservedException("Seat is already reserved");
-        }
-        if (BLOCKED_SENTINEL.equals(previousValue)) {
-            throw new SeatBlockedException("Seat is blocked");
-        }
-        if (previousValue != null && !previousValue.equals(userIdStr)) {
+        if (previousOwner != null && !previousOwner.equals(userIdStr)) {
             LOG.warnf(
                     "Seat %s for event %s is held by another user's cart; rejecting hold for user"
                             + " %s.",
@@ -157,7 +133,20 @@ public class SeatCartService {
             throw new SeatPendingException("Seat is currently selected by another user");
         }
 
-        if (previousValue != null) {
+        if (previousOwner == null) {
+            // Brand-new hold (not a refresh of one already owned by this user): only this case can
+            // push the user over their per-event quota, so only check and roll back here.
+            setCommands.sadd(userIndexKey(eventId, userId), seatId.toString());
+            if (countHeldSeats(eventId, userId) > allowedCount) {
+                keyCommands.del(key);
+                setCommands.srem(userIndexKey(eventId, userId), seatId.toString());
+                LOG.warnf(
+                        "user ID: %s reached their seat cart quota (%d) for event ID: %s.",
+                        userId, allowedCount, eventId);
+                throw new NoSeatsAvailableException(
+                        "You have reached your reservation limit for this event");
+            }
+        } else {
             // Already held by this user: NX above was a no-op, refresh the TTL explicitly.
             valueCommands.set(key, userIdStr, new SetArgs().ex(Duration.ofSeconds(ttlSeconds)));
         }
@@ -170,7 +159,7 @@ public class SeatCartService {
         // access grant keeps getting pushed out instead of expiring mid-session.
         keyCommands.expire(
                 accessCacheKey(eventId, userId),
-                Duration.ofSeconds(ttlSeconds + ACCESS_GRANT_TTL_BUFFER_SECONDS));
+                Duration.ofSeconds(ttlSeconds + accessGrantTtlBufferSeconds));
 
         return new SeatCartEntryDTO(seatId, Instant.now().plusSeconds(ttlSeconds));
     }
@@ -182,56 +171,23 @@ public class SeatCartService {
         if (owner != null && owner.equals(userId.toString())) {
             keyCommands.del(key);
             setCommands.srem(indexKey(eventId), seatId.toString());
+            setCommands.srem(userIndexKey(eventId, userId), seatId.toString());
         }
     }
 
     /**
-     * Marks the given seats as RESERVED in Redis (rather than clearing their key), so a subsequent
-     * {@link #addSeatToCart} for the same seat rejects with {@link SeatAlreadyReservedException}
-     * purely from Redis, without a Postgres read. Called after a reservation is successfully
-     * persisted for these seats.
-     *
-     * @param eventEndTime used to derive the marker's TTL (see {@link #markerTtl})
+     * Releases the cart entries for the given seats, regardless of owner. Called after a
+     * reservation is successfully persisted for these seats, so the next {@link #addSeatToCart} for
+     * the same seat falls through to the (now up to date) Postgres check instead of a stale cart
+     * hold.
      */
-    public void markSeatsReserved(UUID eventId, Collection<UUID> seatIds, Instant eventEndTime) {
-        setSentinelForSeats(eventId, seatIds, RESERVED_SENTINEL, eventEndTime);
-    }
-
-    /**
-     * Marks the given seats as BLOCKED in Redis. Called after a manager persists a block for these
-     * seats.
-     *
-     * @param eventEndTime used to derive the marker's TTL (see {@link #markerTtl})
-     */
-    public void markSeatsBlocked(UUID eventId, Collection<UUID> seatIds, Instant eventEndTime) {
-        setSentinelForSeats(eventId, seatIds, BLOCKED_SENTINEL, eventEndTime);
-    }
-
-    private void setSentinelForSeats(
-            UUID eventId, Collection<UUID> seatIds, String sentinel, Instant eventEndTime) {
+    public void releaseSeats(UUID eventId, Collection<UUID> seatIds) {
         if (seatIds == null || seatIds.isEmpty()) {
             return;
         }
-        SetArgs args = new SetArgs().ex(markerTtl(eventEndTime));
-        for (UUID seatId : seatIds) {
-            valueCommands.set(key(eventId, seatId), sentinel, args);
-        }
-        setCommands.srem(
-                indexKey(eventId), seatIds.stream().map(UUID::toString).toArray(String[]::new));
-    }
-
-    /**
-     * Frees the given seats entirely (deletes their Redis key), regardless of whether they were
-     * previously a cart hold, RESERVED, or BLOCKED. Called after a reservation is cancelled or a
-     * block is lifted, so the seat becomes selectable again.
-     */
-    public void freeSeats(UUID eventId, Collection<UUID> seatIds) {
-        if (seatIds == null || seatIds.isEmpty()) {
-            return;
-        }
-        String[] seatIdStrs = seatIds.stream().map(UUID::toString).toArray(String[]::new);
         String[] keys = seatIds.stream().map(seatId -> key(eventId, seatId)).toArray(String[]::new);
         keyCommands.del(keys);
+        String[] seatIdStrs = seatIds.stream().map(UUID::toString).toArray(String[]::new);
         setCommands.srem(indexKey(eventId), seatIdStrs);
     }
 
@@ -250,8 +206,6 @@ public class SeatCartService {
      * every {@code GET /api/user/events}). The index can contain stale entries for holds that
      * already expired via TTL (Redis has no per-set-member expiry), so each candidate is verified
      * with a single {@code MGET} and stale entries are opportunistically pruned from the index.
-     * RESERVED/BLOCKED sentinels are never added to this index (see {@link #setSentinelForSeats}),
-     * so they never show up here.
      */
     public Set<UUID> findPendingSeatIds(UUID eventId) {
         Set<String> candidateSeatIdStrs = setCommands.smembers(indexKey(eventId));
@@ -287,85 +241,92 @@ public class SeatCartService {
     }
 
     /**
-     * Grants {@code userId} access to {@code eventId}'s cart for a sliding TTL window. Called by
-     * {@link EventService} while it already loads the user's event allowances for {@code GET
-     * /api/user/events} - minting the grant here means {@link #addSeatToCart} never needs its own
-     * Postgres allowance check.
+     * Grants {@code userId} access to {@code eventId}'s cart for a sliding TTL window, remembering
+     * their currently allowed seat count so {@link #addSeatToCart} can enforce the per-event quota
+     * without a Postgres read. Called by {@link EventService} while it already loads the user's
+     * event allowances for {@code GET /api/user/events} - minting the grant here means {@link
+     * #addSeatToCart} never needs its own Postgres allowance check in the common case.
      */
-    public void grantAccess(UUID eventId, UUID userId) {
+    public void grantAccess(UUID eventId, UUID userId, int allowedCount) {
         valueCommands.set(
                 accessCacheKey(eventId, userId),
-                "1",
-                new SetArgs().ex(Duration.ofSeconds(ttlSeconds + ACCESS_GRANT_TTL_BUFFER_SECONDS)));
+                String.valueOf(allowedCount),
+                new SetArgs().ex(Duration.ofSeconds(ttlSeconds + accessGrantTtlBufferSeconds)));
     }
 
     /**
-     * Verifies {@code userId} currently has a Redis access grant for {@code eventId}. Purely
-     * Redis-based, no Postgres fallback: an expired or missing grant means the caller's event list
-     * is stale (or they never fetched it) and must be refreshed via {@code GET /api/user/events}
-     * (which re-mints the grant via {@link #grantAccess}) before retrying.
-     */
-    private void assertAccessGranted(UUID eventId, UUID userId) {
-        if (valueCommands.get(accessCacheKey(eventId, userId)) == null) {
-            LOG.warnf(
-                    "user ID: %s has no seat cart access grant for event ID: %s.", userId, eventId);
-            throw new SeatCartAccessNotGrantedException(
-                    "Seat cart access has expired or was never granted; refresh the event list and"
-                            + " try again");
-        }
-    }
-
-    /**
-     * Ensures this event's RESERVED/BLOCKED seats have been mirrored from Postgres into Redis at
-     * least once, so {@link #addSeatToCart} can rely purely on Redis afterwards.
+     * Verifies {@code userId} currently has a Redis access grant for {@code eventId} and returns
+     * the allowed seat count it carries. If the grant is missing or expired - most commonly because
+     * its TTL simply ran out while the user kept looking at an already-loaded page - falls back to
+     * a single direct Postgres allowance check and re-mints the grant, rather than forcing the
+     * frontend into a full {@code GET /api/user/events} resync for what is usually a harmless,
+     * recoverable gap.
      *
-     * @return {@code true} if the event is seeded (either already, or just now by this call);
-     *     {@code false} if another request is seeding it concurrently, in which case the caller
-     *     must fall back to a direct Postgres check for this one request instead of waiting.
+     * @throws SeatCartAccessNotGrantedException if the user genuinely has no allowance for this
+     *     event in Postgres either
      */
-    private boolean ensureEventSeeded(UUID eventId) {
-        if (valueCommands.get(seededKey(eventId)) != null) {
-            return true;
+    private int assertAccessGranted(UUID eventId, UUID userId) {
+        String grant = valueCommands.get(accessCacheKey(eventId, userId));
+        if (grant != null) {
+            return Integer.parseInt(grant);
         }
 
-        if (!valueCommands.setnx(seedingLockKey(eventId), "1")) {
-            return false;
-        }
-        keyCommands.expire(seedingLockKey(eventId), SEEDING_LOCK_TTL);
-        try {
-            seedEventFromDatabase(eventId);
-        } finally {
-            keyCommands.del(seedingLockKey(eventId));
-        }
-        return true;
-    }
-
-    private void seedEventFromDatabase(UUID eventId) {
-        Instant eventEndTime =
-                eventRepository.findByIdOptional(eventId).map(Event::getEndTime).orElse(null);
-        Duration ttl = eventEndTime != null ? markerTtl(eventEndTime) : MIN_MARKER_TTL;
-        SetArgs args = new SetArgs().ex(ttl);
-
-        for (Reservation reservation : reservationRepository.findByEventId(eventId)) {
-            String sentinel =
-                    reservation.getStatus() == ReservationStatus.BLOCKED
-                            ? BLOCKED_SENTINEL
-                            : RESERVED_SENTINEL;
-            valueCommands.set(key(eventId, reservation.getSeat().id), sentinel, args);
-        }
-        valueCommands.set(seededKey(eventId), "1", args);
-    }
-
-    /** RESERVED/BLOCKED marker TTL: the event's remaining lifetime plus a buffer, floored. */
-    private static Duration markerTtl(Instant eventEndTime) {
-        Duration ttl = Duration.between(Instant.now(), eventEndTime).plus(MARKER_TTL_BUFFER);
-        return ttl.compareTo(MIN_MARKER_TTL) > 0 ? ttl : MIN_MARKER_TTL;
+        EventUserAllowance allowance =
+                eventUserAllowanceRepository
+                        .findByUserIdAndEventId(userId, eventId)
+                        .orElseThrow(
+                                () -> {
+                                    LOG.warnf(
+                                            "user ID: %s has no seat cart access grant or"
+                                                    + " allowance for event ID: %s.",
+                                            userId, eventId);
+                                    return new SeatCartAccessNotGrantedException(
+                                            "You are not allowed to select seats for this event");
+                                });
+        grantAccess(eventId, userId, allowance.getReservationsAllowedCount());
+        return allowance.getReservationsAllowedCount();
     }
 
     /**
-     * Rare-path fallback used only when {@link #ensureEventSeeded} couldn't run because a
-     * concurrent seeding request was already in flight for this event.
+     * Counts how many seats {@code userId} currently holds in {@code eventId}'s cart. Backed by the
+     * per-(event,user) index set, verified against live hold keys the same way {@link
+     * #findPendingSeatIds} verifies the per-event index - stale entries (TTL-expired holds) are
+     * opportunistically pruned rather than counted.
      */
+    private int countHeldSeats(UUID eventId, UUID userId) {
+        Set<String> candidateSeatIdStrs = setCommands.smembers(userIndexKey(eventId, userId));
+        if (candidateSeatIdStrs.isEmpty()) {
+            return 0;
+        }
+
+        Map<String, String> holdKeyToSeatIdStr =
+                candidateSeatIdStrs.stream()
+                        .collect(
+                                Collectors.toMap(
+                                        seatIdStr -> key(eventId, UUID.fromString(seatIdStr)),
+                                        seatIdStr -> seatIdStr));
+        Map<String, String> stillHeld =
+                valueCommands.mget(holdKeyToSeatIdStr.keySet().toArray(new String[0]));
+
+        int heldCount = 0;
+        List<String> staleSeatIdStrs = new ArrayList<>();
+        String userIdStr = userId.toString();
+        for (Map.Entry<String, String> entry : holdKeyToSeatIdStr.entrySet()) {
+            String owner = stillHeld.get(entry.getKey());
+            if (userIdStr.equals(owner)) {
+                heldCount++;
+            } else {
+                staleSeatIdStrs.add(entry.getValue());
+            }
+        }
+
+        if (!staleSeatIdStrs.isEmpty()) {
+            setCommands.srem(userIndexKey(eventId, userId), staleSeatIdStrs.toArray(new String[0]));
+        }
+
+        return heldCount;
+    }
+
     private void assertSeatNotPersistedAsUnavailable(UUID eventId, UUID seatId) {
         List<Reservation> existing =
                 reservationRepository.findByEventIdAndSeatIds(eventId, List.of(seatId));
@@ -386,15 +347,11 @@ public class SeatCartService {
         return INDEX_KEY_PREFIX + eventId;
     }
 
+    private static String userIndexKey(UUID eventId, UUID userId) {
+        return USER_INDEX_KEY_PREFIX + eventId + ":" + userId;
+    }
+
     private static String accessCacheKey(UUID eventId, UUID userId) {
         return ACCESS_CACHE_PREFIX + eventId + ":" + userId;
-    }
-
-    private static String seededKey(UUID eventId) {
-        return SEEDED_KEY_PREFIX + eventId;
-    }
-
-    private static String seedingLockKey(UUID eventId) {
-        return SEEDING_LOCK_KEY_PREFIX + eventId;
     }
 }

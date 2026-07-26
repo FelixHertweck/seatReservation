@@ -75,6 +75,8 @@ public class SeatCartResourceTest {
     private Event eventWithoutAllowance;
     private Seat testSeat1;
     private Seat testSeat2;
+    private Seat testSeat3;
+    private Seat testSeat4;
 
     @BeforeEach
     @Transactional
@@ -122,8 +124,12 @@ public class SeatCartResourceTest {
 
         testSeat1 = new Seat("A1", "Row 1", location);
         testSeat2 = new Seat("A2", "Row 1", location);
+        testSeat3 = new Seat("A3", "Row 1", location);
+        testSeat4 = new Seat("A4", "Row 1", location);
         seatRepository.persist(testSeat1);
         seatRepository.persist(testSeat2);
+        seatRepository.persist(testSeat3);
+        seatRepository.persist(testSeat4);
 
         eventUserAllowanceRepository.persist(new EventUserAllowance(testUser, testEvent, 2));
         eventUserAllowanceRepository.persist(new EventUserAllowance(adminUser, testEvent, 2));
@@ -181,12 +187,14 @@ public class SeatCartResourceTest {
             user = "user",
             roles = {"USER"})
     @JwtSecurity(claims = @Claim(key = "uid", value = USER_UID, type = ClaimType.STRING))
-    void testAddSeatToCart_NoAccessGrant_ReturnsConflict() {
-        // Never fetched /api/user/events, so no access grant was ever minted.
+    void testAddSeatToCart_NoAccessGrantButAllowanceExists_SelfHealsAndSucceeds() {
+        // Never fetched /api/user/events, so no access grant was ever minted - but the user does
+        // have an EventUserAllowance for this event in Postgres, so addSeatToCart should self-heal
+        // by checking it directly instead of rejecting.
         given().when()
                 .post("/api/user/seatcart/" + testEvent.id + "/" + testSeat2.id)
                 .then()
-                .statusCode(409);
+                .statusCode(200);
     }
 
     @Test
@@ -195,7 +203,8 @@ public class SeatCartResourceTest {
             roles = {"USER"})
     @JwtSecurity(claims = @Claim(key = "uid", value = USER_UID, type = ClaimType.STRING))
     void testAddSeatToCart_NoAllowanceForEvent_ReturnsConflict() {
-        // Fetching events mints a grant only for events the user has an allowance for.
+        // Fetching events mints a grant only for events the user has an allowance for. The
+        // self-healing DB fallback also finds no allowance for this event, so it's still rejected.
         fetchEventsAsUser();
 
         given().when()
@@ -240,7 +249,7 @@ public class SeatCartResourceTest {
     @Transactional
     void testAddSeatToCart_HeldByAnotherUser_ReturnsConflict() {
         var adminUser = userRepository.findByUsernameOptional("admin").orElseThrow();
-        seatCartService.grantAccess(testEvent.id, adminUser.id);
+        seatCartService.grantAccess(testEvent.id, adminUser.id, 2);
         seatCartService.addSeatToCart(testEvent.id, testSeat2.id, adminUser.id);
 
         fetchEventsAsUser();
@@ -249,6 +258,31 @@ public class SeatCartResourceTest {
                 .post("/api/user/seatcart/" + testEvent.id + "/" + testSeat2.id)
                 .then()
                 .statusCode(409);
+    }
+
+    @Test
+    @TestSecurity(
+            user = "user",
+            roles = {"USER"})
+    @JwtSecurity(claims = @Claim(key = "uid", value = USER_UID, type = ClaimType.STRING))
+    void testAddSeatToCart_QuotaExceeded_ReturnsBadRequest() {
+        // testUser's allowance for testEvent is 2; testSeat1 is already reserved, leaving
+        // testSeat2/3/4 free to hold.
+        fetchEventsAsUser();
+
+        given().when()
+                .post("/api/user/seatcart/" + testEvent.id + "/" + testSeat2.id)
+                .then()
+                .statusCode(200);
+        given().when()
+                .post("/api/user/seatcart/" + testEvent.id + "/" + testSeat3.id)
+                .then()
+                .statusCode(200);
+        // A third hold pushes the user over their allowance of 2.
+        given().when()
+                .post("/api/user/seatcart/" + testEvent.id + "/" + testSeat4.id)
+                .then()
+                .statusCode(400);
     }
 
     @Test
