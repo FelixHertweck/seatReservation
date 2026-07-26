@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -73,19 +74,21 @@ import org.jboss.logging.Logger;
  * (where the allowance check already runs for other reasons) and refreshed on every successful cart
  * write, so it never expires out from under an actively-selecting user. If it has expired, {@link
  * #assertAccessGranted} self-heals with a single direct Postgres check rather than forcing the
- * frontend into a full resync.
+ * frontend into a full resync. The grant is also actively invalidated the moment the underlying
+ * {@code EventUserAllowance} changes - see {@link SeatCartAccessGrantStore} and {@link
+ * de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository}.
  */
 @ApplicationScoped
 public class SeatCartService {
 
     private static final Logger LOG = Logger.getLogger(SeatCartService.class);
     private static final String KEY_PREFIX = "seatcart:";
-    private static final String ACCESS_CACHE_PREFIX = "seatcart:access:";
     private static final String INDEX_KEY_PREFIX = "seatcart:idx:";
     private static final String USER_INDEX_KEY_PREFIX = "seatcart:useridx:";
 
     @Inject ReservationRepository reservationRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
+    @Inject SeatCartAccessGrantStore accessGrantStore;
 
     @ConfigProperty(name = "seatcart.ttl-seconds")
     long ttlSeconds;
@@ -157,9 +160,8 @@ public class SeatCartService {
 
         // Sliding window: as long as the user keeps interacting with this event's cart, their
         // access grant keeps getting pushed out instead of expiring mid-session.
-        keyCommands.expire(
-                accessCacheKey(eventId, userId),
-                Duration.ofSeconds(ttlSeconds + accessGrantTtlBufferSeconds));
+        accessGrantStore.refreshTtl(
+                eventId, userId, Duration.ofSeconds(ttlSeconds + accessGrantTtlBufferSeconds));
 
         return new SeatCartEntryDTO(seatId, Instant.now().plusSeconds(ttlSeconds));
     }
@@ -248,27 +250,30 @@ public class SeatCartService {
      * #addSeatToCart} never needs its own Postgres allowance check in the common case.
      */
     public void grantAccess(UUID eventId, UUID userId, int allowedCount) {
-        valueCommands.set(
-                accessCacheKey(eventId, userId),
-                String.valueOf(allowedCount),
-                new SetArgs().ex(Duration.ofSeconds(ttlSeconds + accessGrantTtlBufferSeconds)));
+        accessGrantStore.set(
+                eventId,
+                userId,
+                allowedCount,
+                Duration.ofSeconds(ttlSeconds + accessGrantTtlBufferSeconds));
     }
 
     /**
      * Verifies {@code userId} currently has a Redis access grant for {@code eventId} and returns
      * the allowed seat count it carries. If the grant is missing or expired - most commonly because
-     * its TTL simply ran out while the user kept looking at an already-loaded page - falls back to
-     * a single direct Postgres allowance check and re-mints the grant, rather than forcing the
-     * frontend into a full {@code GET /api/user/events} resync for what is usually a harmless,
-     * recoverable gap.
+     * its TTL simply ran out while the user kept looking at an already-loaded page, or because the
+     * underlying {@code EventUserAllowance} changed and {@link
+     * de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository} invalidated
+     * it - falls back to a single direct Postgres allowance check and re-mints the grant, rather
+     * than forcing the frontend into a full {@code GET /api/user/events} resync for what is usually
+     * a harmless, recoverable gap.
      *
      * @throws SeatCartAccessNotGrantedException if the user genuinely has no allowance for this
      *     event in Postgres either
      */
     private int assertAccessGranted(UUID eventId, UUID userId) {
-        String grant = valueCommands.get(accessCacheKey(eventId, userId));
-        if (grant != null) {
-            return Integer.parseInt(grant);
+        Optional<Integer> grant = accessGrantStore.get(eventId, userId);
+        if (grant.isPresent()) {
+            return grant.get();
         }
 
         EventUserAllowance allowance =
@@ -349,9 +354,5 @@ public class SeatCartService {
 
     private static String userIndexKey(UUID eventId, UUID userId) {
         return USER_INDEX_KEY_PREFIX + eventId + ":" + userId;
-    }
-
-    private static String accessCacheKey(UUID eventId, UUID userId) {
-        return ACCESS_CACHE_PREFIX + eventId + ":" + userId;
     }
 }

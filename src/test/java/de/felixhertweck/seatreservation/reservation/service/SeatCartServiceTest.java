@@ -73,6 +73,7 @@ class SeatCartServiceTest {
 
     private ReservationRepository reservationRepository;
     private EventUserAllowanceRepository eventUserAllowanceRepository;
+    private SeatCartAccessGrantStore accessGrantStore;
     private ValueCommands<String, String> valueCommands;
     private KeyCommands<String> keyCommands;
     private SetCommands<String, String> setCommands;
@@ -88,6 +89,7 @@ class SeatCartServiceTest {
     void setUp() {
         reservationRepository = mock(ReservationRepository.class);
         eventUserAllowanceRepository = mock(EventUserAllowanceRepository.class);
+        accessGrantStore = mock(SeatCartAccessGrantStore.class);
         valueCommands = mock(ValueCommands.class);
         keyCommands = mock(KeyCommands.class);
         setCommands = mock(SetCommands.class);
@@ -100,12 +102,13 @@ class SeatCartServiceTest {
         seatCartService = new SeatCartService(redisDataSource);
         seatCartService.reservationRepository = reservationRepository;
         seatCartService.eventUserAllowanceRepository = eventUserAllowanceRepository;
+        seatCartService.accessGrantStore = accessGrantStore;
         seatCartService.ttlSeconds = TTL_SECONDS;
         seatCartService.accessGrantTtlBufferSeconds = ACCESS_GRANT_TTL_BUFFER_SECONDS;
 
         // Default: access already granted with an allowance of ALLOWED_COUNT, seat not persisted
         // as unavailable - most tests exercise only the Redis-only hot path plus this one DB read.
-        when(valueCommands.get(accessKey())).thenReturn(String.valueOf(ALLOWED_COUNT));
+        when(accessGrantStore.get(eventId, userId)).thenReturn(Optional.of(ALLOWED_COUNT));
         when(reservationRepository.findByEventIdAndSeatIds(any(), any()))
                 .thenReturn(Collections.emptyList());
     }
@@ -116,10 +119,6 @@ class SeatCartServiceTest {
 
     private String key(UUID seat) {
         return "seatcart:" + eventId + ":" + seat;
-    }
-
-    private String accessKey() {
-        return "seatcart:access:" + eventId + ":" + userId;
     }
 
     private String indexKey() {
@@ -155,8 +154,8 @@ class SeatCartServiceTest {
         verify(setCommands, times(1)).sadd(userIndexKey(), seatId.toString());
         verify(setCommands, times(1)).sadd(indexKey(), seatId.toString());
         // Sliding window: access grant TTL pushed out again on every successful cart write.
-        verify(keyCommands, times(1))
-                .expire(eq(accessKey()), eq(Duration.ofSeconds(ACCESS_GRANT_TTL_SECONDS)));
+        verify(accessGrantStore, times(1))
+                .refreshTtl(eventId, userId, Duration.ofSeconds(ACCESS_GRANT_TTL_SECONDS));
     }
 
     @Test
@@ -208,7 +207,7 @@ class SeatCartServiceTest {
 
     @Test
     void addSeatToCart_AccessNotGranted_NoAllowanceInDb_Throws() {
-        when(valueCommands.get(accessKey())).thenReturn(null);
+        when(accessGrantStore.get(eventId, userId)).thenReturn(Optional.empty());
         when(eventUserAllowanceRepository.findByUserIdAndEventId(userId, eventId))
                 .thenReturn(Optional.empty());
 
@@ -220,7 +219,7 @@ class SeatCartServiceTest {
 
     @Test
     void addSeatToCart_AccessGrantExpired_SelfHealsFromDatabaseAndMintsNewGrant() {
-        when(valueCommands.get(accessKey())).thenReturn(null);
+        when(accessGrantStore.get(eventId, userId)).thenReturn(Optional.empty());
         EventUserAllowance allowance = mock(EventUserAllowance.class);
         when(allowance.getReservationsAllowedCount()).thenReturn(ALLOWED_COUNT);
         when(eventUserAllowanceRepository.findByUserIdAndEventId(userId, eventId))
@@ -233,8 +232,8 @@ class SeatCartServiceTest {
         SeatCartEntryDTO result = seatCartService.addSeatToCart(eventId, seatId, userId);
 
         assertEquals(seatId, result.seatId());
-        verify(valueCommands, times(1))
-                .set(eq(accessKey()), eq(String.valueOf(ALLOWED_COUNT)), any(SetArgs.class));
+        verify(accessGrantStore, times(1))
+                .set(eventId, userId, ALLOWED_COUNT, Duration.ofSeconds(ACCESS_GRANT_TTL_SECONDS));
     }
 
     @Test
@@ -402,7 +401,7 @@ class SeatCartServiceTest {
     void grantAccess_SetsAccessKeyWithAllowedCountAndSlidingTtl() {
         seatCartService.grantAccess(eventId, userId, ALLOWED_COUNT);
 
-        verify(valueCommands, times(1))
-                .set(eq(accessKey()), eq(String.valueOf(ALLOWED_COUNT)), any(SetArgs.class));
+        verify(accessGrantStore, times(1))
+                .set(eventId, userId, ALLOWED_COUNT, Duration.ofSeconds(ACCESS_GRANT_TTL_SECONDS));
     }
 }

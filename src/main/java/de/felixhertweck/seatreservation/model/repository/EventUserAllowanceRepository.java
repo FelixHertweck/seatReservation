@@ -23,15 +23,67 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.reservation.service.SeatCartAccessGrantStore;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class EventUserAllowanceRepository
         implements PanacheRepositoryBase<EventUserAllowance, UUID> {
+
+    private static final Logger LOG = Logger.getLogger(EventUserAllowanceRepository.class);
+
+    @Inject SeatCartAccessGrantStore accessGrantStore;
+
+    /**
+     * Persists the allowance, then invalidates any cached seat-cart access grant for this
+     * user/event so a change in {@code reservationsAllowedCount} takes effect immediately instead
+     * of waiting out the grant's TTL - see {@link SeatCartAccessGrantStore}.
+     *
+     * <p>The invalidation is best-effort: Redis is a pure cache for the seat cart feature and
+     * unrelated to allowance persistence, so a Redis failure here must not fail this (possibly
+     * unrelated) transaction. Worst case on failure is a stale grant that self-heals via {@link
+     * de.felixhertweck.seatreservation.reservation.service.SeatCartService#addSeatToCart} once its
+     * TTL runs out or Redis recovers.
+     */
+    @Override
+    public void persist(EventUserAllowance allowance) {
+        PanacheRepositoryBase.super.persist(allowance);
+        invalidateAccessGrant(allowance);
+    }
+
+    /**
+     * Deletes the allowance, then invalidates any cached seat-cart access grant for this user/event
+     * - otherwise a revoked user could keep holding seats in their cart for up to the grant's TTL
+     * after losing their {@code EventUserAllowance} entirely.
+     *
+     * <p>See {@link #persist} for why the invalidation is best-effort and must not fail this
+     * transaction.
+     */
+    @Override
+    public void delete(EventUserAllowance allowance) {
+        PanacheRepositoryBase.super.delete(allowance);
+        invalidateAccessGrant(allowance);
+    }
+
+    private void invalidateAccessGrant(EventUserAllowance allowance) {
+        try {
+            accessGrantStore.invalidate(allowance.getEvent().id, allowance.getUser().id);
+        } catch (RuntimeException e) {
+            LOG.warnf(
+                    e,
+                    "Failed to invalidate seat-cart access grant for user ID: %s, event ID: %s."
+                            + " The grant will self-heal from Postgres once its TTL expires.",
+                    allowance.getUser().id,
+                    allowance.getEvent().id);
+        }
+    }
+
     /**
      * Finds all event user allowances for a specific user.
      *
