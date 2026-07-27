@@ -1,3 +1,0 @@
-## 2026-07-27 - Stream Filter Optimization
-**Learning:** Found N+1-like issue where all `EventUserAllowance`s for a user are fetched from the database, then filtered in-memory using `.stream().filter(...)` instead of directly querying the database with `findByUserAndEventId` (which exists!). Memory notes mention: "Avoid fetching large entity collections to filter them in-memory using Java Streams... Instead, use targeted Panache database queries (e.g., repository.findByUserAndEventId)".
-**Action:** Replace `allowances.stream().filter(...)` with direct query calls for performance boost when filtering in collections.

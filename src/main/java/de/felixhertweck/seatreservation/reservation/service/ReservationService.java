@@ -194,9 +194,6 @@ public class ReservationService {
 
         // Check if the user has an allowance for this event
         // And if the user is allowed to reserve that amount of seats
-        // Optimization: Use direct Panache query `findByUserAndEventId` instead of fetching all
-        // user allowances
-        // and stream-filtering them in memory, which solves a potential N+1 / memory bottleneck.
         EventUserAllowance eventUserAllowance =
                 eventUserAllowanceRepository
                         .findByUserAndEventId(currentUser, event.id)
