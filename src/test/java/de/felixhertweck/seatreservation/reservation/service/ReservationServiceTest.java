@@ -242,8 +242,10 @@ class ReservationServiceTest {
 
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
         mockSeatFind(dto.getSeatIds(), List.of(seat1));
-        when(eventUserAllowanceRepository.findByUser(currentUser)).thenReturn(List.of(allowance));
-        when(reservationRepository.findByEventId(event.id)).thenReturn(Collections.emptyList());
+        when(eventUserAllowanceRepository.findByUserAndEventId(currentUser, event.id))
+                .thenReturn(Optional.of(allowance));
+        when(reservationRepository.findByEventIdAndSeatIds(eq(event.id), anyList()))
+                .thenReturn(Collections.emptyList());
         when(seatCartService.isHeldByAnotherUser(event.id, seat1.id, currentUser.id))
                 .thenReturn(true);
 
