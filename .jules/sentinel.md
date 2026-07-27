@@ -1,4 +1,0 @@
-## 2026-07-26 - Predictable SecureRandom in Quarkus Native Builds
-**Vulnerability:** Static `SecureRandom` fields initialized at class-loading time result in predictable random sequences (e.g. check-in codes, tokens) in Quarkus GraalVM native builds.
-**Learning:** In GraalVM native builds, static fields are often initialized at build time, and their state is baked into the executable. For `SecureRandom`, this means the seed is generated once during the build, leading to the same sequence of random numbers being generated every time the native application runs.
-**Prevention:** Avoid statically initializing `SecureRandom` instances unless explicitly configured for runtime initialization. Use a centralized utility (e.g., `SecurityUtils`) that is configured with `--initialize-at-run-time` for all random number generation to ensure a fresh, unpredictable seed at application startup.
