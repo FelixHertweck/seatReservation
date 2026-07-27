@@ -1,4 +1,0 @@
-## 2026-07-27 - Safely Parsing UUID Claims in JWTs
-**Vulnerability:** A `NullPointerException` occurs when `UUID.fromString(jwt.getClaim("...").toString())` is called and the underlying claim is missing (null). The code assumed it would throw an `IllegalArgumentException` (which it catches), but instead, it threw an unhandled `NullPointerException`.
-**Learning:** In Quarkus (and Java broadly), passing null to `UUID.fromString()` or calling `.toString()` on a null object skips `IllegalArgumentException` catches and propagates an unhandled `NullPointerException`.
-**Prevention:** Always extract claims into an `Object` or `String` variable, check for null, and explicitly throw a mapped application exception (like `JwtInvalidException` or `IllegalStateException`) before attempting to parse as a UUID.
