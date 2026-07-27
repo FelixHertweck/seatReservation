@@ -194,11 +194,9 @@ public class ReservationService {
 
         // Check if the user has an allowance for this event
         // And if the user is allowed to reserve that amount of seats
-        List<EventUserAllowance> allowances = eventUserAllowanceRepository.findByUser(currentUser);
         EventUserAllowance eventUserAllowance =
-                allowances.stream()
-                        .filter(a -> a.getEvent().id.equals(event.id))
-                        .findFirst()
+                eventUserAllowanceRepository
+                        .findByUserAndEventId(currentUser, event.id)
                         .orElseThrow(
                                 () -> {
                                     LOG.warnf(
@@ -252,7 +250,9 @@ public class ReservationService {
         LOG.debugf("Event ID: %s is still bookable.", event.id);
 
         // Check if seats are already reserved
-        List<Reservation> existingReservations = reservationRepository.findByEventId(event.id);
+        List<Reservation> existingReservations =
+                reservationRepository.findByEventIdAndSeatIds(
+                        event.id, new ArrayList<>(dto.getSeatIds()));
 
         Set<UUID> reservedSeatIds = new java.util.HashSet<>();
         Set<UUID> blockedSeatIds = new java.util.HashSet<>();
