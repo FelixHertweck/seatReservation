@@ -63,7 +63,11 @@ public class UserSecurityContext {
      * @return the authenticated user's ID and roles
      */
     public AuthenticatedUser getAuthenticatedUser() {
-        UUID id = UUID.fromString(jsonWebToken.getClaim("uid").toString());
+        Object uidClaim = jsonWebToken.getClaim("uid");
+        if (uidClaim == null) {
+            throw new IllegalStateException("JWT missing uid claim");
+        }
+        UUID id = UUID.fromString(uidClaim.toString());
         return new AuthenticatedUser(id, securityIdentity.getRoles());
     }
 
