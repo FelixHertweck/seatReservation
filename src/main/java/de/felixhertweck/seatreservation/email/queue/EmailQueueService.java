@@ -22,6 +22,7 @@ package de.felixhertweck.seatreservation.email.queue;
 import java.time.Instant;
 import java.util.ArrayList;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
@@ -46,6 +47,8 @@ public class EmailQueueService {
     private static final Logger LOG = Logger.getLogger(EmailQueueService.class);
 
     @Inject OutboundEmailRepository outboundEmailRepository;
+
+    @Inject Event<EmailEnqueuedEvent> emailEnqueuedEvent;
 
     @ConfigProperty(name = "email.queue.max-attempts", defaultValue = "5")
     int maxAttempts;
@@ -96,6 +99,9 @@ public class EmailQueueService {
                 message.getSubject(),
                 message.getTo().size() + message.getCc().size() + message.getBcc().size(),
                 message.getAttachments().size());
+
+        // Triggers an immediate drain once this transaction commits (see EmailDispatcher).
+        emailEnqueuedEvent.fire(new EmailEnqueuedEvent(email.id));
         return email;
     }
 }

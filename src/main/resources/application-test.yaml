@@ -19,5 +19,6 @@ email:
   # explicitly via EmailDispatcher#drainQueue so assertions stay deterministic.
   queue:
     poll-interval: 24h
+    immediate-trigger: false
     retry-backoff-seconds: 0
     sending-timeout-seconds: 1
