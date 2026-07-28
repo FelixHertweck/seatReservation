@@ -25,6 +25,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
+import de.felixhertweck.seatreservation.security.dto.PasswordPolicy;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
@@ -40,7 +41,7 @@ public class UserProfileUpdateDTO {
     @NotNull(message = "lastname cannot be null")
     private final String lastname;
 
-    @Size(min = 8, message = "Password must be at least 8 characters long")
+    @Size(min = PasswordPolicy.MIN_LENGTH, message = PasswordPolicy.MIN_LENGTH_MESSAGE)
     @NoHtmlSanitize
     private final String password;
 

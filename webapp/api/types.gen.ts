@@ -209,6 +209,34 @@ export type MakerRequestDto = {
     eventLocationId: Uuid;
 };
 
+/**
+ * Request DTO for confirming a password reset
+ */
+export type PasswordResetConfirmDto = {
+    /**
+     * The password reset token
+     */
+    token: string;
+    /**
+     * The new password
+     */
+    newPassword: string;
+};
+
+/**
+ * Request DTO for initiating a password reset
+ */
+export type PasswordResetRequestDto = {
+    /**
+     * The username of the account
+     */
+    username: string;
+    /**
+     * The email address associated with the account
+     */
+    email: string;
+};
+
 export type RegisterRequestDto = {
     username: string;
     firstname: string;
@@ -490,6 +518,52 @@ export type PostApiAuthLogoutAllDevicesErrors = {
 export type PostApiAuthLogoutAllDevicesResponses = {
     /**
      * Logout from all devices successful
+     */
+    200: unknown;
+};
+
+export type PostApiAuthPasswordResetData = {
+    body: PasswordResetRequestDto;
+    path?: never;
+    query?: never;
+    url: '/api/auth/password-reset';
+};
+
+export type PostApiAuthPasswordResetErrors = {
+    /**
+     * Bad Request
+     */
+    400: unknown;
+};
+
+export type PostApiAuthPasswordResetResponses = {
+    /**
+     * If the account exists, an email has been sent. Generic response to prevent enumeration.
+     */
+    200: unknown;
+};
+
+export type PostApiAuthPasswordResetConfirmData = {
+    body: PasswordResetConfirmDto;
+    path?: never;
+    query?: never;
+    url: '/api/auth/password-reset/confirm';
+};
+
+export type PostApiAuthPasswordResetConfirmErrors = {
+    /**
+     * Invalid or unknown token.
+     */
+    400: unknown;
+    /**
+     * Token has expired.
+     */
+    410: unknown;
+};
+
+export type PostApiAuthPasswordResetConfirmResponses = {
+    /**
+     * Password successfully reset.
      */
     200: unknown;
 };

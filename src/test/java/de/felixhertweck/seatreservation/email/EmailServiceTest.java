@@ -50,6 +50,7 @@ import de.felixhertweck.seatreservation.model.entity.EmailVerification;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
+import de.felixhertweck.seatreservation.model.entity.PasswordResetToken;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
@@ -156,6 +157,29 @@ class EmailServiceTest {
                         .contains("http://localhost:8080/verify?code=testtoken")); // Verification
         // link should be
         // in email
+    }
+
+    @Test
+    void sendPasswordResetEmail_Success() throws IOException {
+        User user = createTestUser();
+        PasswordResetToken passwordResetToken =
+                new PasswordResetToken(
+                        user,
+                        "testresettoken",
+                        Instant.now().plusSeconds(Duration.ofMinutes(60).toSeconds()));
+
+        emailService.sendPasswordResetEmail(user, passwordResetToken);
+        emailDispatcher.drainQueue();
+
+        List<Mail> sentMails = mailbox.getMailsSentTo(user.getEmail());
+        assertEquals(1, sentMails.size());
+
+        Mail sentMail = sentMails.get(0);
+        assertEquals(user.getEmail(), sentMail.getTo().getFirst());
+        assertEquals("Password Reset Request", sentMail.getSubject());
+        assertTrue(
+                sentMail.getHtml()
+                        .contains("http://localhost:8080/reset-password?token=testresettoken"));
     }
 
     @Test
