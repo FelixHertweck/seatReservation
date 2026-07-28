@@ -1136,6 +1136,18 @@
           }
         }
       },
+      "UsernameRecoveryRequestDTO" : {
+        "description" : "Request DTO for initiating a username recovery",
+        "type" : "object",
+        "required" : [ "email" ],
+        "properties" : {
+          "email" : {
+            "type" : "string",
+            "description" : "The email address associated with the account(s)",
+            "pattern" : "\\S"
+          }
+        }
+      },
       "VerifyEmailCodeRequestDto" : {
         "type" : "object",
         "required" : [ "verificationCode" ],
@@ -1454,6 +1466,35 @@
           }
         },
         "summary" : "Get Registration Status",
+        "tags" : [ "Auth Resource" ]
+      }
+    },
+    "/api/auth/username-recovery" : {
+      "post" : {
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UsernameRecoveryRequestDTO"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "If the email address is associated with any account, a recovery email has been sent. Generic response to prevent enumeration.",
+            "content" : {
+              "application/json" : {
+                "schema" : { }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "Request Username Recovery",
         "tags" : [ "Auth Resource" ]
       }
     },

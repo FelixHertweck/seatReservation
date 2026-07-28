@@ -73,7 +73,8 @@
       "tooManyAttemptsDescription": "Too many failed login attempts. Your account has been temporarily locked."
     },
     "or": "or",
-    "forgotPassword": "Forgot Password?"
+    "forgotPassword": "Forgot Password?",
+    "forgotUsername": "Forgot Username?"
   },
   "register": {
     "success": {
@@ -1224,6 +1225,15 @@
     "sendLink": "Send Reset Link",
     "backToLogin": "Back to Login",
     "error": "Failed to request password reset. Please try again."
+  },
+  "forgotUsername": {
+    "title": "Forgot Username",
+    "description": "Enter your email to receive the username(s) associated with your account.",
+    "successMessage": "If this email is associated with any account, you will receive the username(s) shortly.",
+    "sending": "Sending...",
+    "sendLink": "Send Username(s)",
+    "backToLogin": "Back to Login",
+    "error": "Failed to request username recovery. Please try again."
   },
   "resetPassword": {
     "title": "Reset Password",

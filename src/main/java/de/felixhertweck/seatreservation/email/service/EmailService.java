@@ -88,6 +88,11 @@ public class EmailService {
     @ConfigProperty(name = "email.header.password-reset", defaultValue = "Password Reset Request")
     String EMAIL_HEADER_PASSWORD_RESET;
 
+    @ConfigProperty(
+            name = "email.header.username-recovery",
+            defaultValue = "Username Recovery Request")
+    String EMAIL_HEADER_USERNAME_RECOVERY;
+
     private static final Logger LOG = Logger.getLogger(EmailService.class);
 
     @Inject EmailQueueService emailQueueService;
@@ -142,6 +147,10 @@ public class EmailService {
     @Location("email/password-reset")
     Template passwordResetTemplate;
 
+    @Inject
+    @Location("email/username-recovery")
+    Template usernameRecoveryTemplate;
+
     /**
      * Sends a password reset email to the specified user.
      *
@@ -183,6 +192,34 @@ public class EmailService {
                 htmlContent,
                 List.of(),
                 false);
+    }
+
+    /**
+     * Sends an email listing every username associated with the given email address.
+     *
+     * @param email the email address to send the recovery message to
+     * @param usernames the usernames associated with this email address
+     * @throws IOException if the email template cannot be read
+     */
+    public void sendUsernameRecoveryEmail(String email, List<String> usernames) throws IOException {
+        if (skipForNullOrEmptyAddress(email)) {
+            LOG.warn("No valid email addresses provided for username recovery.");
+            return;
+        }
+        if (skipForLocalhostAddress(email)) {
+            LOG.warn("No valid email addresses provided for username recovery.");
+            return;
+        }
+
+        String htmlContent =
+                usernameRecoveryTemplate
+                        .data("usernames", usernames)
+                        .data("currentYear", currentYear())
+                        .render();
+
+        // Queue the email for asynchronous, retried delivery
+        LOG.debugf("Username recovery subject: %s", EMAIL_HEADER_USERNAME_RECOVERY);
+        enqueue(List.of(email), EMAIL_HEADER_USERNAME_RECOVERY, htmlContent, List.of(), false);
     }
 
     /**

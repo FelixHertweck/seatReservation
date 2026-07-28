@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
+import java.util.List;
 import java.util.Set;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -43,6 +44,7 @@ import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.security.dto.PasswordResetConfirmDTO;
 import de.felixhertweck.seatreservation.security.dto.PasswordResetRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
+import de.felixhertweck.seatreservation.security.dto.UsernameRecoveryRequestDTO;
 import de.felixhertweck.seatreservation.security.exceptions.AccountLockedException;
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
 import de.felixhertweck.seatreservation.security.exceptions.PasswordResetTokenExpiredException;
@@ -299,6 +301,47 @@ public class AuthService {
             LOG.infof("Password reset email sent to user %s.", user.getUsername());
         } catch (IOException e) {
             LOG.errorf(e, "Failed to send password reset email to user %s", user.getUsername());
+        }
+    }
+
+    /**
+     * Minimum wall-clock time {@link #requestUsernameRecovery} takes to return, regardless of
+     * whether the email address is associated with any account. See {@link
+     * #MIN_REQUEST_PASSWORD_RESET_DURATION_MILLIS} for the underlying timing-attack rationale.
+     */
+    private static final long MIN_REQUEST_USERNAME_RECOVERY_DURATION_MILLIS = 250;
+
+    /**
+     * Sends an email listing every username associated with the given email address, if any. Since
+     * {@code email} is not unique, this may resolve to zero, one, or several accounts; all matching
+     * usernames are relayed in a single email. To prevent enumeration, this method returns silently
+     * regardless of whether any account was found, and always takes at least {@link
+     * #MIN_REQUEST_USERNAME_RECOVERY_DURATION_MILLIS} to respond.
+     *
+     * @param requestDTO the email address to look up
+     */
+    public void requestUsernameRecovery(UsernameRecoveryRequestDTO requestDTO) {
+        long startNanos = System.nanoTime();
+        try {
+            doRequestUsernameRecovery(requestDTO);
+        } finally {
+            sleepRemaining(startNanos, MIN_REQUEST_USERNAME_RECOVERY_DURATION_MILLIS);
+        }
+    }
+
+    private void doRequestUsernameRecovery(UsernameRecoveryRequestDTO requestDTO) {
+        List<User> users = userRepository.findAllByEmail(requestDTO.getEmail());
+        if (users.isEmpty()) {
+            LOG.info("Username recovery requested for an email with no associated accounts.");
+            return;
+        }
+
+        try {
+            emailService.sendUsernameRecoveryEmail(
+                    requestDTO.getEmail(), users.stream().map(User::getUsername).toList());
+            LOG.info("Username recovery email sent.");
+        } catch (IOException e) {
+            LOG.error("Failed to send username recovery email.", e);
         }
     }
 

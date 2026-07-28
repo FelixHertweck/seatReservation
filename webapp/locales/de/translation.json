@@ -73,7 +73,8 @@
       "tooManyAttemptsDescription": "Zu viele fehlgeschlagene Anmeldeversuche. Ihr Konto wurde vorübergehend gesperrt."
     },
     "or": "oder",
-    "forgotPassword": "Passwort vergessen?"
+    "forgotPassword": "Passwort vergessen?",
+    "forgotUsername": "Benutzername vergessen?"
   },
   "register": {
     "success": {
@@ -1224,6 +1225,15 @@
     "sendLink": "Link anfordern",
     "backToLogin": "Zurück zum Login",
     "error": "Fehler beim Anfordern des Links. Bitte versuchen Sie es erneut."
+  },
+  "forgotUsername": {
+    "title": "Benutzername vergessen",
+    "description": "Geben Sie Ihre E-Mail-Adresse ein, um die zugehörigen Benutzernamen zu erhalten.",
+    "successMessage": "Wenn diese E-Mail-Adresse einem Konto zugeordnet ist, erhalten Sie in Kürze die Benutzernamen.",
+    "sending": "Wird gesendet...",
+    "sendLink": "Benutzernamen anfordern",
+    "backToLogin": "Zurück zum Login",
+    "error": "Fehler beim Anfordern der Benutzernamen. Bitte versuchen Sie es erneut."
   },
   "resetPassword": {
     "title": "Passwort zurücksetzen",
