@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.security.resource;
 
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 import jakarta.ws.rs.core.MediaType;
 
 import static io.restassured.RestAssured.given;
@@ -31,18 +32,23 @@ import static org.hamcrest.Matchers.notNullValue;
 import de.felixhertweck.seatreservation.security.dto.WebAuthnRegistrationStartDTO;
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.QuarkusTestProfile;
+import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.security.webauthn.WebAuthnHardware;
 import io.restassured.filter.cookie.CookieFilter;
 import io.vertx.core.json.JsonObject;
 import org.junit.jupiter.api.Test;
 
-/**
- * End-to-end passkey ceremony tests driven by a simulated authenticator ({@link WebAuthnHardware}).
- * Exercises the full journey: create a passkey-only account, log in with the passkey, add a second
- * passkey, and manage/delete credentials.
- */
 @QuarkusTest
+@TestProfile(WebAuthnFlowTest.SecureCookieTestProfile.class)
 class WebAuthnFlowTest {
+
+    public static class SecureCookieTestProfile implements QuarkusTestProfile {
+        @Override
+        public Map<String, String> getConfigOverrides() {
+            return Map.of("jwt.cookie.secure", "false");
+        }
+    }
 
     @TestHTTPResource URL url;
 
