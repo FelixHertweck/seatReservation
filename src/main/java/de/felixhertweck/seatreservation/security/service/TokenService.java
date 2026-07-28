@@ -24,6 +24,7 @@ import java.time.Instant;
 import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.NewCookie;
 
@@ -355,16 +356,26 @@ public class TokenService {
 
             UUID tokenId = UUID.fromString(tokenIdClaim.toString());
 
+            deleteRefreshTokenFromDatabase(tokenId, user);
+        } catch (ParseException e) {
+            LOG.warnf("Failed to parse refresh token: %s", e.getMessage());
+        } catch (IllegalArgumentException e) {
+            LOG.warnf("Invalid token_id format: %s", e.getMessage());
+        } catch (RuntimeException e) {
+            LOG.warnf(e, "Unexpected error while parsing refresh token: %s", e.getMessage());
+        }
+    }
+
+    private void deleteRefreshTokenFromDatabase(UUID tokenId, User user) {
+        try {
             boolean deleted = refreshTokenRepository.deleteWithIdAndUser(tokenId, user);
             if (deleted) {
                 LOG.debugf("Refresh token with id %s has been deleted.", tokenId);
             } else {
                 LOG.debugf("Refresh token with id %s not found in database.", tokenId);
             }
-        } catch (ParseException e) {
-            LOG.warnf("Failed to parse refresh token: %s", e.getMessage());
-        } catch (IllegalArgumentException e) {
-            LOG.warnf("Invalid token_id format: %s", e.getMessage());
+        } catch (PersistenceException e) {
+            LOG.errorf(e, "Failed to delete refresh token with id %s from database", tokenId);
         }
     }
 }
