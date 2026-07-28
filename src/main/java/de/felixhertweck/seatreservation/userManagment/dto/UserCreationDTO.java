@@ -26,6 +26,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
+import de.felixhertweck.seatreservation.security.dto.PasswordPolicy;
 import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
@@ -46,7 +47,7 @@ public class UserCreationDTO {
 
     @NotNull(message = "Password cannot be null")
     @NoHtmlSanitize
-    @Size(min = 8, message = "Password must be at least 8 characters long")
+    @Size(min = PasswordPolicy.MIN_LENGTH, message = PasswordPolicy.MIN_LENGTH_MESSAGE)
     private final String password;
 
     @NotNull(message = "Firstname cannot be null")

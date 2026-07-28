@@ -52,6 +52,8 @@ import de.felixhertweck.seatreservation.security.exceptions.AccountLockedExcepti
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
 import de.felixhertweck.seatreservation.security.exceptions.LastCredentialException;
+import de.felixhertweck.seatreservation.security.exceptions.PasswordResetTokenExpiredException;
+import de.felixhertweck.seatreservation.security.exceptions.PasswordResetTokenNotFoundException;
 import de.felixhertweck.seatreservation.security.service.TokenService;
 import de.felixhertweck.seatreservation.supervisor.exception.CheckInException;
 import de.felixhertweck.seatreservation.supervisor.exception.CheckInTokenNotFoundException;
@@ -120,6 +122,9 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
             case RegistrationDisabledException ignored -> status = Response.Status.FORBIDDEN;
             case VerificationCodeNotFoundException ignored -> status = Response.Status.BAD_REQUEST;
             case VerifyTokenExpiredException ignored -> status = Response.Status.GONE;
+            case PasswordResetTokenNotFoundException ignored ->
+                    status = Response.Status.BAD_REQUEST;
+            case PasswordResetTokenExpiredException ignored -> status = Response.Status.GONE;
             case UserNotFoundException ignored -> status = Response.Status.NOT_FOUND;
             case IllegalArgumentException ignored -> status = Response.Status.BAD_REQUEST;
             case SecurityException ignored -> status = Response.Status.FORBIDDEN;

@@ -2,7 +2,7 @@
  * #%L
  * seat-reservation
  * %%
- * Copyright (C) 2025 Felix Hertweck
+ * Copyright (C) 2026 Felix Hertweck
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,38 +24,36 @@ import jakarta.validation.constraints.Size;
 
 import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
 import io.quarkus.runtime.annotations.RegisterForReflection;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 @RegisterForReflection
-public class RegisterRequestDTO extends RegistrationDetailsDTO {
+@Schema(description = "Request DTO for confirming a password reset")
+public class PasswordResetConfirmDTO {
+
+    @NotBlank(message = "Token must not be blank")
+    @NoHtmlSanitize
+    @Schema(description = "The password reset token", required = true)
+    private String token;
 
     @NotBlank(message = "Password must not be blank")
     @Size(min = PasswordPolicy.MIN_LENGTH, message = PasswordPolicy.MIN_LENGTH_MESSAGE)
     @NoHtmlSanitize
-    private String password;
+    @Schema(description = "The new password", required = true)
+    private String newPassword;
 
-    public String getPassword() {
-        return password;
+    public String getToken() {
+        return token;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setToken(String token) {
+        this.token = token;
     }
 
-    @Override
-    public String toString() {
-        return "RegisterRequestDTO{"
-                + "username='"
-                + getUsername()
-                + '\''
-                + ", firstname='"
-                + getFirstname()
-                + '\''
-                + ", lastname='"
-                + getLastname()
-                + '\''
-                + ", email='"
-                + getEmail()
-                + '\''
-                + '}';
+    public String getNewPassword() {
+        return newPassword;
+    }
+
+    public void setNewPassword(String newPassword) {
+        this.newPassword = newPassword;
     }
 }

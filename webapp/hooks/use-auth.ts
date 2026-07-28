@@ -10,6 +10,8 @@ import {
   postApiAuthLoginMutation,
   postApiAuthLogoutAllDevicesMutation,
   postApiAuthLogoutMutation,
+  postApiAuthPasswordResetConfirmMutation,
+  postApiAuthPasswordResetMutation,
   postApiAuthRegisterMutation,
   postApiUserResendEmailConfirmationMutation,
   postApiUserVerifyEmailCodeMutation,
@@ -17,6 +19,8 @@ import {
 import {
   Instant,
   LoginLockedDto,
+  type PasswordResetConfirmDto,
+  type PasswordResetRequestDto,
   type RegisterRequestDto,
   type RegistrationStatusDto,
 } from "@/api";
@@ -183,6 +187,48 @@ export function useAuth() {
     return request;
   };
 
+  const { mutateAsync: requestPasswordResetMutation } = useMutation({
+    ...postApiAuthPasswordResetMutation(),
+  });
+
+  const requestPasswordReset = async (requestData: PasswordResetRequestDto) => {
+    const request = requestPasswordResetMutation({ body: requestData });
+    // No success toast: the page already renders an inline success Alert with the same message.
+    toast.promise(request, {
+      loading: t("common.loading"),
+      error: (error: ErrorWithResponse) => ({
+        message: t("forgotPassword.error"),
+        description: error.response?.description ?? t("common.error.default"),
+      }),
+    });
+    return request;
+  };
+
+  const { mutateAsync: confirmPasswordResetMutation } = useMutation({
+    ...postApiAuthPasswordResetConfirmMutation(),
+  });
+
+  const confirmPasswordReset = async (confirmData: PasswordResetConfirmDto) => {
+    const request = confirmPasswordResetMutation({ body: confirmData });
+    // No success toast: the page already renders an inline success Alert with the same message.
+    toast.promise(request, {
+      loading: t("common.loading"),
+      error: (error: ErrorWithResponse) => {
+        const status = error.response?.status;
+        // The component renders its own inline message for a known-bad token;
+        // only toast a generic message for anything unexpected.
+        if (status === 400 || status === 410) {
+          return { message: t("common.error.default") };
+        }
+        return {
+          message: t("resetPassword.error.general"),
+          description: error.response?.description ?? t("common.error.default"),
+        };
+      },
+    });
+    return request;
+  };
+
   const resendConfirmationMutation = useMutation({
     ...postApiUserResendEmailConfirmationMutation(),
   });
@@ -225,6 +271,8 @@ export function useAuth() {
     logoutAll,
     verifyEmail,
     resendConfirmation,
+    requestPasswordReset,
+    confirmPasswordReset,
     retryAfter,
   };
 }

@@ -639,6 +639,41 @@
           }
         }
       },
+      "PasswordResetConfirmDTO" : {
+        "description" : "Request DTO for confirming a password reset",
+        "type" : "object",
+        "required" : [ "token", "newPassword" ],
+        "properties" : {
+          "token" : {
+            "type" : "string",
+            "description" : "The password reset token",
+            "pattern" : "\\S"
+          },
+          "newPassword" : {
+            "type" : "string",
+            "description" : "The new password",
+            "pattern" : "\\S",
+            "minLength" : 8
+          }
+        }
+      },
+      "PasswordResetRequestDTO" : {
+        "description" : "Request DTO for initiating a password reset",
+        "type" : "object",
+        "required" : [ "username", "email" ],
+        "properties" : {
+          "username" : {
+            "type" : "string",
+            "description" : "The username of the account",
+            "pattern" : "\\S"
+          },
+          "email" : {
+            "type" : "string",
+            "description" : "The email address associated with the account",
+            "pattern" : "\\S"
+          }
+        }
+      },
       "RegisterRequestDTO" : {
         "type" : "object",
         "required" : [ "username", "firstname", "lastname", "email", "password" ],
@@ -1280,6 +1315,67 @@
         "security" : [ {
           "SecurityScheme" : [ ]
         } ]
+      }
+    },
+    "/api/auth/password-reset" : {
+      "post" : {
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PasswordResetRequestDTO"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "If the account exists, an email has been sent. Generic response to prevent enumeration.",
+            "content" : {
+              "application/json" : {
+                "schema" : { }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "Request Password Reset",
+        "tags" : [ "Auth Resource" ]
+      }
+    },
+    "/api/auth/password-reset/confirm" : {
+      "post" : {
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PasswordResetConfirmDTO"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Password successfully reset.",
+            "content" : {
+              "application/json" : {
+                "schema" : { }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid or unknown token."
+          },
+          "410" : {
+            "description" : "Token has expired."
+          }
+        },
+        "summary" : "Confirm Password Reset",
+        "tags" : [ "Auth Resource" ]
       }
     },
     "/api/auth/refresh" : {
