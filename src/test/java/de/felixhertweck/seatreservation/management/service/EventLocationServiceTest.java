@@ -311,9 +311,15 @@ public class EventLocationServiceTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void deleteEventLocation_Success_AsManager() {
-        when(eventLocationRepository.findByIdOptional(id(1)))
-                .thenReturn(Optional.of(existingLocation));
+        io.quarkus.hibernate.orm.panache.PanacheQuery<EventLocation> queryMock =
+                Mockito.mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
+        when(queryMock.list()).thenReturn(List.of(existingLocation));
+        when(eventLocationRepository.find(
+                        "from EventLocation el left join fetch el.manager where el.id in ?1",
+                        List.of(id(1))))
+                .thenReturn(queryMock);
         doNothing().when(eventLocationRepository).delete(any(EventLocation.class));
 
         eventLocationService.deleteEventLocation(List.of(id(1)), managerAuth);
@@ -322,9 +328,15 @@ public class EventLocationServiceTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void deleteEventLocation_NotFound() {
-        when(eventLocationRepository.findByIdOptional(any(UUID.class)))
-                .thenReturn(Optional.empty());
+        io.quarkus.hibernate.orm.panache.PanacheQuery<EventLocation> queryMock =
+                Mockito.mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
+        when(queryMock.list()).thenReturn(Collections.emptyList());
+        when(eventLocationRepository.find(
+                        "from EventLocation el left join fetch el.manager where el.id in ?1",
+                        List.of(id(99))))
+                .thenReturn(queryMock);
 
         assertThrows(
                 EventLocationNotFoundException.class,
@@ -333,9 +345,15 @@ public class EventLocationServiceTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void deleteEventLocation_Success_AsAdmin() {
-        when(eventLocationRepository.findByIdOptional(id(1)))
-                .thenReturn(Optional.of(existingLocation));
+        io.quarkus.hibernate.orm.panache.PanacheQuery<EventLocation> queryMock =
+                Mockito.mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
+        when(queryMock.list()).thenReturn(List.of(existingLocation));
+        when(eventLocationRepository.find(
+                        "from EventLocation el left join fetch el.manager where el.id in ?1",
+                        List.of(id(1))))
+                .thenReturn(queryMock);
         doNothing().when(eventLocationRepository).delete(any(EventLocation.class));
 
         eventLocationService.deleteEventLocation(List.of(id(1)), adminAuth);
@@ -344,9 +362,15 @@ public class EventLocationServiceTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void deleteEventLocation_ForbiddenException_NotManagerOrAdmin() {
-        when(eventLocationRepository.findByIdOptional(id(1)))
-                .thenReturn(Optional.of(existingLocation));
+        io.quarkus.hibernate.orm.panache.PanacheQuery<EventLocation> queryMock =
+                Mockito.mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
+        when(queryMock.list()).thenReturn(List.of(existingLocation));
+        when(eventLocationRepository.find(
+                        "from EventLocation el left join fetch el.manager where el.id in ?1",
+                        List.of(id(1))))
+                .thenReturn(queryMock);
 
         assertThrows(
                 SecurityException.class,
