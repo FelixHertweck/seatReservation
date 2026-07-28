@@ -44,6 +44,7 @@ import de.felixhertweck.seatreservation.security.dto.LoginRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.PasswordResetConfirmDTO;
 import de.felixhertweck.seatreservation.security.dto.PasswordResetRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
+import de.felixhertweck.seatreservation.security.dto.UsernameRecoveryRequestDTO;
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
 import de.felixhertweck.seatreservation.security.service.AuthService;
@@ -810,6 +811,35 @@ public class AuthResourceTest {
                 .body(confirmDTO)
                 .when()
                 .post("/api/auth/password-reset/confirm")
+                .then()
+                .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    void testRequestUsernameRecovery_AlwaysReturnsOk() {
+        UsernameRecoveryRequestDTO requestDTO = new UsernameRecoveryRequestDTO();
+        requestDTO.setEmail("someuser@example.com");
+
+        given().contentType(MediaType.APPLICATION_JSON)
+                .body(requestDTO)
+                .when()
+                .post("/api/auth/username-recovery")
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode());
+
+        Mockito.verify(authService)
+                .requestUsernameRecovery(Mockito.any(UsernameRecoveryRequestDTO.class));
+    }
+
+    @Test
+    void testRequestUsernameRecovery_BadRequest_InvalidEmail() {
+        UsernameRecoveryRequestDTO requestDTO = new UsernameRecoveryRequestDTO();
+        requestDTO.setEmail("not-an-email");
+
+        given().contentType(MediaType.APPLICATION_JSON)
+                .body(requestDTO)
+                .when()
+                .post("/api/auth/username-recovery")
                 .then()
                 .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
     }

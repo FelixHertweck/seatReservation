@@ -19,8 +19,10 @@
  */
 package de.felixhertweck.seatreservation.security.service;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Optional;
 import jakarta.persistence.PersistenceException;
 
@@ -32,7 +34,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -48,6 +52,7 @@ import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.security.dto.PasswordResetConfirmDTO;
 import de.felixhertweck.seatreservation.security.dto.PasswordResetRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
+import de.felixhertweck.seatreservation.security.dto.UsernameRecoveryRequestDTO;
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
 import de.felixhertweck.seatreservation.security.exceptions.PasswordResetTokenExpiredException;
 import de.felixhertweck.seatreservation.security.exceptions.PasswordResetTokenNotFoundException;
@@ -349,6 +354,96 @@ public class AuthServiceTest {
                 "Expected requestPasswordReset to enforce a minimum response time, took only "
                         + elapsedMillis
                         + "ms");
+    }
+
+    @Test
+    void testRequestUsernameRecovery_SingleUserFound_SendsEmailWithUsername() throws IOException {
+        String email = "test@example.com";
+        User user = new User();
+        user.setUsername("testuser");
+        user.setEmail(email);
+
+        when(userRepository.findAllByEmail(email)).thenReturn(List.of(user));
+
+        UsernameRecoveryRequestDTO requestDTO = new UsernameRecoveryRequestDTO();
+        requestDTO.setEmail(email);
+
+        authService.requestUsernameRecovery(requestDTO);
+
+        verify(emailService, times(1)).sendUsernameRecoveryEmail(email, List.of("testuser"));
+    }
+
+    @Test
+    void testRequestUsernameRecovery_MultipleUsersFound_SendsEmailWithAllUsernames()
+            throws IOException {
+        String email = "shared@example.com";
+        User firstUser = new User();
+        firstUser.setUsername("firstuser");
+        firstUser.setEmail(email);
+        User secondUser = new User();
+        secondUser.setUsername("seconduser");
+        secondUser.setEmail(email);
+
+        when(userRepository.findAllByEmail(email)).thenReturn(List.of(firstUser, secondUser));
+
+        UsernameRecoveryRequestDTO requestDTO = new UsernameRecoveryRequestDTO();
+        requestDTO.setEmail(email);
+
+        authService.requestUsernameRecovery(requestDTO);
+
+        verify(emailService, times(1))
+                .sendUsernameRecoveryEmail(email, List.of("firstuser", "seconduser"));
+    }
+
+    @Test
+    void testRequestUsernameRecovery_NoUserFound_DoesNotSendEmail() throws IOException {
+        when(userRepository.findAllByEmail(anyString())).thenReturn(List.of());
+
+        UsernameRecoveryRequestDTO requestDTO = new UsernameRecoveryRequestDTO();
+        requestDTO.setEmail("unknown@example.com");
+
+        authService.requestUsernameRecovery(requestDTO);
+
+        verify(emailService, never()).sendUsernameRecoveryEmail(anyString(), anyList());
+    }
+
+    @Test
+    void testRequestUsernameRecovery_NoUserFound_StillTakesAtLeastMinimumDuration() {
+        // Same timing-side-channel rationale as password reset: the "no account" branch must not
+        // return measurably faster than the "account(s) found" branch.
+        when(userRepository.findAllByEmail(anyString())).thenReturn(List.of());
+
+        UsernameRecoveryRequestDTO requestDTO = new UsernameRecoveryRequestDTO();
+        requestDTO.setEmail("unknown@example.com");
+
+        long start = System.nanoTime();
+        authService.requestUsernameRecovery(requestDTO);
+        long elapsedMillis = (System.nanoTime() - start) / 1_000_000;
+
+        assertTrue(
+                elapsedMillis >= 200,
+                "Expected requestUsernameRecovery to enforce a minimum response time, took only "
+                        + elapsedMillis
+                        + "ms");
+    }
+
+    @Test
+    void testRequestUsernameRecovery_EmailServiceThrowsIOException_DoesNotPropagate()
+            throws IOException {
+        String email = "test@example.com";
+        User user = new User();
+        user.setUsername("testuser");
+        user.setEmail(email);
+
+        when(userRepository.findAllByEmail(email)).thenReturn(List.of(user));
+        doThrow(new IOException("template not found"))
+                .when(emailService)
+                .sendUsernameRecoveryEmail(anyString(), anyList());
+
+        UsernameRecoveryRequestDTO requestDTO = new UsernameRecoveryRequestDTO();
+        requestDTO.setEmail(email);
+
+        assertDoesNotThrow(() -> authService.requestUsernameRecovery(requestDTO));
     }
 
     @Test

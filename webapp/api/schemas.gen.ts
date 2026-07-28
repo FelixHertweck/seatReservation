@@ -1292,6 +1292,21 @@ export const UserReservationsRequestDTOSchema = {
     }
 } as const;
 
+export const UsernameRecoveryRequestDTOSchema = {
+    description: 'Request DTO for initiating a username recovery',
+    type: 'object',
+    required: [
+        'email'
+    ],
+    properties: {
+        email: {
+            type: 'string',
+            description: 'The email address associated with the account(s)',
+            pattern: '\\S'
+        }
+    }
+} as const;
+
 export const VerifyEmailCodeRequestDtoSchema = {
     type: 'object',
     required: [

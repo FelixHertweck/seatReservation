@@ -414,6 +414,16 @@ export type UserReservationsRequestDto = {
     seatIds: Array<string>;
 };
 
+/**
+ * Request DTO for initiating a username recovery
+ */
+export type UsernameRecoveryRequestDto = {
+    /**
+     * The email address associated with the account(s)
+     */
+    email: string;
+};
+
 export type VerifyEmailCodeRequestDto = {
     verificationCode: string;
 };
@@ -633,6 +643,27 @@ export type GetApiAuthRegistrationStatusResponses = {
 };
 
 export type GetApiAuthRegistrationStatusResponse = GetApiAuthRegistrationStatusResponses[keyof GetApiAuthRegistrationStatusResponses];
+
+export type PostApiAuthUsernameRecoveryData = {
+    body: UsernameRecoveryRequestDto;
+    path?: never;
+    query?: never;
+    url: '/api/auth/username-recovery';
+};
+
+export type PostApiAuthUsernameRecoveryErrors = {
+    /**
+     * Bad Request
+     */
+    400: unknown;
+};
+
+export type PostApiAuthUsernameRecoveryResponses = {
+    /**
+     * If the email address is associated with any account, a recovery email has been sent. Generic response to prevent enumeration.
+     */
+    200: unknown;
+};
 
 export type GetApiAuthWebauthnCredentialsData = {
     body?: never;

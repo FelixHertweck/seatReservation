@@ -18,10 +18,9 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useT } from "@/lib/i18n/hooks";
 
-export default function ForgotPasswordPage() {
+export default function ForgotUsernamePage() {
   const t = useT();
-  const { requestPasswordReset } = useAuth();
-  const [username, setUsername] = useState("");
+  const { requestUsernameRecovery } = useAuth();
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -30,10 +29,7 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await requestPasswordReset({
-        username: username.trim(),
-        email: email.trim(),
-      });
+      await requestUsernameRecovery({ email: email.trim() });
       setIsSuccess(true);
     } catch {
       // Errors are surfaced via toast inside the hook; keep the form usable.
@@ -47,32 +43,19 @@ export default function ForgotPasswordPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">
-            {t("forgotPassword.title")}
+            {t("forgotUsername.title")}
           </CardTitle>
-          <CardDescription>{t("forgotPassword.description")}</CardDescription>
+          <CardDescription>{t("forgotUsername.description")}</CardDescription>
         </CardHeader>
         <CardContent>
           {isSuccess ? (
             <Alert className="mb-4 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
               <AlertDescription>
-                {t("forgotPassword.successMessage")}
+                {t("forgotUsername.successMessage")}
               </AlertDescription>
             </Alert>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="username">{t("login.username")}</Label>
-                <Input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder={t("login.enterUsername")}
-                  autoCapitalize="none"
-                  autoComplete="username"
-                  required
-                />
-              </div>
               <div className="space-y-2">
                 <Label htmlFor="email">{t("register.email")}</Label>
                 <Input
@@ -86,13 +69,13 @@ export default function ForgotPasswordPage() {
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading
-                  ? t("forgotPassword.sending")
-                  : t("forgotPassword.sendLink")}
+                  ? t("forgotUsername.sending")
+                  : t("forgotUsername.sendLink")}
               </Button>
             </form>
           )}
           <Button asChild variant="outline" className="mt-4 w-full">
-            <Link href="/login">{t("forgotPassword.backToLogin")}</Link>
+            <Link href="/login">{t("forgotUsername.backToLogin")}</Link>
           </Button>
         </CardContent>
       </Card>
