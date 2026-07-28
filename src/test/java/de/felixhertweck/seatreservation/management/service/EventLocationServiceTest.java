@@ -379,6 +379,68 @@ public class EventLocationServiceTest {
     }
 
     @Test
+    void deleteEventLocation_NullIds_ThrowsIllegalArgumentException() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> eventLocationService.deleteEventLocation(null, managerAuth));
+        verify(eventLocationRepository, never()).delete(any(EventLocation.class));
+    }
+
+    @Test
+    void deleteEventLocation_EmptyIds_ThrowsIllegalArgumentException() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () ->
+                        eventLocationService.deleteEventLocation(
+                                Collections.emptyList(), managerAuth));
+        verify(eventLocationRepository, never()).delete(any(EventLocation.class));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void deleteEventLocation_MultipleIds_OneNotFound_ThrowsEventLocationNotFoundException() {
+        EventLocation secondLocation =
+                new EventLocation("Second Hall", "Second Street", managerUser, 150);
+        secondLocation.id = id(2);
+
+        io.quarkus.hibernate.orm.panache.PanacheQuery<EventLocation> queryMock =
+                Mockito.mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
+        when(queryMock.list()).thenReturn(List.of(existingLocation));
+        when(eventLocationRepository.find(
+                        "from EventLocation el left join fetch el.manager where el.id in ?1",
+                        List.of(id(1), id(2))))
+                .thenReturn(queryMock);
+
+        assertThrows(
+                EventLocationNotFoundException.class,
+                () -> eventLocationService.deleteEventLocation(List.of(id(1), id(2)), managerAuth));
+
+        verify(eventLocationRepository, never()).delete(any(EventLocation.class));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void deleteEventLocation_MultipleIds_OneUnauthorized_ThrowsSecurityException() {
+        EventLocation unauthorizedLocation =
+                new EventLocation("Unauthorized Hall", "Unauthorized Street", regularUser, 150);
+        unauthorizedLocation.id = id(2);
+
+        io.quarkus.hibernate.orm.panache.PanacheQuery<EventLocation> queryMock =
+                Mockito.mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
+        when(queryMock.list()).thenReturn(List.of(existingLocation, unauthorizedLocation));
+        when(eventLocationRepository.find(
+                        "from EventLocation el left join fetch el.manager where el.id in ?1",
+                        List.of(id(1), id(2))))
+                .thenReturn(queryMock);
+
+        assertThrows(
+                SecurityException.class,
+                () -> eventLocationService.deleteEventLocation(List.of(id(1), id(2)), managerAuth));
+
+        verify(eventLocationRepository, never()).delete(any(EventLocation.class));
+    }
+
+    @Test
     void createEventLocation_WithSeats_Success() {
         // Arrange
         EventLocationRequestDTO dto = new EventLocationRequestDTO();
