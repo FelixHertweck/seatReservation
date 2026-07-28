@@ -268,7 +268,7 @@ public class TokenServiceTest {
         assertEquals("/", cookie.getPath());
         assertEquals(0, cookie.getMaxAge());
         assertTrue(cookie.isHttpOnly());
-        assertFalse(cookie.isSecure()); // Based on default config
+        assertTrue(cookie.isSecure()); // Based on default config
     }
 
     @Test
@@ -281,7 +281,7 @@ public class TokenServiceTest {
         assertEquals("/", cookie.getPath());
         assertEquals(0, cookie.getMaxAge());
         assertFalse(cookie.isHttpOnly());
-        assertFalse(cookie.isSecure());
+        assertTrue(cookie.isSecure());
     }
 
     @Test
@@ -471,7 +471,7 @@ public class TokenServiceTest {
         assertEquals(refreshToken, cookie.getValue());
         assertEquals("/", cookie.getPath());
         assertTrue(cookie.isHttpOnly());
-        assertFalse(cookie.isSecure()); // Based on default config
+        assertTrue(cookie.isSecure()); // Based on default config
         assertTrue(cookie.getMaxAge() > 0);
     }
 
