@@ -22,7 +22,10 @@ package de.felixhertweck.seatreservation.email.queue;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.event.TransactionPhase;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
@@ -75,12 +78,81 @@ public class EmailDispatcher {
     @ConfigProperty(name = "email.queue.sending-timeout-seconds", defaultValue = "300")
     long sendingTimeoutSeconds;
 
-    /** Periodically drains the outbox. Interval and enablement are configurable. */
+    @ConfigProperty(name = "email.queue.immediate-trigger", defaultValue = "true")
+    boolean immediateTriggerEnabled;
+
+    /** Guards against piling up concurrent drain loops when many mails are enqueued at once. */
+    private final AtomicBoolean draining = new AtomicBoolean(false);
+
+    /**
+     * Set by every {@link #triggerDrain} call and cleared at the start of each loop pass; lets a
+     * trigger that arrives while the loop is winding down ask for one more pass instead of being
+     * silently dropped (see {@link #drainLoop}).
+     */
+    private final AtomicBoolean pendingRedrain = new AtomicBoolean(false);
+
+    /**
+     * Fallback poll of the outbox. In the common case {@link #onEmailEnqueued} already triggers a
+     * drain right after a message is committed, so this mainly picks up retries (whose {@code
+     * nextAttemptAt} lies in the future) and messages left behind by a crashed instance.
+     */
     @Scheduled(
             every = "${email.queue.poll-interval:30s}",
             concurrentExecution = ConcurrentExecution.SKIP)
     void scheduledDrain() {
         drainQueue();
+    }
+
+    /**
+     * Triggers an immediate drain once a message has been committed to the outbox, instead of
+     * waiting for the next {@link #scheduledDrain} tick. Runs as an {@code AFTER_SUCCESS}
+     * transactional observer so it never fires for a message whose enqueuing transaction rolled
+     * back.
+     *
+     * @param event the enqueue notification (payload unused; only its arrival matters)
+     */
+    void onEmailEnqueued(
+            @Observes(during = TransactionPhase.AFTER_SUCCESS) EmailEnqueuedEvent event) {
+        if (immediateTriggerEnabled) {
+            triggerDrain();
+        }
+    }
+
+    /**
+     * Runs {@link #drainQueue} on a virtual thread until the outbox reports nothing left to send,
+     * coalescing concurrent triggers (e.g. from a bulk send enqueuing many messages at once) into a
+     * single loop so each one doesn't open its own database connection.
+     */
+    private void triggerDrain() {
+        pendingRedrain.set(true);
+        if (draining.compareAndSet(false, true)) {
+            Thread.ofVirtual().name("email-dispatch-trigger").start(this::drainLoop);
+        }
+    }
+
+    /**
+     * Drains the queue until empty, then releases {@link #draining} and checks {@link
+     * #pendingRedrain} once more before actually exiting.
+     *
+     * <p>Without that recheck, a trigger landing between this loop's last (empty) {@link
+     * #drainQueue} call and the release of {@link #draining} would see draining still in progress,
+     * assume this loop will pick up its message, and return without starting a new one -- silently
+     * falling back to the next {@link #scheduledDrain} tick instead of dispatching immediately.
+     */
+    private void drainLoop() {
+        try {
+            do {
+                pendingRedrain.set(false);
+                int sent;
+                do {
+                    sent = drainQueue();
+                } while (sent > 0);
+                draining.set(false);
+            } while (pendingRedrain.get() && draining.compareAndSet(false, true));
+        } catch (RuntimeException e) {
+            LOG.error("Immediate email dispatch loop failed", e);
+            draining.set(false);
+        }
     }
 
     /**

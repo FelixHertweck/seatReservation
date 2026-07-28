@@ -59,7 +59,8 @@ email:
   # Mails are persisted first and delivered asynchronously by a background dispatcher,
   # which retries failed sends with exponential back-off before giving up (dead letter).
   queue:
-    poll-interval: 30s # How often the dispatcher drains the queue
+    poll-interval: 30s # Fallback poll interval; immediate-trigger normally beats this
+    immediate-trigger: true # Drain right after a mail is committed instead of waiting for the poll
     batch-size: 20 # Max number of mails handled per drain cycle
     max-attempts: 5 # Delivery attempts before a mail becomes a FAILED dead letter
     retry-backoff-seconds: 60 # Base back-off; doubles per attempt (60s, 120s, 240s, ...)
