@@ -25,6 +25,7 @@ import java.util.UUID;
 
 import de.felixhertweck.seatreservation.common.dto.SeatStatusDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.Reservation;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
@@ -39,7 +40,16 @@ public record UserEventResponseDTO(
         List<SeatStatusDTO> seatStatuses,
         UUID locationId,
         Integer reservationsAllowed) {
-    public UserEventResponseDTO(Event event, Integer reservationsAllowed) {
+
+    /**
+     * @param event the event to map
+     * @param reservationsAllowed the reservations-allowed count to embed
+     * @param reservations the event's reservations, pre-fetched by the caller (e.g. via a single
+     *     bulk query for all events in a result set) instead of via the lazy {@code
+     *     event.getReservations()} collection
+     */
+    public UserEventResponseDTO(
+            Event event, Integer reservationsAllowed, List<Reservation> reservations) {
         this(
                 event.getId(),
                 event.getName(),
@@ -48,9 +58,9 @@ public record UserEventResponseDTO(
                 event.getEndTime(),
                 event.getBookingDeadline(),
                 event.getBookingStartTime(),
-                event.getReservations() == null
+                reservations == null
                         ? null
-                        : event.getReservations().stream().map(SeatStatusDTO::new).toList(),
+                        : reservations.stream().map(SeatStatusDTO::new).toList(),
                 event.getEventLocation() == null ? null : event.getEventLocation().getId(),
                 reservationsAllowed);
     }

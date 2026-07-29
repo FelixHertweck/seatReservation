@@ -25,7 +25,9 @@ import java.time.Year;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
@@ -328,17 +330,39 @@ public class EmailService {
     }
 
     /**
+     * Bulk-loads the seats (with area and entrance pre-fetched) referenced by the given reservation
+     * lists, keyed by seat ID. Avoids triggering one lazy-load query per reservation when the
+     * seat's number, row, area, or entrance is read afterwards.
+     *
+     * @param reservationLists the reservation lists whose seats should be loaded (entries may be
+     *     {@code null})
+     * @return the referenced seats, keyed by seat ID
+     */
+    @SafeVarargs
+    private final Map<UUID, Seat> loadSeatsForReservations(List<Reservation>... reservationLists) {
+        Set<UUID> seatIds = new HashSet<>();
+        for (List<Reservation> reservations : reservationLists) {
+            if (reservations != null) {
+                reservations.forEach(r -> seatIds.add(r.getSeat().getId()));
+            }
+        }
+        return seatRepository.findByIdsWithAreaAndEntrance(seatIds).stream()
+                .collect(Collectors.toMap(s -> s.id, s -> s));
+    }
+
+    /**
      * Maps reservations to the seat views rendered by the templates.
      *
      * @param reservations the reservations to map (may be {@code null})
+     * @param seatById the pre-loaded seats referenced by the reservations, keyed by seat ID
      * @return the seat views, in encounter order
      */
-    private List<SeatView> toSeatViews(List<Reservation> reservations) {
+    private List<SeatView> toSeatViews(List<Reservation> reservations, Map<UUID, Seat> seatById) {
         if (reservations == null) {
             return List.of();
         }
         return reservations.stream()
-                .map(Reservation::getSeat)
+                .map(r -> seatById.get(r.getSeat().getId()))
                 .map(
                         seat ->
                                 new SeatView(
@@ -431,27 +455,30 @@ public class EmailService {
         LOG.debugf("Retrieved PNG image with size: %d bytes", pngImage.length);
 
         // Prepare data for seat list rendering
-        List<Seat> allSeats = seatRepository.findByEventLocation(event.getEventLocation());
         List<Reservation> allUserReservationsForEvent =
                 reservationRepository.findByUserAndEvent(user, event);
         LOG.debugf(
-                "Retrieved %d total seats and %d user reservations for event %s.",
-                allSeats.size(), allUserReservationsForEvent.size(), eventName);
+                "Retrieved %d user reservations for event %s.",
+                allUserReservationsForEvent.size(), eventName);
 
-        Set<Seat> newSeatNumbers =
-                reservations.stream().map(Reservation::getSeat).collect(Collectors.toSet());
-        LOG.debugf("New seat numbers for confirmation: %s", newSeatNumbers);
+        Map<UUID, Seat> seatById =
+                loadSeatsForReservations(reservations, allUserReservationsForEvent);
 
-        Set<Seat> existingSeatNumbers =
+        Set<UUID> newSeatIds =
+                reservations.stream().map(r -> r.getSeat().getId()).collect(Collectors.toSet());
+        LOG.debugf("New seat ids for confirmation: %s", newSeatIds);
+
+        Set<UUID> existingSeatIds =
                 allUserReservationsForEvent.stream()
-                        .map(Reservation::getSeat)
+                        .map(r -> r.getSeat().getId())
                         .collect(Collectors.toSet());
-        existingSeatNumbers.removeAll(newSeatNumbers); // Keep only previously reserved seats
-        LOG.debugf("Existing seat numbers (excluding new ones): %s", existingSeatNumbers);
+        existingSeatIds.removeAll(newSeatIds); // Keep only previously reserved seats
+        LOG.debugf("Existing seat ids (excluding new ones): %s", existingSeatIds);
 
-        List<SeatView> newSeats = toSeatViews(reservations);
+        List<SeatView> newSeats = toSeatViews(reservations, seatById);
         List<SeatView> existingSeats =
-                existingSeatNumbers.stream()
+                existingSeatIds.stream()
+                        .map(seatById::get)
                         .map(
                                 seat ->
                                         new SeatView(
@@ -462,7 +489,7 @@ public class EmailService {
                                                         : null))
                         .collect(Collectors.toList());
 
-        String entranceInfo = generateEntranceInfo(reservations);
+        String entranceInfo = generateEntranceInfo(reservations, seatById);
 
         String htmlContent =
                 reservationConfirmationTemplate
@@ -565,18 +592,17 @@ public class EmailService {
         LOG.debugf("Retrieved PNG image with size: %d bytes", pngImage.length);
 
         // Prepare data for seat list rendering
-        List<Seat> allSeats = seatRepository.findByEventLocation(event.getEventLocation());
-
         LOG.debugf(
-                "Retrieved %d total seats and %d user reservations for event %s.",
-                allSeats.size(),
-                activeReservations != null ? activeReservations.size() : 0,
-                eventName);
+                "Retrieved %d user reservations for event %s.",
+                activeReservations != null ? activeReservations.size() : 0, eventName);
 
-        List<SeatView> deletedSeats = toSeatViews(deletedReservations);
-        List<SeatView> activeSeats = toSeatViews(activeReservations);
+        Map<UUID, Seat> seatById =
+                loadSeatsForReservations(deletedReservations, activeReservations);
 
-        String entranceInfo = generateEntranceInfo(activeReservations);
+        List<SeatView> deletedSeats = toSeatViews(deletedReservations, seatById);
+        List<SeatView> activeSeats = toSeatViews(activeReservations, seatById);
+
+        String entranceInfo = generateEntranceInfo(activeReservations, seatById);
 
         String htmlContent =
                 reservationUpdateTemplate
@@ -686,8 +712,9 @@ public class EmailService {
         byte[] pngImage = pngImageOpt.orElse(new byte[0]);
         LOG.debugf("Retrieved PNG image with size: %d bytes", pngImage.length);
 
-        List<SeatView> seats = toSeatViews(reservations);
-        String entranceInfo = generateEntranceInfo(reservations);
+        Map<UUID, Seat> seatById = loadSeatsForReservations(reservations);
+        List<SeatView> seats = toSeatViews(reservations, seatById);
+        String entranceInfo = generateEntranceInfo(reservations, seatById);
 
         String htmlContent =
                 eventReminderTemplate
@@ -882,10 +909,11 @@ public class EmailService {
      * entrance and creates a formatted text according to the configured template.
      *
      * @param reservations the list of reservations to process
+     * @param seatById the pre-loaded seats referenced by the reservations, keyed by seat ID
      * @return a formatted text describing which entrance to use for which seats, or an empty string
      *     if no valid entrance information is available
      */
-    private String generateEntranceInfo(List<Reservation> reservations) {
+    private String generateEntranceInfo(List<Reservation> reservations, Map<UUID, Seat> seatById) {
         if (reservations == null || reservations.isEmpty()) {
             return "";
         }
@@ -893,7 +921,7 @@ public class EmailService {
         // Group seats by entrance
         var seatsByEntrance =
                 reservations.stream()
-                        .map(Reservation::getSeat)
+                        .map(r -> seatById.get(r.getSeat().getId()))
                         .filter(
                                 seat ->
                                         seat.getEntrance() != null

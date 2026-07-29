@@ -20,7 +20,9 @@
 package de.felixhertweck.seatreservation.management.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -283,8 +285,18 @@ public class SeatService {
         }
 
         LOG.debugf("Attempting to delete seats with IDs: %s for manager ID: %s", ids, manager.id());
+
+        Map<UUID, Seat> seatMap =
+                seatRepository.findByIdsWithLocation(ids).stream()
+                        .collect(Collectors.toMap(s -> s.id, s -> s));
+
         for (UUID id : ids) {
-            Seat seat = findSeatEntityById(id, manager); // This already checks for ownership
+            Seat seat = seatMap.get(id);
+            if (seat == null) {
+                LOG.warnf("Seat with ID %s not found for user ID: %s", id, manager.id());
+                throw new SeatNotFoundException("Seat with id " + id + " not found");
+            }
+            eventLocationAccessService.requireAccess(seat.getLocation(), manager);
             seatRepository.delete(seat);
             LOG.infof("Seat ID: %s deleted successfully", seat.id);
         }

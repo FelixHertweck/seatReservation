@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.model.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -55,5 +56,23 @@ public class EventLocationAreaRepository implements PanacheRepositoryBase<EventL
                                 + " where e.id = ?1",
                         id)
                 .firstResultOptional();
+    }
+
+    /**
+     * Finds areas by their IDs, eagerly fetching each one's event location and that location's
+     * manager. Used to batch the ownership check for bulk operations (e.g. deletion) instead of
+     * querying once per ID.
+     *
+     * @param ids the area IDs to find
+     * @return the matching areas, each including its event location and manager
+     */
+    public List<EventLocationArea> findByIdsWithEventLocation(Collection<UUID> ids) {
+        return find(
+                        "select e from EventLocationArea e"
+                                + " join fetch e.eventLocation el"
+                                + " join fetch el.manager"
+                                + " where e.id in ?1",
+                        ids)
+                .list();
     }
 }

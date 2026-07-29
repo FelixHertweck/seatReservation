@@ -20,7 +20,10 @@
 package de.felixhertweck.seatreservation.management.service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -164,9 +167,19 @@ public class AreaService {
         if (ids == null || ids.isEmpty()) {
             throw new IllegalArgumentException("No area IDs provided for deletion");
         }
+
+        Map<UUID, EventLocationArea> areaMap =
+                areaRepository.findByIdsWithEventLocation(ids).stream()
+                        .collect(Collectors.toMap(a -> a.id, a -> a));
+        Set<UUID> usedAreaIds = new HashSet<>(seatRepository.findUsedAreaIds(ids));
+
         for (UUID id : ids) {
-            EventLocationArea area = findAreaEntityById(id, manager);
-            if (seatRepository.countByArea(area) > 0) {
+            EventLocationArea area = areaMap.get(id);
+            if (area == null) {
+                throw new AreaNotFoundException("Area with id " + id + " not found");
+            }
+            eventLocationAccessService.requireAccess(area.getEventLocation(), manager);
+            if (usedAreaIds.contains(id)) {
                 throw new AreaInUseException(
                         "Area with id " + id + " is still referenced by at least one seat");
             }

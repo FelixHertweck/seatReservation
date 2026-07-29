@@ -31,6 +31,9 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.dto.SeatStatusDTO;
+import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
+import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
@@ -56,38 +59,52 @@ public class EventService {
     public List<UserEventResponseDTO> getEventsForCurrentUser(User user) {
         LOG.debugf("Attempting to retrieve events for current user ID: %s", user.id);
 
-        Map<UUID, UserEventResponseDTO> eventMap = new HashMap<>();
+        Map<UUID, Event> events = new HashMap<>();
+        Map<UUID, Integer> reservationsAllowedByEvent = new HashMap<>();
 
         // Add allowances. Also grants seat-cart access for each event here, reusing this query
         // instead of SeatCartService doing its own DB lookup on every cart write.
-        eventUserAllowanceRepository
-                .findByUser(user)
-                .forEach(
-                        allowance -> {
-                            eventMap.put(
-                                    allowance.getEvent().getId(),
-                                    new UserEventResponseDTO(
-                                            allowance.getEvent(),
-                                            allowance.getReservationsAllowedCount()));
-                            seatCartService.grantAccess(
-                                    allowance.getEvent().getId(),
-                                    user.id,
-                                    allowance.getReservationsAllowedCount());
-                        });
+        for (EventUserAllowance allowance :
+                eventUserAllowanceRepository.findByUserWithEvent(user)) {
+            Event event = allowance.getEvent();
+            events.put(event.getId(), event);
+            reservationsAllowedByEvent.put(event.getId(), allowance.getReservationsAllowedCount());
+            seatCartService.grantAccess(
+                    event.getId(), user.id, allowance.getReservationsAllowedCount());
+        }
 
         // Reservations only add if event not already exists
-        reservationRepository
-                .findByUser(user)
-                .forEach(
-                        reservation ->
-                                eventMap.putIfAbsent(
-                                        reservation.getEvent().getId(),
-                                        new UserEventResponseDTO(reservation.getEvent(), 0)));
+        for (Reservation reservation : reservationRepository.findByUserWithEvent(user)) {
+            Event event = reservation.getEvent();
+            events.putIfAbsent(event.getId(), event);
+            reservationsAllowedByEvent.putIfAbsent(event.getId(), 0);
+        }
 
-        LOG.debugf("Returning %d events for user ID: %s", eventMap.size(), user.id);
-        return eventMap.values().stream()
-                .map(dto -> withPendingSeatStatuses(dto, user.id))
-                .toList();
+        // Bulk-load every relevant event's reservations in one query instead of relying on the
+        // lazy event.getReservations() collection (which would run one query per event).
+        Map<UUID, List<Reservation>> reservationsByEvent =
+                events.isEmpty()
+                        ? Map.of()
+                        : reservationRepository
+                                .find("event.id in ?1", events.keySet())
+                                .list()
+                                .stream()
+                                .collect(Collectors.groupingBy(r -> r.getEvent().getId()));
+
+        List<UserEventResponseDTO> result =
+                events.values().stream()
+                        .map(
+                                event ->
+                                        new UserEventResponseDTO(
+                                                event,
+                                                reservationsAllowedByEvent.get(event.getId()),
+                                                reservationsByEvent.getOrDefault(
+                                                        event.getId(), List.of())))
+                        .map(dto -> withPendingSeatStatuses(dto, user.id))
+                        .toList();
+
+        LOG.debugf("Returning %d events for user ID: %s", result.size(), user.id);
+        return result;
     }
 
     /**

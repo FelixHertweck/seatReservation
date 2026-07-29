@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.model.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -146,5 +147,70 @@ public class EventUserAllowanceRepository
      */
     public Optional<EventUserAllowance> findByUserIdAndEventId(UUID userId, UUID eventId) {
         return find("user.id = ?1 and event.id = ?2", userId, eventId).firstResultOptional();
+    }
+
+    /**
+     * Finds all event user allowances for a specific user, eagerly fetching each allowance's event.
+     *
+     * @param user the user to search for
+     * @return a list of event user allowances for the specified user, with the event pre-fetched
+     */
+    public List<EventUserAllowance> findByUserWithEvent(User user) {
+        return find("select a from EventUserAllowance a join fetch a.event where a.user = ?1", user)
+                .list();
+    }
+
+    /**
+     * Finds all event user allowances for a specific user, eagerly fetching each allowance's event
+     * and that event's event location.
+     *
+     * @param user the user to search for
+     * @return a list of event user allowances for the specified user, with the event and its
+     *     location pre-fetched
+     */
+    public List<EventUserAllowance> findByUserWithEventAndLocation(User user) {
+        return find(
+                        "select a from EventUserAllowance a"
+                                + " join fetch a.event e"
+                                + " join fetch e.event_location"
+                                + " where a.user = ?1",
+                        user)
+                .list();
+    }
+
+    /**
+     * Finds the event user allowances for a specific event among a set of user IDs. Used to batch
+     * the per-user allowance lookup for bulk operations instead of querying once per user.
+     *
+     * @param event the event to search for
+     * @param userIds the user IDs to restrict the search to
+     * @return a list of matching event user allowances
+     */
+    public List<EventUserAllowance> findByEventAndUserIds(Event event, Collection<UUID> userIds) {
+        if (userIds.isEmpty()) {
+            return List.of();
+        }
+        return find("event = ?1 and user.id in ?2", event, userIds).list();
+    }
+
+    /**
+     * Finds event user allowances by their IDs, eagerly fetching each one's event and that event's
+     * manager. Used to batch the ownership check for bulk operations (e.g. deletion) instead of
+     * querying once per ID.
+     *
+     * @param ids the allowance IDs to find
+     * @return the matching allowances, each including its event and manager
+     */
+    public List<EventUserAllowance> findByIdsWithEventAndManager(Collection<UUID> ids) {
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+        return find(
+                        "select a from EventUserAllowance a"
+                                + " join fetch a.event e"
+                                + " join fetch e.manager"
+                                + " where a.id in ?1",
+                        ids)
+                .list();
     }
 }

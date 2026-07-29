@@ -79,9 +79,22 @@ public class UserService {
             throws InvalidUserException, DuplicateUserException {
         LOG.infof("Importing %d users.", adminUserCreationDtos.size());
 
+        Set<String> requestedUsernames =
+                adminUserCreationDtos.stream()
+                        .map(AdminUserCreationDto::getUsername)
+                        .collect(Collectors.toSet());
+        Set<String> knownExistingUsernames =
+                new HashSet<>(userRepository.findExistingUsernames(requestedUsernames));
+
         Set<UserDTO> importedUsers = new HashSet<>();
         for (AdminUserCreationDto adminUser : adminUserCreationDtos) {
-            UserDTO user = createUser(new UserCreationDTO(adminUser), adminUser.getRoles(), false);
+            UserDTO user =
+                    createUser(
+                            new UserCreationDTO(adminUser),
+                            adminUser.getRoles(),
+                            false,
+                            false,
+                            knownExistingUsernames);
             importedUsers.add(user);
         }
         return importedUsers;
@@ -123,6 +136,33 @@ public class UserService {
             boolean sendEmailVerification,
             boolean allowNoPassword)
             throws InvalidUserException, DuplicateUserException {
+        return createUser(userCreationDTO, roles, sendEmailVerification, allowNoPassword, null);
+    }
+
+    /**
+     * Creates a new user.
+     *
+     * @param userCreationDTO the data for the new user
+     * @param roles the roles to assign
+     * @param sendEmailVerification whether to send an email verification
+     * @param allowNoPassword when {@code true}, the user may be created without a password (e.g. a
+     *     passkey-only account); the stored password hash is {@code null} and password login is
+     *     unavailable for this user until a password is set
+     * @param knownExistingUsernames when non-{@code null}, the duplicate-username check is done
+     *     against this in-memory set instead of a per-call database query; used by {@link
+     *     #importUsers} to check all usernames of a batch in a single upfront query. The newly
+     *     created user's username is added to the set so later entries in the same batch still
+     *     detect duplicates against each other.
+     * @return the created user
+     */
+    @Transactional
+    public UserDTO createUser(
+            UserCreationDTO userCreationDTO,
+            Set<String> roles,
+            boolean sendEmailVerification,
+            boolean allowNoPassword,
+            Set<String> knownExistingUsernames)
+            throws InvalidUserException, DuplicateUserException {
         if (userCreationDTO == null) {
             LOG.warn("UserCreationDTO is null during user creation.");
             throw new InvalidUserException("User creation data cannot be null.");
@@ -143,7 +183,13 @@ public class UserService {
             throw new InvalidUserException("Password cannot be empty.");
         }
 
-        if (userRepository.findByUsernameOptional(userCreationDTO.getUsername()).isPresent()) {
+        boolean isDuplicate =
+                knownExistingUsernames != null
+                        ? knownExistingUsernames.contains(userCreationDTO.getUsername())
+                        : userRepository
+                                .findByUsernameOptional(userCreationDTO.getUsername())
+                                .isPresent();
+        if (isDuplicate) {
             LOG.warnf(
                     "Duplicate user creation attempt for username: %s",
                     userCreationDTO.getUsername());
@@ -191,6 +237,9 @@ public class UserService {
 
         userRepository.persist(user);
         LOG.debugf("User %s persisted successfully with ID: %s", user.getUsername(), user.id);
+        if (knownExistingUsernames != null) {
+            knownExistingUsernames.add(user.getUsername());
+        }
 
         if (sendEmailVerification) {
             if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {

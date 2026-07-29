@@ -460,14 +460,13 @@ public class EventServiceTest {
 
         when(eventRepository.findByIdOptional(existingEvent.id))
                 .thenReturn(Optional.of(existingEvent));
-        when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
-        // Mocking PanacheQuery for find method when no existing allowance is found
         @SuppressWarnings("unchecked")
-        PanacheQuery<EventUserAllowance> mockQueryNewAllowance = mock(PanacheQuery.class);
-        when(eventUserAllowanceRepository.find(
-                        "user = ?1 and event = ?2", regularUser, existingEvent))
-                .thenReturn(mockQueryNewAllowance);
-        when(mockQueryNewAllowance.firstResultOptional()).thenReturn(Optional.empty());
+        PanacheQuery<User> mockUserQuery = mock(PanacheQuery.class);
+        when(userRepository.find("id in ?1", dto.getUserIds())).thenReturn(mockUserQuery);
+        when(mockUserQuery.list()).thenReturn(List.of(regularUser));
+        // Mocking the batch allowance lookup to report no existing allowance
+        when(eventUserAllowanceRepository.findByEventAndUserIds(existingEvent, dto.getUserIds()))
+                .thenReturn(List.of());
         doAnswer(
                         invocation -> {
                             EventUserAllowance allowance = invocation.getArgument(0);
@@ -492,14 +491,12 @@ public class EventServiceTest {
 
         when(eventRepository.findByIdOptional(existingEvent.id))
                 .thenReturn(Optional.of(existingEvent));
-        when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
-        // Mocking PanacheQuery for find method
         @SuppressWarnings("unchecked")
-        PanacheQuery<EventUserAllowance> mockQuery = mock(PanacheQuery.class);
-        when(eventUserAllowanceRepository.find(
-                        "user = ?1 and event = ?2", regularUser, existingEvent))
-                .thenReturn(mockQuery);
-        when(mockQuery.firstResultOptional()).thenReturn(Optional.of(existingAllowance));
+        PanacheQuery<User> mockUserQuery = mock(PanacheQuery.class);
+        when(userRepository.find("id in ?1", dto.getUserIds())).thenReturn(mockUserQuery);
+        when(mockUserQuery.list()).thenReturn(List.of(regularUser));
+        when(eventUserAllowanceRepository.findByEventAndUserIds(existingEvent, dto.getUserIds()))
+                .thenReturn(List.of(existingAllowance));
         doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
 
         eventReservationAllowanceService.setReservationsAllowedForUser(dto, managerAuth);
@@ -519,13 +516,12 @@ public class EventServiceTest {
 
         when(eventRepository.findByIdOptional(existingEvent.id))
                 .thenReturn(Optional.of(existingEvent));
-        when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
         @SuppressWarnings("unchecked")
-        PanacheQuery<EventUserAllowance> mockQuery = mock(PanacheQuery.class);
-        when(eventUserAllowanceRepository.find(
-                        "user = ?1 and event = ?2", regularUser, existingEvent))
-                .thenReturn(mockQuery);
-        when(mockQuery.firstResultOptional()).thenReturn(Optional.empty());
+        PanacheQuery<User> mockUserQuery = mock(PanacheQuery.class);
+        when(userRepository.find("id in ?1", dto.getUserIds())).thenReturn(mockUserQuery);
+        when(mockUserQuery.list()).thenReturn(List.of(regularUser));
+        when(eventUserAllowanceRepository.findByEventAndUserIds(existingEvent, dto.getUserIds()))
+                .thenReturn(List.of());
 
         // Act
         eventReservationAllowanceService.setReservationsAllowedForUser(dto, adminAuth);
@@ -562,7 +558,12 @@ public class EventServiceTest {
 
         when(eventRepository.findByIdOptional(existingEvent.id))
                 .thenReturn(Optional.of(existingEvent));
-        when(userRepository.findByIdOptional(any(UUID.class))).thenReturn(Optional.empty());
+        @SuppressWarnings("unchecked")
+        PanacheQuery<User> mockUserQuery = mock(PanacheQuery.class);
+        when(userRepository.find("id in ?1", dto.getUserIds())).thenReturn(mockUserQuery);
+        when(mockUserQuery.list()).thenReturn(List.of());
+        when(eventUserAllowanceRepository.findByEventAndUserIds(existingEvent, dto.getUserIds()))
+                .thenReturn(List.of());
 
         assertThrows(
                 UserNotFoundException.class,

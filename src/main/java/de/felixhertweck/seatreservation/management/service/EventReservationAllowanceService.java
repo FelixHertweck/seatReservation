@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.management.service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -85,26 +86,31 @@ public class EventReservationAllowanceService {
 
         Set<EventUserAllowancesDto> resultAllowances = new HashSet<>();
 
-        dto.getUserIds()
-                .forEach(
-                        userId -> {
-                            User user = getUserById(userId);
-                            EventUserAllowance allowance =
-                                    eventUserAllowanceRepository
-                                            .find("user = ?1 and event = ?2", user, event)
-                                            .firstResultOptional()
-                                            .orElse(
-                                                    new EventUserAllowance(
-                                                            user,
-                                                            event,
-                                                            dto.getReservationsAllowedCount()));
+        Map<UUID, User> userMap =
+                userRepository.find("id in ?1", dto.getUserIds()).list().stream()
+                        .collect(Collectors.toMap(u -> u.id, u -> u));
 
-                            allowance.setReservationsAllowedCount(
-                                    dto.getReservationsAllowedCount());
-                            eventUserAllowanceRepository.persist(allowance);
+        Map<UUID, EventUserAllowance> allowanceByUserId =
+                eventUserAllowanceRepository.findByEventAndUserIds(event, dto.getUserIds()).stream()
+                        .collect(Collectors.toMap(a -> a.getUser().id, a -> a));
 
-                            resultAllowances.add(new EventUserAllowancesDto((allowance)));
-                        });
+        for (UUID userId : dto.getUserIds()) {
+            User user = userMap.get(userId);
+            if (user == null) {
+                LOG.warnf("User with ID %s not found.", userId);
+                throw new UserNotFoundException("User with id " + userId + " not found");
+            }
+
+            EventUserAllowance allowance = allowanceByUserId.get(userId);
+            if (allowance == null) {
+                allowance = new EventUserAllowance(user, event, dto.getReservationsAllowedCount());
+            }
+
+            allowance.setReservationsAllowedCount(dto.getReservationsAllowedCount());
+            eventUserAllowanceRepository.persist(allowance);
+
+            resultAllowances.add(new EventUserAllowancesDto(allowance));
+        }
 
         LOG.infof(
                 "Successfully set reservation allowance for user IDs %s and event ID %s",
@@ -304,22 +310,23 @@ public class EventReservationAllowanceService {
                     "No reservation allowance IDs provided for deletion.");
         }
 
+        Map<UUID, EventUserAllowance> allowanceMap =
+                eventUserAllowanceRepository.findByIdsWithEventAndManager(ids).stream()
+                        .collect(Collectors.toMap(a -> a.id, a -> a));
+
         for (UUID id : ids) {
             LOG.debugf(
                     "Attempting to delete reservation allowance with ID: %s for user ID: %s (ID:"
                             + " %s)",
                     id, currentUser.id, currentUser.getId());
-            EventUserAllowance allowance =
-                    eventUserAllowanceRepository
-                            .findByIdOptional(id)
-                            .orElseThrow(
-                                    () -> {
-                                        LOG.warnf(
-                                                "Reservation allowance with ID %s not found for"
-                                                        + " deletion by user: %s (ID: %s)",
-                                                id, currentUser.id, currentUser.getId());
-                                        return new EventNotFoundException("Allowance not found");
-                                    });
+            EventUserAllowance allowance = allowanceMap.get(id);
+            if (allowance == null) {
+                LOG.warnf(
+                        "Reservation allowance with ID %s not found for deletion by user: %s (ID:"
+                                + " %s)",
+                        id, currentUser.id, currentUser.getId());
+                throw new EventNotFoundException("Allowance not found");
+            }
 
             if (!allowance.getEvent().getManager().equals(currentUser)
                     && !currentUser.getRoles().contains(Roles.ADMIN)) {
@@ -347,17 +354,6 @@ public class EventReservationAllowanceService {
                         () -> {
                             LOG.warnf("Event with ID %s not found.", id);
                             return new EventNotFoundException("Event with id " + id + " not found");
-                        });
-    }
-
-    private User getUserById(UUID id) throws UserNotFoundException {
-        LOG.debugf("Attempting to find user by ID: %s", id);
-        return userRepository
-                .findByIdOptional(id)
-                .orElseThrow(
-                        () -> {
-                            LOG.warnf("User with ID %s not found.", id);
-                            return new UserNotFoundException("User with id " + id + " not found");
                         });
     }
 }

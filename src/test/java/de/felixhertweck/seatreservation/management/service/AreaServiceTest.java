@@ -373,9 +373,9 @@ public class AreaServiceTest {
 
     @Test
     void deleteAreas_Success() {
-        when(areaRepository.findByIdWithEventLocation(existingArea.id))
-                .thenReturn(Optional.of(existingArea));
-        when(seatRepository.countByArea(existingArea)).thenReturn(0L);
+        when(areaRepository.findByIdsWithEventLocation(List.of(existingArea.id)))
+                .thenReturn(List.of(existingArea));
+        when(seatRepository.findUsedAreaIds(List.of(existingArea.id))).thenReturn(List.of());
 
         areaService.deleteAreas(List.of(existingArea.id), managerAuth);
 
@@ -384,8 +384,7 @@ public class AreaServiceTest {
 
     @Test
     void deleteAreas_NotFound() {
-        when(areaRepository.findByIdWithEventLocation(any(UUID.class)))
-                .thenReturn(Optional.empty());
+        when(areaRepository.findByIdsWithEventLocation(List.of(id(999)))).thenReturn(List.of());
 
         assertThrows(
                 AreaNotFoundException.class,
@@ -397,8 +396,8 @@ public class AreaServiceTest {
         EventLocationArea areaInOtherLocation = new EventLocationArea("X");
         areaInOtherLocation.id = id(20);
         areaInOtherLocation.setEventLocation(otherLocation);
-        when(areaRepository.findByIdWithEventLocation(areaInOtherLocation.id))
-                .thenReturn(Optional.of(areaInOtherLocation));
+        when(areaRepository.findByIdsWithEventLocation(List.of(areaInOtherLocation.id)))
+                .thenReturn(List.of(areaInOtherLocation));
 
         assertThrows(
                 SecurityException.class,
@@ -407,9 +406,10 @@ public class AreaServiceTest {
 
     @Test
     void deleteAreas_Conflict_ReferencedBySeat() {
-        when(areaRepository.findByIdWithEventLocation(existingArea.id))
-                .thenReturn(Optional.of(existingArea));
-        when(seatRepository.countByArea(existingArea)).thenReturn(1L);
+        when(areaRepository.findByIdsWithEventLocation(List.of(existingArea.id)))
+                .thenReturn(List.of(existingArea));
+        when(seatRepository.findUsedAreaIds(List.of(existingArea.id)))
+                .thenReturn(List.of(existingArea.id));
 
         assertThrows(
                 AreaInUseException.class,

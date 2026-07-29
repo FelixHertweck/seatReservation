@@ -367,9 +367,10 @@ public class EntranceServiceTest {
 
     @Test
     void deleteEntrances_Success() {
-        when(entranceRepository.findByIdWithEventLocation(existingEntrance.id))
-                .thenReturn(Optional.of(existingEntrance));
-        when(seatRepository.countByEntrance(existingEntrance)).thenReturn(0L);
+        when(entranceRepository.findByIdsWithEventLocation(List.of(existingEntrance.id)))
+                .thenReturn(List.of(existingEntrance));
+        when(seatRepository.findUsedEntranceIds(List.of(existingEntrance.id)))
+                .thenReturn(List.of());
 
         entranceService.deleteEntrances(List.of(existingEntrance.id), managerAuth);
 
@@ -378,8 +379,7 @@ public class EntranceServiceTest {
 
     @Test
     void deleteEntrances_NotFound() {
-        when(entranceRepository.findByIdWithEventLocation(any(UUID.class)))
-                .thenReturn(Optional.empty());
+        when(entranceRepository.findByIdsWithEventLocation(List.of(id(999)))).thenReturn(List.of());
 
         assertThrows(
                 EntranceNotFoundException.class,
@@ -388,9 +388,10 @@ public class EntranceServiceTest {
 
     @Test
     void deleteEntrances_Conflict_ReferencedBySeat() {
-        when(entranceRepository.findByIdWithEventLocation(existingEntrance.id))
-                .thenReturn(Optional.of(existingEntrance));
-        when(seatRepository.countByEntrance(existingEntrance)).thenReturn(1L);
+        when(entranceRepository.findByIdsWithEventLocation(List.of(existingEntrance.id)))
+                .thenReturn(List.of(existingEntrance));
+        when(seatRepository.findUsedEntranceIds(List.of(existingEntrance.id)))
+                .thenReturn(List.of(existingEntrance.id));
 
         assertThrows(
                 EntranceInUseException.class,

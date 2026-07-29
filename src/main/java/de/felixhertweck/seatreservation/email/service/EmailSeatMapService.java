@@ -38,6 +38,7 @@ import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenRepository;
+import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.utils.SecurityUtils;
 import de.felixhertweck.seatreservation.utils.SvgRenderer;
 import de.felixhertweck.seatreservation.utils.SvgToPngConverter;
@@ -51,6 +52,8 @@ public class EmailSeatMapService {
     private static final Logger LOG = Logger.getLogger(EmailSeatMapService.class);
 
     @Inject EmailSeatMapTokenRepository tokenRepository;
+
+    @Inject ReservationRepository reservationRepository;
 
     @ConfigProperty(name = "email.seatmap.token.expiration.days", defaultValue = "30")
     long tokenExpirationDays;
@@ -149,8 +152,9 @@ public class EmailSeatMapService {
         List<Seat> allSeats = event.getEventLocation().getSeats();
         Set<String> newReservedSeatNumbers = emailSeatMapToken.getNewReservedSeatNumbers();
         Set<String> existingReservedSeatNumbers =
-                emailSeatMapToken.getUser().getReservations().stream()
-                        .filter(r -> r.getEvent().equals(event))
+                reservationRepository
+                        .findByUserAndEventWithSeat(emailSeatMapToken.getUser(), event)
+                        .stream()
                         .map(Reservation::getSeat)
                         .map(Seat::getSeatNumber)
                         .collect(java.util.stream.Collectors.toSet());
