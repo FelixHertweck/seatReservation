@@ -333,16 +333,23 @@ public class CheckInService {
                     String.format("No reservations found for user %s.", username));
         }
 
-        List<SupervisorReservationResponseDTO> processedReservations =
+        List<SupervisorReservationResponseDTO> processedReservations;
+
+        // ⚡ Bolt: Cache authorization checks by event ID to prevent O(N) redundant database queries
+        java.util.Map<UUID, Boolean> authorizationCache = new java.util.HashMap<>();
+
+        processedReservations =
                 reservations.stream()
                         .filter(
                                 r ->
                                         currentUser == null
-                                                || isAuthorizedForEvent(
-                                                        currentUser, r.getEvent().getId()))
+                                                || authorizationCache.computeIfAbsent(
+                                                        r.getEvent().getId(),
+                                                        eventId ->
+                                                                isAuthorizedForEvent(
+                                                                        currentUser, eventId)))
                         .map(SupervisorReservationResponseDTO::new)
                         .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
-
         LOG.debugf(
                 "Processed %d reservations for user %s.", processedReservations.size(), username);
 
