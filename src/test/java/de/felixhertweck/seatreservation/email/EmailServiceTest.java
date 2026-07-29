@@ -35,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
@@ -43,6 +44,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.zxing.WriterException;
 import de.felixhertweck.seatreservation.email.queue.EmailDispatcher;
 import de.felixhertweck.seatreservation.email.service.EmailSeatMapService;
 import de.felixhertweck.seatreservation.email.service.EmailService;
@@ -56,12 +58,15 @@ import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
+import de.felixhertweck.seatreservation.utils.QRCodeImage;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.MockMailbox;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 @QuarkusTest
 class EmailServiceTest {
@@ -314,5 +319,37 @@ class EmailServiceTest {
 
         List<Mail> sentMails = mailbox.getMailsSentTo(user.getEmail());
         assertEquals(1, sentMails.size());
+    }
+
+    @Test
+    void sendEventReminder_QrCodeGenerationThrowsException() throws Exception {
+        User user = createTestUser();
+        EventLocation location = createTestEventLocation();
+        Event event = createTestEvent(location);
+        Seat seat = createTestSeat(location, "A1");
+        List<Reservation> reservations =
+                Collections.singletonList(createTestReservation(user, event, seat));
+
+        when(emailSeatMapService.createEmailSeatMapToken(any(), any(), any()))
+                .thenReturn("test-token-123");
+        when(emailSeatMapService.getPngImage(anyString())).thenReturn(Optional.of(new byte[0]));
+
+        try (MockedStatic<QRCodeImage> qrCodeImageMock = Mockito.mockStatic(QRCodeImage.class)) {
+            qrCodeImageMock
+                    .when(() -> QRCodeImage.generateQrCodeImage(anyString(), anyInt(), anyInt()))
+                    .thenThrow(new WriterException("Simulated WriterException"));
+
+            emailService.sendEventReminder(user, event, reservations);
+        }
+
+        emailDispatcher.drainQueue();
+
+        List<Mail> sentMails = mailbox.getMailsSentTo(user.getEmail());
+        assertEquals(1, sentMails.size());
+
+        Mail sentMail = sentMails.get(0);
+        assertTrue(
+                sentMail.getAttachments().isEmpty(),
+                "Mail should have no attachments when QR code generation fails");
     }
 }
