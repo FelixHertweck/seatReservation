@@ -19,8 +19,12 @@
  */
 package de.felixhertweck.seatreservation.management.service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -151,9 +155,19 @@ public class EntranceService {
         if (ids == null || ids.isEmpty()) {
             throw new IllegalArgumentException("No entrance IDs provided for deletion");
         }
+
+        Map<UUID, EventLocationEntrance> entranceMap =
+                entranceRepository.findByIdsWithEventLocation(ids).stream()
+                        .collect(Collectors.toMap(e -> e.id, e -> e));
+        Set<UUID> usedEntranceIds = new HashSet<>(seatRepository.findUsedEntranceIds(ids));
+
         for (UUID id : ids) {
-            EventLocationEntrance entrance = findEntranceEntityById(id, manager);
-            if (seatRepository.countByEntrance(entrance) > 0) {
+            EventLocationEntrance entrance = entranceMap.get(id);
+            if (entrance == null) {
+                throw new EntranceNotFoundException("Entrance with id " + id + " not found");
+            }
+            eventLocationAccessService.requireAccess(entrance.getEventLocation(), manager);
+            if (usedEntranceIds.contains(id)) {
                 throw new EntranceInUseException(
                         "Entrance with id " + id + " is still referenced by at least one seat");
             }

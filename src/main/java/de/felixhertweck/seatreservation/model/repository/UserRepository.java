@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.model.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -107,5 +108,24 @@ public class UserRepository implements PanacheRepositoryBase<User, UUID> {
      */
     public User getReference(UUID id) {
         return getEntityManager().getReference(User.class, id);
+    }
+
+    /**
+     * Finds which of the given usernames already exist, used to batch-check duplicates for a bulk
+     * user import instead of querying once per username.
+     *
+     * @param usernames the usernames to check
+     * @return the subset of {@code usernames} that already belong to an existing user
+     */
+    public List<String> findExistingUsernames(Collection<String> usernames) {
+        if (usernames.isEmpty()) {
+            return List.of();
+        }
+        return getEntityManager()
+                .createQuery(
+                        "select u.username from User u where u.username in :usernames",
+                        String.class)
+                .setParameter("usernames", usernames)
+                .getResultList();
     }
 }

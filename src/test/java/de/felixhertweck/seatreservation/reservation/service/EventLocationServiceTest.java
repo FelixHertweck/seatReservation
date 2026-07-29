@@ -24,7 +24,6 @@ import static de.felixhertweck.seatreservation.testutil.TestIds.id;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import jakarta.inject.Inject;
 
@@ -34,6 +33,7 @@ import static org.mockito.Mockito.when;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.*;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
+import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.reservation.dto.UserEventLocationResponseDTO;
 import de.felixhertweck.seatreservation.utils.CodeGenerator;
@@ -50,6 +50,8 @@ class EventLocationServiceTest {
     @InjectMock UserRepository userRepository;
 
     @InjectMock EventUserAllowanceRepository eventUserAllowanceRepository;
+
+    @InjectMock ReservationRepository reservationRepository;
 
     private User user;
     private EventLocation locationA;
@@ -100,12 +102,12 @@ class EventLocationServiceTest {
                         Instant.now(),
                         ReservationStatus.RESERVED,
                         CodeGenerator.generateRandomCode());
-        var reservations = new HashSet<Reservation>();
-        reservations.add(reservation);
-        user.setReservations(reservations);
 
         when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(eventUserAllowanceRepository.findByUser(user)).thenReturn(List.of(allowance));
+        when(eventUserAllowanceRepository.findByUserWithEventAndLocation(user))
+                .thenReturn(List.of(allowance));
+        when(reservationRepository.findByUserWithEventAndLocation(user))
+                .thenReturn(List.of(reservation));
 
         List<UserEventLocationResponseDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");
@@ -132,12 +134,12 @@ class EventLocationServiceTest {
                         Instant.now(),
                         ReservationStatus.RESERVED,
                         CodeGenerator.generateRandomCode());
-        var reservations = new HashSet<Reservation>();
-        reservations.add(reservation);
-        user.setReservations(reservations);
 
         when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(eventUserAllowanceRepository.findByUser(user)).thenReturn(List.of(allowance));
+        when(eventUserAllowanceRepository.findByUserWithEventAndLocation(user))
+                .thenReturn(List.of(allowance));
+        when(reservationRepository.findByUserWithEventAndLocation(user))
+                .thenReturn(List.of(reservation));
 
         List<UserEventLocationResponseDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");
@@ -149,8 +151,10 @@ class EventLocationServiceTest {
     @Test
     void getLocationsForCurrentUser_Empty() {
         when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(eventUserAllowanceRepository.findByUser(user)).thenReturn(Collections.emptyList());
-        user.setReservations(Collections.emptySet());
+        when(eventUserAllowanceRepository.findByUserWithEventAndLocation(user))
+                .thenReturn(Collections.emptyList());
+        when(reservationRepository.findByUserWithEventAndLocation(user))
+                .thenReturn(Collections.emptyList());
 
         List<UserEventLocationResponseDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");
@@ -175,8 +179,10 @@ class EventLocationServiceTest {
         allowance.setReservationsAllowedCount(3);
 
         when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(eventUserAllowanceRepository.findByUser(user)).thenReturn(List.of(allowance));
-        user.setReservations(Collections.emptySet()); // No reservations
+        when(eventUserAllowanceRepository.findByUserWithEventAndLocation(user))
+                .thenReturn(List.of(allowance));
+        when(reservationRepository.findByUserWithEventAndLocation(user))
+                .thenReturn(Collections.emptyList()); // No reservations
 
         List<UserEventLocationResponseDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");
@@ -197,13 +203,12 @@ class EventLocationServiceTest {
                         Instant.now(),
                         ReservationStatus.RESERVED,
                         CodeGenerator.generateRandomCode());
-        var reservations = new HashSet<Reservation>();
-        reservations.add(reservation);
-        user.setReservations(reservations);
 
         when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(eventUserAllowanceRepository.findByUser(user))
+        when(eventUserAllowanceRepository.findByUserWithEventAndLocation(user))
                 .thenReturn(Collections.emptyList()); // No allowances
+        when(reservationRepository.findByUserWithEventAndLocation(user))
+                .thenReturn(List.of(reservation));
 
         List<UserEventLocationResponseDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");
@@ -215,8 +220,10 @@ class EventLocationServiceTest {
     @Test
     void getLocationsForCurrentUser_NoAllowanceNoReservation() {
         when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(eventUserAllowanceRepository.findByUser(user)).thenReturn(Collections.emptyList());
-        user.setReservations(Collections.emptySet());
+        when(eventUserAllowanceRepository.findByUserWithEventAndLocation(user))
+                .thenReturn(Collections.emptyList());
+        when(reservationRepository.findByUserWithEventAndLocation(user))
+                .thenReturn(Collections.emptyList());
 
         List<UserEventLocationResponseDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");
@@ -242,12 +249,12 @@ class EventLocationServiceTest {
                         Instant.now(),
                         ReservationStatus.RESERVED,
                         CodeGenerator.generateRandomCode());
-        var reservations = new HashSet<Reservation>();
-        reservations.add(reservationB);
-        user.setReservations(reservations);
 
         when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(eventUserAllowanceRepository.findByUser(user)).thenReturn(List.of(allowanceA));
+        when(eventUserAllowanceRepository.findByUserWithEventAndLocation(user))
+                .thenReturn(List.of(allowanceA));
+        when(reservationRepository.findByUserWithEventAndLocation(user))
+                .thenReturn(List.of(reservationB));
 
         List<UserEventLocationResponseDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");
@@ -275,12 +282,12 @@ class EventLocationServiceTest {
                         Instant.now(),
                         ReservationStatus.RESERVED,
                         CodeGenerator.generateRandomCode());
-        var reservations = new HashSet<Reservation>();
-        reservations.add(reservationB);
-        user.setReservations(reservations);
 
         when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(eventUserAllowanceRepository.findByUser(user)).thenReturn(List.of(allowanceA));
+        when(eventUserAllowanceRepository.findByUserWithEventAndLocation(user))
+                .thenReturn(List.of(allowanceA));
+        when(reservationRepository.findByUserWithEventAndLocation(user))
+                .thenReturn(List.of(reservationB));
 
         List<UserEventLocationResponseDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");
@@ -314,12 +321,12 @@ class EventLocationServiceTest {
                         Instant.now(),
                         ReservationStatus.RESERVED,
                         CodeGenerator.generateRandomCode());
-        var reservations = new HashSet<Reservation>();
-        reservations.add(reservationC);
-        user.setReservations(reservations);
 
         when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(eventUserAllowanceRepository.findByUser(user)).thenReturn(List.of(allowanceA));
+        when(eventUserAllowanceRepository.findByUserWithEventAndLocation(user))
+                .thenReturn(List.of(allowanceA));
+        when(reservationRepository.findByUserWithEventAndLocation(user))
+                .thenReturn(List.of(reservationC));
 
         List<UserEventLocationResponseDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");
@@ -351,8 +358,10 @@ class EventLocationServiceTest {
         allowance.setReservationsAllowedCount(3);
 
         when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(eventUserAllowanceRepository.findByUser(user)).thenReturn(List.of(allowance));
-        user.setReservations(Collections.emptySet());
+        when(eventUserAllowanceRepository.findByUserWithEventAndLocation(user))
+                .thenReturn(List.of(allowance));
+        when(reservationRepository.findByUserWithEventAndLocation(user))
+                .thenReturn(Collections.emptyList());
 
         List<UserEventLocationResponseDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");

@@ -183,9 +183,12 @@ public class CheckInService {
 
                 LOG.debugf("Setting reservation %s to CHECK_IN status.", reservationId);
                 reservation.setLiveStatus(ReservationLiveStatus.CHECKED_IN);
-                reservationRepository.persist(reservation);
                 LOG.infof("Reservation %s successfully checked in.", reservationId);
+            }
 
+            reservationRepository.persistAll(checkInReservations);
+
+            for (Reservation reservation : checkInReservations) {
                 // Broadcast check-in update to WebSocket clients
                 webSocketService.broadcastUpdate(reservation.getEvent().getId(), reservation);
             }
@@ -217,9 +220,12 @@ public class CheckInService {
 
                 LOG.debugf("Setting reservation %s to CANCEL status.", reservationId);
                 reservation.setLiveStatus(ReservationLiveStatus.CANCELLED);
-                reservationRepository.persist(reservation);
                 LOG.infof("Reservation %s successfully cancelled.", reservationId);
+            }
 
+            reservationRepository.persistAll(cancelReservations);
+
+            for (Reservation reservation : cancelReservations) {
                 // Broadcast cancellation update to WebSocket clients
                 webSocketService.broadcastUpdate(reservation.getEvent().getId(), reservation);
             }

@@ -38,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
@@ -237,18 +238,18 @@ public class ReservationServiceTest {
 
         doAnswer(
                         inv -> {
-                            Reservation res = inv.getArgument(0);
-                            res.id = id(99);
+                            List<Reservation> reservations = inv.getArgument(0);
+                            reservations.forEach(res -> res.id = id(99));
                             return null;
                         })
                 .when(reservationRepository)
-                .persist(any(Reservation.class));
+                .persistAll(anyList());
 
         Set<ReservationResponseDTO> created = reservationService.createReservations(dto, adminUser);
 
         assertNotNull(created);
         assertEquals(regularUser.id, created.iterator().next().user().id());
-        verify(reservationRepository).persist(any(Reservation.class));
+        verify(reservationRepository).persistAll(anyList());
         verify(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
         assertEquals(0, allowance.getReservationsAllowedCount()); // Allowance should be decremented
     }
@@ -268,18 +269,18 @@ public class ReservationServiceTest {
 
         doAnswer(
                         inv -> {
-                            Reservation res = inv.getArgument(0);
-                            res.id = id(99);
+                            List<Reservation> reservations = inv.getArgument(0);
+                            reservations.forEach(res -> res.id = id(99));
                             return null;
                         })
                 .when(reservationRepository)
-                .persist(any(Reservation.class));
+                .persistAll(anyList());
 
         Set<ReservationResponseDTO> created = reservationService.createReservations(dto, adminUser);
 
         assertNotNull(created);
         assertEquals(regularUser.id, created.iterator().next().user().id());
-        verify(reservationRepository).persist(any(Reservation.class));
+        verify(reservationRepository).persistAll(anyList());
         verify(eventUserAllowanceRepository, never())
                 .persist(any(EventUserAllowance.class)); // Verify allowance was not persisted
     }
@@ -299,19 +300,19 @@ public class ReservationServiceTest {
 
         doAnswer(
                         inv -> {
-                            Reservation res = inv.getArgument(0);
-                            res.id = id(99);
+                            List<Reservation> reservations = inv.getArgument(0);
+                            reservations.forEach(res -> res.id = id(99));
                             return null;
                         })
                 .when(reservationRepository)
-                .persist(any(Reservation.class));
+                .persistAll(anyList());
 
         Set<ReservationResponseDTO> created =
                 reservationService.createReservations(dto, managerUser);
 
         assertNotNull(created);
         assertEquals(regularUser.id, created.iterator().next().user().id());
-        verify(reservationRepository).persist(any(Reservation.class));
+        verify(reservationRepository).persistAll(anyList());
         verify(eventUserAllowanceRepository, never())
                 .persist(any(EventUserAllowance.class)); // Verify allowance was not persisted
     }
@@ -338,7 +339,7 @@ public class ReservationServiceTest {
 
         assertNotNull(created);
         assertEquals(regularUser.id, created.iterator().next().user().id());
-        verify(reservationRepository).persist(any(Reservation.class));
+        verify(reservationRepository).persistAll(anyList());
         verify(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
         assertEquals(0, allowance.getReservationsAllowedCount()); // Allowance should be decremented
     }
@@ -484,8 +485,8 @@ public class ReservationServiceTest {
         allowance.setReservationsAllowedCount(0);
 
         mockReservationFind(List.of(reservation.id), List.of(reservation));
-        when(eventUserAllowanceRepository.findByUserAndEvent(regularUser, event))
-                .thenReturn(Optional.of(allowance));
+        when(eventUserAllowanceRepository.findByEventAndUserIds(event, Set.of(regularUser.id)))
+                .thenReturn(List.of(allowance));
         doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
 
         reservationService.deleteReservation(List.of(reservation.id), managerUser);
@@ -551,8 +552,8 @@ public class ReservationServiceTest {
 
         mockReservationFind(
                 List.of(reservation.id, reservation2.id), List.of(reservation, reservation2));
-        when(eventUserAllowanceRepository.findByUserAndEvent(regularUser, event))
-                .thenReturn(Optional.of(allowance));
+        when(eventUserAllowanceRepository.findByEventAndUserIds(event, Set.of(regularUser.id)))
+                .thenReturn(List.of(allowance));
         doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
 
         reservationService.deleteReservation(List.of(reservation.id, reservation2.id), managerUser);
@@ -602,8 +603,8 @@ public class ReservationServiceTest {
         mockReservationFind(
                 List.of(blockedReservation.id, reservedReservation.id),
                 List.of(blockedReservation, reservedReservation));
-        when(eventUserAllowanceRepository.findByUserAndEvent(regularUser, event))
-                .thenReturn(Optional.of(allowance));
+        when(eventUserAllowanceRepository.findByEventAndUserIds(event, Set.of(regularUser.id)))
+                .thenReturn(List.of(allowance));
         doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
 
         reservationService.deleteReservation(
@@ -622,8 +623,8 @@ public class ReservationServiceTest {
         allowance.setReservationsAllowedCount(5);
 
         mockReservationFind(List.of(reservation.id), List.of(reservation));
-        when(eventUserAllowanceRepository.findByUserAndEvent(regularUser, event))
-                .thenReturn(Optional.of(allowance));
+        when(eventUserAllowanceRepository.findByEventAndUserIds(event, Set.of(regularUser.id)))
+                .thenReturn(List.of(allowance));
         doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
 
         reservationService.deleteReservation(List.of(reservation.id), managerUser);

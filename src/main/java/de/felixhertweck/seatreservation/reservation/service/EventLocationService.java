@@ -30,6 +30,7 @@ import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
+import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.reservation.dto.UserEventLocationResponseDTO;
 import org.jboss.logging.Logger;
@@ -40,6 +41,7 @@ public class EventLocationService {
 
     @Inject UserRepository userRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
+    @Inject ReservationRepository reservationRepository;
 
     /**
      * Retrieves all event locations for which the specified user has event allowances or active
@@ -64,13 +66,13 @@ public class EventLocationService {
 
         // Get all locations from allowances
         locations.addAll(
-                eventUserAllowanceRepository.findByUser(user).stream()
+                eventUserAllowanceRepository.findByUserWithEventAndLocation(user).stream()
                         .map(allowance -> allowance.getEvent().getEventLocation())
                         .collect(Collectors.toSet()));
 
         // Get all locations from reservations
         locations.addAll(
-                user.getReservations().stream()
+                reservationRepository.findByUserWithEventAndLocation(user).stream()
                         .map(reservation -> reservation.getEvent().getEventLocation())
                         .collect(Collectors.toSet()));
 

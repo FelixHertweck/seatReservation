@@ -257,7 +257,7 @@ class EmailServiceTest {
         List<Reservation> reservations =
                 Collections.singletonList(createTestReservation(user, event, seat));
 
-        when(seatRepository.findByEventLocation(any())).thenReturn(Collections.singletonList(seat));
+        when(seatRepository.findByIdsWithAreaAndEntrance(any())).thenReturn(List.of(seat));
         when(emailSeatMapService.createEmailSeatMapToken(any(), any(), any()))
                 .thenReturn("test-token-123");
         when(emailSeatMapService.getPngImage(anyString())).thenReturn(Optional.of(new byte[0]));
@@ -302,6 +302,7 @@ class EmailServiceTest {
         List<Reservation> reservations =
                 Collections.singletonList(createTestReservation(user, event, seat));
 
+        when(seatRepository.findByIdsWithAreaAndEntrance(any())).thenReturn(List.of(seat));
         when(emailSeatMapService.createEmailSeatMapToken(any(), any(), any()))
                 .thenReturn("test-token-123");
         when(emailSeatMapService.getPngImage(anyString())).thenReturn(Optional.of(new byte[0]));

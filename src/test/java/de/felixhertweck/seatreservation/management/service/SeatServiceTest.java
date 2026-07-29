@@ -718,8 +718,8 @@ public class SeatServiceTest {
 
     @Test
     void deleteSeat_Success_AsManager() {
-        when(seatRepository.findByIdOptional(existingSeat.id))
-                .thenReturn(Optional.of(existingSeat));
+        when(seatRepository.findByIdsWithLocation(List.of(existingSeat.id)))
+                .thenReturn(List.of(existingSeat));
         doNothing().when(seatRepository).delete(any(Seat.class));
 
         seatService.deleteSeatForManager(List.of(existingSeat.id), managerAuth);
@@ -729,8 +729,8 @@ public class SeatServiceTest {
 
     @Test
     void deleteSeat_Success_AsAdmin() {
-        when(seatRepository.findByIdOptional(existingSeat.id))
-                .thenReturn(Optional.of(existingSeat));
+        when(seatRepository.findByIdsWithLocation(List.of(existingSeat.id)))
+                .thenReturn(List.of(existingSeat));
         doNothing().when(seatRepository).delete(any(Seat.class));
 
         seatService.deleteSeatForManager(List.of(existingSeat.id), adminAuth);
@@ -740,7 +740,7 @@ public class SeatServiceTest {
 
     @Test
     void deleteSeat_NotFound() {
-        when(seatRepository.findByIdOptional(any(UUID.class))).thenReturn(Optional.empty());
+        when(seatRepository.findByIdsWithLocation(List.of(id(99)))).thenReturn(List.of());
 
         assertThrows(
                 SeatNotFoundException.class,
@@ -756,8 +756,8 @@ public class SeatServiceTest {
         Seat seatInOtherLocation = new Seat("X1", "", otherLocation);
         seatInOtherLocation.id = id(2);
 
-        when(seatRepository.findByIdOptional(seatInOtherLocation.id))
-                .thenReturn(Optional.of(seatInOtherLocation));
+        when(seatRepository.findByIdsWithLocation(List.of(seatInOtherLocation.id)))
+                .thenReturn(List.of(seatInOtherLocation));
 
         assertThrows(
                 SecurityException.class,

@@ -33,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -131,7 +132,7 @@ class CheckInServiceTest {
         assertEquals(ReservationLiveStatus.CHECKED_IN, reservation1.getLiveStatus());
         assertEquals(ReservationLiveStatus.CHECKED_IN, reservation2.getLiveStatus());
 
-        verify(reservationRepository, times(2)).persist(any(Reservation.class));
+        verify(reservationRepository, times(1)).persistAll(anyList());
     }
 
     @Test
@@ -173,7 +174,7 @@ class CheckInServiceTest {
 
         assertEquals(ReservationLiveStatus.CANCELLED, reservation1.getLiveStatus());
 
-        verify(reservationRepository, times(1)).persist(any(Reservation.class));
+        verify(reservationRepository, times(1)).persistAll(anyList());
     }
 
     @Test
@@ -225,7 +226,7 @@ class CheckInServiceTest {
         assertEquals(ReservationLiveStatus.CHECKED_IN, checkInReservation.getLiveStatus());
         assertEquals(ReservationLiveStatus.CANCELLED, cancelReservation.getLiveStatus());
 
-        verify(reservationRepository, times(2)).persist(any(Reservation.class));
+        verify(reservationRepository, times(2)).persistAll(anyList());
     }
 
     @Test
@@ -370,7 +371,7 @@ class CheckInServiceTest {
 
         assertEquals(ReservationLiveStatus.CANCELLED, reservation1.getLiveStatus());
 
-        verify(reservationRepository, times(1)).persist(any(Reservation.class));
+        verify(reservationRepository, times(1)).persistAll(anyList());
     }
 
     @Test

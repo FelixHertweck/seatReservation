@@ -320,12 +320,13 @@ public class ReservationService {
                             Instant.now(),
                             ReservationStatus.RESERVED,
                             CodeGenerator.generateRandomCode());
-            reservationRepository.persist(reservation);
             existingReservations.add(reservation);
             LOG.infof(
                     "Reservation created successfully for seat ID %s, user ID %s, event ID %s.",
                     dtoSeatId, dto.getUserId(), dto.getEventId());
         }
+
+        reservationRepository.persistAll(existingReservations);
 
         try {
             emailService.sendReservationConfirmation(
@@ -403,30 +404,42 @@ public class ReservationService {
                         "Adding reservation ID %s to deleted reservations for email notification.",
                         reservation.id);
                 deletedReservations.add(reservation);
+            }
+        }
 
-                // Restore allowance count if it exists
-                eventUserAllowanceRepository
-                        .findByUserAndEvent(reservation.getUser(), reservation.getEvent())
-                        .ifPresentOrElse(
-                                allowance -> {
-                                    allowance.setReservationsAllowedCount(
-                                            allowance.getReservationsAllowedCount() + 1);
-                                    eventUserAllowanceRepository.persist(allowance);
-                                    LOG.debug(
-                                            String.format(
-                                                    "Incremented reservation allowance for user ID"
-                                                        + " %s and event ID %s. New allowance: %d",
-                                                    reservation.getUser().getId(),
-                                                    reservation.getEvent().getId(),
-                                                    allowance.getReservationsAllowedCount()));
-                                },
-                                () -> {
-                                    LOG.debugf(
-                                            "No allowance found for user ID %s and event ID %s,"
-                                                    + " skipping allowance increment.",
-                                            reservation.getUser().getId(),
-                                            reservation.getEvent().getId());
-                                });
+        // Restore allowance counts, grouped by event so each event needs only one allowance
+        // lookup regardless of how many of its reservations were deleted.
+        Map<Event, List<Reservation>> deletedByEvent =
+                deletedReservations.stream().collect(Collectors.groupingBy(Reservation::getEvent));
+        for (Map.Entry<Event, List<Reservation>> eventEntry : deletedByEvent.entrySet()) {
+            Event event = eventEntry.getKey();
+            List<Reservation> reservationsForEvent = eventEntry.getValue();
+            Set<UUID> userIds =
+                    reservationsForEvent.stream()
+                            .map(r -> r.getUser().id)
+                            .collect(Collectors.toSet());
+            Map<UUID, EventUserAllowance> allowanceByUserId =
+                    eventUserAllowanceRepository.findByEventAndUserIds(event, userIds).stream()
+                            .collect(Collectors.toMap(a -> a.getUser().id, a -> a));
+
+            for (Reservation reservation : reservationsForEvent) {
+                EventUserAllowance allowance = allowanceByUserId.get(reservation.getUser().id);
+                if (allowance == null) {
+                    LOG.debugf(
+                            "No allowance found for user ID %s and event ID %s, skipping allowance"
+                                    + " increment.",
+                            reservation.getUser().getId(), event.getId());
+                    continue;
+                }
+                allowance.setReservationsAllowedCount(allowance.getReservationsAllowedCount() + 1);
+                eventUserAllowanceRepository.persist(allowance);
+                LOG.debug(
+                        String.format(
+                                "Incremented reservation allowance for user ID %s and event ID %s."
+                                        + " New allowance: %d",
+                                reservation.getUser().getId(),
+                                event.getId(),
+                                allowance.getReservationsAllowedCount()));
             }
         }
 

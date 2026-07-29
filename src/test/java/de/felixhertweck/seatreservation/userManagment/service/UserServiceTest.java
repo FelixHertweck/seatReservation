@@ -1467,8 +1467,8 @@ public class UserServiceTest {
                         Set.of());
         dtos.add(duplicateDto);
 
-        when(userRepository.findByUsernameOptional("existinguser"))
-                .thenReturn(Optional.of(new User())); // Simulate existing user
+        when(userRepository.findExistingUsernames(Set.of("existinguser")))
+                .thenReturn(List.of("existinguser")); // Simulate existing user
         when(emailService.createEmailVerification(any(User.class)))
                 .thenReturn(
                         new EmailVerification(

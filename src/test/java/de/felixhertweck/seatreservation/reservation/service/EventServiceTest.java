@@ -28,6 +28,7 @@ import java.util.UUID;
 import jakarta.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,6 +42,7 @@ import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.reservation.dto.UserEventResponseDTO;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -95,10 +97,24 @@ class EventServiceTest {
         reservation2.setEvent(event2);
     }
 
+    /**
+     * Stubs the bulk per-event reservation lookup that {@code getEventsForCurrentUser} issues once
+     * for all relevant events (replacing the old per-event lazy {@code event.getReservations()}
+     * load), so tests don't NPE on the unstubbed {@code find(...)} call.
+     */
+    @SuppressWarnings("unchecked")
+    private void mockReservationsByEventQuery(Set<UUID> eventIds, List<Reservation> result) {
+        PanacheQuery<Reservation> query = mock(PanacheQuery.class);
+        when(reservationRepository.find("event.id in ?1", eventIds)).thenReturn(query);
+        when(query.list()).thenReturn(result);
+    }
+
     @Test
     void getEventsForCurrentUser_Success_OnlyAllowances() {
-        when(eventUserAllowanceRepository.findByUser(user)).thenReturn(List.of(allowance1));
-        when(reservationRepository.findByUser(user)).thenReturn(Collections.emptyList());
+        when(eventUserAllowanceRepository.findByUserWithEvent(user))
+                .thenReturn(List.of(allowance1));
+        when(reservationRepository.findByUserWithEvent(user)).thenReturn(Collections.emptyList());
+        mockReservationsByEventQuery(Set.of(event1.id), List.of());
 
         List<UserEventResponseDTO> result = eventService.getEventsForCurrentUser(user);
 
@@ -110,8 +126,10 @@ class EventServiceTest {
 
     @Test
     void getEventsForCurrentUser_Success_OnlyReservations() {
-        when(eventUserAllowanceRepository.findByUser(user)).thenReturn(Collections.emptyList());
-        when(reservationRepository.findByUser(user)).thenReturn(List.of(reservation2));
+        when(eventUserAllowanceRepository.findByUserWithEvent(user))
+                .thenReturn(Collections.emptyList());
+        when(reservationRepository.findByUserWithEvent(user)).thenReturn(List.of(reservation2));
+        mockReservationsByEventQuery(Set.of(event2.id), List.of());
 
         List<UserEventResponseDTO> result = eventService.getEventsForCurrentUser(user);
 
@@ -124,8 +142,10 @@ class EventServiceTest {
 
     @Test
     void getEventsForCurrentUser_Success_AllowancesAndDifferentReservations() {
-        when(eventUserAllowanceRepository.findByUser(user)).thenReturn(List.of(allowance1));
-        when(reservationRepository.findByUser(user)).thenReturn(List.of(reservation2));
+        when(eventUserAllowanceRepository.findByUserWithEvent(user))
+                .thenReturn(List.of(allowance1));
+        when(reservationRepository.findByUserWithEvent(user)).thenReturn(List.of(reservation2));
+        mockReservationsByEventQuery(Set.of(event1.id, event2.id), List.of());
 
         List<UserEventResponseDTO> result = eventService.getEventsForCurrentUser(user);
 
@@ -150,9 +170,11 @@ class EventServiceTest {
 
     @Test
     void getEventsForCurrentUser_Success_AllowancesAndSameEventReservations() {
-        when(eventUserAllowanceRepository.findByUser(user)).thenReturn(List.of(allowance1));
-        when(reservationRepository.findByUser(user))
+        when(eventUserAllowanceRepository.findByUserWithEvent(user))
+                .thenReturn(List.of(allowance1));
+        when(reservationRepository.findByUserWithEvent(user))
                 .thenReturn(List.of(reservation1)); // reservation for event1
+        mockReservationsByEventQuery(Set.of(event1.id), List.of());
 
         List<UserEventResponseDTO> result = eventService.getEventsForCurrentUser(user);
 
@@ -166,8 +188,10 @@ class EventServiceTest {
     @Test
     void getEventsForCurrentUser_MergesPendingSeatStatusesFromCart() {
         UUID pendingSeatId = id(10);
-        when(eventUserAllowanceRepository.findByUser(user)).thenReturn(List.of(allowance1));
-        when(reservationRepository.findByUser(user)).thenReturn(Collections.emptyList());
+        when(eventUserAllowanceRepository.findByUserWithEvent(user))
+                .thenReturn(List.of(allowance1));
+        when(reservationRepository.findByUserWithEvent(user)).thenReturn(Collections.emptyList());
+        mockReservationsByEventQuery(Set.of(event1.id), List.of());
         when(seatCartService.findPendingSeatIds(event1.id, user.id))
                 .thenReturn(Set.of(pendingSeatId));
 
@@ -186,8 +210,10 @@ class EventServiceTest {
 
     @Test
     void getEventsForCurrentUser_NoCartHolds_SeatStatusesUnchanged() {
-        when(eventUserAllowanceRepository.findByUser(user)).thenReturn(List.of(allowance1));
-        when(reservationRepository.findByUser(user)).thenReturn(Collections.emptyList());
+        when(eventUserAllowanceRepository.findByUserWithEvent(user))
+                .thenReturn(List.of(allowance1));
+        when(reservationRepository.findByUserWithEvent(user)).thenReturn(Collections.emptyList());
+        mockReservationsByEventQuery(Set.of(event1.id), List.of());
         when(seatCartService.findPendingSeatIds(event1.id, user.id))
                 .thenReturn(Collections.emptySet());
 
@@ -205,8 +231,10 @@ class EventServiceTest {
         // own cart holds - EventService must pass the current user's ID through so that a seat
         // the user themselves is holding never shows up as PENDING in their own event list (it
         // would otherwise make the seat look blocked/unselectable to the very user holding it).
-        when(eventUserAllowanceRepository.findByUser(user)).thenReturn(List.of(allowance1));
-        when(reservationRepository.findByUser(user)).thenReturn(Collections.emptyList());
+        when(eventUserAllowanceRepository.findByUserWithEvent(user))
+                .thenReturn(List.of(allowance1));
+        when(reservationRepository.findByUserWithEvent(user)).thenReturn(Collections.emptyList());
+        mockReservationsByEventQuery(Set.of(event1.id), List.of());
         when(seatCartService.findPendingSeatIds(event1.id, user.id))
                 .thenReturn(Collections.emptySet());
 
@@ -217,8 +245,9 @@ class EventServiceTest {
 
     @Test
     void getEventsForCurrentUser_Success_NoEvents() {
-        when(eventUserAllowanceRepository.findByUser(user)).thenReturn(Collections.emptyList());
-        when(reservationRepository.findByUser(user)).thenReturn(Collections.emptyList());
+        when(eventUserAllowanceRepository.findByUserWithEvent(user))
+                .thenReturn(Collections.emptyList());
+        when(reservationRepository.findByUserWithEvent(user)).thenReturn(Collections.emptyList());
 
         List<UserEventResponseDTO> result = eventService.getEventsForCurrentUser(user);
 

@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.model.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -56,5 +57,23 @@ public class EventLocationMarkerRepository
                                 + " where e.id = ?1",
                         id)
                 .firstResultOptional();
+    }
+
+    /**
+     * Finds markers by their IDs, eagerly fetching each one's event location and that location's
+     * manager. Used to batch the ownership check for bulk operations (e.g. deletion) instead of
+     * querying once per ID.
+     *
+     * @param ids the marker IDs to find
+     * @return the matching markers, each including its event location and manager
+     */
+    public List<EventLocationMarker> findByIdsWithEventLocation(Collection<UUID> ids) {
+        return find(
+                        "select e from EventLocationMarker e"
+                                + " join fetch e.eventLocation el"
+                                + " join fetch el.manager"
+                                + " where e.id in ?1",
+                        ids)
+                .list();
     }
 }
