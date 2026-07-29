@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.supervisor.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -333,12 +334,9 @@ public class CheckInService {
                     String.format("No reservations found for user %s.", username));
         }
 
-        List<SupervisorReservationResponseDTO> processedReservations;
+        Map<UUID, Boolean> authorizationCache = new HashMap<>();
 
-        // ⚡ Bolt: Cache authorization checks by event ID to prevent O(N) redundant database queries
-        java.util.Map<UUID, Boolean> authorizationCache = new java.util.HashMap<>();
-
-        processedReservations =
+        List<SupervisorReservationResponseDTO> processedReservations =
                 reservations.stream()
                         .filter(
                                 r ->
@@ -354,13 +352,6 @@ public class CheckInService {
                 "Processed %d reservations for user %s.", processedReservations.size(), username);
 
         return new CheckInInfoResponseDTO(processedReservations, new LimitedUserInfoDTO(user));
-    }
-
-    // Backwards-compatible overload
-    public CheckInInfoResponseDTO getReservationInfosByUsername(String username)
-            throws ReservationNotFoundException {
-        // Fallback to no filtering
-        return getReservationInfosByUsername(null, username);
     }
 
     private void validateReservation(Reservation reservation, UUID userId, UUID eventId)
