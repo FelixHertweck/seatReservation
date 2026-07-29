@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.supervisor.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -333,27 +334,24 @@ public class CheckInService {
                     String.format("No reservations found for user %s.", username));
         }
 
+        Map<UUID, Boolean> authorizationCache = new HashMap<>();
+
         List<SupervisorReservationResponseDTO> processedReservations =
                 reservations.stream()
                         .filter(
                                 r ->
                                         currentUser == null
-                                                || isAuthorizedForEvent(
-                                                        currentUser, r.getEvent().getId()))
+                                                || authorizationCache.computeIfAbsent(
+                                                        r.getEvent().getId(),
+                                                        eventId ->
+                                                                isAuthorizedForEvent(
+                                                                        currentUser, eventId)))
                         .map(SupervisorReservationResponseDTO::new)
                         .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
-
         LOG.debugf(
                 "Processed %d reservations for user %s.", processedReservations.size(), username);
 
         return new CheckInInfoResponseDTO(processedReservations, new LimitedUserInfoDTO(user));
-    }
-
-    // Backwards-compatible overload
-    public CheckInInfoResponseDTO getReservationInfosByUsername(String username)
-            throws ReservationNotFoundException {
-        // Fallback to no filtering
-        return getReservationInfosByUsername(null, username);
     }
 
     private void validateReservation(Reservation reservation, UUID userId, UUID eventId)
