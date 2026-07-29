@@ -29,7 +29,7 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 public class RegisterRequestDTO extends RegistrationDetailsDTO {
 
     @NotBlank(message = "Password must not be blank")
-    @Size(min = 8, message = "Password must be at least 8 characters long")
+    @Size(min = PasswordPolicy.MIN_LENGTH, message = PasswordPolicy.MIN_LENGTH_MESSAGE)
     @NoHtmlSanitize
     private String password;
 

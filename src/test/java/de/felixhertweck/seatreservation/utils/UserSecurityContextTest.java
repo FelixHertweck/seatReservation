@@ -235,4 +235,18 @@ class UserSecurityContextTest {
         verify(userRepository).getReference(id(42));
         verifyNoInteractions(principal);
     }
+
+    @Test
+    void getAuthenticatedUser_NullUid_ThrowsIllegalStateException() {
+        // Arrange
+        when(jsonWebToken.getClaim("uid")).thenReturn(null);
+
+        // Act & Assert
+        IllegalStateException exception =
+                assertThrows(
+                        IllegalStateException.class,
+                        () -> userSecurityContext.getAuthenticatedUser());
+
+        assertEquals("JWT missing uid claim", exception.getMessage());
+    }
 }

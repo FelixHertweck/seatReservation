@@ -5,7 +5,10 @@ quarkus:
     password: ${POSTGRES_PASSWORD}
     jdbc:
       url: jdbc:postgresql://db:5432/${POSTGRES_DB:seatReservation}
-      
+
+  redis:
+    hosts: redis://redis:6379
+
   mailer:
     mock: false
     from: ${MAIL_FROM}

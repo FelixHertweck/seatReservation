@@ -12,6 +12,7 @@ This application provides a robust solution for managing event seat reservations
 
 -   **Event & seat management** with interactive seating plans.
 -   **Reservations** with per-user allowances and manager oversight.
+-   **Temporary seat holds** while a user has seats selected, backed by Redis, so two users can't both check out the same seat (see [Seat Selection Cart](#seat-selection-cart-redis)).
 -   **Role-based access** (Standard User, Manager, Admin) secured with JWT.
 -   **Transactional email delivery** via a persistent outbox with automatic retries and dead-lettering (see [Email Delivery](#email-delivery-transactional-outbox)).
 -   **Customizable email templates** (Qute HTML) and **PDF export** of reservations.
@@ -27,6 +28,7 @@ The system is built with a clear separation of concerns:
 -   **Backend:** Developed using **Quarkus**, a cloud-native Java framework, providing high performance and a small memory footprint. It handles all business logic, data persistence, and API endpoints.
 -   **Frontend:** A modern web application built with **Next.js**, a React framework, offering a responsive and interactive user interface. It consumes data from the backend API.
 -   **Database:** **PostgreSQL** is used as the primary data store, ensuring reliable and scalable data management for events, seats, and user information.
+-   **Cache:** **Redis** backs the short-lived seat selection cart (see [Seat Selection Cart](#seat-selection-cart-redis)); no other component depends on it, so the app runs fine without persistence configured for it.
 -   **Security:** Implemented with **JWT (JSON Web Tokens)** for authentication and authorization, securing access to various functionalities based on user roles.
 -   **Email Services:** Integrated for sending automated notifications, such as reservation confirmations and event reminders, delivered asynchronously through a transactional outbox and configured via environment variables.
 -   **Monitoring:** **Prometheus** scrapes the backend's metrics and **Grafana** visualizes them via a provisioned dashboard.
@@ -100,6 +102,7 @@ Only **nginx** is published to the host (port `80`); all other services communic
 | `frontend` | Next.js web UI | via nginx `/` |
 | `backend` | Quarkus API | via nginx `/api`, `/q` |
 | `db` | PostgreSQL 18 | internal only |
+| `redis` | Seat selection cart cache | internal only |
 | `prometheus` | Metrics collection | internal only |
 | `grafana` | Dashboards | `http://localhost/grafana` (default login `admin` / `admin`) |
 
@@ -199,6 +202,17 @@ The behaviour is configurable via `email.queue.*` in [`application.yaml`](src/ma
 | `max-backoff-seconds` | `3600` | Upper bound for the back-off delay |
 | `sending-timeout-seconds` | `300` | After this, a mail stuck in `SENDING` is requeued |
 | `retention-days` | `30` | How long delivered/failed mails are kept before cleanup |
+
+## Seat Selection Cart (Redis)
+
+While a user has seats selected in the reservation dialog but hasn't submitted the booking yet, each selected seat is held in a short-lived **Redis-backed cart**. This closes the gap where two users could both select the same seat and only find out about the conflict when one of them submits:
+
+-   Selecting a seat calls `POST /api/user/seatcart/{eventId}/{seatId}`, which sets a Redis key `seatcart:<eventId>:<seatId>` → holding user's ID with a TTL (`seatcart.ttl-seconds`, default `300`). This is atomic (`SET NX EX`), so concurrent selections of the same seat can't both succeed.
+-   If another user already holds the seat (or it's already reserved/blocked), the request fails with `409 Conflict` and the seat is surfaced to other users as `PENDING` in `GET /api/user/events`.
+-   Deselecting a seat, closing the reservation dialog, or letting the TTL expire releases the hold (`DELETE /api/user/seatcart/{eventId}/{seatId}` or automatic Redis expiry). The frontend refetches the seat map on conflict and when its own selection expires.
+-   On a **successful** reservation, the corresponding cart entries are cleared immediately rather than waiting out the TTL.
+
+Redis is a pure ephemeral cache for this feature only — no other part of the application depends on it, and data loss (e.g. a Redis restart) just means in-flight seat holds are forgotten, not a data-integrity issue. In Docker Compose this is the `redis` service (`redis:7-alpine`, `--save ""`, no persistent volume); in dev/test, Quarkus Dev Services provisions a disposable Redis container automatically.
 
 ## Monitoring
 

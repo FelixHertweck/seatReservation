@@ -35,8 +35,11 @@ import jakarta.ws.rs.core.Response;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.security.dto.LoginLockedDTO;
 import de.felixhertweck.seatreservation.security.dto.LoginRequestDTO;
+import de.felixhertweck.seatreservation.security.dto.PasswordResetConfirmDTO;
+import de.felixhertweck.seatreservation.security.dto.PasswordResetRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.RegistrationStatusDTO;
+import de.felixhertweck.seatreservation.security.dto.UsernameRecoveryRequestDTO;
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
 import de.felixhertweck.seatreservation.security.service.AuthService;
 import de.felixhertweck.seatreservation.security.service.TokenService;
@@ -252,5 +255,71 @@ public class AuthResource {
                 .cookie(cookies.refreshToken())
                 .cookie(cookies.refreshTokenExpiration())
                 .build();
+    }
+
+    /**
+     * Initiates a password reset by sending a reset link to the user's email if the account exists.
+     * Always returns a generic response to prevent account enumeration.
+     *
+     * @param requestDTO the username/email pair identifying the account
+     * @return Response indicating the request was accepted
+     */
+    @POST
+    @Path("/password-reset")
+    @PermitAll
+    @APIResponse(
+            responseCode = "200",
+            description =
+                    "If the account exists, an email has been sent. Generic response to prevent"
+                            + " enumeration.")
+    public Response requestPasswordReset(@Valid PasswordResetRequestDTO requestDTO) {
+        LOG.debug("Received password reset request.");
+
+        authService.requestPasswordReset(requestDTO);
+
+        return Response.ok().build();
+    }
+
+    /**
+     * Sets a new password for the account identified by a valid, unexpired reset token.
+     *
+     * @param confirmDTO the reset token and new password
+     * @return Response indicating the password was reset
+     */
+    @POST
+    @Path("/password-reset/confirm")
+    @PermitAll
+    @APIResponse(responseCode = "200", description = "Password successfully reset.")
+    @APIResponse(responseCode = "400", description = "Invalid or unknown token.")
+    @APIResponse(responseCode = "410", description = "Token has expired.")
+    public Response confirmPasswordReset(@Valid PasswordResetConfirmDTO confirmDTO) {
+        LOG.debug("Received password reset confirmation request.");
+
+        authService.confirmPasswordReset(confirmDTO);
+
+        return Response.ok().build();
+    }
+
+    /**
+     * Sends an email listing every username associated with the given email address, if any. Always
+     * returns a generic response to prevent account enumeration.
+     *
+     * @param requestDTO the email address to look up
+     * @return Response indicating the request was accepted
+     */
+    @POST
+    @Path("/username-recovery")
+    @PermitAll
+    @APIResponse(
+            responseCode = "200",
+            description =
+                    "If the email address is associated with any account, a recovery email has"
+                            + " been sent. Generic response to prevent enumeration.")
+    public Response requestUsernameRecovery(@Valid UsernameRecoveryRequestDTO requestDTO) {
+        LOG.debug("Received username recovery request.");
+
+        authService.requestUsernameRecovery(requestDTO);
+
+        return Response.ok().build();
     }
 }

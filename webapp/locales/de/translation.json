@@ -7,7 +7,8 @@
     "noShow": "Nicht erschienen",
     "cancelled": "Storniert",
     "selected": "Ausgewählt",
-    "myReserved": "Meine Reservierung"
+    "myReserved": "Meine Reservierung",
+    "pending": "Von anderem Nutzer ausgewählt"
   },
   "validation": {
     "usernameHint": "3-64 Zeichen: Buchstaben, Zahlen, Punkte, Unterstriche, Bindestriche"
@@ -71,7 +72,9 @@
       "accountLocked": "Konto gesperrt bis {{time}} ({{duration}})",
       "tooManyAttemptsDescription": "Zu viele fehlgeschlagene Anmeldeversuche. Ihr Konto wurde vorübergehend gesperrt."
     },
-    "or": "oder"
+    "or": "oder",
+    "forgotPassword": "Passwort vergessen?",
+    "forgotUsername": "Benutzername vergessen?"
   },
   "register": {
     "success": {
@@ -573,7 +576,17 @@
     "cancelButton": "Abbrechen",
     "reservingButton": "Reserviere...",
     "reserveSeatsButton": "Reserviere {{count}} Plätze",
-    "reserveSeatButton": "Reserviere den Platz"
+    "reserveSeatButton": "Reserviere den Platz",
+    "cart": {
+      "conflict": {
+        "title": "Platz nicht mehr verfügbar",
+        "description": "Dieser Platz wurde soeben von einem anderen Nutzer ausgewählt."
+      },
+      "expired": {
+        "title": "Auswahl abgelaufen",
+        "description": "Ihre Sitzplatzauswahl ist abgelaufen und wurde zurückgesetzt. Bitte wählen Sie Ihre Plätze erneut aus."
+      }
+    }
   },
   "reservation": {
     "delete": {
@@ -1202,6 +1215,43 @@
       "renameButton": "Umbenennen",
       "saveRename": "Speichern",
       "renameSuccess": "Passkey umbenannt."
+    }
+  },
+  "forgotPassword": {
+    "title": "Passwort vergessen",
+    "description": "Geben Sie Ihren Benutzernamen und Ihre E-Mail-Adresse ein, um einen Link zum Zurücksetzen zu erhalten.",
+    "successMessage": "Wenn Ihr Konto existiert und die E-Mail-Adresse übereinstimmt, erhalten Sie in Kürze einen Link zum Zurücksetzen.",
+    "sending": "Wird gesendet...",
+    "sendLink": "Link anfordern",
+    "backToLogin": "Zurück zum Login",
+    "error": "Fehler beim Anfordern des Links. Bitte versuchen Sie es erneut."
+  },
+  "forgotUsername": {
+    "title": "Benutzername vergessen",
+    "description": "Geben Sie Ihre E-Mail-Adresse ein, um die zugehörigen Benutzernamen zu erhalten.",
+    "successMessage": "Wenn diese E-Mail-Adresse einem Konto zugeordnet ist, erhalten Sie in Kürze die Benutzernamen.",
+    "sending": "Wird gesendet...",
+    "sendLink": "Benutzernamen anfordern",
+    "backToLogin": "Zurück zum Login",
+    "error": "Fehler beim Anfordern der Benutzernamen. Bitte versuchen Sie es erneut."
+  },
+  "resetPassword": {
+    "title": "Passwort zurücksetzen",
+    "description": "Geben Sie ein neues Passwort für Ihr Konto ein.",
+    "newPassword": "Neues Passwort",
+    "enterNewPassword": "Neues Passwort eingeben",
+    "confirmPassword": "Passwort bestätigen",
+    "enterConfirmPassword": "Neues Passwort bestätigen",
+    "submitting": "Wird zurückgesetzt...",
+    "submit": "Passwort speichern",
+    "successMessage": "Ihr Passwort wurde erfolgreich zurückgesetzt. Sie können sich nun anmelden.",
+    "error": {
+      "missingToken": "Ungültiger oder fehlender Token.",
+      "mismatch": "Die Passwörter stimmen nicht überein.",
+      "tooShort": "Das Passwort muss mindestens 8 Zeichen lang sein.",
+      "invalidToken": "Dieser Link ist ungültig oder abgelaufen. Bitte verwenden Sie die neueste E-Mail bzw. den neuesten Link oder fordern Sie einen neuen an.",
+      "tokenExpired": "Dieser Link zum Zurücksetzen des Passworts ist abgelaufen. Bitte verwenden Sie die neueste E-Mail bzw. den neuesten Link oder fordern Sie einen neuen an.",
+      "general": "Fehler beim Zurücksetzen des Passworts. Bitte versuchen Sie es erneut."
     }
   }
 }

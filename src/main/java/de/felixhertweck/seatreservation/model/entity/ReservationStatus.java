@@ -20,6 +20,15 @@
 package de.felixhertweck.seatreservation.model.entity;
 
 public enum ReservationStatus {
+    /** A seat booked by a user via {@code createReservationForUser}. Persisted. */
     RESERVED,
-    BLOCKED
+
+    /** A seat manually blocked by a manager via {@code blockSeats}. Persisted. */
+    BLOCKED,
+
+    /**
+     * Transient status for a seat currently held in another user's Redis-backed selection cart.
+     * Never persisted to the database, only computed on read.
+     */
+    PENDING
 }

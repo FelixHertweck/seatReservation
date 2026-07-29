@@ -639,6 +639,41 @@
           }
         }
       },
+      "PasswordResetConfirmDTO" : {
+        "description" : "Request DTO for confirming a password reset",
+        "type" : "object",
+        "required" : [ "token", "newPassword" ],
+        "properties" : {
+          "token" : {
+            "type" : "string",
+            "description" : "The password reset token",
+            "pattern" : "\\S"
+          },
+          "newPassword" : {
+            "type" : "string",
+            "description" : "The new password",
+            "pattern" : "\\S",
+            "minLength" : 8
+          }
+        }
+      },
+      "PasswordResetRequestDTO" : {
+        "description" : "Request DTO for initiating a password reset",
+        "type" : "object",
+        "required" : [ "username", "email" ],
+        "properties" : {
+          "username" : {
+            "type" : "string",
+            "description" : "The username of the account",
+            "pattern" : "\\S"
+          },
+          "email" : {
+            "type" : "string",
+            "description" : "The email address associated with the account",
+            "pattern" : "\\S"
+          }
+        }
+      },
       "RegisterRequestDTO" : {
         "type" : "object",
         "required" : [ "username", "firstname", "lastname", "email", "password" ],
@@ -730,7 +765,18 @@
       },
       "ReservationStatus" : {
         "type" : "string",
-        "enum" : [ "RESERVED", "BLOCKED" ]
+        "enum" : [ "RESERVED", "BLOCKED", "PENDING" ]
+      },
+      "SeatCartEntryDTO" : {
+        "type" : "object",
+        "properties" : {
+          "seatId" : {
+            "$ref" : "#/components/schemas/UUID"
+          },
+          "expiresAt" : {
+            "$ref" : "#/components/schemas/Instant"
+          }
+        }
       },
       "SeatDTO" : {
         "type" : "object",
@@ -1090,6 +1136,18 @@
           }
         }
       },
+      "UsernameRecoveryRequestDTO" : {
+        "description" : "Request DTO for initiating a username recovery",
+        "type" : "object",
+        "required" : [ "email" ],
+        "properties" : {
+          "email" : {
+            "type" : "string",
+            "description" : "The email address associated with the account(s)",
+            "pattern" : "\\S"
+          }
+        }
+      },
       "VerifyEmailCodeRequestDto" : {
         "type" : "object",
         "required" : [ "verificationCode" ],
@@ -1271,6 +1329,67 @@
         } ]
       }
     },
+    "/api/auth/password-reset" : {
+      "post" : {
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PasswordResetRequestDTO"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "If the account exists, an email has been sent. Generic response to prevent enumeration.",
+            "content" : {
+              "application/json" : {
+                "schema" : { }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "Request Password Reset",
+        "tags" : [ "Auth Resource" ]
+      }
+    },
+    "/api/auth/password-reset/confirm" : {
+      "post" : {
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PasswordResetConfirmDTO"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Password successfully reset.",
+            "content" : {
+              "application/json" : {
+                "schema" : { }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid or unknown token."
+          },
+          "410" : {
+            "description" : "Token has expired."
+          }
+        },
+        "summary" : "Confirm Password Reset",
+        "tags" : [ "Auth Resource" ]
+      }
+    },
     "/api/auth/refresh" : {
       "post" : {
         "parameters" : [ {
@@ -1347,6 +1466,35 @@
           }
         },
         "summary" : "Get Registration Status",
+        "tags" : [ "Auth Resource" ]
+      }
+    },
+    "/api/auth/username-recovery" : {
+      "post" : {
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UsernameRecoveryRequestDTO"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "If the email address is associated with any account, a recovery email has been sent. Generic response to prevent enumeration.",
+            "content" : {
+              "application/json" : {
+                "schema" : { }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "Request Username Recovery",
         "tags" : [ "Auth Resource" ]
       }
     },
@@ -3884,6 +4032,87 @@
         },
         "summary" : "Get My Reservation By Id",
         "tags" : [ "Reservation Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "USER" ]
+        } ]
+      }
+    },
+    "/api/user/seatcart/{eventId}/{seatId}" : {
+      "delete" : {
+        "parameters" : [ {
+          "name" : "eventId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
+        }, {
+          "name" : "seatId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Forbidden: Only authenticated users can access this resource"
+          }
+        },
+        "summary" : "Remove Seat From Cart",
+        "tags" : [ "Seat Cart Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "USER" ]
+        } ]
+      },
+      "post" : {
+        "parameters" : [ {
+          "name" : "eventId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
+        }, {
+          "name" : "seatId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SeatCartEntryDTO"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Forbidden: Only authenticated users can access this resource, or you have no reservation allowance for this event at all"
+          },
+          "400" : {
+            "description" : "Bad Request: You have reached your reservation limit for this event"
+          },
+          "409" : {
+            "description" : "Conflict: Seat is already reserved, blocked, or held by another user's cart"
+          }
+        },
+        "summary" : "Add Seat To Cart",
+        "tags" : [ "Seat Cart Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "USER" ]
         } ]

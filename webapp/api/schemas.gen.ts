@@ -735,6 +735,49 @@ export const MakerRequestDTOSchema = {
     }
 } as const;
 
+export const PasswordResetConfirmDTOSchema = {
+    description: 'Request DTO for confirming a password reset',
+    type: 'object',
+    required: [
+        'token',
+        'newPassword'
+    ],
+    properties: {
+        token: {
+            type: 'string',
+            description: 'The password reset token',
+            pattern: '\\S'
+        },
+        newPassword: {
+            type: 'string',
+            description: 'The new password',
+            pattern: '\\S',
+            minLength: 8
+        }
+    }
+} as const;
+
+export const PasswordResetRequestDTOSchema = {
+    description: 'Request DTO for initiating a password reset',
+    type: 'object',
+    required: [
+        'username',
+        'email'
+    ],
+    properties: {
+        username: {
+            type: 'string',
+            description: 'The username of the account',
+            pattern: '\\S'
+        },
+        email: {
+            type: 'string',
+            description: 'The email address associated with the account',
+            pattern: '\\S'
+        }
+    }
+} as const;
+
 export const RegisterRequestDTOSchema = {
     type: 'object',
     required: [
@@ -847,8 +890,21 @@ export const ReservationStatusSchema = {
     type: 'string',
     enum: [
         'RESERVED',
-        'BLOCKED'
+        'BLOCKED',
+        'PENDING'
     ]
+} as const;
+
+export const SeatCartEntryDTOSchema = {
+    type: 'object',
+    properties: {
+        seatId: {
+            $ref: '#/components/schemas/UUID'
+        },
+        expiresAt: {
+            $ref: '#/components/schemas/Instant'
+        }
+    }
 } as const;
 
 export const SeatDTOSchema = {
@@ -1232,6 +1288,21 @@ export const UserReservationsRequestDTOSchema = {
                 pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
             },
             minItems: 1
+        }
+    }
+} as const;
+
+export const UsernameRecoveryRequestDTOSchema = {
+    description: 'Request DTO for initiating a username recovery',
+    type: 'object',
+    required: [
+        'email'
+    ],
+    properties: {
+        email: {
+            type: 'string',
+            description: 'The email address associated with the account(s)',
+            pattern: '\\S'
         }
     }
 } as const;

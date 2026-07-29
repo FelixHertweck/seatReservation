@@ -41,7 +41,10 @@ import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.RefreshTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.security.dto.LoginRequestDTO;
+import de.felixhertweck.seatreservation.security.dto.PasswordResetConfirmDTO;
+import de.felixhertweck.seatreservation.security.dto.PasswordResetRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
+import de.felixhertweck.seatreservation.security.dto.UsernameRecoveryRequestDTO;
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
 import de.felixhertweck.seatreservation.security.service.AuthService;
@@ -706,6 +709,139 @@ public class AuthResourceTest {
                 .then()
                 .statusCode(Response.Status.OK.getStatusCode())
                 .body("enabled", equalTo(true));
+    }
+
+    @Test
+    void testRequestPasswordReset_AlwaysReturnsOk() {
+        PasswordResetRequestDTO requestDTO = new PasswordResetRequestDTO();
+        requestDTO.setUsername("someuser");
+        requestDTO.setEmail("someuser@example.com");
+
+        given().contentType(MediaType.APPLICATION_JSON)
+                .body(requestDTO)
+                .when()
+                .post("/api/auth/password-reset")
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode());
+
+        Mockito.verify(authService)
+                .requestPasswordReset(Mockito.any(PasswordResetRequestDTO.class));
+    }
+
+    @Test
+    void testRequestPasswordReset_BadRequest_MissingFields() {
+        PasswordResetRequestDTO requestDTO = new PasswordResetRequestDTO();
+        requestDTO.setUsername("");
+        requestDTO.setEmail("not-an-email");
+
+        given().contentType(MediaType.APPLICATION_JSON)
+                .body(requestDTO)
+                .when()
+                .post("/api/auth/password-reset")
+                .then()
+                .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    void testConfirmPasswordReset_ValidToken_ReturnsOk() {
+        PasswordResetConfirmDTO confirmDTO = new PasswordResetConfirmDTO();
+        confirmDTO.setToken("valid-token");
+        confirmDTO.setNewPassword("newSecurePassword123");
+
+        given().contentType(MediaType.APPLICATION_JSON)
+                .body(confirmDTO)
+                .when()
+                .post("/api/auth/password-reset/confirm")
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode());
+
+        Mockito.verify(authService)
+                .confirmPasswordReset(Mockito.any(PasswordResetConfirmDTO.class));
+    }
+
+    @Test
+    void testConfirmPasswordReset_UnknownToken_ReturnsBadRequest() {
+        Mockito.doThrow(
+                        new de.felixhertweck.seatreservation.security.exceptions
+                                .PasswordResetTokenNotFoundException(
+                                "Password reset token not found."))
+                .when(authService)
+                .confirmPasswordReset(Mockito.any(PasswordResetConfirmDTO.class));
+
+        PasswordResetConfirmDTO confirmDTO = new PasswordResetConfirmDTO();
+        confirmDTO.setToken("invalid-token");
+        confirmDTO.setNewPassword("newSecurePassword123");
+
+        given().contentType(MediaType.APPLICATION_JSON)
+                .body(confirmDTO)
+                .when()
+                .post("/api/auth/password-reset/confirm")
+                .then()
+                .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    void testConfirmPasswordReset_ExpiredToken_ReturnsGone() {
+        Mockito.doThrow(
+                        new de.felixhertweck.seatreservation.security.exceptions
+                                .PasswordResetTokenExpiredException(
+                                "Password reset token expired."))
+                .when(authService)
+                .confirmPasswordReset(Mockito.any(PasswordResetConfirmDTO.class));
+
+        PasswordResetConfirmDTO confirmDTO = new PasswordResetConfirmDTO();
+        confirmDTO.setToken("expired-token");
+        confirmDTO.setNewPassword("newSecurePassword123");
+
+        given().contentType(MediaType.APPLICATION_JSON)
+                .body(confirmDTO)
+                .when()
+                .post("/api/auth/password-reset/confirm")
+                .then()
+                .statusCode(Response.Status.GONE.getStatusCode());
+    }
+
+    @Test
+    void testConfirmPasswordReset_BadRequest_PasswordTooShort() {
+        PasswordResetConfirmDTO confirmDTO = new PasswordResetConfirmDTO();
+        confirmDTO.setToken("some-token");
+        confirmDTO.setNewPassword("short");
+
+        given().contentType(MediaType.APPLICATION_JSON)
+                .body(confirmDTO)
+                .when()
+                .post("/api/auth/password-reset/confirm")
+                .then()
+                .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    void testRequestUsernameRecovery_AlwaysReturnsOk() {
+        UsernameRecoveryRequestDTO requestDTO = new UsernameRecoveryRequestDTO();
+        requestDTO.setEmail("someuser@example.com");
+
+        given().contentType(MediaType.APPLICATION_JSON)
+                .body(requestDTO)
+                .when()
+                .post("/api/auth/username-recovery")
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode());
+
+        Mockito.verify(authService)
+                .requestUsernameRecovery(Mockito.any(UsernameRecoveryRequestDTO.class));
+    }
+
+    @Test
+    void testRequestUsernameRecovery_BadRequest_InvalidEmail() {
+        UsernameRecoveryRequestDTO requestDTO = new UsernameRecoveryRequestDTO();
+        requestDTO.setEmail("not-an-email");
+
+        given().contentType(MediaType.APPLICATION_JSON)
+                .body(requestDTO)
+                .when()
+                .post("/api/auth/username-recovery")
+                .then()
+                .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
     }
 
     /** Test profile that disables registration. */

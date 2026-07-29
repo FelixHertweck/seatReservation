@@ -42,6 +42,7 @@ import de.felixhertweck.seatreservation.email.queue.EmailQueueService;
 import de.felixhertweck.seatreservation.management.service.ReservationService;
 import de.felixhertweck.seatreservation.model.entity.EmailVerification;
 import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.PasswordResetToken;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
@@ -83,6 +84,14 @@ public class EmailService {
             name = "email.header.reservation-overview",
             defaultValue = "Reservation Overview")
     String EMAIL_HEADER_RESERVATION_OVERVIEW;
+
+    @ConfigProperty(name = "email.header.password-reset", defaultValue = "Password Reset Request")
+    String EMAIL_HEADER_PASSWORD_RESET;
+
+    @ConfigProperty(
+            name = "email.header.username-recovery",
+            defaultValue = "Username Recovery Request")
+    String EMAIL_HEADER_USERNAME_RECOVERY;
 
     private static final Logger LOG = Logger.getLogger(EmailService.class);
 
@@ -133,6 +142,85 @@ public class EmailService {
     @Inject
     @Location("email/manager-reservation-export")
     Template managerExportTemplate;
+
+    @Inject
+    @Location("email/password-reset")
+    Template passwordResetTemplate;
+
+    @Inject
+    @Location("email/username-recovery")
+    Template usernameRecoveryTemplate;
+
+    /**
+     * Sends a password reset email to the specified user.
+     *
+     * @param user the user to whom the password reset email will be sent
+     * @param passwordResetToken the PasswordResetToken object to use for the link
+     * @throws IOException if the email template cannot be read
+     */
+    public void sendPasswordResetEmail(User user, PasswordResetToken passwordResetToken)
+            throws IOException {
+        if (skipForNullOrEmptyAddress(user.getEmail())) {
+            LOG.warn("No valid email addresses provided for password reset.");
+            return;
+        }
+        if (skipForLocalhostAddress(user.getEmail())) {
+            LOG.warn("No valid email addresses provided for password reset.");
+            return;
+        }
+
+        LOG.debugf("User ID: %s, Username: %s", user.id, user.getUsername());
+
+        String resetLink =
+                frontendBaseUrl.trim() + "/reset-password?token=" + passwordResetToken.getToken();
+
+        String htmlContent =
+                passwordResetTemplate
+                        .data("fullName", fullName(user))
+                        .data("resetLink", resetLink)
+                        .data(
+                                "expirationTime",
+                                formatDateTime(passwordResetToken.getExpirationTime()))
+                        .data("currentYear", currentYear())
+                        .render();
+
+        // Queue the email for asynchronous, retried delivery
+        LOG.debugf("Password reset subject: %s", EMAIL_HEADER_PASSWORD_RESET);
+        enqueue(
+                List.of(user.getEmail()),
+                EMAIL_HEADER_PASSWORD_RESET,
+                htmlContent,
+                List.of(),
+                false);
+    }
+
+    /**
+     * Sends an email listing every username associated with the given email address.
+     *
+     * @param email the email address to send the recovery message to
+     * @param usernames the usernames associated with this email address
+     * @throws IOException if the email template cannot be read
+     */
+    public void sendUsernameRecoveryEmail(String email, List<String> usernames) throws IOException {
+        if (skipForNullOrEmptyAddress(email)) {
+            LOG.warn("No valid email addresses provided for username recovery.");
+            return;
+        }
+        if (skipForLocalhostAddress(email)) {
+            LOG.warn("No valid email addresses provided for username recovery.");
+            return;
+        }
+
+        String htmlContent =
+                usernameRecoveryTemplate
+                        .data("usernames", usernames)
+                        .data("currentYear", currentYear())
+                        .render();
+
+        // Queue the email for asynchronous, retried delivery
+        LOG.debugf("Username recovery subject: %s", EMAIL_HEADER_USERNAME_RECOVERY);
+        enqueue(List.of(email), EMAIL_HEADER_USERNAME_RECOVERY, htmlContent, List.of(), false);
+    }
 
     /**
      * Sends an email confirmation to the specified user.

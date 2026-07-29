@@ -547,6 +547,8 @@ export function SeatMap({
             return "bg-red-500 dark:bg-red-600";
           case "BLOCKED":
             return "bg-gray-500 dark:bg-gray-600";
+          case "PENDING":
+            return "bg-amber-500 dark:bg-amber-600";
           default:
             return "bg-green-500 dark:bg-green-600";
         }
@@ -558,6 +560,10 @@ export function SeatMap({
   const canSelectSeat = useCallback(
     (seat: SeatDto | undefined) => {
       if (!seat || readonly) return false;
+
+      // Own selection stays clickable (to deselect), even if refetched as e.g. PENDING -
+      // mirrors getSeatColor's isSelected priority.
+      if (selectedSeatIds.has(seat.id)) return true;
 
       const isUserReserved = userReservedSeatIds.has(seat.id);
       if (isUserReserved) return true;
@@ -578,7 +584,7 @@ export function SeatMap({
         return !seatStatus; // Can only select seats without status (available)
       }
     },
-    [readonly, userReservedSeatIds, seatStatuses],
+    [readonly, selectedSeatIds, userReservedSeatIds, seatStatuses],
   );
 
   const gridStructure = useMemo(() => {

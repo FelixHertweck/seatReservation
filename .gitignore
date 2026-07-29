@@ -42,3 +42,6 @@ keys
 
 # pdf templates
 /export-template/
+
+# Jules recordings
+.jules/

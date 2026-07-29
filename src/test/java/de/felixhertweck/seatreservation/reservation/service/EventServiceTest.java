@@ -23,15 +23,20 @@ import static de.felixhertweck.seatreservation.testutil.TestIds.id;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import jakarta.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
+import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
@@ -48,6 +53,7 @@ class EventServiceTest {
 
     @InjectMock EventUserAllowanceRepository eventUserAllowanceRepository;
     @InjectMock ReservationRepository reservationRepository;
+    @InjectMock SeatCartService seatCartService;
 
     private User user;
     private Event event1;
@@ -155,6 +161,58 @@ class EventServiceTest {
         assertEquals(event1.id, result.getFirst().id());
         assertEquals(
                 5, result.getFirst().reservationsAllowed()); // Allowance should take precedence
+    }
+
+    @Test
+    void getEventsForCurrentUser_MergesPendingSeatStatusesFromCart() {
+        UUID pendingSeatId = id(10);
+        when(eventUserAllowanceRepository.findByUser(user)).thenReturn(List.of(allowance1));
+        when(reservationRepository.findByUser(user)).thenReturn(Collections.emptyList());
+        when(seatCartService.findPendingSeatIds(event1.id, user.id))
+                .thenReturn(Set.of(pendingSeatId));
+
+        List<UserEventResponseDTO> result = eventService.getEventsForCurrentUser(user);
+
+        assertEquals(1, result.size());
+        UserEventResponseDTO dto = result.getFirst();
+        assertNotNull(dto.seatStatuses());
+        assertTrue(
+                dto.seatStatuses().stream()
+                        .anyMatch(
+                                s ->
+                                        s.seatId().equals(pendingSeatId)
+                                                && s.status() == ReservationStatus.PENDING));
+    }
+
+    @Test
+    void getEventsForCurrentUser_NoCartHolds_SeatStatusesUnchanged() {
+        when(eventUserAllowanceRepository.findByUser(user)).thenReturn(List.of(allowance1));
+        when(reservationRepository.findByUser(user)).thenReturn(Collections.emptyList());
+        when(seatCartService.findPendingSeatIds(event1.id, user.id))
+                .thenReturn(Collections.emptySet());
+
+        List<UserEventResponseDTO> result = eventService.getEventsForCurrentUser(user);
+
+        assertEquals(1, result.size());
+        // Event.reservations defaults to an empty list (never null), so seatStatuses() is an
+        // empty list rather than null when there are no reservations or cart holds.
+        assertTrue(result.getFirst().seatStatuses().isEmpty());
+    }
+
+    @Test
+    void getEventsForCurrentUser_PassesCurrentUserIdToExcludeOwnHoldsFromPending() {
+        // SeatCartService.findPendingSeatIds is responsible for excluding the requesting user's
+        // own cart holds - EventService must pass the current user's ID through so that a seat
+        // the user themselves is holding never shows up as PENDING in their own event list (it
+        // would otherwise make the seat look blocked/unselectable to the very user holding it).
+        when(eventUserAllowanceRepository.findByUser(user)).thenReturn(List.of(allowance1));
+        when(reservationRepository.findByUser(user)).thenReturn(Collections.emptyList());
+        when(seatCartService.findPendingSeatIds(event1.id, user.id))
+                .thenReturn(Collections.emptySet());
+
+        eventService.getEventsForCurrentUser(user);
+
+        verify(seatCartService, times(1)).findPendingSeatIds(event1.id, user.id);
     }
 
     @Test

@@ -7,7 +7,8 @@
     "noShow": "No Show",
     "cancelled": "Cancelled",
     "selected": "Selected",
-    "myReserved": "My Reservation"
+    "myReserved": "My Reservation",
+    "pending": "Selected by another user"
   },
   "validation": {
     "usernameHint": "3-64 characters: letters, numbers, dots, underscores, hyphens"
@@ -71,7 +72,9 @@
       "accountLocked": "Account locked until {{time}} ({{duration}})",
       "tooManyAttemptsDescription": "Too many failed login attempts. Your account has been temporarily locked."
     },
-    "or": "or"
+    "or": "or",
+    "forgotPassword": "Forgot Password?",
+    "forgotUsername": "Forgot Username?"
   },
   "register": {
     "success": {
@@ -718,7 +721,17 @@
     "cancelButton": "Cancel",
     "reservingButton": "Reserving...",
     "reserveSeatsButton": "Reserve {{count}} Seats",
-    "reserveSeatButton": "Reserve Seat"
+    "reserveSeatButton": "Reserve Seat",
+    "cart": {
+      "conflict": {
+        "title": "Seat No Longer Available",
+        "description": "This seat was just taken by another user."
+      },
+      "expired": {
+        "title": "Selection Expired",
+        "description": "Your seat selection has expired and was cleared. Please select your seats again."
+      }
+    }
   },
   "reservation": {
     "delete": {
@@ -1202,6 +1215,43 @@
       "renameButton": "Rename",
       "saveRename": "Save",
       "renameSuccess": "Passkey renamed."
+    }
+  },
+  "forgotPassword": {
+    "title": "Forgot Password",
+    "description": "Enter your username and email to receive a password reset link.",
+    "successMessage": "If your account exists and the email matches, you will receive a reset link shortly.",
+    "sending": "Sending...",
+    "sendLink": "Send Reset Link",
+    "backToLogin": "Back to Login",
+    "error": "Failed to request password reset. Please try again."
+  },
+  "forgotUsername": {
+    "title": "Forgot Username",
+    "description": "Enter your email to receive the username(s) associated with your account.",
+    "successMessage": "If this email is associated with any account, you will receive the username(s) shortly.",
+    "sending": "Sending...",
+    "sendLink": "Send Username(s)",
+    "backToLogin": "Back to Login",
+    "error": "Failed to request username recovery. Please try again."
+  },
+  "resetPassword": {
+    "title": "Reset Password",
+    "description": "Enter a new password for your account.",
+    "newPassword": "New Password",
+    "enterNewPassword": "Enter new password",
+    "confirmPassword": "Confirm Password",
+    "enterConfirmPassword": "Confirm new password",
+    "submitting": "Resetting...",
+    "submit": "Reset Password",
+    "successMessage": "Your password has been successfully reset. You can now login.",
+    "error": {
+      "missingToken": "Invalid or missing reset token.",
+      "mismatch": "Passwords do not match.",
+      "tooShort": "Password must be at least 8 characters long.",
+      "invalidToken": "This link is invalid or has expired. Please use the newest email or link, or request a new one.",
+      "tokenExpired": "This password reset link has expired. Please use the newest email or link, or request a new one.",
+      "general": "Failed to reset password. Please try again."
     }
   }
 }

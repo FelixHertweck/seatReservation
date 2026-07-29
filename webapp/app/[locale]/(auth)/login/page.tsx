@@ -180,7 +180,15 @@ export default function LoginPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">{t("login.username")}</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="username">{t("login.username")}</Label>
+                <Link
+                  href="/forgot-username"
+                  className="text-sm text-primary hover:underline"
+                >
+                  {t("login.forgotUsername")}
+                </Link>
+              </div>
               <Input
                 id="username"
                 type="text"
@@ -196,7 +204,15 @@ export default function LoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">{t("login.password")}</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">{t("login.password")}</Label>
+                <Link
+                  href="/forgot-password"
+                  className="text-sm text-primary hover:underline"
+                >
+                  {t("login.forgotPassword")}
+                </Link>
+              </div>
               <Input
                 id="password"
                 type="password"
