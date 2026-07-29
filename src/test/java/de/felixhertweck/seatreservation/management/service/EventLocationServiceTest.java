@@ -75,9 +75,11 @@ public class EventLocationServiceTest {
 
     private User adminUser;
     private User managerUser;
+    private User otherManagerUser;
     private User regularUser;
     private AuthenticatedUser adminAuth;
     private AuthenticatedUser managerAuth;
+    private AuthenticatedUser otherManagerAuth;
     private AuthenticatedUser regularAuth;
     private EventLocation existingLocation;
 
@@ -112,6 +114,19 @@ public class EventLocationServiceTest {
                         Set.of(Roles.MANAGER),
                         Set.of());
         managerUser.id = id(3);
+        otherManagerUser =
+                new User(
+                        "othermanager",
+                        "othermanager@example.com",
+                        true,
+                        false,
+                        "hash",
+                        "salt",
+                        "Other",
+                        "Manager",
+                        Set.of(Roles.MANAGER),
+                        Set.of());
+        otherManagerUser.id = id(4);
         regularUser =
                 new User(
                         "user",
@@ -128,9 +143,11 @@ public class EventLocationServiceTest {
 
         adminAuth = new AuthenticatedUser(adminUser.id, adminUser.getRoles());
         managerAuth = new AuthenticatedUser(managerUser.id, managerUser.getRoles());
+        otherManagerAuth = new AuthenticatedUser(otherManagerUser.id, otherManagerUser.getRoles());
         regularAuth = new AuthenticatedUser(regularUser.id, regularUser.getRoles());
 
         when(userRepository.getReference(managerUser.id)).thenReturn(managerUser);
+        when(userRepository.getReference(otherManagerUser.id)).thenReturn(otherManagerUser);
         when(userRepository.getReference(regularUser.id)).thenReturn(regularUser);
 
         existingLocation = new EventLocation("Stadthalle", "Hauptstraße 1", managerUser, 100);
@@ -311,6 +328,22 @@ public class EventLocationServiceTest {
     }
 
     @Test
+    void updateEventLocation_ForbiddenException_OtherManager() {
+        EventLocationUpdateDTO dto = new EventLocationUpdateDTO();
+        dto.setName("Updated Hall");
+        dto.setAddress("Updated Street 1");
+        dto.setCapacity(600);
+
+        when(eventLocationRepository.findByIdOptional(id(1)))
+                .thenReturn(Optional.of(existingLocation));
+
+        assertThrows(
+                SecurityException.class,
+                () -> eventLocationService.updateEventLocation(id(1), dto, otherManagerAuth));
+        verify(eventLocationRepository, never()).persist(any(EventLocation.class));
+    }
+
+    @Test
     @SuppressWarnings("unchecked")
     void deleteEventLocation_Success_AsManager() {
         io.quarkus.hibernate.orm.panache.PanacheQuery<EventLocation> queryMock =
@@ -379,6 +412,23 @@ public class EventLocationServiceTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
+    void deleteEventLocation_ForbiddenException_OtherManager() {
+        io.quarkus.hibernate.orm.panache.PanacheQuery<EventLocation> queryMock =
+                Mockito.mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
+        when(queryMock.list()).thenReturn(List.of(existingLocation));
+        when(eventLocationRepository.find(
+                        "from EventLocation el left join fetch el.manager where el.id in ?1",
+                        List.of(id(1))))
+                .thenReturn(queryMock);
+
+        assertThrows(
+                SecurityException.class,
+                () -> eventLocationService.deleteEventLocation(List.of(id(1)), otherManagerAuth));
+        verify(eventLocationRepository, never()).delete(any(EventLocation.class));
+    }
+
+    @Test
     void deleteEventLocation_NullIds_ThrowsIllegalArgumentException() {
         assertThrows(
                 IllegalArgumentException.class,
@@ -438,6 +488,71 @@ public class EventLocationServiceTest {
                 () -> eventLocationService.deleteEventLocation(List.of(id(1), id(2)), managerAuth));
 
         verify(eventLocationRepository, never()).delete(any(EventLocation.class));
+    }
+
+    @Test
+    void createEventLocation_InvalidInput_EmptyName() {
+        EventLocationRequestDTO dto = new EventLocationRequestDTO();
+        dto.setName("   "); // Empty or blank name
+        dto.setAddress("Some Address");
+        dto.setCapacity(100);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> eventLocationService.createEventLocation(dto, managerAuth));
+        verify(eventLocationRepository, never()).persist(any(EventLocation.class));
+    }
+
+    @Test
+    void createEventLocation_InvalidInput_NullAddress() {
+        EventLocationRequestDTO dto = new EventLocationRequestDTO();
+        dto.setName("Some Name");
+        dto.setAddress(null); // Null address
+        dto.setCapacity(100);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> eventLocationService.createEventLocation(dto, managerAuth));
+        verify(eventLocationRepository, never()).persist(any(EventLocation.class));
+    }
+
+    @Test
+    void createEventLocation_InvalidInput_EmptyAddress() {
+        EventLocationRequestDTO dto = new EventLocationRequestDTO();
+        dto.setName("Some Name");
+        dto.setAddress("  "); // Empty or blank address
+        dto.setCapacity(100);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> eventLocationService.createEventLocation(dto, managerAuth));
+        verify(eventLocationRepository, never()).persist(any(EventLocation.class));
+    }
+
+    @Test
+    void createEventLocation_InvalidInput_NullCapacity() {
+        EventLocationRequestDTO dto = new EventLocationRequestDTO();
+        dto.setName("Some Name");
+        dto.setAddress("Some Address");
+        dto.setCapacity(null); // Null capacity
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> eventLocationService.createEventLocation(dto, managerAuth));
+        verify(eventLocationRepository, never()).persist(any(EventLocation.class));
+    }
+
+    @Test
+    void createEventLocation_InvalidInput_ZeroCapacity() {
+        EventLocationRequestDTO dto = new EventLocationRequestDTO();
+        dto.setName("Some Name");
+        dto.setAddress("Some Address");
+        dto.setCapacity(0); // Zero capacity
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> eventLocationService.createEventLocation(dto, managerAuth));
+        verify(eventLocationRepository, never()).persist(any(EventLocation.class));
     }
 
     @Test
