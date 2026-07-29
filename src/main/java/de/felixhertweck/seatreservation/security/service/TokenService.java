@@ -53,7 +53,7 @@ public class TokenService {
     @ConfigProperty(name = "smallrye.jwt.refreshtoken.expiration.days", defaultValue = "7")
     long refreshExpirationDays;
 
-    @ConfigProperty(name = "jwt.cookie.secure", defaultValue = "false")
+    @ConfigProperty(name = "jwt.cookie.secure", defaultValue = "true")
     boolean cookieSecure;
 
     @Inject RefreshTokenRepository refreshTokenRepository;
