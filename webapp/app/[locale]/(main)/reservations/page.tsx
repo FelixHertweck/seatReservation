@@ -16,6 +16,7 @@ import { ReservationCard } from "@/components/reservations/reservation-card";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
+import { PageHeader } from "@/components/page-header";
 
 interface SelectedReservation {
   reservation: UserReservationResponseDto;
@@ -114,19 +115,18 @@ export default function EventsPage() {
 
   return (
     <div className="container mx-auto px-2 py-3 md:p-6">
-      <div className="mb-3 md:mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold mb-1 md:mb-2">
-          {t("reservationsPage.title")}
-        </h1>
-        <p className="text-muted-foreground text-sm md:text-base">
-          {t("reservationsPage.description")}
-        </p>
-      </div>
-      <SearchAndFilter
-        onSearch={handleReservationSearch}
-        onFilter={() => {}}
-        filterOptions={[]}
-        initialQuery={effectiveSearchQuery}
+      <PageHeader
+        title={t("reservationsPage.title")}
+        description={t("reservationsPage.description")}
+        search={
+          <SearchAndFilter
+            onSearch={handleReservationSearch}
+            onFilter={() => {}}
+            filterOptions={[]}
+            initialQuery={effectiveSearchQuery}
+            className="w-full"
+          />
+        }
       />
 
       {reservationsLoading ? (

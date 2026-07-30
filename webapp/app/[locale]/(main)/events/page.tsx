@@ -8,6 +8,7 @@ import { EventCardSkeleton } from "@/components/events/event-card-skeleton";
 import { EventReservationModal } from "@/components/events/event-reservation-modal";
 import { EventCard } from "@/components/events/event-card";
 import { useReservations } from "@/hooks/use-reservations";
+import { PageHeader } from "@/components/page-header";
 
 export default function EventsPage() {
   const t = useT();
@@ -67,20 +68,18 @@ export default function EventsPage() {
 
   return (
     <div className="container mx-auto px-2 py-3 md:p-6">
-      <div className="mb-3 md:mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold mb-1 md:mb-2">
-          {t("eventsPage.title")}
-        </h1>
-        <p className="text-muted-foreground text-sm md:text-base">
-          {t("eventsPage.description")}
-        </p>
-      </div>
-
-      <SearchAndFilter
-        onSearch={handleEventSearch}
-        onFilter={() => {}}
-        filterOptions={[]}
-        initialQuery={eventSearchQuery}
+      <PageHeader
+        title={t("eventsPage.title")}
+        description={t("eventsPage.description")}
+        search={
+          <SearchAndFilter
+            onSearch={handleEventSearch}
+            onFilter={() => {}}
+            filterOptions={[]}
+            initialQuery={eventSearchQuery}
+            className="w-full"
+          />
+        }
       />
 
       {eventsLoading || reservationsLoading ? (

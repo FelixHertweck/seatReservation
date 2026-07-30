@@ -17,6 +17,7 @@ import { useT } from "@/lib/i18n/hooks";
 import { useProfileUnsavedChanges } from "@/hooks/use-profile-unsaved-changes";
 import { useRouter, useParams } from "next/navigation";
 import { PasskeySection } from "@/components/profile/passkey-section";
+import { PageHeader } from "@/components/page-header";
 
 interface FormData {
   firstname: string;
@@ -178,14 +179,10 @@ export default function ProfilePage() {
 
   return (
     <div className="container mx-auto px-2 py-3 md:p-6">
-      <div className="mb-3 md:mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold mb-1 md:mb-2">
-          {t("profilePage.profileSettingsTitle")}
-        </h1>
-        <p className="text-muted-foreground text-sm md:text-base">
-          {t("profilePage.profileSettingsDescription")}
-        </p>
-      </div>
+      <PageHeader
+        title={t("profilePage.profileSettingsTitle")}
+        description={t("profilePage.profileSettingsDescription")}
+      />
 
       <Card className="max-w-2xl mx-auto">
         <CardContent>
