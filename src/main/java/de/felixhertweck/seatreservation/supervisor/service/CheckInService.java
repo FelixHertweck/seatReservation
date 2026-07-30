@@ -295,13 +295,7 @@ public class CheckInService {
         if (currentUser != null && !isAuthorizedForEvent(currentUser, eventId)) {
             throw new SecurityException("User is not authorized to access event " + eventId);
         }
-        return reservationRepository.find("event.id", eventId).stream()
-                .filter(r -> r.getStatus() != ReservationStatus.BLOCKED)
-                .map(Reservation::getUser)
-                .filter(Objects::nonNull)
-                .map(User::getUsername)
-                .distinct()
-                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+        return reservationRepository.findDistinctUsernamesByEventId(eventId);
     }
 
     // Backwards-compatible overload

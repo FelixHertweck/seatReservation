@@ -127,6 +127,26 @@ public class ReservationRepository implements PanacheRepositoryBase<Reservation,
     }
 
     /**
+     * Finds distinct usernames of users who have an active reservation (not BLOCKED) for a specific
+     * event ID.
+     *
+     * @param eventId the event ID to search for
+     * @return a list of distinct usernames
+     */
+    @SuppressWarnings("unchecked")
+    public List<String> findDistinctUsernamesByEventId(UUID eventId) {
+        return (List<String>)
+                (List<?>)
+                        find(
+                                        "select distinct r.user.username from Reservation r where"
+                                            + " r.event.id = ?1 and r.status != ?2 and r.user is"
+                                            + " not null",
+                                        eventId,
+                                        ReservationStatus.BLOCKED)
+                                .list();
+    }
+
+    /**
      * Finds all reservations for a specific user and event ID.
      *
      * @param user the user to search for
