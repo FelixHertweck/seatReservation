@@ -42,7 +42,9 @@ export function usePageHeaderContent() {
 function usePageHeaderSetter() {
   const setContent = useContext(PageHeaderSetterContext);
   if (!setContent) {
-    throw new Error("usePageHeaderSetter must be used within a PageHeaderProvider");
+    throw new Error(
+      "usePageHeaderSetter must be used within a PageHeaderProvider",
+    );
   }
   return setContent;
 }
@@ -88,8 +90,8 @@ export function PageHeaderSlot() {
   }
 
   return (
-    <div className="flex w-full flex-1 min-w-0 items-center gap-4">
-      <div className="min-w-0 shrink-0">
+    <div className="relative flex w-full flex-1 min-w-0 items-center gap-4">
+      <div className="min-w-0 flex-1 max-sm:pr-24">
         <h1 className="truncate text-lg font-semibold md:text-xl">
           {content.title}
         </h1>
@@ -100,7 +102,12 @@ export function PageHeaderSlot() {
         )}
       </div>
       {content.search && (
-        <div className="ml-auto w-full max-w-xs sm:max-w-sm">
+        <div
+          className={
+            "absolute right-0 top-1/2 z-20 w-10 -translate-y-1/2 overflow-hidden rounded-md transition-[width] duration-200 ease-out max-sm:right-2 max-sm:has-[button]:w-[5.75rem] max-sm:has-[input:focus]:w-56! max-sm:has-[input:focus]:bg-background " +
+            "sm:static sm:top-auto sm:z-auto sm:ml-auto sm:w-full sm:max-w-sm sm:translate-y-0 sm:overflow-visible sm:transition-none"
+          }
+        >
           {content.search}
         </div>
       )}

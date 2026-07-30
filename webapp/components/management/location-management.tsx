@@ -42,6 +42,7 @@ import { customSerializer } from "@/lib/jsonBodySerializer";
 import { useT } from "@/lib/i18n/hooks";
 import { sanitizeFileName } from "@/lib/utils/filename";
 import { useSortableData } from "@/lib/table-sorting";
+import { PageHeader } from "@/components/page-header";
 
 export interface LocationManagementProps {
   locations: EventLocationResponseDto[];
@@ -245,18 +246,33 @@ export function LocationManagement({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0 flex-1">
-            <CardTitle className="text-xl sm:text-2xl">
-              {t("locationManagement.title")}
-            </CardTitle>
-            <CardDescription className="text-sm">
-              {t("locationManagement.description")}
-            </CardDescription>
-          </div>
-          <div className="flex flex-col md:flex-row gap-2 w-full sm:w-auto shrink-0">
+    <>
+      <PageHeader
+        title={t("locationManagement.title")}
+        description={t("locationManagement.description")}
+        search={
+          <SearchAndFilter
+            onSearch={handleSearch}
+            onFilter={handleFilter}
+            filterOptions={[
+              {
+                key: "locationId",
+                label: t("locationManagement.locationFilterLabel"),
+                type: "select",
+                options: locations.map((loc) => ({
+                  value: loc.id?.toString() || "",
+                  label: loc.name || "",
+                })),
+              },
+            ]}
+            initialFilters={currentFilters}
+            className="w-full"
+          />
+        }
+      />
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col md:flex-row gap-2 sm:justify-end">
             {selectedIds.size > 0 && (
               <Button
                 variant="destructive"
@@ -282,28 +298,10 @@ export function LocationManagement({
               {t("locationManagement.addLocationButton")}
             </Button>
           </div>
-        </div>
-      </CardHeader>
+        </CardHeader>
 
-      <CardContent>
+        <CardContent>
         <div className="space-y-4">
-          <SearchAndFilter
-            onSearch={handleSearch}
-            onFilter={handleFilter}
-            filterOptions={[
-              {
-                key: "locationId",
-                label: t("locationManagement.locationFilterLabel"),
-                type: "select",
-                options: locations.map((loc) => ({
-                  value: loc.id?.toString() || "",
-                  label: loc.name || "",
-                })),
-              },
-            ]}
-            initialFilters={currentFilters}
-          />
-
           <PaginationWrapper
             data={sortedData}
             itemsPerPage={100}
@@ -312,24 +310,26 @@ export function LocationManagement({
             {(paginatedData) => (
               <>
                 <div className="hidden md:block overflow-x-auto">
-                  <div className="mb-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleSelectAll(paginatedData)}
-                    >
-                      {paginatedData.every((location) =>
-                        location.id ? selectedIds.has(location.id) : false,
-                      )
-                        ? t("locationManagement.deselectAll")
-                        : t("locationManagement.selectAll")}
-                    </Button>
-                  </div>
                   <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead className="w-[50px]">
-                          {t("locationManagement.tableHeaderSelect")}
+                          <Checkbox
+                            aria-label={t(
+                              "locationManagement.tableHeaderSelect",
+                            )}
+                            checked={
+                              paginatedData.length > 0 &&
+                              paginatedData.every((location) =>
+                                location.id
+                                  ? selectedIds.has(location.id)
+                                  : false,
+                              )
+                            }
+                            onCheckedChange={() =>
+                              handleSelectAll(paginatedData)
+                            }
+                          />
                         </TableHead>
                         <SortableTableHead
                           sortKey="name"
@@ -663,7 +663,8 @@ export function LocationManagement({
             )}
           </PaginationWrapper>
         </div>
-      </CardContent>
+        </CardContent>
+      </Card>
 
       {isModalOpen && (
         <LocationFormModal
@@ -688,6 +689,6 @@ export function LocationManagement({
           onImportLocation={importLocationWithSeats}
         />
       )}
-    </Card>
+    </>
   );
 }

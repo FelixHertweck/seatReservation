@@ -24,7 +24,7 @@ export default async function MainLayout({
       <AppSidebar />
       <PageHeaderProvider>
         <SidebarInset className="transition-[margin] duration-200 ease-linear md:!m-0 md:peer-data-[state=expanded]:!ml-[var(--sidebar-width)] md:peer-data-[state=collapsed]:!ml-[var(--sidebar-width-icon)]">
-          <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6 md:peer-data-[state=collapsed]:px-3 md:peer-data-[state=expanded]:px-6">
+          <header className="flex min-h-14 items-center gap-4 border-b bg-background px-4 py-2 lg:min-h-[60px] lg:px-6 md:peer-data-[state=collapsed]:px-3 md:peer-data-[state=expanded]:px-6">
             <SidebarTrigger className="hover:scale-110 transition-transform duration-200" />
             <PageHeaderSlot />
           </header>

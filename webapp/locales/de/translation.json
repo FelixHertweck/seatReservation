@@ -114,9 +114,7 @@
   },
   "adminPage": {
     "dashboardTitle": "Admin-Dashboard",
-    "dashboardDescription": "Benutzer und Systemeinstellungen verwalten",
-    "userManagementTab": "Benutzerverwaltung",
-    "exportDataTab": "Daten exportieren"
+    "dashboardDescription": "Benutzer und Systemeinstellungen verwalten"
   },
   "admin": {
     "user": {
@@ -183,8 +181,6 @@
     "noReservationsFoundDescription": "Es wurden keine Reservierungen mit der angefragten URL gefunden."
   },
   "managerPage": {
-    "dashboardTitle": "Manager-Dashboard",
-    "dashboardDescription": "Verwalten Sie Veranstaltungen, Standorte, Plätze und Reservierungen",
     "eventsTab": "Veranstaltungen",
     "locationsTab": "Standorte",
     "seatsTab": "Plätze",
@@ -548,9 +544,7 @@
     "searchPlaceholder": "Suchen...",
     "filtersButton": "Filter",
     "selectPlaceholder": "Wählen Sie {{label}}",
-    "enterPlaceholder": "Geben Sie {{label}} ein",
-    "activeFiltersLabel": "Aktive Filter:",
-    "clearAllButton": "Alle löschen"
+    "enterPlaceholder": "Geben Sie {{label}} ein"
   },
   "seatMap": {
     "seatTitle": "Platz {{seatNumber}} ({{seatRow}})",
@@ -801,8 +795,6 @@
     "description": "Veranstaltungsorte erstellen und verwalten",
     "importJsonButton": "JSON importieren",
     "addLocationButton": "Standort hinzufügen",
-    "selectAll": "Alle auswählen",
-    "deselectAll": "Alle abwählen",
     "locationFilterLabel": "Standort",
     "tableHeaderSelect": "Auswahl",
     "tableHeaderName": "Name",
@@ -825,8 +817,6 @@
     "title": "Reservierungskontingent-Verwaltung",
     "description": "Benutzerreservierungskontingente für Veranstaltungen verwalten",
     "addAllowanceButton": "Kontingent hinzufügen",
-    "selectAll": "Alle auswählen",
-    "deselectAll": "Alle abwählen",
     "eventFilterLabel": "Veranstaltung",
     "tableHeaderSelect": "Auswahl",
     "tableHeaderEvent": "Veranstaltung",
@@ -872,8 +862,6 @@
     "blockSeatsButton": "Plätze blockieren",
     "addReservationButton": "Reservierung hinzufügen",
     "confirmDeleteMultiple": "Sind Sie sicher, dass Sie {{count}} Reservierungen löschen möchten?",
-    "selectAll": "Alle auswählen",
-    "deselectAll": "Alle abwählen",
     "eventFilterLabel": "Veranstaltung",
     "statusFilterLabel": "Status",
     "tableHeaderSelect": "Auswahl",
@@ -952,8 +940,6 @@
     "description": "Sitzplätze für Standorte erstellen und verwalten",
     "addSeatButton": "Sitzplatz hinzufügen",
     "confirmDeleteMultiple": "Sind Sie sicher, dass Sie {{count}} Sitzplätze löschen möchten?",
-    "selectAll": "Alle auswählen",
-    "deselectAll": "Alle abwählen",
     "filter": {
       "locationLabel": "Standort",
       "entranceLabel": "Eingang"

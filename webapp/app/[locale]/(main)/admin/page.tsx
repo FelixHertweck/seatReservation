@@ -1,58 +1,56 @@
 "use client";
 
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/custom-ui/tabs";
+import { useMemo, useState } from "react";
 import { UserManagement } from "@/components/admin/user-management";
-import {
-  UserTableSkeleton,
-  UserExportSkeleton,
-} from "@/components/admin/user-table-skeleton";
+import { UserTableSkeleton } from "@/components/admin/user-table-skeleton";
 import { useAdmin } from "@/hooks/use-admin";
-import { UserExport } from "@/components/admin/user-export";
 import { useT } from "@/lib/i18n/hooks";
+import { PageHeader } from "@/components/page-header";
+import { SearchAndFilter } from "@/components/common/search-and-filter";
 
 export default function AdminPage() {
   const t = useT();
 
   const adminData = useAdmin();
+  const [userSearchQuery, setUserSearchQuery] = useState("");
+
+  const filteredUsers = useMemo(() => {
+    const lowerCaseQuery = userSearchQuery.toLowerCase();
+    return adminData.users.filter(
+      (user) =>
+        user.username?.toLowerCase().includes(lowerCaseQuery) ||
+        user.firstname?.toLowerCase().includes(lowerCaseQuery) ||
+        user.lastname?.toLowerCase().includes(lowerCaseQuery) ||
+        user.email?.toLowerCase().includes(lowerCaseQuery) ||
+        user.tags?.some((tag) => tag.toLowerCase().includes(lowerCaseQuery)),
+    );
+  }, [adminData.users, userSearchQuery]);
 
   return (
     <div className="container mx-auto p-4 sm:p-6">
-      <div className="mb-4 sm:mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-2">
-          {t("adminPage.dashboardTitle")}
-        </h1>
-        <p className="text-sm sm:text-base text-muted-foreground">
-          {t("adminPage.dashboardDescription")}
-        </p>
-      </div>
+      <PageHeader
+        title={t("adminPage.dashboardTitle")}
+        description={t("adminPage.dashboardDescription")}
+        search={
+          <SearchAndFilter
+            onSearch={setUserSearchQuery}
+            onFilter={() => {}}
+            filterOptions={[]}
+            initialQuery={userSearchQuery}
+            className="w-full"
+          />
+        }
+      />
 
-      <Tabs defaultValue="users" className="space-y-4">
-        <TabsList className="w-full grid grid-cols-2 gap-2 h-auto">
-          <TabsTrigger value="users" className="text-sm sm:text-base">
-            {t("adminPage.userManagementTab")}
-          </TabsTrigger>
-          <TabsTrigger value="export" className="text-sm sm:text-base">
-            {t("adminPage.exportDataTab")}
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="users">
-          {adminData.isLoading ? (
-            <UserTableSkeleton showImportButton={true} />
-          ) : (
-            <UserManagement {...adminData} />
-          )}
-        </TabsContent>
-
-        <TabsContent value="export">
-          {adminData.isLoading ? <UserExportSkeleton /> : <UserExport />}
-        </TabsContent>
-      </Tabs>
+      {adminData.isLoading ? (
+        <UserTableSkeleton showImportButton={true} />
+      ) : (
+        <UserManagement
+          {...adminData}
+          users={filteredUsers}
+          allUsers={adminData.users}
+        />
+      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { Plus, Edit, Trash2, FileText } from "lucide-react";
+import { useState } from "react";
+import { Plus, Edit, Trash2, FileText, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -22,7 +22,6 @@ import {
 import { SortableTableHead } from "@/components/common/sortable-table-head";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { UserFormModal } from "@/components/admin/user-form-modal";
 import { UserImportModal } from "@/components/admin/user-import-modal";
 import { TruncatedCell } from "@/components/common/truncated-cell";
@@ -30,9 +29,12 @@ import type { UserDto, AdminUserCreationDto, AdminUserUpdateDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
 import { useSortableData } from "@/lib/table-sorting";
+import { toast } from "sonner";
+import { customSerializer } from "@/lib/jsonBodySerializer";
 
 export interface UserManagementProps {
   users: UserDto[];
+  allUsers?: UserDto[];
   availableRoles: string[];
   createUser: (user: AdminUserCreationDto) => Promise<void>;
   updateUser: (id: string, user: AdminUserUpdateDto) => Promise<void>;
@@ -43,6 +45,7 @@ export interface UserManagementProps {
 
 export function UserManagement({
   users,
+  allUsers,
   availableRoles,
   createUser,
   updateUser,
@@ -52,7 +55,6 @@ export function UserManagement({
 }: UserManagementProps) {
   const t = useT();
 
-  const [filteredUsers, setFilteredUsers] = useState(users);
   const [selectedUser, setSelectedUser] = useState<UserDto | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -60,37 +62,42 @@ export function UserManagement({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const { sortedData, sortKey, sortDirection, handleSort } = useSortableData(
-    filteredUsers,
+    users,
     "id",
     "asc",
   );
 
-  useEffect(() => {
-    setFilteredUsers(users);
-  }, [users]);
+  const handleExport = () => {
+    const exportUsers = allUsers ?? users;
+    if (exportUsers.length === 0) {
+      toast.error(t("userExport.noUsersToExportTitle"), {
+        description: t("userExport.noUsersToExportDescription"),
+      });
+      return;
+    }
 
-  const applyFilters = useCallback(
-    (searchQuery: string) => {
-      const lowerCaseQuery = searchQuery.toLowerCase();
-      const filtered = users.filter(
-        (user) =>
-          user.username?.toLowerCase().includes(lowerCaseQuery) ||
-          user.firstname?.toLowerCase().includes(lowerCaseQuery) ||
-          user.lastname?.toLowerCase().includes(lowerCaseQuery) ||
-          user.email?.toLowerCase().includes(lowerCaseQuery) ||
-          user.tags?.some((tag) => tag.toLowerCase().includes(lowerCaseQuery)),
-      );
-      setFilteredUsers(filtered);
-    },
-    [users],
-  );
+    try {
+      const jsonString = customSerializer.json(exportUsers);
 
-  const handleSearch = (query: string) => {
-    applyFilters(query);
-  };
+      const blob = new Blob([jsonString], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "users.json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
 
-  const handleFilter = () => {
-    setFilteredUsers(users);
+      toast.success(t("userExport.exportSuccessTitle"), {
+        description: t("userExport.exportSuccessDescription"),
+      });
+    } catch (error) {
+      console.error(t("userExport.exportErrorLog"), error);
+      toast.error(t("userExport.exportFailedTitle"), {
+        description: t("userExport.exportFailedDescription"),
+      });
+    }
   };
 
   const handleCreateUser = () => {
@@ -203,6 +210,17 @@ export function UserManagement({
                 <span className="sm:hidden">Import</span>
               </Button>
             )}
+            <Button
+              variant="outline"
+              onClick={handleExport}
+              className="w-full sm:w-auto"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              <span className="hidden sm:inline">
+                {t("userExport.exportUsersAsJson")}
+              </span>
+              <span className="sm:hidden">Export</span>
+            </Button>
             <Button onClick={handleCreateUser} className="w-full sm:w-auto">
               <Plus className="mr-2 h-4 w-4" />
               <span className="hidden sm:inline">
@@ -215,12 +233,6 @@ export function UserManagement({
       </CardHeader>
 
       <CardContent>
-        <SearchAndFilter
-          onSearch={handleSearch}
-          onFilter={handleFilter}
-          filterOptions={[]}
-        />
-
         <PaginationWrapper
           data={sortedData}
           itemsPerPage={100}
@@ -229,24 +241,20 @@ export function UserManagement({
           {(paginatedData) => (
             <>
               <div className="hidden md:block overflow-x-auto">
-                <div className="mb-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleSelectAll(paginatedData)}
-                  >
-                    {paginatedData.every((user) =>
-                      user.id ? selectedIds.has(user.id) : false,
-                    )
-                      ? t("userManagement.deselectAll")
-                      : t("userManagement.selectAll")}
-                  </Button>
-                </div>
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[50px]">
-                        {t("userManagement.tableHeaderSelect")}
+                        <Checkbox
+                          aria-label={t("userManagement.tableHeaderSelect")}
+                          checked={
+                            paginatedData.length > 0 &&
+                            paginatedData.every((user) =>
+                              user.id ? selectedIds.has(user.id) : false,
+                            )
+                          }
+                          onCheckedChange={() => handleSelectAll(paginatedData)}
+                        />
                       </TableHead>
                       <SortableTableHead
                         sortKey="username"

@@ -55,6 +55,7 @@ import { customSerializer } from "@/lib/jsonBodySerializer";
 import { useT } from "@/lib/i18n/hooks";
 import { sanitizeFileName } from "@/lib/utils/filename";
 import { useSortableData } from "@/lib/table-sorting";
+import { PageHeader } from "@/components/page-header";
 
 export interface ReservationManagementProps {
   users: UserDto[];
@@ -287,18 +288,48 @@ export function ReservationManagement({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <CardTitle className="text-xl sm:text-2xl">
-              {t("reservationManagement.title")}
-            </CardTitle>
-            <CardDescription className="text-sm">
-              {t("reservationManagement.description")}
-            </CardDescription>
-          </div>
-          <div className="flex flex-col lg:flex-row gap-2 w-full sm:w-auto">
+    <>
+      <PageHeader
+        title={t("reservationManagement.title")}
+        description={t("reservationManagement.description")}
+        search={
+          <SearchAndFilter
+            onSearch={handleSearch}
+            onFilter={handleFilter}
+            filterOptions={[
+              {
+                key: "eventId",
+                label: t("reservationManagement.eventFilterLabel"),
+                type: "select",
+                options: events.map((event) => ({
+                  value: event.id?.toString() || "",
+                  label: event.name || "",
+                })),
+              },
+              {
+                key: "status",
+                label: t("reservationManagement.statusFilterLabel"),
+                type: "select",
+                options: [
+                  {
+                    value: "RESERVED",
+                    label: t("reservationManagement.statusReserved"),
+                  },
+                  {
+                    value: "BLOCKED",
+                    label: t("reservationManagement.statusBlocked"),
+                  },
+                ],
+              },
+            ]}
+            initialFilters={currentFilters}
+            className="w-full"
+          />
+        }
+      />
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col lg:flex-row gap-2 sm:justify-end">
             {selectedIds.size > 0 && (
               <Button
                 variant="destructive"
@@ -432,42 +463,9 @@ export function ReservationManagement({
               {t("reservationManagement.addReservationButton")}
             </Button>
           </div>
-        </div>
-      </CardHeader>
+        </CardHeader>
 
-      <CardContent>
-        <SearchAndFilter
-          onSearch={handleSearch}
-          onFilter={handleFilter}
-          filterOptions={[
-            {
-              key: "eventId",
-              label: t("reservationManagement.eventFilterLabel"),
-              type: "select",
-              options: events.map((event) => ({
-                value: event.id?.toString() || "",
-                label: event.name || "",
-              })),
-            },
-            {
-              key: "status",
-              label: t("reservationManagement.statusFilterLabel"),
-              type: "select",
-              options: [
-                {
-                  value: "RESERVED",
-                  label: t("reservationManagement.statusReserved"),
-                },
-                {
-                  value: "BLOCKED",
-                  label: t("reservationManagement.statusBlocked"),
-                },
-              ],
-            },
-          ]}
-          initialFilters={currentFilters}
-        />
-
+        <CardContent>
         <PaginationWrapper
           data={sortedData}
           itemsPerPage={100}
@@ -476,24 +474,24 @@ export function ReservationManagement({
           {(paginatedData) => (
             <>
               <div className="hidden md:block overflow-x-auto">
-                <div className="mb-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleSelectAll(paginatedData)}
-                  >
-                    {paginatedData.every((reservation) =>
-                      reservation.id ? selectedIds.has(reservation.id) : false,
-                    )
-                      ? t("reservationManagement.deselectAll")
-                      : t("reservationManagement.selectAll")}
-                  </Button>
-                </div>
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[50px]">
-                        {t("reservationManagement.tableHeaderSelect")}
+                        <Checkbox
+                          aria-label={t(
+                            "reservationManagement.tableHeaderSelect",
+                          )}
+                          checked={
+                            paginatedData.length > 0 &&
+                            paginatedData.every((reservation) =>
+                              reservation.id
+                                ? selectedIds.has(reservation.id)
+                                : false,
+                            )
+                          }
+                          onCheckedChange={() => handleSelectAll(paginatedData)}
+                        />
                       </TableHead>
                       <SortableTableHead
                         sortKey="user.username"
@@ -817,7 +815,8 @@ export function ReservationManagement({
             </>
           )}
         </PaginationWrapper>
-      </CardContent>
+        </CardContent>
+      </Card>
 
       {isModalOpen && (
         <ReservationFormModal
@@ -846,6 +845,6 @@ export function ReservationManagement({
           onClose={() => setIsBlockModalOpen(false)}
         />
       )}
-    </Card>
+    </>
   );
 }

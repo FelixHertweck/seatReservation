@@ -34,6 +34,7 @@ import type {
 } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { useSortableData } from "@/lib/table-sorting";
+import { PageHeader } from "@/components/page-header";
 
 export interface ReservationAllowanceManagementProps {
   allowances: EventUserAllowancesDto[];
@@ -214,18 +215,33 @@ export function ReservationAllowanceManagement({
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0 flex-1">
-            <CardTitle className="text-xl sm:text-2xl">
-              {t("reservationAllowanceManagement.title")}
-            </CardTitle>
-            <CardDescription className="text-sm">
-              {t("reservationAllowanceManagement.description")}
-            </CardDescription>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto shrink-0">
+    <>
+      <PageHeader
+        title={t("reservationAllowanceManagement.title")}
+        description={t("reservationAllowanceManagement.description")}
+        search={
+          <SearchAndFilter
+            onSearch={handleSearch}
+            onFilter={handleFilter}
+            filterOptions={[
+              {
+                key: "eventId",
+                label: t("reservationAllowanceManagement.eventFilterLabel"),
+                type: "select",
+                options: events.map((event) => ({
+                  value: event.id?.toString() || "",
+                  label: event.name || "",
+                })),
+              },
+            ]}
+            initialFilters={currentFilters}
+            className="w-full"
+          />
+        }
+      />
+      <Card className="w-full">
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
             {selectedIds.size > 0 && (
               <Button
                 variant="destructive"
@@ -244,29 +260,9 @@ export function ReservationAllowanceManagement({
               {t("reservationAllowanceManagement.addAllowanceButton")}
             </Button>
           </div>
-        </div>
-      </CardHeader>
+        </CardHeader>
 
-      <CardContent>
-        <div>
-          <SearchAndFilter
-            onSearch={handleSearch}
-            onFilter={handleFilter}
-            filterOptions={[
-              {
-                key: "eventId",
-                label: t("reservationAllowanceManagement.eventFilterLabel"),
-                type: "select",
-                options: events.map((event) => ({
-                  value: event.id?.toString() || "",
-                  label: event.name || "",
-                })),
-              },
-            ]}
-            initialFilters={currentFilters}
-          />
-        </div>
-
+        <CardContent>
         <PaginationWrapper
           data={sortedData}
           itemsPerPage={100}
@@ -275,24 +271,24 @@ export function ReservationAllowanceManagement({
           {(paginatedData) => (
             <>
               <div className="hidden md:block overflow-x-auto">
-                <div className="mb-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleSelectAll(paginatedData)}
-                  >
-                    {paginatedData.every((allowance) =>
-                      allowance.id ? selectedIds.has(allowance.id) : false,
-                    )
-                      ? t("reservationAllowanceManagement.deselectAll")
-                      : t("reservationAllowanceManagement.selectAll")}
-                  </Button>
-                </div>
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[50px]">
-                        {t("reservationAllowanceManagement.tableHeaderSelect")}
+                        <Checkbox
+                          aria-label={t(
+                            "reservationAllowanceManagement.tableHeaderSelect",
+                          )}
+                          checked={
+                            paginatedData.length > 0 &&
+                            paginatedData.every((allowance) =>
+                              allowance.id
+                                ? selectedIds.has(allowance.id)
+                                : false,
+                            )
+                          }
+                          onCheckedChange={() => handleSelectAll(paginatedData)}
+                        />
                       </TableHead>
                       <SortableTableHead
                         sortKey="event.name"
@@ -546,7 +542,8 @@ export function ReservationAllowanceManagement({
             </>
           )}
         </PaginationWrapper>
-      </CardContent>
+        </CardContent>
+      </Card>
 
       {isCreateModalOpen && (
         <AllowanceFormModal
@@ -569,6 +566,6 @@ export function ReservationAllowanceManagement({
           onClose={() => setIsEditModalOpen(false)}
         />
       )}
-    </Card>
+    </>
   );
 }
