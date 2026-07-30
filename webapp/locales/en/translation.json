@@ -426,6 +426,10 @@
   "userFormModal": {
     "addNewUserTitle": "Add New User",
     "editUserTitle": "Edit User",
+    "accountSectionTitle": "Account",
+    "personalInfoSectionTitle": "Personal Information",
+    "emailStatusSectionTitle": "Email Status",
+    "emailStatusUnverifiedOption": "Not verified",
     "usernameLabel": "Username",
     "passwordLabel": "Password",
     "passwordTooShort": "Password must be at least 8 characters long",

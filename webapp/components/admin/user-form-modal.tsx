@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import type { UserDto, AdminUserUpdateDto, AdminUserCreationDto } from "@/api";
@@ -27,6 +28,8 @@ interface UserFormModalProps {
   ) => Promise<void>;
   onClose: () => void;
 }
+
+type EmailStatus = "unverified" | "verified" | "send";
 
 export function UserFormModal({
   user,
@@ -44,7 +47,9 @@ export function UserFormModal({
       lastname: user?.lastname || "",
       email: user?.email || "",
       password: isCreating ? "" : "••••••••",
-      emailVerified: user?.emailVerified || false,
+      emailStatus: (user?.emailVerified
+        ? "verified"
+        : "unverified") as EmailStatus,
       selectedRoles: user?.roles || [],
       tags: user?.tags || [],
     };
@@ -54,7 +59,6 @@ export function UserFormModal({
   const [formState, setFormState] = useState(() =>
     getInitialFormState(user, isCreating),
   );
-  const [sendEmailVerification, setSendEmailVerification] = useState(false);
   const [newTag, setNewTag] = useState("");
 
   const [isFormLoading, setIsFormLoading] = useState(false);
@@ -93,6 +97,9 @@ export function UserFormModal({
   const handleSubmit = async () => {
     setIsFormLoading(true);
 
+    const emailVerified = formState.emailStatus === "verified";
+    const sendEmailVerification = formState.emailStatus === "send";
+
     let userData: AdminUserCreationDto | AdminUserUpdateDto;
 
     if (isCreating) {
@@ -105,7 +112,7 @@ export function UserFormModal({
         roles: formState.selectedRoles,
         tags: formState.tags,
         sendEmailVerification,
-        emailVerified: formState.emailVerified,
+        emailVerified,
       };
     } else {
       userData = {
@@ -115,7 +122,7 @@ export function UserFormModal({
         roles: formState.selectedRoles,
         tags: formState.tags,
         sendEmailVerification,
-        emailVerified: formState.emailVerified,
+        emailVerified,
       };
 
       if (formState.password !== "••••••••") {
@@ -134,7 +141,7 @@ export function UserFormModal({
     <Dialog open onOpenChange={onClose}>
       <DialogContent
         key={formKey}
-        className="sm:max-w-xl"
+        className="sm:max-w-xl sm:max-h-[80vh] sm:overflow-y-auto"
         onInteractOutside={(e) => e.preventDefault()}
         onKeyDown={(e) => {
           if (
@@ -154,28 +161,34 @@ export function UserFormModal({
               : t("userFormModal.editUserTitle")}
           </DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="username" className="text-right">
-              {t("userFormModal.usernameLabel")}
-            </Label>
-            <Input
-              id="username"
-              value={formState.username}
-              onChange={(e) =>
-                setFormState((prev) => ({ ...prev, username: e.target.value }))
-              }
-              className="col-span-3"
-              disabled={!isCreating} // Username typically not editable after creation
-              autoCapitalize="none"
-              autoComplete="username"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="password" className="text-right">
-              {t("userFormModal.passwordLabel")}
-            </Label>
-            <div className="col-span-3">
+        <div className="grid gap-6 py-4">
+          {/* Account */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium text-muted-foreground">
+              {t("userFormModal.accountSectionTitle")}
+            </h3>
+            <div className="space-y-2">
+              <Label htmlFor="username">
+                {t("userFormModal.usernameLabel")}
+              </Label>
+              <Input
+                id="username"
+                value={formState.username}
+                onChange={(e) =>
+                  setFormState((prev) => ({
+                    ...prev,
+                    username: e.target.value,
+                  }))
+                }
+                disabled={!isCreating} // Username typically not editable after creation
+                autoCapitalize="none"
+                autoComplete="username"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">
+                {t("userFormModal.passwordLabel")}
+              </Label>
               <Input
                 id="password"
                 type="password"
@@ -201,101 +214,120 @@ export function UserFormModal({
                 }}
               />
               {isPasswordTooShort && (
-                <p className="text-sm text-destructive mt-1">
+                <p className="text-sm text-destructive">
                   {t("userFormModal.passwordTooShort")}
                 </p>
               )}
               {!isCreating && (
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground">
                   {t("userFormModal.passwordUpdateHint")}
                 </p>
               )}
             </div>
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="firstname" className="text-right">
-              {t("userFormModal.firstNameLabel")}
-            </Label>
-            <Input
-              id="firstname"
-              value={formState.firstname}
-              onChange={(e) =>
-                setFormState((prev) => ({ ...prev, firstname: e.target.value }))
-              }
-              className="col-span-3"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="lastname" className="text-right">
-              {t("userFormModal.lastNameLabel")}
-            </Label>
-            <Input
-              id="lastname"
-              value={formState.lastname}
-              onChange={(e) =>
-                setFormState((prev) => ({ ...prev, lastname: e.target.value }))
-              }
-              className="col-span-3"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="email" className="text-right">
-              {t("userFormModal.emailLabel")}
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              value={formState.email}
-              onChange={(e) =>
-                setFormState((prev) => ({ ...prev, email: e.target.value }))
-              }
-              className="col-span-3"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="emailVerified" className="text-right">
-              {t("userFormModal.verifiedLabel")}
-            </Label>
-            <Checkbox
-              id="emailVerified"
-              checked={formState.emailVerified}
-              onCheckedChange={(checked) => {
-                setFormState((prev) => ({ ...prev, emailVerified: !!checked }));
-                if (checked) {
-                  setSendEmailVerification(false);
+
+          {/* Personal information */}
+          <div className="space-y-4 border-t pt-6">
+            <h3 className="text-sm font-medium text-muted-foreground">
+              {t("userFormModal.personalInfoSectionTitle")}
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstname">
+                  {t("userFormModal.firstNameLabel")}
+                </Label>
+                <Input
+                  id="firstname"
+                  value={formState.firstname}
+                  onChange={(e) =>
+                    setFormState((prev) => ({
+                      ...prev,
+                      firstname: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastname">
+                  {t("userFormModal.lastNameLabel")}
+                </Label>
+                <Input
+                  id="lastname"
+                  value={formState.lastname}
+                  onChange={(e) =>
+                    setFormState((prev) => ({
+                      ...prev,
+                      lastname: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">{t("userFormModal.emailLabel")}</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formState.email}
+                onChange={(e) =>
+                  setFormState((prev) => ({ ...prev, email: e.target.value }))
                 }
-              }}
-              className="col-span-3"
-              disabled={sendEmailVerification}
-            />
+              />
+            </div>
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="sendEmailVerification" className="text-right">
-              {t("userFormModal.sendEmailVerificationLabel")}
-            </Label>
-            <Checkbox
-              id="sendEmailVerification"
-              checked={sendEmailVerification}
-              onCheckedChange={(checked) => {
-                setSendEmailVerification(!!checked);
-                if (checked) {
-                  setFormState((prev) => ({ ...prev, emailVerified: false }));
-                }
-              }}
-              className="col-span-3"
-              aria-describedby="sendEmailVerification-desc"
-              disabled={formState.emailVerified}
-            />
-            {/* Visually hidden description for accessibility */}
-            <span id="sendEmailVerification-desc" className="sr-only">
-              {t("userFormModal.sendEmailVerificationDesc")}
-            </span>
+
+          {/* Email verification status */}
+          <div className="space-y-3 border-t pt-6">
+            <h3 className="text-sm font-medium text-muted-foreground">
+              {t("userFormModal.emailStatusSectionTitle")}
+            </h3>
+            <RadioGroup
+              value={formState.emailStatus}
+              onValueChange={(value) =>
+                setFormState((prev) => ({
+                  ...prev,
+                  emailStatus: value as EmailStatus,
+                }))
+              }
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem
+                  value="unverified"
+                  id="email-status-unverified"
+                />
+                <Label
+                  htmlFor="email-status-unverified"
+                  className="font-normal"
+                >
+                  {t("userFormModal.emailStatusUnverifiedOption")}
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="verified" id="email-status-verified" />
+                <Label htmlFor="email-status-verified" className="font-normal">
+                  {t("userFormModal.verifiedLabel")}
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="send" id="email-status-send" />
+                <Label htmlFor="email-status-send" className="font-normal">
+                  {t("userFormModal.sendEmailVerificationLabel")}
+                </Label>
+              </div>
+            </RadioGroup>
+            {formState.emailStatus === "send" && (
+              <p className="text-xs text-muted-foreground">
+                {t("userFormModal.sendEmailVerificationDesc")}
+              </p>
+            )}
           </div>
-          <div className="grid grid-cols-4 items-start gap-4">
-            <Label className="text-right pt-2">
+
+          {/* Roles */}
+          <div className="space-y-3 border-t pt-6">
+            <h3 className="text-sm font-medium text-muted-foreground">
               {t("userFormModal.rolesLabel")}
-            </Label>
-            <div className="col-span-3 flex flex-col gap-2">
+            </h3>
+            <div className="grid grid-cols-2 gap-2">
               {availableRoles.map((role) => (
                 <div key={role} className="flex items-center space-x-2">
                   <Checkbox
@@ -304,55 +336,56 @@ export function UserFormModal({
                     onCheckedChange={(checked) =>
                       handleRoleChange(role, !!checked)
                     }
-                    aria-describedby="mutual-exclusivity-info"
                   />
-                  <Label htmlFor={`role-${role}`}>{role}</Label>
+                  <Label htmlFor={`role-${role}`} className="font-normal">
+                    {role}
+                  </Label>
                 </div>
               ))}
             </div>
           </div>
-          <div className="grid grid-cols-4 items-start gap-4">
-            <Label htmlFor="tags" className="text-right pt-2">
+
+          {/* Tags */}
+          <div className="space-y-3 border-t pt-6">
+            <h3 className="text-sm font-medium text-muted-foreground">
               {t("userFormModal.tagsLabel")}
-            </Label>
-            <div className="col-span-3">
-              <div className="flex flex-wrap gap-2 mb-2">
-                {formState.tags.map((tag) => (
-                  <Badge
-                    key={tag}
-                    variant="secondary"
-                    className="flex items-center gap-1"
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {formState.tags.map((tag) => (
+                <Badge
+                  key={tag}
+                  variant="secondary"
+                  className="flex items-center gap-1"
+                >
+                  {tag}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRemoveTag(tag)}
+                    className="h-auto p-0.5"
                   >
-                    {tag}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveTag(tag)}
-                      className="h-auto p-0.5"
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </Badge>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                <Input
-                  id="newTag"
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                  placeholder={t("userFormModal.addTagPlaceholder")}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleAddTag();
-                    }
-                  }}
-                />
-                <Button type="button" onClick={handleAddTag}>
-                  {t("userFormModal.addButton")}
-                </Button>
-              </div>
+                    <X className="h-3 w-3" />
+                  </Button>
+                </Badge>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                id="newTag"
+                value={newTag}
+                onChange={(e) => setNewTag(e.target.value)}
+                placeholder={t("userFormModal.addTagPlaceholder")}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleAddTag();
+                  }
+                }}
+              />
+              <Button type="button" onClick={handleAddTag}>
+                {t("userFormModal.addButton")}
+              </Button>
             </div>
           </div>
         </div>
