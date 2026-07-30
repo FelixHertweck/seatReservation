@@ -543,9 +543,9 @@ export function AppSidebar() {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                  className="min-w-56 rounded-lg shadow-xl border-sidebar-border/50 bg-sidebar-background/95 backdrop-blur-xs animate-in slide-in-from-bottom-2 duration-300"
-                  side="right"
-                  align="end"
+                  className="min-w-56 rounded-lg shadow-xl border-sidebar-border/50 bg-sidebar animate-in slide-in-from-bottom-2 duration-300"
+                  side={isMobile ? "top" : "right"}
+                  align={isMobile ? "center" : "end"}
                   sideOffset={8}
                 >
                   {renderSettingsMenuItems()}
@@ -570,7 +570,7 @@ export function AppSidebar() {
                     </SidebarMenuButton>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
-                    className="w-56 rounded-lg shadow-xl border-sidebar-border/50 bg-sidebar-background/95 backdrop-blur-xs animate-in slide-in-from-bottom-2 duration-300"
+                    className="w-56 rounded-lg shadow-xl border-sidebar-border/50 bg-sidebar animate-in slide-in-from-bottom-2 duration-300"
                     side="right"
                     align="end"
                     sideOffset={4}
