@@ -918,10 +918,13 @@
     "selectEntrancePlaceholder": "Eingang auswählen"
   },
   "sidebar": {
-    "navigation": "Navigation",
+    "groupGeneral": "Allgemein",
+    "groupSupervision": "Aufsicht",
+    "groupManagement": "Verwaltung",
     "events": "Veranstaltungen",
     "reservations": "Reservierungen",
-    "profile": "Profil",
+    "viewProfile": "Profil ansehen",
+    "settings": "Einstellungen",
     "manager": "Manager",
     "userManagement": "Benutzer-Verwaltung",
     "admin": "Admin",

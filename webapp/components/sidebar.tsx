@@ -12,6 +12,8 @@ import {
   Monitor,
   Globe,
   UserLock,
+  UserRound,
+  ChevronRight,
   Eye,
   LogIn as CheckInIcon,
   LucideIcon,
@@ -90,47 +92,44 @@ export function AppSidebar() {
     }
   }, [pathname, isMobile, setOpenMobile]);
 
-  const getMenuItems = () => {
-    const baseItems: Array<{
-      title: string;
-      url: string;
-      icon: LucideIcon;
-      badge: string;
-      subItems?: Array<{ title: string; url: string; icon: LucideIcon }>;
-    }> = [];
+  type MenuItem = {
+    title: string;
+    url: string;
+    icon: LucideIcon;
+    badge: string;
+    subItems?: Array<{ title: string; url: string; icon: LucideIcon }>;
+  };
+
+  const getMenuGroups = () => {
+    const generalItems: MenuItem[] = [];
     if (user?.roles?.includes("USER")) {
-      baseItems.push({
+      generalItems.push({
         title: t("sidebar.events"),
         url: "/events",
         icon: CalendarDays,
         badge: "",
       });
-      baseItems.push({
+      generalItems.push({
         title: t("sidebar.reservations"),
         url: "/reservations",
         icon: BookmarkCheck,
         badge: "",
       });
     }
-    baseItems.push({
-      title: t("sidebar.profile"),
-      url: "/profile",
-      icon: Settings,
-      badge: "",
-    });
 
+    const supervisionItems: MenuItem[] = [];
     if (
       user?.roles?.includes("SUPERVISOR") ||
       user?.roles?.includes("MANAGER") ||
       user?.roles?.includes("ADMIN")
     ) {
-      baseItems.push({
+      supervisionItems.push({
         title: t("sidebar.checkin"),
         url: "/checkin",
         icon: CheckInIcon,
         badge: t("sidebar.supervisor"),
       });
-      baseItems.push({
+      supervisionItems.push({
         title: t("sidebar.liveview"),
         url: "/liveview",
         icon: Eye,
@@ -138,8 +137,9 @@ export function AppSidebar() {
       });
     }
 
+    const managementItems: MenuItem[] = [];
     if (user?.roles?.includes("MANAGER") || user?.roles?.includes("ADMIN")) {
-      baseItems.push({
+      managementItems.push({
         title: t("sidebar.manager"),
         url: "/manager",
         icon: CalendarCog,
@@ -148,7 +148,7 @@ export function AppSidebar() {
     }
 
     if (user?.roles?.includes("ADMIN")) {
-      baseItems.push({
+      managementItems.push({
         title: t("sidebar.userManagement"),
         url: "/admin",
         icon: Users,
@@ -156,7 +156,11 @@ export function AppSidebar() {
       });
     }
 
-    return baseItems;
+    return [
+      { label: t("sidebar.groupGeneral"), items: generalItems },
+      { label: t("sidebar.groupSupervision"), items: supervisionItems },
+      { label: t("sidebar.groupManagement"), items: managementItems },
+    ].filter((group) => group.items.length > 0);
   };
 
   const getUserInitials = () => {
@@ -230,6 +234,73 @@ export function AppSidebar() {
       setOpen(false);
     }
   };
+
+  const renderSettingsMenuItems = () => (
+    <>
+      <div className="px-2 py-1.5 text-sm font-semibold text-sidebar-foreground">
+        {t("sidebar.theme")}
+      </div>
+      {["light", "dark", "system"].map((themeOption) => {
+        const ThemeIcon = getThemeIcon(themeOption);
+        return (
+          <DropdownMenuItem
+            key={themeOption}
+            onClick={() => setTheme(themeOption)}
+            className={`hover:bg-sidebar-accent/50 transition-all duration-200 cursor-pointer group ${
+              theme === themeOption ? "bg-sidebar-accent/30" : ""
+            }`}
+          >
+            <ThemeIcon className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
+            {getThemeLabel(themeOption)}
+            {theme === themeOption && (
+              <div className="ml-auto w-2 h-2 rounded-full bg-sidebar-primary animate-pulse" />
+            )}
+          </DropdownMenuItem>
+        );
+      })}
+      <DropdownMenuSeparator />
+      <div className="px-2 py-1.5 text-sm font-semibold text-sidebar-foreground">
+        {t("sidebar.language")}
+      </div>
+      {languages.map((lang) => {
+        const isCurrentLanguage = getCurrentLanguage() === lang;
+        return (
+          <DropdownMenuItem
+            key={lang}
+            onClick={() => switchLanguage(lang)}
+            className={`hover:bg-sidebar-accent/50 transition-all duration-200 cursor-pointer group ${
+              isCurrentLanguage ? "bg-sidebar-accent/30" : ""
+            }`}
+          >
+            <Globe className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
+            {getLanguageLabel(lang)}
+            {isCurrentLanguage && (
+              <div className="ml-auto w-2 h-2 rounded-full bg-sidebar-primary animate-pulse" />
+            )}
+          </DropdownMenuItem>
+        );
+      })}
+      <DropdownMenuSeparator />
+      <DropdownMenuItem
+        onClick={() => {
+          void logoutAll();
+        }}
+        className="focus:bg-destructive/10 focus:text-destructive data-[highlighted]:bg-destructive/10 data-[highlighted]:text-destructive transition-all duration-200 cursor-pointer group"
+      >
+        <UserLock className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
+        {t("sidebar.logoutAll")}
+      </DropdownMenuItem>
+      <DropdownMenuItem
+        onClick={() => {
+          void logout();
+        }}
+        className="focus:bg-destructive/10 focus:text-destructive data-[highlighted]:bg-destructive/10 data-[highlighted]:text-destructive transition-all duration-200 cursor-pointer group"
+      >
+        <LogOut className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
+        {t("sidebar.logout")}
+      </DropdownMenuItem>
+    </>
+  );
 
   return (
     <Sidebar
@@ -318,213 +389,210 @@ export function AppSidebar() {
       <div className="border-b border-sidebar-border/50" />
 
       <SidebarContent className="px-2 py-1 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-0">
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-base font-semibold text-sidebar-foreground/70 mb-2 px-2 group-data-[collapsible=icon]:hidden">
-            {t("sidebar.navigation")}
-          </SidebarGroupLabel>
-          <SidebarGroupContent className="group-data-[collapsible=icon]:!p-0">
-            <SidebarMenu className="space-y-1 group-data-[collapsible=icon]:space-y-1">
-              {getMenuItems().map((item, index) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    tooltip={item.title}
-                    className={`hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground transition-all duration-300 hover:scale-[1.02] group relative overflow-hidden p-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 ${
-                      pathname.includes(item.url)
-                        ? "bg-sidebar-accent/40 text-sidebar-accent-foreground"
-                        : ""
-                    }`}
-                    style={{
-                      animationDelay: `${index * 140}ms`,
-                    }}
-                  >
-                    <Link
-                      href={item.url}
-                      onClick={(e) => {
-                        if (e.button === 0 && !e.metaKey && !e.ctrlKey) {
-                          e.preventDefault();
-                          handleNavigation(item.url);
-                        }
-                      }}
-                      onContextMenu={(e) => {
-                        e.stopPropagation();
+        {getMenuGroups().map((group) => (
+          <SidebarGroup key={group.label}>
+            <SidebarGroupLabel className="text-base font-semibold text-sidebar-foreground/70 mb-2 px-2 group-data-[collapsible=icon]:hidden">
+              {group.label}
+            </SidebarGroupLabel>
+            <SidebarGroupContent className="group-data-[collapsible=icon]:!p-0">
+              <SidebarMenu className="space-y-1 group-data-[collapsible=icon]:space-y-1">
+                {group.items.map((item, index) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      tooltip={item.title}
+                      className={`hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground transition-all duration-300 hover:scale-[1.02] group relative overflow-hidden p-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 ${
+                        pathname.includes(item.url)
+                          ? "bg-sidebar-accent/40 text-sidebar-accent-foreground"
+                          : ""
+                      }`}
+                      style={{
+                        animationDelay: `${index * 140}ms`,
                       }}
                     >
-                      <div className="flex items-center gap-3 w-full px-3 py-2 group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-3 group-data-[collapsible=icon]:justify-center">
-                        <div className="relative">
-                          <item.icon
-                            className={`group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 ${
-                              pathname.includes(item.url) ? "scale-110" : ""
-                            }`}
-                          />
-                          <div
-                            className={`absolute inset-0 bg-sidebar-primary/20 rounded-full scale-0 group-hover:scale-150 transition-transform duration-500 opacity-0 group-hover:opacity-100 ${
-                              pathname.includes(item.url)
-                                ? "scale-125 opacity-100"
-                                : ""
-                            }`}
-                          />
-                        </div>
-                        <span
-                          className={`font-medium ${
-                            pathname.includes(item.url) ? "font-semibold" : ""
-                          } group-data-[collapsible=icon]:hidden`}
-                        >
-                          {item.title}
-                        </span>
-                        {item.badge && (
-                          <Badge
-                            variant="secondary"
-                            className={`ml-auto text-xs bg-linear-to-r from-sidebar-primary/10 to-sidebar-accent/10 border-sidebar-primary/20 group-hover:scale-105 transition-transform duration-300 ${
-                              pathname.includes(item.url) ? "scale-110" : ""
+                      <Link
+                        href={item.url}
+                        onClick={(e) => {
+                          if (e.button === 0 && !e.metaKey && !e.ctrlKey) {
+                            e.preventDefault();
+                            handleNavigation(item.url);
+                          }
+                        }}
+                        onContextMenu={(e) => {
+                          e.stopPropagation();
+                        }}
+                      >
+                        <div className="flex items-center gap-3 w-full px-3 py-2 group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-3 group-data-[collapsible=icon]:justify-center">
+                          <div className="relative">
+                            <item.icon
+                              className={`group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 ${
+                                pathname.includes(item.url) ? "scale-110" : ""
+                              }`}
+                            />
+                            <div
+                              className={`absolute inset-0 bg-sidebar-primary/20 rounded-full scale-0 group-hover:scale-150 transition-transform duration-500 opacity-0 group-hover:opacity-100 ${
+                                pathname.includes(item.url)
+                                  ? "scale-125 opacity-100"
+                                  : ""
+                              }`}
+                            />
+                          </div>
+                          <span
+                            className={`font-medium ${
+                              pathname.includes(item.url) ? "font-semibold" : ""
                             } group-data-[collapsible=icon]:hidden`}
                           >
-                            {item.badge}
-                          </Badge>
-                        )}
-                        <div className="absolute inset-0 bg-linear-to-r from-transparent via-sidebar-primary/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                      </div>
-                    </Link>
-                  </SidebarMenuButton>
-                  {item.subItems && item.subItems.length > 0 && (
-                    <SidebarMenuSub className="ml-0 border-l border-sidebar-border/50 ml-4">
-                      {item.subItems.map((subItem) => (
-                        <SidebarMenuSubItem key={subItem.title}>
-                          <SidebarMenuSubButton
-                            asChild
-                            className="hover:bg-sidebar-accent/50 transition-all duration-300 group p-0"
-                          >
-                            <Link
-                              href={subItem.url}
-                              onClick={(e) => {
-                                if (
-                                  e.button === 0 &&
-                                  !e.metaKey &&
-                                  !e.ctrlKey
-                                ) {
-                                  e.preventDefault();
-                                  handleNavigation(subItem.url);
-                                }
-                              }}
-                              onContextMenu={(e) => {
-                                e.stopPropagation();
-                              }}
-                              className="flex items-center gap-3 w-full px-3 py-2 group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
+                            {item.title}
+                          </span>
+                          {item.badge && (
+                            <Badge
+                              variant="secondary"
+                              className={`ml-auto text-xs bg-linear-to-r from-sidebar-primary/10 to-sidebar-accent/10 border-sidebar-primary/20 group-hover:scale-105 transition-transform duration-300 ${
+                                pathname.includes(item.url) ? "scale-110" : ""
+                              } group-data-[collapsible=icon]:hidden`}
                             >
-                              <subItem.icon className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
-                              <span className="text-sm group-data-[collapsible=icon]:hidden">
-                                {subItem.title}
-                              </span>
-                            </Link>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      ))}
-                    </SidebarMenuSub>
-                  )}
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+                              {item.badge}
+                            </Badge>
+                          )}
+                          <div className="absolute inset-0 bg-linear-to-r from-transparent via-sidebar-primary/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                        </div>
+                      </Link>
+                    </SidebarMenuButton>
+                    {item.subItems && item.subItems.length > 0 && (
+                      <SidebarMenuSub className="ml-0 border-l border-sidebar-border/50 ml-4">
+                        {item.subItems.map((subItem) => (
+                          <SidebarMenuSubItem key={subItem.title}>
+                            <SidebarMenuSubButton
+                              asChild
+                              className="hover:bg-sidebar-accent/50 transition-all duration-300 group p-0"
+                            >
+                              <Link
+                                href={subItem.url}
+                                onClick={(e) => {
+                                  if (
+                                    e.button === 0 &&
+                                    !e.metaKey &&
+                                    !e.ctrlKey
+                                  ) {
+                                    e.preventDefault();
+                                    handleNavigation(subItem.url);
+                                  }
+                                }}
+                                onContextMenu={(e) => {
+                                  e.stopPropagation();
+                                }}
+                                className="flex items-center gap-3 w-full px-3 py-2 group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
+                              >
+                                <subItem.icon className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
+                                <span className="text-sm group-data-[collapsible=icon]:hidden">
+                                  {subItem.title}
+                                </span>
+                              </Link>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        ))}
+                      </SidebarMenuSub>
+                    )}
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border/50 bg-linear-to-r from-sidebar-background to-sidebar-accent/5 p-2 group-data-[collapsible=icon]:p-0">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            {user ? (
+        {user ? (
+          showLargeLogo ? (
+            <div className="rounded-xl border border-sidebar-border/50 bg-sidebar-accent/5 overflow-hidden">
+              <div className="flex items-center gap-3 px-3 pt-3 pb-2">
+                <Avatar className="h-8 w-8 rounded-lg ring-2 ring-sidebar-primary/20">
+                  <AvatarFallback className="rounded-lg bg-linear-to-br from-sidebar-primary to-sidebar-primary/80 text-sidebar-primary-foreground font-semibold">
+                    {getUserInitials()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="grid flex-1 min-w-0 text-left text-sm leading-tight">
+                  <span className="truncate font-semibold">
+                    {user.firstname} {user.lastname}
+                  </span>
+                  <span className="truncate text-xs text-sidebar-foreground/60">
+                    {user.email}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => handleNavigation("/profile")}
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm font-medium hover:bg-sidebar-accent/50 transition-colors duration-200"
+              >
+                <UserRound className="h-4 w-4 text-sidebar-primary" />
+                {t("sidebar.viewProfile")}
+                <ChevronRight className="ml-auto h-4 w-4 text-sidebar-foreground/50" />
+              </button>
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <SidebarMenuButton
-                    size="lg"
-                    className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent/50 transition-all duration-300 hover:scale-[1.02] group group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:mx-auto"
+                  <button
+                    type="button"
+                    className="flex w-full items-center gap-2 border-t border-sidebar-border/50 px-3 py-2 text-sm font-medium hover:bg-sidebar-accent/50 transition-colors duration-200"
                   >
-                    <Avatar className="h-8 w-8 rounded-lg ring-2 ring-sidebar-primary/20 group-hover:ring-sidebar-primary/40 transition-all duration-300 group-hover:scale-110 group-data-[collapsible=icon]:h-6 group-data-[collapsible=icon]:w-6">
-                      <AvatarFallback className="rounded-lg bg-linear-to-br from-sidebar-primary to-sidebar-primary/80 text-sidebar-primary-foreground font-semibold group-hover:rotate-3 transition-transform duration-300">
-                        {getUserInitials()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                      <span className="truncate font-semibold group-hover:text-sidebar-accent-foreground transition-colors duration-300">
-                        {user.firstname} {user.lastname}
-                      </span>
-                      <span className="truncate text-xs text-sidebar-foreground/60 group-hover:text-sidebar-foreground/80 transition-colors duration-300">
-                        {user.email}
-                      </span>
-                    </div>
-                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse group-data-[collapsible=icon]:hidden" />
-                  </SidebarMenuButton>
+                    <Settings className="h-4 w-4 text-sidebar-primary" />
+                    {t("sidebar.settings")}
+                    <ChevronRight className="ml-auto h-4 w-4 text-sidebar-foreground/50" />
+                  </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                  className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg shadow-xl border-sidebar-border/50 bg-sidebar-background/95 backdrop-blur-xs animate-in slide-in-from-bottom-2 duration-300"
-                  side="bottom"
+                  className="min-w-56 rounded-lg shadow-xl border-sidebar-border/50 bg-sidebar-background/95 backdrop-blur-xs animate-in slide-in-from-bottom-2 duration-300"
+                  side="right"
                   align="end"
-                  sideOffset={4}
+                  sideOffset={8}
                 >
-                  <div className="px-2 py-1.5 text-sm font-semibold text-sidebar-foreground">
-                    {t("sidebar.theme")}
-                  </div>
-                  {["light", "dark", "system"].map((themeOption) => {
-                    const ThemeIcon = getThemeIcon(themeOption);
-                    return (
-                      <DropdownMenuItem
-                        key={themeOption}
-                        onClick={() => setTheme(themeOption)}
-                        className={`hover:bg-sidebar-accent/50 transition-all duration-200 cursor-pointer group ${
-                          theme === themeOption ? "bg-sidebar-accent/30" : ""
-                        }`}
-                      >
-                        <ThemeIcon className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
-                        {getThemeLabel(themeOption)}
-                        {theme === themeOption && (
-                          <div className="ml-auto w-2 h-2 rounded-full bg-sidebar-primary animate-pulse" />
-                        )}
-                      </DropdownMenuItem>
-                    );
-                  })}
-                  <DropdownMenuSeparator />
-                  <div className="px-2 py-1.5 text-sm font-semibold text-sidebar-foreground">
-                    {t("sidebar.language")}
-                  </div>
-                  {languages.map((lang) => {
-                    const isCurrentLanguage = getCurrentLanguage() === lang;
-                    return (
-                      <DropdownMenuItem
-                        key={lang}
-                        onClick={() => switchLanguage(lang)}
-                        className={`hover:bg-sidebar-accent/50 transition-all duration-200 cursor-pointer group ${
-                          isCurrentLanguage ? "bg-sidebar-accent/30" : ""
-                        }`}
-                      >
-                        <Globe className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
-                        {getLanguageLabel(lang)}
-                        {isCurrentLanguage && (
-                          <div className="ml-auto w-2 h-2 rounded-full bg-sidebar-primary animate-pulse" />
-                        )}
-                      </DropdownMenuItem>
-                    );
-                  })}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => {
-                      void logoutAll();
-                    }}
-                    className="focus:bg-destructive/10 focus:text-destructive data-[highlighted]:bg-destructive/10 data-[highlighted]:text-destructive transition-all duration-200 cursor-pointer group"
-                  >
-                    <UserLock className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
-                    {t("sidebar.logoutAll")}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      void logout();
-                    }}
-                    className="focus:bg-destructive/10 focus:text-destructive data-[highlighted]:bg-destructive/10 data-[highlighted]:text-destructive transition-all duration-200 cursor-pointer group"
-                  >
-                    <LogOut className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
-                    {t("sidebar.logout")}
-                  </DropdownMenuItem>
+                  {renderSettingsMenuItems()}
                 </DropdownMenuContent>
               </DropdownMenu>
-            ) : (
+            </div>
+          ) : (
+            <SidebarMenu className="gap-1">
+              <SidebarMenuItem>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <SidebarMenuButton
+                      size="lg"
+                      tooltip={t("sidebar.settings")}
+                      className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent/50 transition-all duration-300 hover:scale-[1.02] group group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:mx-auto"
+                    >
+                      <Avatar className="h-6 w-6 rounded-lg ring-2 ring-sidebar-primary/20 group-hover:ring-sidebar-primary/40 transition-all duration-300 group-hover:scale-110">
+                        <AvatarFallback className="rounded-lg bg-linear-to-br from-sidebar-primary to-sidebar-primary/80 text-sidebar-primary-foreground font-semibold group-hover:rotate-3 transition-transform duration-300">
+                          {getUserInitials()}
+                        </AvatarFallback>
+                      </Avatar>
+                    </SidebarMenuButton>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    className="w-56 rounded-lg shadow-xl border-sidebar-border/50 bg-sidebar-background/95 backdrop-blur-xs animate-in slide-in-from-bottom-2 duration-300"
+                    side="right"
+                    align="end"
+                    sideOffset={4}
+                  >
+                    {renderSettingsMenuItems()}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  tooltip={t("sidebar.viewProfile")}
+                  onClick={() => handleNavigation("/profile")}
+                  className="hover:bg-sidebar-accent/50 transition-all duration-300 hover:scale-[1.02] group group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:mx-auto"
+                >
+                  <UserRound className="group-hover:scale-110 transition-transform duration-300" />
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          )
+        ) : (
+          <SidebarMenu>
+            <SidebarMenuItem>
               <SidebarMenuButton
                 asChild
                 tooltip={t("sidebar.login")}
@@ -541,9 +609,9 @@ export function AppSidebar() {
                   </span>
                 </Link>
               </SidebarMenuButton>
-            )}
-          </SidebarMenuItem>
-        </SidebarMenu>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        )}
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
