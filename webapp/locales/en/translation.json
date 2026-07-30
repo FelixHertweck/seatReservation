@@ -114,9 +114,7 @@
   },
   "adminPage": {
     "dashboardTitle": "Admin Dashboard",
-    "dashboardDescription": "Manage users and system settings",
-    "userManagementTab": "User Management",
-    "exportDataTab": "Export Data"
+    "dashboardDescription": "Manage users and system settings"
   },
   "admin": {
     "user": {
@@ -183,8 +181,6 @@
     "noReservationsFoundDescription": "No reservations were found for the requested URL."
   },
   "managerPage": {
-    "dashboardTitle": "Manager Dashboard",
-    "dashboardDescription": "Manage events, locations, seats, and reservations",
     "eventsTab": "Events",
     "locationsTab": "Locations",
     "seatsTab": "Seats",
@@ -548,9 +544,7 @@
     "searchPlaceholder": "Search...",
     "filtersButton": "Filters",
     "selectPlaceholder": "Select {{label}}",
-    "enterPlaceholder": "Enter {{label}}",
-    "activeFiltersLabel": "Active filters:",
-    "clearAllButton": "Clear all"
+    "enterPlaceholder": "Enter {{label}}"
   },
   "common": {
     "cancel": "Cancel",
@@ -946,8 +940,6 @@
     "description": "Create and manage event locations",
     "importJsonButton": "Import JSON",
     "addLocationButton": "Add Location",
-    "selectAll": "Select All",
-    "deselectAll": "Deselect All",
     "locationFilterLabel": "Location",
     "tableHeaderSelect": "Select",
     "tableHeaderName": "Name",
@@ -970,8 +962,6 @@
     "title": "Reservation Allowance Management",
     "description": "Manage user reservation allowances for events",
     "addAllowanceButton": "Add Allowance",
-    "selectAll": "Select All",
-    "deselectAll": "Deselect All",
     "eventFilterLabel": "Event",
     "tableHeaderSelect": "Select",
     "tableHeaderEvent": "Event",
@@ -1017,8 +1007,6 @@
     "blockSeatsButton": "Block Seats",
     "addReservationButton": "Add Reservation",
     "confirmDeleteMultiple": "Are you sure you want to delete {{count}} reservations?",
-    "selectAll": "Select All",
-    "deselectAll": "Deselect All",
     "eventFilterLabel": "Event",
     "statusFilterLabel": "Status",
     "tableHeaderSelect": "Select",
@@ -1097,8 +1085,6 @@
     "description": "Create and manage seats for locations",
     "addSeatButton": "Add Seat",
     "confirmDeleteMultiple": "Are you sure you want to delete {{count}} seats?",
-    "selectAll": "Select All",
-    "deselectAll": "Deselect All",
     "filter": {
       "locationLabel": "Location",
       "entranceLabel": "Entrance"

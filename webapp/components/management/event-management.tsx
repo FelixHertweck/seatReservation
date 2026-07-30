@@ -34,6 +34,7 @@ import { useT } from "@/lib/i18n/hooks";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
 import { useSortableData } from "@/lib/table-sorting";
 import { formatDateTime } from "@/lib/utils";
+import { PageHeader } from "@/components/page-header";
 
 export interface EventManagementProps {
   events: EventResponseDto[];
@@ -215,18 +216,52 @@ export function EventManagement({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <CardTitle className="text-xl sm:text-2xl">
-              {t("eventManagement.title")}
-            </CardTitle>
-            <CardDescription className="text-sm">
-              {t("eventManagement.description")}
-            </CardDescription>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+    <>
+      <PageHeader
+        title={t("eventManagement.title")}
+        description={t("eventManagement.description")}
+        search={
+          <SearchAndFilter
+            onSearch={handleSearch}
+            onFilter={handleFilter}
+            filterOptions={[
+              {
+                key: "locationId",
+                label: t("eventManagement.locationFilterLabel"),
+                type: "select",
+                options: allLocations.map((loc) => ({
+                  value: loc.id?.toString() || "",
+                  label: loc.name || "",
+                })),
+              },
+              {
+                key: "reminderStatus",
+                label: t("eventManagement.reminderStatusFilterLabel"),
+                type: "select",
+                options: [
+                  {
+                    value: "scheduled",
+                    label: t("eventManagement.reminderStatusScheduled"),
+                  },
+                  {
+                    value: "sent",
+                    label: t("eventManagement.reminderStatusSent"),
+                  },
+                  {
+                    value: "notScheduled",
+                    label: t("eventManagement.reminderStatusNotScheduled"),
+                  },
+                ],
+              },
+            ]}
+            initialFilters={currentFilters}
+            className="w-full"
+          />
+        }
+      />
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
             {selectedIds.size > 0 && (
               <Button
                 variant="destructive"
@@ -242,46 +277,9 @@ export function EventManagement({
               {t("eventManagement.addEventButton")}
             </Button>
           </div>
-        </div>
-      </CardHeader>
+        </CardHeader>
 
-      <CardContent>
-        <SearchAndFilter
-          onSearch={handleSearch}
-          onFilter={handleFilter}
-          filterOptions={[
-            {
-              key: "locationId",
-              label: t("eventManagement.locationFilterLabel"),
-              type: "select",
-              options: allLocations.map((loc) => ({
-                value: loc.id?.toString() || "",
-                label: loc.name || "",
-              })),
-            },
-            {
-              key: "reminderStatus",
-              label: t("eventManagement.reminderStatusFilterLabel"),
-              type: "select",
-              options: [
-                {
-                  value: "scheduled",
-                  label: t("eventManagement.reminderStatusScheduled"),
-                },
-                {
-                  value: "sent",
-                  label: t("eventManagement.reminderStatusSent"),
-                },
-                {
-                  value: "notScheduled",
-                  label: t("eventManagement.reminderStatusNotScheduled"),
-                },
-              ],
-            },
-          ]}
-          initialFilters={currentFilters}
-        />
-
+        <CardContent>
         <PaginationWrapper
           data={sortedData}
           itemsPerPage={100}
@@ -290,24 +288,20 @@ export function EventManagement({
           {(paginatedData) => (
             <>
               <div className="hidden md:block overflow-x-auto">
-                <div className="mb-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleSelectAll(paginatedData)}
-                  >
-                    {paginatedData.every((event) =>
-                      event.id ? selectedIds.has(event.id) : false,
-                    )
-                      ? t("eventManagement.deselectAll")
-                      : t("eventManagement.selectAll")}
-                  </Button>
-                </div>
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[50px]">
-                        {t("eventManagement.tableHeaderSelect")}
+                        <Checkbox
+                          aria-label={t("eventManagement.tableHeaderSelect")}
+                          checked={
+                            paginatedData.length > 0 &&
+                            paginatedData.every((event) =>
+                              event.id ? selectedIds.has(event.id) : false,
+                            )
+                          }
+                          onCheckedChange={() => handleSelectAll(paginatedData)}
+                        />
                       </TableHead>
                       <SortableTableHead
                         sortKey="name"
@@ -755,7 +749,8 @@ export function EventManagement({
             </>
           )}
         </PaginationWrapper>
-      </CardContent>
+        </CardContent>
+      </Card>
 
       {isModalOpen && (
         <EventFormModal
@@ -774,6 +769,6 @@ export function EventManagement({
           onClose={() => setIsModalOpen(false)}
         />
       )}
-    </Card>
+    </>
   );
 }

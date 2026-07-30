@@ -15,8 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Plus, FileText } from "lucide-react";
-import { SearchAndFilter } from "@/components/common/search-and-filter";
+import { Plus, FileText, Download } from "lucide-react";
 import { useT } from "@/lib/i18n/hooks";
 
 interface UserTableSkeletonProps {
@@ -50,6 +49,13 @@ export function UserTableSkeleton({
                 <span className="sm:hidden">Import</span>
               </Button>
             )}
+            <Button variant="outline" disabled className="w-full sm:w-auto">
+              <Download className="mr-2 h-4 w-4" />
+              <span className="hidden sm:inline">
+                {t("userExport.exportUsersAsJson")}
+              </span>
+              <span className="sm:hidden">Export</span>
+            </Button>
             <Button disabled className="w-full sm:w-auto">
               <Plus className="mr-2 h-4 w-4" />
               <span className="hidden sm:inline">
@@ -62,12 +68,6 @@ export function UserTableSkeleton({
       </CardHeader>
 
       <CardContent>
-        <SearchAndFilter
-          onSearch={() => {}}
-          onFilter={() => {}}
-          filterOptions={[]}
-        />
-
         {/* Desktop Table View */}
         <div className="hidden md:block border rounded-lg mt-6">
           <Table>
@@ -172,29 +172,6 @@ export function UserTableSkeleton({
             <Skeleton className="h-8 w-8 hidden sm:block" />
             <Skeleton className="h-8 w-8 hidden sm:block" />
           </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-export function UserExportSkeleton() {
-  const t = useT();
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xl sm:text-2xl">
-          {t("userExport.exportDataTitle")}
-        </CardTitle>
-        <CardDescription className="text-sm">
-          {t("userExport.exportDataDescription")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <Skeleton className="h-10 w-full sm:w-40" />
-          <Skeleton className="h-4 w-48" />
         </div>
       </CardContent>
     </Card>

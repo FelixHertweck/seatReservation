@@ -28,6 +28,7 @@ import { TruncatedCell } from "@/components/common/truncated-cell";
 import type { SeatDto, SeatRequestDto, EventLocationResponseDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { useSortableData } from "@/lib/table-sorting";
+import { PageHeader } from "@/components/page-header";
 
 export interface SeatManagementProps {
   seats: SeatDto[];
@@ -194,18 +195,33 @@ export function SeatManagement({
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0 flex-1">
-            <CardTitle className="text-xl sm:text-2xl">
-              {t("seatManagement.title")}
-            </CardTitle>
-            <CardDescription className="text-sm">
-              {t("seatManagement.description")}
-            </CardDescription>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto shrink-0">
+    <>
+      <PageHeader
+        title={t("seatManagement.title")}
+        description={t("seatManagement.description")}
+        search={
+          <SearchAndFilter
+            onSearch={handleSearch}
+            onFilter={handleFilter}
+            filterOptions={[
+              {
+                key: "locationId",
+                label: t("seatManagement.filter.locationLabel"),
+                type: "select",
+                options: locations.map((loc) => ({
+                  value: loc.id?.toString() || "",
+                  label: loc.name || "",
+                })),
+              },
+            ]}
+            initialFilters={currentFilters}
+            className="w-full"
+          />
+        }
+      />
+      <Card className="w-full">
+        <CardHeader>
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
             {selectedIds.size > 0 && (
               <Button
                 variant="destructive"
@@ -224,29 +240,9 @@ export function SeatManagement({
               {t("seatManagement.addSeatButton")}
             </Button>
           </div>
-        </div>
-      </CardHeader>
+        </CardHeader>
 
-      <CardContent>
-        <div>
-          <SearchAndFilter
-            onSearch={handleSearch}
-            onFilter={handleFilter}
-            filterOptions={[
-              {
-                key: "locationId",
-                label: t("seatManagement.filter.locationLabel"),
-                type: "select",
-                options: locations.map((loc) => ({
-                  value: loc.id?.toString() || "",
-                  label: loc.name || "",
-                })),
-              },
-            ]}
-            initialFilters={currentFilters}
-          />
-        </div>
-
+        <CardContent>
         <PaginationWrapper
           data={sortedData}
           itemsPerPage={100}
@@ -255,24 +251,20 @@ export function SeatManagement({
           {(paginatedData) => (
             <>
               <div className="hidden md:block overflow-x-auto">
-                <div className="mb-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleSelectAll(paginatedData)}
-                  >
-                    {paginatedData.every((seat) =>
-                      seat.id ? selectedIds.has(seat.id) : false,
-                    )
-                      ? t("seatManagement.deselectAll")
-                      : t("seatManagement.selectAll")}
-                  </Button>
-                </div>
                 <Table className="table-fixed">
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[50px]">
-                        {t("seatManagement.table.selectHeader")}
+                        <Checkbox
+                          aria-label={t("seatManagement.table.selectHeader")}
+                          checked={
+                            paginatedData.length > 0 &&
+                            paginatedData.every((seat) =>
+                              seat.id ? selectedIds.has(seat.id) : false,
+                            )
+                          }
+                          onCheckedChange={() => handleSelectAll(paginatedData)}
+                        />
                       </TableHead>
                       <SortableTableHead
                         sortKey="seatNumber"
@@ -534,7 +526,8 @@ export function SeatManagement({
             </>
           )}
         </PaginationWrapper>
-      </CardContent>
+        </CardContent>
+      </Card>
 
       {isModalOpen && (
         <SeatFormModal
@@ -552,6 +545,6 @@ export function SeatManagement({
           onClose={() => setIsModalOpen(false)}
         />
       )}
-    </Card>
+    </>
   );
 }
