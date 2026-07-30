@@ -52,6 +52,7 @@ import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.exceptions.SendEmailException;
 import de.felixhertweck.seatreservation.userManagment.exceptions.VerificationCodeNotFoundException;
 import de.felixhertweck.seatreservation.userManagment.exceptions.VerifyTokenExpiredException;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.SecurityUtils;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import org.jboss.logging.Logger;
@@ -466,10 +467,13 @@ public class UserService {
      * Deletes a user by ID.
      *
      * @param ids The IDs of the users to delete.
+     * @param currentUser The currently authenticated user performing the deletion.
      * @throws UserNotFoundException If the user with the given ID does not exist.
+     * @throws SecurityException If the user is attempting to delete their own account.
      */
     @Transactional
-    public void deleteUser(List<UUID> ids) throws UserNotFoundException {
+    public void deleteUser(List<UUID> ids, AuthenticatedUser currentUser)
+            throws UserNotFoundException, SecurityException {
         if (ids == null || ids.isEmpty()) {
             return;
         }
@@ -487,6 +491,10 @@ public class UserService {
             if (user == null) {
                 LOG.warnf("User with ID %s not found for deletion.", id);
                 throw new UserNotFoundException("User with id " + id + " not found.");
+            }
+            if (currentUser != null && id.equals(currentUser.id())) {
+                LOG.warnf("User %s attempted to delete their own account.", currentUser.id());
+                throw new SecurityException("Admins cannot delete their own accounts.");
             }
         }
 

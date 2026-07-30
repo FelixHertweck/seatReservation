@@ -46,6 +46,7 @@ import de.felixhertweck.seatreservation.userManagment.dto.AdminUserUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import io.quarkus.security.Authenticated;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
@@ -173,7 +174,8 @@ public class UserResource {
         LOG.debugf(
                 "Received DELETE request to /api/users/admin/%s for user deletion.",
                 ids != null ? ids : Collections.emptyList());
-        userService.deleteUser(ids);
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
+        userService.deleteUser(ids, currentUser);
         LOG.debugf(
                 "User with ID %s deleted successfully by admin.",
                 ids != null ? ids : Collections.emptyList());
