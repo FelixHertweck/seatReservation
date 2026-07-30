@@ -177,50 +177,48 @@ export function UserManagement({
   return (
     <Card className="rounded-none border-0 bg-transparent shadow-none md:rounded-lg md:border md:bg-card md:shadow-sm">
       <CardHeader className="p-0 pb-4 md:p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-end">
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            {selectedIds.size > 0 && (
-              <Button
-                variant="destructive"
-                onClick={handleDeleteSelected}
-                className="w-full sm:w-auto"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                {selectedIds.size}
-              </Button>
-            )}
-            {importUsers && (
-              <Button
-                variant="outline"
-                onClick={() => setIsImportModalOpen(true)}
-                className="w-full sm:w-auto"
-              >
-                <FileText className="mr-2 h-4 w-4" />
-                <span className="hidden sm:inline">
-                  {t("userManagement.importJsonButton")}
-                </span>
-                <span className="sm:hidden">Import</span>
-              </Button>
-            )}
+        <div className="flex flex-col lg:flex-row gap-2 sm:justify-end">
+          {selectedIds.size > 0 && (
             <Button
-              variant="outline"
-              onClick={handleExport}
+              variant="destructive"
+              onClick={handleDeleteSelected}
               className="w-full sm:w-auto"
             >
-              <Download className="mr-2 h-4 w-4" />
-              <span className="hidden sm:inline">
-                {t("userExport.exportUsersAsJson")}
-              </span>
-              <span className="sm:hidden">Export</span>
+              <Trash2 className="mr-2 h-4 w-4" />
+              {selectedIds.size}
             </Button>
-            <Button onClick={handleCreateUser} className="w-full sm:w-auto">
-              <Plus className="mr-2 h-4 w-4" />
+          )}
+          {importUsers && (
+            <Button
+              variant="outline"
+              onClick={() => setIsImportModalOpen(true)}
+              className="w-full sm:w-auto"
+            >
+              <FileText className="mr-2 h-4 w-4" />
               <span className="hidden sm:inline">
-                {t("userManagement.addUserButton")}
+                {t("userManagement.importJsonButton")}
               </span>
-              <span className="sm:hidden">Hinzufügen</span>
+              <span className="sm:hidden">Import</span>
             </Button>
-          </div>
+          )}
+          <Button
+            variant="outline"
+            onClick={handleExport}
+            className="w-full sm:w-auto"
+          >
+            <Download className="mr-2 h-4 w-4" />
+            <span className="hidden sm:inline">
+              {t("userExport.exportUsersAsJson")}
+            </span>
+            <span className="sm:hidden">Export</span>
+          </Button>
+          <Button onClick={handleCreateUser} className="w-full sm:w-auto">
+            <Plus className="mr-2 h-4 w-4" />
+            <span className="hidden sm:inline">
+              {t("userManagement.addUserButton")}
+            </span>
+            <span className="sm:hidden">Hinzufügen</span>
+          </Button>
         </div>
       </CardHeader>
 
@@ -512,8 +510,10 @@ export function UserManagement({
                               className="flex-1"
                               onClick={() => handleEditUser(user)}
                             >
-                              <Edit className="mr-2 h-4 w-4" />
-                              {t("userManagement.editButtonLabel")}
+                              <Edit className="h-4 w-4 min-[400px]:mr-2" />
+                              <span className="hidden min-[400px]:inline">
+                                {t("userManagement.editButtonLabel")}
+                              </span>
                             </Button>
                             <Button
                               variant="destructive"
@@ -521,8 +521,10 @@ export function UserManagement({
                               className="flex-1"
                               onClick={() => handleDeleteUser(user)}
                             >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              {t("userManagement.deleteButtonLabel")}
+                              <Trash2 className="h-4 w-4 min-[400px]:mr-2" />
+                              <span className="hidden min-[400px]:inline">
+                                {t("userManagement.deleteButtonLabel")}
+                              </span>
                             </Button>
                           </div>
                         </CardContent>

@@ -184,8 +184,8 @@ export default function ProfilePage() {
         description={t("profilePage.profileSettingsDescription")}
       />
 
-      <Card className="max-w-2xl mx-auto">
-        <CardContent>
+      <Card className="max-w-2xl mx-auto rounded-none border-0 bg-transparent shadow-none md:rounded-lg md:border md:bg-card md:shadow-sm">
+        <CardContent className="p-0 md:p-6 md:pt-0">
           <form onSubmit={handleSubmit} className="space-y-4 mt-5">
             <div>
               <Label htmlFor="username">{t("profilePage.usernameLabel")}</Label>
