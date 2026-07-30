@@ -105,7 +105,7 @@ export function LocationFormModal({
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent
-        className="sm:max-w-lg sm:max-h-[80vh] sm:overflow-y-auto"
+        className="sm:max-w-xl sm:max-h-[80vh] sm:overflow-y-auto"
         onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
