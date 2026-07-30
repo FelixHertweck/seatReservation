@@ -217,7 +217,7 @@ export function PasskeySection() {
     <div className="border-t pt-4">
       <Accordion type="single" collapsible>
         <AccordionItem value="passkeys" className="border-none">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <AccordionTrigger
               className="flex-1 py-0 hover:no-underline disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:no-underline"
               disabled={!isExpandable}
@@ -246,7 +246,7 @@ export function PasskeySection() {
               type="button"
               variant="outline"
               size="sm"
-              className="shrink-0"
+              className="w-full shrink-0 sm:w-auto"
               onClick={handleAdd}
               disabled={isAdding}
             >
