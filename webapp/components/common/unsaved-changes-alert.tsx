@@ -10,7 +10,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "../ui/alert-dialog";
+} from "@/components/custom-ui/alert-dialog";
 import { useProfileUnsavedChanges } from "@/hooks/use-profile-unsaved-changes";
 
 export function UnsavedChangesAlert() {

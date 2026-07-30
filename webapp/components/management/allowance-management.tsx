@@ -239,8 +239,8 @@ export function ReservationAllowanceManagement({
           />
         }
       />
-      <Card className="w-full">
-        <CardHeader>
+      <Card className="w-full rounded-none border-0 bg-transparent shadow-none md:rounded-lg md:border md:bg-card md:shadow-sm">
+        <CardHeader className="p-0 pb-4 md:p-6">
           <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
             {selectedIds.size > 0 && (
               <Button
@@ -262,286 +262,297 @@ export function ReservationAllowanceManagement({
           </div>
         </CardHeader>
 
-        <CardContent>
-        <PaginationWrapper
-          data={sortedData}
-          itemsPerPage={100}
-          paginationLabel={t("reservationAllowanceManagement.paginationLabel")}
-        >
-          {(paginatedData) => (
-            <>
-              <div className="hidden md:block overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[50px]">
-                        <Checkbox
-                          aria-label={t(
-                            "reservationAllowanceManagement.tableHeaderSelect",
+        <CardContent className="p-0 md:p-6 md:pt-0">
+          <PaginationWrapper
+            data={sortedData}
+            itemsPerPage={100}
+            paginationLabel={t(
+              "reservationAllowanceManagement.paginationLabel",
+            )}
+          >
+            {(paginatedData) => (
+              <>
+                <div className="hidden md:block overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[50px]">
+                          <Checkbox
+                            aria-label={t(
+                              "reservationAllowanceManagement.tableHeaderSelect",
+                            )}
+                            checked={
+                              paginatedData.length > 0 &&
+                              paginatedData.every((allowance) =>
+                                allowance.id
+                                  ? selectedIds.has(allowance.id)
+                                  : false,
+                              )
+                            }
+                            onCheckedChange={() =>
+                              handleSelectAll(paginatedData)
+                            }
+                          />
+                        </TableHead>
+                        <SortableTableHead
+                          sortKey="event.name"
+                          currentSortKey={sortKey}
+                          currentSortDirection={sortDirection}
+                          onSort={handleSort}
+                          className="min-w-[200px]"
+                        >
+                          {t("reservationAllowanceManagement.tableHeaderEvent")}
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortKey="user.username"
+                          currentSortKey={sortKey}
+                          currentSortDirection={sortDirection}
+                          onSort={handleSort}
+                          className="min-w-[150px]"
+                        >
+                          {t("reservationAllowanceManagement.tableHeaderUser")}
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortKey="allowedReservations"
+                          currentSortKey={sortKey}
+                          currentSortDirection={sortDirection}
+                          onSort={handleSort}
+                          className="min-w-[150px]"
+                        >
+                          {t(
+                            "reservationAllowanceManagement.tableHeaderAllowedReservations",
                           )}
-                          checked={
-                            paginatedData.length > 0 &&
-                            paginatedData.every((allowance) =>
-                              allowance.id
-                                ? selectedIds.has(allowance.id)
-                                : false,
-                            )
-                          }
-                          onCheckedChange={() => handleSelectAll(paginatedData)}
-                        />
-                      </TableHead>
-                      <SortableTableHead
-                        sortKey="event.name"
-                        currentSortKey={sortKey}
-                        currentSortDirection={sortDirection}
-                        onSort={handleSort}
-                        className="min-w-[200px]"
-                      >
-                        {t("reservationAllowanceManagement.tableHeaderEvent")}
-                      </SortableTableHead>
-                      <SortableTableHead
-                        sortKey="user.username"
-                        currentSortKey={sortKey}
-                        currentSortDirection={sortDirection}
-                        onSort={handleSort}
-                        className="min-w-[150px]"
-                      >
-                        {t("reservationAllowanceManagement.tableHeaderUser")}
-                      </SortableTableHead>
-                      <SortableTableHead
-                        sortKey="allowedReservations"
-                        currentSortKey={sortKey}
-                        currentSortDirection={sortDirection}
-                        onSort={handleSort}
-                        className="min-w-[150px]"
-                      >
-                        {t(
-                          "reservationAllowanceManagement.tableHeaderAllowedReservations",
-                        )}
-                      </SortableTableHead>
-                      <TableHead className="min-w-[100px]">
-                        {t("reservationAllowanceManagement.tableHeaderActions")}
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {isLoading
-                      ? Array.from({ length: 8 }).map((_, index) => (
-                          <TableRow key={index}>
-                            <TableCell>
-                              <Skeleton className="h-4 w-4" />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton className="h-4 w-32" />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton className="h-4 w-24" />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton className="h-4 w-12" />
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex gap-2">
-                                <Skeleton className="h-8 w-8" />
-                                <Skeleton className="h-8 w-8" />
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      : paginatedData.map((allowance) => {
-                          const event = events.find(
-                            (e) => e.id === allowance.eventId,
-                          );
-                          const user = users.find(
-                            (u) => u.id === allowance.userId,
-                          );
-
-                          return (
-                            <TableRow
-                              key={`${allowance.id?.toString()}${allowance.eventId?.toString()}`}
-                            >
+                        </SortableTableHead>
+                        <TableHead className="min-w-[100px]">
+                          {t(
+                            "reservationAllowanceManagement.tableHeaderActions",
+                          )}
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {isLoading
+                        ? Array.from({ length: 8 }).map((_, index) => (
+                            <TableRow key={index}>
                               <TableCell>
-                                <Checkbox
-                                  checked={
-                                    allowance.id
-                                      ? selectedIds.has(allowance.id)
-                                      : false
-                                  }
-                                  onCheckedChange={() =>
-                                    allowance.id &&
-                                    handleToggleSelect(allowance.id)
-                                  }
-                                />
+                                <Skeleton className="h-4 w-4" />
                               </TableCell>
                               <TableCell>
-                                {event ? (
+                                <Skeleton className="h-4 w-32" />
+                              </TableCell>
+                              <TableCell>
+                                <Skeleton className="h-4 w-24" />
+                              </TableCell>
+                              <TableCell>
+                                <Skeleton className="h-4 w-12" />
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex gap-2">
+                                  <Skeleton className="h-8 w-8" />
+                                  <Skeleton className="h-8 w-8" />
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        : paginatedData.map((allowance) => {
+                            const event = events.find(
+                              (e) => e.id === allowance.eventId,
+                            );
+                            const user = users.find(
+                              (u) => u.id === allowance.userId,
+                            );
+
+                            return (
+                              <TableRow
+                                key={`${allowance.id?.toString()}${allowance.eventId?.toString()}`}
+                              >
+                                <TableCell>
+                                  <Checkbox
+                                    checked={
+                                      allowance.id
+                                        ? selectedIds.has(allowance.id)
+                                        : false
+                                    }
+                                    onCheckedChange={() =>
+                                      allowance.id &&
+                                      handleToggleSelect(allowance.id)
+                                    }
+                                  />
+                                </TableCell>
+                                <TableCell>
+                                  {event ? (
+                                    <Button
+                                      variant="link"
+                                      className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800 truncate w-full justify-start"
+                                      onClick={() =>
+                                        event.id && handleEventClick(event.id)
+                                      }
+                                    >
+                                      <span className="truncate">
+                                        {event.name}
+                                      </span>
+                                      <ExternalLink className="ml-1 h-3 w-3 flex-shrink-0" />
+                                    </Button>
+                                  ) : (
+                                    t(
+                                      "reservationAllowanceManagement.unknownEvent",
+                                    )
+                                  )}
+                                </TableCell>
+                                <TruncatedCell
+                                  content={
+                                    user?.username ||
+                                    t(
+                                      "reservationAllowanceManagement.unknownUser",
+                                    )
+                                  }
+                                  className="w-[20%]"
+                                />
+                                <TableCell className="w-[20%]">
+                                  {allowance.reservationsAllowedCount}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex gap-2">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => openEditModal(allowance)}
+                                    >
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      onClick={() =>
+                                        handleDeleteAllowance(allowance)
+                                      }
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="md:hidden space-y-4">
+                  {isLoading
+                    ? Array.from({ length: 3 }).map((_, index) => (
+                        <Card key={index}>
+                          <CardHeader className="pb-3">
+                            <Skeleton className="h-5 w-3/4" />
+                            <Skeleton className="h-4 w-1/2 mt-2" />
+                          </CardHeader>
+                          <CardContent>
+                            <Skeleton className="h-4 w-full" />
+                          </CardContent>
+                        </Card>
+                      ))
+                    : paginatedData.map((allowance) => {
+                        const event = events.find(
+                          (e) => e.id === allowance.eventId,
+                        );
+                        const user = users.find(
+                          (u) => u.id === allowance.userId,
+                        );
+
+                        return (
+                          <Card
+                            key={`${allowance.id?.toString()}${allowance.eventId?.toString()}`}
+                            className="w-full"
+                          >
+                            <CardHeader className="pb-3 flex flex-row items-start space-x-3 space-y-0">
+                              <Checkbox
+                                checked={
+                                  allowance.id
+                                    ? selectedIds.has(allowance.id)
+                                    : false
+                                }
+                                onCheckedChange={() =>
+                                  allowance.id &&
+                                  handleToggleSelect(allowance.id)
+                                }
+                                className="mt-1"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <CardTitle className="text-base break-words">
+                                  {user?.username ||
+                                    t(
+                                      "reservationAllowanceManagement.unknownUser",
+                                    )}
+                                </CardTitle>
+                                <CardDescription className="text-sm mt-1 break-words">
+                                  {allowance.reservationsAllowedCount}{" "}
+                                  {t(
+                                    "reservationAllowanceManagement.tableHeaderAllowedReservations",
+                                  )}
+                                </CardDescription>
+                              </div>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                              {event && (
+                                <div className="min-w-0">
+                                  <p className="text-xs text-muted-foreground mb-1">
+                                    {t(
+                                      "reservationAllowanceManagement.tableHeaderEvent",
+                                    )}
+                                  </p>
                                   <Button
                                     variant="link"
-                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800 truncate w-full justify-start"
+                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800 text-sm break-words text-left max-w-full"
                                     onClick={() =>
                                       event.id && handleEventClick(event.id)
                                     }
                                   >
-                                    <span className="truncate">
+                                    <span className="break-words max-w-full">
                                       {event.name}
                                     </span>
-                                    <ExternalLink className="ml-1 h-3 w-3 flex-shrink-0" />
-                                  </Button>
-                                ) : (
-                                  t(
-                                    "reservationAllowanceManagement.unknownEvent",
-                                  )
-                                )}
-                              </TableCell>
-                              <TruncatedCell
-                                content={
-                                  user?.username ||
-                                  t(
-                                    "reservationAllowanceManagement.unknownUser",
-                                  )
-                                }
-                                className="w-[20%]"
-                              />
-                              <TableCell className="w-[20%]">
-                                {allowance.reservationsAllowedCount}
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex gap-2">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => openEditModal(allowance)}
-                                  >
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    onClick={() =>
-                                      handleDeleteAllowance(allowance)
-                                    }
-                                  >
-                                    <Trash2 className="h-4 w-4" />
+                                    <ExternalLink className="ml-1 h-3 w-3 shrink-0" />
                                   </Button>
                                 </div>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                  </TableBody>
-                </Table>
-              </div>
+                              )}
 
-              <div className="md:hidden space-y-4">
-                {isLoading
-                  ? Array.from({ length: 3 }).map((_, index) => (
-                      <Card key={index}>
-                        <CardHeader className="pb-3">
-                          <Skeleton className="h-5 w-3/4" />
-                          <Skeleton className="h-4 w-1/2 mt-2" />
-                        </CardHeader>
-                        <CardContent>
-                          <Skeleton className="h-4 w-full" />
-                        </CardContent>
-                      </Card>
-                    ))
-                  : paginatedData.map((allowance) => {
-                      const event = events.find(
-                        (e) => e.id === allowance.eventId,
-                      );
-                      const user = users.find((u) => u.id === allowance.userId);
-
-                      return (
-                        <Card
-                          key={`${allowance.id?.toString()}${allowance.eventId?.toString()}`}
-                          className="w-full"
-                        >
-                          <CardHeader className="pb-3 flex flex-row items-start space-x-3 space-y-0">
-                            <Checkbox
-                              checked={
-                                allowance.id
-                                  ? selectedIds.has(allowance.id)
-                                  : false
-                              }
-                              onCheckedChange={() =>
-                                allowance.id && handleToggleSelect(allowance.id)
-                              }
-                              className="mt-1"
-                            />
-                            <div className="flex-1 min-w-0">
-                              <CardTitle className="text-base break-words">
-                                {user?.username ||
-                                  t(
-                                    "reservationAllowanceManagement.unknownUser",
-                                  )}
-                              </CardTitle>
-                              <CardDescription className="text-sm mt-1 break-words">
-                                {allowance.reservationsAllowedCount}{" "}
-                                {t(
-                                  "reservationAllowanceManagement.tableHeaderAllowedReservations",
-                                )}
-                              </CardDescription>
-                            </div>
-                          </CardHeader>
-                          <CardContent className="space-y-3">
-                            {event && (
-                              <div className="min-w-0">
-                                <p className="text-xs text-muted-foreground mb-1">
-                                  {t(
-                                    "reservationAllowanceManagement.tableHeaderEvent",
-                                  )}
-                                </p>
+                              <div className="flex gap-2 pt-2">
                                 <Button
-                                  variant="link"
-                                  className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800 text-sm break-words text-left max-w-full"
+                                  variant="outline"
+                                  size="sm"
+                                  className="flex-1 bg-transparent min-w-0"
+                                  onClick={() => openEditModal(allowance)}
+                                >
+                                  <Edit className="mr-2 h-4 w-4 shrink-0" />
+                                  <span className="truncate">
+                                    {t(
+                                      "reservationAllowanceManagement.editButtonLabel",
+                                    )}
+                                  </span>
+                                </Button>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  className="flex-1 min-w-0"
                                   onClick={() =>
-                                    event.id && handleEventClick(event.id)
+                                    handleDeleteAllowance(allowance)
                                   }
                                 >
-                                  <span className="break-words max-w-full">
-                                    {event.name}
+                                  <Trash2 className="mr-2 h-4 w-4 shrink-0" />
+                                  <span className="truncate">
+                                    {t(
+                                      "reservationAllowanceManagement.deleteButtonLabel",
+                                    )}
                                   </span>
-                                  <ExternalLink className="ml-1 h-3 w-3 shrink-0" />
                                 </Button>
                               </div>
-                            )}
-
-                            <div className="flex gap-2 pt-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="flex-1 bg-transparent min-w-0"
-                                onClick={() => openEditModal(allowance)}
-                              >
-                                <Edit className="mr-2 h-4 w-4 shrink-0" />
-                                <span className="truncate">
-                                  {t(
-                                    "reservationAllowanceManagement.editButtonLabel",
-                                  )}
-                                </span>
-                              </Button>
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                className="flex-1 min-w-0"
-                                onClick={() => handleDeleteAllowance(allowance)}
-                              >
-                                <Trash2 className="mr-2 h-4 w-4 shrink-0" />
-                                <span className="truncate">
-                                  {t(
-                                    "reservationAllowanceManagement.deleteButtonLabel",
-                                  )}
-                                </span>
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-              </div>
-            </>
-          )}
-        </PaginationWrapper>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                </div>
+              </>
+            )}
+          </PaginationWrapper>
         </CardContent>
       </Card>
 

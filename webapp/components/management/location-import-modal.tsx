@@ -11,7 +11,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/components/custom-ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import type { EventLocationRequestDto, EventLocationResponseDto } from "@/api";
@@ -74,7 +74,7 @@ export function LocationImportModal({
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent
-        className="max-w-2xl max-h-[80vh] overflow-y-auto"
+        className="sm:max-w-2xl sm:max-h-[80vh] sm:overflow-y-auto"
         onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>

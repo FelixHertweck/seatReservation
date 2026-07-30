@@ -259,8 +259,8 @@ export function EventManagement({
           />
         }
       />
-      <Card>
-        <CardHeader>
+      <Card className="rounded-none border-0 bg-transparent shadow-none md:rounded-lg md:border md:bg-card md:shadow-sm">
+        <CardHeader className="p-0 pb-4 md:p-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
             {selectedIds.size > 0 && (
               <Button
@@ -279,476 +279,482 @@ export function EventManagement({
           </div>
         </CardHeader>
 
-        <CardContent>
-        <PaginationWrapper
-          data={sortedData}
-          itemsPerPage={100}
-          paginationLabel={t("eventManagement.paginationLabel")}
-        >
-          {(paginatedData) => (
-            <>
-              <div className="hidden md:block overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[50px]">
-                        <Checkbox
-                          aria-label={t("eventManagement.tableHeaderSelect")}
-                          checked={
-                            paginatedData.length > 0 &&
-                            paginatedData.every((event) =>
-                              event.id ? selectedIds.has(event.id) : false,
-                            )
-                          }
-                          onCheckedChange={() => handleSelectAll(paginatedData)}
-                        />
-                      </TableHead>
-                      <SortableTableHead
-                        sortKey="name"
-                        currentSortKey={sortKey}
-                        currentSortDirection={sortDirection}
-                        onSort={handleSort}
-                        className="min-w-[130px] max-w-[160px]"
-                      >
-                        {t("eventManagement.tableHeaderName")}
-                      </SortableTableHead>
-                      <SortableTableHead
-                        sortKey="description"
-                        currentSortKey={sortKey}
-                        currentSortDirection={sortDirection}
-                        onSort={handleSort}
-                        className="min-w-[120px] max-w-[150px]"
-                      >
-                        {t("eventManagement.tableHeaderDescription")}
-                      </SortableTableHead>
-                      <SortableTableHead
-                        sortKey="startTime"
-                        currentSortKey={sortKey}
-                        currentSortDirection={sortDirection}
-                        onSort={handleSort}
-                        className="min-w-[100px] max-w-[110px]"
-                      >
-                        {t("eventManagement.tableHeaderStartTime")}
-                      </SortableTableHead>
-                      <SortableTableHead
-                        sortKey="endTime"
-                        currentSortKey={sortKey}
-                        currentSortDirection={sortDirection}
-                        onSort={handleSort}
-                        className="min-w-[100px] max-w-[110px]"
-                      >
-                        {t("eventManagement.tableHeaderEndTime")}
-                      </SortableTableHead>
-                      <SortableTableHead
-                        sortKey="bookingStartTime"
-                        currentSortKey={sortKey}
-                        currentSortDirection={sortDirection}
-                        onSort={handleSort}
-                        className="min-w-[100px] max-w-[110px]"
-                      >
-                        {t("eventManagement.tableHeaderBookingStartTime")}
-                      </SortableTableHead>
-                      <SortableTableHead
-                        sortKey="bookingDeadline"
-                        currentSortKey={sortKey}
-                        currentSortDirection={sortDirection}
-                        onSort={handleSort}
-                        className="min-w-[100px] max-w-[110px]"
-                      >
-                        {t("eventManagement.tableHeaderBookingDeadline")}
-                      </SortableTableHead>
-                      <SortableTableHead
-                        sortKey="reminderSendDate"
-                        currentSortKey={sortKey}
-                        currentSortDirection={sortDirection}
-                        onSort={handleSort}
-                        className="min-w-[100px] max-w-[110px]"
-                      >
-                        {t("eventManagement.tableHeaderReminderSendDate")}
-                      </SortableTableHead>
-                      <TableHead className="w-[50px]">
-                        <div className="flex items-center justify-center">
-                          <Mail className="h-4 w-4" />
-                        </div>
-                      </TableHead>
-                      <SortableTableHead
-                        sortKey="location.name"
-                        currentSortKey={sortKey}
-                        currentSortDirection={sortDirection}
-                        onSort={handleSort}
-                        className="min-w-[100px] max-w-[120px]"
-                      >
-                        {t("eventManagement.tableHeaderLocation")}
-                      </SortableTableHead>
-                      <TableHead className="min-w-[70px] w-[80px]">
-                        {t("eventManagement.tableHeaderActions")}
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {isLoading
-                      ? Array.from({ length: 8 }).map((_, index) => (
-                          <TableRow key={index}>
-                            <TableCell>
-                              <Skeleton className="h-4 w-4" />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton className="h-4 w-32" />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton className="h-4 w-48" />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton className="h-4 w-36" />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton className="h-4 w-36" />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton className="h-4 w-36" />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton className="h-4 w-36" />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton className="h-4 w-24" />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton className="h-4 w-24" />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton className="h-4 w-32" />
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex gap-2">
-                                <Skeleton className="h-8 w-8" />
-                                <Skeleton className="h-8 w-8" />
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      : paginatedData.map((event) => {
-                          const location = allLocations.find(
-                            (loc) => loc.id === event.eventLocationId,
-                          );
-                          return (
-                            <TableRow key={event.id?.toString()}>
+        <CardContent className="p-0 md:p-6 md:pt-0">
+          <PaginationWrapper
+            data={sortedData}
+            itemsPerPage={100}
+            paginationLabel={t("eventManagement.paginationLabel")}
+          >
+            {(paginatedData) => (
+              <>
+                <div className="hidden md:block overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[50px]">
+                          <Checkbox
+                            aria-label={t("eventManagement.tableHeaderSelect")}
+                            checked={
+                              paginatedData.length > 0 &&
+                              paginatedData.every((event) =>
+                                event.id ? selectedIds.has(event.id) : false,
+                              )
+                            }
+                            onCheckedChange={() =>
+                              handleSelectAll(paginatedData)
+                            }
+                          />
+                        </TableHead>
+                        <SortableTableHead
+                          sortKey="name"
+                          currentSortKey={sortKey}
+                          currentSortDirection={sortDirection}
+                          onSort={handleSort}
+                          className="min-w-[130px] max-w-[160px]"
+                        >
+                          {t("eventManagement.tableHeaderName")}
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortKey="description"
+                          currentSortKey={sortKey}
+                          currentSortDirection={sortDirection}
+                          onSort={handleSort}
+                          className="min-w-[120px] max-w-[150px]"
+                        >
+                          {t("eventManagement.tableHeaderDescription")}
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortKey="startTime"
+                          currentSortKey={sortKey}
+                          currentSortDirection={sortDirection}
+                          onSort={handleSort}
+                          className="min-w-[100px] max-w-[110px]"
+                        >
+                          {t("eventManagement.tableHeaderStartTime")}
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortKey="endTime"
+                          currentSortKey={sortKey}
+                          currentSortDirection={sortDirection}
+                          onSort={handleSort}
+                          className="min-w-[100px] max-w-[110px]"
+                        >
+                          {t("eventManagement.tableHeaderEndTime")}
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortKey="bookingStartTime"
+                          currentSortKey={sortKey}
+                          currentSortDirection={sortDirection}
+                          onSort={handleSort}
+                          className="min-w-[100px] max-w-[110px]"
+                        >
+                          {t("eventManagement.tableHeaderBookingStartTime")}
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortKey="bookingDeadline"
+                          currentSortKey={sortKey}
+                          currentSortDirection={sortDirection}
+                          onSort={handleSort}
+                          className="min-w-[100px] max-w-[110px]"
+                        >
+                          {t("eventManagement.tableHeaderBookingDeadline")}
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortKey="reminderSendDate"
+                          currentSortKey={sortKey}
+                          currentSortDirection={sortDirection}
+                          onSort={handleSort}
+                          className="min-w-[100px] max-w-[110px]"
+                        >
+                          {t("eventManagement.tableHeaderReminderSendDate")}
+                        </SortableTableHead>
+                        <TableHead className="w-[50px]">
+                          <div className="flex items-center justify-center">
+                            <Mail className="h-4 w-4" />
+                          </div>
+                        </TableHead>
+                        <SortableTableHead
+                          sortKey="location.name"
+                          currentSortKey={sortKey}
+                          currentSortDirection={sortDirection}
+                          onSort={handleSort}
+                          className="min-w-[100px] max-w-[120px]"
+                        >
+                          {t("eventManagement.tableHeaderLocation")}
+                        </SortableTableHead>
+                        <TableHead className="min-w-[70px] w-[80px]">
+                          {t("eventManagement.tableHeaderActions")}
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {isLoading
+                        ? Array.from({ length: 8 }).map((_, index) => (
+                            <TableRow key={index}>
                               <TableCell>
-                                <Checkbox
-                                  checked={
-                                    event.id ? selectedIds.has(event.id) : false
-                                  }
-                                  onCheckedChange={() =>
-                                    event.id && handleToggleSelect(event.id)
-                                  }
-                                />
-                              </TableCell>
-                              <TruncatedCell
-                                content={event.name}
-                                className="font-medium"
-                              />
-                              <TruncatedCell content={event.description} />
-                              <TableCell>
-                                {(() => {
-                                  const formatted = formatDateTime(
-                                    event.startTime,
-                                  );
-                                  return formatted ? (
-                                    <div className="flex flex-col text-sm">
-                                      <span>{formatted.date}</span>
-                                      <span>{formatted.time}</span>
-                                    </div>
-                                  ) : (
-                                    "-"
-                                  );
-                                })()}
+                                <Skeleton className="h-4 w-4" />
                               </TableCell>
                               <TableCell>
-                                {(() => {
-                                  const formatted = formatDateTime(
-                                    event.endTime,
-                                  );
-                                  return formatted ? (
-                                    <div className="flex flex-col text-sm">
-                                      <span>{formatted.date}</span>
-                                      <span>{formatted.time}</span>
-                                    </div>
-                                  ) : (
-                                    "-"
-                                  );
-                                })()}
+                                <Skeleton className="h-4 w-32" />
                               </TableCell>
                               <TableCell>
-                                {(() => {
-                                  const formatted = formatDateTime(
-                                    event.bookingStartTime,
-                                  );
-                                  return formatted ? (
-                                    <div className="flex flex-col text-sm">
-                                      <span>{formatted.date}</span>
-                                      <span>{formatted.time}</span>
-                                    </div>
-                                  ) : (
-                                    "-"
-                                  );
-                                })()}
+                                <Skeleton className="h-4 w-48" />
                               </TableCell>
                               <TableCell>
-                                {(() => {
-                                  const formatted = formatDateTime(
-                                    event.bookingDeadline,
-                                  );
-                                  return formatted ? (
-                                    <div className="flex flex-col text-sm">
-                                      <span>{formatted.date}</span>
-                                      <span>{formatted.time}</span>
-                                    </div>
-                                  ) : (
-                                    "-"
-                                  );
-                                })()}
+                                <Skeleton className="h-4 w-36" />
                               </TableCell>
                               <TableCell>
-                                {(() => {
-                                  const formatted = formatDateTime(
-                                    event.reminderSendDate,
-                                  );
-                                  return formatted ? (
-                                    <div className="flex flex-col text-sm">
-                                      <span>{formatted.date}</span>
-                                      <span>{formatted.time}</span>
-                                    </div>
-                                  ) : (
-                                    "-"
-                                  );
-                                })()}
+                                <Skeleton className="h-4 w-36" />
                               </TableCell>
                               <TableCell>
-                                <div className="flex items-center justify-center">
-                                  {event.isReminderSent ? (
-                                    <Mail className="h-4 w-4 text-green-600" />
-                                  ) : event.reminderSendDate ? (
-                                    <Clock className="h-4 w-4 text-orange-500" />
-                                  ) : (
-                                    <X className="h-4 w-4 text-red-500" />
-                                  )}
+                                <Skeleton className="h-4 w-36" />
+                              </TableCell>
+                              <TableCell>
+                                <Skeleton className="h-4 w-36" />
+                              </TableCell>
+                              <TableCell>
+                                <Skeleton className="h-4 w-24" />
+                              </TableCell>
+                              <TableCell>
+                                <Skeleton className="h-4 w-24" />
+                              </TableCell>
+                              <TableCell>
+                                <Skeleton className="h-4 w-32" />
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex gap-2">
+                                  <Skeleton className="h-8 w-8" />
+                                  <Skeleton className="h-8 w-8" />
                                 </div>
                               </TableCell>
-                              <TableCell>
-                                {location ? (
+                            </TableRow>
+                          ))
+                        : paginatedData.map((event) => {
+                            const location = allLocations.find(
+                              (loc) => loc.id === event.eventLocationId,
+                            );
+                            return (
+                              <TableRow key={event.id?.toString()}>
+                                <TableCell>
+                                  <Checkbox
+                                    checked={
+                                      event.id
+                                        ? selectedIds.has(event.id)
+                                        : false
+                                    }
+                                    onCheckedChange={() =>
+                                      event.id && handleToggleSelect(event.id)
+                                    }
+                                  />
+                                </TableCell>
+                                <TruncatedCell
+                                  content={event.name}
+                                  className="font-medium"
+                                />
+                                <TruncatedCell content={event.description} />
+                                <TableCell>
+                                  {(() => {
+                                    const formatted = formatDateTime(
+                                      event.startTime,
+                                    );
+                                    return formatted ? (
+                                      <div className="flex flex-col text-sm">
+                                        <span>{formatted.date}</span>
+                                        <span>{formatted.time}</span>
+                                      </div>
+                                    ) : (
+                                      "-"
+                                    );
+                                  })()}
+                                </TableCell>
+                                <TableCell>
+                                  {(() => {
+                                    const formatted = formatDateTime(
+                                      event.endTime,
+                                    );
+                                    return formatted ? (
+                                      <div className="flex flex-col text-sm">
+                                        <span>{formatted.date}</span>
+                                        <span>{formatted.time}</span>
+                                      </div>
+                                    ) : (
+                                      "-"
+                                    );
+                                  })()}
+                                </TableCell>
+                                <TableCell>
+                                  {(() => {
+                                    const formatted = formatDateTime(
+                                      event.bookingStartTime,
+                                    );
+                                    return formatted ? (
+                                      <div className="flex flex-col text-sm">
+                                        <span>{formatted.date}</span>
+                                        <span>{formatted.time}</span>
+                                      </div>
+                                    ) : (
+                                      "-"
+                                    );
+                                  })()}
+                                </TableCell>
+                                <TableCell>
+                                  {(() => {
+                                    const formatted = formatDateTime(
+                                      event.bookingDeadline,
+                                    );
+                                    return formatted ? (
+                                      <div className="flex flex-col text-sm">
+                                        <span>{formatted.date}</span>
+                                        <span>{formatted.time}</span>
+                                      </div>
+                                    ) : (
+                                      "-"
+                                    );
+                                  })()}
+                                </TableCell>
+                                <TableCell>
+                                  {(() => {
+                                    const formatted = formatDateTime(
+                                      event.reminderSendDate,
+                                    );
+                                    return formatted ? (
+                                      <div className="flex flex-col text-sm">
+                                        <span>{formatted.date}</span>
+                                        <span>{formatted.time}</span>
+                                      </div>
+                                    ) : (
+                                      "-"
+                                    );
+                                  })()}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center justify-center">
+                                    {event.isReminderSent ? (
+                                      <Mail className="h-4 w-4 text-green-600" />
+                                    ) : event.reminderSendDate ? (
+                                      <Clock className="h-4 w-4 text-orange-500" />
+                                    ) : (
+                                      <X className="h-4 w-4 text-red-500" />
+                                    )}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  {location ? (
+                                    <Button
+                                      variant="link"
+                                      className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800 truncate justify-start"
+                                      onClick={() =>
+                                        location.id &&
+                                        handleLocationClick(location.id)
+                                      }
+                                    >
+                                      <span className="truncate">
+                                        {location.name}
+                                      </span>
+                                      <ExternalLink className="ml-1 h-3 w-3 flex-shrink-0" />
+                                    </Button>
+                                  ) : (
+                                    t("eventManagement.noLocation")
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex gap-2">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleEditEvent(event)}
+                                    >
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      onClick={() => handleDeleteEvent(event)}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="md:hidden space-y-4">
+                  <div className="mb-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleSelectAll(paginatedData)}
+                    >
+                      {paginatedData.every((event) =>
+                        event.id ? selectedIds.has(event.id) : false,
+                      )
+                        ? t("eventManagement.deselectAll")
+                        : t("eventManagement.selectAll")}
+                    </Button>
+                  </div>
+                  {isLoading
+                    ? Array.from({ length: 3 }).map((_, index) => (
+                        <Card key={index}>
+                          <CardHeader className="pb-3">
+                            <Skeleton className="h-5 w-3/4" />
+                            <Skeleton className="h-4 w-full mt-2" />
+                          </CardHeader>
+                          <CardContent>
+                            <Skeleton className="h-4 w-full" />
+                          </CardContent>
+                        </Card>
+                      ))
+                    : paginatedData.map((event) => {
+                        const location = allLocations.find(
+                          (loc) => loc.id === event.eventLocationId,
+                        );
+                        return (
+                          <Card key={event.id?.toString()}>
+                            <CardHeader className="pb-3 flex flex-row items-start space-x-3 space-y-0">
+                              <Checkbox
+                                checked={
+                                  event.id ? selectedIds.has(event.id) : false
+                                }
+                                onCheckedChange={() =>
+                                  event.id && handleToggleSelect(event.id)
+                                }
+                                className="mt-1"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <CardTitle className="text-base">
+                                    {event.name}
+                                  </CardTitle>
+                                  {event.isReminderSent && (
+                                    <Mail className="h-4 w-4 text-green-600 flex-shrink-0" />
+                                  )}
+                                </div>
+                                {event.description && (
+                                  <CardDescription className="text-sm mt-1 line-clamp-2">
+                                    {event.description}
+                                  </CardDescription>
+                                )}
+                              </div>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                              <div className="grid grid-cols-1 gap-2 text-sm">
+                                <div>
+                                  <p className="text-xs text-muted-foreground mb-1">
+                                    {t("eventManagement.tableHeaderStartTime")}
+                                  </p>
+                                  <p className="text-sm">
+                                    {event.startTime
+                                      ? new Date(
+                                          event.startTime,
+                                        ).toLocaleString()
+                                      : "-"}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-muted-foreground mb-1">
+                                    {t("eventManagement.tableHeaderEndTime")}
+                                  </p>
+                                  <p className="text-sm">
+                                    {event.endTime
+                                      ? new Date(event.endTime).toLocaleString()
+                                      : "-"}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-muted-foreground mb-1">
+                                    {t(
+                                      "eventManagement.tableHeaderBookingStartTime",
+                                    )}
+                                  </p>
+                                  <p className="text-sm">
+                                    {event.bookingStartTime
+                                      ? new Date(
+                                          event.bookingStartTime,
+                                        ).toLocaleString()
+                                      : "-"}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-muted-foreground mb-1">
+                                    {t(
+                                      "eventManagement.tableHeaderBookingDeadline",
+                                    )}
+                                  </p>
+                                  <p className="text-sm">
+                                    {event.bookingDeadline
+                                      ? new Date(
+                                          event.bookingDeadline,
+                                        ).toLocaleString()
+                                      : "-"}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-muted-foreground mb-1">
+                                    {t(
+                                      "eventManagement.tableHeaderReminderSendDate",
+                                    )}
+                                  </p>
+                                  <p className="text-sm">
+                                    {event.reminderSendDate
+                                      ? new Date(
+                                          event.reminderSendDate,
+                                        ).toLocaleString()
+                                      : "-"}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {location && (
+                                <div>
+                                  <p className="text-xs text-muted-foreground mb-1">
+                                    {t("eventManagement.tableHeaderLocation")}
+                                  </p>
                                   <Button
                                     variant="link"
-                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800 truncate justify-start"
+                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800 text-sm"
                                     onClick={() =>
                                       location.id &&
                                       handleLocationClick(location.id)
                                     }
                                   >
-                                    <span className="truncate">
-                                      {location.name}
-                                    </span>
-                                    <ExternalLink className="ml-1 h-3 w-3 flex-shrink-0" />
-                                  </Button>
-                                ) : (
-                                  t("eventManagement.noLocation")
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex gap-2">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleEditEvent(event)}
-                                  >
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    onClick={() => handleDeleteEvent(event)}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
+                                    {location.name}
+                                    <ExternalLink className="ml-1 h-3 w-3" />
                                   </Button>
                                 </div>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                  </TableBody>
-                </Table>
-              </div>
-
-              <div className="md:hidden space-y-4">
-                <div className="mb-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleSelectAll(paginatedData)}
-                  >
-                    {paginatedData.every((event) =>
-                      event.id ? selectedIds.has(event.id) : false,
-                    )
-                      ? t("eventManagement.deselectAll")
-                      : t("eventManagement.selectAll")}
-                  </Button>
-                </div>
-                {isLoading
-                  ? Array.from({ length: 3 }).map((_, index) => (
-                      <Card key={index}>
-                        <CardHeader className="pb-3">
-                          <Skeleton className="h-5 w-3/4" />
-                          <Skeleton className="h-4 w-full mt-2" />
-                        </CardHeader>
-                        <CardContent>
-                          <Skeleton className="h-4 w-full" />
-                        </CardContent>
-                      </Card>
-                    ))
-                  : paginatedData.map((event) => {
-                      const location = allLocations.find(
-                        (loc) => loc.id === event.eventLocationId,
-                      );
-                      return (
-                        <Card key={event.id?.toString()}>
-                          <CardHeader className="pb-3 flex flex-row items-start space-x-3 space-y-0">
-                            <Checkbox
-                              checked={
-                                event.id ? selectedIds.has(event.id) : false
-                              }
-                              onCheckedChange={() =>
-                                event.id && handleToggleSelect(event.id)
-                              }
-                              className="mt-1"
-                            />
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <CardTitle className="text-base">
-                                  {event.name}
-                                </CardTitle>
-                                {event.isReminderSent && (
-                                  <Mail className="h-4 w-4 text-green-600 flex-shrink-0" />
-                                )}
-                              </div>
-                              {event.description && (
-                                <CardDescription className="text-sm mt-1 line-clamp-2">
-                                  {event.description}
-                                </CardDescription>
                               )}
-                            </div>
-                          </CardHeader>
-                          <CardContent className="space-y-3">
-                            <div className="grid grid-cols-1 gap-2 text-sm">
-                              <div>
-                                <p className="text-xs text-muted-foreground mb-1">
-                                  {t("eventManagement.tableHeaderStartTime")}
-                                </p>
-                                <p className="text-sm">
-                                  {event.startTime
-                                    ? new Date(event.startTime).toLocaleString()
-                                    : "-"}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-xs text-muted-foreground mb-1">
-                                  {t("eventManagement.tableHeaderEndTime")}
-                                </p>
-                                <p className="text-sm">
-                                  {event.endTime
-                                    ? new Date(event.endTime).toLocaleString()
-                                    : "-"}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-xs text-muted-foreground mb-1">
-                                  {t(
-                                    "eventManagement.tableHeaderBookingStartTime",
-                                  )}
-                                </p>
-                                <p className="text-sm">
-                                  {event.bookingStartTime
-                                    ? new Date(
-                                        event.bookingStartTime,
-                                      ).toLocaleString()
-                                    : "-"}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-xs text-muted-foreground mb-1">
-                                  {t(
-                                    "eventManagement.tableHeaderBookingDeadline",
-                                  )}
-                                </p>
-                                <p className="text-sm">
-                                  {event.bookingDeadline
-                                    ? new Date(
-                                        event.bookingDeadline,
-                                      ).toLocaleString()
-                                    : "-"}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-xs text-muted-foreground mb-1">
-                                  {t(
-                                    "eventManagement.tableHeaderReminderSendDate",
-                                  )}
-                                </p>
-                                <p className="text-sm">
-                                  {event.reminderSendDate
-                                    ? new Date(
-                                        event.reminderSendDate,
-                                      ).toLocaleString()
-                                    : "-"}
-                                </p>
-                              </div>
-                            </div>
 
-                            {location && (
-                              <div>
-                                <p className="text-xs text-muted-foreground mb-1">
-                                  {t("eventManagement.tableHeaderLocation")}
-                                </p>
+                              <div className="flex gap-2 pt-2">
                                 <Button
-                                  variant="link"
-                                  className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800 text-sm"
-                                  onClick={() =>
-                                    location.id &&
-                                    handleLocationClick(location.id)
-                                  }
+                                  variant="outline"
+                                  size="sm"
+                                  className="flex-1 bg-transparent"
+                                  onClick={() => handleEditEvent(event)}
                                 >
-                                  {location.name}
-                                  <ExternalLink className="ml-1 h-3 w-3" />
+                                  <Edit className="mr-2 h-4 w-4" />
+                                  {t("eventManagement.editButtonLabel")}
+                                </Button>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  className="flex-1"
+                                  onClick={() => handleDeleteEvent(event)}
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  {t("eventManagement.deleteButtonLabel")}
                                 </Button>
                               </div>
-                            )}
-
-                            <div className="flex gap-2 pt-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="flex-1 bg-transparent"
-                                onClick={() => handleEditEvent(event)}
-                              >
-                                <Edit className="mr-2 h-4 w-4" />
-                                {t("eventManagement.editButtonLabel")}
-                              </Button>
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                className="flex-1"
-                                onClick={() => handleDeleteEvent(event)}
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                {t("eventManagement.deleteButtonLabel")}
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-              </div>
-            </>
-          )}
-        </PaginationWrapper>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                </div>
+              </>
+            )}
+          </PaginationWrapper>
         </CardContent>
       </Card>
 

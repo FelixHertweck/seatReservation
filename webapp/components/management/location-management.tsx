@@ -270,8 +270,8 @@ export function LocationManagement({
           />
         }
       />
-      <Card>
-        <CardHeader>
+      <Card className="rounded-none border-0 bg-transparent shadow-none md:rounded-lg md:border md:bg-card md:shadow-sm">
+        <CardHeader className="p-0 pb-4 md:p-6">
           <div className="flex flex-col md:flex-row gap-2 sm:justify-end">
             {selectedIds.size > 0 && (
               <Button
@@ -300,166 +300,321 @@ export function LocationManagement({
           </div>
         </CardHeader>
 
-        <CardContent>
-        <div className="space-y-4">
-          <PaginationWrapper
-            data={sortedData}
-            itemsPerPage={100}
-            paginationLabel={t("locationManagement.paginationLabel")}
-          >
-            {(paginatedData) => (
-              <>
-                <div className="hidden md:block overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-[50px]">
-                          <Checkbox
-                            aria-label={t(
-                              "locationManagement.tableHeaderSelect",
-                            )}
-                            checked={
-                              paginatedData.length > 0 &&
-                              paginatedData.every((location) =>
-                                location.id
-                                  ? selectedIds.has(location.id)
-                                  : false,
-                              )
-                            }
-                            onCheckedChange={() =>
-                              handleSelectAll(paginatedData)
-                            }
-                          />
-                        </TableHead>
-                        <SortableTableHead
-                          sortKey="name"
-                          currentSortKey={sortKey}
-                          currentSortDirection={sortDirection}
-                          onSort={handleSort}
-                          className="min-w-[150px] max-w-[250px]"
-                        >
-                          {t("locationManagement.tableHeaderName")}
-                        </SortableTableHead>
-                        <SortableTableHead
-                          sortKey="address"
-                          currentSortKey={sortKey}
-                          currentSortDirection={sortDirection}
-                          onSort={handleSort}
-                          className="min-w-[200px] max-w-[300px]"
-                        >
-                          {t("locationManagement.tableHeaderAddress")}
-                        </SortableTableHead>
-                        <SortableTableHead
-                          sortKey="capacity"
-                          currentSortKey={sortKey}
-                          currentSortDirection={sortDirection}
-                          onSort={handleSort}
-                          className="min-w-[100px] max-w-[150px]"
-                        >
-                          {t("locationManagement.tableHeaderCapacity")}
-                        </SortableTableHead>
-                        <SortableTableHead
-                          sortKey="managerName"
-                          currentSortKey={sortKey}
-                          currentSortDirection={sortDirection}
-                          onSort={handleSort}
-                          className="min-w-[100px] max-w-[180px]"
-                        >
-                          {t("locationManagement.tableHeaderManager")}
-                        </SortableTableHead>
-                        <SortableTableHead
-                          sortKey="marker"
-                          currentSortKey={sortKey}
-                          currentSortDirection={sortDirection}
-                          onSort={handleSort}
-                          className="min-w-[150px] max-w-[250px]"
-                        >
-                          {t("locationManagement.tableHeaderMarker")}
-                        </SortableTableHead>
-                        <TableHead className="min-w-[120px] max-w-[180px]">
-                          {t("locationManagement.tableHeaderSeats")}
-                        </TableHead>
-                        <TableHead className="min-w-[120px] max-w-[180px]">
-                          {t("locationManagement.tableHeaderActions")}
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {isLoading
-                        ? Array.from({ length: 8 }).map((_, index) => (
-                            <TableRow key={index}>
-                              <TableCell>
-                                <Skeleton className="h-4 w-4" />
-                              </TableCell>
-                              <TableCell>
-                                <Skeleton className="h-4 w-32" />
-                              </TableCell>
-                              <TableCell>
-                                <Skeleton className="h-4 w-48" />
-                              </TableCell>
-                              <TableCell>
-                                <Skeleton className="h-4 w-16" />
-                              </TableCell>
-                              <TableCell>
-                                <Skeleton className="h-4 w-24" />
-                              </TableCell>
-                              <TableCell>
-                                <Skeleton className="h-4 w-40" />
-                              </TableCell>
-                              <TableCell>
-                                <Skeleton className="h-4 w-20" />
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex gap-2">
-                                  <Skeleton className="h-8 w-8" />
-                                  <Skeleton className="h-8 w-8" />
-                                  <Skeleton className="h-8 w-8" />
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))
-                        : paginatedData.map((location) => {
-                            const seatCount = location.seatIds?.length || 0;
-                            const markersDisplay =
-                              location.markers && location.markers.length > 0
-                                ? location.markers
-                                    .map(
-                                      (marker) =>
-                                        `${marker.label} (${marker.coordinate?.xCoordinate}, ${marker.coordinate?.yCoordinate})`,
-                                    )
-                                    .join(", ")
-                                : "-";
-
-                            return (
-                              <TableRow key={location.id?.toString()}>
+        <CardContent className="p-0 md:p-6 md:pt-0">
+          <div className="space-y-4">
+            <PaginationWrapper
+              data={sortedData}
+              itemsPerPage={100}
+              paginationLabel={t("locationManagement.paginationLabel")}
+            >
+              {(paginatedData) => (
+                <>
+                  <div className="hidden md:block overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[50px]">
+                            <Checkbox
+                              aria-label={t(
+                                "locationManagement.tableHeaderSelect",
+                              )}
+                              checked={
+                                paginatedData.length > 0 &&
+                                paginatedData.every((location) =>
+                                  location.id
+                                    ? selectedIds.has(location.id)
+                                    : false,
+                                )
+                              }
+                              onCheckedChange={() =>
+                                handleSelectAll(paginatedData)
+                              }
+                            />
+                          </TableHead>
+                          <SortableTableHead
+                            sortKey="name"
+                            currentSortKey={sortKey}
+                            currentSortDirection={sortDirection}
+                            onSort={handleSort}
+                            className="min-w-[150px] max-w-[250px]"
+                          >
+                            {t("locationManagement.tableHeaderName")}
+                          </SortableTableHead>
+                          <SortableTableHead
+                            sortKey="address"
+                            currentSortKey={sortKey}
+                            currentSortDirection={sortDirection}
+                            onSort={handleSort}
+                            className="min-w-[200px] max-w-[300px]"
+                          >
+                            {t("locationManagement.tableHeaderAddress")}
+                          </SortableTableHead>
+                          <SortableTableHead
+                            sortKey="capacity"
+                            currentSortKey={sortKey}
+                            currentSortDirection={sortDirection}
+                            onSort={handleSort}
+                            className="min-w-[100px] max-w-[150px]"
+                          >
+                            {t("locationManagement.tableHeaderCapacity")}
+                          </SortableTableHead>
+                          <SortableTableHead
+                            sortKey="managerName"
+                            currentSortKey={sortKey}
+                            currentSortDirection={sortDirection}
+                            onSort={handleSort}
+                            className="min-w-[100px] max-w-[180px]"
+                          >
+                            {t("locationManagement.tableHeaderManager")}
+                          </SortableTableHead>
+                          <SortableTableHead
+                            sortKey="marker"
+                            currentSortKey={sortKey}
+                            currentSortDirection={sortDirection}
+                            onSort={handleSort}
+                            className="min-w-[150px] max-w-[250px]"
+                          >
+                            {t("locationManagement.tableHeaderMarker")}
+                          </SortableTableHead>
+                          <TableHead className="min-w-[120px] max-w-[180px]">
+                            {t("locationManagement.tableHeaderSeats")}
+                          </TableHead>
+                          <TableHead className="min-w-[120px] max-w-[180px]">
+                            {t("locationManagement.tableHeaderActions")}
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {isLoading
+                          ? Array.from({ length: 8 }).map((_, index) => (
+                              <TableRow key={index}>
                                 <TableCell>
-                                  <Checkbox
-                                    checked={
-                                      location.id
-                                        ? selectedIds.has(location.id)
-                                        : false
-                                    }
-                                    onCheckedChange={() =>
-                                      location.id &&
-                                      handleToggleSelect(location.id)
-                                    }
-                                  />
+                                  <Skeleton className="h-4 w-4" />
                                 </TableCell>
-                                <TruncatedCell
-                                  content={location.name}
-                                  className="font-medium"
-                                />
-                                <TruncatedCell content={location.address} />
-                                <TableCell>{location.capacity}</TableCell>
-                                <TruncatedCell
-                                  content={location.manager?.username}
-                                />
-                                <TruncatedCell content={markersDisplay} />
                                 <TableCell>
-                                  {seatCount > 0 ? (
+                                  <Skeleton className="h-4 w-32" />
+                                </TableCell>
+                                <TableCell>
+                                  <Skeleton className="h-4 w-48" />
+                                </TableCell>
+                                <TableCell>
+                                  <Skeleton className="h-4 w-16" />
+                                </TableCell>
+                                <TableCell>
+                                  <Skeleton className="h-4 w-24" />
+                                </TableCell>
+                                <TableCell>
+                                  <Skeleton className="h-4 w-40" />
+                                </TableCell>
+                                <TableCell>
+                                  <Skeleton className="h-4 w-20" />
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex gap-2">
+                                    <Skeleton className="h-8 w-8" />
+                                    <Skeleton className="h-8 w-8" />
+                                    <Skeleton className="h-8 w-8" />
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          : paginatedData.map((location) => {
+                              const seatCount = location.seatIds?.length || 0;
+                              const markersDisplay =
+                                location.markers && location.markers.length > 0
+                                  ? location.markers
+                                      .map(
+                                        (marker) =>
+                                          `${marker.label} (${marker.coordinate?.xCoordinate}, ${marker.coordinate?.yCoordinate})`,
+                                      )
+                                      .join(", ")
+                                  : "-";
+
+                              return (
+                                <TableRow key={location.id?.toString()}>
+                                  <TableCell>
+                                    <Checkbox
+                                      checked={
+                                        location.id
+                                          ? selectedIds.has(location.id)
+                                          : false
+                                      }
+                                      onCheckedChange={() =>
+                                        location.id &&
+                                        handleToggleSelect(location.id)
+                                      }
+                                    />
+                                  </TableCell>
+                                  <TruncatedCell
+                                    content={location.name}
+                                    className="font-medium"
+                                  />
+                                  <TruncatedCell content={location.address} />
+                                  <TableCell>{location.capacity}</TableCell>
+                                  <TruncatedCell
+                                    content={location.manager?.username}
+                                  />
+                                  <TruncatedCell content={markersDisplay} />
+                                  <TableCell>
+                                    {seatCount > 0 ? (
+                                      <Button
+                                        variant="link"
+                                        className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                                        onClick={() =>
+                                          location.id &&
+                                          handleSeatsClick(location.id)
+                                        }
+                                      >
+                                        {t("locationManagement.seatsCount", {
+                                          count: seatCount,
+                                        })}
+                                        <ExternalLink className="ml-1 h-3 w-3" />
+                                      </Button>
+                                    ) : (
+                                      t("locationManagement.noSeats")
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex gap-2">
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                          handleExportLocation(location)
+                                        }
+                                        title={t(
+                                          "locationManagement.exportAsJsonTitle",
+                                        )}
+                                      >
+                                        <Download className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                          handleEditLocation(location)
+                                        }
+                                      >
+                                        <Edit className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        onClick={() =>
+                                          handleDeleteLocation(location)
+                                        }
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="md:hidden space-y-4">
+                    {isLoading
+                      ? Array.from({ length: 3 }).map((_, index) => (
+                          <Card key={index}>
+                            <CardHeader className="pb-3">
+                              <Skeleton className="h-5 w-3/4" />
+                              <Skeleton className="h-4 w-full mt-2" />
+                            </CardHeader>
+                            <CardContent>
+                              <Skeleton className="h-4 w-full" />
+                            </CardContent>
+                          </Card>
+                        ))
+                      : paginatedData.map((location) => {
+                          const seatCount = location.seatIds?.length || 0;
+                          const markersDisplay =
+                            location.markers && location.markers.length > 0
+                              ? location.markers
+                                  .map(
+                                    (marker) =>
+                                      `${marker.label} (${marker.coordinate?.xCoordinate}, ${marker.coordinate?.yCoordinate})`,
+                                  )
+                                  .join(", ")
+                              : "-";
+
+                          return (
+                            <Card
+                              key={location.id?.toString()}
+                              className="overflow-hidden"
+                            >
+                              <CardHeader className="pb-3 flex flex-row items-start space-x-3 space-y-0">
+                                <Checkbox
+                                  checked={
+                                    location.id
+                                      ? selectedIds.has(location.id)
+                                      : false
+                                  }
+                                  onCheckedChange={() =>
+                                    location.id &&
+                                    handleToggleSelect(location.id)
+                                  }
+                                  className="mt-1"
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <CardTitle className="text-base break-words">
+                                    {location.name}
+                                  </CardTitle>
+                                  {location.address && (
+                                    <CardDescription className="text-sm mt-1 break-words">
+                                      {location.address}
+                                    </CardDescription>
+                                  )}
+                                </div>
+                              </CardHeader>
+                              <CardContent className="space-y-3">
+                                <div className="grid grid-cols-2 gap-3 text-sm">
+                                  <div className="min-w-0">
+                                    <p className="text-xs text-muted-foreground mb-1">
+                                      {t(
+                                        "locationManagement.tableHeaderCapacity",
+                                      )}
+                                    </p>
+                                    <p className="text-sm truncate">
+                                      {location.capacity}
+                                    </p>
+                                  </div>
+                                  <div className="min-w-0">
+                                    <p className="text-xs text-muted-foreground mb-1">
+                                      {t(
+                                        "locationManagement.tableHeaderManager",
+                                      )}
+                                    </p>
+                                    <p className="text-sm truncate">
+                                      {location.manager?.username || "-"}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                {location.markers &&
+                                  location.markers.length > 0 && (
+                                    <div className="min-w-0">
+                                      <p className="text-xs text-muted-foreground mb-1">
+                                        {t(
+                                          "locationManagement.tableHeaderMarker",
+                                        )}
+                                      </p>
+                                      <p className="text-sm break-words line-clamp-1">
+                                        {markersDisplay}
+                                      </p>
+                                    </div>
+                                  )}
+
+                                {seatCount > 0 && (
+                                  <div className="min-w-0">
+                                    <p className="text-xs text-muted-foreground mb-1">
+                                      {t("locationManagement.tableHeaderSeats")}
+                                    </p>
                                     <Button
                                       variant="link"
-                                      className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                                      className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800 text-sm"
                                       onClick={() =>
                                         location.id &&
                                         handleSeatsClick(location.id)
@@ -470,199 +625,51 @@ export function LocationManagement({
                                       })}
                                       <ExternalLink className="ml-1 h-3 w-3" />
                                     </Button>
-                                  ) : (
-                                    t("locationManagement.noSeats")
-                                  )}
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex gap-2">
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() =>
-                                        handleExportLocation(location)
-                                      }
-                                      title={t(
-                                        "locationManagement.exportAsJsonTitle",
-                                      )}
-                                    >
-                                      <Download className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() =>
-                                        handleEditLocation(location)
-                                      }
-                                    >
-                                      <Edit className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                      variant="destructive"
-                                      size="sm"
-                                      onClick={() =>
-                                        handleDeleteLocation(location)
-                                      }
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })}
-                    </TableBody>
-                  </Table>
-                </div>
-
-                <div className="md:hidden space-y-4">
-                  {isLoading
-                    ? Array.from({ length: 3 }).map((_, index) => (
-                        <Card key={index}>
-                          <CardHeader className="pb-3">
-                            <Skeleton className="h-5 w-3/4" />
-                            <Skeleton className="h-4 w-full mt-2" />
-                          </CardHeader>
-                          <CardContent>
-                            <Skeleton className="h-4 w-full" />
-                          </CardContent>
-                        </Card>
-                      ))
-                    : paginatedData.map((location) => {
-                        const seatCount = location.seatIds?.length || 0;
-                        const markersDisplay =
-                          location.markers && location.markers.length > 0
-                            ? location.markers
-                                .map(
-                                  (marker) =>
-                                    `${marker.label} (${marker.coordinate?.xCoordinate}, ${marker.coordinate?.yCoordinate})`,
-                                )
-                                .join(", ")
-                            : "-";
-
-                        return (
-                          <Card
-                            key={location.id?.toString()}
-                            className="overflow-hidden"
-                          >
-                            <CardHeader className="pb-3 flex flex-row items-start space-x-3 space-y-0">
-                              <Checkbox
-                                checked={
-                                  location.id
-                                    ? selectedIds.has(location.id)
-                                    : false
-                                }
-                                onCheckedChange={() =>
-                                  location.id && handleToggleSelect(location.id)
-                                }
-                                className="mt-1"
-                              />
-                              <div className="flex-1 min-w-0">
-                                <CardTitle className="text-base break-words">
-                                  {location.name}
-                                </CardTitle>
-                                {location.address && (
-                                  <CardDescription className="text-sm mt-1 break-words">
-                                    {location.address}
-                                  </CardDescription>
-                                )}
-                              </div>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                              <div className="grid grid-cols-2 gap-3 text-sm">
-                                <div className="min-w-0">
-                                  <p className="text-xs text-muted-foreground mb-1">
-                                    {t(
-                                      "locationManagement.tableHeaderCapacity",
-                                    )}
-                                  </p>
-                                  <p className="text-sm truncate">
-                                    {location.capacity}
-                                  </p>
-                                </div>
-                                <div className="min-w-0">
-                                  <p className="text-xs text-muted-foreground mb-1">
-                                    {t("locationManagement.tableHeaderManager")}
-                                  </p>
-                                  <p className="text-sm truncate">
-                                    {location.manager?.username || "-"}
-                                  </p>
-                                </div>
-                              </div>
-
-                              {location.markers &&
-                                location.markers.length > 0 && (
-                                  <div className="min-w-0">
-                                    <p className="text-xs text-muted-foreground mb-1">
-                                      {t(
-                                        "locationManagement.tableHeaderMarker",
-                                      )}
-                                    </p>
-                                    <p className="text-sm break-words line-clamp-1">
-                                      {markersDisplay}
-                                    </p>
                                   </div>
                                 )}
 
-                              {seatCount > 0 && (
-                                <div className="min-w-0">
-                                  <p className="text-xs text-muted-foreground mb-1">
-                                    {t("locationManagement.tableHeaderSeats")}
-                                  </p>
+                                <div className="flex gap-2 pt-2">
                                   <Button
-                                    variant="link"
-                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800 text-sm"
+                                    variant="outline"
+                                    size="sm"
+                                    className="flex-1 bg-transparent"
+                                    onClick={() => handleEditLocation(location)}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="flex-1"
                                     onClick={() =>
-                                      location.id &&
-                                      handleSeatsClick(location.id)
+                                      handleExportLocation(location)
+                                    }
+                                    title={t(
+                                      "locationManagement.exportAsJsonTitle",
+                                    )}
+                                  >
+                                    <Download className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    className="flex-1"
+                                    onClick={() =>
+                                      handleDeleteLocation(location)
                                     }
                                   >
-                                    {t("locationManagement.seatsCount", {
-                                      count: seatCount,
-                                    })}
-                                    <ExternalLink className="ml-1 h-3 w-3" />
+                                    <Trash2 className="h-4 w-4" />
                                   </Button>
                                 </div>
-                              )}
-
-                              <div className="flex gap-2 pt-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="flex-1 bg-transparent"
-                                  onClick={() => handleEditLocation(location)}
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="flex-1"
-                                  onClick={() => handleExportLocation(location)}
-                                  title={t(
-                                    "locationManagement.exportAsJsonTitle",
-                                  )}
-                                >
-                                  <Download className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="destructive"
-                                  size="sm"
-                                  className="flex-1"
-                                  onClick={() => handleDeleteLocation(location)}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        );
-                      })}
-                </div>
-              </>
-            )}
-          </PaginationWrapper>
-        </div>
+                              </CardContent>
+                            </Card>
+                          );
+                        })}
+                  </div>
+                </>
+              )}
+            </PaginationWrapper>
+          </div>
         </CardContent>
       </Card>
 

@@ -8,7 +8,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/components/custom-ui/dialog";
 import { useT } from "@/lib/i18n/hooks";
 import { sanitizeFileName } from "@/lib/utils/filename";
 import { Download } from "lucide-react";
@@ -93,7 +93,7 @@ export function QRCodeModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent noX={true} className="max-w-md">
+      <DialogContent noX={true} className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t("qrCodeModal.title")}</DialogTitle>
           <DialogDescription>{t("qrCodeModal.description")}</DialogDescription>

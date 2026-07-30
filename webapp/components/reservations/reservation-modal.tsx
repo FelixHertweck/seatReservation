@@ -6,7 +6,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/components/custom-ui/dialog";
 import { SeatMap } from "@/components/common/seat-map";
 import SeatmapLegend from "@/components/common/seatmap-legend";
 import { useState } from "react";
@@ -65,7 +65,7 @@ export function SeatMapModal({
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent
-        className="max-w-[95vw] w-[1200px] max-h-[90vh] h-[85vh] flex flex-col"
+        className="flex flex-col sm:max-w-[95vw] sm:w-[1200px] sm:max-h-[90vh] sm:h-[85vh]"
         onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>

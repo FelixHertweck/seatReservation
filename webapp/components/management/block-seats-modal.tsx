@@ -9,7 +9,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/components/custom-ui/dialog";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -105,7 +105,7 @@ export function BlockSeatsModal({
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent
-        className="max-w-6xl max-h-[90vh] h-[85vh] flex flex-col"
+        className="flex flex-col sm:max-w-6xl sm:max-h-[90vh] sm:h-[85vh]"
         onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
