@@ -134,7 +134,7 @@ export function UserFormModal({
     <Dialog open onOpenChange={onClose}>
       <DialogContent
         key={formKey}
-        className="sm:max-w-[425px]"
+        className="sm:max-w-xl"
         onInteractOutside={(e) => e.preventDefault()}
         onKeyDown={(e) => {
           if (

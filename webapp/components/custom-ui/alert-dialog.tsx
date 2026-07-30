@@ -20,7 +20,7 @@ const AlertDialogContent = React.forwardRef<
     ref={ref}
     className={cn(
       "inset-0 top-0 left-0 flex h-full w-full max-w-none translate-x-0 translate-y-0 flex-col justify-center overflow-y-auto rounded-none border-0 p-4",
-      "sm:inset-auto sm:top-[50%] sm:left-[50%] sm:h-auto sm:max-h-[85vh] sm:w-full sm:max-w-lg sm:-translate-x-1/2 sm:-translate-y-1/2 sm:block sm:overflow-visible sm:rounded-lg sm:border sm:p-6",
+      "sm:inset-auto sm:top-[50%] sm:left-[50%] sm:h-auto sm:max-h-[85vh] sm:w-full sm:max-w-xl sm:-translate-x-1/2 sm:-translate-y-1/2 sm:block sm:overflow-visible sm:rounded-lg sm:border sm:p-6",
       className,
     )}
     {...props}

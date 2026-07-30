@@ -85,7 +85,7 @@ export function SeatFormModal({
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent
-        className="sm:max-w-md"
+        className="sm:max-w-xl"
         onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>

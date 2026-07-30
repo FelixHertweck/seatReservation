@@ -106,7 +106,7 @@ export function EventFormModal({
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent
-        className="sm:max-w-md sm:max-h-[80vh] sm:overflow-y-auto"
+        className="sm:max-w-xl sm:max-h-[80vh] sm:overflow-y-auto"
         onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
