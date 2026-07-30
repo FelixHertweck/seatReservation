@@ -29,6 +29,7 @@ interface SearchAndFilterProps {
   filterOptions: FilterOption[];
   initialFilters?: Record<string, string>;
   initialQuery?: string;
+  className?: string;
 }
 
 export function SearchAndFilter({
@@ -37,6 +38,7 @@ export function SearchAndFilter({
   filterOptions,
   initialFilters = {},
   initialQuery = "",
+  className = "space-y-4 mb-6",
 }: SearchAndFilterProps) {
   const t = useT();
 
@@ -99,7 +101,7 @@ export function SearchAndFilter({
   );
 
   return (
-    <div className="space-y-4 mb-6">
+    <div className={className}>
       {/* Search Bar and Filter Toggle */}
       <div className="flex gap-2 items-center">
         <div className="relative flex-1">

@@ -18,6 +18,7 @@ import {
   SupervisorReservationResponseDto,
   SupervisorSeatStatusDto,
 } from "@/api";
+import { PageHeader } from "@/components/page-header";
 import SeatmapLegend from "@/components/common/seatmap-legend";
 import { LiveviewStatus } from "@/components/liveview/liveview-status";
 
@@ -51,14 +52,10 @@ export default function LiveViewPage() {
 
   return (
     <div className="container mx-auto px-2 py-3 md:p-6">
-      <div className="mb-3 md:mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold mb-1 md:mb-2">
-          {t("liveview.title")}
-        </h1>
-        <p className="text-muted-foreground text-sm md:text-base">
-          {t("liveview.description")}
-        </p>
-      </div>
+      <PageHeader
+        title={t("liveview.title")}
+        description={t("liveview.description")}
+      />
 
       <EventSelector
         events={events}
