@@ -40,7 +40,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@/components/custom-ui/dialog";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
 import type {
   UserDto,
@@ -327,8 +327,8 @@ export function ReservationManagement({
           />
         }
       />
-      <Card>
-        <CardHeader>
+      <Card className="rounded-none border-0 bg-transparent shadow-none md:rounded-lg md:border md:bg-card md:shadow-sm">
+        <CardHeader className="p-0 pb-4 md:p-6">
           <div className="flex flex-col lg:flex-row gap-2 sm:justify-end">
             {selectedIds.size > 0 && (
               <Button
@@ -465,356 +465,367 @@ export function ReservationManagement({
           </div>
         </CardHeader>
 
-        <CardContent>
-        <PaginationWrapper
-          data={sortedData}
-          itemsPerPage={100}
-          paginationLabel={t("reservationManagement.paginationLabel")}
-        >
-          {(paginatedData) => (
-            <>
-              <div className="hidden md:block overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[50px]">
-                        <Checkbox
-                          aria-label={t(
-                            "reservationManagement.tableHeaderSelect",
-                          )}
-                          checked={
-                            paginatedData.length > 0 &&
-                            paginatedData.every((reservation) =>
-                              reservation.id
-                                ? selectedIds.has(reservation.id)
-                                : false,
-                            )
-                          }
-                          onCheckedChange={() => handleSelectAll(paginatedData)}
-                        />
-                      </TableHead>
-                      <SortableTableHead
-                        sortKey="user.username"
-                        currentSortKey={sortKey}
-                        currentSortDirection={sortDirection}
-                        onSort={handleSort}
-                        className="min-w-[150px]"
-                      >
-                        {t("reservationManagement.tableHeaderUser")}
-                      </SortableTableHead>
-                      <SortableTableHead
-                        sortKey="event.name"
-                        currentSortKey={sortKey}
-                        currentSortDirection={sortDirection}
-                        onSort={handleSort}
-                        className="min-w-[200px]"
-                      >
-                        {t("reservationManagement.tableHeaderEvent")}
-                      </SortableTableHead>
-                      <SortableTableHead
-                        sortKey="seat.seatNumber"
-                        currentSortKey={sortKey}
-                        currentSortDirection={sortDirection}
-                        onSort={handleSort}
-                        className="min-w-[150px]"
-                      >
-                        {t("reservationManagement.tableHeaderSeat")}
-                      </SortableTableHead>
-                      <SortableTableHead
-                        sortKey="reservationStatus"
-                        currentSortKey={sortKey}
-                        currentSortDirection={sortDirection}
-                        onSort={handleSort}
-                        className="min-w-[100px]"
-                      >
-                        {t("reservationManagement.tableHeaderStatus")}
-                      </SortableTableHead>
-                      <SortableTableHead
-                        sortKey="reservationDateTime"
-                        currentSortKey={sortKey}
-                        currentSortDirection={sortDirection}
-                        onSort={handleSort}
-                        className="min-w-[180px]"
-                      >
-                        {t("reservationManagement.tableHeaderReservedDate")}
-                      </SortableTableHead>
-                      <TableHead className="min-w-[100px]">
-                        {t("reservationManagement.tableHeaderActions")}
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {isLoading
-                      ? Array.from({ length: 8 }).map((_, index) => (
-                          <TableRow key={index}>
-                            <TableCell>
-                              <Skeleton className="h-4 w-4" />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton className="h-4 w-24" />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton className="h-4 w-32" />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton className="h-5 w-16" />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton className="h-5 w-20" />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton className="h-4 w-32" />
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex gap-2">
-                                <Skeleton className="h-8 w-8" />
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      : paginatedData.map((reservation) => {
-                          const event = events.find(
-                            (event) => event.id === reservation.eventId,
-                          );
-
-                          return (
-                            <TableRow key={reservation.id?.toString()}>
+        <CardContent className="p-0 md:p-6 md:pt-0">
+          <PaginationWrapper
+            data={sortedData}
+            itemsPerPage={100}
+            paginationLabel={t("reservationManagement.paginationLabel")}
+          >
+            {(paginatedData) => (
+              <>
+                <div className="hidden md:block overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[50px]">
+                          <Checkbox
+                            aria-label={t(
+                              "reservationManagement.tableHeaderSelect",
+                            )}
+                            checked={
+                              paginatedData.length > 0 &&
+                              paginatedData.every((reservation) =>
+                                reservation.id
+                                  ? selectedIds.has(reservation.id)
+                                  : false,
+                              )
+                            }
+                            onCheckedChange={() =>
+                              handleSelectAll(paginatedData)
+                            }
+                          />
+                        </TableHead>
+                        <SortableTableHead
+                          sortKey="user.username"
+                          currentSortKey={sortKey}
+                          currentSortDirection={sortDirection}
+                          onSort={handleSort}
+                          className="min-w-[150px]"
+                        >
+                          {t("reservationManagement.tableHeaderUser")}
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortKey="event.name"
+                          currentSortKey={sortKey}
+                          currentSortDirection={sortDirection}
+                          onSort={handleSort}
+                          className="min-w-[200px]"
+                        >
+                          {t("reservationManagement.tableHeaderEvent")}
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortKey="seat.seatNumber"
+                          currentSortKey={sortKey}
+                          currentSortDirection={sortDirection}
+                          onSort={handleSort}
+                          className="min-w-[150px]"
+                        >
+                          {t("reservationManagement.tableHeaderSeat")}
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortKey="reservationStatus"
+                          currentSortKey={sortKey}
+                          currentSortDirection={sortDirection}
+                          onSort={handleSort}
+                          className="min-w-[100px]"
+                        >
+                          {t("reservationManagement.tableHeaderStatus")}
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortKey="reservationDateTime"
+                          currentSortKey={sortKey}
+                          currentSortDirection={sortDirection}
+                          onSort={handleSort}
+                          className="min-w-[180px]"
+                        >
+                          {t("reservationManagement.tableHeaderReservedDate")}
+                        </SortableTableHead>
+                        <TableHead className="min-w-[100px]">
+                          {t("reservationManagement.tableHeaderActions")}
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {isLoading
+                        ? Array.from({ length: 8 }).map((_, index) => (
+                            <TableRow key={index}>
                               <TableCell>
-                                <Checkbox
-                                  checked={
-                                    reservation.id
-                                      ? selectedIds.has(reservation.id)
-                                      : false
-                                  }
-                                  onCheckedChange={() =>
-                                    reservation.id &&
-                                    handleToggleSelect(reservation.id)
-                                  }
-                                />
+                                <Skeleton className="h-4 w-4" />
                               </TableCell>
-                              <TruncatedCell
-                                content={reservation.user?.username}
-                              />
                               <TableCell>
-                                {event ? (
+                                <Skeleton className="h-4 w-24" />
+                              </TableCell>
+                              <TableCell>
+                                <Skeleton className="h-4 w-32" />
+                              </TableCell>
+                              <TableCell>
+                                <Skeleton className="h-5 w-16" />
+                              </TableCell>
+                              <TableCell>
+                                <Skeleton className="h-5 w-20" />
+                              </TableCell>
+                              <TableCell>
+                                <Skeleton className="h-4 w-32" />
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex gap-2">
+                                  <Skeleton className="h-8 w-8" />
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        : paginatedData.map((reservation) => {
+                            const event = events.find(
+                              (event) => event.id === reservation.eventId,
+                            );
+
+                            return (
+                              <TableRow key={reservation.id?.toString()}>
+                                <TableCell>
+                                  <Checkbox
+                                    checked={
+                                      reservation.id
+                                        ? selectedIds.has(reservation.id)
+                                        : false
+                                    }
+                                    onCheckedChange={() =>
+                                      reservation.id &&
+                                      handleToggleSelect(reservation.id)
+                                    }
+                                  />
+                                </TableCell>
+                                <TruncatedCell
+                                  content={reservation.user?.username}
+                                />
+                                <TableCell>
+                                  {event ? (
+                                    <Button
+                                      variant="link"
+                                      className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800 truncate w-full justify-start"
+                                      onClick={() =>
+                                        event.id && handleEventClick(event.id)
+                                      }
+                                    >
+                                      <span className="truncate">
+                                        {event.name}
+                                      </span>
+                                      <ExternalLink className="ml-1 h-3 w-3 flex-shrink-0" />
+                                    </Button>
+                                  ) : (
+                                    t("reservationManagement.unknownEvent")
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  {reservation.seat ? (
+                                    <Button
+                                      variant="link"
+                                      className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                                      onClick={() =>
+                                        reservation.seat?.id &&
+                                        handleSeatClick(reservation.seat.id)
+                                      }
+                                    >
+                                      <Badge variant="outline">
+                                        {reservation.seat.seatNumber}
+                                      </Badge>
+                                      <ExternalLink className="ml-1 h-3 w-3" />
+                                    </Button>
+                                  ) : (
+                                    <Badge variant="outline">
+                                      {t("reservationManagement.unknownSeat")}
+                                    </Badge>
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  <Badge
+                                    variant={
+                                      reservation.status === "BLOCKED"
+                                        ? "secondary"
+                                        : "default"
+                                    }
+                                  >
+                                    {reservation.status === "BLOCKED"
+                                      ? t("reservationManagement.statusBlocked")
+                                      : t(
+                                          "reservationManagement.statusReserved",
+                                        )}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  {reservation.reservationDateTime
+                                    ? new Date(
+                                        reservation.reservationDateTime,
+                                      ).toLocaleString([], {
+                                        year: "numeric",
+                                        month: "2-digit",
+                                        day: "2-digit",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      })
+                                    : t("reservationManagement.unknownDate")}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex gap-2">
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      onClick={() =>
+                                        handleDeleteReservation(reservation)
+                                      }
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="md:hidden space-y-4">
+                  {isLoading
+                    ? Array.from({ length: 3 }).map((_, index) => (
+                        <Card key={index}>
+                          <CardHeader className="pb-3">
+                            <Skeleton className="h-5 w-1/2" />
+                            <Skeleton className="h-4 w-3/4 mt-2" />
+                          </CardHeader>
+                          <CardContent>
+                            <Skeleton className="h-4 w-full" />
+                          </CardContent>
+                        </Card>
+                      ))
+                    : paginatedData.map((reservation) => {
+                        const event = events.find(
+                          (event) => event.id === reservation.eventId,
+                        );
+
+                        return (
+                          <Card key={reservation.id?.toString()}>
+                            <CardHeader className="pb-3 flex flex-row items-start space-x-3 space-y-0">
+                              <Checkbox
+                                checked={
+                                  reservation.id
+                                    ? selectedIds.has(reservation.id)
+                                    : false
+                                }
+                                onCheckedChange={() =>
+                                  reservation.id &&
+                                  handleToggleSelect(reservation.id)
+                                }
+                                className="mt-1"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <CardTitle className="text-base">
+                                  {reservation.user?.username}
+                                </CardTitle>
+                                <CardDescription className="text-sm mt-1">
+                                  <Badge
+                                    variant={
+                                      reservation.status === "BLOCKED"
+                                        ? "secondary"
+                                        : "default"
+                                    }
+                                    className="text-xs"
+                                  >
+                                    {reservation.status === "BLOCKED"
+                                      ? t("reservationManagement.statusBlocked")
+                                      : t(
+                                          "reservationManagement.statusReserved",
+                                        )}
+                                  </Badge>
+                                </CardDescription>
+                              </div>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                              {event && (
+                                <div>
+                                  <p className="text-xs text-muted-foreground mb-1">
+                                    {t(
+                                      "reservationManagement.tableHeaderEvent",
+                                    )}
+                                  </p>
                                   <Button
                                     variant="link"
-                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800 truncate w-full justify-start"
+                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800 text-sm"
                                     onClick={() =>
                                       event.id && handleEventClick(event.id)
                                     }
                                   >
-                                    <span className="truncate">
-                                      {event.name}
-                                    </span>
-                                    <ExternalLink className="ml-1 h-3 w-3 flex-shrink-0" />
+                                    {event.name}
+                                    <ExternalLink className="ml-1 h-3 w-3" />
                                   </Button>
-                                ) : (
-                                  t("reservationManagement.unknownEvent")
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                {reservation.seat ? (
+                                </div>
+                              )}
+
+                              {reservation.seat && (
+                                <div>
+                                  <p className="text-xs text-muted-foreground mb-1">
+                                    {t("reservationManagement.tableHeaderSeat")}
+                                  </p>
                                   <Button
                                     variant="link"
-                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800 text-sm"
                                     onClick={() =>
                                       reservation.seat?.id &&
                                       handleSeatClick(reservation.seat.id)
                                     }
                                   >
-                                    <Badge variant="outline">
+                                    <Badge
+                                      variant="outline"
+                                      className="text-xs"
+                                    >
                                       {reservation.seat.seatNumber}
                                     </Badge>
                                     <ExternalLink className="ml-1 h-3 w-3" />
                                   </Button>
-                                ) : (
-                                  <Badge variant="outline">
-                                    {t("reservationManagement.unknownSeat")}
-                                  </Badge>
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                <Badge
-                                  variant={
-                                    reservation.status === "BLOCKED"
-                                      ? "secondary"
-                                      : "default"
-                                  }
-                                >
-                                  {reservation.status === "BLOCKED"
-                                    ? t("reservationManagement.statusBlocked")
-                                    : t("reservationManagement.statusReserved")}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
-                                {reservation.reservationDateTime
-                                  ? new Date(
-                                      reservation.reservationDateTime,
-                                    ).toLocaleString([], {
-                                      year: "numeric",
-                                      month: "2-digit",
-                                      day: "2-digit",
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    })
-                                  : t("reservationManagement.unknownDate")}
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex gap-2">
-                                  <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    onClick={() =>
-                                      handleDeleteReservation(reservation)
-                                    }
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
                                 </div>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                  </TableBody>
-                </Table>
-              </div>
+                              )}
 
-              <div className="md:hidden space-y-4">
-                {isLoading
-                  ? Array.from({ length: 3 }).map((_, index) => (
-                      <Card key={index}>
-                        <CardHeader className="pb-3">
-                          <Skeleton className="h-5 w-1/2" />
-                          <Skeleton className="h-4 w-3/4 mt-2" />
-                        </CardHeader>
-                        <CardContent>
-                          <Skeleton className="h-4 w-full" />
-                        </CardContent>
-                      </Card>
-                    ))
-                  : paginatedData.map((reservation) => {
-                      const event = events.find(
-                        (event) => event.id === reservation.eventId,
-                      );
-
-                      return (
-                        <Card key={reservation.id?.toString()}>
-                          <CardHeader className="pb-3 flex flex-row items-start space-x-3 space-y-0">
-                            <Checkbox
-                              checked={
-                                reservation.id
-                                  ? selectedIds.has(reservation.id)
-                                  : false
-                              }
-                              onCheckedChange={() =>
-                                reservation.id &&
-                                handleToggleSelect(reservation.id)
-                              }
-                              className="mt-1"
-                            />
-                            <div className="flex-1 min-w-0">
-                              <CardTitle className="text-base">
-                                {reservation.user?.username}
-                              </CardTitle>
-                              <CardDescription className="text-sm mt-1">
-                                <Badge
-                                  variant={
-                                    reservation.status === "BLOCKED"
-                                      ? "secondary"
-                                      : "default"
-                                  }
-                                  className="text-xs"
-                                >
-                                  {reservation.status === "BLOCKED"
-                                    ? t("reservationManagement.statusBlocked")
-                                    : t("reservationManagement.statusReserved")}
-                                </Badge>
-                              </CardDescription>
-                            </div>
-                          </CardHeader>
-                          <CardContent className="space-y-3">
-                            {event && (
                               <div>
                                 <p className="text-xs text-muted-foreground mb-1">
-                                  {t("reservationManagement.tableHeaderEvent")}
+                                  {t(
+                                    "reservationManagement.tableHeaderReservedDate",
+                                  )}
                                 </p>
+                                <p className="text-sm">
+                                  {reservation.reservationDateTime
+                                    ? new Date(
+                                        reservation.reservationDateTime,
+                                      ).toLocaleString([], {
+                                        year: "numeric",
+                                        month: "2-digit",
+                                        day: "2-digit",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      })
+                                    : t("reservationManagement.unknownDate")}
+                                </p>
+                              </div>
+
+                              <div className="flex gap-2 pt-2">
                                 <Button
-                                  variant="link"
-                                  className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800 text-sm"
+                                  variant="destructive"
+                                  size="sm"
+                                  className="flex-1"
                                   onClick={() =>
-                                    event.id && handleEventClick(event.id)
+                                    handleDeleteReservation(reservation)
                                   }
                                 >
-                                  {event.name}
-                                  <ExternalLink className="ml-1 h-3 w-3" />
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  {t("reservationManagement.deleteButtonLabel")}
                                 </Button>
                               </div>
-                            )}
-
-                            {reservation.seat && (
-                              <div>
-                                <p className="text-xs text-muted-foreground mb-1">
-                                  {t("reservationManagement.tableHeaderSeat")}
-                                </p>
-                                <Button
-                                  variant="link"
-                                  className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800 text-sm"
-                                  onClick={() =>
-                                    reservation.seat?.id &&
-                                    handleSeatClick(reservation.seat.id)
-                                  }
-                                >
-                                  <Badge variant="outline" className="text-xs">
-                                    {reservation.seat.seatNumber}
-                                  </Badge>
-                                  <ExternalLink className="ml-1 h-3 w-3" />
-                                </Button>
-                              </div>
-                            )}
-
-                            <div>
-                              <p className="text-xs text-muted-foreground mb-1">
-                                {t(
-                                  "reservationManagement.tableHeaderReservedDate",
-                                )}
-                              </p>
-                              <p className="text-sm">
-                                {reservation.reservationDateTime
-                                  ? new Date(
-                                      reservation.reservationDateTime,
-                                    ).toLocaleString([], {
-                                      year: "numeric",
-                                      month: "2-digit",
-                                      day: "2-digit",
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    })
-                                  : t("reservationManagement.unknownDate")}
-                              </p>
-                            </div>
-
-                            <div className="flex gap-2 pt-2">
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                className="flex-1"
-                                onClick={() =>
-                                  handleDeleteReservation(reservation)
-                                }
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                {t("reservationManagement.deleteButtonLabel")}
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-              </div>
-            </>
-          )}
-        </PaginationWrapper>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                </div>
+              </>
+            )}
+          </PaginationWrapper>
         </CardContent>
       </Card>
 

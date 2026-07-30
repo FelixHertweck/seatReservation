@@ -8,7 +8,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/components/custom-ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n/hooks";
 import { useLoginRequiredPopup } from "@/hooks/use-login-popup";

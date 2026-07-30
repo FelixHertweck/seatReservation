@@ -8,7 +8,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/components/custom-ui/dialog";
 import { useT } from "@/lib/i18n/hooks";
 
 interface DeleteConfirmationModalProps {

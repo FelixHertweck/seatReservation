@@ -175,17 +175,9 @@ export function UserManagement({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <CardTitle className="text-xl sm:text-2xl">
-              {t("userManagement.title")}
-            </CardTitle>
-            <CardDescription className="text-sm">
-              {t("userManagement.description")}
-            </CardDescription>
-          </div>
+    <Card className="rounded-none border-0 bg-transparent shadow-none md:rounded-lg md:border md:bg-card md:shadow-sm">
+      <CardHeader className="p-0 pb-4 md:p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-end">
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             {selectedIds.size > 0 && (
               <Button
@@ -232,7 +224,7 @@ export function UserManagement({
         </div>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="p-0 md:p-6 md:pt-0">
         <PaginationWrapper
           data={sortedData}
           itemsPerPage={100}

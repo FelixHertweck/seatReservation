@@ -10,7 +10,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/components/custom-ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -85,7 +85,7 @@ export function SeatFormModal({
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent
-        className="max-w-md"
+        className="sm:max-w-md"
         onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>

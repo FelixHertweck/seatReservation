@@ -9,7 +9,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/components/custom-ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -106,7 +106,7 @@ export function EventFormModal({
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent
-        className="max-w-md max-h-[80vh] overflow-y-auto"
+        className="sm:max-w-md sm:max-h-[80vh] sm:overflow-y-auto"
         onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>

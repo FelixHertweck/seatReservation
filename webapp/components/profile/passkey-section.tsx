@@ -22,7 +22,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from "@/components/custom-ui/alert-dialog";
 import { useT } from "@/lib/i18n/hooks";
 import { useWebAuthn, useWebAuthnStatus } from "@/hooks/use-webauthn";
 import type { WebAuthnCredentialDto } from "@/api";

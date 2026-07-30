@@ -9,7 +9,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/components/custom-ui/dialog";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -149,7 +149,7 @@ export function ReservationFormModal({
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent
-        className="max-w-6xl max-h-[90vh] h-[80vh] flex flex-col p-0 sm:p-6"
+        className="flex flex-col p-0 sm:max-w-6xl sm:max-h-[90vh] sm:h-[80vh] sm:p-6"
         onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader className="pb-2 px-4 pt-4 sm:px-0 sm:pt-0">
