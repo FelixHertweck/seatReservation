@@ -10,7 +10,7 @@ import {
 } from "@/components/checkin/qr-code-scanner";
 import { ReservationSelector } from "@/components/checkin/reservation-selector";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ChevronUp, Loader2 } from "lucide-react";
+import { ArrowUp, ChevronUp, Loader2 } from "lucide-react";
 import {
   Tabs,
   TabsContent,
@@ -142,23 +142,22 @@ export default function CheckInPage() {
       <PageHeader
         title={t("checkin.title")}
         description={t("checkin.description")}
-      />
-
-      {/* Event Selector */}
-
-      <EventSelector
-        events={events}
-        isLoadingEvents={isLoadingEvents}
-        selectedEventId={selectedEventId}
-        onEventSelect={(id) => handleEventSelect(id)}
-        labelKey="checkin.eventSelector.label"
-        placeholderKey="checkin.eventSelector.placeholder"
-        noEventsKey="checkin.eventSelector.noEvents"
+        search={
+          <EventSelector
+            events={events}
+            isLoadingEvents={isLoadingEvents}
+            selectedEventId={selectedEventId}
+            onEventSelect={handleEventSelect}
+            placeholderKey="checkin.eventSelector.placeholder"
+            noEventsKey="checkin.eventSelector.noEvents"
+          />
+        }
       />
 
       {/* Show content only if event is selected */}
       {!selectedEventId ? (
-        <div className="text-center py-12 text-muted-foreground">
+        <div className="flex flex-col items-center gap-2 py-12 text-center text-muted-foreground">
+          <ArrowUp className="h-5 w-5" />
           <p className="text-lg">{t("checkin.eventSelector.selectFirst")}</p>
         </div>
       ) : isLoadingEvents || isLoadingInfo ? (

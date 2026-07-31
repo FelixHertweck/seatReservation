@@ -20,9 +20,9 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { SeatMap } from "@/components/common/seat-map";
 import SeatmapLegend from "@/components/common/seatmap-legend";
+import { UserSearchSelect } from "@/components/common/user-search-select";
 import type {
   EventResponseDto,
   ReservationRequestDto,
@@ -42,6 +42,7 @@ interface ReservationFormModalProps {
   locations: EventLocationResponseDto[];
   events: EventResponseDto[];
   reservations?: ReservationResponseDto[];
+  eventId?: string;
   onSubmit: (reservationData: ReservationRequestDto) => Promise<void>;
   onClose: () => void;
 }
@@ -52,20 +53,20 @@ export function ReservationFormModal({
   seats,
   events,
   reservations = [],
+  eventId,
   onSubmit,
   onClose,
 }: ReservationFormModalProps) {
   const t = useT();
 
   const [formData, setFormData] = useState({
-    eventId: "",
+    eventId: eventId ?? "",
     userId: "",
     seatIds: [] as string[],
     deductAllowance: true,
   });
   const [selectedSeats, setSelectedSeats] = useState<SeatDto[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [userSearch, setUserSearch] = useState("");
 
   const selectedEvent = events?.find(
     (event) => event.id?.toString() === formData.eventId,
@@ -80,18 +81,6 @@ export function ReservationFormModal({
   const availableMarkers: EventLocationMakerDto[] =
     eventLocation?.markers ?? [];
   const availableAreas: AreaDto[] = eventLocation?.areas ?? [];
-
-  const filteredUsers = users
-    .filter((user) => {
-      const username = user.username?.toLowerCase() || "";
-      const searchTerm = userSearch.toLowerCase();
-      return username.includes(searchTerm);
-    })
-    .sort((a, b) => {
-      const usernameA = a.username?.toLowerCase() || "";
-      const usernameB = b.username?.toLowerCase() || "";
-      return usernameA.localeCompare(usernameB);
-    });
 
   const handleSubmit = async (e?: React.FormEvent | React.KeyboardEvent) => {
     if (e) {
@@ -212,71 +201,45 @@ export function ReservationFormModal({
             <div className="space-y-4 sm:space-y-6">
               {/* Event and User Selection in a grid */}
               <div className="grid grid-cols-1 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="event" className="text-sm font-medium">
-                    {t("reservationFormModal.eventLabel")}
-                  </Label>
-                  <Select
-                    value={formData.eventId}
-                    onValueChange={handleEventChange}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue
-                        placeholder={t(
-                          "reservationFormModal.selectEventPlaceholder",
-                        )}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {events.map((event) => (
-                        <SelectItem
-                          key={event.id?.toString()}
-                          value={event.id?.toString() ?? "unknown"}
-                        >
-                          {event.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {!eventId && (
+                  <div className="space-y-2">
+                    <Label htmlFor="event" className="text-sm font-medium">
+                      {t("reservationFormModal.eventLabel")}
+                    </Label>
+                    <Select
+                      value={formData.eventId}
+                      onValueChange={handleEventChange}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue
+                          placeholder={t(
+                            "reservationFormModal.selectEventPlaceholder",
+                          )}
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {events.map((event) => (
+                          <SelectItem
+                            key={event.id?.toString()}
+                            value={event.id?.toString() ?? "unknown"}
+                          >
+                            {event.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="user" className="text-sm font-medium">
-                    {t("reservationFormModal.userLabel")}
-                  </Label>
-                  <Input
-                    placeholder={t(
-                      "reservationFormModal.filterUsersPlaceholder",
-                    )}
-                    value={userSearch}
-                    onChange={(e) => setUserSearch(e.target.value)}
-                    className="w-full"
-                  />
-                  <Select
-                    value={formData.userId}
-                    onValueChange={(value) =>
-                      setFormData((prev) => ({ ...prev, userId: value }))
-                    }
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue
-                        placeholder={t(
-                          "reservationFormModal.selectUserPlaceholder",
-                        )}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {filteredUsers.map((user) => (
-                        <SelectItem
-                          key={user.id?.toString()}
-                          value={user.id?.toString() ?? "unknown"}
-                        >
-                          {user.username}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <UserSearchSelect
+                  users={users}
+                  selectedUserId={formData.userId}
+                  onSelectionChange={(userId) =>
+                    setFormData((prev) => ({ ...prev, userId }))
+                  }
+                  label={t("reservationFormModal.userLabel")}
+                  placeholder={t("reservationFormModal.selectUserPlaceholder")}
+                />
               </div>
 
               {/* Selected Seats Section */}

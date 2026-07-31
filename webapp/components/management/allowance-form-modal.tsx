@@ -35,6 +35,8 @@ interface AllowanceFormModalProps {
   users: UserDto[];
   events: EventResponseDto[];
   isCreating: boolean;
+  hideEventSelector?: boolean;
+  usersWithoutAllowance?: UserDto[];
   onSubmit: (
     allowanceData: EventUserAllowancesCreateDto | EventUserAllowanceUpdateDto,
   ) => Promise<void>;
@@ -46,6 +48,8 @@ export function AllowanceFormModal({
   users,
   events,
   isCreating,
+  hideEventSelector = false,
+  usersWithoutAllowance,
   onSubmit,
   onClose,
 }: AllowanceFormModalProps) {
@@ -149,38 +153,59 @@ export function AllowanceFormModal({
           </DialogTitle>
         </DialogHeader>
         <div className="grid gap-6 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="event" className="text-right">
-              {t("allowanceFormModal.eventLabel")}
-            </Label>
-            <Select
-              value={selectedEventId}
-              onValueChange={setSelectedEventId}
-              disabled={!isCreating}
-            >
-              <SelectTrigger className="col-span-3">
-                <SelectValue
-                  placeholder={t("allowanceFormModal.selectEventPlaceholder")}
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {events.map((event) => (
-                  <SelectItem
-                    key={event.id?.toString()}
-                    value={event.id?.toString() || ""}
-                  >
-                    {event.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {!hideEventSelector && (
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="event" className="text-right">
+                {t("allowanceFormModal.eventLabel")}
+              </Label>
+              <Select
+                value={selectedEventId}
+                onValueChange={setSelectedEventId}
+                disabled={!isCreating}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue
+                    placeholder={t("allowanceFormModal.selectEventPlaceholder")}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {events.map((event) => (
+                    <SelectItem
+                      key={event.id?.toString()}
+                      value={event.id?.toString() || ""}
+                    >
+                      {event.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div className="grid grid-cols-4 items-start gap-4">
             <Label className="text-right pt-2">
               {t("allowanceFormModal.usersLabel")}
             </Label>
-            <div className="col-span-3">
+            <div className="col-span-3 space-y-2">
+              {isCreating && usersWithoutAllowance && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={usersWithoutAllowance.length === 0}
+                  onClick={() =>
+                    setSelectedUserIds(
+                      usersWithoutAllowance
+                        .map((u) => u.id?.toString())
+                        .filter((id): id is string => !!id),
+                    )
+                  }
+                >
+                  {t("allowanceFormModal.selectUsersWithoutAllowanceButton", {
+                    count: usersWithoutAllowance.length,
+                  })}
+                </Button>
+              )}
               {isCreating && (
                 <UserMultiSelect
                   users={

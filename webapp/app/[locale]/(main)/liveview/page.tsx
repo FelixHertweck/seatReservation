@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useLiveView } from "@/hooks/use-liveview";
 import { useT } from "@/lib/i18n/hooks";
-import { Loader2 } from "lucide-react";
+import { ArrowUp, Loader2 } from "lucide-react";
 import { SeatMap } from "@/components/common/seat-map";
 import { ReservationList } from "@/components/liveview/reservation-list";
 import EventSelector from "@/components/common/supervisor/event-selector";
@@ -55,21 +55,22 @@ export default function LiveViewPage() {
       <PageHeader
         title={t("liveview.title")}
         description={t("liveview.description")}
-      />
-
-      <EventSelector
-        events={events}
-        isLoadingEvents={isLoadingEvents}
-        selectedEventId={selectedEventId}
-        onEventSelect={(id) => handleEventSelect(id)}
-        labelKey="liveview.eventSelector.label"
-        placeholderKey="liveview.eventSelector.placeholder"
-        noEventsKey="liveview.eventSelector.noEvents"
+        search={
+          <EventSelector
+            events={events}
+            isLoadingEvents={isLoadingEvents}
+            selectedEventId={selectedEventId}
+            onEventSelect={handleEventSelect}
+            placeholderKey="liveview.eventSelector.placeholder"
+            noEventsKey="liveview.eventSelector.noEvents"
+          />
+        }
       />
 
       {/* Show content only if event is selected */}
       {!selectedEventId ? (
-        <div className="text-center py-12 text-muted-foreground">
+        <div className="flex flex-col items-center gap-2 py-12 text-center text-muted-foreground">
+          <ArrowUp className="h-5 w-5" />
           <p className="text-lg">{t("liveview.eventSelector.selectFirst")}</p>
         </div>
       ) : isInitialLoading ? (

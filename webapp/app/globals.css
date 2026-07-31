@@ -285,3 +285,67 @@
     }
   }
 }
+
+/* Leaflet sets `position: relative` on `.leaflet-container` via JS but
+   never gives it a `z-index`, so it never becomes its own stacking
+   context - its internal panes (tile-pane is z-index 200) escape and
+   stack directly against sibling elements like the card's gradient
+   overlay, which has no z-index of its own (auto ~= 0) and always loses.
+   Pinning it to 0 traps the panes inside so the container behaves as one
+   atomic layer for anything stacked around it. */
+.leaflet-container {
+  z-index: 0;
+}
+
+/* Leaflet ships light-only tiles; invert them for a plausible dark map
+   instead of shipping a second (paid) dark tile source. */
+.leaflet-dark-tiles .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9);
+}
+.leaflet-dark-tiles .leaflet-control-attribution {
+  background: hsl(0 0% 13% / 0.8);
+  color: hsl(0 0% 70%);
+}
+.leaflet-dark-tiles .leaflet-control-attribution a {
+  color: hsl(0 0% 85%);
+}
+
+/* Desaturate only the tile layer, not `.leaflet-container` - opacity/filter
+   on the container would trap the attribution control's z-index. */
+.location-card-map .leaflet-tile-pane {
+  filter: grayscale(35%);
+}
+/* Same specificity as the two rules above, so source order would let this
+   one's grayscale silently cancel the dark-mode invert - combine them
+   explicitly instead of relying on cascade order. */
+.leaflet-dark-tiles.location-card-map .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9)
+    grayscale(35%);
+}
+.dark .location-card-map .leaflet-control-attribution {
+  background: hsl(0 0% 13% / 0.85);
+  color: hsl(0 0% 70%);
+}
+.dark .location-card-map .leaflet-control-attribution a {
+  color: hsl(0 0% 85%);
+}
+
+/* Matches `--card`'s light (white) / dark (hsl(0 0% 13%) ~= rgb(33 33 33))
+   values directly - see the comment in location-card-map-background.tsx
+   for why this isn't done with `color-mix()` against the variable. */
+.location-card-map-fade {
+  background: linear-gradient(
+    to bottom,
+    rgb(255 255 255 / 55%),
+    rgb(255 255 255 / 78%) 55%,
+    rgb(255 255 255 / 96%)
+  );
+}
+.dark .location-card-map-fade {
+  background: linear-gradient(
+    to bottom,
+    rgb(33 33 33 / 55%),
+    rgb(33 33 33 / 78%) 55%,
+    rgb(33 33 33 / 96%)
+  );
+}
