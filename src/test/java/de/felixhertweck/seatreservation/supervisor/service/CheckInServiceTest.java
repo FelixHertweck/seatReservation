@@ -515,20 +515,8 @@ class CheckInServiceTest {
         admin.id = id(2);
         admin.setRoles(Set.of(Roles.ADMIN));
 
-        // create reservations for event
-        User uname1 = new User();
-        uname1.setUsername("user1");
-        Reservation r1 = new Reservation();
-        r1.setUser(uname1);
-        r1.setEvent(new Event());
-        r1.getEvent().id = eventId;
-
-        @SuppressWarnings("unchecked")
-        io.quarkus.hibernate.orm.panache.PanacheQuery<Reservation> q =
-                (io.quarkus.hibernate.orm.panache.PanacheQuery<Reservation>)
-                        mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
-        when(q.stream()).thenReturn(Stream.of(r1));
-        when(reservationRepository.find("event.id", eventId)).thenReturn(q);
+        when(reservationRepository.findDistinctUsernamesByEventIdAndStatusNotBlocked(eventId))
+                .thenReturn(List.of("user1"));
 
         List<String> usernames = checkInService.getUsernamesWithReservations(auth(admin), eventId);
         assertEquals(1, usernames.size());

@@ -158,11 +158,15 @@ class CheckInResourceTest {
                 (PanacheQuery<Reservation>) mock(PanacheQuery.class);
         when(reservedQueryEvent10.stream()).thenReturn(Stream.of(res1, res2));
         when(reservationRepository.find("event.id", id(10))).thenReturn(reservedQueryEvent10);
+        when(reservationRepository.findDistinctUsernamesByEventIdAndStatusNotBlocked(id(10)))
+                .thenReturn(List.of("user1", "user2"));
 
         PanacheQuery<Reservation> reservedQueryEvent20 =
                 (PanacheQuery<Reservation>) mock(PanacheQuery.class);
         when(reservedQueryEvent20.stream()).thenReturn(Stream.empty());
         when(reservationRepository.find("event.id", id(20))).thenReturn(reservedQueryEvent20);
+        when(reservationRepository.findDistinctUsernamesByEventIdAndStatusNotBlocked(id(20)))
+                .thenReturn(List.of());
     }
 
     @Test
