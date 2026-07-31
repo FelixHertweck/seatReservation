@@ -173,6 +173,14 @@ public class UserResource {
         LOG.debugf(
                 "Received DELETE request to /api/users/admin/%s for user deletion.",
                 ids != null ? ids : Collections.emptyList());
+
+        if (ids != null && ids.contains(userSecurityContext.getAuthenticatedUser().id())) {
+            LOG.warnf(
+                    "User %s attempted to delete themselves.",
+                    userSecurityContext.getAuthenticatedUser().id());
+            throw new SecurityException("You cannot delete your own user account.");
+        }
+
         userService.deleteUser(ids);
         LOG.debugf(
                 "User with ID %s deleted successfully by admin.",
