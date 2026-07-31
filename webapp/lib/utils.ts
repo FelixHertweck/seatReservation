@@ -5,6 +5,16 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * Formats a number for compact display in stat tiles (1284 -> "1,284", 12900 -> "12.9K").
+ */
+export function formatCompactNumber(value: number): string {
+  return new Intl.NumberFormat("en-US", {
+    notation: value >= 1000 ? "compact" : "standard",
+    maximumFractionDigits: 1,
+  }).format(value);
+}
+
 export function isValidRedirectUrl(decodedUrl: string): boolean {
   // Check for relative URLs
   if (decodedUrl.startsWith("/") && !decodedUrl.startsWith("//")) {

@@ -1,7 +1,6 @@
 "use client";
 
-import React from "react";
-
+import React, { useRef, useCallback, useMemo, useLayoutEffect } from "react";
 import type { ReactElement } from "react";
 
 import { cn } from "@/lib/utils";
@@ -13,26 +12,18 @@ import type {
   SeatStatusDto,
   SupervisorSeatStatusDto,
 } from "@/api";
-// Wichtig: 'useLayoutEffect' importieren
-import {
-  useState,
-  useRef,
-  useCallback,
-  useEffect,
-  useMemo,
-  useLayoutEffect,
-} from "react";
 import { useT } from "@/lib/i18n/hooks";
 import { findSeatStatus, isSupervisorSeatStatus } from "@/lib/reservationSeat";
 import { getAreaColor } from "@/lib/areaColors";
-
-// Shared grid geometry, used both for placing markers/area zones and for
-// sizing the seat grid itself.
-const SEAT_SIZE = 32;
-const GAP = 4;
-const PADDING = 16;
-const CELL_TOTAL_SIZE = SEAT_SIZE + GAP;
-const ZONE_INSET = 6;
+import {
+  SEAT_SIZE,
+  ZONE_INSET,
+  cellToPx,
+  mapPxSize,
+  gridContentPxSize,
+  boundaryToPixelPolygon,
+} from "@/components/common/seat-map-geometry";
+import { useMapViewport } from "@/components/common/use-map-viewport";
 
 interface SeatMapProps {
   seats: SeatDto[];
@@ -140,9 +131,7 @@ const MarkerComponent = React.memo(
 
         // --- Centering Logic ---
         // Calculate the original starting position of the grid cell
-        const cellLeft =
-          PADDING +
-          ((marker.coordinate?.xCoordinate ?? 1) - 1) * CELL_TOTAL_SIZE;
+        const cellLeft = cellToPx(marker.coordinate?.xCoordinate ?? 1);
         // Adjust the left position to center the new, smaller width within the cell
         const newLeft = cellLeft + (SEAT_SIZE - finalWidth) / 2;
 
@@ -159,8 +148,8 @@ const MarkerComponent = React.memo(
         className="absolute z-0 flex items-center justify-center font-bold text-gray-800 dark:text-gray-200 rounded-md overflow-hidden"
         style={{
           // Initial position and size before dynamic adjustment
-          left: `${PADDING + ((marker.coordinate?.xCoordinate ?? 1) - 1) * CELL_TOTAL_SIZE}px`,
-          top: `${PADDING + ((marker.coordinate?.yCoordinate ?? 1) - 1) * CELL_TOTAL_SIZE}px`,
+          left: `${cellToPx(marker.coordinate?.xCoordinate ?? 1)}px`,
+          top: `${cellToPx(marker.coordinate?.yCoordinate ?? 1)}px`,
           width: `${SEAT_SIZE}px`,
           height: `${SEAT_SIZE}px`,
           fontSize: "14px",
@@ -204,6 +193,9 @@ interface AreaPolygonZone {
   height: number;
   // Points relative to (left, top), as an SVG `points` attribute value.
   pointsAttr: string;
+  // Where to place the name label - the polygon's own topmost vertex, not
+  // the bounding box's corner (see boundaryToPixelPolygon).
+  labelAnchor: { x: number; y: number };
   colorIndex: number;
 }
 
@@ -283,7 +275,18 @@ const AreaPolygonZoneComponent = React.memo(
             strokeLinejoin="round"
           />
         </svg>
-        <AreaZoneLabel name={zone.name} textClass={color.text} />
+        <span
+          className={cn(
+            "absolute -translate-x-1/2 -translate-y-full px-1.5 rounded-sm bg-seatmap text-[10px] font-semibold whitespace-nowrap",
+            color.text,
+          )}
+          style={{
+            left: `${zone.labelAnchor.x}px`,
+            top: `${zone.labelAnchor.y - 4}px`,
+          }}
+        >
+          {zone.name}
+        </span>
       </div>
     );
   },
@@ -302,17 +305,6 @@ export function SeatMap({
   readonly = false,
 }: SeatMapProps): ReactElement {
   const t = useT();
-
-  const [zoom, setZoom] = useState(1);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [lastTouchDistance, setLastTouchDistance] = useState<number | null>(
-    null,
-  );
-
-  const mapRef = useRef<HTMLDivElement>(null);
-  const animationFrameRef = useRef<number | null>(null);
 
   const {
     maxX,
@@ -400,28 +392,8 @@ export function SeatMap({
         // Anchor each boundary point to the center of the referenced grid
         // cell, then push it outward from the polygon's centroid so the
         // outline doesn't just clip through the seats it encloses.
-        const rawPoints = validBoundaryPoints.map((p) => ({
-          x: PADDING + (p.xCoordinate - 1) * CELL_TOTAL_SIZE + SEAT_SIZE / 2,
-          y: PADDING + (p.yCoordinate - 1) * CELL_TOTAL_SIZE + SEAT_SIZE / 2,
-        }));
-        const centroidX =
-          rawPoints.reduce((sum, p) => sum + p.x, 0) / rawPoints.length;
-        const centroidY =
-          rawPoints.reduce((sum, p) => sum + p.y, 0) / rawPoints.length;
-        const inflatedPoints = rawPoints.map((p) => {
-          const dx = p.x - centroidX;
-          const dy = p.y - centroidY;
-          const len = Math.hypot(dx, dy) || 1;
-          return {
-            x: p.x + (dx / len) * ZONE_INSET,
-            y: p.y + (dy / len) * ZONE_INSET,
-          };
-        });
-
-        const left = Math.min(...inflatedPoints.map((p) => p.x));
-        const top = Math.min(...inflatedPoints.map((p) => p.y));
-        const width = Math.max(...inflatedPoints.map((p) => p.x)) - left;
-        const height = Math.max(...inflatedPoints.map((p) => p.y)) - top;
+        const { left, top, width, height, pointsAttr, labelAnchor } =
+          boundaryToPixelPolygon(validBoundaryPoints);
 
         return [
           {
@@ -432,9 +404,8 @@ export function SeatMap({
             top,
             width,
             height,
-            pointsAttr: inflatedPoints
-              .map((p) => `${p.x - left},${p.y - top}`)
-              .join(" "),
+            pointsAttr,
+            labelAnchor,
             colorIndex: index,
           },
         ];
@@ -462,16 +433,10 @@ export function SeatMap({
           shape: "rect" as const,
           key,
           name: area.name ?? "",
-          left: PADDING + (minX - 1) * CELL_TOTAL_SIZE - ZONE_INSET,
-          top: PADDING + (minY - 1) * CELL_TOTAL_SIZE - ZONE_INSET,
-          width:
-            (maxAreaX - minX + 1) * SEAT_SIZE +
-            (maxAreaX - minX) * GAP +
-            ZONE_INSET * 2,
-          height:
-            (maxAreaY - minY + 1) * SEAT_SIZE +
-            (maxAreaY - minY) * GAP +
-            ZONE_INSET * 2,
+          left: cellToPx(minX) - ZONE_INSET,
+          top: cellToPx(minY) - ZONE_INSET,
+          width: gridContentPxSize(maxAreaX - minX + 1) + ZONE_INSET * 2,
+          height: gridContentPxSize(maxAreaY - minY + 1) + ZONE_INSET * 2,
           colorIndex: index,
         },
       ];
@@ -487,6 +452,17 @@ export function SeatMap({
       areaZones,
     };
   }, [seats, selectedSeats, userReservedSeats, markers, areas]);
+
+  const {
+    zoom,
+    pan,
+    containerRef,
+    mapRef,
+    zoomIn,
+    zoomOut,
+    resetView,
+    panHandlers,
+  } = useMapViewport(maxX, maxY);
 
   const getSeatColor = useCallback(
     (seat: SeatDto | undefined) => {
@@ -624,176 +600,6 @@ export function SeatMap({
     ));
   }, [gridStructure, displayFlags.showSeatNumber, onSeatSelect]);
 
-  const wheelRef = useRef<HTMLDivElement>(null);
-
-  const handleWheel = useCallback((e: WheelEvent) => {
-    e.preventDefault();
-
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-    }
-
-    animationFrameRef.current = requestAnimationFrame(() => {
-      const delta = e.deltaY > 0 ? 0.9 : 1.1;
-      setZoom((prev) => Math.max(0.1, Math.min(3, prev * delta)));
-    });
-  }, []);
-
-  // Register wheel event listener as non-passive
-  useEffect(() => {
-    const element = wheelRef.current;
-    if (!element) return;
-
-    element.addEventListener("wheel", handleWheel, { passive: false });
-
-    return () => {
-      element.removeEventListener("wheel", handleWheel);
-    };
-  }, [handleWheel]);
-
-  const handleMouseDown = useCallback(
-    (e: React.MouseEvent) => {
-      if (e.button === 0) {
-        // Left mouse button
-        setIsDragging(true);
-        setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
-      }
-    },
-    [pan],
-  );
-
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent) => {
-      if (isDragging) {
-        setPan({
-          x: e.clientX - dragStart.x,
-          y: e.clientY - dragStart.y,
-        });
-      }
-    },
-    [isDragging, dragStart],
-  );
-
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false);
-  }, []);
-
-  const zoomIn = useCallback(() => {
-    setZoom((prev) => Math.min(3, prev * 1.2));
-  }, []);
-
-  const zoomOut = useCallback(() => {
-    setZoom((prev) => Math.max(0.1, prev * 0.8));
-  }, []);
-
-  const resetView = useCallback(() => {
-    if (wheelRef.current && maxX > 0 && maxY > 0) {
-      const container = wheelRef.current;
-      const containerWidth = container.clientWidth - 32;
-      const containerHeight = container.clientHeight - 120;
-
-      const seatSize = 32;
-      const gap = 4;
-      const borderPadding = 16;
-
-      const requiredWidth =
-        maxX * seatSize + (maxX - 1) * gap + borderPadding * 2;
-      const requiredHeight =
-        maxY * seatSize + (maxY - 1) * gap + borderPadding * 2;
-
-      const zoomX = containerWidth / requiredWidth;
-      const zoomY = containerHeight / requiredHeight;
-
-      const initialZoom = Math.min(zoomX, zoomY, 1);
-      setZoom(initialZoom);
-      setPan({ x: 0, y: 0 });
-    }
-  }, [maxX, maxY]);
-
-  const getTouchDistance = useCallback((touches: TouchList) => {
-    if (touches.length < 2) return 0;
-    const touch1 = touches[0];
-    const touch2 = touches[1];
-    return Math.sqrt(
-      Math.pow(touch2.clientX - touch1.clientX, 2) +
-        Math.pow(touch2.clientY - touch1.clientY, 2),
-    );
-  }, []);
-
-  const handleTouchStart = useCallback(
-    (e: TouchEvent) => {
-      if (e.touches.length === 1) {
-        // Single finger - start panning
-        const touch = e.touches[0];
-        setIsDragging(true);
-        setDragStart({ x: touch.clientX - pan.x, y: touch.clientY - pan.y });
-        setLastTouchDistance(null);
-      } else if (e.touches.length === 2) {
-        // Two fingers - start pinch zoom
-        setIsDragging(false);
-        setLastTouchDistance(getTouchDistance(e.touches));
-      }
-    },
-    [pan, getTouchDistance],
-  );
-
-  const handleTouchMove = useCallback(
-    (e: TouchEvent) => {
-      if (e.touches.length === 1 && isDragging) {
-        const touch = e.touches[0];
-        setPan({
-          x: touch.clientX - dragStart.x,
-          y: touch.clientY - dragStart.y,
-        });
-      } else if (e.touches.length === 2 && lastTouchDistance) {
-        // Two fingers - pinch zoom with throttling
-        const currentDistance = getTouchDistance(e.touches);
-        const scale = currentDistance / lastTouchDistance;
-
-        if (Math.abs(scale - 1.0) > 0.02) {
-          // Only update if significant change
-          setZoom((prev) => Math.max(0.1, Math.min(3, prev * scale)));
-          setLastTouchDistance(currentDistance);
-        }
-      }
-    },
-    [isDragging, dragStart, lastTouchDistance, getTouchDistance],
-  );
-
-  const handleTouchEnd = useCallback(() => {
-    setIsDragging(false);
-    setLastTouchDistance(null);
-  }, []);
-
-  // Register touch event listeners as non-passive
-  useEffect(() => {
-    const element = wheelRef.current;
-    if (!element) return;
-
-    element.addEventListener("touchstart", handleTouchStart);
-    element.addEventListener("touchmove", handleTouchMove);
-    element.addEventListener("touchend", handleTouchEnd);
-
-    return () => {
-      element.removeEventListener("touchstart", handleTouchStart);
-      element.removeEventListener("touchmove", handleTouchMove);
-      element.removeEventListener("touchend", handleTouchEnd);
-    };
-  }, [handleTouchStart, handleTouchMove, handleTouchEnd]);
-
-  useEffect(() => {
-    resetView();
-  }, [resetView]);
-
-  // Cleanup animation frames on unmount
-  useEffect(() => {
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, []);
-
   return (
     <div className="relative w-full h-full rounded-lg overflow-hidden">
       <div className="absolute top-2 right-2 z-10 flex gap-2">
@@ -818,12 +624,9 @@ export function SeatMap({
       </div>
 
       <div
-        ref={wheelRef}
+        ref={containerRef}
         className="w-full h-full p-4 pt-16 cursor-grab active:cursor-grabbing flex items-center justify-center"
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
+        {...panHandlers}
         style={{
           touchAction: "none",
           willChange: "transform",
@@ -843,7 +646,7 @@ export function SeatMap({
           <div
             className="border-2 border rounded-lg mb-0 bg-seatmap"
             style={{
-              width: `${maxX * SEAT_SIZE + (maxX - 1) * GAP + PADDING * 2}px`,
+              width: `${mapPxSize(maxX)}px`,
               height: "120px",
             }}
           >
@@ -855,8 +658,8 @@ export function SeatMap({
           <div
             className="border-2 border rounded-lg p-4 bg-seatmap relative"
             style={{
-              width: `${maxX * SEAT_SIZE + (maxX - 1) * GAP + PADDING * 2}px`,
-              height: `${maxY * SEAT_SIZE + (maxY - 1) * GAP + PADDING * 2}px`,
+              width: `${mapPxSize(maxX)}px`,
+              height: `${mapPxSize(maxY)}px`,
             }}
           >
             {/* Area Zone Layer - ganz im Hintergrund */}
@@ -882,7 +685,7 @@ export function SeatMap({
               className="grid gap-1 relative z-10"
               style={{
                 gridTemplateColumns: `repeat(${maxX}, 1fr)`,
-                width: `${maxX * SEAT_SIZE + (maxX - 1) * GAP}px`,
+                width: `${gridContentPxSize(maxX)}px`,
               }}
             >
               {gridItems}

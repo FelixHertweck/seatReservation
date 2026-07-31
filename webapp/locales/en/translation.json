@@ -601,7 +601,7 @@
       "placeholder": "Choose an event...",
       "loading": "Loading events...",
       "noEvents": "No events available",
-      "selectFirst": "Please select an event first to proceed with check-in."
+      "selectFirst": "Select an event at the top of the page to proceed with check-in."
     },
     "qrScanner": {
       "title": "QR Code Scanner",
@@ -657,7 +657,7 @@
       "placeholder": "Choose an event...",
       "loading": "Loading events...",
       "noEvents": "No events available",
-      "selectFirst": "Please select an event first"
+      "selectFirst": "Select an event at the top of the page"
     },
     "status": {
       "connected": "Connected",
@@ -832,6 +832,7 @@
     "noUserFound": "No user found.",
     "clearAllButton": "Clear All",
     "selectedUserLabel": "Selected User:",
+    "selectUsersWithoutAllowanceButton": "Select all without allowance ({{count}})",
     "allowedReservationsLabel": "Allowed Reservations",
     "cancelButton": "Cancel",
     "submittingButton": "Submitting...",
@@ -987,7 +988,6 @@
     "eventLabel": "Event",
     "selectEventPlaceholder": "Select an event",
     "userLabel": "User",
-    "filterUsersPlaceholder": "Filter users...",
     "selectUserPlaceholder": "Select a user",
     "selectedSeatsTitle": "Selected Seats",
     "seatSelected": "1 seat selected",
@@ -1063,6 +1063,11 @@
     "viewProfile": "View profile",
     "settings": "Settings",
     "manager": "Manager",
+    "management": "Management",
+    "managementLocations": "Locations",
+    "managementEvents": "Events",
+    "managementReservations": "Reservations",
+    "managementAllowances": "Allowances",
     "userManagement": "User Management",
     "admin": "Admin",
     "supervisor": "Supervisor",
@@ -1110,13 +1115,36 @@
     "editButtonLabel": "Edit"
   },
   "userMultiSelect": {
-    "quickSelectByTags": "Quick select by tags:",
-    "searchPlaceholder": "Search users...",
+    "searchPlaceholder": "Search by name or email...",
     "noUsersFound": "No users found",
     "noUsersAvailable": "No users available",
+    "noUsersFoundWithTags": "No users found with these tags.",
+    "tagsFilterLabel": "Filter by tags",
+    "addTagButton": "Add tag",
+    "addTagPlaceholder": "Add tag...",
+    "noTagsFound": "No matching tags",
+    "resetFilters": "Reset filters",
+    "resultsCount": "{{count}} results",
+    "resultsCountSingular": "1 result",
+    "selectAllFiltered": "Select all",
+    "deselectAllFiltered": "Deselect all",
     "selectedUsers": "Selected users",
     "removeAll": "Remove all",
     "noUsersSelected": "No users selected"
+  },
+  "userSearchSelect": {
+    "searchPlaceholder": "Search by name or email...",
+    "noUsersFound": "No users found",
+    "noUsersAvailable": "No users available",
+    "noUsersFoundWithTags": "No users found with these tags.",
+    "selectedLabel": "Selected:",
+    "tagsFilterLabel": "Filter by tags",
+    "addTagButton": "Add tag",
+    "addTagPlaceholder": "Add tag...",
+    "noTagsFound": "No matching tags",
+    "resetFilters": "Reset filters",
+    "resultsCount": "{{count}} results",
+    "resultsCountSingular": "1 result"
   },
   "pagination-wrapper": {
     "label": "Showing {{fromCount}} to {{toCount}} of {{totalCount}}"
@@ -1245,6 +1273,306 @@
       "invalidToken": "This link is invalid or has expired. Please use the newest email or link, or request a new one.",
       "tokenExpired": "This password reset link has expired. Please use the newest email or link, or request a new one.",
       "general": "Failed to reset password. Please try again."
+    }
+  },
+  "management": {
+    "nav": {
+      "label": "Management sections",
+      "overview": "Overview",
+      "locations": "Locations",
+      "events": "Events",
+      "reservations": "Reservations",
+      "allowances": "Allowances"
+    },
+    "overview": {
+      "title": "Management Dashboard",
+      "description": "Overview of your locations, events, reservations and allowances.",
+      "comingSoon": "Coming soon.",
+      "stats": {
+        "locations": "Locations",
+        "locationsSub": "{{count}} seats total",
+        "events": "Events",
+        "eventsSub": "{{count}} upcoming",
+        "bookingOpen": "Booking open now",
+        "bookingOpenSub": "events accepting reservations",
+        "reservations": "Reservations",
+        "reservationsSub": "{{reserved}} reserved · {{blocked}} blocked · {{pending}} pending",
+        "allowances": "Allowances granted",
+        "allowancesSub": "for {{count}} users"
+      },
+      "panels": {
+        "upcomingEvents": {
+          "title": "Upcoming events",
+          "empty": "No upcoming events.",
+          "occupancy": "{{reserved}}/{{capacity}} reserved"
+        },
+        "capacity": {
+          "title": "Locations",
+          "empty": "No locations yet.",
+          "seats": "{{count}} seats",
+          "events": "{{count}} events"
+        },
+        "quickActions": {
+          "title": "Quick actions",
+          "newLocation": "New location",
+          "newEvent": "New event",
+          "newReservation": "New reservation",
+          "grantAllowances": "Grant allowances"
+        },
+        "deadlines": {
+          "title": "Booking deadlines this week",
+          "empty": "No booking deadlines in the next 7 days.",
+          "deadlineOn": "Deadline {{date}}"
+        }
+      }
+    },
+    "locations": {
+      "title": "Locations",
+      "description": "Create and edit event locations, seats, markers and areas.",
+      "newLocation": "New location",
+      "importJson": "Import JSON",
+      "comingSoon": "Coming soon.",
+      "empty": "No locations yet. Create one or import a JSON document.",
+      "noResults": "No locations match your search.",
+      "capacityLabel": "Capacity",
+      "managerLabel": "Manager",
+      "seatsLabel": "{{count}} seats",
+      "markersLabel": "{{count}} markers",
+      "areasLabel": "{{count}} areas",
+      "sortLabel": "Sort by",
+      "sortByName": "Name",
+      "sortByCapacity": "Capacity",
+      "sortByAddress": "Address",
+      "paginationLabel": "locations",
+      "deleteConfirm": "Delete location \"{{name}}\"? This also deletes all its seats, markers, areas and entrances.",
+      "createSuccess": "Location created.",
+      "createError": "Failed to create location.",
+      "updateSuccess": "Location updated.",
+      "updateError": "Failed to update location.",
+      "deleteSuccess": "Location deleted.",
+      "deleteError": "Failed to delete location.",
+      "openEditor": "Open editor",
+      "form": {
+        "nameLabel": "Name",
+        "namePlaceholder": "e.g. Stadthalle",
+        "addressLabel": "Address",
+        "addressPlaceholder": "Street, city",
+        "capacityLabel": "Capacity",
+        "capacityPlaceholder": "e.g. 240",
+        "submitButton": "Create & open editor",
+        "submitting": "Creating...",
+        "cancelButton": "Cancel"
+      }
+    },
+    "locationEditor": {
+      "title": "Location Editor",
+      "comingSoon": "Coming soon.",
+      "backToLocations": "Locations",
+      "notFound": "Location not found.",
+      "tabs": {
+        "map": "Map",
+        "preview": "Preview",
+        "json": "JSON"
+      },
+      "preview": {
+        "empty": "No seats or markers yet."
+      },
+      "status": {
+        "saved": "All changes saved",
+        "saving": "Saving…",
+        "error": "{{count}} failed to save",
+        "retry": "Retry"
+      },
+      "undo": "Undo",
+      "redo": "Redo",
+      "autosaveFailed": "Change could not be saved.",
+      "positionOccupied": "Position already occupied.",
+      "details": {
+        "title": "Details",
+        "dialogDescription": "Name, address and capacity for this location.",
+        "nameLabel": "Name",
+        "addressLabel": "Address",
+        "capacityLabel": "Capacity",
+        "addressMapPlaceholder": "Enter an address above to preview it on the map",
+        "locating": "Locating…",
+        "addressNotFound": "Address not found",
+        "saveButton": "Save changes",
+        "saveSuccess": "Changes saved"
+      },
+      "selection": {
+        "title": "Selection",
+        "empty": "Click a seat, marker or area to edit it here.",
+        "seat": "Seat",
+        "marker": "Marker",
+        "area": "Area",
+        "multiple": "{{count}} selected",
+        "deleteButton": "Delete",
+        "positionLabel": "Position",
+        "assignAreaPlaceholder": "Assign area"
+      },
+      "seats": {
+        "title": "Seats",
+        "addButton": "Add seat",
+        "dialogDescription": "Create a single seat or a whole series at once.",
+        "singleTab": "Single",
+        "seriesTab": "Series",
+        "seatNumberLabel": "Number",
+        "seatRowLabel": "Row",
+        "xLabel": "X",
+        "yLabel": "Y",
+        "entranceLabel": "Entrance",
+        "areaLabel": "Area",
+        "noneOption": "None",
+        "emptyList": "No seats yet.",
+        "deleteConfirm": "Delete seat {{seatNumber}}?",
+        "deleteSelectedConfirm": "Delete {{count}} seats?"
+      },
+      "bulk": {
+        "title": "Bulk create seats",
+        "openButton": "Bulk create",
+        "startX": "Start X",
+        "startY": "Start Y",
+        "layoutLabel": "Layout",
+        "layoutRow": "Row",
+        "layoutColumn": "Column",
+        "layoutBlock": "Block",
+        "countLabel": "Count",
+        "rowsLabel": "Rows",
+        "colsLabel": "Columns",
+        "spacingLabel": "Spacing",
+        "numberStartLabel": "Start number",
+        "prefixLabel": "Prefix",
+        "seatRowLabel": "Seat row label",
+        "entranceLabel": "Entrance",
+        "areaLabel": "Area",
+        "noneOption": "None",
+        "insertButton": "Insert {{count}} seats",
+        "progress": "Creating {{done}}/{{total}}…"
+      },
+      "markers": {
+        "title": "Markers",
+        "addButton": "Add marker",
+        "dialogDescription": "Label and position of the new marker.",
+        "labelLabel": "Label",
+        "emptyList": "No markers yet.",
+        "deleteConfirm": "Delete marker \"{{label}}\"?"
+      },
+      "areas": {
+        "title": "Areas",
+        "addButton": "Add area",
+        "dialogTitle": "Add area",
+        "dialogDescription": "Name the area and optionally pick its seats. Apply right away or draw a boundary on the map.",
+        "selectSeatsLabel": "Seats (optional)",
+        "selectAll": "Select all",
+        "deselectAll": "Deselect all",
+        "cancelButton": "Cancel",
+        "applyButton": "Apply",
+        "drawButton": "Draw boundary",
+        "drawing": "Click the map to add corners, click the first point or press Enter to finish, Escape to cancel.",
+        "closeHint": "Click here to close the area.",
+        "nameLabel": "Name",
+        "seatCount": "{{count}} seats in this area",
+        "emptyList": "No areas yet.",
+        "deleteConfirm": "Delete area \"{{name}}\"?",
+        "cannotDeleteReferenced": "{{count}} seats still belong to this area.",
+        "unassignFirst": "Unassign seats & delete",
+        "assignSelection": "Assign selected seats",
+        "autoAssign": "Auto-assign",
+        "autoAssignHint": "Auto-assign seats inside boundary",
+        "clearBoundary": "Clear points",
+        "clearBoundaryHint": "Remove the manual corner points; the area will be calculated automatically from its assigned seats.",
+        "drawBoundary": "Draw points",
+        "drawBoundaryHint": "Draw manual corner points for this area on the map.",
+        "minPointsHint": "An area needs at least 3 corners.",
+        "editHint": "Click the outline to add a point. Right-click a point to delete it."
+      },
+      "entrances": {
+        "title": "Entrances",
+        "addButton": "Add entrance",
+        "dialogDescription": "Name of the new entrance.",
+        "nameLabel": "Name",
+        "emptyList": "No entrances yet.",
+        "deleteConfirm": "Delete entrance \"{{name}}\"?",
+        "cannotDeleteReferenced": "{{count}} seats still use this entrance."
+      },
+      "json": {
+        "applyButton": "Apply changes",
+        "copyButton": "Copy",
+        "downloadButton": "Download",
+        "uploadButton": "Upload",
+        "notApplied": "JSON edited but not applied yet.",
+        "discardButton": "Discard",
+        "errorsTitle": "Errors",
+        "warningsTitle": "Warnings",
+        "applied": "JSON changes applied."
+      },
+      "canvas": {
+        "collisionHint": "Cell already occupied",
+        "snapHint": "Corners snap to the grid"
+      }
+    },
+    "events": {
+      "title": "Events",
+      "description": "Create and manage events for your locations.",
+      "comingSoon": "Coming soon.",
+      "newEvent": "New event",
+      "empty": "No events yet.",
+      "noResults": "No events match your search.",
+      "noLocation": "No location",
+      "occupancy": "{{reserved}}/{{capacity}} reserved",
+      "bookingWindow": "Booking {{start}} – {{deadline}}",
+      "supervisorsCount": "{{count}} supervisors",
+      "editButton": "Edit",
+      "deleteConfirm": "Delete event \"{{name}}\"?",
+      "viewReservations": "Reservations",
+      "viewAllowances": "Allowances",
+      "createSuccess": "Event created.",
+      "createError": "Failed to create event.",
+      "updateSuccess": "Event updated.",
+      "updateError": "Failed to update event.",
+      "deleteSuccess": "Event deleted.",
+      "deleteError": "Failed to delete event."
+    },
+    "reservations": {
+      "title": "Reservations",
+      "description": "View and create reservations.",
+      "comingSoon": "Coming soon.",
+      "selectEventPrompt": "Select an event at the top of the page to view its reservations.",
+      "newReservation": "New reservation",
+      "blockSeats": "Block seats",
+      "exportCsv": "Export CSV",
+      "exportPdf": "Export PDF",
+      "empty": "No reservations for this event yet.",
+      "tableUser": "User",
+      "tableSeat": "Seat",
+      "tableStatus": "Status",
+      "tableDate": "Date",
+      "deleteConfirm": "Delete {{count}} reservation(s)?",
+      "createSuccess": "Reservation created.",
+      "createError": "Failed to create reservation.",
+      "blockSuccess": "Seats blocked.",
+      "blockError": "Failed to block seats.",
+      "deleteSuccess": "Reservation(s) deleted.",
+      "deleteError": "Failed to delete reservation(s)."
+    },
+    "allowances": {
+      "title": "Allowances",
+      "description": "Create and manage reservation allowances.",
+      "comingSoon": "Coming soon.",
+      "selectEventPrompt": "Select an event at the top of the page to view its allowances.",
+      "coverage": "{{withAllowance}} of {{total}} users have an allowance",
+      "totalGranted": "{{count}} reservations allowed in total",
+      "grantButton": "Grant allowances",
+      "empty": "No allowances for this event yet.",
+      "tableUser": "User",
+      "tableCount": "Allowed reservations",
+      "deleteConfirm": "Delete {{count}} allowance(s)?",
+      "grantSuccess": "Allowance(s) granted.",
+      "grantError": "Failed to grant allowance(s).",
+      "updateSuccess": "Allowance updated.",
+      "updateError": "Failed to update allowance.",
+      "deleteSuccess": "Allowance(s) deleted.",
+      "deleteError": "Failed to delete allowance(s)."
     }
   }
 }

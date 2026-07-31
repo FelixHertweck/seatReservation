@@ -18,6 +18,9 @@ import {
   LogIn as CheckInIcon,
   LucideIcon,
   CalendarCog,
+  LayoutDashboard,
+  MapPinned,
+  Ticket,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -139,6 +142,34 @@ export function AppSidebar() {
 
     const managementItems: MenuItem[] = [];
     if (user?.roles?.includes("MANAGER") || user?.roles?.includes("ADMIN")) {
+      managementItems.push({
+        title: t("sidebar.management"),
+        url: "/management",
+        icon: LayoutDashboard,
+        badge: t("sidebar.manager"),
+        subItems: [
+          {
+            title: t("sidebar.managementLocations"),
+            url: "/management/locations",
+            icon: MapPinned,
+          },
+          {
+            title: t("sidebar.managementEvents"),
+            url: "/management/events",
+            icon: CalendarDays,
+          },
+          {
+            title: t("sidebar.managementReservations"),
+            url: "/management/reservations",
+            icon: BookmarkCheck,
+          },
+          {
+            title: t("sidebar.managementAllowances"),
+            url: "/management/allowances",
+            icon: Ticket,
+          },
+        ],
+      });
       managementItems.push({
         title: t("sidebar.manager"),
         url: "/manager",
@@ -323,7 +354,7 @@ export function AppSidebar() {
           <div
             className="relative w-full h-full flex items-center justify-center"
             style={{
-              height: showLargeLogo ? (openMobile ? "80px" : "100px") : "59px",
+              height: showLargeLogo ? (openMobile ? "82px" : "102px") : "59px",
               transition: "height 520ms cubic-bezier(0.2,0.9,0.2,1)",
             }}
           >

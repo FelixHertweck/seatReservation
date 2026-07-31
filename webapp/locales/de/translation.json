@@ -687,6 +687,7 @@
     "noUserFound": "Kein Benutzer gefunden.",
     "clearAllButton": "Alle löschen",
     "selectedUserLabel": "Ausgewählter Benutzer:",
+    "selectUsersWithoutAllowanceButton": "Alle ohne Kontingent auswählen ({{count}})",
     "allowedReservationsLabel": "Erlaubte Reservierungen",
     "cancelButton": "Abbrechen",
     "submittingButton": "Wird übermittelt...",
@@ -842,7 +843,6 @@
     "eventLabel": "Veranstaltung",
     "selectEventPlaceholder": "Veranstaltung auswählen",
     "userLabel": "Benutzer",
-    "filterUsersPlaceholder": "Benutzer filtern...",
     "selectUserPlaceholder": "Benutzer auswählen",
     "selectedSeatsTitle": "Ausgewählte Plätze",
     "seatSelected": "1 Platz ausgewählt",
@@ -918,6 +918,11 @@
     "viewProfile": "Profil ansehen",
     "settings": "Einstellungen",
     "manager": "Manager",
+    "management": "Management",
+    "managementLocations": "Locations",
+    "managementEvents": "Veranstaltungen",
+    "managementReservations": "Reservierungen",
+    "managementAllowances": "Kontingente",
     "userManagement": "Benutzer-Verwaltung",
     "admin": "Admin",
     "supervisor": "Supervisor",
@@ -965,13 +970,36 @@
     "editButtonLabel": "Bearbeiten"
   },
   "userMultiSelect": {
-    "quickSelectByTags": "Schnellauswahl nach Tags:",
-    "searchPlaceholder": "Benutzer suchen...",
+    "searchPlaceholder": "Name oder E-Mail suchen...",
     "noUsersFound": "Keine Benutzer gefunden",
     "noUsersAvailable": "Keine Benutzer verfügbar",
+    "noUsersFoundWithTags": "Keine Nutzer mit diesen Tags gefunden.",
+    "tagsFilterLabel": "Nach Tags filtern",
+    "addTagButton": "Tag hinzufügen",
+    "addTagPlaceholder": "Tag hinzufügen...",
+    "noTagsFound": "Keine passenden Tags",
+    "resetFilters": "Filter zurücksetzen",
+    "resultsCount": "{{count}} Ergebnisse",
+    "resultsCountSingular": "1 Ergebnis",
+    "selectAllFiltered": "Alle auswählen",
+    "deselectAllFiltered": "Alle abwählen",
     "selectedUsers": "Ausgewählte Benutzer",
     "removeAll": "Alle entfernen",
     "noUsersSelected": "Keine Benutzer ausgewählt"
+  },
+  "userSearchSelect": {
+    "searchPlaceholder": "Name oder E-Mail suchen...",
+    "noUsersFound": "Keine Benutzer gefunden",
+    "noUsersAvailable": "Keine Benutzer verfügbar",
+    "noUsersFoundWithTags": "Keine Nutzer mit diesen Tags gefunden.",
+    "selectedLabel": "Ausgewählt:",
+    "tagsFilterLabel": "Nach Tags filtern",
+    "addTagButton": "Tag hinzufügen",
+    "addTagPlaceholder": "Tag hinzufügen...",
+    "noTagsFound": "Keine passenden Tags",
+    "resetFilters": "Filter zurücksetzen",
+    "resultsCount": "{{count}} Ergebnisse",
+    "resultsCountSingular": "1 Ergebnis"
   },
   "pagination-wrapper": {
     "label": "Zeige {{fromCount}} bis {{toCount}} von {{totalCount}}"
@@ -1067,7 +1095,7 @@
       "placeholder": "Wähle ein Event...",
       "loading": "Events werden geladen...",
       "noEvents": "Keine Veranstaltungen verfügbar",
-      "selectFirst": "Bitte wähle zuerst ein Event aus, um mit dem Check-In fortzufahren."
+      "selectFirst": "Wähle oben im Header ein Event aus, um mit dem Check-In fortzufahren."
     },
     "qrScanner": {
       "title": "QR-Code Scanner",
@@ -1123,7 +1151,7 @@
       "placeholder": "Wähle ein Event...",
       "loading": "Events werden geladen...",
       "noEvents": "Keine Veranstaltungen verfügbar",
-      "selectFirst": "Bitte wähle zuerst ein Event aus"
+      "selectFirst": "Wähle oben im Header ein Event aus"
     },
     "status": {
       "connected": "Verbunden",
@@ -1245,6 +1273,306 @@
       "invalidToken": "Dieser Link ist ungültig oder abgelaufen. Bitte verwenden Sie die neueste E-Mail bzw. den neuesten Link oder fordern Sie einen neuen an.",
       "tokenExpired": "Dieser Link zum Zurücksetzen des Passworts ist abgelaufen. Bitte verwenden Sie die neueste E-Mail bzw. den neuesten Link oder fordern Sie einen neuen an.",
       "general": "Fehler beim Zurücksetzen des Passworts. Bitte versuchen Sie es erneut."
+    }
+  },
+  "management": {
+    "nav": {
+      "label": "Verwaltungsbereiche",
+      "overview": "Übersicht",
+      "locations": "Locations",
+      "events": "Veranstaltungen",
+      "reservations": "Reservierungen",
+      "allowances": "Kontingente"
+    },
+    "overview": {
+      "title": "Management-Dashboard",
+      "description": "Übersicht über Locations, Veranstaltungen, Reservierungen und Kontingente.",
+      "comingSoon": "Demnächst verfügbar.",
+      "stats": {
+        "locations": "Locations",
+        "locationsSub": "{{count}} Sitze insgesamt",
+        "events": "Veranstaltungen",
+        "eventsSub": "{{count}} bevorstehend",
+        "bookingOpen": "Buchung aktuell offen",
+        "bookingOpenSub": "Veranstaltungen mit offener Buchung",
+        "reservations": "Reservierungen",
+        "reservationsSub": "{{reserved}} reserviert · {{blocked}} blockiert · {{pending}} ausstehend",
+        "allowances": "Vergebene Kontingente",
+        "allowancesSub": "für {{count}} Nutzer"
+      },
+      "panels": {
+        "upcomingEvents": {
+          "title": "Bevorstehende Veranstaltungen",
+          "empty": "Keine bevorstehenden Veranstaltungen.",
+          "occupancy": "{{reserved}}/{{capacity}} reserviert"
+        },
+        "capacity": {
+          "title": "Locations",
+          "empty": "Noch keine Locations.",
+          "seats": "{{count}} Sitze",
+          "events": "{{count}} Veranstaltungen"
+        },
+        "quickActions": {
+          "title": "Schnellaktionen",
+          "newLocation": "Neue Location",
+          "newEvent": "Neue Veranstaltung",
+          "newReservation": "Neue Reservierung",
+          "grantAllowances": "Kontingente vergeben"
+        },
+        "deadlines": {
+          "title": "Buchungsfristen diese Woche",
+          "empty": "Keine Buchungsfristen in den nächsten 7 Tagen.",
+          "deadlineOn": "Frist {{date}}"
+        }
+      }
+    },
+    "locations": {
+      "title": "Locations",
+      "description": "Event-Locations mit Sitzen, Markern und Bereichen anlegen und bearbeiten.",
+      "newLocation": "Neue Location",
+      "importJson": "JSON importieren",
+      "comingSoon": "Demnächst verfügbar.",
+      "empty": "Noch keine Locations. Lege eine an oder importiere ein JSON-Dokument.",
+      "noResults": "Keine Locations gefunden.",
+      "capacityLabel": "Kapazität",
+      "managerLabel": "Manager",
+      "seatsLabel": "{{count}} Sitze",
+      "markersLabel": "{{count}} Marker",
+      "areasLabel": "{{count}} Bereiche",
+      "sortLabel": "Sortieren nach",
+      "sortByName": "Name",
+      "sortByCapacity": "Kapazität",
+      "sortByAddress": "Adresse",
+      "paginationLabel": "Locations",
+      "deleteConfirm": "Location \"{{name}}\" löschen? Damit werden auch alle Sitze, Marker, Bereiche und Eingänge gelöscht.",
+      "createSuccess": "Location erstellt.",
+      "createError": "Location konnte nicht erstellt werden.",
+      "updateSuccess": "Location aktualisiert.",
+      "updateError": "Location konnte nicht aktualisiert werden.",
+      "deleteSuccess": "Location gelöscht.",
+      "deleteError": "Location konnte nicht gelöscht werden.",
+      "openEditor": "Editor öffnen",
+      "form": {
+        "nameLabel": "Name",
+        "namePlaceholder": "z.B. Stadthalle",
+        "addressLabel": "Adresse",
+        "addressPlaceholder": "Straße, Ort",
+        "capacityLabel": "Kapazität",
+        "capacityPlaceholder": "z.B. 240",
+        "submitButton": "Erstellen & Editor öffnen",
+        "submitting": "Wird erstellt...",
+        "cancelButton": "Abbrechen"
+      }
+    },
+    "locationEditor": {
+      "title": "Location-Editor",
+      "comingSoon": "Demnächst verfügbar.",
+      "backToLocations": "Locations",
+      "notFound": "Location nicht gefunden.",
+      "tabs": {
+        "map": "Karte",
+        "preview": "Vorschau",
+        "json": "JSON"
+      },
+      "preview": {
+        "empty": "Noch keine Sitzplätze oder Marker vorhanden."
+      },
+      "status": {
+        "saved": "Alle Änderungen gespeichert",
+        "saving": "Speichern…",
+        "error": "{{count}} konnten nicht gespeichert werden",
+        "retry": "Erneut versuchen"
+      },
+      "undo": "Rückgängig",
+      "redo": "Wiederholen",
+      "autosaveFailed": "Änderung konnte nicht gespeichert werden.",
+      "positionOccupied": "Position bereits belegt.",
+      "details": {
+        "title": "Details",
+        "dialogDescription": "Name, Adresse und Kapazität dieser Location.",
+        "nameLabel": "Name",
+        "addressLabel": "Adresse",
+        "capacityLabel": "Kapazität",
+        "addressMapPlaceholder": "Adresse oben eingeben, um sie auf der Karte zu sehen",
+        "locating": "Suche Adresse…",
+        "addressNotFound": "Adresse nicht gefunden",
+        "saveButton": "Änderungen speichern",
+        "saveSuccess": "Änderungen gespeichert"
+      },
+      "selection": {
+        "title": "Auswahl",
+        "empty": "Klicke auf einen Sitz, Marker oder Bereich, um ihn hier zu bearbeiten.",
+        "seat": "Sitz",
+        "marker": "Marker",
+        "area": "Bereich",
+        "multiple": "{{count}} ausgewählt",
+        "deleteButton": "Löschen",
+        "positionLabel": "Position",
+        "assignAreaPlaceholder": "Bereich zuweisen"
+      },
+      "seats": {
+        "title": "Sitze",
+        "addButton": "Sitz hinzufügen",
+        "dialogDescription": "Erstelle einen einzelnen Sitz oder gleich eine ganze Serie.",
+        "singleTab": "Einzeln",
+        "seriesTab": "Serie",
+        "seatNumberLabel": "Nummer",
+        "seatRowLabel": "Reihe",
+        "xLabel": "X",
+        "yLabel": "Y",
+        "entranceLabel": "Eingang",
+        "areaLabel": "Bereich",
+        "noneOption": "Keiner",
+        "emptyList": "Noch keine Sitze.",
+        "deleteConfirm": "Sitz {{seatNumber}} löschen?",
+        "deleteSelectedConfirm": "{{count}} Sitze löschen?"
+      },
+      "bulk": {
+        "title": "Sitze in Serie erstellen",
+        "openButton": "Serienerstellung",
+        "startX": "Start X",
+        "startY": "Start Y",
+        "layoutLabel": "Anordnung",
+        "layoutRow": "Reihe",
+        "layoutColumn": "Spalte",
+        "layoutBlock": "Block",
+        "countLabel": "Anzahl",
+        "rowsLabel": "Reihen",
+        "colsLabel": "Spalten",
+        "spacingLabel": "Abstand",
+        "numberStartLabel": "Startnummer",
+        "prefixLabel": "Präfix",
+        "seatRowLabel": "Reihenbezeichnung",
+        "entranceLabel": "Eingang",
+        "areaLabel": "Bereich",
+        "noneOption": "Keiner",
+        "insertButton": "{{count}} Sitze einfügen",
+        "progress": "Erstelle {{done}}/{{total}}…"
+      },
+      "markers": {
+        "title": "Marker",
+        "addButton": "Marker hinzufügen",
+        "dialogDescription": "Beschriftung und Position des neuen Markers.",
+        "labelLabel": "Beschriftung",
+        "emptyList": "Noch keine Marker.",
+        "deleteConfirm": "Marker \"{{label}}\" löschen?"
+      },
+      "areas": {
+        "title": "Bereiche",
+        "addButton": "Bereich hinzufügen",
+        "dialogTitle": "Bereich hinzufügen",
+        "dialogDescription": "Vergib einen Namen und wähle optional die Sitze des Bereichs aus. Direkt übernehmen oder eine Umrandung auf der Karte zeichnen.",
+        "selectSeatsLabel": "Sitze (optional)",
+        "selectAll": "Alle auswählen",
+        "deselectAll": "Auswahl aufheben",
+        "cancelButton": "Abbrechen",
+        "applyButton": "Übernehmen",
+        "drawButton": "Umrandung zeichnen",
+        "drawing": "Auf die Karte klicken, um Ecken hinzuzufügen. Ersten Punkt anklicken oder Enter drücken zum Abschließen, Escape zum Abbrechen.",
+        "closeHint": "Hier klicken, um den Bereich zu schließen.",
+        "nameLabel": "Name",
+        "seatCount": "{{count}} Sitze in diesem Bereich",
+        "emptyList": "Noch keine Bereiche.",
+        "deleteConfirm": "Bereich \"{{name}}\" löschen?",
+        "cannotDeleteReferenced": "{{count}} Sitze gehören noch zu diesem Bereich.",
+        "unassignFirst": "Sitze lösen & löschen",
+        "assignSelection": "Ausgewählte Sitze zuweisen",
+        "autoAssign": "Automatisch zuweisen",
+        "autoAssignHint": "Sitze innerhalb der Grenze automatisch zuweisen",
+        "clearBoundary": "Punkte entfernen",
+        "clearBoundaryHint": "Manuelle Eckpunkte entfernen; die Fläche wird automatisch anhand der zugewiesenen Sitzplätze berechnet.",
+        "drawBoundary": "Punkte zeichnen",
+        "drawBoundaryHint": "Manuelle Eckpunkte für diesen Bereich auf der Karte zeichnen.",
+        "minPointsHint": "Ein Bereich benötigt mindestens 3 Ecken.",
+        "editHint": "Auf die Umrandung klicken, um einen Punkt hinzuzufügen. Rechtsklick auf einen Punkt zum Löschen."
+      },
+      "entrances": {
+        "title": "Eingänge",
+        "addButton": "Eingang hinzufügen",
+        "dialogDescription": "Name des neuen Eingangs.",
+        "nameLabel": "Name",
+        "emptyList": "Noch keine Eingänge.",
+        "deleteConfirm": "Eingang \"{{name}}\" löschen?",
+        "cannotDeleteReferenced": "{{count}} Sitze nutzen noch diesen Eingang."
+      },
+      "json": {
+        "applyButton": "Änderungen anwenden",
+        "copyButton": "Kopieren",
+        "downloadButton": "Herunterladen",
+        "uploadButton": "Hochladen",
+        "notApplied": "JSON bearbeitet, aber noch nicht angewendet.",
+        "discardButton": "Verwerfen",
+        "errorsTitle": "Fehler",
+        "warningsTitle": "Warnungen",
+        "applied": "JSON-Änderungen angewendet."
+      },
+      "canvas": {
+        "collisionHint": "Zelle bereits belegt",
+        "snapHint": "Ecken rasten am Raster ein"
+      }
+    },
+    "events": {
+      "title": "Veranstaltungen",
+      "description": "Veranstaltungen für deine Locations anlegen und verwalten.",
+      "comingSoon": "Demnächst verfügbar.",
+      "newEvent": "Neue Veranstaltung",
+      "empty": "Noch keine Veranstaltungen.",
+      "noResults": "Keine Veranstaltungen gefunden.",
+      "noLocation": "Keine Location",
+      "occupancy": "{{reserved}}/{{capacity}} reserviert",
+      "bookingWindow": "Buchung {{start}} – {{deadline}}",
+      "supervisorsCount": "{{count}} Supervisor",
+      "editButton": "Bearbeiten",
+      "deleteConfirm": "Veranstaltung \"{{name}}\" löschen?",
+      "viewReservations": "Reservierungen",
+      "viewAllowances": "Kontingente",
+      "createSuccess": "Veranstaltung erstellt.",
+      "createError": "Veranstaltung konnte nicht erstellt werden.",
+      "updateSuccess": "Veranstaltung aktualisiert.",
+      "updateError": "Veranstaltung konnte nicht aktualisiert werden.",
+      "deleteSuccess": "Veranstaltung gelöscht.",
+      "deleteError": "Veranstaltung konnte nicht gelöscht werden."
+    },
+    "reservations": {
+      "title": "Reservierungen",
+      "description": "Reservierungen ansehen und erstellen.",
+      "comingSoon": "Demnächst verfügbar.",
+      "selectEventPrompt": "Wähle oben im Header eine Veranstaltung aus, um ihre Reservierungen zu sehen.",
+      "newReservation": "Neue Reservierung",
+      "blockSeats": "Sitze blockieren",
+      "exportCsv": "CSV exportieren",
+      "exportPdf": "PDF exportieren",
+      "empty": "Noch keine Reservierungen für diese Veranstaltung.",
+      "tableUser": "Benutzer",
+      "tableSeat": "Sitz",
+      "tableStatus": "Status",
+      "tableDate": "Datum",
+      "deleteConfirm": "{{count}} Reservierung(en) löschen?",
+      "createSuccess": "Reservierung erstellt.",
+      "createError": "Reservierung konnte nicht erstellt werden.",
+      "blockSuccess": "Sitze blockiert.",
+      "blockError": "Sitze konnten nicht blockiert werden.",
+      "deleteSuccess": "Reservierung(en) gelöscht.",
+      "deleteError": "Reservierung(en) konnten nicht gelöscht werden."
+    },
+    "allowances": {
+      "title": "Kontingente",
+      "description": "Reservierungs-Kontingente anlegen und verwalten.",
+      "comingSoon": "Demnächst verfügbar.",
+      "selectEventPrompt": "Wähle oben im Header eine Veranstaltung aus, um ihre Kontingente zu sehen.",
+      "coverage": "{{withAllowance}} von {{total}} Nutzern haben ein Kontingent",
+      "totalGranted": "{{count}} Reservierungen insgesamt erlaubt",
+      "grantButton": "Kontingente vergeben",
+      "empty": "Noch keine Kontingente für diese Veranstaltung.",
+      "tableUser": "Benutzer",
+      "tableCount": "Erlaubte Reservierungen",
+      "deleteConfirm": "{{count}} Kontingent(e) löschen?",
+      "grantSuccess": "Kontingent(e) vergeben.",
+      "grantError": "Kontingent(e) konnten nicht vergeben werden.",
+      "updateSuccess": "Kontingent aktualisiert.",
+      "updateError": "Kontingent konnte nicht aktualisiert werden.",
+      "deleteSuccess": "Kontingent(e) gelöscht.",
+      "deleteError": "Kontingent(e) konnten nicht gelöscht werden."
     }
   }
 }

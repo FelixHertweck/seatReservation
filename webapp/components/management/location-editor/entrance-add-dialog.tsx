@@ -1,0 +1,68 @@
+"use client";
+
+import { useState } from "react";
+import { Plus } from "lucide-react";
+
+import { useT } from "@/lib/i18n/hooks";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/custom-ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import type { useLocationAutosave } from "@/components/management/location-editor/use-location-autosave";
+
+interface EntranceAddDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  autosave: ReturnType<typeof useLocationAutosave>;
+}
+
+export function EntranceAddDialog({
+  open,
+  onOpenChange,
+  autosave,
+}: EntranceAddDialogProps) {
+  const t = useT();
+  const [name, setName] = useState("");
+
+  const handleAdd = () => {
+    if (!name.trim()) return;
+    autosave.addEntrance({ name: name.trim() });
+    setName("");
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>
+            {t("management.locationEditor.entrances.addButton")}
+          </DialogTitle>
+          <DialogDescription>
+            {t("management.locationEditor.entrances.dialogDescription")}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <Label>{t("management.locationEditor.entrances.nameLabel")}</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+          <Button
+            size="sm"
+            className="w-full"
+            onClick={handleAdd}
+            disabled={!name.trim()}
+          >
+            <Plus className="h-4 w-4" />
+            {t("management.locationEditor.entrances.addButton")}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
