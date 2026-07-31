@@ -295,13 +295,12 @@ public class CheckInService {
         if (currentUser != null && !isAuthorizedForEvent(currentUser, eventId)) {
             throw new SecurityException("User is not authorized to access event " + eventId);
         }
-        return reservationRepository.find("event.id", eventId).stream()
-                .filter(r -> r.getStatus() != ReservationStatus.BLOCKED)
-                .map(Reservation::getUser)
-                .filter(Objects::nonNull)
-                .map(User::getUsername)
-                .distinct()
-                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+
+        // ⚡ Bolt: Performance optimization
+        // Use an HQL projection to fetch only distinct usernames directly from the database.
+        // This avoids N+1 queries and fetching full entities (Reservation/User) into memory
+        // and streaming over them just to extract the username.
+        return reservationRepository.findDistinctUsernamesByEventIdAndStatusNotBlocked(eventId);
     }
 
     // Backwards-compatible overload
