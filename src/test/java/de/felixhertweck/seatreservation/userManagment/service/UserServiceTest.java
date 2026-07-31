@@ -67,6 +67,7 @@ import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserProfileUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.exceptions.VerificationCodeNotFoundException;
 import de.felixhertweck.seatreservation.userManagment.exceptions.VerifyTokenExpiredException;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.test.InjectMock;
@@ -928,7 +929,10 @@ public class UserServiceTest {
         when(userRepository.find("id in ?1", List.of(id(1)))).thenReturn(mockQuery);
         when(userRepository.delete("id in ?1", List.of(id(1)))).thenReturn(1L);
 
-        userService.deleteUser(List.of(id(1)));
+        // the caller has a different id
+        AuthenticatedUser caller = new AuthenticatedUser(id(2), Set.of(Roles.ADMIN));
+
+        userService.deleteUser(List.of(id(1)), caller);
 
         verify(userRepository, times(1)).delete("id in ?1", List.of(id(1)));
     }
@@ -939,7 +943,36 @@ public class UserServiceTest {
         when(mockQuery.list()).thenReturn(Collections.emptyList());
         when(userRepository.find("id in ?1", List.of(id(1)))).thenReturn(mockQuery);
 
-        assertThrows(UserNotFoundException.class, () -> userService.deleteUser(List.of(id(1))));
+        AuthenticatedUser caller = new AuthenticatedUser(id(2), Set.of(Roles.ADMIN));
+
+        assertThrows(
+                UserNotFoundException.class, () -> userService.deleteUser(List.of(id(1)), caller));
+        verify(userRepository, never()).delete(any(User.class));
+    }
+
+    @Test
+    void deleteUser_SecurityException_CannotDeleteSelf() {
+        User existingUser =
+                new User(
+                        "admin",
+                        "admin@example.com",
+                        true,
+                        false,
+                        "hash",
+                        "salt",
+                        "Admin",
+                        "User",
+                        Collections.singleton(Roles.ADMIN),
+                        Collections.emptySet());
+        existingUser.id = id(1);
+
+        PanacheQuery<User> mockQuery = Mockito.mock(PanacheQuery.class);
+        when(mockQuery.list()).thenReturn(List.of(existingUser));
+        when(userRepository.find("id in ?1", List.of(id(1)))).thenReturn(mockQuery);
+
+        AuthenticatedUser caller = new AuthenticatedUser(id(1), Set.of(Roles.ADMIN));
+
+        assertThrows(SecurityException.class, () -> userService.deleteUser(List.of(id(1)), caller));
         verify(userRepository, never()).delete(any(User.class));
     }
 
