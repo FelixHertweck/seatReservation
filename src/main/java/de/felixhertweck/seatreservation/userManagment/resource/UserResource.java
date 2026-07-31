@@ -26,6 +26,7 @@ import java.util.UUID;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -173,6 +174,10 @@ public class UserResource {
         LOG.debugf(
                 "Received DELETE request to /api/users/admin/%s for user deletion.",
                 ids != null ? ids : Collections.emptyList());
+        if (ids != null && ids.contains(userSecurityContext.getAuthenticatedUser().id())) {
+            LOG.warn("Admin attempted to delete their own account.");
+            throw new BadRequestException("You cannot delete your own account.");
+        }
         userService.deleteUser(ids);
         LOG.debugf(
                 "User with ID %s deleted successfully by admin.",
