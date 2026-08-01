@@ -1,3 +1,6 @@
 ## 2026-07-30 - N+1 Query in CheckInService.getUsernamesWithReservations
 **Learning:** Found a performance bottleneck where `getUsernamesWithReservations` fetches all `Reservation` objects into memory just to map them to `User` objects, then map them to `username`s, filter out nulls, apply `distinct()`, and then collect into a list. The N+1 query issue comes into play because `Reservation::getUser` triggers lazy fetching of the User entity if not properly initialized, or when fetching massive amounts of reservations and extracting their usernames manually in Java.
 **Action:** Always prefer pushing filtering and aggregations (like `distinct` or fetching only a specific column like `username`) directly to the database via HQL/SQL rather than fetching full entities and filtering/mapping via Java streams.
+## 2026-08-01 - Fix N+1 Query in EventService.getEventsForCurrentUser
+**Learning:** Found an N+1 query issue where fetching reservations in bulk (event.id in ?1) still resulted in lazy-loading the associated `Seat` entities when mapping to DTOs in a loop later, because they were not eagerly fetched.
+**Action:** Use `left join fetch` in Panache HQL queries (e.g., `select r from Reservation r left join fetch r.seat`) when bulk-loading entities if their associations will be accessed during DTO projection to prevent N+1 queries.
