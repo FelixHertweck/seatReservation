@@ -28,6 +28,8 @@ import java.util.UUID;
 import jakarta.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -105,7 +107,7 @@ class EventServiceTest {
     @SuppressWarnings("unchecked")
     private void mockReservationsByEventQuery(Set<UUID> eventIds, List<Reservation> result) {
         PanacheQuery<Reservation> query = mock(PanacheQuery.class);
-        when(reservationRepository.find("event.id in ?1", eventIds)).thenReturn(query);
+        when(reservationRepository.find(anyString(), (Object[]) any())).thenReturn(query);
         when(query.list()).thenReturn(result);
     }
 
