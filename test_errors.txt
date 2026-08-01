@@ -1,5 +1,0 @@
-[ERROR]   CheckInResourceTest.testGetUsernamesWithReservations:384 1 expectation failed.
-[ERROR]   CheckInResourceTest.testGetUsernamesWithReservations_AsAdmin:400 1 expectation failed.
-[ERROR]   CheckInResourceTest.testGetUsernamesWithReservations_AsManagerForEvent:416 1 expectation failed.
-[ERROR]   CheckInResourceTest.testGetUsernamesWithReservations_SupervisorAccess:444 1 expectation failed.
-[ERROR]   CheckInServiceTest.testGetUsernamesWithReservations_AdminAllowed:534 expected: <1> but was: <0>

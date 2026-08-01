@@ -36,8 +36,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.model.entity.Event;
-import de.felixhertweck.seatreservation.model.entity.Reservation;
-import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
@@ -139,32 +137,8 @@ class CheckInResourceTest {
                 .thenReturn(List.of(event10, event20)); // Though admin will use findAll().list()
 
         // Mock reservations for event 10 (two usernames) and for event 20 none
-        User r1 = new User();
-        r1.setUsername("user1");
-        User r2 = new User();
-        r2.setUsername("user2");
-        Reservation res1 = new Reservation();
-        res1.id = id(1);
-        res1.setUser(r1);
-        res1.setEvent(event10);
-        res1.setStatus(ReservationStatus.RESERVED);
-        Reservation res2 = new Reservation();
-        res2.id = id(2);
-        res2.setUser(r2);
-        res2.setEvent(event10);
-        res2.setStatus(ReservationStatus.RESERVED);
-
-        PanacheQuery<Reservation> reservedQueryEvent10 =
-                (PanacheQuery<Reservation>) mock(PanacheQuery.class);
-        when(reservedQueryEvent10.stream()).thenReturn(Stream.of(res1, res2));
-        when(reservationRepository.find("event.id", id(10))).thenReturn(reservedQueryEvent10);
         when(reservationRepository.findDistinctUsernamesByEventIdAndStatusNotBlocked(id(10)))
                 .thenReturn(List.of("user1", "user2"));
-
-        PanacheQuery<Reservation> reservedQueryEvent20 =
-                (PanacheQuery<Reservation>) mock(PanacheQuery.class);
-        when(reservedQueryEvent20.stream()).thenReturn(Stream.empty());
-        when(reservationRepository.find("event.id", id(20))).thenReturn(reservedQueryEvent20);
         when(reservationRepository.findDistinctUsernamesByEventIdAndStatusNotBlocked(id(20)))
                 .thenReturn(List.of());
     }
