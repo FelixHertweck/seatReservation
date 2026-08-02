@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useLiveView } from "@/hooks/use-liveview";
 import { useT } from "@/lib/i18n/hooks";
 import { ArrowUp, Loader2 } from "lucide-react";
@@ -22,9 +23,14 @@ import { PageHeader } from "@/components/page-header";
 import SeatmapLegend from "@/components/common/seatmap-legend";
 import { LiveviewStatus } from "@/components/liveview/liveview-status";
 
-export default function LiveViewPage() {
+function LiveViewPageContent() {
   const t = useT();
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(() =>
+    searchParams.get("eventId"),
+  );
   const [selectedSeats, setSelectedSeats] = useState<SeatDto[]>([]);
   const [expandedAccordion, setExpandedAccordion] = useState<string[]>([]);
 
@@ -43,6 +49,10 @@ export default function LiveViewPage() {
   const handleEventSelect = (eventId: string) => {
     setSelectedEventId(eventId);
     setSelectedSeats([]);
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("eventId", eventId);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   // TODO: Implement
@@ -234,6 +244,14 @@ export default function LiveViewPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function LiveViewPage() {
+  return (
+    <Suspense fallback={null}>
+      <LiveViewPageContent />
+    </Suspense>
   );
 }
 

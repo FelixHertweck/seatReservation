@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { Suspense, useState, useRef, useCallback } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useT } from "@/lib/i18n/hooks";
 import { useCheckin } from "@/hooks/use-checkin";
 import type { CheckInInfoRequestDto, CheckInInfoResponseDto } from "@/api";
@@ -21,15 +22,23 @@ import { UsernameSelector } from "@/components/checkin/username-selector";
 import EventSelector from "@/components/common/supervisor/event-selector";
 import { PageHeader } from "@/components/page-header";
 
-export default function CheckInPage() {
+function CheckInPageContent() {
   const t = useT();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [isScanning, setIsScanning] = useState(false);
   const [scannedData, setScannedData] = useState<ScannedData | null>(null);
   const [selectedReservations, setSelectedReservations] = useState<Set<string>>(
     new Set(),
   );
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(() =>
+    searchParams.get("eventId"),
+  );
+  const [activeTab, setActiveTab] = useState<string>(
+    () => searchParams.get("tab") || "qr-code-scanner",
+  );
   const [resetUsernameSelector, setResetUsernameSelector] =
     useState<boolean>(false);
   const isMobile = useIsMobile();
@@ -135,6 +144,19 @@ export default function CheckInPage() {
     setSelectedReservations(new Set());
     lastScannedDataRef.current = null;
     setIsScanning(true);
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("eventId", eventId);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    setIsScanning(value === "qr-code-scanner");
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", value);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   return (
@@ -172,15 +194,9 @@ export default function CheckInPage() {
           className={`grid gap-6 ${isMobile ? "grid-cols-1" : "md:grid-cols-2"}`}
         >
           <Tabs
-            defaultValue="qr-code-scanner"
+            value={activeTab}
             className={isMobile ? "" : "md:sticky md:top-4 md:h-fit"}
-            onValueChange={(value) => {
-              if (value === "qr-code-scanner") {
-                setIsScanning(true);
-              } else {
-                setIsScanning(false);
-              }
-            }}
+            onValueChange={handleTabChange}
           >
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="qr-code-scanner">
@@ -245,5 +261,13 @@ export default function CheckInPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function CheckInPage() {
+  return (
+    <Suspense fallback={null}>
+      <CheckInPageContent />
+    </Suspense>
   );
 }
