@@ -15,7 +15,7 @@ export function redirectUser(
   } else if (currentUser?.roles?.includes("SUPERVISOR")) {
     router.push(`/${locale}/liveview`);
   } else if (currentUser?.roles?.includes("MANAGER")) {
-    router.push(`/${locale}/manager`);
+    router.push(`/${locale}/management`);
   } else if (currentUser?.roles?.includes("ADMIN")) {
     router.push(`/${locale}/admin`);
   }
