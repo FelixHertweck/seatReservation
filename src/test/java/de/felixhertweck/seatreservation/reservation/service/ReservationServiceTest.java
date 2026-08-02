@@ -163,7 +163,8 @@ class ReservationServiceTest {
 
     @Test
     void findReservationsByUser_Success() {
-        when(reservationRepository.findByUser(currentUser)).thenReturn(List.of(reservation));
+        when(reservationRepository.findByUserWithDetails(any(User.class)))
+                .thenReturn(List.of(reservation));
 
         List<UserReservationResponseDTO> result =
                 reservationService.findReservationsByUser(currentUser);
@@ -175,7 +176,8 @@ class ReservationServiceTest {
 
     @Test
     void findReservationsByUser_Success_NoReservations() {
-        when(reservationRepository.findByUser(currentUser)).thenReturn(Collections.emptyList());
+        when(reservationRepository.findByUserWithDetails(any(User.class)))
+                .thenReturn(Collections.emptyList());
 
         List<UserReservationResponseDTO> result =
                 reservationService.findReservationsByUser(currentUser);
