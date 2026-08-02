@@ -1,10 +1,10 @@
 "use client";
 import { useState, useMemo, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/components/custom-ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import { Plus, Search, X } from "lucide-react";
 import type { UserDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
@@ -157,16 +157,105 @@ export function UserMultiSelect({
     <div className="space-y-3" ref={containerRef}>
       {label && <Label className="text-sm font-medium">{label}</Label>}
 
-      {/* Name / email search */}
+      {/* Name / email search + floating results popup */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder={placeholder || t("userMultiSelect.searchPlaceholder")}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onFocus={() => setIsResultsOpen(true)}
-          className="w-full pl-9"
-        />
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder={placeholder || t("userMultiSelect.searchPlaceholder")}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onFocus={() => setIsResultsOpen(true)}
+            className="w-full pl-9"
+          />
+        </div>
+
+        {/* Results popup - absolutely positioned so it overlays instead of shifting layout */}
+        {isResultsOpen && (
+          <div className="absolute left-0 right-0 top-full z-50 mt-1 border rounded-md shadow-lg bg-background max-h-[300px] overflow-y-auto">
+            <div className="flex items-center justify-between px-2 py-1.5 border-b text-xs text-muted-foreground">
+              <span>
+                {filteredUsers.length === 1
+                  ? t("userMultiSelect.resultsCountSingular")
+                  : t("userMultiSelect.resultsCount", {
+                      count: filteredUsers.length,
+                    })}
+              </span>
+              {filteredUserIds.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleToggleSelectAllFiltered}
+                  className="text-foreground hover:underline underline-offset-2"
+                >
+                  {allFilteredSelected
+                    ? t("userMultiSelect.deselectAllFiltered")
+                    : t("userMultiSelect.selectAllFiltered")}
+                </button>
+              )}
+            </div>
+
+            {filteredUsers.length === 0 ? (
+              <div className="text-center text-muted-foreground py-4 text-sm px-2">
+                {activeTags.length > 0
+                  ? t("userMultiSelect.noUsersFoundWithTags")
+                  : t("userMultiSelect.noUsersFound")}{" "}
+                {hasActiveFilters && (
+                  <button
+                    type="button"
+                    onClick={handleResetFilters}
+                    className="text-foreground underline underline-offset-2"
+                  >
+                    {t("userMultiSelect.resetFilters")}
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="p-1">
+                {filteredUsers.map((user) => {
+                  const userId = user.id?.toString() || "";
+                  const isSelected = selectedUserIds.includes(userId);
+
+                  return (
+                    <div
+                      key={userId}
+                      className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer transition-colors"
+                      onClick={(e) => {
+                        // Radix's Checkbox renders a hidden native input for
+                        // form integration and re-dispatches an untrusted
+                        // "click" that bubbles here whenever `checked`
+                        // changes, so ignore it to avoid toggling twice
+                        // (which would otherwise flip-flop forever).
+                        if (!e.isTrusted) return;
+                        handleUserToggle(userId);
+                      }}
+                    >
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={() => handleUserToggle(userId)}
+                        className="pointer-events-none"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm truncate">
+                          {user.username}
+                        </div>
+                        {user.email && (
+                          <div className="text-xs text-muted-foreground truncate">
+                            {user.email}
+                          </div>
+                        )}
+                        {user.tags && user.tags.length > 0 && (
+                          <div className="text-xs text-muted-foreground mt-0.5 truncate">
+                            {user.tags.join(" · ")}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Tag filter */}
@@ -247,85 +336,6 @@ export function UserMultiSelect({
               )}
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Results */}
-      {isResultsOpen && (
-        <div className="border rounded-md shadow-sm max-h-[300px] overflow-y-auto">
-          <div className="flex items-center justify-between px-2 py-1.5 border-b text-xs text-muted-foreground">
-            <span>
-              {filteredUsers.length === 1
-                ? t("userMultiSelect.resultsCountSingular")
-                : t("userMultiSelect.resultsCount", {
-                    count: filteredUsers.length,
-                  })}
-            </span>
-            {filteredUserIds.length > 0 && (
-              <button
-                type="button"
-                onClick={handleToggleSelectAllFiltered}
-                className="text-foreground hover:underline underline-offset-2"
-              >
-                {allFilteredSelected
-                  ? t("userMultiSelect.deselectAllFiltered")
-                  : t("userMultiSelect.selectAllFiltered")}
-              </button>
-            )}
-          </div>
-
-          {filteredUsers.length === 0 ? (
-            <div className="text-center text-muted-foreground py-4 text-sm px-2">
-              {activeTags.length > 0
-                ? t("userMultiSelect.noUsersFoundWithTags")
-                : t("userMultiSelect.noUsersFound")}{" "}
-              {hasActiveFilters && (
-                <button
-                  type="button"
-                  onClick={handleResetFilters}
-                  className="text-foreground underline underline-offset-2"
-                >
-                  {t("userMultiSelect.resetFilters")}
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className="p-1">
-              {filteredUsers.map((user) => {
-                const userId = user.id?.toString() || "";
-                const isSelected = selectedUserIds.includes(userId);
-
-                return (
-                  <div
-                    key={userId}
-                    className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer transition-colors"
-                    onClick={() => handleUserToggle(userId)}
-                  >
-                    <Checkbox
-                      checked={isSelected}
-                      onChange={() => handleUserToggle(userId)}
-                      className="pointer-events-none"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-sm truncate">
-                        {user.username}
-                      </div>
-                      {user.email && (
-                        <div className="text-xs text-muted-foreground truncate">
-                          {user.email}
-                        </div>
-                      )}
-                      {user.tags && user.tags.length > 0 && (
-                        <div className="text-xs text-muted-foreground mt-0.5 truncate">
-                          {user.tags.join(" · ")}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
         </div>
       )}
 

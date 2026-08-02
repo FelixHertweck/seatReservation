@@ -10,9 +10,6 @@ import {
   ArrowRight,
   MapPinned,
   Users,
-  ArrowUp,
-  ArrowDown,
-  ArrowUpDown,
 } from "lucide-react";
 
 import { useT } from "@/lib/i18n/hooks";
@@ -25,16 +22,9 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Skeleton } from "@/components/custom-ui/skeleton";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
 import { useSortableData } from "@/lib/table-sorting";
@@ -49,17 +39,34 @@ export default function ManagementLocationsPage() {
     useManagementLocations();
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [filters, setFilters] = useState<Record<string, unknown>>({});
   const [isImportOpen, setIsImportOpen] = useState(false);
+
+  const managerOptions = useMemo(() => {
+    const managers = new Map<string, string>();
+    for (const location of locations) {
+      if (location.manager?.id && location.manager.username) {
+        managers.set(location.manager.id, location.manager.username);
+      }
+    }
+    return [...managers.entries()].map(([value, label]) => ({
+      value,
+      label,
+    }));
+  }, [locations]);
 
   const filteredLocations = useMemo(() => {
     const query = searchQuery.toLowerCase();
-    if (!query) return locations;
-    return locations.filter(
-      (location) =>
+    const managerId = filters.managerId as string | undefined;
+    return locations.filter((location) => {
+      const matchesQuery =
+        !query ||
         location.name?.toLowerCase().includes(query) ||
-        location.address?.toLowerCase().includes(query),
-    );
-  }, [locations, searchQuery]);
+        location.address?.toLowerCase().includes(query);
+      const matchesManager = !managerId || location.manager?.id === managerId;
+      return matchesQuery && matchesManager;
+    });
+  }, [locations, searchQuery, filters]);
 
   const { sortedData, sortKey, sortDirection, handleSort } = useSortableData(
     filteredLocations,
@@ -67,13 +74,18 @@ export default function ManagementLocationsPage() {
     "asc",
   );
 
-  let SortDirectionIcon = ArrowUpDown;
-  if (sortDirection === "asc") SortDirectionIcon = ArrowUp;
-  else if (sortDirection === "desc") SortDirectionIcon = ArrowDown;
+  const [deletingLocationId, setDeletingLocationId] = useState<string | null>(
+    null,
+  );
 
   const handleDelete = async (id: string, name: string | undefined) => {
     if (confirm(t("management.locations.deleteConfirm", { name }))) {
-      await deleteLocation([id]);
+      setDeletingLocationId(id);
+      try {
+        await deleteLocation([id]);
+      } finally {
+        setDeletingLocationId(null);
+      }
     }
   };
 
@@ -88,68 +100,67 @@ export default function ManagementLocationsPage() {
       <PageHeader
         title={t("management.locations.title")}
         description={t("management.locations.description")}
+        actions={
+          <>
+            <Button
+              variant="outline"
+              onClick={() => setIsImportOpen(true)}
+              aria-label={t("management.locations.importJson")}
+            >
+              <Upload className="h-4 w-4" />
+              <span className="hidden sm:inline">
+                {t("management.locations.importJson")}
+              </span>
+            </Button>
+
+            <Button asChild>
+              <Link
+                href="/management/locations/new"
+                aria-label={t("management.locations.newLocation")}
+              >
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">
+                  {t("management.locations.newLocation")}
+                </span>
+              </Link>
+            </Button>
+          </>
+        }
         search={
           <SearchAndFilter
             onSearch={setSearchQuery}
-            onFilter={() => {}}
-            filterOptions={[]}
+            onFilter={setFilters}
+            filterOptions={
+              managerOptions.length > 0
+                ? [
+                    {
+                      key: "managerId",
+                      label: t("management.locations.managerLabel"),
+                      type: "select",
+                      options: managerOptions,
+                    },
+                  ]
+                : []
+            }
+            sortOptions={[
+              { key: "name", label: t("management.locations.sortByName") },
+              {
+                key: "capacity",
+                label: t("management.locations.sortByCapacity"),
+              },
+              {
+                key: "address",
+                label: t("management.locations.sortByAddress"),
+              },
+            ]}
+            sortKey={sortKey}
+            sortDirection={sortDirection}
+            onSort={handleSort}
             initialQuery={searchQuery}
             className="w-full"
           />
         }
       />
-
-      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">
-            {t("management.locations.sortLabel")}
-          </span>
-          <Select
-            value={sortKey ?? "name"}
-            onValueChange={(value) => handleSort(value)}
-          >
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="name">
-                {t("management.locations.sortByName")}
-              </SelectItem>
-              <SelectItem value="capacity">
-                {t("management.locations.sortByCapacity")}
-              </SelectItem>
-              <SelectItem value="address">
-                {t("management.locations.sortByAddress")}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => handleSort(sortKey ?? "name")}
-            aria-label={t("management.locations.sortLabel")}
-          >
-            <SortDirectionIcon className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <div className="flex justify-end gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setIsImportOpen(true)}
-            className="w-full sm:w-auto"
-          >
-            <Upload className="h-4 w-4" />
-            {t("management.locations.importJson")}
-          </Button>
-          <Button asChild className="w-full sm:w-auto">
-            <Link href="/management/locations/new">
-              <Plus className="h-4 w-4" />
-              {t("management.locations.newLocation")}
-            </Link>
-          </Button>
-        </div>
-      </div>
 
       {isLoading && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -248,6 +259,7 @@ export default function ManagementLocationsPage() {
                           location.id &&
                           handleDelete(location.id, location.name)
                         }
+                        isLoading={deletingLocationId === location.id}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

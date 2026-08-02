@@ -175,6 +175,20 @@ export function useMapViewport(maxX: number, maxY: number) {
     resetView();
   }, [resetView]);
 
+  // Re-fit whenever the container itself resizes (e.g. a parent layout
+  // recalculating available height after mount), not just when the seat
+  // grid's extent changes - otherwise the map is stuck at whatever zoom
+  // fit the container's size at mount time.
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!element) return;
+
+    const resizeObserver = new ResizeObserver(() => resetView());
+    resizeObserver.observe(element);
+
+    return () => resizeObserver.disconnect();
+  }, [resetView]);
+
   // Cleanup animation frames on unmount
   useEffect(() => {
     return () => {
