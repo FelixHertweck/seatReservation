@@ -77,7 +77,7 @@ public class ReservationService {
      */
     public List<UserReservationResponseDTO> findReservationsByUser(User currentUser) {
         LOG.debugf("Attempting to find reservations for user ID: %s", currentUser.id);
-        List<Reservation> reservations = reservationRepository.findByUser(currentUser);
+        List<Reservation> reservations = reservationRepository.findByUserWithDetails(currentUser);
         LOG.debugf("Found %d reservations for user ID: %s", reservations.size(), currentUser.id);
         return reservations.stream().map(UserReservationResponseDTO::new).toList();
     }
