@@ -199,7 +199,10 @@ export function useManager(): UseManagerReturn {
       })),
   });
   const seats = seatsQueries.flatMap((query) => query.data ?? []);
-  const seatsIsLoading = seatsQueries.some((query) => query.isLoading);
+  // While locations are still loading, seatsQueries is empty and `.some`
+  // would report `false` even though nothing has actually loaded yet.
+  const seatsIsLoading =
+    locationsIsLoading || seatsQueries.some((query) => query.isLoading);
 
   const createSeatMutation = useMutation({
     ...postApiManagerSeatsMutation(),

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Trash2, Ban, ExternalLink, Download } from "lucide-react"; // Added Download icon
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/table";
 import { SortableTableHead } from "@/components/common/sortable-table-head";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/custom-ui/skeleton";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { ReservationFormModal } from "@/components/management/reservation-form-modal";
 import { BlockSeatsModal } from "@/components/management/block-seats-modal";
@@ -107,6 +107,11 @@ export function ReservationManagement({
   const [currentFilters, setCurrentFilters] =
     useState<Record<string, string>>(initialFilter);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [deletingReservationId, setDeletingReservationId] = useState<
+    string | null
+  >(null);
+  const [isDeletingSelected, setIsDeletingSelected] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const { sortedData, sortKey, sortDirection, handleSort } = useSortableData(
     filteredReservations,
@@ -188,8 +193,13 @@ export function ReservationManagement({
     reservation: ReservationResponseDto,
   ) => {
     if (reservation.id && confirm(t("reservationManagement.confirmDelete"))) {
-      await deleteReservation([reservation.id]);
-      setSelectedIds(new Set());
+      setDeletingReservationId(reservation.id);
+      try {
+        await deleteReservation([reservation.id]);
+        setSelectedIds(new Set());
+      } finally {
+        setDeletingReservationId(null);
+      }
     }
   };
 
@@ -208,41 +218,46 @@ export function ReservationManagement({
   const handleExportReservations = async () => {
     if (!selectedEventForExport) return;
 
-    const eventId = selectedEventForExport;
-    const event = events.find((e) => e.id === eventId);
+    setIsExporting(true);
+    try {
+      const eventId = selectedEventForExport;
+      const event = events.find((e) => e.id === eventId);
 
-    let blob: Blob;
-    let fileName: string;
+      let blob: Blob;
+      let fileName: string;
 
-    if (selectedFormat === "csv") {
-      blob = await exportCSV(eventId);
-      fileName = `reservations-${sanitizeFileName(event?.name)}-${new Date().toISOString().split("T")[0]}.csv`;
-    } else if (selectedFormat === "pdf") {
-      blob = await exportPDF(eventId);
-      fileName = `reservations-${sanitizeFileName(event?.name)}-${new Date().toISOString().split("T")[0]}.pdf`;
-    } else {
-      const eventReservations = reservations.filter(
-        (r) => r.eventId === eventId,
-      );
-      const exportData = customSerializer.json(eventReservations);
-      blob = new Blob([exportData], {
-        type: "application/json",
-      });
-      fileName = `reservations-${sanitizeFileName(event?.name)}-${new Date().toISOString().split("T")[0]}.json`;
+      if (selectedFormat === "csv") {
+        blob = await exportCSV(eventId);
+        fileName = `reservations-${sanitizeFileName(event?.name)}-${new Date().toISOString().split("T")[0]}.csv`;
+      } else if (selectedFormat === "pdf") {
+        blob = await exportPDF(eventId);
+        fileName = `reservations-${sanitizeFileName(event?.name)}-${new Date().toISOString().split("T")[0]}.pdf`;
+      } else {
+        const eventReservations = reservations.filter(
+          (r) => r.eventId === eventId,
+        );
+        const exportData = customSerializer.json(eventReservations);
+        blob = new Blob([exportData], {
+          type: "application/json",
+        });
+        fileName = `reservations-${sanitizeFileName(event?.name)}-${new Date().toISOString().split("T")[0]}.json`;
+      }
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      setIsExportModalOpen(false);
+      setSelectedEventForExport("");
+      setSelectedFormat("");
+    } finally {
+      setIsExporting(false);
     }
-
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
-    setIsExportModalOpen(false);
-    setSelectedEventForExport("");
-    setSelectedFormat("");
   };
 
   const handleSelectAll = (paginatedData: ReservationResponseDto[]) => {
@@ -282,8 +297,13 @@ export function ReservationManagement({
         }),
       )
     ) {
-      await deleteReservation(Array.from(selectedIds));
-      setSelectedIds(new Set());
+      setIsDeletingSelected(true);
+      try {
+        await deleteReservation(Array.from(selectedIds));
+        setSelectedIds(new Set());
+      } finally {
+        setIsDeletingSelected(false);
+      }
     }
   };
 
@@ -334,6 +354,7 @@ export function ReservationManagement({
               <Button
                 variant="destructive"
                 onClick={handleDeleteSelected}
+                isLoading={isDeletingSelected}
                 className="w-full sm:w-auto"
               >
                 <Trash2 className="mr-2 h-4 w-4" />
@@ -431,6 +452,7 @@ export function ReservationManagement({
                     </Button>
                     <Button
                       onClick={handleExportReservations}
+                      isLoading={isExporting}
                       disabled={
                         !selectedEventForExport || selectedFormat === ""
                       }
@@ -672,6 +694,9 @@ export function ReservationManagement({
                                       onClick={() =>
                                         handleDeleteReservation(reservation)
                                       }
+                                      isLoading={
+                                        deletingReservationId === reservation.id
+                                      }
                                     >
                                       <Trash2 className="h-4 w-4" />
                                     </Button>
@@ -812,6 +837,9 @@ export function ReservationManagement({
                                   className="flex-1"
                                   onClick={() =>
                                     handleDeleteReservation(reservation)
+                                  }
+                                  isLoading={
+                                    deletingReservationId === reservation.id
                                   }
                                 >
                                   <Trash2 className="mr-2 h-4 w-4" />

@@ -4,7 +4,7 @@ import type React from "react";
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import {
   Card,
   CardContent,
@@ -173,11 +173,10 @@ export default function VerifyEmailPage() {
               type="submit"
               className="w-full"
               variant={alreadyVerified ? "outline" : "default"}
+              isLoading={isLoadingForm}
               disabled={isLoadingForm || verificationCode.length !== 6}
             >
-              {isLoadingForm
-                ? t("emailVerification.verifying")
-                : t("emailVerification.verifyButton")}
+              {t("emailVerification.verifyButton")}
             </Button>
             {alreadyVerified && (
               <div className="space-y-2">

@@ -5,10 +5,10 @@ import { Loader2, MapPinOff } from "lucide-react";
 import { toast } from "sonner";
 
 import { useT } from "@/lib/i18n/hooks";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/components/custom-ui/label";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/custom-ui/button";
+import { Skeleton } from "@/components/custom-ui/skeleton";
 import { useSyncedField } from "@/components/management/location-editor/use-synced-field";
 import { useGeocode } from "@/hooks/use-geocode";
 import type { useLocationAutosave } from "@/components/management/location-editor/use-location-autosave";

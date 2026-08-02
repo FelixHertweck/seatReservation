@@ -1,7 +1,7 @@
 "use client";
 
 import { Calendar, Clock, MapPin, Users } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import {
   Card,
   CardContent,
@@ -13,6 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import type { UserEventLocationResponseDto, UserEventResponseDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
+import { LocationCardMapBackground } from "@/components/management/location-card-map-background";
 
 interface EventCardProps {
   event: UserEventResponseDto;
@@ -53,8 +54,11 @@ export function EventCard({ event, location, onReserve }: EventCardProps) {
   };
 
   return (
-    <Card className="h-full flex flex-col hover:shadow-lg transition-all duration-300 hover:scale-[1.02] group animate-in fade-in slide-in-from-bottom duration-500">
-      <CardHeader>
+    <Card className="relative overflow-hidden h-full flex flex-col hover:shadow-lg transition-all duration-300 hover:scale-[1.02] group animate-in fade-in slide-in-from-bottom duration-500">
+      {location?.address && (
+        <LocationCardMapBackground address={location.address} />
+      )}
+      <CardHeader className="relative z-10">
         <div className="flex items-start justify-between gap-2 mb-3">
           <Badge
             variant={
@@ -79,7 +83,7 @@ export function EventCard({ event, location, onReserve }: EventCardProps) {
         </div>
       </CardHeader>
 
-      <CardContent className="flex-1 space-y-3">
+      <CardContent className="relative z-10 flex-1 space-y-3">
         <div className="flex items-center text-sm text-muted-foreground">
           <Calendar className="mr-2 h-4 w-4" />
           {event.startTime
@@ -116,7 +120,7 @@ export function EventCard({ event, location, onReserve }: EventCardProps) {
         )}
       </CardContent>
 
-      <CardFooter>
+      <CardFooter className="relative z-10">
         <Button
           onClick={onReserve}
           className="w-full hover:scale-[1.02] transition-all duration-300 active:scale-[0.98]"

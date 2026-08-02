@@ -10,9 +10,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/custom-ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/components/custom-ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Trash2 } from "lucide-react";
 import type {
@@ -287,12 +287,10 @@ export function LocationFormModal({
             <Button type="button" variant="outline" onClick={onClose}>
               {t("locationFormModal.cancelButton")}
             </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading
-                ? t("locationFormModal.savingButton")
-                : isCreating
-                  ? t("locationFormModal.createButton")
-                  : t("locationFormModal.updateButton")}
+            <Button type="submit" isLoading={isLoading} disabled={isLoading}>
+              {isCreating
+                ? t("locationFormModal.createButton")
+                : t("locationFormModal.updateButton")}
             </Button>
           </div>
         </form>

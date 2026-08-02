@@ -6,10 +6,10 @@ import { useState, useEffect } from "react";
 import { useProfile } from "@/hooks/use-profile";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/custom-ui/button";
+import { Label } from "@/components/custom-ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/custom-ui/skeleton";
 import { X } from "lucide-react";
 import { toast } from "sonner";
 import type { UserProfileUpdateDto } from "@/api";
@@ -32,7 +32,7 @@ export default function ProfilePage() {
   const params = useParams();
   const locale = params.locale as string;
 
-  const { user, updateProfile, isLoading } = useProfile();
+  const { user, updateProfile, isLoading, isUpdating } = useProfile();
 
   const initialFormData: FormData = {
     firstname: user?.firstname || "",
@@ -339,7 +339,10 @@ export default function ProfilePage() {
                     type="button"
                     className="w-full"
                     onClick={handlePasswordUpdate}
-                    disabled={!isPasswordValid || !doPasswordsMatch}
+                    isLoading={isUpdating}
+                    disabled={
+                      isUpdating || !isPasswordValid || !doPasswordsMatch
+                    }
                   >
                     {t("profilePage.savePasswordButton")}
                   </Button>
@@ -422,7 +425,8 @@ export default function ProfilePage() {
                     ? t("profilePage.noSaveChangesButton")
                     : t("profilePage.saveChangesButton")
                 }
-                disabled={!hasUnsavedChanges}
+                isLoading={isUpdating}
+                disabled={isUpdating || !hasUnsavedChanges}
               >
                 {t("profilePage.saveChangesButton")}
               </Button>
@@ -446,7 +450,8 @@ const EmailSubButtons = ({
   const params = useParams();
   const locale = params.locale as string;
 
-  const { user, isLoading, resendConfirmation } = useProfile();
+  const { user, isLoading, resendConfirmation, isResendingConfirmation } =
+    useProfile();
 
   if (isLoading) return;
   if (!user?.email) return;
@@ -464,6 +469,7 @@ const EmailSubButtons = ({
             type="button"
             className="text-xs"
             size={"sm"}
+            isLoading={isResendingConfirmation}
             onClick={() => {
               resendConfirmation();
             }}
@@ -493,6 +499,7 @@ const EmailSubButtons = ({
             type="button"
             className="text-xs"
             size={"sm"}
+            isLoading={isResendingConfirmation}
             onClick={() => {
               resendConfirmation().then(() => {
                 setTimeout(() => {

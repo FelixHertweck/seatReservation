@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/custom-ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -149,6 +149,7 @@ function DynamicDialogFooter({
 
   const router = useRouter();
   const { user, resendConfirmation } = useAuth();
+  const [isSending, setIsSending] = useState(false);
 
   const handleGoToProfile = () => {
     setShowPopup(false);
@@ -161,10 +162,15 @@ function DynamicDialogFooter({
   };
 
   const handleSendVerification = async () => {
-    await resendConfirmation();
-    setTimeout(() => {
-      handleGoToVerify();
-    }, 700);
+    setIsSending(true);
+    try {
+      await resendConfirmation();
+      setTimeout(() => {
+        handleGoToVerify();
+      }, 700);
+    } finally {
+      setIsSending(false);
+    }
   };
 
   if (user?.emailVerified) {
@@ -184,6 +190,7 @@ function DynamicDialogFooter({
         <EmailVerificationNotSent
           handleGoToProfile={handleGoToProfile}
           handleSendVerification={handleSendVerification}
+          isSending={isSending}
         />
       );
     }
@@ -251,9 +258,11 @@ const EmailVerificationAlreadySent = ({
 const EmailVerificationNotSent = ({
   handleGoToProfile,
   handleSendVerification,
+  isSending,
 }: {
   handleGoToProfile: () => void;
   handleSendVerification: () => void;
+  isSending: boolean;
 }) => {
   const t = useT();
 
@@ -263,11 +272,16 @@ const EmailVerificationNotSent = ({
         onClick={handleGoToProfile}
         className="w-full sm:w-auto"
         variant="outline"
+        disabled={isSending}
       >
         <User className="mr-2 h-4 w-4" />
         {t("emailVerificationPrompt.goToProfileButton")}
       </Button>
-      <Button onClick={handleSendVerification} className="w-full sm:w-auto">
+      <Button
+        onClick={handleSendVerification}
+        className="w-full sm:w-auto"
+        isLoading={isSending}
+      >
         <MailCheck className="mr-2 h-4 w-4" />
         {t("emailVerificationPrompt.sendVerificationMail")}
       </Button>

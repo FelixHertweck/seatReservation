@@ -23,8 +23,8 @@ export function StatCard({
 }: StatCardProps) {
   const content = (
     <CardContent className="flex items-start justify-between gap-3 py-2">
-      <div className="min-w-0">
-        <p className="text-sm text-muted-foreground">{label}</p>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm text-muted-foreground">{label}</p>
         <p className="text-2xl font-semibold tabular-nums">
           {formatCompactNumber(value)}
         </p>

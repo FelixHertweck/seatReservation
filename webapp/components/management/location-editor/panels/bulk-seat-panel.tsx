@@ -4,9 +4,9 @@ import { useMemo, useState } from "react";
 import { Layers } from "lucide-react";
 
 import { useT } from "@/lib/i18n/hooks";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/components/custom-ui/label";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import {
   Select,
   SelectContent,

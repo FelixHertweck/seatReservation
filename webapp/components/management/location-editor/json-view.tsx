@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Copy, Download, Upload, Check } from "lucide-react";
 
 import { useT } from "@/lib/i18n/hooks";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { sanitizeFileName } from "@/lib/utils/filename";
 import {

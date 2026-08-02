@@ -17,9 +17,9 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/custom-ui/tabs";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/components/custom-ui/label";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import { BulkSeatPanel } from "@/components/management/location-editor/panels/bulk-seat-panel";
 import type { useLocationAutosave } from "@/components/management/location-editor/use-location-autosave";
 import {

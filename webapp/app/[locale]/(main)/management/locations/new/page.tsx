@@ -8,9 +8,9 @@ import { useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n/hooks";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/components/custom-ui/label";
 import { useManagementLocations } from "@/hooks/use-management-locations";
 
 export default function NewLocationPage() {
@@ -102,10 +102,8 @@ export default function NewLocationPage() {
               >
                 {t("management.locations.form.cancelButton")}
               </Button>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading
-                  ? t("management.locations.form.submitting")
-                  : t("management.locations.form.submitButton")}
+              <Button type="submit" isLoading={isLoading} disabled={isLoading}>
+                {t("management.locations.form.submitButton")}
               </Button>
             </div>
           </form>

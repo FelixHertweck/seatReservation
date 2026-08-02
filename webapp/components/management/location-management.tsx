@@ -9,7 +9,7 @@ import {
   FileText,
   Download,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
@@ -27,7 +27,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { SortableTableHead } from "@/components/common/sortable-table-head";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/custom-ui/skeleton";
 import { LocationFormModal } from "@/components/management/location-form-modal";
 import { LocationImportModal } from "@/components/management/location-import-modal";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
@@ -85,6 +85,10 @@ export function LocationManagement({
   const [currentFilters, setCurrentFilters] =
     useState<Record<string, string>>(initialFilter);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [deletingLocationId, setDeletingLocationId] = useState<string | null>(
+    null,
+  );
+  const [isDeletingSelected, setIsDeletingSelected] = useState(false);
 
   const { sortedData, sortKey, sortDirection, handleSort } = useSortableData(
     filteredLocations,
@@ -161,8 +165,13 @@ export function LocationManagement({
         t("locationManagement.confirmDelete", { locationName: location.name }),
       )
     ) {
-      await deleteLocation([location.id]);
-      setSelectedIds(new Set());
+      setDeletingLocationId(location.id);
+      try {
+        await deleteLocation([location.id]);
+        setSelectedIds(new Set());
+      } finally {
+        setDeletingLocationId(null);
+      }
     }
   };
 
@@ -240,8 +249,13 @@ export function LocationManagement({
         }),
       )
     ) {
-      await deleteLocation(Array.from(selectedIds));
-      setSelectedIds(new Set());
+      setIsDeletingSelected(true);
+      try {
+        await deleteLocation(Array.from(selectedIds));
+        setSelectedIds(new Set());
+      } finally {
+        setIsDeletingSelected(false);
+      }
     }
   };
 
@@ -277,6 +291,7 @@ export function LocationManagement({
               <Button
                 variant="destructive"
                 onClick={handleDeleteSelected}
+                isLoading={isDeletingSelected}
                 className="w-full sm:w-auto"
               >
                 <Trash2 className="mr-2 h-4 w-4" />
@@ -503,6 +518,9 @@ export function LocationManagement({
                                         onClick={() =>
                                           handleDeleteLocation(location)
                                         }
+                                        isLoading={
+                                          deletingLocationId === location.id
+                                        }
                                       >
                                         <Trash2 className="h-4 w-4" />
                                       </Button>
@@ -656,6 +674,9 @@ export function LocationManagement({
                                     className="flex-1"
                                     onClick={() =>
                                       handleDeleteLocation(location)
+                                    }
+                                    isLoading={
+                                      deletingLocationId === location.id
                                     }
                                   >
                                     <Trash2 className="h-4 w-4" />

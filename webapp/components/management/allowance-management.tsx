@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Edit, Trash2, ExternalLink } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
@@ -20,7 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { SortableTableHead } from "@/components/common/sortable-table-head";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/custom-ui/skeleton";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { AllowanceFormModal } from "@/components/management/allowance-form-modal";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
@@ -73,6 +73,10 @@ export function ReservationAllowanceManagement({
   const [currentFilters, setCurrentFilters] =
     useState<Record<string, string>>(initialFilter);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [deletingAllowanceId, setDeletingAllowanceId] = useState<string | null>(
+    null,
+  );
+  const [isDeletingSelected, setIsDeletingSelected] = useState(false);
 
   const { sortedData, sortKey, sortDirection, handleSort } = useSortableData(
     filteredAllowances,
@@ -163,8 +167,13 @@ export function ReservationAllowanceManagement({
       allowance.id &&
       confirm(t("reservationAllowanceManagement.confirmDelete"))
     ) {
-      await deleteReservationAllowance([allowance.id]);
-      setSelectedIds(new Set());
+      setDeletingAllowanceId(allowance.id);
+      try {
+        await deleteReservationAllowance([allowance.id]);
+        setSelectedIds(new Set());
+      } finally {
+        setDeletingAllowanceId(null);
+      }
     }
   };
 
@@ -209,8 +218,13 @@ export function ReservationAllowanceManagement({
         }),
       )
     ) {
-      await deleteReservationAllowance(Array.from(selectedIds));
-      setSelectedIds(new Set());
+      setIsDeletingSelected(true);
+      try {
+        await deleteReservationAllowance(Array.from(selectedIds));
+        setSelectedIds(new Set());
+      } finally {
+        setIsDeletingSelected(false);
+      }
     }
   };
 
@@ -246,6 +260,7 @@ export function ReservationAllowanceManagement({
               <Button
                 variant="destructive"
                 onClick={handleDeleteSelected}
+                isLoading={isDeletingSelected}
                 className="w-full sm:w-auto"
               >
                 <Trash2 className="mr-2 h-4 w-4" />
@@ -426,6 +441,9 @@ export function ReservationAllowanceManagement({
                                       onClick={() =>
                                         handleDeleteAllowance(allowance)
                                       }
+                                      isLoading={
+                                        deletingAllowanceId === allowance.id
+                                      }
                                     >
                                       <Trash2 className="h-4 w-4" />
                                     </Button>
@@ -535,6 +553,9 @@ export function ReservationAllowanceManagement({
                                   className="flex-1 min-w-0"
                                   onClick={() =>
                                     handleDeleteAllowance(allowance)
+                                  }
+                                  isLoading={
+                                    deletingAllowanceId === allowance.id
                                   }
                                 >
                                   <Trash2 className="mr-2 h-4 w-4 shrink-0" />

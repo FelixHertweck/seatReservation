@@ -3,7 +3,7 @@ import { Plus, CalendarPlus, BookmarkPlus, Ticket } from "lucide-react";
 
 import { useT } from "@/lib/i18n/hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 
 export function QuickActions() {
   const t = useT();

@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/custom-ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import { useT } from "@/lib/i18n/hooks";
 import { useLoginRequiredPopup } from "@/hooks/use-login-popup";
 import { isValidRedirectUrl } from "@/lib/utils";

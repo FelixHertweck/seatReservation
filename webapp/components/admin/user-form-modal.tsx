@@ -8,9 +8,9 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/custom-ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/components/custom-ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
@@ -395,15 +395,12 @@ export function UserFormModal({
           </Button>
           <Button
             onClick={handleSubmit}
+            isLoading={isFormLoading}
             disabled={isFormLoading || isPasswordTooShort}
           >
             {isCreating
-              ? isFormLoading
-                ? t("userFormModal.createUserButtonLoading")
-                : t("userFormModal.createUserButton")
-              : isFormLoading
-                ? t("userFormModal.saveChangesButtonLoading")
-                : t("userFormModal.saveChangesButton")}
+              ? t("userFormModal.createUserButton")
+              : t("userFormModal.saveChangesButton")}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,9 +1,9 @@
 "use client";
 import { useState, useMemo, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/components/custom-ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import { Check, Plus, Search, X } from "lucide-react";
 import type { UserDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";

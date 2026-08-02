@@ -2,7 +2,7 @@
 
 import { useEffect, type SetStateAction, type Dispatch } from "react";
 import { useT } from "@/lib/i18n/hooks";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Drawer,
@@ -187,17 +187,11 @@ export function ReservationSelector({
           <div className="flex gap-2">
             <Button
               onClick={onProcessingSubmit}
+              isLoading={isLoading}
               disabled={isLoading}
               className="flex-1"
             >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {t("checkin.actions.processing")}
-                </>
-              ) : (
-                t("checkin.actions.submit")
-              )}
+              {t("checkin.actions.submit")}
             </Button>
             <Button variant="outline" onClick={onClear}>
               <X className="mr-2 h-4 w-4" />

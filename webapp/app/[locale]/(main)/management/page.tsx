@@ -16,7 +16,7 @@ import { CapacityPanel } from "@/components/management/dashboard/capacity-panel"
 import { QuickActions } from "@/components/management/dashboard/quick-actions";
 import { DeadlinesPanel } from "@/components/management/dashboard/deadlines-panel";
 import { useManagementOverview } from "@/hooks/use-management-overview";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/custom-ui/skeleton";
 
 export default function ManagementOverviewPage() {
   const t = useT();
@@ -83,13 +83,13 @@ export default function ManagementOverviewPage() {
       )}
 
       <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <UpcomingEventsPanel events={upcomingEvents} />
-        <CapacityPanel locations={locationCapacities} />
+        <UpcomingEventsPanel events={upcomingEvents} isLoading={isLoading} />
+        <CapacityPanel locations={locationCapacities} isLoading={isLoading} />
         <QuickActions />
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <DeadlinesPanel events={deadlineWarnings} />
+        <DeadlinesPanel events={deadlineWarnings} isLoading={isLoading} />
         <StatCard
           className="lg:col-span-2"
           label={t("management.overview.stats.allowances")}

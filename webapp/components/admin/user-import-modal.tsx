@@ -4,7 +4,7 @@ import type React from "react";
 
 import { useState } from "react";
 import { Upload, FileText } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from "@/components/custom-ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/components/custom-ui/label";
 import type { AdminUserCreationDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 
@@ -156,11 +156,13 @@ export function UserImportModal({
             <Button type="button" variant="outline" onClick={handleClose}>
               {t("userImportModal.cancelButton")}
             </Button>
-            <Button type="submit" disabled={isLoading || !jsonData.trim()}>
+            <Button
+              type="submit"
+              isLoading={isLoading}
+              disabled={isLoading || !jsonData.trim()}
+            >
               <Upload className="mr-2 h-4 w-4" />
-              {isLoading
-                ? t("userImportModal.importingButton")
-                : t("userImportModal.importUsersButton")}
+              {t("userImportModal.importUsersButton")}
             </Button>
           </div>
         </form>

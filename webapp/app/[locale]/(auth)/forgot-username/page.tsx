@@ -5,9 +5,9 @@ import type React from "react";
 import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/components/custom-ui/label";
 import {
   Card,
   CardContent,
@@ -67,10 +67,13 @@ export default function ForgotUsernamePage() {
                   required
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading
-                  ? t("forgotUsername.sending")
-                  : t("forgotUsername.sendLink")}
+              <Button
+                type="submit"
+                className="w-full"
+                isLoading={isLoading}
+                disabled={isLoading}
+              >
+                {t("forgotUsername.sendLink")}
               </Button>
             </form>
           )}

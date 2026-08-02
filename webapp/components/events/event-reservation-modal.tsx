@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/custom-ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import { SeatMap } from "@/components/common/seat-map";
 import SeatmapLegend from "@/components/common/seatmap-legend";
 import type {
@@ -241,16 +241,15 @@ export function EventReservationModal({
               </Button>
               <Button
                 onClick={handleReserve}
+                isLoading={isLoading}
                 disabled={selectedSeats.length === 0 || isLoading}
                 className="text-sm md:text-base px-3 py-2"
               >
-                {isLoading
-                  ? t("eventReservationModal.reservingButton")
-                  : selectedSeats.length === 1
-                    ? t("eventReservationModal.reserveSeatButton")
-                    : t("eventReservationModal.reserveSeatsButton", {
-                        count: selectedSeats.length,
-                      })}
+                {selectedSeats.length === 1
+                  ? t("eventReservationModal.reserveSeatButton")
+                  : t("eventReservationModal.reserveSeatsButton", {
+                      count: selectedSeats.length,
+                    })}
               </Button>
             </div>
           </div>
