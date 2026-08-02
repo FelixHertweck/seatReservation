@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -18,12 +18,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useT } from "@/lib/i18n/hooks";
+import type { SortDirection } from "@/components/common/sortable-table-head";
 
 interface FilterOption {
   key: string;
   label: string;
   type: "boolean" | "string" | "number" | "select";
   options?: { value: string; label: string }[];
+}
+
+export interface SortOption {
+  key: string;
+  label: string;
 }
 
 interface SearchAndFilterProps {
@@ -33,6 +39,13 @@ interface SearchAndFilterProps {
   initialFilters?: Record<string, string>;
   initialQuery?: string;
   className?: string;
+  // Sort lives in the same dropdown as the filter fields - it's the same
+  // "refine the list" concern, and keeping it there avoids a second trigger
+  // fighting for space in the (already tight) mobile header.
+  sortOptions?: SortOption[];
+  sortKey?: string | null;
+  sortDirection?: SortDirection;
+  onSort?: (key: string) => void;
 }
 
 export function SearchAndFilter({
@@ -42,6 +55,10 @@ export function SearchAndFilter({
   initialFilters = {},
   initialQuery = "",
   className = "w-full",
+  sortOptions = [],
+  sortKey = null,
+  sortDirection = null,
+  onSort,
 }: SearchAndFilterProps) {
   const t = useT();
 
@@ -87,7 +104,7 @@ export function SearchAndFilter({
             className="h-10 pl-8 pr-1 max-sm:not-focus:placeholder:text-transparent focus:pr-3 sm:pr-3"
           />
         </div>
-        {filterOptions.length > 0 && (
+        {(filterOptions.length > 0 || sortOptions.length > 0) && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -105,6 +122,39 @@ export function SearchAndFilter({
               align="end"
               className="w-80 p-4 max-w-[calc(100vw-2rem)]"
             >
+              {sortOptions.length > 0 && onSort && (
+                <div
+                  className={
+                    filterOptions.length > 0
+                      ? "mb-4 space-y-1 border-b pb-4"
+                      : "space-y-1"
+                  }
+                >
+                  <p className="mb-1 text-sm font-medium">
+                    {t("searchAndFilter.sortLabel")}
+                  </p>
+                  {sortOptions.map((option) => {
+                    const isActive = sortKey === option.key;
+                    let Icon = ArrowUpDown;
+                    if (isActive && sortDirection === "asc") Icon = ArrowUp;
+                    else if (isActive && sortDirection === "desc")
+                      Icon = ArrowDown;
+                    return (
+                      <button
+                        key={option.key}
+                        type="button"
+                        onClick={() => onSort(option.key)}
+                        className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent"
+                      >
+                        <Icon
+                          className={`h-4 w-4 shrink-0 ${isActive ? "" : "invisible"}`}
+                        />
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
               <div className="grid grid-cols-1 gap-4">
                 {filterOptions.map((option) => (
                   <div key={option.key} className="space-y-2">

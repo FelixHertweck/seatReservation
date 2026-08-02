@@ -2,13 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowUp, Plus, Trash2, Users } from "lucide-react";
+import { ArrowUp, Plus, Trash2 } from "lucide-react";
 
 import { useT } from "@/lib/i18n/hooks";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import EventSelector from "@/components/common/supervisor/event-selector";
+import { OverflowActionBar } from "@/components/common/overflow-action-bar";
 import { AllowanceFormModal } from "@/components/management/allowance-form-modal";
 import { AllowancesTable } from "@/components/management/allowances/allowances-table";
 import { useManagementAllowances } from "@/hooks/use-management-allowances";
@@ -33,6 +34,10 @@ export default function ManagementAllowancesPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isDeletingSelected, setIsDeletingSelected] = useState(false);
+  const [deletingAllowanceId, setDeletingAllowanceId] = useState<string | null>(
+    null,
+  );
   const [pendingCounts, setPendingCounts] = useState<Record<string, number>>(
     {},
   );
@@ -47,11 +52,6 @@ export default function ManagementAllowancesPage() {
     };
   }, []);
 
-  const usersWithoutAllowance = useMemo(() => {
-    const covered = new Set(allowances.map((a) => a.userId));
-    return users.filter((u) => u.id && !covered.has(u.id));
-  }, [allowances, users]);
-
   const handleEventSelect = (id: string) => {
     router.push(`/management/allowances?eventId=${id}`);
     setSelectedIds(new Set());
@@ -64,8 +64,13 @@ export default function ManagementAllowancesPage() {
         t("management.allowances.deleteConfirm", { count: selectedIds.size }),
       )
     ) {
-      await deleteAllowances([...selectedIds]);
-      setSelectedIds(new Set());
+      setIsDeletingSelected(true);
+      try {
+        await deleteAllowances([...selectedIds]);
+        setSelectedIds(new Set());
+      } finally {
+        setIsDeletingSelected(false);
+      }
     }
   };
 
@@ -74,12 +79,17 @@ export default function ManagementAllowancesPage() {
       allowance.id &&
       confirm(t("management.allowances.deleteConfirm", { count: 1 }))
     ) {
-      await deleteAllowances([allowance.id]);
-      setSelectedIds((prev) => {
-        const next = new Set(prev);
-        next.delete(allowance.id!);
-        return next;
-      });
+      setDeletingAllowanceId(allowance.id);
+      try {
+        await deleteAllowances([allowance.id]);
+        setSelectedIds((prev) => {
+          const next = new Set(prev);
+          next.delete(allowance.id!);
+          return next;
+        });
+      } finally {
+        setDeletingAllowanceId(null);
+      }
     }
   };
 
@@ -140,11 +150,49 @@ export default function ManagementAllowancesPage() {
     0,
   );
 
+  const modalAllowance = useMemo(
+    () => (eventId ? ({ eventId } as EventUserAllowancesDto) : null),
+    [eventId],
+  );
+
   return (
     <div className="container mx-auto p-4 sm:p-6">
       <PageHeader
         title={t("management.allowances.title")}
         description={t("management.allowances.description")}
+        actions={
+          eventId ? (
+            <>
+              <OverflowActionBar
+                actions={
+                  selectedIds.size > 0
+                    ? [
+                        {
+                          key: "delete",
+                          label: t("management.allowances.deleteSelected", {
+                            count: selectedIds.size,
+                          }),
+                          icon: <Trash2 className="h-4 w-4" />,
+                          onClick: handleDeleteSelected,
+                          variant: "destructive" as const,
+                          isLoading: isDeletingSelected,
+                        },
+                      ]
+                    : []
+                }
+              />
+              <Button
+                onClick={() => setIsModalOpen(true)}
+                aria-label={t("management.allowances.grantButton")}
+              >
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">
+                  {t("management.allowances.grantButton")}
+                </span>
+              </Button>
+            </>
+          ) : undefined
+        }
         search={
           <EventSelector
             events={events}
@@ -166,13 +214,6 @@ export default function ManagementAllowancesPage() {
         <div className="space-y-3">
           <Card>
             <CardContent className="flex flex-wrap items-center gap-4 py-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                {t("management.allowances.coverage", {
-                  withAllowance: allowances.length,
-                  total: users.length,
-                })}
-              </div>
               <div>
                 {t("management.allowances.totalGranted", {
                   count: totalGranted,
@@ -180,23 +221,6 @@ export default function ManagementAllowancesPage() {
               </div>
             </CardContent>
           </Card>
-
-          <div className="flex flex-wrap justify-end gap-2">
-            {selectedIds.size > 0 && (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleDeleteSelected}
-              >
-                <Trash2 className="h-4 w-4" />
-                {selectedIds.size}
-              </Button>
-            )}
-            <Button size="sm" onClick={() => setIsModalOpen(true)}>
-              <Plus className="h-4 w-4" />
-              {t("management.allowances.grantButton")}
-            </Button>
-          </div>
 
           <Card>
             <CardContent className="p-0">
@@ -209,6 +233,7 @@ export default function ManagementAllowancesPage() {
                 onToggleAll={toggleAll}
                 onChangeCount={handleChangeCount}
                 onDeleteAllowance={handleDeleteAllowance}
+                deletingId={deletingAllowanceId}
               />
             </CardContent>
           </Card>
@@ -217,12 +242,11 @@ export default function ManagementAllowancesPage() {
 
       {isModalOpen && (
         <AllowanceFormModal
-          allowance={eventId ? ({ eventId } as EventUserAllowancesDto) : null}
+          allowance={modalAllowance}
           users={users}
           events={events}
           isCreating
           hideEventSelector
-          usersWithoutAllowance={usersWithoutAllowance}
           onSubmit={async (data) => {
             await grantAllowances(
               data as Parameters<typeof grantAllowances>[0],

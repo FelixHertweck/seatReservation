@@ -3,9 +3,9 @@
 import { Minus, Plus, Trash2 } from "lucide-react";
 
 import { useT } from "@/lib/i18n/hooks";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/custom-ui/skeleton";
 import {
   Table,
   TableBody,
@@ -25,6 +25,7 @@ interface AllowancesTableProps {
   onToggleAll: () => void;
   onChangeCount: (allowance: EventUserAllowancesDto, delta: number) => void;
   onDeleteAllowance: (allowance: EventUserAllowancesDto) => void;
+  deletingId?: string | null;
 }
 
 export function AllowancesTable({
@@ -36,6 +37,7 @@ export function AllowancesTable({
   onToggleAll,
   onChangeCount,
   onDeleteAllowance,
+  deletingId = null,
 }: AllowancesTableProps) {
   const t = useT();
 
@@ -123,6 +125,7 @@ export function AllowancesTable({
                   size="icon"
                   className="h-7 w-7"
                   onClick={() => onDeleteAllowance(allowance)}
+                  isLoading={deletingId === allowance.id}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </Button>

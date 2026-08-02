@@ -8,9 +8,9 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/custom-ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/components/custom-ui/label";
 import {
   Select,
   SelectContent,
@@ -36,7 +36,6 @@ interface AllowanceFormModalProps {
   events: EventResponseDto[];
   isCreating: boolean;
   hideEventSelector?: boolean;
-  usersWithoutAllowance?: UserDto[];
   onSubmit: (
     allowanceData: EventUserAllowancesCreateDto | EventUserAllowanceUpdateDto,
   ) => Promise<void>;
@@ -49,7 +48,6 @@ export function AllowanceFormModal({
   events,
   isCreating,
   hideEventSelector = false,
-  usersWithoutAllowance,
   onSubmit,
   onClose,
 }: AllowanceFormModalProps) {
@@ -75,7 +73,7 @@ export function AllowanceFormModal({
       );
     } else if (isCreating) {
       setSelectedUserIds([]);
-      setSelectedEventId(undefined);
+      setSelectedEventId(allowance?.eventId?.toString());
       setAllowedReservations("");
     }
   }, [allowance, isCreating]);
@@ -154,8 +152,8 @@ export function AllowanceFormModal({
         </DialogHeader>
         <div className="grid gap-6 py-4">
           {!hideEventSelector && (
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="event" className="text-right">
+            <div className="space-y-2">
+              <Label htmlFor="event">
                 {t("allowanceFormModal.eventLabel")}
               </Label>
               <Select
@@ -163,7 +161,7 @@ export function AllowanceFormModal({
                 onValueChange={setSelectedEventId}
                 disabled={!isCreating}
               >
-                <SelectTrigger className="col-span-3">
+                <SelectTrigger className="w-full">
                   <SelectValue
                     placeholder={t("allowanceFormModal.selectEventPlaceholder")}
                   />
@@ -182,30 +180,9 @@ export function AllowanceFormModal({
             </div>
           )}
 
-          <div className="grid grid-cols-4 items-start gap-4">
-            <Label className="text-right pt-2">
-              {t("allowanceFormModal.usersLabel")}
-            </Label>
-            <div className="col-span-3 space-y-2">
-              {isCreating && usersWithoutAllowance && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={usersWithoutAllowance.length === 0}
-                  onClick={() =>
-                    setSelectedUserIds(
-                      usersWithoutAllowance
-                        .map((u) => u.id?.toString())
-                        .filter((id): id is string => !!id),
-                    )
-                  }
-                >
-                  {t("allowanceFormModal.selectUsersWithoutAllowanceButton", {
-                    count: usersWithoutAllowance.length,
-                  })}
-                </Button>
-              )}
+          <div className="space-y-2">
+            <Label>{t("allowanceFormModal.usersLabel")}</Label>
+            <div className="space-y-2">
               {isCreating && (
                 <UserMultiSelect
                   users={
@@ -236,8 +213,8 @@ export function AllowanceFormModal({
             </div>
           </div>
 
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="allowedReservations" className="text-right">
+          <div className="space-y-2">
+            <Label htmlFor="allowedReservations">
               {t("allowanceFormModal.allowedReservationsLabel")}
             </Label>
             <Input
@@ -245,7 +222,6 @@ export function AllowanceFormModal({
               type="number"
               value={allowedReservations}
               onChange={(e) => setAllowedReservations(e.target.value)}
-              className="col-span-3"
             />
           </div>
         </div>
@@ -255,6 +231,7 @@ export function AllowanceFormModal({
           </Button>
           <Button
             onClick={handleSubmit}
+            isLoading={isLoading}
             disabled={
               isLoading ||
               selectedUserIds.length === 0 ||
@@ -262,11 +239,9 @@ export function AllowanceFormModal({
               !allowedReservations
             }
           >
-            {isLoading
-              ? t("allowanceFormModal.submittingButton")
-              : isCreating
-                ? t("allowanceFormModal.createAllowanceButton")
-                : t("allowanceFormModal.saveChangesButton")}
+            {isCreating
+              ? t("allowanceFormModal.createAllowanceButton")
+              : t("allowanceFormModal.saveChangesButton")}
           </Button>
         </DialogFooter>
       </DialogContent>

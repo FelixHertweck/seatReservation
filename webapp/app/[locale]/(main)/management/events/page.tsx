@@ -17,9 +17,9 @@ import { useT } from "@/lib/i18n/hooks";
 import { formatDateTime } from "@/lib/utils";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/custom-ui/skeleton";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { EventFormModal } from "@/components/management/event-form-modal";
 import { useManagementEvents } from "@/hooks/use-management-events";
@@ -41,26 +41,39 @@ export default function ManagementEventsPage() {
   } = useManagementEvents();
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [filters, setFilters] = useState<Record<string, unknown>>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<EventResponseDto | null>(
     null,
   );
+  const [deletingEventId, setDeletingEventId] = useState<string | null>(null);
 
   const locationById = useMemo(
     () => new Map(locations.map((l) => [l.id, l])),
     [locations],
   );
 
+  const locationOptions = useMemo(
+    () =>
+      locations
+        .filter((l) => l.id && l.name)
+        .map((l) => ({ value: l.id!, label: l.name! })),
+    [locations],
+  );
+
   const filteredEvents = useMemo(() => {
     const query = searchQuery.toLowerCase();
-    const base = query
-      ? events.filter((e) => e.name?.toLowerCase().includes(query))
-      : events;
+    const locationId = filters.locationId as string | undefined;
+    const base = events.filter((e) => {
+      const matchesQuery = !query || e.name?.toLowerCase().includes(query);
+      const matchesLocation = !locationId || e.eventLocationId === locationId;
+      return matchesQuery && matchesLocation;
+    });
     return [...base].sort(
       (a, b) => (a.startTime?.getTime() ?? 0) - (b.startTime?.getTime() ?? 0),
     );
-  }, [events, searchQuery]);
+  }, [events, searchQuery, filters]);
 
   const groups = useMemo(() => {
     const map = new Map<string, EventResponseDto[]>();
@@ -86,7 +99,12 @@ export default function ManagementEventsPage() {
   const handleDelete = async (event: EventResponseDto) => {
     if (!event.id) return;
     if (confirm(t("management.events.deleteConfirm", { name: event.name }))) {
-      await deleteEvent([event.id]);
+      setDeletingEventId(event.id);
+      try {
+        await deleteEvent([event.id]);
+      } finally {
+        setDeletingEventId(null);
+      }
     }
   };
 
@@ -101,23 +119,38 @@ export default function ManagementEventsPage() {
       <PageHeader
         title={t("management.events.title")}
         description={t("management.events.description")}
+        actions={
+          <Button
+            onClick={handleCreate}
+            aria-label={t("management.events.newEvent")}
+          >
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">
+              {t("management.events.newEvent")}
+            </span>
+          </Button>
+        }
         search={
           <SearchAndFilter
             onSearch={setSearchQuery}
-            onFilter={() => {}}
-            filterOptions={[]}
+            onFilter={setFilters}
+            filterOptions={
+              locationOptions.length > 0
+                ? [
+                    {
+                      key: "locationId",
+                      label: t("management.events.locationFilterLabel"),
+                      type: "select",
+                      options: locationOptions,
+                    },
+                  ]
+                : []
+            }
             initialQuery={searchQuery}
             className="w-full"
           />
         }
       />
-
-      <div className="mb-4 flex justify-end">
-        <Button onClick={handleCreate}>
-          <Plus className="h-4 w-4" />
-          {t("management.events.newEvent")}
-        </Button>
-      </div>
 
       {isLoading && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -230,6 +263,7 @@ export default function ManagementEventsPage() {
                               variant="destructive"
                               size="sm"
                               onClick={() => handleDelete(event)}
+                              isLoading={deletingEventId === event.id}
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>
