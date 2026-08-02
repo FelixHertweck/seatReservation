@@ -4,7 +4,7 @@ import { useT } from "@/lib/i18n/hooks";
 import { formatDateTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/custom-ui/skeleton";
 import {
   Table,
   TableBody,

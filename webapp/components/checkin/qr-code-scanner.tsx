@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import jsQR from "jsqr";
 import { useT } from "@/lib/i18n/hooks";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import {
   Card,
   CardContent,

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Edit, Trash2, ExternalLink } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
@@ -20,7 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { SortableTableHead } from "@/components/common/sortable-table-head";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/custom-ui/skeleton";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { SeatFormModal } from "@/components/management/seat-form-modal";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
@@ -60,6 +60,8 @@ export function SeatManagement({
   const [currentFilters, setCurrentFilters] =
     useState<Record<string, string>>(initialFilter);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [deletingSeatId, setDeletingSeatId] = useState<string | null>(null);
+  const [isDeletingSelected, setIsDeletingSelected] = useState(false);
 
   const { sortedData, sortKey, sortDirection, handleSort } = useSortableData(
     filteredSeats,
@@ -143,8 +145,13 @@ export function SeatManagement({
         t("seatManagement.confirmDelete", { seatNumber: seat.seatNumber }),
       )
     ) {
-      await deleteSeat([seat.id]);
-      setSelectedIds(new Set());
+      setDeletingSeatId(seat.id);
+      try {
+        await deleteSeat([seat.id]);
+        setSelectedIds(new Set());
+      } finally {
+        setDeletingSeatId(null);
+      }
     }
   };
 
@@ -189,8 +196,13 @@ export function SeatManagement({
         }),
       )
     ) {
-      await deleteSeat(Array.from(selectedIds));
-      setSelectedIds(new Set());
+      setIsDeletingSelected(true);
+      try {
+        await deleteSeat(Array.from(selectedIds));
+        setSelectedIds(new Set());
+      } finally {
+        setIsDeletingSelected(false);
+      }
     }
   };
 
@@ -226,6 +238,7 @@ export function SeatManagement({
               <Button
                 variant="destructive"
                 onClick={handleDeleteSelected}
+                isLoading={isDeletingSelected}
                 className="w-full sm:w-auto"
               >
                 <Trash2 className="mr-2 h-4 w-4" />
@@ -410,6 +423,7 @@ export function SeatManagement({
                                       variant="destructive"
                                       size="sm"
                                       onClick={() => handleDeleteSeat(seat)}
+                                      isLoading={deletingSeatId === seat.id}
                                     >
                                       <Trash2 className="h-4 w-4" />
                                     </Button>
@@ -513,6 +527,7 @@ export function SeatManagement({
                                   size="sm"
                                   className="flex-1 min-w-0"
                                   onClick={() => handleDeleteSeat(seat)}
+                                  isLoading={deletingSeatId === seat.id}
                                 >
                                   <Trash2 className="mr-2 h-4 w-4 shrink-0" />
                                   <span className="truncate">

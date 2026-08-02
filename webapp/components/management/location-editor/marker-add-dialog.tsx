@@ -11,9 +11,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/custom-ui/dialog";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/components/custom-ui/label";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import type { useLocationAutosave } from "@/components/management/location-editor/use-location-autosave";
 import {
   isCellOccupied,

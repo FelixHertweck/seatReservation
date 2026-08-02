@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Plus, Edit, Trash2, FileText, Download } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/table";
 import { SortableTableHead } from "@/components/common/sortable-table-head";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/custom-ui/skeleton";
 import { UserFormModal } from "@/components/admin/user-form-modal";
 import { UserImportModal } from "@/components/admin/user-import-modal";
 import { TruncatedCell } from "@/components/common/truncated-cell";
@@ -60,6 +60,8 @@ export function UserManagement({
   const [isCreating, setIsCreating] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
+  const [isDeletingSelected, setIsDeletingSelected] = useState(false);
 
   const { sortedData, sortKey, sortDirection, handleSort } = useSortableData(
     users,
@@ -118,8 +120,13 @@ export function UserManagement({
       user.id &&
       confirm(t("userManagement.confirmDelete", { username: user.username }))
     ) {
-      await deleteUser([user.id]);
-      setSelectedIds(new Set());
+      setDeletingUserId(user.id);
+      try {
+        await deleteUser([user.id]);
+        setSelectedIds(new Set());
+      } finally {
+        setDeletingUserId(null);
+      }
     }
   };
 
@@ -158,8 +165,13 @@ export function UserManagement({
         }),
       )
     ) {
-      await deleteUser(Array.from(selectedIds));
-      setSelectedIds(new Set());
+      setIsDeletingSelected(true);
+      try {
+        await deleteUser(Array.from(selectedIds));
+        setSelectedIds(new Set());
+      } finally {
+        setIsDeletingSelected(false);
+      }
     }
   };
 
@@ -182,6 +194,7 @@ export function UserManagement({
             <Button
               variant="destructive"
               onClick={handleDeleteSelected}
+              isLoading={isDeletingSelected}
               className="w-full sm:w-auto"
             >
               <Trash2 className="mr-2 h-4 w-4" />
@@ -388,6 +401,7 @@ export function UserManagement({
                                   variant="destructive"
                                   size="sm"
                                   onClick={() => handleDeleteUser(user)}
+                                  isLoading={deletingUserId === user.id}
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -520,6 +534,7 @@ export function UserManagement({
                               size="sm"
                               className="flex-1"
                               onClick={() => handleDeleteUser(user)}
+                              isLoading={deletingUserId === user.id}
                             >
                               <Trash2 className="h-4 w-4 min-[400px]:mr-2" />
                               <span className="hidden min-[400px]:inline">

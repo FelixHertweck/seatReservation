@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Edit, Trash2, ExternalLink, Mail, Clock, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
@@ -20,7 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { SortableTableHead } from "@/components/common/sortable-table-head";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/custom-ui/skeleton";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { EventFormModal } from "@/components/management/event-form-modal";
 import { TruncatedCell } from "@/components/common/truncated-cell";
@@ -73,6 +73,8 @@ export function EventManagement({
   const [currentFilters, setCurrentFilters] =
     useState<Record<string, string>>(initialFilter);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [deletingEventId, setDeletingEventId] = useState<string | null>(null);
+  const [isDeletingSelected, setIsDeletingSelected] = useState(false);
 
   const { sortedData, sortKey, sortDirection, handleSort } = useSortableData(
     filteredEvents,
@@ -164,8 +166,13 @@ export function EventManagement({
       event.id &&
       confirm(t("eventManagement.confirmDelete", { eventName: event.name }))
     ) {
-      await deleteEvent([event.id]);
-      setSelectedIds(new Set());
+      setDeletingEventId(event.id);
+      try {
+        await deleteEvent([event.id]);
+        setSelectedIds(new Set());
+      } finally {
+        setDeletingEventId(null);
+      }
     }
   };
 
@@ -210,8 +217,13 @@ export function EventManagement({
         }),
       )
     ) {
-      await deleteEvent(Array.from(selectedIds));
-      setSelectedIds(new Set());
+      setIsDeletingSelected(true);
+      try {
+        await deleteEvent(Array.from(selectedIds));
+        setSelectedIds(new Set());
+      } finally {
+        setIsDeletingSelected(false);
+      }
     }
   };
 
@@ -266,6 +278,7 @@ export function EventManagement({
               <Button
                 variant="destructive"
                 onClick={handleDeleteSelected}
+                isLoading={isDeletingSelected}
                 className="w-full sm:w-auto"
               >
                 <Trash2 className="mr-2 h-4 w-4" />
@@ -570,6 +583,7 @@ export function EventManagement({
                                       variant="destructive"
                                       size="sm"
                                       onClick={() => handleDeleteEvent(event)}
+                                      isLoading={deletingEventId === event.id}
                                     >
                                       <Trash2 className="h-4 w-4" />
                                     </Button>
@@ -742,6 +756,7 @@ export function EventManagement({
                                   size="sm"
                                   className="flex-1"
                                   onClick={() => handleDeleteEvent(event)}
+                                  isLoading={deletingEventId === event.id}
                                 >
                                   <Trash2 className="mr-2 h-4 w-4" />
                                   {t("eventManagement.deleteButtonLabel")}

@@ -11,9 +11,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/custom-ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/components/custom-ui/label";
 import {
   Select,
   SelectContent,
@@ -237,12 +237,10 @@ export function SeatFormModal({
             <Button type="button" variant="outline" onClick={onClose}>
               {t("seatFormModal.cancelButton")}
             </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading
-                ? t("seatFormModal.savingButton")
-                : isCreating
-                  ? t("seatFormModal.createButton")
-                  : t("seatFormModal.updateButton")}
+            <Button type="submit" isLoading={isLoading} disabled={isLoading}>
+              {isCreating
+                ? t("seatFormModal.createButton")
+                : t("seatFormModal.updateButton")}
             </Button>
           </div>
         </form>

@@ -1,12 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { Check, KeyRound, Pencil, Plus, Trash2, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import {
+  Check,
+  KeyRound,
+  Loader2,
+  Pencil,
+  Plus,
+  Trash2,
+  X,
+} from "lucide-react";
+import { Button } from "@/components/custom-ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/components/custom-ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/custom-ui/skeleton";
 import {
   Accordion,
   AccordionContent,
@@ -166,6 +174,7 @@ export function PasskeySection() {
                   variant="ghost"
                   size="sm"
                   onClick={handleConfirmRename}
+                  isLoading={isRenaming}
                   disabled={isRenaming || !editValue.trim()}
                   aria-label={t("webauthn.manage.saveRename")}
                 >
@@ -248,12 +257,11 @@ export function PasskeySection() {
               size="sm"
               className="w-full shrink-0 sm:w-auto"
               onClick={handleAdd}
+              isLoading={isAdding}
               disabled={isAdding}
             >
               <Plus className="mr-1 h-4 w-4" />
-              {isAdding
-                ? t("webauthn.manage.adding")
-                : t("webauthn.manage.addButton")}
+              {t("webauthn.manage.addButton")}
             </Button>
           </div>
 
@@ -300,6 +308,7 @@ export function PasskeySection() {
               disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
+              {isDeleting && <Loader2 className="h-4 w-4 animate-spin" />}
               {t("webauthn.manage.deleteButton")}
             </AlertDialogAction>
           </AlertDialogFooter>

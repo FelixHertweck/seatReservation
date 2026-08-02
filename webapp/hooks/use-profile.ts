@@ -67,7 +67,9 @@ export function useProfile() {
   return {
     user,
     isLoading,
+    isUpdating: updateMutation.isPending,
     updateProfile,
     resendConfirmation,
+    isResendingConfirmation: resendConfirmationMutation.isPending,
   };
 }

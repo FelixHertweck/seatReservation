@@ -17,7 +17,7 @@ import {
 
 import { useT } from "@/lib/i18n/hooks";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/custom-ui/tabs";
 import { DetailsDialog } from "@/components/management/location-editor/details-dialog";
 import type { useLocationAutosave } from "@/components/management/location-editor/use-location-autosave";

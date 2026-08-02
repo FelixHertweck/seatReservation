@@ -5,7 +5,7 @@ import { Plus, Trash2 } from "lucide-react";
 
 import { useT } from "@/lib/i18n/hooks";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import { SeatAddDialog } from "@/components/management/location-editor/seat-add-dialog";
 import type { useLocationAutosave } from "@/components/management/location-editor/use-location-autosave";
 import type {

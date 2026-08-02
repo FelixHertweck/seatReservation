@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/custom-ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import {
   Select,
   SelectContent,
@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/components/custom-ui/label";
 import { Badge } from "@/components/ui/badge";
 import { SeatMap } from "@/components/common/seat-map";
 import SeatmapLegend from "@/components/common/seatmap-legend";
@@ -197,17 +197,16 @@ export function BlockSeatsModal({
             </Button>
             <Button
               type="submit"
+              isLoading={isLoading}
               disabled={
                 isLoading || selectedSeats.length === 0 || !formData.eventId
               }
             >
-              {isLoading
-                ? t("blockSeatsModal.blockingButton")
-                : selectedSeats.length === 1
-                  ? t("blockSeatsModal.blockSeatButton")
-                  : t("blockSeatsModal.blockSeatsButton", {
-                      count: selectedSeats.length,
-                    })}
+              {selectedSeats.length === 1
+                ? t("blockSeatsModal.blockSeatButton")
+                : t("blockSeatsModal.blockSeatsButton", {
+                    count: selectedSeats.length,
+                  })}
             </Button>
           </div>
         </form>

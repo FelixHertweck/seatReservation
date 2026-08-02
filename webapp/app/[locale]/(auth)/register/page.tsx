@@ -4,7 +4,7 @@ import type React from "react";
 
 import { useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import {
   Card,
   CardContent,
@@ -12,7 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/components/custom-ui/label";
 import {
   Tooltip,
   TooltipContent,
@@ -198,14 +198,10 @@ export default function RegisterPage() {
             <Button
               type="submit"
               className="w-full"
+              isLoading={isLoading}
               disabled={isLoading || isDisabled || isPasswordTooShort}
             >
-              {ButtonLabel(
-                t,
-                isLoading,
-                isDisabled,
-                usePasskey && isPasskeySupported,
-              )}
+              {ButtonLabel(t, isDisabled, usePasskey && isPasskeySupported)}
             </Button>
           </form>
           {isDisabled && (
@@ -227,14 +223,12 @@ export default function RegisterPage() {
 
 const ButtonLabel = (
   t: TFunction<string, string>,
-  isLoading: boolean,
   isDisabled: boolean,
   usePasskey: boolean,
 ) => {
   if (isDisabled) {
     return t("register.registrationDisabled.title");
   }
-  if (isLoading) return t("register.creatingAccount");
   if (usePasskey) return t("register.createAccountWithPasskey");
   return t("register.createAccountButton");
 };

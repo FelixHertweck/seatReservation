@@ -57,7 +57,10 @@ export function useManagementReservations(eventId: string | null) {
       })),
   });
   const seats = seatsQueries.flatMap((q) => q.data ?? []);
-  const seatsLoading = seatsQueries.some((q) => q.isLoading);
+  // While locations are still loading, seatsQueries is empty and `.some`
+  // would report `false` even though nothing has actually loaded yet.
+  const seatsLoading =
+    locationsLoading || seatsQueries.some((q) => q.isLoading);
 
   const { data: reservations, isLoading: reservationsLoading } = useQuery({
     ...getApiManagerReservationsEventByIdOptions({

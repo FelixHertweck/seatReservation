@@ -4,7 +4,7 @@ import type React from "react";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import {
   Card,
   CardContent,
@@ -13,7 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/components/custom-ui/label";
 import { useAuth } from "@/hooks/use-auth";
 import { useWebAuthn } from "@/hooks/use-webauthn";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -231,15 +231,13 @@ export default function LoginPage() {
               type="submit"
               className="w-full"
               variant={loginError ? "destructive" : "default"}
+              isLoading={isLoadingForm}
               disabled={isLoadingForm || isRetryAfterActive || !!loginError}
             >
-              {loginError
-                ? loginError
-                : isRetryAfterActive
+              {loginError ||
+                (isRetryAfterActive
                   ? formatRetryTime()
-                  : isLoadingForm
-                    ? t("login.signingIn")
-                    : t("login.signInButton")}
+                  : t("login.signInButton"))}
             </Button>
           </form>
           {isPasskeySupported && (
@@ -259,12 +257,11 @@ export default function LoginPage() {
                 variant="outline"
                 className="w-full"
                 onClick={handlePasskeyLogin}
+                isLoading={isPasskeyLoading}
                 disabled={isPasskeyLoading || isRetryAfterActive}
               >
                 <KeyRound className="mr-2 h-4 w-4" />
-                {isPasskeyLoading
-                  ? t("webauthn.login.signingIn")
-                  : t("webauthn.login.button")}
+                {t("webauthn.login.button")}
               </Button>
             </>
           )}
