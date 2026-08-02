@@ -1,17 +1,24 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 /**
  * Measures how tall `ref`'s element can grow to fill the viewport down to
  * the footer, re-measuring on resize since header/footer height varies.
+ *
+ * Uses a callback ref (rather than useRef) so the measurement effect re-runs
+ * whenever the element actually mounts - important when the ref'd node only
+ * appears conditionally (e.g. after data loads) instead of on first render.
  */
 export function useFillHeight<T extends HTMLElement>(fallbackPx = 480) {
-  const ref = useRef<T | null>(null);
+  const [el, setEl] = useState<T | null>(null);
   const [height, setHeight] = useState<number | null>(null);
 
+  const ref = useCallback((node: T | null) => {
+    setEl(node);
+  }, []);
+
   useEffect(() => {
-    const el = ref.current;
     if (!el) return;
 
     const footer = document.querySelector("footer");
@@ -34,7 +41,7 @@ export function useFillHeight<T extends HTMLElement>(fallbackPx = 480) {
       resizeObserver.disconnect();
       window.removeEventListener("resize", measure);
     };
-  }, []);
+  }, [el]);
 
   return { ref, height: height ?? fallbackPx };
 }

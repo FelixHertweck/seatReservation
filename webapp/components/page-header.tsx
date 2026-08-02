@@ -12,6 +12,7 @@ import Link from "next/link";
 type PageHeaderContent = {
   title: ReactNode;
   description?: ReactNode;
+  actions?: ReactNode;
   search?: ReactNode;
 };
 
@@ -69,16 +70,18 @@ function usePageHeaderSetter() {
 export function PageHeader({
   title,
   description,
+  actions,
   search,
 }: {
   title: ReactNode;
   description?: ReactNode;
+  actions?: ReactNode;
   search?: ReactNode;
 }) {
   const setContent = usePageHeaderSetter();
 
   useEffect(() => {
-    setContent({ title, description, search });
+    setContent({ title, description, actions, search });
     return () => setContent(null);
   });
 
@@ -134,8 +137,8 @@ export function PageHeaderSlot() {
   }
 
   return (
-    <div className="group relative flex w-full flex-1 min-w-0 items-center gap-4 max-sm:flex-wrap">
-      <div className="min-w-0 flex-1 max-sm:pr-24 max-sm:group-has-[[data-placeholder]]:pr-0">
+    <div className="flex w-full flex-1 min-w-0 flex-wrap items-center gap-2 sm:gap-4">
+      <div className="min-w-0 flex-1 max-sm:w-full">
         <h1 className="truncate text-lg font-semibold md:text-xl">
           {content.title}
         </h1>
@@ -149,19 +152,27 @@ export function PageHeaderSlot() {
         <div
           className={
             // Default: a compact search-bar slot, icon-sized on mobile until
-            // focused (used by e.g. SearchAndFilter's text input).
-            "absolute right-0 top-1/2 z-20 w-10 -translate-y-1/2 overflow-hidden rounded-md transition-[width] duration-200 ease-out max-sm:right-2 max-sm:has-[button]:w-[5.75rem] max-sm:has-[input:focus]:w-56! max-sm:has-[input:focus]:bg-background " +
+            // focused (used by e.g. SearchAndFilter's text input). Sits in
+            // normal flow (not absolute) so it never overlaps the actions
+            // that share its row.
+            "order-2 flex shrink-0 items-center overflow-hidden rounded-md transition-[width] duration-200 ease-out max-sm:w-10 max-sm:has-[button]:w-[5.75rem] max-sm:has-[input:focus]:w-56! max-sm:has-[input:focus]:bg-background " +
             // A select/combobox (e.g. EventSelector) can't shrink to an icon
             // and stay usable while it still shows its placeholder, so on
-            // mobile it drops out of the absolute corner and becomes its own
-            // full-width row below the title, where there's room to read it.
+            // mobile it gets its own full-width row above the actions.
             // Once a value is picked, data-placeholder disappears and it
-            // falls back to the compact has-[button] corner sizing above.
-            "max-sm:has-[[data-placeholder]]:static max-sm:has-[[data-placeholder]]:top-auto max-sm:has-[[data-placeholder]]:z-auto max-sm:has-[[data-placeholder]]:order-3 max-sm:has-[[data-placeholder]]:mt-1 max-sm:has-[[data-placeholder]]:w-full max-sm:has-[[data-placeholder]]:translate-y-0 max-sm:has-[[data-placeholder]]:overflow-visible " +
-            "sm:static sm:top-auto sm:z-auto sm:ml-auto sm:w-full sm:max-w-sm sm:translate-y-0 sm:overflow-visible sm:transition-none"
+            // falls back to the compact icon sizing above.
+            "max-sm:has-[[data-placeholder]]:order-1 max-sm:has-[[data-placeholder]]:w-full max-sm:has-[[data-placeholder]]:overflow-visible " +
+            "sm:order-none sm:ml-auto sm:w-full sm:max-w-sm sm:overflow-visible sm:transition-none"
           }
         >
           {content.search}
+        </div>
+      )}
+      {content.actions && (
+        // Primary page actions (Add, sort, import, …) share the search's row
+        // on mobile, pushed to the right edge of it via ml-auto.
+        <div className="order-3 flex shrink-0 items-center gap-2 max-sm:ml-auto sm:order-none sm:flex-nowrap">
+          {content.actions}
         </div>
       )}
     </div>

@@ -6,7 +6,7 @@ import { useT } from "@/lib/i18n/hooks";
 import { useLocationEditorData } from "@/components/management/location-editor/use-location-editor-data";
 import { useLocationEditorState } from "@/components/management/location-editor/use-location-editor-state";
 import { useLocationAutosave } from "@/components/management/location-editor/use-location-autosave";
-import { useFillHeight } from "@/components/management/location-editor/use-fill-height";
+import { useFillHeight } from "@/hooks/use-fill-height";
 import { EditorToolbar } from "@/components/management/location-editor/editor-toolbar";
 import { SeatMapEditor } from "@/components/management/location-editor/seat-map-editor";
 import { EditorSidePanel } from "@/components/management/location-editor/editor-side-panel";
@@ -18,7 +18,7 @@ import type {
   LocalId,
 } from "@/components/management/location-editor/types";
 import { PageHeader } from "@/components/page-header";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/custom-ui/button";
 import Link from "next/link";
 import { ArrowLeft, AlertCircle, Loader2 } from "lucide-react";
 
