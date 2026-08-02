@@ -228,6 +228,12 @@ export function AppSidebar() {
     return segments[1] || "en";
   };
 
+  // pathname without the locale prefix, e.g. "/de/management/locations" -> "/management/locations"
+  const currentPath = `/${pathname.split("/").slice(2).join("/")}`;
+
+  const isPathActive = (url: string) =>
+    currentPath === url || currentPath.startsWith(`${url}/`);
+
   const getLanguageLabel = (lang: string) => {
     switch (lang) {
       case "en":
@@ -320,15 +326,6 @@ export function AppSidebar() {
       >
         <UserLock className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
         {t("sidebar.logoutAll")}
-      </DropdownMenuItem>
-      <DropdownMenuItem
-        onClick={() => {
-          void logout();
-        }}
-        className="focus:bg-destructive/10 focus:text-destructive data-[highlighted]:bg-destructive/10 data-[highlighted]:text-destructive transition-all duration-200 cursor-pointer group"
-      >
-        <LogOut className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
-        {t("sidebar.logout")}
       </DropdownMenuItem>
     </>
   );
@@ -433,7 +430,7 @@ export function AppSidebar() {
                       asChild
                       tooltip={item.title}
                       className={`hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground transition-all duration-300 hover:scale-[1.02] group relative overflow-hidden p-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 ${
-                        pathname.includes(item.url)
+                        isPathActive(item.url)
                           ? "bg-sidebar-accent/40 text-sidebar-accent-foreground"
                           : ""
                       }`}
@@ -457,12 +454,12 @@ export function AppSidebar() {
                           <div className="relative">
                             <item.icon
                               className={`group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 ${
-                                pathname.includes(item.url) ? "scale-110" : ""
+                                isPathActive(item.url) ? "scale-110" : ""
                               }`}
                             />
                             <div
                               className={`absolute inset-0 bg-sidebar-primary/20 rounded-full scale-0 group-hover:scale-150 transition-transform duration-500 opacity-0 group-hover:opacity-100 ${
-                                pathname.includes(item.url)
+                                isPathActive(item.url)
                                   ? "scale-125 opacity-100"
                                   : ""
                               }`}
@@ -470,7 +467,7 @@ export function AppSidebar() {
                           </div>
                           <span
                             className={`font-medium ${
-                              pathname.includes(item.url) ? "font-semibold" : ""
+                              isPathActive(item.url) ? "font-semibold" : ""
                             } group-data-[collapsible=icon]:hidden`}
                           >
                             {item.title}
@@ -479,7 +476,7 @@ export function AppSidebar() {
                             <Badge
                               variant="secondary"
                               className={`ml-auto text-xs bg-linear-to-r from-sidebar-primary/10 to-sidebar-accent/10 border-sidebar-primary/20 group-hover:scale-105 transition-transform duration-300 ${
-                                pathname.includes(item.url) ? "scale-110" : ""
+                                isPathActive(item.url) ? "scale-110" : ""
                               } group-data-[collapsible=icon]:hidden`}
                             >
                               {item.badge}
@@ -495,7 +492,11 @@ export function AppSidebar() {
                           <SidebarMenuSubItem key={subItem.title}>
                             <SidebarMenuSubButton
                               asChild
-                              className="hover:bg-sidebar-accent/50 transition-all duration-300 group p-0"
+                              className={`hover:bg-sidebar-accent/50 transition-all duration-300 group p-0 ${
+                                isPathActive(subItem.url)
+                                  ? "bg-sidebar-accent/40 text-sidebar-accent-foreground"
+                                  : ""
+                              }`}
                             >
                               <Link
                                 href={subItem.url}
@@ -514,8 +515,18 @@ export function AppSidebar() {
                                 }}
                                 className="flex items-center gap-3 w-full px-3 py-2 group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
                               >
-                                <subItem.icon className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
-                                <span className="text-sm group-data-[collapsible=icon]:hidden">
+                                <subItem.icon
+                                  className={`h-4 w-4 group-hover:scale-110 transition-transform duration-300 ${
+                                    isPathActive(subItem.url) ? "scale-110" : ""
+                                  }`}
+                                />
+                                <span
+                                  className={`text-sm group-data-[collapsible=icon]:hidden ${
+                                    isPathActive(subItem.url)
+                                      ? "font-semibold"
+                                      : ""
+                                  }`}
+                                >
                                   {subItem.title}
                                 </span>
                               </Link>
@@ -582,22 +593,51 @@ export function AppSidebar() {
                   {renderSettingsMenuItems()}
                 </DropdownMenuContent>
               </DropdownMenu>
+
+              <button
+                type="button"
+                onClick={() => {
+                  void logout();
+                }}
+                className="flex w-full items-center gap-2 border-t border-sidebar-border/50 px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors duration-200"
+              >
+                <LogOut className="h-4 w-4" />
+                {t("sidebar.logout")}
+              </button>
             </div>
           ) : (
             <SidebarMenu className="gap-1">
               <SidebarMenuItem>
+                <SidebarMenuButton
+                  size="lg"
+                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent/50 transition-all duration-300 hover:scale-[1.02] group group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:mx-auto"
+                >
+                  <Avatar className="h-6 w-6 rounded-lg ring-2 ring-sidebar-primary/20 group-hover:ring-sidebar-primary/40 transition-all duration-300 group-hover:scale-110">
+                    <AvatarFallback className="rounded-lg bg-linear-to-br from-sidebar-primary to-sidebar-primary/80 text-sidebar-primary-foreground font-semibold group-hover:rotate-3 transition-transform duration-300">
+                      {getUserInitials()}
+                    </AvatarFallback>
+                  </Avatar>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  tooltip={t("sidebar.viewProfile")}
+                  onClick={() => handleNavigation("/profile")}
+                  className="hover:bg-sidebar-accent/50 transition-all duration-300 hover:scale-[1.02] group group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:mx-auto"
+                >
+                  <UserRound className="group-hover:scale-110 transition-transform duration-300" />
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <SidebarMenuButton
-                      size="lg"
                       tooltip={t("sidebar.settings")}
-                      className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent/50 transition-all duration-300 hover:scale-[1.02] group group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:mx-auto"
+                      onClick={() => renderSettingsMenuItems()}
+                      className="hover:bg-sidebar-accent/50 transition-all duration-300 hover:scale-[1.02] group group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:mx-auto"
                     >
-                      <Avatar className="h-6 w-6 rounded-lg ring-2 ring-sidebar-primary/20 group-hover:ring-sidebar-primary/40 transition-all duration-300 group-hover:scale-110">
-                        <AvatarFallback className="rounded-lg bg-linear-to-br from-sidebar-primary to-sidebar-primary/80 text-sidebar-primary-foreground font-semibold group-hover:rotate-3 transition-transform duration-300">
-                          {getUserInitials()}
-                        </AvatarFallback>
-                      </Avatar>
+                      <Settings className="group-hover:scale-110 transition-transform duration-300" />
                     </SidebarMenuButton>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
@@ -610,13 +650,16 @@ export function AppSidebar() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </SidebarMenuItem>
+
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  tooltip={t("sidebar.viewProfile")}
-                  onClick={() => handleNavigation("/profile")}
-                  className="hover:bg-sidebar-accent/50 transition-all duration-300 hover:scale-[1.02] group group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:mx-auto"
+                  tooltip={t("sidebar.logout")}
+                  onClick={() => {
+                    void logout();
+                  }}
+                  className="text-destructive hover:bg-destructive/10 hover:text-destructive transition-all duration-300 hover:scale-[1.02] group group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:mx-auto"
                 >
-                  <UserRound className="group-hover:scale-110 transition-transform duration-300" />
+                  <LogOut className="group-hover:scale-110 transition-transform duration-300" />
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
