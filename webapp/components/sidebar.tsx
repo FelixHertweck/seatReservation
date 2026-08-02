@@ -17,7 +17,6 @@ import {
   Eye,
   LogIn as CheckInIcon,
   LucideIcon,
-  CalendarCog,
   LayoutDashboard,
   MapPinned,
   Ticket,
@@ -169,12 +168,6 @@ export function AppSidebar() {
             icon: Ticket,
           },
         ],
-      });
-      managementItems.push({
-        title: t("sidebar.manager"),
-        url: "/manager",
-        icon: CalendarCog,
-        badge: t("sidebar.manager"),
       });
     }
 
