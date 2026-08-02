@@ -125,6 +125,10 @@
   animation: bounce-dot 1.4s infinite ease-in-out both;
 }
 
+@utility animate-shimmer {
+  animation: shimmer-sweep 1.6s ease-in-out infinite;
+}
+
 :root {
   --background: hsl(0 0% 100%);
   --foreground: hsl(240 20% 3%);
@@ -282,6 +286,15 @@
     }
     40% {
       transform: translateY(-10px);
+    }
+  }
+
+  @keyframes shimmer-sweep {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
     }
   }
 }
