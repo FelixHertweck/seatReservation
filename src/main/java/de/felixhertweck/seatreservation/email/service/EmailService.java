@@ -95,6 +95,11 @@ public class EmailService {
             defaultValue = "Username Recovery Request")
     String EMAIL_HEADER_USERNAME_RECOVERY;
 
+    @ConfigProperty(
+            name = "email.header.two-factor",
+            defaultValue = "Two-Factor Authentication Code")
+    String EMAIL_HEADER_TWO_FACTOR;
+
     private static final Logger LOG = Logger.getLogger(EmailService.class);
 
     @Inject EmailQueueService emailQueueService;
@@ -152,6 +157,36 @@ public class EmailService {
     @Inject
     @Location("email/username-recovery")
     Template usernameRecoveryTemplate;
+
+    @Inject
+    @Location("email/two-factor-code")
+    Template twoFactorCodeTemplate;
+
+    /**
+     * Sends a two-factor authentication code email to the specified user.
+     *
+     * @param user the user to send the code to
+     * @param code the 2FA verification code
+     */
+    public void sendTwoFactorCode(User user, String code) {
+        if (skipForNullOrEmptyAddress(user.getEmail())
+                || skipForLocalhostAddress(user.getEmail())) {
+            LOG.warn("No valid email address provided for 2FA code.");
+            return;
+        }
+
+        LOG.debugf(
+                "Sending 2FA code email to User ID: %s, Username: %s", user.id, user.getUsername());
+
+        String htmlContent =
+                twoFactorCodeTemplate
+                        .data("fullName", fullName(user))
+                        .data("code", code)
+                        .data("currentYear", currentYear())
+                        .render();
+
+        enqueue(List.of(user.getEmail()), EMAIL_HEADER_TWO_FACTOR, htmlContent, List.of(), false);
+    }
 
     /**
      * Sends a password reset email to the specified user.

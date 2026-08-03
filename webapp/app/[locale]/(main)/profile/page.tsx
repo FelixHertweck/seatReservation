@@ -4,19 +4,30 @@ import type React from "react";
 
 import { useState, useEffect } from "react";
 import { useProfile } from "@/hooks/use-profile";
+import { useTwoFactor } from "@/hooks/use-2fa";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/custom-ui/button";
 import { Label } from "@/components/custom-ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/custom-ui/skeleton";
-import { X } from "lucide-react";
+import { X, AtSign, User, Mail, Lock, Tag, Save } from "lucide-react";
 import { toast } from "sonner";
 import type { UserProfileUpdateDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 import { useRouter, useParams } from "next/navigation";
 import { PasskeySection } from "@/components/profile/passkey-section";
+import { TwoFactorSection } from "@/components/profile/two-factor-section";
+import { TwoFactorCodeInput } from "@/components/common/two-factor-code-input";
 import { PageHeader } from "@/components/page-header";
 
 interface FormData {
@@ -33,6 +44,11 @@ export default function ProfilePage() {
   const locale = params.locale as string;
 
   const { user, updateProfile, isLoading, isUpdating } = useProfile();
+  const {
+    status: twoFactorStatus,
+    sendSetupEmail,
+    isSetupLoading,
+  } = useTwoFactor();
 
   const initialFormData: FormData = {
     firstname: user?.firstname || "",
@@ -51,7 +67,15 @@ export default function ProfilePage() {
   const [showPasswordSection, setShowPasswordSection] =
     useState<boolean>(false);
 
+  // Changing the email address while 2FA is enabled requires proving continued possession of it first
+  const [emailChangeCode, setEmailChangeCode] = useState("");
+  const [isEmailChangeDialogOpen, setIsEmailChangeDialogOpen] = useState(false);
+
   const { hasUnsavedChanges, setHasUnsavedChanges } = useUnsavedChanges();
+
+  const isEmailChanging = formData.email !== originalEmail;
+  const requiresCodeForEmailChange =
+    isEmailChanging && !!twoFactorStatus?.twoFactorEnabled;
 
   if (
     user &&
@@ -137,25 +161,19 @@ export default function ProfilePage() {
     setShowPasswordSection(false);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (showPasswordSection && !isPasswordUpdateValid) {
-      toast.error(t("profilePage.passwordValidationErrorTitle"), {
-        description: t("profilePage.passwordValidationErrorDescription"),
-      });
-      return;
-    }
-
+  const performUpdate = async (twoFactorCode?: string) => {
     const updatedProfile: UserProfileUpdateDto = {
       ...formData,
       ...(showPasswordSection && newPassword ? { password: newPassword } : {}),
+      ...(twoFactorCode ? { twoFactorCode } : {}),
     };
 
     await updateProfile(updatedProfile);
 
     setOriginalFormData(formData);
     setHasUnsavedChanges(false);
+    setEmailChangeCode("");
+    setIsEmailChangeDialogOpen(false);
 
     if (showPasswordSection) {
       setNewPassword("");
@@ -172,8 +190,30 @@ export default function ProfilePage() {
       setTimeout(() => {
         router.push(`/${locale}/verify`);
       }, 700);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (showPasswordSection && !isPasswordUpdateValid) {
+      toast.error(t("profilePage.passwordValidationErrorTitle"), {
+        description: t("profilePage.passwordValidationErrorDescription"),
+      });
       return;
     }
+
+    if (requiresCodeForEmailChange) {
+      setIsEmailChangeDialogOpen(true);
+      return;
+    }
+
+    await performUpdate();
+  };
+
+  const handleConfirmEmailChange = async () => {
+    if (!emailChangeCode.trim()) return;
+    await performUpdate(emailChangeCode.trim());
   };
 
   return (
@@ -187,19 +227,29 @@ export default function ProfilePage() {
         <CardContent className="p-0 md:p-6 md:pt-0">
           <form onSubmit={handleSubmit} className="space-y-4 mt-5">
             <div>
-              <Label htmlFor="username">{t("profilePage.usernameLabel")}</Label>
+              <Label
+                htmlFor="username"
+                className="flex items-center gap-2 pb-2"
+              >
+                <AtSign className="h-4 w-4 text-muted-foreground" />
+                {t("profilePage.usernameLabel")}
+              </Label>
               {isLoading ? (
-                <Skeleton className="h-10 w-full mt-2" />
+                <Skeleton className="h-10 w-full" />
               ) : (
                 <Input id="username" value={user?.username || ""} disabled />
               )}
             </div>
             <div>
-              <Label htmlFor="firstname">
+              <Label
+                htmlFor="firstname"
+                className="flex items-center gap-2 pb-2"
+              >
+                <User className="h-4 w-4 text-muted-foreground" />
                 {t("profilePage.firstNameLabel")}
               </Label>
               {isLoading ? (
-                <Skeleton className="h-10 w-full mt-2" />
+                <Skeleton className="h-10 w-full" />
               ) : (
                 <Input
                   id="firstname"
@@ -214,9 +264,15 @@ export default function ProfilePage() {
               )}
             </div>
             <div>
-              <Label htmlFor="lastname">{t("profilePage.lastNameLabel")}</Label>
+              <Label
+                htmlFor="lastname"
+                className="flex items-center gap-2 pb-2"
+              >
+                <User className="h-4 w-4 text-muted-foreground" />
+                {t("profilePage.lastNameLabel")}
+              </Label>
               {isLoading ? (
-                <Skeleton className="h-10 w-full mt-2" />
+                <Skeleton className="h-10 w-full" />
               ) : (
                 <Input
                   id="lastname"
@@ -231,8 +287,11 @@ export default function ProfilePage() {
               )}
             </div>
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <Label htmlFor="email">{t("profilePage.emailLabel")}</Label>
+              <div className="flex items-center justify-between pb-2">
+                <Label htmlFor="email" className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  {t("profilePage.emailLabel")}
+                </Label>
                 {isLoading ? (
                   <Skeleton className="h-5 w-16" />
                 ) : user?.emailVerified ? (
@@ -268,11 +327,17 @@ export default function ProfilePage() {
                 email={formData.email}
                 originalEmail={originalEmail}
               />
+              {requiresCodeForEmailChange && (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {t("profilePage.emailChangeCodeHint")}
+                </p>
+              )}
             </div>
 
             <div className="border-t pt-4">
               <div className="flex items-center justify-between mb-4">
-                <Label className="text-base font-medium">
+                <Label className="flex items-center gap-2 text-base font-medium">
+                  <Lock className="h-5 w-5 text-primary" />
                   {t("profilePage.passwordSectionTitle")}
                 </Label>
                 {isLoading ? (
@@ -351,8 +416,11 @@ export default function ProfilePage() {
 
             <PasskeySection />
 
+            <TwoFactorSection />
+
             <div>
-              <Label htmlFor="tags" className="pb-2">
+              <Label htmlFor="tags" className="flex items-center gap-2 pb-2">
+                <Tag className="h-4 w-4 text-muted-foreground" />
                 {t("profilePage.tagsLabel")}
               </Label>
               {isLoading ? (
@@ -427,12 +495,60 @@ export default function ProfilePage() {
                 isLoading={isUpdating}
                 disabled={isUpdating || !hasUnsavedChanges}
               >
+                <Save className="mr-2 h-4 w-4" />
                 {t("profilePage.saveChangesButton")}
               </Button>
             )}
           </form>
         </CardContent>
       </Card>
+
+      <Dialog
+        open={isEmailChangeDialogOpen}
+        onOpenChange={(open) => {
+          setIsEmailChangeDialogOpen(open);
+          if (!open) setEmailChangeCode("");
+        }}
+      >
+        <DialogContent>
+          <DialogHeader className="text-left">
+            <DialogTitle>{t("profilePage.emailChangeCodeTitle")}</DialogTitle>
+            <DialogDescription>
+              {t("profilePage.emailChangeCodeDescription")}
+            </DialogDescription>
+          </DialogHeader>
+
+          <TwoFactorCodeInput
+            id="emailChangeCode"
+            totpAvailable={!!twoFactorStatus?.totpEnabled}
+            emailAvailable={!!twoFactorStatus?.emailEnabled}
+            code={emailChangeCode}
+            onCodeChange={setEmailChangeCode}
+            onRequestEmailCode={() => sendSetupEmail()}
+            isRequestingEmailCode={isSetupLoading}
+            autoSendEmailCode
+            autoFocus
+          />
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsEmailChangeDialogOpen(false)}
+            >
+              {t("common.cancel")}
+            </Button>
+            <Button
+              type="button"
+              onClick={handleConfirmEmailChange}
+              isLoading={isUpdating}
+              disabled={!emailChangeCode.trim() || isUpdating}
+            >
+              {t("profilePage.confirmEmailChangeButton")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

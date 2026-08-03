@@ -31,9 +31,14 @@ quarkus:
 
 jwt:
   cookie:
-    secure: ${SSL_ENABLED:true} 
+    secure: ${SSL_ENABLED:true}
 
-email:  
+# Mounted read-only from the host's keys/ directory (see docker-compose.yml), same as the JWT
+# keys below. Keep it stable -- losing it makes every stored TOTP secret unrecoverable.
+security:
+  encryption-key-location: /deployments/keys/totp-encryption.key
+
+email:
   frontend-base-url: ${APP_URL} # Change in case provide frontend on different URL
   bcc-address: ${EMAIL_BCC_ADDRESS:} # Optional BCC address for event notifications to users (leave empty to disable)
 

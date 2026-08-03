@@ -20,7 +20,10 @@
 package de.felixhertweck.seatreservation.security.resource;
 
 import java.net.URL;
+import java.time.Instant;
 import java.util.List;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import jakarta.ws.rs.core.MediaType;
 
 import static io.restassured.RestAssured.given;
@@ -28,7 +31,13 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.notNullValue;
 
+import com.eatthepath.otp.TimeBasedOneTimePasswordGenerator;
+import de.felixhertweck.seatreservation.model.entity.TwoFactorMethod;
+import de.felixhertweck.seatreservation.security.dto.TwoFactorEnableDTO;
+import de.felixhertweck.seatreservation.security.dto.TwoFactorSettingsUpdateDTO;
+import de.felixhertweck.seatreservation.security.dto.TwoFactorVerifyRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.WebAuthnRegistrationStartDTO;
+import de.felixhertweck.seatreservation.security.service.TwoFactorService;
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.webauthn.WebAuthnHardware;
@@ -187,6 +196,145 @@ class WebAuthnFlowTest {
                 .delete("/api/auth/webauthn/credentials/" + ids.get(1))
                 .then()
                 .statusCode(409);
+    }
+
+    @Test
+    void passkeyLogin_TwoFactorGateEnabled_RequiresChallengeThenVerifies() throws Exception {
+        WebAuthnHardware authenticator = new WebAuthnHardware(url);
+        String username = "passkey_2fa_user";
+        CookieFilter registrationCookies = new CookieFilter();
+        JsonObject registrationDetails =
+                new JsonObject()
+                        .put("username", username)
+                        .put("firstname", "Grace")
+                        .put("lastname", "Hopper")
+                        .put("email", username + "@example.com");
+
+        // 1. Create a passkey-only account (also logs the session in via cookies).
+        String registerOptions =
+                given().filter(registrationCookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(registrationDetails.encode())
+                        .when()
+                        .post("/api/auth/webauthn/register-new/options")
+                        .then()
+                        .statusCode(200)
+                        .extract()
+                        .asString();
+        JsonObject attestation =
+                authenticator.makeRegistrationJson(extractChallenge(registerOptions));
+        JsonObject registerBody =
+                new JsonObject()
+                        .put("registration", registrationDetails)
+                        .put("credential", attestation);
+        given().filter(registrationCookies)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(registerBody.encode())
+                .when()
+                .post("/api/auth/webauthn/register-new")
+                .then()
+                .statusCode(200);
+
+        // 2. Enable TOTP 2FA and require it after passkey login too.
+        String secret =
+                given().filter(registrationCookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .when()
+                        .post("/api/users/me/2fa/setup-totp")
+                        .then()
+                        .statusCode(200)
+                        .extract()
+                        .path("secret");
+        long enableTotpStep = currentTotpStep();
+        String totpCode = generateTotpCode(secret);
+        given().filter(registrationCookies)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new TwoFactorEnableDTO(TwoFactorMethod.TOTP, totpCode))
+                .when()
+                .post("/api/users/me/2fa/enable")
+                .then()
+                .statusCode(200);
+        given().filter(registrationCookies)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new TwoFactorSettingsUpdateDTO(true))
+                .when()
+                .put("/api/users/me/2fa/settings")
+                .then()
+                .statusCode(200)
+                .body("twoFactorPasskeyEnabled", equalTo(true));
+
+        // 3. A fresh passkey login is now gated behind 2FA: no auth cookie, a challenge instead.
+        CookieFilter loginCookies = new CookieFilter();
+        String loginOptions =
+                given().filter(loginCookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .queryParam("username", username)
+                        .when()
+                        .post("/api/auth/webauthn/login/options")
+                        .then()
+                        .statusCode(200)
+                        .extract()
+                        .asString();
+        JsonObject assertion = authenticator.makeLoginJson(extractChallenge(loginOptions));
+        io.restassured.response.Response loginResponse =
+                given().filter(loginCookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(assertion.encode())
+                        .when()
+                        .post("/api/auth/webauthn/login");
+        loginResponse
+                .then()
+                .statusCode(200)
+                .body("twoFactorRequired", equalTo(true))
+                .body("totpAvailable", equalTo(true))
+                .body("emailAvailable", equalTo(false));
+        org.junit.jupiter.api.Assertions.assertTrue(
+                loginResponse.getHeaders().getValues("Set-Cookie").stream()
+                        .noneMatch(header -> header.startsWith("jwt=")),
+                "No JWT cookie should be set before the 2FA challenge is verified");
+        String challengeToken = loginResponse.jsonPath().getString("challengeToken");
+
+        // 4. A wrong code is rejected...
+        given().filter(loginCookies)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new TwoFactorVerifyRequestDTO(challengeToken, "000000"))
+                .when()
+                .post("/api/auth/2fa/verify")
+                .then()
+                .statusCode(401);
+
+        // Replay protection rejects reusing a code from an already-accepted TOTP step (RFC 6238),
+        // so make sure we're generating a code for a step later than the one /2fa/enable consumed
+        // above before logging in with it.
+        waitForTotpStepAfter(enableTotpStep);
+
+        // 5. ...but the correct TOTP code completes the login with auth cookies.
+        given().filter(loginCookies)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new TwoFactorVerifyRequestDTO(challengeToken, generateTotpCode(secret)))
+                .when()
+                .post("/api/auth/2fa/verify")
+                .then()
+                .statusCode(200)
+                .cookie("jwt", notNullValue());
+    }
+
+    private static String generateTotpCode(String base32Secret) throws Exception {
+        byte[] secretBytes = TwoFactorService.decodeBase32(base32Secret);
+        TimeBasedOneTimePasswordGenerator totp = new TimeBasedOneTimePasswordGenerator();
+        SecretKey key = new SecretKeySpec(secretBytes, totp.getAlgorithm());
+        return totp.generateOneTimePasswordString(key, Instant.now());
+    }
+
+    private static long currentTotpStep() {
+        return Instant.now().getEpochSecond() / 30;
+    }
+
+    /** Blocks until the current 30s TOTP step is strictly later than {@code step}. */
+    private static void waitForTotpStepAfter(long step) throws InterruptedException {
+        while (currentTotpStep() <= step) {
+            Thread.sleep(500);
+        }
     }
 
     @Test

@@ -351,6 +351,69 @@ export type SupervisorSeatStatusDto = {
     liveStatus?: ReservationLiveStatus;
 };
 
+export type TwoFactorBackupCodesDto = {
+    backupCodes?: Array<string>;
+};
+
+export type TwoFactorDisableDto = {
+    method: TwoFactorMethod;
+    code: string;
+};
+
+export type TwoFactorEnableDto = {
+    method: TwoFactorMethod;
+    code?: string;
+};
+
+export const TwoFactorMethod = {
+    NONE: 'NONE',
+    TOTP: 'TOTP',
+    EMAIL: 'EMAIL'
+} as const;
+
+export type TwoFactorMethod = typeof TwoFactorMethod[keyof typeof TwoFactorMethod];
+
+export type TwoFactorRegenerateBackupCodesDto = {
+    code: string;
+};
+
+export type TwoFactorRequiredDto = {
+    twoFactorRequired?: boolean;
+    challengeToken?: string;
+    totpAvailable?: boolean;
+    emailAvailable?: boolean;
+};
+
+export type TwoFactorResendEmailRequestDto = {
+    challengeToken: string;
+};
+
+export type TwoFactorSettingsUpdateDto = {
+    twoFactorPasskeyEnabled?: boolean;
+};
+
+export type TwoFactorSetupDto = {
+    secret?: string;
+    otpauthUrl?: string;
+    qrCodeDataUrl?: string;
+    backupCodes?: Array<string>;
+};
+
+export type TwoFactorStatusDto = {
+    twoFactorEnabled?: boolean;
+    totpEnabled?: boolean;
+    emailEnabled?: boolean;
+    twoFactorPasskeyEnabled?: boolean;
+    hasTotpSecret?: boolean;
+    remainingBackupCodes?: bigint;
+    backupCodes?: Array<string>;
+};
+
+export type TwoFactorVerifyRequestDto = {
+    challengeToken: string;
+    code: string;
+};
+
 export type Uuid = string;
 
 export type UserDto = {
@@ -394,6 +457,7 @@ export type UserProfileUpdateDto = {
     lastname: string;
     password?: string;
     tags: Array<string>;
+    twoFactorCode?: string;
 };
 
 export type UserReservationResponseDto = {
@@ -447,6 +511,52 @@ export type WebAuthnStatusDto = {
     hasPassword?: boolean;
 };
 
+export type PostApiAuth2FaResendEmailData = {
+    body: TwoFactorResendEmailRequestDto;
+    path?: never;
+    query?: never;
+    url: '/api/auth/2fa/resend-email';
+};
+
+export type PostApiAuth2FaResendEmailErrors = {
+    /**
+     * Bad Request
+     */
+    400: unknown;
+};
+
+export type PostApiAuth2FaResendEmailResponses = {
+    /**
+     * Email code resent if challenge valid
+     */
+    200: unknown;
+};
+
+export type PostApiAuth2FaVerifyData = {
+    body: TwoFactorVerifyRequestDto;
+    path?: never;
+    query?: never;
+    url: '/api/auth/2fa/verify';
+};
+
+export type PostApiAuth2FaVerifyErrors = {
+    /**
+     * Bad Request
+     */
+    400: unknown;
+    /**
+     * Invalid or expired 2FA code
+     */
+    401: unknown;
+};
+
+export type PostApiAuth2FaVerifyResponses = {
+    /**
+     * 2FA verified, auth cookies set
+     */
+    200: unknown;
+};
+
 export type PostApiAuthLoginData = {
     body: LoginRequestDto;
     path?: never;
@@ -464,7 +574,7 @@ export type PostApiAuthLoginErrors = {
      */
     401: unknown;
     /**
-     * Too Many Requests: Account temporarily locked due to too many failed login attempts
+     * Too Many Requests: Account locked due to failed attempts
      */
     429: LoginLockedDto;
 };
@@ -473,10 +583,12 @@ export type PostApiAuthLoginError = PostApiAuthLoginErrors[keyof PostApiAuthLogi
 
 export type PostApiAuthLoginResponses = {
     /**
-     * Login successful, JWT cookie set
+     * Login successful or 2FA required (check response body)
      */
-    200: unknown;
+    200: TwoFactorRequiredDto;
 };
+
+export type PostApiAuthLoginResponse = PostApiAuthLoginResponses[keyof PostApiAuthLoginResponses];
 
 export type PostApiAuthLogoutData = {
     body?: never;
@@ -3249,6 +3361,213 @@ export type PutApiUsersMeResponses = {
 };
 
 export type PutApiUsersMeResponse = PutApiUsersMeResponses[keyof PutApiUsersMeResponses];
+
+export type GetApiUsersMe2FaData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/users/me/2fa';
+};
+
+export type GetApiUsersMe2FaErrors = {
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type GetApiUsersMe2FaResponses = {
+    /**
+     * OK
+     */
+    200: TwoFactorStatusDto;
+};
+
+export type GetApiUsersMe2FaResponse = GetApiUsersMe2FaResponses[keyof GetApiUsersMe2FaResponses];
+
+export type PostApiUsersMe2FaBackupCodesData = {
+    body: TwoFactorRegenerateBackupCodesDto;
+    path?: never;
+    query?: never;
+    url: '/api/users/me/2fa/backup-codes';
+};
+
+export type PostApiUsersMe2FaBackupCodesErrors = {
+    /**
+     * Bad Request
+     */
+    400: unknown;
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type PostApiUsersMe2FaBackupCodesResponses = {
+    /**
+     * OK
+     */
+    200: TwoFactorBackupCodesDto;
+};
+
+export type PostApiUsersMe2FaBackupCodesResponse = PostApiUsersMe2FaBackupCodesResponses[keyof PostApiUsersMe2FaBackupCodesResponses];
+
+export type PostApiUsersMe2FaDisableData = {
+    body: TwoFactorDisableDto;
+    path?: never;
+    query?: never;
+    url: '/api/users/me/2fa/disable';
+};
+
+export type PostApiUsersMe2FaDisableErrors = {
+    /**
+     * Bad Request
+     */
+    400: unknown;
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type PostApiUsersMe2FaDisableResponses = {
+    /**
+     * OK
+     */
+    200: TwoFactorStatusDto;
+};
+
+export type PostApiUsersMe2FaDisableResponse = PostApiUsersMe2FaDisableResponses[keyof PostApiUsersMe2FaDisableResponses];
+
+export type PostApiUsersMe2FaEnableData = {
+    body: TwoFactorEnableDto;
+    path?: never;
+    query?: never;
+    url: '/api/users/me/2fa/enable';
+};
+
+export type PostApiUsersMe2FaEnableErrors = {
+    /**
+     * Bad Request
+     */
+    400: unknown;
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Email method requested but the account email is not verified
+     */
+    403: unknown;
+    /**
+     * Too many failed TOTP codes submitted recently; account locked
+     */
+    429: unknown;
+};
+
+export type PostApiUsersMe2FaEnableResponses = {
+    /**
+     * OK
+     */
+    200: TwoFactorStatusDto;
+};
+
+export type PostApiUsersMe2FaEnableResponse = PostApiUsersMe2FaEnableResponses[keyof PostApiUsersMe2FaEnableResponses];
+
+export type PostApiUsersMe2FaSendSetupEmailData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/users/me/2fa/send-setup-email';
+};
+
+export type PostApiUsersMe2FaSendSetupEmailErrors = {
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type PostApiUsersMe2FaSendSetupEmailResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type PutApiUsersMe2FaSettingsData = {
+    body: TwoFactorSettingsUpdateDto;
+    path?: never;
+    query?: never;
+    url: '/api/users/me/2fa/settings';
+};
+
+export type PutApiUsersMe2FaSettingsErrors = {
+    /**
+     * Bad Request
+     */
+    400: unknown;
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type PutApiUsersMe2FaSettingsResponses = {
+    /**
+     * OK
+     */
+    200: TwoFactorStatusDto;
+};
+
+export type PutApiUsersMe2FaSettingsResponse = PutApiUsersMe2FaSettingsResponses[keyof PutApiUsersMe2FaSettingsResponses];
+
+export type PostApiUsersMe2FaSetupTotpData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/users/me/2fa/setup-totp';
+};
+
+export type PostApiUsersMe2FaSetupTotpErrors = {
+    /**
+     * Not Authorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type PostApiUsersMe2FaSetupTotpResponses = {
+    /**
+     * OK
+     */
+    200: TwoFactorSetupDto;
+};
+
+export type PostApiUsersMe2FaSetupTotpResponse = PostApiUsersMe2FaSetupTotpResponses[keyof PostApiUsersMe2FaSetupTotpResponses];
 
 export type GetApiUsersRolesData = {
     body?: never;

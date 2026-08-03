@@ -9,6 +9,18 @@ login:
   # Duration in seconds for which account remains locked after max failed attempts
   lockout-duration-seconds: 300
 
+# 2FA challenge verification rate limiting configuration (POST /api/auth/2fa/verify).
+# Tracked per user (not per challenge), so requesting a fresh challenge does not reset the budget.
+two-factor:
+  max-failed-attempts: 5
+  lockout-duration-seconds: 300
+
+# AES-256 key file for EncryptedStringConverter (e.g. TOTP secrets at rest). Same pattern as the
+# JWT keys below: a file under keys/, generated locally, gitignored, and bind-mounted (read-only)
+# into the container for docker deployments (see application-docker.yaml for the mount path).
+security:
+  encryption-key-location: keys/totp-encryption.key
+
 # Redis-backed seat selection cart (soft-lock while a user has a seat selected
 # but hasn't completed the reservation yet).
 seatcart:

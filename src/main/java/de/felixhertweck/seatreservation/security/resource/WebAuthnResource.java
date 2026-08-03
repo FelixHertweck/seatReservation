@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.security.resource;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import jakarta.annotation.security.PermitAll;
@@ -45,6 +46,7 @@ import de.felixhertweck.seatreservation.common.exception.DuplicateUserException;
 import de.felixhertweck.seatreservation.common.exception.RegistrationDisabledException;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.security.dto.TwoFactorRequiredDTO;
 import de.felixhertweck.seatreservation.security.dto.WebAuthnCredentialDTO;
 import de.felixhertweck.seatreservation.security.dto.WebAuthnCredentialUpdateDTO;
 import de.felixhertweck.seatreservation.security.dto.WebAuthnRegistrationStartDTO;
@@ -53,6 +55,7 @@ import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailed
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
 import de.felixhertweck.seatreservation.security.service.AuthService;
 import de.felixhertweck.seatreservation.security.service.TokenService;
+import de.felixhertweck.seatreservation.security.service.TwoFactorService;
 import de.felixhertweck.seatreservation.security.service.WebAuthnService;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import io.quarkus.security.Authenticated;
@@ -94,6 +97,7 @@ public class WebAuthnResource {
     @Inject WebAuthnService webAuthnService;
     @Inject AuthService authService;
     @Inject TokenService tokenService;
+    @Inject TwoFactorService twoFactorService;
     @Inject UserSecurityContext userSecurityContext;
     @Inject UserRepository userRepository;
     @Inject CurrentVertxRequest currentVertxRequest;
@@ -274,6 +278,14 @@ public class WebAuthnResource {
                     "No user associated with the presented passkey");
         }
         webAuthnService.recordSuccessfulLogin(user);
+
+        Optional<TwoFactorRequiredDTO> challenge =
+                twoFactorService.challengeIfRequiredAfterPasskeyLogin(user);
+        if (challenge.isPresent()) {
+            LOG.infof("User ID: %s requires 2FA authentication after passkey login.", user.id);
+            return Response.ok(challenge.get()).build();
+        }
+
         LOG.infof("User ID: %s logged in successfully via passkey.", user.id);
         return authCookieResponse(user);
     }

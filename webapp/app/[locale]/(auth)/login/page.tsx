@@ -14,31 +14,50 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/custom-ui/label";
+import { TwoFactorCodeInput } from "@/components/common/two-factor-code-input";
 import { useAuth } from "@/hooks/use-auth";
 import { useWebAuthn } from "@/hooks/use-webauthn";
+import { useTwoFactor } from "@/hooks/use-2fa";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useT } from "@/lib/i18n/hooks";
 import { ErrorWithResponse } from "@/components/init-query-client";
 import { redirectUser } from "@/lib/redirect-User";
-import { KeyRound } from "lucide-react";
+import { KeyRound, ShieldCheck, ArrowLeft } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const params = useParams();
   const locale = params.locale as string;
   const t = useT();
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoadingForm, setIsLoadingForm] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
-  const { user, isLoggedIn, login, logout, retryAfter } = useAuth();
+
+  const { user, isLoggedIn, login, logout, retryAfter, refetchUser } =
+    useAuth();
   const { isSupported: isPasskeySupported, loginWithPasskey } = useWebAuthn();
+  const { verifyChallenge, resendChallengeEmail } = useTwoFactor();
+
   const [isPasskeyLoading, setIsPasskeyLoading] = useState(false);
-  const router = useRouter();
   const [currentlyLoggingIn, setCurrentlyLoggingIn] = useState(false);
   const [remainingTime, setRemainingTime] = useState<number>(0);
   const [isRetryAfterActive, setIsRetryAfterActive] = useState(false);
+
+  // 2FA Challenge states
+  const [twoFactorChallenge, setTwoFactorChallenge] = useState<{
+    challengeToken: string;
+    totpAvailable: boolean;
+    emailAvailable: boolean;
+  } | null>(null);
+  const [twoFactorCode, setTwoFactorCode] = useState("");
+  const [isVerifying2Fa, setIsVerifying2Fa] = useState(false);
+  const [isResendingEmailCode, setIsResendingEmailCode] = useState(false);
 
   useEffect(() => {
     if (!retryAfter) {
@@ -106,7 +125,15 @@ export default function LoginPage() {
       setCurrentlyLoggingIn(true);
       const returnToUrl = searchParams.get("returnTo");
 
-      await login(username.trim(), password, returnToUrl);
+      const res = await login(username.trim(), password, returnToUrl);
+      if (res?.twoFactorRequired && res?.challengeToken) {
+        setTwoFactorChallenge({
+          challengeToken: res.challengeToken,
+          totpAvailable: res.totpAvailable ?? false,
+          emailAvailable: res.emailAvailable ?? false,
+        });
+        return;
+      }
       setCurrentlyLoggingIn(false);
     } catch (error) {
       if ((error as ErrorWithResponse).response?.status === 401) {
@@ -123,13 +150,61 @@ export default function LoginPage() {
     setLoginError(null);
     try {
       setCurrentlyLoggingIn(true);
-      await loginWithPasskey(username.trim(), searchParams.get("returnTo"));
+      const res = await loginWithPasskey(
+        username.trim(),
+        searchParams.get("returnTo"),
+      );
+      if (res?.twoFactorRequired && res?.challengeToken) {
+        setTwoFactorChallenge({
+          challengeToken: res.challengeToken,
+          totpAvailable: res.totpAvailable ?? false,
+          emailAvailable: res.emailAvailable ?? false,
+        });
+        return;
+      }
       setCurrentlyLoggingIn(false);
     } catch {
-      // Errors are surfaced via toast inside the hook; keep the form usable.
       setCurrentlyLoggingIn(false);
     } finally {
       setIsPasskeyLoading(false);
+    }
+  };
+
+  const handleVerify2Fa = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!twoFactorChallenge || !twoFactorCode.trim()) return;
+
+    setIsVerifying2Fa(true);
+    try {
+      await verifyChallenge(
+        twoFactorChallenge.challengeToken,
+        twoFactorCode.trim(),
+      );
+      await queryClient.invalidateQueries();
+      const { data: freshUser } = await refetchUser();
+      toast.success(t("login.success.title"));
+      redirectUser(
+        router,
+        locale,
+        freshUser ?? user,
+        searchParams.get("returnTo"),
+      );
+    } catch {
+      // Error handled by verifyChallenge toast
+    } finally {
+      setIsVerifying2Fa(false);
+    }
+  };
+
+  const handleResendEmail = async () => {
+    if (!twoFactorChallenge) return;
+    setIsResendingEmailCode(true);
+    try {
+      await resendChallengeEmail(twoFactorChallenge.challengeToken);
+    } catch {
+      // Toast handles error
+    } finally {
+      setIsResendingEmailCode(false);
     }
   };
 
@@ -141,7 +216,7 @@ export default function LoginPage() {
     await logout();
   };
 
-  if (isLoggedIn && !currentlyLoggingIn) {
+  if (isLoggedIn && !currentlyLoggingIn && !twoFactorChallenge) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center bg-background">
         <Card className="w-full max-w-md mx-4">
@@ -168,6 +243,64 @@ export default function LoginPage() {
     );
   }
 
+  // 2FA Challenge Form UI
+  if (twoFactorChallenge) {
+    return (
+      <div className="flex min-h-screen w-full items-center justify-center bg-background">
+        <Card className="w-full max-w-md mx-4">
+          <CardHeader className="space-y-1">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="h-6 w-6 text-primary" />
+              <CardTitle className="text-xl font-bold">
+                {t("twoFactor.challengeTitle")}
+              </CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleVerify2Fa} className="space-y-4">
+              <TwoFactorCodeInput
+                id="2fa-code"
+                totpAvailable={twoFactorChallenge.totpAvailable}
+                emailAvailable={twoFactorChallenge.emailAvailable}
+                code={twoFactorCode}
+                onCodeChange={setTwoFactorCode}
+                onRequestEmailCode={handleResendEmail}
+                isRequestingEmailCode={isResendingEmailCode}
+                emailButtonLabel={t("twoFactor.resendEmailCode")}
+                autoSendEmailCodeOnSwitch
+                autoFocus
+              />
+
+              <Button
+                type="submit"
+                className="w-full"
+                isLoading={isVerifying2Fa}
+                disabled={!twoFactorCode.trim() || isVerifying2Fa}
+              >
+                {t("login.signInButton")}
+              </Button>
+
+              <div className="flex justify-center pt-2 border-t text-xs">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTwoFactorChallenge(null);
+                    setCurrentlyLoggingIn(false);
+                  }}
+                  className="text-muted-foreground hover:text-foreground flex items-center gap-1"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                  {t("common.cancel")}
+                </button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Standard Login Form UI
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-background">
       <Card className="w-full max-w-md mx-4">

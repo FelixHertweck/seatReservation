@@ -23,6 +23,7 @@ import static de.felixhertweck.seatreservation.testutil.TestIds.id;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.MediaType;
@@ -44,11 +45,15 @@ import de.felixhertweck.seatreservation.security.dto.LoginRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.PasswordResetConfirmDTO;
 import de.felixhertweck.seatreservation.security.dto.PasswordResetRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
+import de.felixhertweck.seatreservation.security.dto.TwoFactorRequiredDTO;
+import de.felixhertweck.seatreservation.security.dto.TwoFactorResendEmailRequestDTO;
+import de.felixhertweck.seatreservation.security.dto.TwoFactorVerifyRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.UsernameRecoveryRequestDTO;
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
 import de.felixhertweck.seatreservation.security.service.AuthService;
 import de.felixhertweck.seatreservation.security.service.TokenService;
+import de.felixhertweck.seatreservation.security.service.TwoFactorService;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -64,6 +69,7 @@ public class AuthResourceTest {
     @InjectMock AuthService authService;
     @InjectMock TokenService tokenService;
     @InjectMock UserSecurityContext userSecurityContext;
+    @InjectMock TwoFactorService twoFactorService;
 
     @Inject UserRepository userRepository;
 
@@ -74,7 +80,7 @@ public class AuthResourceTest {
     @BeforeEach
     @Transactional
     void setUp() {
-        Mockito.reset(authService, tokenService, userSecurityContext);
+        Mockito.reset(authService, tokenService, userSecurityContext, twoFactorService);
 
         // Clean up refresh tokens
         refreshTokenRepository.deleteAll();
@@ -146,6 +152,40 @@ public class AuthResourceTest {
         assertTrue(setCookieHeaders.contains("jwt=" + token));
         assertTrue(setCookieHeaders.contains("refreshToken=refreshToken123"));
         assertTrue(setCookieHeaders.contains("refreshToken_expiration=expirationValue123"));
+    }
+
+    @Test
+    void testLoginSuccess_TwoFactorRequired() throws AuthenticationFailedException {
+        String username = "totpuser";
+        String password = "testpassword";
+
+        User mockUser = Mockito.mock(User.class);
+        Mockito.when(mockUser.getUsername()).thenReturn(username);
+        Mockito.when(authService.authenticate(username, password)).thenReturn(mockUser);
+
+        TwoFactorRequiredDTO requiredDTO =
+                new TwoFactorRequiredDTO(true, "chal-token-abc", true, false);
+        Mockito.when(twoFactorService.challengeIfRequired(mockUser))
+                .thenReturn(Optional.of(requiredDTO));
+
+        LoginRequestDTO loginRequest = new LoginRequestDTO();
+        loginRequest.setUsername(username);
+        loginRequest.setPassword(password);
+
+        io.restassured.response.Response response =
+                given().contentType(MediaType.APPLICATION_JSON)
+                        .body(loginRequest)
+                        .when()
+                        .post("/api/auth/login");
+
+        response.then()
+                .statusCode(Response.Status.OK.getStatusCode())
+                .body("twoFactorRequired", equalTo(true))
+                .body("challengeToken", equalTo("chal-token-abc"))
+                .body("totpAvailable", equalTo(true))
+                .body("emailAvailable", equalTo(false));
+
+        Mockito.verify(tokenService, Mockito.never()).issueAuthCookies(Mockito.any());
     }
 
     @Test
@@ -840,6 +880,90 @@ public class AuthResourceTest {
                 .body(requestDTO)
                 .when()
                 .post("/api/auth/username-recovery")
+                .then()
+                .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    void testVerify2fa_Success() {
+        User mockUser = Mockito.mock(User.class);
+        Mockito.when(mockUser.getUsername()).thenReturn("totpuser");
+        Mockito.when(twoFactorService.verifyChallengeAndGetUser("chal-token", "123456"))
+                .thenReturn(Optional.of(mockUser));
+
+        Mockito.when(tokenService.issueAuthCookies(mockUser))
+                .thenReturn(
+                        new TokenService.AuthCookies(
+                                new NewCookie.Builder("jwt").value("accessToken123").build(),
+                                new NewCookie.Builder("refreshToken")
+                                        .value("refreshToken123")
+                                        .build(),
+                                new NewCookie.Builder("refreshToken_expiration")
+                                        .value("expirationValue123")
+                                        .build()));
+
+        TwoFactorVerifyRequestDTO request = new TwoFactorVerifyRequestDTO("chal-token", "123456");
+
+        io.restassured.response.Response response =
+                given().contentType(MediaType.APPLICATION_JSON)
+                        .body(request)
+                        .when()
+                        .post("/api/auth/2fa/verify");
+
+        response.then().statusCode(Response.Status.OK.getStatusCode());
+        String setCookieHeaders = response.getHeaders().getValues("Set-Cookie").toString();
+        assertTrue(setCookieHeaders.contains("jwt=accessToken123"));
+    }
+
+    @Test
+    void testVerify2fa_InvalidCode_Unauthorized() {
+        Mockito.when(twoFactorService.verifyChallengeAndGetUser("chal-token", "000000"))
+                .thenReturn(Optional.empty());
+
+        TwoFactorVerifyRequestDTO request = new TwoFactorVerifyRequestDTO("chal-token", "000000");
+
+        given().contentType(MediaType.APPLICATION_JSON)
+                .body(request)
+                .when()
+                .post("/api/auth/2fa/verify")
+                .then()
+                .statusCode(Response.Status.UNAUTHORIZED.getStatusCode());
+    }
+
+    @Test
+    void testVerify2fa_BadRequest_MissingFields() {
+        TwoFactorVerifyRequestDTO request = new TwoFactorVerifyRequestDTO("", "");
+
+        given().contentType(MediaType.APPLICATION_JSON)
+                .body(request)
+                .when()
+                .post("/api/auth/2fa/verify")
+                .then()
+                .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    void testResend2faEmail_Success() {
+        TwoFactorResendEmailRequestDTO request = new TwoFactorResendEmailRequestDTO("chal-token");
+
+        given().contentType(MediaType.APPLICATION_JSON)
+                .body(request)
+                .when()
+                .post("/api/auth/2fa/resend-email")
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode());
+
+        Mockito.verify(twoFactorService).resendEmailCode("chal-token");
+    }
+
+    @Test
+    void testResend2faEmail_BadRequest_MissingChallengeToken() {
+        TwoFactorResendEmailRequestDTO request = new TwoFactorResendEmailRequestDTO("");
+
+        given().contentType(MediaType.APPLICATION_JSON)
+                .body(request)
+                .when()
+                .post("/api/auth/2fa/resend-email")
                 .then()
                 .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
     }

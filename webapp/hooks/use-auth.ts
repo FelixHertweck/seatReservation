@@ -9,7 +9,8 @@ import { usePasswordReset } from "./auth/use-password-reset";
 import { useUsernameRecovery } from "./auth/use-username-recovery";
 
 export function useAuth() {
-  const { user, isLoading, isLoggedIn, registrationStatus } = useSession();
+  const { user, isLoading, isLoggedIn, registrationStatus, refetchUser } =
+    useSession();
   const { login, retryAfter } = useLogin();
   const { register } = useRegister();
   const { logout, logoutAll } = useLogout();
@@ -22,6 +23,7 @@ export function useAuth() {
     isLoggedIn,
     isLoading,
     registrationStatus,
+    refetchUser,
     login,
     register,
     logout,

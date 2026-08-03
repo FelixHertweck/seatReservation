@@ -25,6 +25,7 @@ import java.util.Set;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -32,6 +33,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+
+import de.felixhertweck.seatreservation.utils.EncryptedStringConverter;
 
 @Entity
 @Table(name = "users")
@@ -54,6 +57,27 @@ public class User extends AbstractEntity {
 
     // Indicates whether a verification email has been sent at least one time
     @Column private Boolean emailVerificationSent = false;
+
+    @Column(name = "two_factor_enabled")
+    private Boolean twoFactorEnabled = false;
+
+    @Column(name = "totp_enabled")
+    private Boolean totpEnabled = false;
+
+    @Column(name = "email_enabled")
+    private Boolean emailEnabled = false;
+
+    @Column(name = "two_factor_passkey_enabled")
+    private Boolean twoFactorPasskeyEnabled = false;
+
+    @Column(name = "totp_secret")
+    @Convert(converter = EncryptedStringConverter.class)
+    private String totpSecret;
+
+    // Last TOTP time-step for which a code was accepted, so an intercepted code cannot be
+    // replayed against a later verification within the same/adjacent time window (RFC 6238).
+    @Column(name = "last_totp_step")
+    private Long lastTotpStep;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_tags", joinColumns = @JoinColumn(name = "user_id"))
@@ -89,6 +113,12 @@ public class User extends AbstractEntity {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<LoginAttempt> loginAttempts = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<TwoFactorBackupCode> backupCodes = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<TwoFactorChallenge> twoFactorChallenges = new HashSet<>();
 
     /** Constructor for JPA. */
     public User() {}
@@ -251,6 +281,70 @@ public class User extends AbstractEntity {
 
     public void setLoginAttempts(Set<LoginAttempt> loginAttempts) {
         this.loginAttempts = loginAttempts;
+    }
+
+    public Boolean isTwoFactorEnabled() {
+        return twoFactorEnabled != null && twoFactorEnabled;
+    }
+
+    public void setTwoFactorEnabled(Boolean twoFactorEnabled) {
+        this.twoFactorEnabled = twoFactorEnabled;
+    }
+
+    public Boolean isTotpEnabled() {
+        return totpEnabled != null && totpEnabled;
+    }
+
+    public void setTotpEnabled(Boolean totpEnabled) {
+        this.totpEnabled = totpEnabled;
+    }
+
+    public Boolean isEmailEnabled() {
+        return emailEnabled != null && emailEnabled;
+    }
+
+    public void setEmailEnabled(Boolean emailEnabled) {
+        this.emailEnabled = emailEnabled;
+    }
+
+    public Boolean isTwoFactorPasskeyEnabled() {
+        return twoFactorPasskeyEnabled != null && twoFactorPasskeyEnabled;
+    }
+
+    public void setTwoFactorPasskeyEnabled(Boolean twoFactorPasskeyEnabled) {
+        this.twoFactorPasskeyEnabled = twoFactorPasskeyEnabled;
+    }
+
+    public String getTotpSecret() {
+        return totpSecret;
+    }
+
+    public void setTotpSecret(String totpSecret) {
+        this.totpSecret = totpSecret;
+    }
+
+    public Long getLastTotpStep() {
+        return lastTotpStep;
+    }
+
+    public void setLastTotpStep(Long lastTotpStep) {
+        this.lastTotpStep = lastTotpStep;
+    }
+
+    public Set<TwoFactorBackupCode> getBackupCodes() {
+        return backupCodes;
+    }
+
+    public void setBackupCodes(Set<TwoFactorBackupCode> backupCodes) {
+        this.backupCodes = backupCodes;
+    }
+
+    public Set<TwoFactorChallenge> getTwoFactorChallenges() {
+        return twoFactorChallenges;
+    }
+
+    public void setTwoFactorChallenges(Set<TwoFactorChallenge> twoFactorChallenges) {
+        this.twoFactorChallenges = twoFactorChallenges;
     }
 
     @Override

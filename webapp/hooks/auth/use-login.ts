@@ -30,39 +30,36 @@ export function useLogin() {
     password: string,
     returnToUrl?: string | null,
   ) => {
-    const request = loginMutation({ body: { username, password } });
-    toast.promise(request, {
-      loading: t("common.loading"),
-      success: async () => {
-        setRetryAfter(null);
-        await queryClient.invalidateQueries();
-        await refetchUser();
-        redirectUser(router, locale, user, returnToUrl);
-        return t("login.success.title");
-      },
-      error: (error: ErrorWithResponse) => {
-        const status = error.response?.status;
-        if (status === 429) {
-          try {
-            const parsed: LoginLockedDto = JSON.parse(error.response?.rawData);
-            if (parsed?.retryAfter) {
-              setRetryAfter(parsed.retryAfter);
-            }
-          } catch (error) {
-            console.log(
-              "Failed to parse retryAfter from error response: ",
-              error,
-            );
+    try {
+      const res = await loginMutation({ body: { username, password } });
+      if (res?.twoFactorRequired) {
+        return res;
+      }
+      setRetryAfter(null);
+      await queryClient.invalidateQueries();
+      await refetchUser();
+      toast.success(t("login.success.title"));
+      redirectUser(router, locale, user, returnToUrl);
+      return res;
+    } catch (error) {
+      const status = (error as ErrorWithResponse).response?.status;
+      if (status === 429) {
+        try {
+          const parsed: LoginLockedDto = JSON.parse(
+            (error as ErrorWithResponse).response?.rawData || "",
+          );
+          if (parsed?.retryAfter) {
+            setRetryAfter(parsed.retryAfter);
           }
-          return t("login.error.tooManyAttemptsDescription");
-        } else if (status !== 401) {
-          return t("login.error.description");
+        } catch (e) {
+          console.log("Failed to parse retryAfter from error response: ", e);
         }
-        return t("common.error.default");
-      },
-    });
-
-    return request;
+        toast.error(t("login.error.tooManyAttemptsDescription"));
+      } else if (status !== 401) {
+        toast.error(t("login.error.description"));
+      }
+      throw error;
+    }
   };
 
   return {

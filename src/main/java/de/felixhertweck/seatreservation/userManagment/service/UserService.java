@@ -45,6 +45,8 @@ import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.security.exceptions.InvalidTwoFactorCodeException;
+import de.felixhertweck.seatreservation.security.service.TwoFactorService;
 import de.felixhertweck.seatreservation.userManagment.dto.AdminUserCreationDto;
 import de.felixhertweck.seatreservation.userManagment.dto.AdminUserUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
@@ -67,6 +69,8 @@ public class UserService {
     @Inject EmailService emailService;
 
     @Inject EmailVerificationRepository emailVerificationRepository;
+
+    @Inject TwoFactorService twoFactorService;
 
     /**
      * Imports a set of users from the provided DTOs. Send directly email verification if email is
@@ -304,6 +308,10 @@ public class UserService {
             existingUser.setEmail(email);
             existingUser.setEmailVerificationSent(false);
             emailVerificationRepository.deleteByUserId(existingUser.id);
+
+            // The new address hasn't been verified, so it can no longer be trusted for
+            // email-based 2FA -- applies to both self-service and admin-driven updates.
+            twoFactorService.disableEmailFactorForEmailChange(existingUser);
 
             if (email != null
                     && !email.trim().isEmpty()
@@ -558,6 +566,20 @@ public class UserService {
                                     return new UserNotFoundException(
                                             "User with username " + username + " not found.");
                                 });
+
+        boolean emailChanging =
+                !Objects.equals(existingUser.getEmail(), userProfileUpdateDTO.getEmail());
+
+        // Changing the email while 2FA is enabled requires proving current possession of 2FA,
+        // otherwise a hijacked session could swap the email and later use it to take over the
+        // account (e.g. via password reset).
+        if (emailChanging
+                && existingUser.isTwoFactorEnabled()
+                && !twoFactorService.verifyCurrentTwoFactorCode(
+                        existingUser, userProfileUpdateDTO.getTwoFactorCode())) {
+            throw new InvalidTwoFactorCodeException(
+                    "A valid 2FA code is required to change your email address.");
+        }
 
         boolean markEmailAsVerified =
                 existingUser.isEmailVerified()
