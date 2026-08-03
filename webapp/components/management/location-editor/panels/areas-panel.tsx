@@ -7,7 +7,7 @@ import { useT } from "@/lib/i18n/hooks";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/custom-ui/button";
 import { AreaAddDialog } from "@/components/management/location-editor/area-add-dialog";
-import type { useLocationAutosave } from "@/components/management/location-editor/use-location-autosave";
+import type { useLocationEditorSave } from "@/components/management/location-editor/use-location-editor-save";
 import type {
   LocalId,
   LocationEditorState,
@@ -17,7 +17,7 @@ interface AreasPanelProps {
   state: LocationEditorState;
   selectedAreaId: LocalId | null;
   onSelectedAreaChange: (id: LocalId | null) => void;
-  autosave: ReturnType<typeof useLocationAutosave>;
+  autosave: ReturnType<typeof useLocationEditorSave>;
   onDrawWithSeats: (name: string, seatIds: Set<LocalId>) => void;
 }
 

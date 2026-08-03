@@ -9,14 +9,14 @@ import {
 } from "@/components/custom-ui/dialog";
 import { useT } from "@/lib/i18n/hooks";
 import { DetailsPanel } from "@/components/management/location-editor/panels/details-panel";
-import type { useLocationAutosave } from "@/components/management/location-editor/use-location-autosave";
+import type { useLocationEditorSave } from "@/components/management/location-editor/use-location-editor-save";
 import type { LocationMeta } from "@/components/management/location-editor/types";
 
 interface DetailsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   meta: LocationMeta;
-  autosave: ReturnType<typeof useLocationAutosave>;
+  autosave: ReturnType<typeof useLocationEditorSave>;
 }
 
 export function DetailsDialog({

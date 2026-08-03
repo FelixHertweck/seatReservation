@@ -14,12 +14,12 @@ import {
 import { Label } from "@/components/custom-ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/custom-ui/button";
-import type { useLocationAutosave } from "@/components/management/location-editor/use-location-autosave";
+import type { useLocationEditorSave } from "@/components/management/location-editor/use-location-editor-save";
 
 interface EntranceAddDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  autosave: ReturnType<typeof useLocationAutosave>;
+  autosave: ReturnType<typeof useLocationEditorSave>;
 }
 
 export function EntranceAddDialog({

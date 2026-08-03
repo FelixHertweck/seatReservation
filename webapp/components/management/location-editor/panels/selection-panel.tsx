@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useSyncedField } from "@/components/management/location-editor/use-synced-field";
-import type { useLocationAutosave } from "@/components/management/location-editor/use-location-autosave";
+import type { useLocationEditorSave } from "@/components/management/location-editor/use-location-editor-save";
 import {
   isCellOccupied,
   type EditorPoint,
@@ -28,7 +28,7 @@ interface SelectionPanelProps {
   onSelectionChange: (next: Set<LocalId>) => void;
   selectedAreaId: LocalId | null;
   onSelectedAreaChange: (id: LocalId | null) => void;
-  autosave: ReturnType<typeof useLocationAutosave>;
+  autosave: ReturnType<typeof useLocationEditorSave>;
   onDrawAreaBoundary: (areaLocalId: LocalId) => void;
 }
 

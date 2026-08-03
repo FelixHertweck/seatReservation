@@ -7,7 +7,7 @@ import { useT } from "@/lib/i18n/hooks";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/custom-ui/button";
 import { MarkerAddDialog } from "@/components/management/location-editor/marker-add-dialog";
-import type { useLocationAutosave } from "@/components/management/location-editor/use-location-autosave";
+import type { useLocationEditorSave } from "@/components/management/location-editor/use-location-editor-save";
 import type {
   LocalId,
   LocationEditorState,
@@ -17,7 +17,7 @@ interface MarkersPanelProps {
   state: LocationEditorState;
   selection: Set<LocalId>;
   onSelectionChange: (next: Set<LocalId>) => void;
-  autosave: ReturnType<typeof useLocationAutosave>;
+  autosave: ReturnType<typeof useLocationEditorSave>;
 }
 
 export function MarkersPanel({

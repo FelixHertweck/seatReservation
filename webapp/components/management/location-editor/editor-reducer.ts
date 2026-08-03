@@ -1,14 +1,27 @@
-import type {
-  EditorArea,
-  EditorEntrance,
-  EditorMarker,
-  EditorSeat,
-  EntityKind,
-  LocalId,
-  LocationEditorState,
-  LocationMeta,
-  SyncState,
+import {
+  emptyPendingDeletions,
+  type EditorArea,
+  type EditorEntrance,
+  type EditorMarker,
+  type EditorSeat,
+  type EntityKind,
+  type LocalId,
+  type LocationEditorState,
+  type LocationMeta,
+  type SyncState,
 } from "@/components/management/location-editor/types";
+
+function withPendingDeletion<T extends { localId: string; serverId?: string }>(
+  pending: LocationEditorState["pendingDeletions"],
+  kind: keyof LocationEditorState["pendingDeletions"],
+  removed: T[],
+): LocationEditorState["pendingDeletions"] {
+  const newIds = removed
+    .map((item) => item.serverId)
+    .filter((id): id is string => !!id);
+  if (newIds.length === 0) return pending;
+  return { ...pending, [kind]: [...pending[kind], ...newIds] };
+}
 
 // ADD_* actions take a caller-provided `localId` (generated via nextTmpId()
 // by the autosave hook right before dispatching) rather than generating one
@@ -78,7 +91,8 @@ export type EditorAction =
       serverId: string;
     }
   | { type: "REMOVE_LOCAL"; kind: EntityKind; localId: LocalId }
-  | { type: "REPLACE_STATE"; state: LocationEditorState };
+  | { type: "REPLACE_STATE"; state: LocationEditorState }
+  | { type: "SAVE_SUCCESS" };
 
 function withSyncState<T extends { syncState: SyncState }>(
   items: T[],
@@ -106,12 +120,16 @@ export function editorReducer(
       return action.state;
 
     case "SET_META":
-      return { ...state, meta: { ...state.meta, ...action.meta } };
+      return {
+        ...state,
+        meta: { ...state.meta, ...action.meta },
+        metaDirty: true,
+      };
 
     case "ADD_SEAT":
       return {
         ...state,
-        seats: [...state.seats, { ...action.seat, syncState: "saving" }],
+        seats: [...state.seats, { ...action.seat, syncState: "dirty" }],
       };
 
     case "ADD_SEATS_BULK":
@@ -121,7 +139,7 @@ export function editorReducer(
           ...state.seats,
           ...action.seats.map((seat) => ({
             ...seat,
-            syncState: "saving" as const,
+            syncState: "dirty" as const,
           })),
         ],
       };
@@ -131,7 +149,7 @@ export function editorReducer(
         ...state,
         seats: state.seats.map((seat) =>
           seat.localId === action.localId
-            ? { ...seat, ...action.changes, syncState: "saving" }
+            ? { ...seat, ...action.changes, syncState: "dirty" }
             : seat,
         ),
       };
@@ -145,7 +163,7 @@ export function editorReducer(
                 ...seat,
                 x: seat.x + action.dx,
                 y: seat.y + action.dy,
-                syncState: "saving",
+                syncState: "dirty",
               }
             : seat,
         ),
@@ -155,25 +173,42 @@ export function editorReducer(
                 ...marker,
                 x: marker.x + action.dx,
                 y: marker.y + action.dy,
-                syncState: "saving",
+                syncState: "dirty",
               }
             : marker,
         ),
       };
 
-    case "DELETE_ENTITIES":
+    case "DELETE_ENTITIES": {
+      const removedSeats = state.seats.filter((seat) =>
+        action.ids.has(seat.localId),
+      );
+      const removedMarkers = state.markers.filter((marker) =>
+        action.ids.has(marker.localId),
+      );
+      const afterSeats = withPendingDeletion(
+        state.pendingDeletions,
+        "seat",
+        removedSeats,
+      );
       return {
         ...state,
         seats: state.seats.filter((seat) => !action.ids.has(seat.localId)),
         markers: state.markers.filter(
           (marker) => !action.ids.has(marker.localId),
         ),
+        pendingDeletions: withPendingDeletion(
+          afterSeats,
+          "marker",
+          removedMarkers,
+        ),
       };
+    }
 
     case "ADD_MARKER":
       return {
         ...state,
-        markers: [...state.markers, { ...action.marker, syncState: "saving" }],
+        markers: [...state.markers, { ...action.marker, syncState: "dirty" }],
       };
 
     case "UPDATE_MARKER":
@@ -181,7 +216,7 @@ export function editorReducer(
         ...state,
         markers: state.markers.map((marker) =>
           marker.localId === action.localId
-            ? { ...marker, ...action.changes, syncState: "saving" }
+            ? { ...marker, ...action.changes, syncState: "dirty" }
             : marker,
         ),
       };
@@ -189,7 +224,7 @@ export function editorReducer(
     case "ADD_AREA":
       return {
         ...state,
-        areas: [...state.areas, { ...action.area, syncState: "saving" }],
+        areas: [...state.areas, { ...action.area, syncState: "dirty" }],
       };
 
     case "UPDATE_AREA":
@@ -197,7 +232,7 @@ export function editorReducer(
         ...state,
         areas: state.areas.map((area) =>
           area.localId === action.localId
-            ? { ...area, ...action.changes, syncState: "saving" }
+            ? { ...area, ...action.changes, syncState: "dirty" }
             : area,
         ),
       };
@@ -212,7 +247,7 @@ export function editorReducer(
                 boundary: area.boundary.map((p, i) =>
                   i === action.index ? { x: action.x, y: action.y } : p,
                 ),
-                syncState: "saving",
+                syncState: "dirty",
               }
             : area,
         ),
@@ -230,7 +265,7 @@ export function editorReducer(
                   { x: action.x, y: action.y },
                   ...area.boundary.slice(action.index),
                 ],
-                syncState: "saving",
+                syncState: "dirty",
               }
             : area,
         ),
@@ -244,29 +279,38 @@ export function editorReducer(
             ? {
                 ...area,
                 boundary: area.boundary.filter((_, i) => i !== action.index),
-                syncState: "saving",
+                syncState: "dirty",
               }
             : area,
         ),
       };
 
-    case "DELETE_AREAS":
+    case "DELETE_AREAS": {
+      const removedAreas = state.areas.filter((area) =>
+        action.ids.has(area.localId),
+      );
       return {
         ...state,
         areas: state.areas.filter((area) => !action.ids.has(area.localId)),
         seats: state.seats.map((seat) =>
           seat.areaRef && action.ids.has(seat.areaRef)
-            ? { ...seat, areaRef: undefined }
+            ? { ...seat, areaRef: undefined, syncState: "dirty" }
             : seat,
         ),
+        pendingDeletions: withPendingDeletion(
+          state.pendingDeletions,
+          "area",
+          removedAreas,
+        ),
       };
+    }
 
     case "ADD_ENTRANCE":
       return {
         ...state,
         entrances: [
           ...state.entrances,
-          { ...action.entrance, syncState: "saving" },
+          { ...action.entrance, syncState: "dirty" },
         ],
       };
 
@@ -275,12 +319,15 @@ export function editorReducer(
         ...state,
         entrances: state.entrances.map((entrance) =>
           entrance.localId === action.localId
-            ? { ...entrance, name: action.name, syncState: "saving" }
+            ? { ...entrance, name: action.name, syncState: "dirty" }
             : entrance,
         ),
       };
 
-    case "DELETE_ENTRANCES":
+    case "DELETE_ENTRANCES": {
+      const removedEntrances = state.entrances.filter((entrance) =>
+        action.ids.has(entrance.localId),
+      );
       return {
         ...state,
         entrances: state.entrances.filter(
@@ -288,17 +335,23 @@ export function editorReducer(
         ),
         seats: state.seats.map((seat) =>
           seat.entranceRef && action.ids.has(seat.entranceRef)
-            ? { ...seat, entranceRef: undefined }
+            ? { ...seat, entranceRef: undefined, syncState: "dirty" }
             : seat,
         ),
+        pendingDeletions: withPendingDeletion(
+          state.pendingDeletions,
+          "entrance",
+          removedEntrances,
+        ),
       };
+    }
 
     case "ASSIGN_AREA_TO_SEATS":
       return {
         ...state,
         seats: state.seats.map((seat) =>
           action.seatIds.has(seat.localId)
-            ? { ...seat, areaRef: action.areaRef, syncState: "saving" }
+            ? { ...seat, areaRef: action.areaRef, syncState: "dirty" }
             : seat,
         ),
       };
@@ -310,13 +363,13 @@ export function editorReducer(
           ...seat,
           x: seat.x + action.dx,
           y: seat.y + action.dy,
-          syncState: "saving",
+          syncState: "dirty",
         })),
         markers: state.markers.map((marker) => ({
           ...marker,
           x: marker.x + action.dx,
           y: marker.y + action.dy,
-          syncState: "saving",
+          syncState: "dirty",
         })),
         areas: state.areas.map((area) => ({
           ...area,
@@ -324,7 +377,7 @@ export function editorReducer(
             x: p.x + action.dx,
             y: p.y + action.dy,
           })),
-          syncState: "saving",
+          syncState: "dirty",
         })),
       };
 
@@ -407,6 +460,13 @@ export function editorReducer(
           };
       }
       break;
+
+    case "SAVE_SUCCESS":
+      return {
+        ...state,
+        metaDirty: false,
+        pendingDeletions: emptyPendingDeletions(),
+      };
 
     default:
       return state;

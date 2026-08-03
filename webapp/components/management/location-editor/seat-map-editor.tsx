@@ -26,7 +26,7 @@ import {
   gridContentPxSize,
   boundaryToPixelPolygon,
 } from "@/components/common/seat-map-geometry";
-import type { useLocationAutosave } from "@/components/management/location-editor/use-location-autosave";
+import type { useLocationEditorSave } from "@/components/management/location-editor/use-location-editor-save";
 import type {
   EditorMarker,
   EditorSeat,
@@ -43,7 +43,7 @@ export type EditorTool = "select" | "draw-area";
 
 interface SeatMapEditorProps {
   state: LocationEditorState;
-  autosave: ReturnType<typeof useLocationAutosave>;
+  autosave: ReturnType<typeof useLocationEditorSave>;
   selection: Set<LocalId>;
   onSelectionChange: (next: Set<LocalId>) => void;
   selectedAreaId: LocalId | null;

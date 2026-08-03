@@ -7,7 +7,7 @@
 /** The server UUID once persisted, else a locally-generated "tmp-N" id. */
 export type LocalId = string;
 
-export type SyncState = "synced" | "saving" | "error";
+export type SyncState = "synced" | "dirty" | "saving" | "error";
 
 export interface EditorSeat {
   localId: LocalId;
@@ -57,12 +57,25 @@ export interface LocationMeta {
   capacity: number;
 }
 
+export interface PendingDeletions {
+  seat: string[];
+  marker: string[];
+  area: string[];
+  entrance: string[];
+}
+
+export function emptyPendingDeletions(): PendingDeletions {
+  return { seat: [], marker: [], area: [], entrance: [] };
+}
+
 export interface LocationEditorState {
   meta: LocationMeta;
+  metaDirty: boolean;
   seats: EditorSeat[];
   markers: EditorMarker[];
   areas: EditorArea[];
   entrances: EditorEntrance[];
+  pendingDeletions: PendingDeletions;
 }
 
 export type EditorTab = "map" | "preview" | "json";
@@ -83,7 +96,30 @@ export function nextTmpId(): LocalId {
 export function emptyLocationEditorState(
   meta: LocationMeta,
 ): LocationEditorState {
-  return { meta, seats: [], markers: [], areas: [], entrances: [] };
+  return {
+    meta,
+    metaDirty: false,
+    seats: [],
+    markers: [],
+    areas: [],
+    entrances: [],
+    pendingDeletions: emptyPendingDeletions(),
+  };
+}
+
+/** True while there are local edits not yet persisted to the server. */
+export function hasUnsavedChanges(state: LocationEditorState): boolean {
+  if (state.metaDirty) return true;
+  const { seat, marker, area, entrance } = state.pendingDeletions;
+  if (seat.length || marker.length || area.length || entrance.length) {
+    return true;
+  }
+  return [
+    ...state.seats,
+    ...state.markers,
+    ...state.areas,
+    ...state.entrances,
+  ].some((e) => e.syncState !== "synced");
 }
 
 /**

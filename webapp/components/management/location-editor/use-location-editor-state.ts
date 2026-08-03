@@ -18,6 +18,7 @@ const NON_UNDOABLE = new Set<EditorAction["type"]>([
   "SET_SYNC_STATE",
   "RECONCILE",
   "REMOVE_LOCAL",
+  "SAVE_SUCCESS",
 ]);
 
 export function useLocationEditorState(initial: LocationEditorState) {

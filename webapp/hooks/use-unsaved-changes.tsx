@@ -8,21 +8,24 @@ import React, {
   useMemo,
 } from "react";
 
-interface ProfileUnsavedChangesContextType {
+type SaveHandler = () => Promise<void> | void;
+
+interface UnsavedChangesContextType {
   hasUnsavedChanges: boolean;
   showUnsavedDialog: boolean;
   setHasUnsavedChanges: (hasChanges: boolean) => void;
   setShowUnsavedDialog: (show: boolean) => void;
   setPendingNavigation: (url: string | null) => void;
+  registerSaveHandler: (handler: SaveHandler | null) => void;
   handleDiscardChanges: () => void;
   handleSaveAndNavigate: () => void;
 }
 
-const ProfileUnsavedChangesContext = createContext<
-  ProfileUnsavedChangesContextType | undefined
+const UnsavedChangesContext = createContext<
+  UnsavedChangesContextType | undefined
 >(undefined);
 
-export const ProfileUnsavedChangesProvider = ({
+export const UnsavedChangesProvider = ({
   children,
 }: {
   children: ReactNode;
@@ -32,7 +35,14 @@ export const ProfileUnsavedChangesProvider = ({
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(
     null,
   );
+  const [saveHandler, setSaveHandler] = useState<SaveHandler | null>(null);
   const router = useRouter();
+
+  const registerSaveHandler = useCallback((handler: SaveHandler | null) => {
+    // Wrap in a thunk - useState's setter calls function values as updaters
+    // otherwise, instead of storing `handler` itself.
+    setSaveHandler(handler === null ? null : () => handler);
+  }, []);
 
   const handleDiscardChanges = useCallback(() => {
     if (pendingNavigation) {
@@ -49,22 +59,30 @@ export const ProfileUnsavedChangesProvider = ({
     setPendingNavigation,
   ]);
 
-  const handleSaveAndNavigate = useCallback(() => {
-    // Trigger form submission on profile page
-    const form = document.querySelector("form") as HTMLFormElement;
-    if (form) {
-      form.requestSubmit();
-      // Wait a bit for the form to submit, then navigate
-      setTimeout(() => {
-        if (pendingNavigation) {
-          router.push(pendingNavigation);
-        }
-        setHasUnsavedChanges(false); // Reset unsaved changes after saving
-        setShowUnsavedDialog(false);
-        setPendingNavigation(null);
-      }, 500);
+  const handleSaveAndNavigate = useCallback(async () => {
+    try {
+      if (saveHandler) {
+        await saveHandler();
+      } else {
+        // Fallback for pages (e.g. Profile) that haven't registered a
+        // handler - submit their form directly.
+        const form = document.querySelector("form") as HTMLFormElement;
+        form?.requestSubmit();
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+    } catch {
+      // Save failed - keep the dialog open and the changes marked unsaved
+      // instead of navigating away and silently losing them.
+      return;
     }
+    if (pendingNavigation) {
+      router.push(pendingNavigation);
+    }
+    setHasUnsavedChanges(false);
+    setShowUnsavedDialog(false);
+    setPendingNavigation(null);
   }, [
+    saveHandler,
     pendingNavigation,
     router,
     setHasUnsavedChanges,
@@ -79,6 +97,7 @@ export const ProfileUnsavedChangesProvider = ({
       setHasUnsavedChanges,
       setShowUnsavedDialog,
       setPendingNavigation,
+      registerSaveHandler,
       handleDiscardChanges,
       handleSaveAndNavigate,
     }),
@@ -88,23 +107,24 @@ export const ProfileUnsavedChangesProvider = ({
       setHasUnsavedChanges,
       setShowUnsavedDialog,
       setPendingNavigation,
+      registerSaveHandler,
       handleDiscardChanges,
       handleSaveAndNavigate,
     ],
   );
 
   return (
-    <ProfileUnsavedChangesContext.Provider value={value}>
+    <UnsavedChangesContext.Provider value={value}>
       {children}
-    </ProfileUnsavedChangesContext.Provider>
+    </UnsavedChangesContext.Provider>
   );
 };
 
-export function useProfileUnsavedChanges() {
-  const context = useContext(ProfileUnsavedChangesContext);
+export function useUnsavedChanges() {
+  const context = useContext(UnsavedChangesContext);
   if (!context) {
     throw new Error(
-      "useProfileUnsavedChanges must be used within a ProfileUnsavedChangesProvider",
+      "useUnsavedChanges must be used within a UnsavedChangesProvider",
     );
   }
   return context;

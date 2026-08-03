@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { useLocationAutosave } from "@/components/management/location-editor/use-location-autosave";
+import type { useLocationEditorSave } from "@/components/management/location-editor/use-location-editor-save";
 import type {
   EditorSeat,
   LocationEditorState,
@@ -22,7 +22,7 @@ import type {
 
 interface BulkSeatPanelProps {
   state: LocationEditorState;
-  autosave: ReturnType<typeof useLocationAutosave>;
+  autosave: ReturnType<typeof useLocationEditorSave>;
 }
 
 type Layout = "row" | "column" | "block";

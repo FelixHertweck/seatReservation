@@ -54,7 +54,7 @@ import { useEffect } from "react";
 import { useTheme } from "next-themes";
 import { useT } from "@/lib/i18n/hooks";
 import { languages } from "@/lib/i18n/config";
-import { useProfileUnsavedChanges } from "@/hooks/use-profile-unsaved-changes";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 
 export function AppSidebar() {
   const t = useT();
@@ -67,7 +67,7 @@ export function AppSidebar() {
   const pathname = usePathname();
 
   const { hasUnsavedChanges, setPendingNavigation, setShowUnsavedDialog } =
-    useProfileUnsavedChanges();
+    useUnsavedChanges();
 
   useEffect(() => {
     const handleResize = () => {
@@ -246,7 +246,7 @@ export function AppSidebar() {
   };
 
   const handleNavigation = (url: string) => {
-    if (hasUnsavedChanges && pathname.includes("/profile")) {
+    if (hasUnsavedChanges) {
       setPendingNavigation(url);
       setShowUnsavedDialog(true);
       return;

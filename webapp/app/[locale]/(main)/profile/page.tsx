@@ -14,7 +14,7 @@ import { X } from "lucide-react";
 import { toast } from "sonner";
 import type { UserProfileUpdateDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
-import { useProfileUnsavedChanges } from "@/hooks/use-profile-unsaved-changes";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 import { useRouter, useParams } from "next/navigation";
 import { PasskeySection } from "@/components/profile/passkey-section";
 import { PageHeader } from "@/components/page-header";
@@ -51,8 +51,7 @@ export default function ProfilePage() {
   const [showPasswordSection, setShowPasswordSection] =
     useState<boolean>(false);
 
-  const { hasUnsavedChanges, setHasUnsavedChanges } =
-    useProfileUnsavedChanges();
+  const { hasUnsavedChanges, setHasUnsavedChanges } = useUnsavedChanges();
 
   if (
     user &&

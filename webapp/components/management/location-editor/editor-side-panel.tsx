@@ -16,7 +16,7 @@ import { SeatsPanel } from "@/components/management/location-editor/panels/seats
 import { MarkersPanel } from "@/components/management/location-editor/panels/markers-panel";
 import { AreasPanel } from "@/components/management/location-editor/panels/areas-panel";
 import { EntrancesPanel } from "@/components/management/location-editor/panels/entrances-panel";
-import type { useLocationAutosave } from "@/components/management/location-editor/use-location-autosave";
+import type { useLocationEditorSave } from "@/components/management/location-editor/use-location-editor-save";
 import type {
   LocalId,
   LocationEditorState,
@@ -24,7 +24,7 @@ import type {
 
 interface EditorSidePanelProps {
   state: LocationEditorState;
-  autosave: ReturnType<typeof useLocationAutosave>;
+  autosave: ReturnType<typeof useLocationEditorSave>;
   selection: Set<LocalId>;
   onSelectionChange: (next: Set<LocalId>) => void;
   selectedAreaId: LocalId | null;
