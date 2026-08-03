@@ -1212,13 +1212,16 @@
       },
       "status": {
         "saved": "All changes saved",
+        "unsaved": "Unsaved changes",
         "saving": "Saving…",
         "error": "{{count}} failed to save",
         "retry": "Retry"
       },
+      "saveButton": "Save",
+      "saveSuccess": "Location saved",
+      "saveFailed": "Could not save changes.",
       "undo": "Undo",
       "redo": "Redo",
-      "autosaveFailed": "Change could not be saved.",
       "positionOccupied": "Position already occupied.",
       "details": {
         "title": "Details",
@@ -1229,8 +1232,7 @@
         "addressMapPlaceholder": "Enter an address above to preview it on the map",
         "locating": "Locating…",
         "addressNotFound": "Address not found",
-        "saveButton": "Save changes",
-        "saveSuccess": "Changes saved"
+        "saveButton": "Apply"
       },
       "selection": {
         "title": "Selection",

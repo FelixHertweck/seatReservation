@@ -1212,13 +1212,16 @@
       },
       "status": {
         "saved": "Alle Änderungen gespeichert",
+        "unsaved": "Ungespeicherte Änderungen",
         "saving": "Speichern…",
         "error": "{{count}} konnten nicht gespeichert werden",
         "retry": "Erneut versuchen"
       },
+      "saveButton": "Speichern",
+      "saveSuccess": "Location gespeichert",
+      "saveFailed": "Änderungen konnten nicht gespeichert werden.",
       "undo": "Rückgängig",
       "redo": "Wiederholen",
-      "autosaveFailed": "Änderung konnte nicht gespeichert werden.",
       "positionOccupied": "Position bereits belegt.",
       "details": {
         "title": "Details",
@@ -1229,8 +1232,7 @@
         "addressMapPlaceholder": "Adresse oben eingeben, um sie auf der Karte zu sehen",
         "locating": "Suche Adresse…",
         "addressNotFound": "Adresse nicht gefunden",
-        "saveButton": "Änderungen speichern",
-        "saveSuccess": "Änderungen gespeichert"
+        "saveButton": "Übernehmen"
       },
       "selection": {
         "title": "Auswahl",

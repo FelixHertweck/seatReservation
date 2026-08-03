@@ -9,6 +9,8 @@ import {
   Loader2,
   CheckCircle2,
   AlertCircle,
+  CircleDot,
+  Save,
   Settings,
   Map,
   Eye,
@@ -20,15 +22,17 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/custom-ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/custom-ui/tabs";
 import { DetailsDialog } from "@/components/management/location-editor/details-dialog";
-import type { useLocationAutosave } from "@/components/management/location-editor/use-location-autosave";
-import type {
-  EditorTab,
-  LocationEditorState,
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
+import type { useLocationEditorSave } from "@/components/management/location-editor/use-location-editor-save";
+import {
+  hasUnsavedChanges,
+  type EditorTab,
+  type LocationEditorState,
 } from "@/components/management/location-editor/types";
 
 interface EditorToolbarProps {
   state: LocationEditorState;
-  autosave: ReturnType<typeof useLocationAutosave>;
+  autosave: ReturnType<typeof useLocationEditorSave>;
   tab: EditorTab;
   onTabChange: (tab: EditorTab) => void;
   canUndo: boolean;
@@ -49,6 +53,9 @@ export function EditorToolbar({
 }: EditorToolbarProps) {
   const t = useT();
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const { setPendingNavigation, setShowUnsavedDialog } = useUnsavedChanges();
+
+  const unsaved = hasUnsavedChanges(state);
 
   const status = useMemo(() => {
     const all = [
@@ -57,18 +64,34 @@ export function EditorToolbar({
       ...state.areas,
       ...state.entrances,
     ];
-    const saving = all.some((e) => e.syncState === "saving");
     const errorCount = all.filter((e) => e.syncState === "error").length;
+    if (autosave.isSaving) return { kind: "saving" as const };
     if (errorCount > 0) return { kind: "error" as const, errorCount };
-    if (saving) return { kind: "saving" as const };
+    if (unsaved) return { kind: "dirty" as const };
     return { kind: "saved" as const };
-  }, [state.seats, state.markers, state.areas, state.entrances]);
+  }, [
+    state.seats,
+    state.markers,
+    state.areas,
+    state.entrances,
+    autosave.isSaving,
+    unsaved,
+  ]);
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 border-b bg-card px-3 py-2">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="sm" asChild>
-          <Link href="/management/locations">
+          <Link
+            href="/management/locations"
+            onClick={(e) => {
+              if (unsaved) {
+                e.preventDefault();
+                setPendingNavigation("/management/locations");
+                setShowUnsavedDialog(true);
+              }
+            }}
+          >
             <ArrowLeft className="h-4 w-4" />
             {t("management.locationEditor.backToLocations")}
           </Link>
@@ -132,20 +155,21 @@ export function EditorToolbar({
           className={cn(
             "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs",
             status.kind === "saved" && "text-muted-foreground",
+            status.kind === "dirty" && "text-amber-600",
             status.kind === "saving" && "text-amber-600",
             status.kind === "error" && "text-red-600",
           )}
         >
           {status.kind === "saved" && <CheckCircle2 className="h-3.5 w-3.5" />}
-          {status.kind === "saving" && (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          {(status.kind === "dirty" || status.kind === "saving") && (
+            <CircleDot className="h-3.5 w-3.5" />
           )}
           {status.kind === "error" && <AlertCircle className="h-3.5 w-3.5" />}
           <span>
             {status.kind === "saved" &&
               t("management.locationEditor.status.saved")}
-            {status.kind === "saving" &&
-              t("management.locationEditor.status.saving")}
+            {(status.kind === "dirty" || status.kind === "saving") &&
+              t("management.locationEditor.status.unsaved")}
             {status.kind === "error" &&
               t("management.locationEditor.status.error", {
                 count: status.errorCount,
@@ -156,12 +180,27 @@ export function EditorToolbar({
               variant="link"
               size="sm"
               className="h-auto p-0 text-xs"
-              onClick={autosave.retryFailed}
+              onClick={() => void autosave.saveAll()}
             >
               {t("management.locationEditor.status.retry")}
             </Button>
           )}
         </div>
+
+        <Button
+          variant="default"
+          size="sm"
+          className="gap-1.5"
+          disabled={!unsaved || autosave.isSaving}
+          onClick={() => void autosave.saveAll()}
+        >
+          {autosave.isSaving ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Save className="h-4 w-4" />
+          )}
+          {t("management.locationEditor.saveButton")}
+        </Button>
       </div>
     </div>
   );

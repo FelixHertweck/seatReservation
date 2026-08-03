@@ -13,17 +13,17 @@ import {
   isDiffEmpty,
   type JsonDiff,
 } from "@/components/management/location-editor/json-codec";
-import type { useLocationAutosave } from "@/components/management/location-editor/use-location-autosave";
+import type { useLocationEditorSave } from "@/components/management/location-editor/use-location-editor-save";
 import type { LocationEditorState } from "@/components/management/location-editor/types";
 
 interface JsonViewProps {
   state: LocationEditorState;
-  autosave: ReturnType<typeof useLocationAutosave>;
+  autosave: ReturnType<typeof useLocationEditorSave>;
 }
 
 function applyDiff(
   diff: JsonDiff,
-  autosave: ReturnType<typeof useLocationAutosave>,
+  autosave: ReturnType<typeof useLocationEditorSave>,
 ) {
   if (Object.keys(diff.metaChanges).length > 0) {
     autosave.updateMeta(diff.metaChanges);

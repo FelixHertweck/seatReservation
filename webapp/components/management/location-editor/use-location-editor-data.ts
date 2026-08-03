@@ -9,7 +9,10 @@ import {
   getApiManagerAreasOptions,
   getApiManagerEntrancesOptions,
 } from "@/api/@tanstack/react-query.gen";
-import type { LocationEditorState } from "@/components/management/location-editor/types";
+import {
+  emptyPendingDeletions,
+  type LocationEditorState,
+} from "@/components/management/location-editor/types";
 
 /**
  * Loads everything needed to hydrate the editor for an existing location.
@@ -79,6 +82,8 @@ export function useLocationEditorData(locationId: string) {
         address: location.address ?? "",
         capacity: location.capacity ?? 0,
       },
+      metaDirty: false,
+      pendingDeletions: emptyPendingDeletions(),
       seats: (seatsQuery.data ?? []).map((seat) => ({
         localId: `seat-${seat.id ?? ""}`,
         serverId: seat.id,

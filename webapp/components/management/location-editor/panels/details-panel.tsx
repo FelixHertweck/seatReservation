@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 import { Loader2, MapPinOff } from "lucide-react";
-import { toast } from "sonner";
 
 import { useT } from "@/lib/i18n/hooks";
 import { Label } from "@/components/custom-ui/label";
@@ -11,7 +10,7 @@ import { Button } from "@/components/custom-ui/button";
 import { Skeleton } from "@/components/custom-ui/skeleton";
 import { useSyncedField } from "@/components/management/location-editor/use-synced-field";
 import { useGeocode } from "@/hooks/use-geocode";
-import type { useLocationAutosave } from "@/components/management/location-editor/use-location-autosave";
+import type { useLocationEditorSave } from "@/components/management/location-editor/use-location-editor-save";
 import type { LocationMeta } from "@/components/management/location-editor/types";
 
 const AddressMap = dynamic(
@@ -49,7 +48,7 @@ function AddressMapPlaceholder({
 
 interface DetailsPanelProps {
   meta: LocationMeta;
-  autosave: ReturnType<typeof useLocationAutosave>;
+  autosave: ReturnType<typeof useLocationEditorSave>;
   onSaved?: () => void;
 }
 
@@ -71,7 +70,7 @@ export function DetailsPanel({ meta, autosave, onSaved }: DetailsPanelProps) {
     address !== meta.address ||
     (isCapacityValid && parsedCapacity !== meta.capacity);
 
-  const handleSave = async () => {
+  const handleSave = () => {
     const changes: Partial<{
       name: string;
       address: string;
@@ -82,17 +81,10 @@ export function DetailsPanel({ meta, autosave, onSaved }: DetailsPanelProps) {
     if (isCapacityValid && parsedCapacity !== meta.capacity) {
       changes.capacity = parsedCapacity;
     }
-    if (Object.keys(changes).length === 0) {
-      onSaved?.();
-      return;
+    if (Object.keys(changes).length > 0) {
+      autosave.updateMeta(changes);
     }
-    try {
-      await autosave.updateMeta(changes);
-      toast.success(t("management.locationEditor.details.saveSuccess"));
-      onSaved?.();
-    } catch {
-      // error toast already shown by autosave.updateMeta
-    }
+    onSaved?.();
   };
 
   return (
@@ -154,10 +146,9 @@ export function DetailsPanel({ meta, autosave, onSaved }: DetailsPanelProps) {
       <Button
         type="button"
         className="w-full"
-        disabled={!isDirty || autosave.isSavingMeta}
+        disabled={!isDirty}
         onClick={handleSave}
       >
-        {autosave.isSavingMeta && <Loader2 className="h-4 w-4 animate-spin" />}
         {t("management.locationEditor.details.saveButton")}
       </Button>
     </div>

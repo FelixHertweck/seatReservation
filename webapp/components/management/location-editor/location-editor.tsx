@@ -1,18 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useT } from "@/lib/i18n/hooks";
 import { useLocationEditorData } from "@/components/management/location-editor/use-location-editor-data";
 import { useLocationEditorState } from "@/components/management/location-editor/use-location-editor-state";
-import { useLocationAutosave } from "@/components/management/location-editor/use-location-autosave";
+import { useLocationEditorSave } from "@/components/management/location-editor/use-location-editor-save";
 import { useFillHeight } from "@/hooks/use-fill-height";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 import { EditorToolbar } from "@/components/management/location-editor/editor-toolbar";
 import { SeatMapEditor } from "@/components/management/location-editor/seat-map-editor";
 import { EditorSidePanel } from "@/components/management/location-editor/editor-side-panel";
 import { JsonView } from "@/components/management/location-editor/json-view";
 import { PreviewView } from "@/components/management/location-editor/preview-view";
-import { emptyLocationEditorState } from "@/components/management/location-editor/types";
+import {
+  emptyLocationEditorState,
+  hasUnsavedChanges,
+} from "@/components/management/location-editor/types";
 import type {
   EditorTab,
   LocalId,
@@ -45,10 +49,49 @@ export function LocationEditor({ locationId }: { locationId: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isReady]);
 
-  const autosave = useLocationAutosave({
+  const autosave = useLocationEditorSave({
     state: editor.state,
     dispatch: editor.dispatch,
   });
+
+  const unsaved = hasUnsavedChanges(editor.state);
+  const { setHasUnsavedChanges, registerSaveHandler } = useUnsavedChanges();
+
+  useEffect(() => {
+    setHasUnsavedChanges(unsaved);
+  }, [unsaved, setHasUnsavedChanges]);
+
+  // autosave.saveAll's identity is not stable across renders (it closes
+  // over React Query's useMutation results, which are re-created on every
+  // render) - registering it directly would re-run this effect every
+  // render and loop forever via the context's setState. Route calls
+  // through a ref instead, so the registered handler itself stays stable.
+  const saveAllRef = useRef(autosave.saveAll);
+  useEffect(() => {
+    saveAllRef.current = autosave.saveAll;
+  }, [autosave.saveAll]);
+
+  useEffect(() => {
+    registerSaveHandler(() => saveAllRef.current());
+    return () => registerSaveHandler(null);
+  }, [registerSaveHandler]);
+
+  useEffect(() => {
+    return () => setHasUnsavedChanges(false);
+    // Only on unmount - leaving the editor always clears the flag, whether
+    // it was saved, discarded, or navigated away from via the dialog.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (unsaved) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [unsaved]);
 
   const locationName = editor.state.meta.name || undefined;
 

@@ -11,7 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/custom-ui/alert-dialog";
-import { useProfileUnsavedChanges } from "@/hooks/use-profile-unsaved-changes";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 
 export function UnsavedChangesAlert() {
   const t = useT();
@@ -21,7 +21,7 @@ export function UnsavedChangesAlert() {
     setShowUnsavedDialog,
     handleDiscardChanges,
     handleSaveAndNavigate,
-  } = useProfileUnsavedChanges();
+  } = useUnsavedChanges();
 
   return (
     <div className="z-50">

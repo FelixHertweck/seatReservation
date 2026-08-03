@@ -5,14 +5,14 @@ import { CookiesProvider } from "react-cookie";
 import InitQueryClient from "./init-query-client";
 import { ThemeProvider } from "@/components/theme-provider";
 import { LoginRequiredPopupProvider } from "@/hooks/use-login-popup";
-import { ProfileUnsavedChangesProvider } from "@/hooks/use-profile-unsaved-changes";
+import { UnsavedChangesProvider } from "@/hooks/use-unsaved-changes";
 import { Toaster } from "./ui/sonner";
 
 export function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
     <CookiesProvider>
       <LoginRequiredPopupProvider>
-        <ProfileUnsavedChangesProvider>
+        <UnsavedChangesProvider>
           <InitQueryClient>
             <ThemeProvider
               attribute="class"
@@ -24,7 +24,7 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
               <Toaster />
             </ThemeProvider>
           </InitQueryClient>
-        </ProfileUnsavedChangesProvider>
+        </UnsavedChangesProvider>
       </LoginRequiredPopupProvider>
     </CookiesProvider>
   );
