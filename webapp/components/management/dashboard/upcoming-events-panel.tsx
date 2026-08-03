@@ -12,9 +12,11 @@ const SKELETON_ROWS = 3;
 export function UpcomingEventsPanel({
   events,
   isLoading,
+  className,
 }: {
   events: UpcomingEvent[];
   isLoading?: boolean;
+  className?: string;
 }) {
   const t = useT();
 
@@ -74,7 +76,7 @@ export function UpcomingEventsPanel({
   }
 
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader>
         <CardTitle className="text-base">
           {t("management.overview.panels.upcomingEvents.title")}

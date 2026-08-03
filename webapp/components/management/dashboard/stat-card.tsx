@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 interface StatCardProps {
   label: string;
   value: number;
+  suffix?: string;
   subLabel?: string;
   icon: LucideIcon;
   href?: string;
@@ -16,6 +17,7 @@ interface StatCardProps {
 export function StatCard({
   label,
   value,
+  suffix,
   subLabel,
   icon: Icon,
   href,
@@ -27,6 +29,7 @@ export function StatCard({
         <p className="truncate text-sm text-muted-foreground">{label}</p>
         <p className="text-2xl font-semibold tabular-nums">
           {formatCompactNumber(value)}
+          {suffix}
         </p>
         {subLabel && (
           <p className="truncate text-xs text-muted-foreground">{subLabel}</p>

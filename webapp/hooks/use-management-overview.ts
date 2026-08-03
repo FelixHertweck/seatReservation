@@ -12,8 +12,8 @@ import {
 } from "@/api/@tanstack/react-query.gen";
 import type { EventLocationResponseDto, EventResponseDto } from "@/api";
 
-const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 const UPCOMING_EVENTS_LIMIT = 5;
+const DEADLINES_LIMIT = 5;
 
 export interface UpcomingEvent {
   event: EventResponseDto;
@@ -22,17 +22,9 @@ export interface UpcomingEvent {
   capacity: number;
 }
 
-export interface LocationCapacity {
-  location: EventLocationResponseDto;
-  seatCount: number;
-  eventCount: number;
-}
-
 export interface ManagementOverview {
   isLoading: boolean;
   stats: {
-    locationsCount: number;
-    totalSeats: number;
     eventsCount: number;
     upcomingEventsCount: number;
     bookingOpenCount: number;
@@ -40,12 +32,15 @@ export interface ManagementOverview {
     reservationsReserved: number;
     reservationsBlocked: number;
     reservationsPending: number;
-    allowancesTotal: number;
-    allowancesUserCount: number;
+    occupancyPercent: number;
+    occupancyReserved: number;
+    occupancyCapacity: number;
+    contingentUsagePercent: number;
+    contingentUsed: number;
+    contingentGranted: number;
   };
   upcomingEvents: UpcomingEvent[];
   deadlineWarnings: UpcomingEvent[];
-  locationCapacities: LocationCapacity[];
 }
 
 /**
@@ -79,15 +74,6 @@ export function useManagementOverview(): ManagementOverview {
       (locations ?? []).map((location) => [location.id, location]),
     );
 
-    const eventsByLocationId = new Map<string, number>();
-    for (const event of events ?? []) {
-      if (!event.eventLocationId) continue;
-      eventsByLocationId.set(
-        event.eventLocationId,
-        (eventsByLocationId.get(event.eventLocationId) ?? 0) + 1,
-      );
-    }
-
     const toUpcomingEvent = (event: EventResponseDto): UpcomingEvent => {
       const location = event.eventLocationId
         ? locationById.get(event.eventLocationId)
@@ -102,22 +88,22 @@ export function useManagementOverview(): ManagementOverview {
       };
     };
 
-    const upcomingEvents = (events ?? [])
-      .filter((e) => e.startTime && e.startTime.getTime() >= now)
+    const futureEvents = (events ?? []).filter(
+      (e) => e.startTime && e.startTime.getTime() >= now,
+    );
+
+    const upcomingEvents = futureEvents
+      .slice()
       .sort((a, b) => a.startTime!.getTime() - b.startTime!.getTime())
       .slice(0, UPCOMING_EVENTS_LIMIT)
       .map(toUpcomingEvent);
 
     const deadlineWarnings = (events ?? [])
-      .filter(
-        (e) =>
-          e.bookingDeadline &&
-          e.bookingDeadline.getTime() >= now &&
-          e.bookingDeadline.getTime() - now <= SEVEN_DAYS_MS,
-      )
+      .filter((e) => e.bookingDeadline && e.bookingDeadline.getTime() >= now)
       .sort(
         (a, b) => a.bookingDeadline!.getTime() - b.bookingDeadline!.getTime(),
       )
+      .slice(0, DEADLINES_LIMIT)
       .map(toUpcomingEvent);
 
     const bookingOpenCount = (events ?? []).filter(
@@ -138,21 +124,46 @@ export function useManagementOverview(): ManagementOverview {
       (r) => r.status === "PENDING",
     ).length;
 
-    const allowancesTotal = (allowances ?? []).reduce(
-      (sum, a) => sum + (a.reservationsAllowedCount ?? 0),
+    // Occupancy across all upcoming events: reserved seats vs. total capacity.
+    const occupancyReserved = futureEvents.reduce(
+      (sum, e) =>
+        sum +
+        (e.seatStatuses?.filter((s) => s.status === "RESERVED").length ?? 0),
       0,
     );
-    const allowancesUserCount = new Set(
-      (allowances ?? []).map((a) => a.userId).filter(Boolean),
-    ).size;
+    const occupancyCapacity = futureEvents.reduce((sum, e) => {
+      const location = e.eventLocationId
+        ? locationById.get(e.eventLocationId)
+        : undefined;
+      return sum + (location?.seatIds?.length ?? 0);
+    }, 0);
+    const occupancyPercent =
+      occupancyCapacity > 0
+        ? Math.round((occupancyReserved / occupancyCapacity) * 100)
+        : 0;
 
-    const locationCapacities: LocationCapacity[] = (locations ?? []).map(
-      (location) => ({
-        location,
-        seatCount: location.seatIds?.length ?? 0,
-        eventCount: eventsByLocationId.get(location.id ?? "") ?? 0,
-      }),
-    );
+    // Contingents: reservationsAllowedCount is the *remaining* balance (the
+    // backend decrements it per reservation and restores it on cancellation),
+    // so the originally granted amount per user/event is reconstructed as
+    // remaining + already-used (active RESERVED reservations for that pair).
+    const reservedCountByPair = new Map<string, number>();
+    for (const r of reservations ?? []) {
+      if (r.status !== "RESERVED" || !r.eventId || !r.user?.id) continue;
+      const key = `${r.eventId}:${r.user.id}`;
+      reservedCountByPair.set(key, (reservedCountByPair.get(key) ?? 0) + 1);
+    }
+    let contingentUsed = 0;
+    let contingentGranted = 0;
+    for (const a of allowances ?? []) {
+      if (!a.eventId || !a.userId) continue;
+      const used = reservedCountByPair.get(`${a.eventId}:${a.userId}`) ?? 0;
+      contingentUsed += used;
+      contingentGranted += (a.reservationsAllowedCount ?? 0) + used;
+    }
+    const contingentUsagePercent =
+      contingentGranted > 0
+        ? Math.round((contingentUsed / contingentGranted) * 100)
+        : 0;
 
     return {
       isLoading:
@@ -162,26 +173,22 @@ export function useManagementOverview(): ManagementOverview {
         allowancesLoading ||
         usersLoading,
       stats: {
-        locationsCount: locations?.length ?? 0,
-        totalSeats: (locations ?? []).reduce(
-          (sum, l) => sum + (l.seatIds?.length ?? 0),
-          0,
-        ),
         eventsCount: events?.length ?? 0,
-        upcomingEventsCount: (events ?? []).filter(
-          (e) => e.startTime && e.startTime.getTime() >= now,
-        ).length,
+        upcomingEventsCount: futureEvents.length,
         bookingOpenCount,
         reservationsCount: reservations?.length ?? 0,
         reservationsReserved,
         reservationsBlocked,
         reservationsPending,
-        allowancesTotal,
-        allowancesUserCount,
+        occupancyPercent,
+        occupancyReserved,
+        occupancyCapacity,
+        contingentUsagePercent,
+        contingentUsed,
+        contingentGranted,
       },
       upcomingEvents,
       deadlineWarnings,
-      locationCapacities,
     };
   }, [
     now,

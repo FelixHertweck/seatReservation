@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  MapPinned,
+  Gauge,
   CalendarDays,
   DoorOpen,
   BookmarkCheck,
@@ -12,7 +12,6 @@ import { useT } from "@/lib/i18n/hooks";
 import { PageHeader } from "@/components/page-header";
 import { StatCard } from "@/components/management/dashboard/stat-card";
 import { UpcomingEventsPanel } from "@/components/management/dashboard/upcoming-events-panel";
-import { CapacityPanel } from "@/components/management/dashboard/capacity-panel";
 import { QuickActions } from "@/components/management/dashboard/quick-actions";
 import { DeadlinesPanel } from "@/components/management/dashboard/deadlines-panel";
 import { useManagementOverview } from "@/hooks/use-management-overview";
@@ -20,13 +19,8 @@ import { Skeleton } from "@/components/custom-ui/skeleton";
 
 export default function ManagementOverviewPage() {
   const t = useT();
-  const {
-    isLoading,
-    stats,
-    upcomingEvents,
-    deadlineWarnings,
-    locationCapacities,
-  } = useManagementOverview();
+  const { isLoading, stats, upcomingEvents, deadlineWarnings } =
+    useManagementOverview();
 
   return (
     <div className="container mx-auto p-4 sm:p-6">
@@ -44,13 +38,15 @@ export default function ManagementOverviewPage() {
       ) : (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <StatCard
-            label={t("management.overview.stats.locations")}
-            value={stats.locationsCount}
-            subLabel={t("management.overview.stats.locationsSub", {
-              count: stats.totalSeats,
+            label={t("management.overview.stats.occupancy")}
+            value={stats.occupancyPercent}
+            suffix="%"
+            subLabel={t("management.overview.stats.occupancySub", {
+              reserved: stats.occupancyReserved,
+              capacity: stats.occupancyCapacity,
             })}
-            icon={MapPinned}
-            href="/management/locations"
+            icon={Gauge}
+            href="/management/events"
           />
           <StatCard
             label={t("management.overview.stats.events")}
@@ -83,8 +79,11 @@ export default function ManagementOverviewPage() {
       )}
 
       <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <UpcomingEventsPanel events={upcomingEvents} isLoading={isLoading} />
-        <CapacityPanel locations={locationCapacities} isLoading={isLoading} />
+        <UpcomingEventsPanel
+          className="lg:col-span-2"
+          events={upcomingEvents}
+          isLoading={isLoading}
+        />
         <QuickActions />
       </div>
 
@@ -92,10 +91,12 @@ export default function ManagementOverviewPage() {
         <DeadlinesPanel events={deadlineWarnings} isLoading={isLoading} />
         <StatCard
           className="lg:col-span-2"
-          label={t("management.overview.stats.allowances")}
-          value={stats.allowancesTotal}
-          subLabel={t("management.overview.stats.allowancesSub", {
-            count: stats.allowancesUserCount,
+          label={t("management.overview.stats.contingentUsage")}
+          value={stats.contingentUsagePercent}
+          suffix="%"
+          subLabel={t("management.overview.stats.contingentUsageSub", {
+            used: stats.contingentUsed,
+            total: stats.contingentGranted,
           })}
           icon={Ticket}
           href="/management/allowances"
