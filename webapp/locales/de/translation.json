@@ -160,11 +160,15 @@
       }
     }
   },
+  "eventsNav": {
+    "label": "Veranstaltungsbereiche",
+    "browse": "Entdecken",
+    "myReservations": "Meine Reservierungen"
+  },
   "eventsPage": {
     "title": "Veranstaltungen",
     "description": "Veranstaltungen durchsuchen und Plätze reservieren",
-    "filterByEventPlaceholder": "Nach Veranstaltung filtern",
-    "allEventsFilter": "Alle Veranstaltungen",
+    "locationFilterLabel": "Ort",
     "noEventsAvailable": "Derzeit sind keine Veranstaltungen verfügbar.",
     "tryAgain": "Bitte versuchen Sie es später erneut.",
     "noEventsMatchSearch": "Keine Veranstaltungen entsprechen Ihrer Suche.",
@@ -173,12 +177,15 @@
   "reservationsPage": {
     "title": "Meine Reservierungen",
     "description": "Ihre aktuellen und vergangenen Reservierungen anzeigen",
+    "locationFilterLabel": "Ort",
+    "eventFilterLabel": "Veranstaltung",
     "noReservationsYet": "Sie haben noch keine Reservierungen.",
-    "switchToAvailableEvents": "Wechseln Sie zu \"Veranstaltungen\", um Ihre erste Reservierung vorzunehmen!",
+    "switchToAvailableEvents": "Wechseln Sie zu \"Entdecken\", um Ihre erste Reservierung vorzunehmen!",
     "noReservationsMatchSearch": "Keine Reservierungen entsprechen Ihrer Suche.",
     "checkSearch": "Bitte überprüfen Sie Ihre Suchkriterien.",
     "noReservationsFoundTitle": "Keine Reservierungen gefunden",
-    "noReservationsFoundDescription": "Es wurden keine Reservierungen mit der angefragten URL gefunden."
+    "noReservationsFoundDescription": "Es wurden keine Reservierungen mit der angefragten URL gefunden.",
+    "viewEventButton": "Veranstaltung ansehen"
   },
   "profilePage": {
     "update": {
@@ -394,7 +401,8 @@
     "bookingUntil": "Buchung bis",
     "reserveSeatsButton": "Plätze reservieren",
     "notAvailableButton": "Nicht verfügbar",
-    "bookingOpenOnButtonWithDate": "Buchung öffnet am {{date}} um {{time}}"
+    "bookingOpenOnButtonWithDate": "Buchung öffnet am {{date}} um {{time}}",
+    "myReservationsButton": "{{count}} Plätze reserviert"
   },
   "eventReservationModal": {
     "title": "Plätze reservieren - {{eventName}}",
@@ -746,6 +754,7 @@
     "groupSupervision": "Aufsicht",
     "groupManagement": "Verwaltung",
     "events": "Veranstaltungen",
+    "eventsBrowse": "Entdecken",
     "reservations": "Reservierungen",
     "viewProfile": "Profil ansehen",
     "settings": "Einstellungen",

@@ -1,212 +1,28 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useReservations } from "@/hooks/use-reservations";
-import { useT } from "@/lib/i18n/hooks";
-import {
-  UserEventLocationResponseDto,
-  UserEventResponseDto,
-  UserReservationResponseDto,
-} from "@/api";
-import { useEvents } from "@/hooks/use-events";
-import { SearchAndFilter } from "@/components/common/search-and-filter";
-import { ReservationCardSkeleton } from "@/components/reservations/reservation-card-skeleton";
-import { SeatMapModal } from "@/components/reservations/reservation-modal";
-import { ReservationCard } from "@/components/reservations/reservation-card";
-import { useAuth } from "@/hooks/use-auth";
+import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { toast } from "sonner";
-import { PageHeader } from "@/components/page-header";
 
-interface SelectedReservation {
-  reservation: UserReservationResponseDto;
-  event: UserEventResponseDto | null;
-  location: UserEventLocationResponseDto | null;
-  eventReservations?: UserReservationResponseDto[] | null;
-}
-
-export default function EventsPage() {
-  const t = useT();
+// Old bookmarked/shared links pointed at "/reservations?id=<eventId>".
+// The reservations view now lives as a tab under "/events" - forward
+// visitors there, mapping the old "id" param to the new "eventId" one.
+export default function LegacyReservationsRedirect() {
   const router = useRouter();
-
-  const {
-    reservations,
-    isLoading: reservationsLoading,
-    deleteReservation,
-  } = useReservations();
-  const { isLoading: eventsLoading, events, locations } = useEvents();
   const searchParams = useSearchParams();
-  const { isLoggedIn } = useAuth();
-  const [selectedReservation, setSelectedReservation] =
-    useState<SelectedReservation | null>(null);
 
-  const reservationSearchQuery = useMemo(() => {
-    const eventIdFromUrl = searchParams.get("id");
-    if (eventIdFromUrl && events && !eventsLoading && isLoggedIn) {
-      const event = events.find((e) => e.id === eventIdFromUrl);
-      if (event) {
-        return event.name || "";
-      } else {
-        router.replace("/reservations");
-        setTimeout(() => {
-          toast.error(t("reservationsPage.noReservationsFoundTitle"), {
-            description: t("reservationsPage.noReservationsFoundDescription"),
-          });
-        }, 500);
-        return "";
-      }
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    const legacyEventId = params.get("id");
+    if (legacyEventId) {
+      params.delete("id");
+      params.set("eventId", legacyEventId);
     }
-    return "";
-  }, [searchParams, events, eventsLoading, isLoggedIn, router, t]);
+    const query = params.toString();
+    const target = query
+      ? `/events/reservations?${query}`
+      : "/events/reservations";
+    router.replace(target);
+  }, [router, searchParams]);
 
-  const [userSearchQuery, setUserSearchQuery] = useState<string>("");
-  const effectiveSearchQuery =
-    userSearchQuery !== "" ? userSearchQuery : reservationSearchQuery;
-
-  const groupedReservations = useMemo(() => {
-    if (!reservations || !events) return [];
-
-    const filtered = reservations.filter((reservation) => {
-      const event = events.find((e) => e.id === reservation.eventId);
-      const eventName = event?.name?.toLowerCase() || "";
-      return eventName.includes(effectiveSearchQuery.toLowerCase());
-    });
-
-    const grouped = filtered.reduce(
-      (acc, reservation) => {
-        const eventId = reservation.eventId?.toString();
-        if (!eventId) return acc;
-        if (!acc[eventId]) {
-          acc[eventId] = [];
-        }
-        acc[eventId].push(reservation);
-        return acc;
-      },
-      {} as Record<string, UserReservationResponseDto[]>,
-    );
-
-    return Object.values(grouped);
-  }, [reservations, effectiveSearchQuery, events]);
-
-  const handleReservationSearch = (query: string) => {
-    setUserSearchQuery(query);
-  };
-
-  const handleDeleteReservation = async (reservationIds: string[]) => {
-    await deleteReservation(reservationIds);
-  };
-
-  const handleViewReservationSeats = (
-    reservation: UserReservationResponseDto,
-  ) => {
-    const event = events?.find((e) => e.id === reservation.eventId) ?? null;
-    const location = locations?.find((l) => l.id === event?.locationId) ?? null;
-    const eventReservations = reservations.filter(
-      (reservation) => reservation.eventId === event?.id,
-    );
-
-    setSelectedReservation({
-      reservation,
-      event,
-      location,
-      eventReservations,
-    });
-  };
-
-  return (
-    <div className="container mx-auto px-2 py-3 md:p-6">
-      <PageHeader
-        title={t("reservationsPage.title")}
-        description={t("reservationsPage.description")}
-        search={
-          <SearchAndFilter
-            onSearch={handleReservationSearch}
-            onFilter={() => {}}
-            filterOptions={[]}
-            initialQuery={effectiveSearchQuery}
-            className="w-full"
-          />
-        }
-      />
-
-      {reservationsLoading ? (
-        <LoadingAnimation />
-      ) : groupedReservations.length === 0 ? (
-        <NoReservationAvailable reservationLength={reservations.length} />
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 lg:gap-4">
-          {groupedReservations.map((eventReservations) => {
-            const firstReservation = eventReservations[0];
-            const event = events?.find(
-              (e) => e.id === firstReservation.eventId,
-            );
-            const location = locations?.find((l) => l.id === event?.locationId);
-            return (
-              <ReservationCard
-                key={firstReservation.eventId?.toString()}
-                reservations={eventReservations}
-                eventName={event?.name}
-                locationName={location?.name}
-                bookingDeadline={event?.bookingDeadline}
-                onViewSeats={handleViewReservationSeats}
-                onDelete={handleDeleteReservation}
-              />
-            );
-          })}
-        </div>
-      )}
-
-      {selectedReservation && (
-        <SeatMapModal
-          seats={selectedReservation.location?.seats || []}
-          seatStatuses={selectedReservation.event?.seatStatuses || []}
-          markers={selectedReservation.location?.markers || []}
-          areas={selectedReservation.location?.areas || []}
-          reservation={selectedReservation.reservation}
-          eventReservations={selectedReservation.eventReservations || []}
-          onClose={() => setSelectedReservation(null)}
-          isLoading={false}
-        />
-      )}
-    </div>
-  );
+  return null;
 }
-
-const LoadingAnimation = () => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
-    {Array.from({ length: 3 }).map((_, index) => (
-      <ReservationCardSkeleton key={index} />
-    ))}
-  </div>
-);
-
-const NoReservationAvailable = ({
-  reservationLength,
-}: {
-  reservationLength: number;
-}) => {
-  const t = useT();
-
-  if (reservationLength === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground text-lg">
-          {t("reservationsPage.noReservationsYet")}
-        </p>
-        <p className="text-muted-foreground">
-          {t("reservationsPage.switchToAvailableEvents")}
-        </p>
-      </div>
-    );
-  }
-  return (
-    <div className="text-center py-12">
-      <p className="text-muted-foreground text-lg">
-        {t("reservationsPage.noReservationsMatchSearch")}
-      </p>
-      <p className="text-muted-foreground">
-        {t("reservationsPage.checkSearch")}
-      </p>
-    </div>
-  );
-};

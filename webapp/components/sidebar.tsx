@@ -110,12 +110,18 @@ export function AppSidebar() {
         url: "/events",
         icon: CalendarDays,
         badge: "",
-      });
-      generalItems.push({
-        title: t("sidebar.reservations"),
-        url: "/reservations",
-        icon: BookmarkCheck,
-        badge: "",
+        subItems: [
+          {
+            title: t("sidebar.eventsBrowse"),
+            url: "/events",
+            icon: CalendarDays,
+          },
+          {
+            title: t("sidebar.reservations"),
+            url: "/events/reservations",
+            icon: BookmarkCheck,
+          },
+        ],
       });
     }
 
@@ -226,6 +232,10 @@ export function AppSidebar() {
 
   const isPathActive = (url: string) =>
     currentPath === url || currentPath.startsWith(`${url}/`);
+
+  // Sub-items are siblings, not a nested hierarchy, so an exact match avoids
+  // e.g. "/events" (Browse) staying highlighted while on "/events/reservations".
+  const isSubItemActive = (url: string) => currentPath === url;
 
   const getLanguageLabel = (lang: string) => {
     switch (lang) {
@@ -486,7 +496,7 @@ export function AppSidebar() {
                             <SidebarMenuSubButton
                               asChild
                               className={`hover:bg-sidebar-accent/50 transition-all duration-300 group p-0 ${
-                                isPathActive(subItem.url)
+                                isSubItemActive(subItem.url)
                                   ? "bg-sidebar-accent/40 text-sidebar-accent-foreground"
                                   : ""
                               }`}
@@ -510,12 +520,14 @@ export function AppSidebar() {
                               >
                                 <subItem.icon
                                   className={`h-4 w-4 group-hover:scale-110 transition-transform duration-300 ${
-                                    isPathActive(subItem.url) ? "scale-110" : ""
+                                    isSubItemActive(subItem.url)
+                                      ? "scale-110"
+                                      : ""
                                   }`}
                                 />
                                 <span
                                   className={`text-sm group-data-[collapsible=icon]:hidden ${
-                                    isPathActive(subItem.url)
+                                    isSubItemActive(subItem.url)
                                       ? "font-semibold"
                                       : ""
                                   }`}

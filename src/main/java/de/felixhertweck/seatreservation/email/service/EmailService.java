@@ -379,7 +379,7 @@ public class EmailService {
      * @return The complete event reservation link.
      */
     private String generateEventLink(UUID eventId) {
-        return frontendBaseUrl.trim() + "/reservations?id=" + eventId;
+        return frontendBaseUrl.trim() + "/events/reservations?eventId=" + eventId;
     }
 
     /**
