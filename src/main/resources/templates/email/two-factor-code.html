@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Two-Factor Authentication Code</title>
+      <style>
+{#include email/fragments/simple-notification-styles /}
+          .header {
+              text-align: center;
+              margin-bottom: 30px;
+              background-color: #e74c3c;
+              color: #ffffff;
+              padding: 15px 20px;
+              border-radius: 8px 8px 0 0;
+          }
+          h1 {
+              margin: 0;
+          }
+          .content {
+              margin-bottom: 30px;
+              padding: 0 20px;
+          }
+          .code-box {
+              background-color: #f3f4f6;
+              border: 2px dashed #e74c3c;
+              border-radius: 8px;
+              padding: 20px;
+              text-align: center;
+              font-size: 32px;
+              font-family: monospace;
+              letter-spacing: 8px;
+              font-weight: bold;
+              color: #1f2937;
+              margin: 20px 0;
+          }
+      </style>
+  </head>
+  <body>
+      <div class="container">
+          <div class="header">
+              <h1>Two-Factor Code</h1>
+          </div>
+          <div class="content">
+              <p>Hello {fullName},</p>
+              <p>Your two-factor authentication verification code is:</p>
+
+              <div class="code-box">
+                  {code}
+              </div>
+
+              <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 15px; margin: 25px 0; color: #856404;">
+                  <p style="margin: 0; font-weight: bold;">Important:</p>
+                  <p style="margin: 5px 0 0 0;">This code is valid for 5 minutes. Do not share this code with anyone.</p>
+              </div>
+
+              <p>If you did not attempt to sign in, please secure your account immediately by changing your password.</p>
+          </div>
+          <div class="footer">
+              <p>&copy; {currentYear} Seat Reservation System. All rights reserved.</p>
+              <p>This is an automated message, please do not reply to this email.</p>
+          </div>
+      </div>
+  </body>
+</html>

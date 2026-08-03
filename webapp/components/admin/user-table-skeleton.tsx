@@ -10,13 +10,7 @@ import {
 } from "@/components/ui/table";
 import { useT } from "@/lib/i18n/hooks";
 
-interface UserTableSkeletonProps {
-  showImportButton?: boolean;
-}
-
-export function UserTableSkeleton({
-  showImportButton = false,
-}: UserTableSkeletonProps) {
+export function UserTableSkeleton() {
   const t = useT();
 
   return (

@@ -31,6 +31,7 @@ import de.felixhertweck.seatreservation.model.repository.EmailVerificationReposi
 import de.felixhertweck.seatreservation.model.repository.LoginAttemptRepository;
 import de.felixhertweck.seatreservation.model.repository.OutboundEmailRepository;
 import de.felixhertweck.seatreservation.model.repository.RefreshTokenRepository;
+import de.felixhertweck.seatreservation.model.repository.TwoFactorAttemptRepository;
 import io.quarkus.scheduler.Scheduled;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
@@ -52,6 +53,8 @@ public class DatabaseCleanup {
     @Inject EmailSeatMapTokenRepository emailSeatMapTokenRepository;
 
     @Inject LoginAttemptRepository loginAttemptRepository;
+
+    @Inject TwoFactorAttemptRepository twoFactorAttemptRepository;
 
     @Inject OutboundEmailRepository outboundEmailRepository;
 
@@ -227,5 +230,29 @@ public class DatabaseCleanup {
         Instant cutoffTime = Instant.now().minus(30, ChronoUnit.DAYS);
         long deletedCount = loginAttemptRepository.deleteOldAttempts(cutoffTime);
         LOG.infof("Manually cleaned up %d old login attempts.", deletedCount);
+    }
+
+    /**
+     * Cleans up old 2FA verification attempts older than 30 days.
+     *
+     * <p>Runs daily at 2:15 AM.
+     */
+    @Scheduled(cron = "0 15 2 * * ?") // Every day at 2:15 AM
+    public void cleanupOldTwoFactorAttempts() {
+        LOG.info("Starting scheduled cleanup of old 2FA attempts.");
+        Instant cutoffTime = Instant.now().minus(30, ChronoUnit.DAYS);
+        long deletedCount = twoFactorAttemptRepository.deleteOldAttempts(cutoffTime);
+        if (deletedCount > 0) {
+            LOG.infof("Successfully cleaned up %d old 2FA attempts.", deletedCount);
+        } else {
+            LOG.debug("No old 2FA attempts found to clean up.");
+        }
+    }
+
+    public void manualCleanupOldTwoFactorAttempts() {
+        LOG.info("Manual cleanup of old 2FA attempts triggered.");
+        Instant cutoffTime = Instant.now().minus(30, ChronoUnit.DAYS);
+        long deletedCount = twoFactorAttemptRepository.deleteOldAttempts(cutoffTime);
+        LOG.infof("Manually cleaned up %d old 2FA attempts.", deletedCount);
     }
 }

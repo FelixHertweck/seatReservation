@@ -50,10 +50,13 @@ import de.felixhertweck.seatreservation.reservation.exception.SeatPendingExcepti
 import de.felixhertweck.seatreservation.security.dto.LoginLockedDTO;
 import de.felixhertweck.seatreservation.security.exceptions.AccountLockedException;
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
+import de.felixhertweck.seatreservation.security.exceptions.EmailNotVerifiedException;
+import de.felixhertweck.seatreservation.security.exceptions.InvalidTwoFactorCodeException;
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
 import de.felixhertweck.seatreservation.security.exceptions.LastCredentialException;
 import de.felixhertweck.seatreservation.security.exceptions.PasswordResetTokenExpiredException;
 import de.felixhertweck.seatreservation.security.exceptions.PasswordResetTokenNotFoundException;
+import de.felixhertweck.seatreservation.security.exceptions.TwoFactorAlreadyEnabledException;
 import de.felixhertweck.seatreservation.security.service.TokenService;
 import de.felixhertweck.seatreservation.supervisor.exception.CheckInException;
 import de.felixhertweck.seatreservation.supervisor.exception.CheckInTokenNotFoundException;
@@ -120,6 +123,9 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
             case DuplicateUserException ignored -> status = Response.Status.CONFLICT;
             case InvalidUserException ignored -> status = Response.Status.BAD_REQUEST;
             case RegistrationDisabledException ignored -> status = Response.Status.FORBIDDEN;
+            case EmailNotVerifiedException ignored -> status = Response.Status.FORBIDDEN;
+            case InvalidTwoFactorCodeException ignored -> status = Response.Status.BAD_REQUEST;
+            case TwoFactorAlreadyEnabledException ignored -> status = Response.Status.CONFLICT;
             case VerificationCodeNotFoundException ignored -> status = Response.Status.BAD_REQUEST;
             case VerifyTokenExpiredException ignored -> status = Response.Status.GONE;
             case PasswordResetTokenNotFoundException ignored ->

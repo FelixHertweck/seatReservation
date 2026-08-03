@@ -60,7 +60,11 @@ import de.felixhertweck.seatreservation.model.entity.EmailVerification;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
+import de.felixhertweck.seatreservation.model.repository.TwoFactorAttemptRepository;
+import de.felixhertweck.seatreservation.model.repository.TwoFactorBackupCodeRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.security.exceptions.InvalidTwoFactorCodeException;
+import de.felixhertweck.seatreservation.security.service.TwoFactorService;
 import de.felixhertweck.seatreservation.userManagment.dto.AdminUserCreationDto;
 import de.felixhertweck.seatreservation.userManagment.dto.AdminUserUpdateDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.UserCreationDTO;
@@ -85,11 +89,20 @@ public class UserServiceTest {
 
     @InjectMock EmailVerificationRepository emailVerificationRepository;
 
+    @InjectMock TwoFactorBackupCodeRepository backupCodeRepository;
+
+    @InjectMock TwoFactorAttemptRepository twoFactorAttemptRepository;
+
     @Inject UserService userService;
 
     @BeforeEach
     void setUp() {
-        Mockito.reset(userRepository, emailService, emailVerificationRepository);
+        Mockito.reset(
+                userRepository,
+                emailService,
+                emailVerificationRepository,
+                backupCodeRepository,
+                twoFactorAttemptRepository);
     }
 
     @Test
@@ -1093,7 +1106,8 @@ public class UserServiceTest {
                         "User",
                         null,
                         existingUser.getEmail(),
-                        Collections.singleton(Roles.USER));
+                        Collections.singleton(Roles.USER),
+                        null);
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
@@ -1135,7 +1149,8 @@ public class UserServiceTest {
                         "New",
                         null,
                         existingUser.getEmail(),
-                        Collections.singleton(Roles.USER));
+                        Collections.singleton(Roles.USER),
+                        null);
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
@@ -1172,7 +1187,7 @@ public class UserServiceTest {
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
         final UserProfileUpdateDTO dto =
-                new UserProfileUpdateDTO(null, null, "newpassword", null, null);
+                new UserProfileUpdateDTO(null, null, "newpassword", null, null, null);
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
@@ -1207,7 +1222,7 @@ public class UserServiceTest {
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
         UserProfileUpdateDTO dto =
-                new UserProfileUpdateDTO(null, null, null, "new@example.com", null);
+                new UserProfileUpdateDTO(null, null, null, "new@example.com", null, null);
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
@@ -1241,9 +1256,177 @@ public class UserServiceTest {
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
+    private static final byte[] TOTP_SECRET_BYTES_EMAIL_CHANGE =
+            new byte[] {0x12, 0x34, 0x56, 0x78, (byte) 0x90, 0x12, 0x34, 0x56, 0x78, 0x12};
+
+    private static String validTotpCodeForEmailChangeTests(byte[] secretBytes) throws Exception {
+        com.eatthepath.otp.TimeBasedOneTimePasswordGenerator totp =
+                new com.eatthepath.otp.TimeBasedOneTimePasswordGenerator();
+        javax.crypto.SecretKey key =
+                new javax.crypto.spec.SecretKeySpec(secretBytes, totp.getAlgorithm());
+        return totp.generateOneTimePasswordString(key, Instant.now());
+    }
+
+    @Test
+    void updateUserProfile_EmailChange_TwoFactorEnabled_ValidCode_SucceedsAndDisablesEmailFactor()
+            throws Exception {
+        User existingUser =
+                new User(
+                        "testuser",
+                        "old@example.com",
+                        true,
+                        false,
+                        "oldhash",
+                        "salt",
+                        "John",
+                        "Doe",
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
+        existingUser.setTwoFactorEnabled(true);
+        existingUser.setTotpEnabled(true);
+        existingUser.setEmailEnabled(true);
+        String secret = TwoFactorService.encodeBase32(TOTP_SECRET_BYTES_EMAIL_CHANGE);
+        existingUser.setTotpSecret(secret);
+        String validCode = validTotpCodeForEmailChangeTests(TOTP_SECRET_BYTES_EMAIL_CHANGE);
+
+        UserProfileUpdateDTO dto =
+                new UserProfileUpdateDTO(null, null, null, "new@example.com", null, validCode);
+
+        when(userRepository.findByUsernameOptional("testuser"))
+                .thenReturn(Optional.of(existingUser));
+        when(emailVerificationRepository.findByUserIdOptional(any(UUID.class)))
+                .thenReturn(Optional.empty());
+        when(emailService.createEmailVerification(any(User.class)))
+                .thenReturn(
+                        new EmailVerification(
+                                new User(
+                                        "mock",
+                                        "mock@example.com",
+                                        true,
+                                        false,
+                                        "hash",
+                                        "salt",
+                                        "Mock",
+                                        "User",
+                                        Collections.emptySet(),
+                                        Collections.emptySet()),
+                                "token",
+                                Instant.now()));
+
+        UserDTO updatedUser = userService.updateUserProfile("testuser", dto);
+
+        assertNotNull(updatedUser);
+        assertEquals("new@example.com", updatedUser.email());
+        // The TOTP code proved current possession of 2FA, so the change went through -- but the
+        // new address is unverified, so EMAIL 2FA specifically is auto-disabled. TOTP, which the
+        // change didn't touch, stays on.
+        assertTrue(existingUser.isTotpEnabled());
+        assertFalse(existingUser.isEmailEnabled());
+        assertTrue(existingUser.isTwoFactorEnabled());
+    }
+
+    @Test
+    void
+            updateUserProfile_EmailChange_TwoFactorEnabled_InvalidCode_ThrowsInvalidTwoFactorCodeException() {
+        User existingUser =
+                new User(
+                        "testuser",
+                        "old@example.com",
+                        true,
+                        false,
+                        "oldhash",
+                        "salt",
+                        "John",
+                        "Doe",
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
+        existingUser.setTwoFactorEnabled(true);
+        existingUser.setTotpEnabled(true);
+        existingUser.setTotpSecret("JBSWY3DPEHPK3PXP");
+
+        UserProfileUpdateDTO dto =
+                new UserProfileUpdateDTO(null, null, null, "new@example.com", null, "000000");
+
+        when(userRepository.findByUsernameOptional("testuser"))
+                .thenReturn(Optional.of(existingUser));
+
+        assertThrows(
+                InvalidTwoFactorCodeException.class,
+                () -> userService.updateUserProfile("testuser", dto));
+
+        // Nothing changed: neither the email nor the 2FA state.
+        assertEquals("old@example.com", existingUser.getEmail());
+        assertTrue(existingUser.isTwoFactorEnabled());
+        verify(userRepository, never()).persist(existingUser);
+    }
+
+    @Test
+    void
+            updateUserProfile_EmailChange_TwoFactorEnabled_MissingCode_ThrowsInvalidTwoFactorCodeException() {
+        User existingUser =
+                new User(
+                        "testuser",
+                        "old@example.com",
+                        true,
+                        false,
+                        "oldhash",
+                        "salt",
+                        "John",
+                        "Doe",
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
+        existingUser.setTwoFactorEnabled(true);
+        existingUser.setEmailEnabled(true);
+
+        UserProfileUpdateDTO dto =
+                new UserProfileUpdateDTO(null, null, null, "new@example.com", null, null);
+
+        when(userRepository.findByUsernameOptional("testuser"))
+                .thenReturn(Optional.of(existingUser));
+
+        assertThrows(
+                InvalidTwoFactorCodeException.class,
+                () -> userService.updateUserProfile("testuser", dto));
+    }
+
+    @Test
+    void updateUserProfile_EmailUnchanged_TwoFactorEnabled_NoCodeRequired() {
+        User existingUser =
+                new User(
+                        "testuser",
+                        "old@example.com",
+                        true,
+                        false,
+                        "oldhash",
+                        "salt",
+                        "John",
+                        "Doe",
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
+        existingUser.setTwoFactorEnabled(true);
+        existingUser.setTotpEnabled(true);
+        existingUser.setTotpSecret("JBSWY3DPEHPK3PXP");
+
+        // Same email as before, only the name changes -- no 2FA code needed since the trust
+        // invariant (email address is unchanged) isn't touched.
+        UserProfileUpdateDTO dto =
+                new UserProfileUpdateDTO("NewFirstName", null, null, "old@example.com", null, null);
+
+        when(userRepository.findByUsernameOptional("testuser"))
+                .thenReturn(Optional.of(existingUser));
+
+        UserDTO updatedUser =
+                assertDoesNotThrow(() -> userService.updateUserProfile("testuser", dto));
+
+        assertEquals("NewFirstName", updatedUser.firstname());
+        assertTrue(existingUser.isTotpEnabled());
+        assertTrue(existingUser.isTwoFactorEnabled());
+    }
+
     @Test
     void updateUserProfile_UserNotFoundException() throws IOException {
-        final UserProfileUpdateDTO dto = new UserProfileUpdateDTO("New", null, null, null, null);
+        final UserProfileUpdateDTO dto =
+                new UserProfileUpdateDTO("New", null, null, null, null, null);
         when(userRepository.findByUsernameOptional(anyString())).thenReturn(Optional.empty());
         when(userRepository.findByUsername(anyString())).thenReturn(null); // Mock findByUsername
 
@@ -1283,7 +1466,7 @@ public class UserServiceTest {
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
         final UserProfileUpdateDTO dto =
-                new UserProfileUpdateDTO(null, null, null, "duplicate@example.com", null);
+                new UserProfileUpdateDTO(null, null, null, "duplicate@example.com", null, null);
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
@@ -1333,7 +1516,7 @@ public class UserServiceTest {
                         Collections.singleton(Roles.USER),
                         Collections.emptySet());
         final UserProfileUpdateDTO dto =
-                new UserProfileUpdateDTO(null, null, null, "new@example.com", null);
+                new UserProfileUpdateDTO(null, null, null, "new@example.com", null, null);
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));
@@ -1384,7 +1567,12 @@ public class UserServiceTest {
                         Collections.emptySet());
         final UserProfileUpdateDTO dto =
                 new UserProfileUpdateDTO(
-                        "John", "Doe", "newpassword", "old@example.com", Collections.emptySet());
+                        "John",
+                        "Doe",
+                        "newpassword",
+                        "old@example.com",
+                        Collections.emptySet(),
+                        null);
 
         when(userRepository.findByUsernameOptional("testuser"))
                 .thenReturn(Optional.of(existingUser));

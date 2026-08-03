@@ -32,10 +32,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Generate keys for JWT tests
+      - name: Generate keys for JWT and encryption tests
         run: |
           mkdir keys
           openssl genpkey -algorithm RSA -out keys/privateKey.pem -pkeyopt rsa_keygen_bits:2048 && openssl rsa -pubout -in keys/privateKey.pem -out keys/publicKey.pem
+          openssl rand -base64 32 > keys/totp-encryption.key
 
       - name: Set up Maven Cache
         uses: actions/cache@v6

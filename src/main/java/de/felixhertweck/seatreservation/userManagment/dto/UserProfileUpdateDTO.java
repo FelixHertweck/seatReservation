@@ -48,6 +48,9 @@ public class UserProfileUpdateDTO {
     @NotNull(message = "tags cannot be null")
     private final Set<String> tags;
 
+    // Required only when changing the email address while 2FA is enabled
+    @NoHtmlSanitize private final String twoFactorCode;
+
     public String getEmail() {
         return email;
     }
@@ -68,12 +71,22 @@ public class UserProfileUpdateDTO {
         return tags;
     }
 
+    public String getTwoFactorCode() {
+        return twoFactorCode;
+    }
+
     public UserProfileUpdateDTO(
-            String firstname, String lastname, String password, String email, Set<String> tags) {
+            String firstname,
+            String lastname,
+            String password,
+            String email,
+            Set<String> tags,
+            String twoFactorCode) {
         this.firstname = firstname;
         this.lastname = lastname;
         this.password = password;
         this.email = email;
         this.tags = tags;
+        this.twoFactorCode = twoFactorCode;
     }
 }

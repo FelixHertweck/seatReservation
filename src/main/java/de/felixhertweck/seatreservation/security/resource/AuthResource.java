@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.security.resource;
 
+import java.util.Optional;
 import jakarta.annotation.security.PermitAll;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -39,10 +40,14 @@ import de.felixhertweck.seatreservation.security.dto.PasswordResetConfirmDTO;
 import de.felixhertweck.seatreservation.security.dto.PasswordResetRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.RegisterRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.RegistrationStatusDTO;
+import de.felixhertweck.seatreservation.security.dto.TwoFactorRequiredDTO;
+import de.felixhertweck.seatreservation.security.dto.TwoFactorResendEmailRequestDTO;
+import de.felixhertweck.seatreservation.security.dto.TwoFactorVerifyRequestDTO;
 import de.felixhertweck.seatreservation.security.dto.UsernameRecoveryRequestDTO;
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
 import de.felixhertweck.seatreservation.security.service.AuthService;
 import de.felixhertweck.seatreservation.security.service.TokenService;
+import de.felixhertweck.seatreservation.security.service.TwoFactorService;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import io.quarkus.security.Authenticated;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -64,6 +69,7 @@ public class AuthResource {
     @Inject AuthService authService;
     @Inject TokenService tokenService;
     @Inject UserSecurityContext userSecurityContext;
+    @Inject TwoFactorService twoFactorService;
 
     /**
      * Gets the current registration status.
@@ -84,24 +90,37 @@ public class AuthResource {
      *
      * @param loginRequest the login credentials
      * @return Response with JWT and refresh token cookies
-     * @throws JwtInvalidException if JWT generation fails
+     * @throws JwtInvalidException if JWT creation fails
      */
     @POST
     @Path("/login")
     @PermitAll
-    @APIResponse(responseCode = "200", description = "Login successful, JWT cookie set")
+    @APIResponse(
+            responseCode = "200",
+            description = "Login successful or 2FA required (check response body)",
+            content =
+                    @Content(
+                            mediaType = MediaType.APPLICATION_JSON,
+                            schema = @Schema(implementation = TwoFactorRequiredDTO.class)))
     @APIResponse(responseCode = "401", description = "Unauthorized: Invalid credentials")
     @APIResponse(
             responseCode = "429",
-            description =
-                    "Too Many Requests: Account temporarily locked due to too many failed login"
-                            + " attempts",
-            content = @Content(schema = @Schema(implementation = LoginLockedDTO.class)))
+            description = "Too Many Requests: Account locked due to failed attempts",
+            content =
+                    @Content(
+                            mediaType = MediaType.APPLICATION_JSON,
+                            schema = @Schema(implementation = LoginLockedDTO.class)))
     public Response login(@Valid LoginRequestDTO loginRequest) throws JwtInvalidException {
         LOG.debug("Received login request.");
         LOG.debugf("LoginRequestDTO: %s", loginRequest.toString());
         User user =
                 authService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
+
+        Optional<TwoFactorRequiredDTO> challenge = twoFactorService.challengeIfRequired(user);
+        if (challenge.isPresent()) {
+            LOG.infof("User ID: %s requires 2FA authentication.", user.id);
+            return Response.ok(challenge.get()).build();
+        }
 
         LOG.debugf(
                 "user ID: %s logged in successfully. JWT and refresh token cookies set.", user.id);
@@ -320,6 +339,48 @@ public class AuthResource {
 
         authService.requestUsernameRecovery(requestDTO);
 
+        return Response.ok().build();
+    }
+
+    /**
+     * Verifies 2FA challenge code and returns JWT/refresh cookies upon success.
+     *
+     * @param request challenge token and code
+     * @return Response with JWT and refresh token cookies
+     * @throws JwtInvalidException if JWT creation fails
+     */
+    @POST
+    @Path("/2fa/verify")
+    @PermitAll
+    @APIResponse(responseCode = "200", description = "2FA verified, auth cookies set")
+    @APIResponse(responseCode = "401", description = "Invalid or expired 2FA code")
+    public Response verify2fa(@Valid TwoFactorVerifyRequestDTO request) throws JwtInvalidException {
+        LOG.debug("Received 2FA verification request.");
+        Optional<User> userOpt =
+                twoFactorService.verifyChallengeAndGetUser(
+                        request.challengeToken(), request.code());
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            LOG.infof("User ID: %s successfully verified 2FA.", user.id);
+            return authCookieResponse(user);
+        }
+        return Response.status(Response.Status.UNAUTHORIZED)
+                .entity("Invalid or expired 2FA code")
+                .build();
+    }
+
+    /**
+     * Resends email 2FA code for an active challenge token.
+     *
+     * @param request challenge token
+     * @return Response 200 OK
+     */
+    @POST
+    @Path("/2fa/resend-email")
+    @PermitAll
+    @APIResponse(responseCode = "200", description = "Email code resent if challenge valid")
+    public Response resend2faEmail(@Valid TwoFactorResendEmailRequestDTO request) {
+        twoFactorService.resendEmailCode(request.challengeToken());
         return Response.ok().build();
     }
 }

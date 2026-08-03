@@ -21,6 +21,7 @@ import {
   deleteApiAuthWebauthnCredentialsById,
   putApiAuthWebauthnCredentialsById,
   type WebAuthnRegistrationStartDto,
+  type TwoFactorRequiredDto,
 } from "@/api";
 import { ErrorWithResponse } from "@/components/init-query-client";
 import { redirectUser } from "@/lib/redirect-User";
@@ -87,22 +88,29 @@ export function useWebAuthn() {
   const loginWithPasskey = async (
     username?: string,
     returnToUrl?: string | null,
-  ) => {
-    return runCeremony(async () => {
+  ): Promise<TwoFactorRequiredDto | null> => {
+    let resultData: TwoFactorRequiredDto | null = null;
+    await runCeremony(async () => {
       const trimmed = username?.trim();
       const { data: optionsJson } = await postApiAuthWebauthnLoginOptions({
         query: trimmed ? { username: trimmed } : undefined,
       });
       const assertion = await getAssertion(optionsJson);
-      await postApiAuthWebauthnLogin({
+      const res = await postApiAuthWebauthnLogin({
         body: assertion,
         bodySerializer: null,
       });
+      const data = res.data as TwoFactorRequiredDto | undefined;
+      if (data?.twoFactorRequired) {
+        resultData = data;
+        return;
+      }
       await queryClient.invalidateQueries();
       const { data: fresh } = await refetchUser();
       toast.success(t("webauthn.login.success"));
       redirectUser(router, locale, fresh ?? user, returnToUrl);
     });
+    return resultData;
   };
 
   /**

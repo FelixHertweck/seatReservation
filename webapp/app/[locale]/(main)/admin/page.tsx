@@ -43,7 +43,7 @@ export default function AdminPage() {
               />
             }
           />
-          <UserTableSkeleton showImportButton={true} />
+          <UserTableSkeleton />
         </>
       ) : (
         <UserManagement

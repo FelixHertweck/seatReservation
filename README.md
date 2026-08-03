@@ -74,14 +74,15 @@ The fastest way to run the full system (reverse proxy, frontend, backend, databa
 ### Prerequisites
 
 -   [Docker](https://docs.docker.com/get-docker/) and Docker Compose.
--   Generated JWT keys (see [JWT Key Generation](#jwt-key-generation)).
+-   Generated JWT and encryption keys (see [JWT Key Generation](#jwt-key-generation)).
 -   A configured `.env` file (see [Environment Variables](#environment-variables)).
 
 ### Starting the stack
 
 ```shell script
-# 1. Generate JWT keys (once)
+# 1. Generate JWT and encryption keys (once)
 mkdir -p keys && openssl genpkey -algorithm RSA -out keys/privateKey.pem -pkeyopt rsa_keygen_bits:2048 && openssl rsa -pubout -in keys/privateKey.pem -out keys/publicKey.pem
+openssl rand -base64 32 > keys/totp-encryption.key
 
 # 2. Create and edit your environment file
 cp .env.example .env
@@ -140,11 +141,16 @@ Before running the application (locally or via Docker), ensure the following set
 
 ### JWT Key Generation
 
-Execute the following command to generate the necessary keys for JWT authentication:
+Execute the following commands to generate the necessary keys for JWT authentication and for
+encrypting sensitive data at rest (e.g. TOTP 2FA secrets):
 
 ```shell script
 mkdir -p keys && openssl genpkey -algorithm RSA -out keys/privateKey.pem -pkeyopt rsa_keygen_bits:2048 && openssl rsa -pubout -in keys/privateKey.pem -out keys/publicKey.pem
+openssl rand -base64 32 > keys/totp-encryption.key
 ```
+
+> **_NOTE:_** Keep `keys/totp-encryption.key` stable and back it up -- losing it makes every
+> already-stored TOTP secret unrecoverable, forcing affected users to re-enroll in 2FA.
 
 ### Automatic Admin User Creation
 

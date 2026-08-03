@@ -1072,6 +1072,182 @@ export const SupervisorSeatStatusDTOSchema = {
     }
 } as const;
 
+export const TwoFactorBackupCodesDTOSchema = {
+    type: 'object',
+    properties: {
+        backupCodes: {
+            type: 'array',
+            items: {
+                type: 'string'
+            }
+        }
+    }
+} as const;
+
+export const TwoFactorDisableDTOSchema = {
+    type: 'object',
+    required: [
+        'method',
+        'code'
+    ],
+    properties: {
+        method: {
+            $ref: '#/components/schemas/TwoFactorMethod'
+        },
+        code: {
+            type: 'string',
+            pattern: '\\S'
+        }
+    }
+} as const;
+
+export const TwoFactorEnableDTOSchema = {
+    type: 'object',
+    required: [
+        'method'
+    ],
+    properties: {
+        method: {
+            $ref: '#/components/schemas/TwoFactorMethod'
+        },
+        code: {
+            type: 'string'
+        }
+    }
+} as const;
+
+export const TwoFactorMethodSchema = {
+    type: 'string',
+    enum: [
+        'NONE',
+        'TOTP',
+        'EMAIL'
+    ]
+} as const;
+
+export const TwoFactorRegenerateBackupCodesDTOSchema = {
+    type: 'object',
+    required: [
+        'code'
+    ],
+    properties: {
+        code: {
+            type: 'string',
+            pattern: '\\S'
+        }
+    }
+} as const;
+
+export const TwoFactorRequiredDTOSchema = {
+    type: 'object',
+    properties: {
+        twoFactorRequired: {
+            type: 'boolean'
+        },
+        challengeToken: {
+            type: 'string'
+        },
+        totpAvailable: {
+            type: 'boolean'
+        },
+        emailAvailable: {
+            type: 'boolean'
+        }
+    }
+} as const;
+
+export const TwoFactorResendEmailRequestDTOSchema = {
+    type: 'object',
+    required: [
+        'challengeToken'
+    ],
+    properties: {
+        challengeToken: {
+            type: 'string',
+            pattern: '\\S'
+        }
+    }
+} as const;
+
+export const TwoFactorSettingsUpdateDTOSchema = {
+    type: 'object',
+    properties: {
+        twoFactorPasskeyEnabled: {
+            type: 'boolean'
+        }
+    }
+} as const;
+
+export const TwoFactorSetupDTOSchema = {
+    type: 'object',
+    properties: {
+        secret: {
+            type: 'string'
+        },
+        otpauthUrl: {
+            type: 'string'
+        },
+        qrCodeDataUrl: {
+            type: 'string'
+        },
+        backupCodes: {
+            type: 'array',
+            items: {
+                type: 'string'
+            }
+        }
+    }
+} as const;
+
+export const TwoFactorStatusDTOSchema = {
+    type: 'object',
+    properties: {
+        twoFactorEnabled: {
+            type: 'boolean'
+        },
+        totpEnabled: {
+            type: 'boolean'
+        },
+        emailEnabled: {
+            type: 'boolean'
+        },
+        twoFactorPasskeyEnabled: {
+            type: 'boolean'
+        },
+        hasTotpSecret: {
+            type: 'boolean'
+        },
+        remainingBackupCodes: {
+            type: 'integer',
+            format: 'int64'
+        },
+        backupCodes: {
+            type: 'array',
+            items: {
+                type: 'string'
+            }
+        }
+    }
+} as const;
+
+export const TwoFactorVerifyRequestDTOSchema = {
+    type: 'object',
+    required: [
+        'challengeToken',
+        'code'
+    ],
+    properties: {
+        challengeToken: {
+            type: 'string',
+            pattern: '\\S'
+        },
+        code: {
+            type: 'string',
+            pattern: '\\S'
+        }
+    }
+} as const;
+
 export const UUIDSchema = {
     type: 'string',
     format: 'uuid',
@@ -1223,6 +1399,9 @@ export const UserProfileUpdateDTOSchema = {
             items: {
                 type: 'string'
             }
+        },
+        twoFactorCode: {
+            type: 'string'
         }
     }
 } as const;
