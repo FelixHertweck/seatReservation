@@ -150,7 +150,7 @@ public class EventLocationServiceTest {
         when(userRepository.getReference(otherManagerUser.id)).thenReturn(otherManagerUser);
         when(userRepository.getReference(regularUser.id)).thenReturn(regularUser);
 
-        existingLocation = new EventLocation("Stadthalle", "Hauptstraße 1", managerUser, 100);
+        existingLocation = new EventLocation("Stadthalle", "Hauptstraße 1", managerUser);
         existingLocation.id = id(1);
     }
 
@@ -159,7 +159,7 @@ public class EventLocationServiceTest {
         List<EventLocation> allLocations =
                 List.of(
                         existingLocation,
-                        new EventLocation("Another Hall", "Another Street", regularUser, 200));
+                        new EventLocation("Another Hall", "Another Street", regularUser));
         when(eventLocationRepository.listAll()).thenReturn(allLocations);
 
         List<EventLocationResponseDTO> result =
@@ -205,9 +205,8 @@ public class EventLocationServiceTest {
         EventLocationRequestDTO dto = new EventLocationRequestDTO();
         dto.setName("New Hall");
         dto.setAddress("New Street 1");
-        dto.setCapacity(500);
 
-        new EventLocation(dto.getName(), dto.getAddress(), managerUser, dto.getCapacity());
+        new EventLocation(dto.getName(), dto.getAddress(), managerUser);
         // Mock persist to do nothing or return the object itself if needed for further operations
         doAnswer(
                         invocation -> {
@@ -224,7 +223,6 @@ public class EventLocationServiceTest {
         assertNotNull(createdLocation);
         assertEquals("New Hall", createdLocation.name());
         assertEquals("New Street 1", createdLocation.address());
-        assertEquals(500, createdLocation.capacity());
         assertEquals(managerUser.getUsername(), createdLocation.manager().username());
         verify(eventLocationRepository, times(1)).persist(any(EventLocation.class));
     }
@@ -234,20 +232,6 @@ public class EventLocationServiceTest {
         EventLocationRequestDTO dto = new EventLocationRequestDTO();
         dto.setName(null); // Invalid input
         dto.setAddress("Some Address");
-        dto.setCapacity(100);
-
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> eventLocationService.createEventLocation(dto, managerAuth));
-        verify(eventLocationRepository, never()).persist(any(EventLocation.class));
-    }
-
-    @Test
-    void createEventLocation_InvalidInput_NegativeCapacity() {
-        EventLocationRequestDTO dto = new EventLocationRequestDTO();
-        dto.setName("New Hall");
-        dto.setAddress("Some Address");
-        dto.setCapacity(-100); // Invalid input
 
         assertThrows(
                 IllegalArgumentException.class,
@@ -260,7 +244,6 @@ public class EventLocationServiceTest {
         EventLocationUpdateDTO dto = new EventLocationUpdateDTO();
         dto.setName("Updated Hall");
         dto.setAddress("Updated Street 1");
-        dto.setCapacity(600);
 
         when(eventLocationRepository.findByIdOptional(id(1)))
                 .thenReturn(Optional.of(existingLocation));
@@ -271,7 +254,6 @@ public class EventLocationServiceTest {
         assertNotNull(updatedLocation);
         assertEquals("Updated Hall", updatedLocation.name());
         assertEquals("Updated Street 1", updatedLocation.address());
-        assertEquals(600, updatedLocation.capacity());
         verify(eventLocationRepository, times(1)).persist(existingLocation);
     }
 
@@ -280,7 +262,6 @@ public class EventLocationServiceTest {
         EventLocationUpdateDTO dto = new EventLocationUpdateDTO();
         dto.setName("Updated Hall");
         dto.setAddress("Updated Street 1");
-        dto.setCapacity(600);
 
         when(eventLocationRepository.findByIdOptional(any(UUID.class)))
                 .thenReturn(Optional.empty());
@@ -296,7 +277,6 @@ public class EventLocationServiceTest {
         EventLocationUpdateDTO dto = new EventLocationUpdateDTO();
         dto.setName("Updated Hall by Admin");
         dto.setAddress("Updated Street 1 by Admin");
-        dto.setCapacity(700);
 
         when(eventLocationRepository.findByIdOptional(id(1)))
                 .thenReturn(Optional.of(existingLocation));
@@ -307,7 +287,6 @@ public class EventLocationServiceTest {
         assertNotNull(updatedLocation);
         assertEquals("Updated Hall by Admin", updatedLocation.name());
         assertEquals("Updated Street 1 by Admin", updatedLocation.address());
-        assertEquals(700, updatedLocation.capacity());
         verify(eventLocationRepository, times(1)).persist(existingLocation);
     }
 
@@ -316,7 +295,6 @@ public class EventLocationServiceTest {
         EventLocationUpdateDTO dto = new EventLocationUpdateDTO();
         dto.setName("Updated Hall");
         dto.setAddress("Updated Street 1");
-        dto.setCapacity(600);
 
         when(eventLocationRepository.findByIdOptional(id(1)))
                 .thenReturn(Optional.of(existingLocation));
@@ -332,7 +310,6 @@ public class EventLocationServiceTest {
         EventLocationUpdateDTO dto = new EventLocationUpdateDTO();
         dto.setName("Updated Hall");
         dto.setAddress("Updated Street 1");
-        dto.setCapacity(600);
 
         when(eventLocationRepository.findByIdOptional(id(1)))
                 .thenReturn(Optional.of(existingLocation));
@@ -450,7 +427,7 @@ public class EventLocationServiceTest {
     @SuppressWarnings("unchecked")
     void deleteEventLocation_MultipleIds_OneNotFound_ThrowsEventLocationNotFoundException() {
         EventLocation secondLocation =
-                new EventLocation("Second Hall", "Second Street", managerUser, 150);
+                new EventLocation("Second Hall", "Second Street", managerUser);
         secondLocation.id = id(2);
 
         io.quarkus.hibernate.orm.panache.PanacheQuery<EventLocation> queryMock =
@@ -472,7 +449,7 @@ public class EventLocationServiceTest {
     @SuppressWarnings("unchecked")
     void deleteEventLocation_MultipleIds_OneUnauthorized_ThrowsSecurityException() {
         EventLocation unauthorizedLocation =
-                new EventLocation("Unauthorized Hall", "Unauthorized Street", regularUser, 150);
+                new EventLocation("Unauthorized Hall", "Unauthorized Street", regularUser);
         unauthorizedLocation.id = id(2);
 
         io.quarkus.hibernate.orm.panache.PanacheQuery<EventLocation> queryMock =
@@ -495,7 +472,6 @@ public class EventLocationServiceTest {
         EventLocationRequestDTO dto = new EventLocationRequestDTO();
         dto.setName("   "); // Empty or blank name
         dto.setAddress("Some Address");
-        dto.setCapacity(100);
 
         assertThrows(
                 IllegalArgumentException.class,
@@ -508,7 +484,6 @@ public class EventLocationServiceTest {
         EventLocationRequestDTO dto = new EventLocationRequestDTO();
         dto.setName("Some Name");
         dto.setAddress(null); // Null address
-        dto.setCapacity(100);
 
         assertThrows(
                 IllegalArgumentException.class,
@@ -521,33 +496,6 @@ public class EventLocationServiceTest {
         EventLocationRequestDTO dto = new EventLocationRequestDTO();
         dto.setName("Some Name");
         dto.setAddress("  "); // Empty or blank address
-        dto.setCapacity(100);
-
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> eventLocationService.createEventLocation(dto, managerAuth));
-        verify(eventLocationRepository, never()).persist(any(EventLocation.class));
-    }
-
-    @Test
-    void createEventLocation_InvalidInput_NullCapacity() {
-        EventLocationRequestDTO dto = new EventLocationRequestDTO();
-        dto.setName("Some Name");
-        dto.setAddress("Some Address");
-        dto.setCapacity(null); // Null capacity
-
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> eventLocationService.createEventLocation(dto, managerAuth));
-        verify(eventLocationRepository, never()).persist(any(EventLocation.class));
-    }
-
-    @Test
-    void createEventLocation_InvalidInput_ZeroCapacity() {
-        EventLocationRequestDTO dto = new EventLocationRequestDTO();
-        dto.setName("Some Name");
-        dto.setAddress("Some Address");
-        dto.setCapacity(0); // Zero capacity
 
         assertThrows(
                 IllegalArgumentException.class,
@@ -561,7 +509,6 @@ public class EventLocationServiceTest {
         EventLocationRequestDTO dto = new EventLocationRequestDTO();
         dto.setName("New Location with Seats");
         dto.setAddress("123 Seat Street");
-        dto.setCapacity(10);
 
         ImportSeatDto seat1 = new ImportSeatDto();
         seat1.setSeatNumber("A1");
@@ -596,7 +543,6 @@ public class EventLocationServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals("New Location with Seats", result.name());
-        assertEquals(10, result.capacity());
         assertEquals(managerUser.getUsername(), result.manager().username());
 
         verify(eventLocationRepository, times(1)).persist(any(EventLocation.class));
@@ -625,7 +571,6 @@ public class EventLocationServiceTest {
         EventLocationRequestDTO dto = new EventLocationRequestDTO();
         dto.setName("Concert Hall");
         dto.setAddress("Music Street 1");
-        dto.setCapacity(300);
 
         List<ImportMarkerDto> markers =
                 List.of(
@@ -670,7 +615,6 @@ public class EventLocationServiceTest {
         EventLocationRequestDTO dto = new EventLocationRequestDTO();
         dto.setName("Simple Hall");
         dto.setAddress("Simple Street 1");
-        dto.setCapacity(100);
         dto.setmarkers(null);
 
         doAnswer(
@@ -701,7 +645,6 @@ public class EventLocationServiceTest {
         EventLocationRequestDTO dto = new EventLocationRequestDTO();
         dto.setName("Empty Markers Hall");
         dto.setAddress("Empty Street 1");
-        dto.setCapacity(150);
         dto.setmarkers(Collections.emptyList());
 
         doAnswer(
@@ -728,7 +671,6 @@ public class EventLocationServiceTest {
         EventLocationRequestDTO dto = new EventLocationRequestDTO();
         dto.setName("Test Hall");
         dto.setAddress("Test Street");
-        dto.setCapacity(100);
 
         List<ImportMarkerDto> markerDtos =
                 List.of(
@@ -766,7 +708,6 @@ public class EventLocationServiceTest {
         EventLocationRequestDTO dto = new EventLocationRequestDTO();
         dto.setName("Concert Hall");
         dto.setAddress("Music Street 1");
-        dto.setCapacity(300);
 
         List<ImportAreaDto> areas =
                 List.of(
@@ -820,7 +761,6 @@ public class EventLocationServiceTest {
         EventLocationRequestDTO dto = new EventLocationRequestDTO();
         dto.setName("Simple Hall");
         dto.setAddress("Simple Street 1");
-        dto.setCapacity(100);
         dto.setAreas(null);
 
         doAnswer(

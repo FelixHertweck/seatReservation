@@ -95,7 +95,6 @@ export type EventLocationMakerDto = {
 export type EventLocationRequestDto = {
     name: string;
     address: string;
-    capacity: number;
     markers?: Array<ImportMarkerDto>;
     areas?: Array<ImportAreaDto>;
     seats?: Array<ImportSeatDto>;
@@ -105,7 +104,6 @@ export type EventLocationResponseDto = {
     id?: Uuid;
     name?: string;
     address?: string;
-    capacity?: number;
     manager?: LimitedUserInfoDto;
     seatIds?: Array<string>;
     markers?: Array<EventLocationMakerDto>;
@@ -115,7 +113,6 @@ export type EventLocationResponseDto = {
 export type EventLocationUpdateDto = {
     name: string;
     address: string;
-    capacity: number;
 };
 
 export type EventRequestDto = {
@@ -372,7 +369,6 @@ export type UserEventLocationResponseDto = {
     id?: Uuid;
     name?: string;
     address?: string;
-    capacity?: number;
     manager?: LimitedUserInfoDto;
     seats?: Array<SeatDto>;
     markers?: Array<EventLocationMakerDto>;

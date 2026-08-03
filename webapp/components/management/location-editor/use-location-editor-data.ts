@@ -80,7 +80,6 @@ export function useLocationEditorData(locationId: string) {
         serverId: location.id,
         name: location.name ?? "",
         address: location.address ?? "",
-        capacity: location.capacity ?? 0,
       },
       metaDirty: false,
       pendingDeletions: emptyPendingDeletions(),

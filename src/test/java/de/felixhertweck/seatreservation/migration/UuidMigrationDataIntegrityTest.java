@@ -85,8 +85,8 @@ VALUES (1,'alice','alice@localhost',true,true,'h','s','Alice','A'),
        (2,'bob','bob@localhost',true,true,'h','s','Bob','B')
 """);
             st.execute(
-                    "INSERT INTO eventlocations (id, name, address, manager_id, capacity) VALUES"
-                            + " (10,'City Hall','Main St',2,100)");
+                    "INSERT INTO eventlocations (id, name, address, manager_id) VALUES"
+                            + " (10,'City Hall','Main St',2)");
             st.execute(
                     "INSERT INTO event_location_entrances (id, event_location_id, name) VALUES"
                             + " (20,10,'Main Entrance')");

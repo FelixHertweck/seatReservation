@@ -34,7 +34,6 @@ public record EventLocationResponseDTO(
         UUID id,
         String name,
         String address,
-        Integer capacity,
         LimitedUserInfoDTO manager,
         List<UUID> seatIds,
         List<EventLocationMakerDTO> markers,
@@ -44,7 +43,6 @@ public record EventLocationResponseDTO(
                 eventLocation.getId(),
                 eventLocation.getName(),
                 eventLocation.getAddress(),
-                eventLocation.getCapacity(),
                 (eventLocation.getManager() != null
                         ? new LimitedUserInfoDTO(eventLocation.getManager())
                         : null),

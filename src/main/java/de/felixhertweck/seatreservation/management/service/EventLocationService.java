@@ -110,25 +110,19 @@ public class EventLocationService {
             EventLocationRequestDTO dto, AuthenticatedUser manager)
             throws IllegalArgumentException {
         LOG.debugf(
-                "Attempting to create event location with name: %s, address: %s, capacity: %d for"
-                        + " manager ID: %s",
-                dto.getName(), dto.getAddress(), dto.getCapacity(), manager.id());
+                "Attempting to create event location with name: %s, address: %s for manager ID: %s",
+                dto.getName(), dto.getAddress(), manager.id());
         if (dto.getName() == null
                 || dto.getName().trim().isEmpty()
                 || dto.getAddress() == null
-                || dto.getAddress().trim().isEmpty()
-                || dto.getCapacity() == null
-                || dto.getCapacity() <= 0) {
+                || dto.getAddress().trim().isEmpty()) {
             LOG.warnf("Invalid EventLocation data provided by manager ID: %s", manager.id());
             throw new IllegalArgumentException("Invalid EventLocation data provided.");
         }
 
         EventLocation location =
                 new EventLocation(
-                        dto.getName(),
-                        dto.getAddress(),
-                        userRepository.getReference(manager.id()),
-                        dto.getCapacity());
+                        dto.getName(), dto.getAddress(), userRepository.getReference(manager.id()));
         // Set markers after location is created to avoid circular dependency
         location.setMarkers(convertToMarkerEntities(dto.getmarkers(), location));
         Map<String, EventLocationArea> areasByName = new LinkedHashMap<>();
@@ -210,18 +204,10 @@ public class EventLocationService {
         }
 
         LOG.debugf(
-                "Updating event location ID %s: name='%s' -> '%s', address='%s' -> '%s',"
-                        + " capacity='%d' -> '%d'",
-                id,
-                location.getName(),
-                dto.getName(),
-                location.getAddress(),
-                dto.getAddress(),
-                location.getCapacity(),
-                dto.getCapacity());
+                "Updating event location ID %s: name='%s' -> '%s', address='%s' -> '%s'",
+                id, location.getName(), dto.getName(), location.getAddress(), dto.getAddress());
         location.setName(dto.getName());
         location.setAddress(dto.getAddress());
-        location.setCapacity(dto.getCapacity());
 
         eventLocationRepository.persist(location);
         LOG.infof(

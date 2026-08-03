@@ -108,7 +108,7 @@ class NotificationServiceTest {
     @Test
     void loadReminderData_WithFullEventLocationGraph_DoesNotThrow() {
         // Arrange
-        EventLocation location = new EventLocation("Main Hall", "Test Street 1", null, 100);
+        EventLocation location = new EventLocation("Main Hall", "Test Street 1", null);
         Seat seat = new Seat("A1", location, "A", 1, 1, null, null);
         location.setSeats(List.of(seat));
         location.setMarkers(List.of(new EventLocationMarker("Entrance", 0, 0)));
@@ -146,7 +146,7 @@ class NotificationServiceTest {
     @Test
     void loadReminderData_WithEmptyLocationCollections_DoesNotThrow() {
         // Arrange: a location with no seats/markers/areas (all default to empty lists).
-        EventLocation location = new EventLocation("Empty Hall", "Test Street 2", null, 50);
+        EventLocation location = new EventLocation("Empty Hall", "Test Street 2", null);
         testEvent.setEventLocation(location);
 
         when(eventService.findById(id(3))).thenReturn(testEvent);

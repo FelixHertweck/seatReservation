@@ -116,7 +116,6 @@ class EmailServiceTest {
         EventLocation location = new EventLocation();
         location.id = id(100);
         location.setName("Test Location");
-        location.setCapacity(100);
         return location;
     }
 

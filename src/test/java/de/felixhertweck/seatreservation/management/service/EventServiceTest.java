@@ -158,7 +158,7 @@ public class EventServiceTest {
         regularAuth = new AuthenticatedUser(regularUser.id, regularUser.getRoles());
         when(userRepository.getReference(managerUser.id)).thenReturn(managerUser);
 
-        eventLocation = new EventLocation("Stadthalle", "Hauptstraße 1", managerUser, 100);
+        eventLocation = new EventLocation("Stadthalle", "Hauptstraße 1", managerUser);
         eventLocation.id = id(1);
 
         existingEvent =

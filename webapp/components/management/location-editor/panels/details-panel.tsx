@@ -56,31 +56,21 @@ export function DetailsPanel({ meta, autosave, onSaved }: DetailsPanelProps) {
   const t = useT();
   const [name, setName] = useSyncedField(meta.name);
   const [address, setAddress] = useSyncedField(meta.address);
-  const [capacity, setCapacity] = useSyncedField(String(meta.capacity));
   const {
     result: geocoded,
     isLoading: isGeocoding,
     notFound,
   } = useGeocode(address);
 
-  const parsedCapacity = Number.parseInt(capacity, 10);
-  const isCapacityValid = !Number.isNaN(parsedCapacity);
-  const isDirty =
-    name !== meta.name ||
-    address !== meta.address ||
-    (isCapacityValid && parsedCapacity !== meta.capacity);
+  const isDirty = name !== meta.name || address !== meta.address;
 
   const handleSave = () => {
     const changes: Partial<{
       name: string;
       address: string;
-      capacity: number;
     }> = {};
     if (name !== meta.name) changes.name = name;
     if (address !== meta.address) changes.address = address;
-    if (isCapacityValid && parsedCapacity !== meta.capacity) {
-      changes.capacity = parsedCapacity;
-    }
     if (Object.keys(changes).length > 0) {
       autosave.updateMeta(changes);
     }
@@ -128,19 +118,6 @@ export function DetailsPanel({ meta, autosave, onSaved }: DetailsPanelProps) {
             />
           </div>
         )}
-      </div>
-
-      <div className="space-y-1.5">
-        <Label htmlFor="editor-capacity">
-          {t("management.locationEditor.details.capacityLabel")}
-        </Label>
-        <Input
-          id="editor-capacity"
-          type="number"
-          min={0}
-          value={capacity}
-          onChange={(e) => setCapacity(e.target.value)}
-        />
       </div>
 
       <Button
