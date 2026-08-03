@@ -28,27 +28,30 @@ export default function AdminPage() {
 
   return (
     <div className="container mx-auto p-4 sm:p-6">
-      <PageHeader
-        title={t("adminPage.dashboardTitle")}
-        description={t("adminPage.dashboardDescription")}
-        search={
-          <SearchAndFilter
-            onSearch={setUserSearchQuery}
-            onFilter={() => {}}
-            filterOptions={[]}
-            initialQuery={userSearchQuery}
-            className="w-full"
-          />
-        }
-      />
-
       {adminData.isLoading ? (
-        <UserTableSkeleton showImportButton={true} />
+        <>
+          <PageHeader
+            title={t("adminPage.dashboardTitle")}
+            description={t("adminPage.dashboardDescription")}
+            search={
+              <SearchAndFilter
+                onSearch={setUserSearchQuery}
+                onFilter={() => {}}
+                filterOptions={[]}
+                initialQuery={userSearchQuery}
+                className="w-full"
+              />
+            }
+          />
+          <UserTableSkeleton showImportButton={true} />
+        </>
       ) : (
         <UserManagement
           {...adminData}
           users={filteredUsers}
           allUsers={adminData.users}
+          searchQuery={userSearchQuery}
+          onSearchChange={setUserSearchQuery}
         />
       )}
     </div>

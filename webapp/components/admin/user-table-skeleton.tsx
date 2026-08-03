@@ -1,11 +1,5 @@
 import { Skeleton } from "@/components/custom-ui/skeleton";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -14,8 +8,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/custom-ui/button";
-import { Plus, FileText, Download } from "lucide-react";
 import { useT } from "@/lib/i18n/hooks";
 
 interface UserTableSkeletonProps {
@@ -28,48 +20,10 @@ export function UserTableSkeleton({
   const t = useT();
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <CardTitle className="text-xl sm:text-2xl">
-              {t("userManagement.title")}
-            </CardTitle>
-            <CardDescription className="text-sm">
-              {t("userManagement.description")}
-            </CardDescription>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            {showImportButton && (
-              <Button variant="outline" disabled className="w-full sm:w-auto">
-                <FileText className="mr-2 h-4 w-4" />
-                <span className="hidden sm:inline">
-                  {t("userManagement.importJsonButton")}
-                </span>
-                <span className="sm:hidden">Import</span>
-              </Button>
-            )}
-            <Button variant="outline" disabled className="w-full sm:w-auto">
-              <Download className="mr-2 h-4 w-4" />
-              <span className="hidden sm:inline">
-                {t("userExport.exportUsersAsJson")}
-              </span>
-              <span className="sm:hidden">Export</span>
-            </Button>
-            <Button disabled className="w-full sm:w-auto">
-              <Plus className="mr-2 h-4 w-4" />
-              <span className="hidden sm:inline">
-                {t("userManagement.addUserButton")}
-              </span>
-              <span className="sm:hidden">Hinzufügen</span>
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-
-      <CardContent>
+    <Card className="rounded-none border-0 bg-transparent shadow-none md:rounded-lg md:border md:bg-card md:shadow-sm">
+      <CardContent className="p-0 md:p-6">
         {/* Desktop Table View */}
-        <div className="hidden md:block border rounded-lg mt-6">
+        <div className="hidden md:block border rounded-lg">
           <Table>
             <TableHeader>
               <TableRow>
