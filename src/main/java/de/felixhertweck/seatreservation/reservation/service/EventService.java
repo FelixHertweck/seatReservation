@@ -86,7 +86,10 @@ public class EventService {
                 events.isEmpty()
                         ? Map.of()
                         : reservationRepository
-                                .find("event.id in ?1", events.keySet())
+                                .find(
+                                        "select r from Reservation r left join fetch r.seat where"
+                                                + " r.event.id in ?1",
+                                        events.keySet())
                                 .list()
                                 .stream()
                                 .collect(Collectors.groupingBy(r -> r.getEvent().getId()));
