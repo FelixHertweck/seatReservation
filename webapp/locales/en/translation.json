@@ -1122,28 +1122,22 @@
       "description": "Overview of your locations, events, reservations and allowances.",
       "comingSoon": "Coming soon.",
       "stats": {
-        "locations": "Locations",
-        "locationsSub": "{{count}} seats total",
+        "occupancy": "Occupancy",
+        "occupancySub": "{{reserved}} of {{capacity}} seats (upcoming events)",
         "events": "Events",
         "eventsSub": "{{count}} upcoming",
         "bookingOpen": "Booking open now",
         "bookingOpenSub": "events accepting reservations",
         "reservations": "Reservations",
         "reservationsSub": "{{reserved}} reserved · {{blocked}} blocked · {{pending}} pending",
-        "allowances": "Allowances granted",
-        "allowancesSub": "for {{count}} users"
+        "contingentUsage": "Contingent usage",
+        "contingentUsageSub": "{{used}} of {{total}} granted seats used"
       },
       "panels": {
         "upcomingEvents": {
           "title": "Upcoming events",
           "empty": "No upcoming events.",
           "occupancy": "{{reserved}}/{{capacity}} reserved"
-        },
-        "capacity": {
-          "title": "Locations",
-          "empty": "No locations yet.",
-          "seats": "{{count}} seats",
-          "events": "{{count}} events"
         },
         "quickActions": {
           "title": "Quick actions",
@@ -1153,8 +1147,8 @@
           "grantAllowances": "Grant allowances"
         },
         "deadlines": {
-          "title": "Booking deadlines this week",
-          "empty": "No booking deadlines in the next 7 days.",
+          "title": "Upcoming booking deadlines",
+          "empty": "No upcoming booking deadlines.",
           "deadlineOn": "Deadline {{date}}"
         }
       }

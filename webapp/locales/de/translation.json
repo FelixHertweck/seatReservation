@@ -1122,28 +1122,22 @@
       "description": "Übersicht über Locations, Veranstaltungen, Reservierungen und Kontingente.",
       "comingSoon": "Demnächst verfügbar.",
       "stats": {
-        "locations": "Locations",
-        "locationsSub": "{{count}} Sitze insgesamt",
+        "occupancy": "Auslastung",
+        "occupancySub": "{{reserved}} von {{capacity}} Plätzen (kommende Events)",
         "events": "Veranstaltungen",
         "eventsSub": "{{count}} bevorstehend",
         "bookingOpen": "Buchung aktuell offen",
         "bookingOpenSub": "Veranstaltungen mit offener Buchung",
         "reservations": "Reservierungen",
         "reservationsSub": "{{reserved}} reserviert · {{blocked}} blockiert · {{pending}} ausstehend",
-        "allowances": "Vergebene Kontingente",
-        "allowancesSub": "für {{count}} Nutzer"
+        "contingentUsage": "Kontingent-Nutzung",
+        "contingentUsageSub": "{{used}} von {{total}} vergebenen Plätzen genutzt"
       },
       "panels": {
         "upcomingEvents": {
           "title": "Bevorstehende Veranstaltungen",
           "empty": "Keine bevorstehenden Veranstaltungen.",
           "occupancy": "{{reserved}}/{{capacity}} reserviert"
-        },
-        "capacity": {
-          "title": "Locations",
-          "empty": "Noch keine Locations.",
-          "seats": "{{count}} Sitze",
-          "events": "{{count}} Veranstaltungen"
         },
         "quickActions": {
           "title": "Schnellaktionen",
@@ -1153,8 +1147,8 @@
           "grantAllowances": "Kontingente vergeben"
         },
         "deadlines": {
-          "title": "Buchungsfristen diese Woche",
-          "empty": "Keine Buchungsfristen in den nächsten 7 Tagen.",
+          "title": "Anstehende Buchungsfristen",
+          "empty": "Keine anstehenden Buchungsfristen.",
           "deadlineOn": "Frist {{date}}"
         }
       }
