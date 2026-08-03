@@ -21,6 +21,7 @@ import {
 import { UsernameSelector } from "@/components/checkin/username-selector";
 import EventSelector from "@/components/common/supervisor/event-selector";
 import { PageHeader } from "@/components/page-header";
+import { Card, CardContent } from "@/components/ui/card";
 
 function CheckInPageContent() {
   const t = useT();
@@ -160,7 +161,7 @@ function CheckInPageContent() {
   };
 
   return (
-    <div className="container mx-auto px-2 py-3 md:p-6">
+    <div className="container mx-auto p-4 sm:p-6">
       <PageHeader
         title={t("checkin.title")}
         description={t("checkin.description")}
@@ -178,10 +179,12 @@ function CheckInPageContent() {
 
       {/* Show content only if event is selected */}
       {!selectedEventId ? (
-        <div className="flex flex-col items-center gap-2 py-12 text-center text-muted-foreground">
-          <ArrowUp className="h-5 w-5" />
-          <p className="text-lg">{t("checkin.eventSelector.selectFirst")}</p>
-        </div>
+        <Card>
+          <CardContent className="flex flex-col items-center gap-2 py-12 text-center text-muted-foreground">
+            <ArrowUp className="h-5 w-5" />
+            {t("checkin.eventSelector.selectFirst")}
+          </CardContent>
+        </Card>
       ) : isLoadingEvents || isLoadingInfo ? (
         <div className="p-4 border rounded-lg bg-card flex items-center justify-center max-h-[70vh]">
           <div className="flex flex-col items-center gap-2 text-muted-foreground">
