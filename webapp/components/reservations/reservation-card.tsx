@@ -1,6 +1,14 @@
 "use client";
 
-import { Calendar, MapPin, Trash2, Eye, QrCode } from "lucide-react";
+import Link from "next/link";
+import {
+  Calendar,
+  MapPin,
+  Trash2,
+  Eye,
+  QrCode,
+  CalendarDays,
+} from "lucide-react";
 import { Button } from "@/components/custom-ui/button";
 import {
   Card,
@@ -26,6 +34,7 @@ interface ReservationCardProps {
   bookingDeadline?: Date;
   onViewSeats: (reservation: UserReservationResponseDto) => void;
   onDelete: (reservationIds: string[]) => void;
+  viewEventHref?: string;
 }
 
 export function ReservationCard({
@@ -35,6 +44,7 @@ export function ReservationCard({
   bookingDeadline,
   onViewSeats,
   onDelete,
+  viewEventHref,
 }: ReservationCardProps) {
   const t = useT();
   const { user } = useAuth();
@@ -205,7 +215,7 @@ export function ReservationCard({
           </div>
         </CardContent>
 
-        <CardFooter className="flex gap-2">
+        <CardFooter className="flex flex-wrap gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -226,6 +236,19 @@ export function ReservationCard({
             <QrCode className="mr-2 h-4 w-4" />
             {t("reservationCard.showQRCodeButton")}
           </Button>
+          {viewEventHref && (
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="flex-1 hover:scale-[1.02] transition-all duration-300 active:scale-[0.98]"
+            >
+              <Link href={viewEventHref}>
+                <CalendarDays className="mr-2 h-4 w-4" />
+                {t("reservationsPage.viewEventButton")}
+              </Link>
+            </Button>
+          )}
         </CardFooter>
       </Card>
 

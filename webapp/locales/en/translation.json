@@ -160,11 +160,15 @@
       }
     }
   },
+  "eventsNav": {
+    "label": "Events sections",
+    "browse": "Browse",
+    "myReservations": "My Reservations"
+  },
   "eventsPage": {
     "title": "Events",
     "description": "Browse events and reserve seats",
-    "filterByEventPlaceholder": "Filter by Event",
-    "allEventsFilter": "All Events",
+    "locationFilterLabel": "Location",
     "noEventsAvailable": "No events are currently available.",
     "tryAgain": "Please try again later.",
     "noEventsMatchSearch": "No events match your search.",
@@ -173,12 +177,15 @@
   "reservationsPage": {
     "title": "My Reservations",
     "description": "View your current and past reservations",
+    "locationFilterLabel": "Location",
+    "eventFilterLabel": "Event",
     "noReservationsYet": "You don't have any reservations yet.",
-    "switchToAvailableEvents": "Switch to \"Available Events\" to make your first reservation!",
+    "switchToAvailableEvents": "Switch to \"Browse\" to make your first reservation!",
     "noReservationsMatchSearch": "No reservations match your search.",
     "checkSearch": "Please check your search criteria.",
     "noReservationsFoundTitle": "No Reservations Found",
-    "noReservationsFoundDescription": "No reservations were found for the requested URL."
+    "noReservationsFoundDescription": "No reservations were found for the requested URL.",
+    "viewEventButton": "View Event"
   },
   "profilePage": {
     "update": {
@@ -540,7 +547,8 @@
     "bookingUntil": "Booking until",
     "reserveSeatsButton": "Reserve Seats",
     "notAvailableButton": "Not Available",
-    "bookingOpenOnButtonWithDate": "Booking opens on {{date}} at {{time}}"
+    "bookingOpenOnButtonWithDate": "Booking opens on {{date}} at {{time}}",
+    "myReservationsButton": "{{count}} seats reserved"
   },
   "eventReservationModal": {
     "title": "Reserve Seats - {{eventName}}",
@@ -892,6 +900,7 @@
     "groupSupervision": "Supervision",
     "groupManagement": "Management",
     "events": "Events",
+    "eventsBrowse": "Browse",
     "reservations": "Reservations",
     "viewProfile": "View profile",
     "settings": "Settings",

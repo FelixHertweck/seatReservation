@@ -1,6 +1,7 @@
 "use client";
 
-import { Calendar, Clock, MapPin, Users } from "lucide-react";
+import Link from "next/link";
+import { Calendar, Clock, MapPin, Users, BookmarkCheck } from "lucide-react";
 import { Button } from "@/components/custom-ui/button";
 import {
   Card,
@@ -18,10 +19,16 @@ import { LocationCardMapBackground } from "@/components/management/location-card
 interface EventCardProps {
   event: UserEventResponseDto;
   location: UserEventLocationResponseDto | null;
+  reservationCount?: number;
   onReserve: () => void;
 }
 
-export function EventCard({ event, location, onReserve }: EventCardProps) {
+export function EventCard({
+  event,
+  location,
+  reservationCount = 0,
+  onReserve,
+}: EventCardProps) {
   const t = useT();
 
   const bookingAlreadyStarted = event.bookingStartTime
@@ -72,6 +79,23 @@ export function EventCard({ event, location, onReserve }: EventCardProps) {
               ? t("eventCard.statusAvailable")
               : t("eventCard.statusNotAvailable")}
           </Badge>
+          {reservationCount > 0 && (
+            <Link
+              href={`/events/reservations?eventId=${event.id}`}
+              onClick={(e) => e.stopPropagation()}
+              className="shrink-0"
+            >
+              <Badge
+                variant="outline"
+                className="flex items-center gap-1 whitespace-nowrap hover:bg-accent transition-colors"
+              >
+                <BookmarkCheck className="h-3 w-3" />
+                {t("eventCard.myReservationsButton", {
+                  count: reservationCount,
+                })}
+              </Badge>
+            </Link>
+          )}
         </div>
         <div className="h-[6rem] flex flex-col">
           <CardTitle className="line-clamp-2 leading-tight mb-2">

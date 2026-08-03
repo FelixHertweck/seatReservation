@@ -291,7 +291,8 @@ class EmailServiceTest {
                 sentMail.getHtml()
                         .contains("http://localhost:8080/email/seatmap?token=test-token-123"));
         assertTrue(
-                sentMail.getHtml().contains("http://localhost:8080/reservations?id=" + event.id));
+                sentMail.getHtml()
+                        .contains("http://localhost:8080/events/reservations?eventId=" + event.id));
         assertTrue(sentMail.getHtml().contains("<img src=\"cid:qrcode-image\""));
         assertTrue(sentMail.getHtml().contains(user.getUsername()));
         // Verify that BCC is not added to event reminder emails

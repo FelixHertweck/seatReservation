@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useT } from "@/lib/i18n/hooks";
 import { useEvents } from "@/hooks/use-events";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
@@ -12,6 +13,8 @@ import { PageHeader } from "@/components/page-header";
 
 export default function EventsPage() {
   const t = useT();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const {
     events,
@@ -22,6 +25,24 @@ export default function EventsPage() {
   const { isLoading: reservationsLoading, reservations } = useReservations();
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [eventSearchQuery, setEventSearchQuery] = useState<string>("");
+  const [filters, setFilters] = useState<Record<string, unknown>>({});
+
+  // Deep link from the "My Reservations" tab (or a shared link): open the
+  // matching event's reservation modal once the events have loaded.
+  useEffect(() => {
+    if (eventsLoading) return;
+    const eventId = searchParams.get("eventId");
+    if (!eventId) return;
+
+    if (events.some((event) => event.id === eventId)) {
+      setSelectedEventId(eventId);
+    } else {
+      router.replace("/events");
+    }
+    // Only run this once the initial deep link has been resolved - further
+    // selection changes are driven by clicks, not the URL.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eventsLoading]);
 
   // Derived from the live query data (rather than a snapshot captured on click) so that
   // seatStatuses - e.g. a seat another user just put on PENDING hold - stay up to date
@@ -31,16 +52,36 @@ export default function EventsPage() {
     [events, selectedEventId],
   );
 
+  const locationOptions = useMemo(
+    () =>
+      locations
+        .filter((l) => l.id && l.name)
+        .map((l) => ({ value: l.id!, label: l.name! })),
+    [locations],
+  );
+
+  const reservationCountByEvent = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const reservation of reservations) {
+      if (!reservation.eventId) continue;
+      map.set(reservation.eventId, (map.get(reservation.eventId) ?? 0) + 1);
+    }
+    return map;
+  }, [reservations]);
+
   const filteredEvents = useMemo(() => {
     if (!events) return [];
 
-    const filtered = events.filter(
-      (event) =>
+    const locationId = filters.locationId as string | undefined;
+    const filtered = events.filter((event) => {
+      const matchesQuery =
         event.name?.toLowerCase().includes(eventSearchQuery.toLowerCase()) ||
         event.description
           ?.toLowerCase()
-          .includes(eventSearchQuery.toLowerCase()),
-    );
+          .includes(eventSearchQuery.toLowerCase());
+      const matchesLocation = !locationId || event.locationId === locationId;
+      return matchesQuery && matchesLocation;
+    });
 
     return [...filtered].sort((a, b) => {
       const aHasSeats = (a.reservationsAllowed ?? 0) > 0;
@@ -50,7 +91,7 @@ export default function EventsPage() {
       if (!aHasSeats && bHasSeats) return 1;
       return 0;
     });
-  }, [events, eventSearchQuery]);
+  }, [events, eventSearchQuery, filters]);
 
   const handleEventSearch = (query: string) => {
     setEventSearchQuery(query);
@@ -66,6 +107,13 @@ export default function EventsPage() {
     return reservations.filter((r) => r.eventId === eventId);
   };
 
+  const closeModal = () => {
+    setSelectedEventId(null);
+    if (searchParams.get("eventId")) {
+      router.replace("/events");
+    }
+  };
+
   return (
     <div className="container mx-auto px-2 py-3 md:p-6">
       <PageHeader
@@ -74,8 +122,19 @@ export default function EventsPage() {
         search={
           <SearchAndFilter
             onSearch={handleEventSearch}
-            onFilter={() => {}}
-            filterOptions={[]}
+            onFilter={setFilters}
+            filterOptions={
+              locationOptions.length > 0
+                ? [
+                    {
+                      key: "locationId",
+                      label: t("eventsPage.locationFilterLabel"),
+                      type: "select",
+                      options: locationOptions,
+                    },
+                  ]
+                : []
+            }
             initialQuery={eventSearchQuery}
             className="w-full"
           />
@@ -93,6 +152,9 @@ export default function EventsPage() {
               key={event.id?.toString()}
               event={event}
               location={getLocation(event.locationId)}
+              reservationCount={
+                reservationCountByEvent.get(event.id ?? "") ?? 0
+              }
               onReserve={() => setSelectedEventId(event.id ?? null)}
             />
           ))}
@@ -104,7 +166,7 @@ export default function EventsPage() {
           event={selectedEvent}
           location={getLocation(selectedEvent.locationId)}
           userReservations={getReservationsForEvent(selectedEvent.id)}
-          onClose={() => setSelectedEventId(null)}
+          onClose={closeModal}
           onReserve={createReservation}
         />
       )}
