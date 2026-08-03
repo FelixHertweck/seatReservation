@@ -9,7 +9,6 @@ import type {
 export interface LocationJsonDoc {
   name: string;
   address: string;
-  capacity: number;
   markers?: {
     label: string;
     coordinate: { xCoordinate: number; yCoordinate: number };
@@ -34,7 +33,6 @@ export function stateToJson(state: LocationEditorState): LocationJsonDoc {
   return {
     name: state.meta.name,
     address: state.meta.address,
-    capacity: state.meta.capacity,
     markers: state.markers.map((m) => ({
       label: m.label,
       coordinate: { xCoordinate: m.x, yCoordinate: m.y },
@@ -76,7 +74,7 @@ export interface SeatDiffUpdate {
 }
 
 export interface JsonDiff {
-  metaChanges: Partial<{ name: string; address: string; capacity: number }>;
+  metaChanges: Partial<{ name: string; address: string }>;
   entrancesToCreate: string[];
   entrancesToDelete: LocalId[];
   areasToCreate: { name: string; boundary: { x: number; y: number }[] }[];
@@ -116,9 +114,6 @@ function validateTopLevel(d: Partial<LocationJsonDoc>): Issue[] {
   if (!d.address || typeof d.address !== "string") {
     errors.push({ message: 'Missing or invalid "address".' });
   }
-  if (typeof d.capacity !== "number" || d.capacity < 0) {
-    errors.push({ message: 'Missing or invalid "capacity".' });
-  }
   return errors;
 }
 
@@ -143,10 +138,10 @@ function validateAreas(areas: NonNullable<LocationJsonDoc["areas"]>): Issue[] {
   return errors;
 }
 
-function validateSeats(
-  seats: NonNullable<LocationJsonDoc["seats"]>,
-  capacity: number | undefined,
-): { errors: Issue[]; warnings: Issue[] } {
+function validateSeats(seats: NonNullable<LocationJsonDoc["seats"]>): {
+  errors: Issue[];
+  warnings: Issue[];
+} {
   const errors: Issue[] = [];
   const warnings: Issue[] = [];
   const cellKeys = new Set<string>();
@@ -165,12 +160,6 @@ function validateSeats(
     cellKeys.add(cellKey);
   }
 
-  if (typeof capacity === "number" && capacity !== seats.length) {
-    warnings.push({
-      message: `Capacity (${capacity}) does not match the seat count (${seats.length}).`,
-    });
-  }
-
   return { errors, warnings };
 }
 
@@ -179,7 +168,7 @@ function validateDoc(
   areas: NonNullable<LocationJsonDoc["areas"]>,
   seats: NonNullable<LocationJsonDoc["seats"]>,
 ): { errors: Issue[]; warnings: Issue[] } {
-  const seatValidation = validateSeats(seats, d.capacity);
+  const seatValidation = validateSeats(seats);
   return {
     errors: [
       ...validateTopLevel(d),
@@ -387,7 +376,6 @@ export function jsonToDiff(
   const metaChanges: JsonDiff["metaChanges"] = {};
   if (d.name !== state.meta.name) metaChanges.name = d.name;
   if (d.address !== state.meta.address) metaChanges.address = d.address;
-  if (d.capacity !== state.meta.capacity) metaChanges.capacity = d.capacity;
 
   return {
     errors,

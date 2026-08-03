@@ -320,8 +320,7 @@ export const EventLocationRequestDTOSchema = {
     type: 'object',
     required: [
         'name',
-        'address',
-        'capacity'
+        'address'
     ],
     properties: {
         name: {
@@ -329,10 +328,6 @@ export const EventLocationRequestDTOSchema = {
         },
         address: {
             type: 'string'
-        },
-        capacity: {
-            type: 'integer',
-            format: 'int32'
         },
         markers: {
             type: 'array',
@@ -367,10 +362,6 @@ export const EventLocationResponseDTOSchema = {
         address: {
             type: 'string'
         },
-        capacity: {
-            type: 'integer',
-            format: 'int32'
-        },
         manager: {
             $ref: '#/components/schemas/LimitedUserInfoDTO'
         },
@@ -401,8 +392,7 @@ export const EventLocationUpdateDTOSchema = {
     type: 'object',
     required: [
         'name',
-        'address',
-        'capacity'
+        'address'
     ],
     properties: {
         name: {
@@ -410,10 +400,6 @@ export const EventLocationUpdateDTOSchema = {
         },
         address: {
             type: 'string'
-        },
-        capacity: {
-            type: 'integer',
-            format: 'int32'
         }
     }
 } as const;
@@ -1144,10 +1130,6 @@ export const UserEventLocationResponseDTOSchema = {
         },
         address: {
             type: 'string'
-        },
-        capacity: {
-            type: 'integer',
-            format: 'int32'
         },
         manager: {
             $ref: '#/components/schemas/LimitedUserInfoDTO'

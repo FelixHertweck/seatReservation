@@ -76,7 +76,6 @@ class EmailSeatMapTokenRepositoryTest {
         // Create test event location
         EventLocation location = new EventLocation();
         location.setName("Token Test Location");
-        location.setCapacity(100);
         eventLocationRepository.persist(location);
 
         // Create test event

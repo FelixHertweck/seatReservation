@@ -33,9 +33,6 @@ public class EventLocationRequestDTO {
     @NotNull(message = "Address must not be null")
     private String address;
 
-    @NotNull(message = "Capacity must not be null")
-    private Integer capacity;
-
     /** Optional markers to scaffold together with the location. */
     private List<@Valid ImportMarkerDto> markers;
 
@@ -53,20 +50,12 @@ public class EventLocationRequestDTO {
         return address;
     }
 
-    public Integer getCapacity() {
-        return capacity;
-    }
-
     public void setName(String name) {
         this.name = name;
     }
 
     public void setAddress(String address) {
         this.address = address;
-    }
-
-    public void setCapacity(Integer capacity) {
-        this.capacity = capacity;
     }
 
     public List<ImportMarkerDto> getmarkers() {

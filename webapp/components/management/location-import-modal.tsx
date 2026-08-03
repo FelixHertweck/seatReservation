@@ -46,7 +46,7 @@ export function LocationImportModal({
     try {
       const parsedData = JSON.parse(jsonData);
 
-      if (!parsedData.name || !parsedData.address || !parsedData.capacity) {
+      if (!parsedData.name || !parsedData.address) {
         throw new Error(t("locationImportModal.locationDataValidationError"));
       }
       await onImportLocation(parsedData as EventLocationRequestDto);

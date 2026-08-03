@@ -32,7 +32,6 @@ public class EventLocation extends AbstractEntity {
 
     private String name;
     private String address;
-    private Integer capacity;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private User manager;
@@ -61,23 +60,17 @@ public class EventLocation extends AbstractEntity {
 
     public EventLocation() {}
 
-    public EventLocation(String name, String address, User manager, Integer capacity) {
+    public EventLocation(String name, String address, User manager) {
         this.name = name;
         this.address = address;
         this.manager = manager;
-        this.capacity = capacity;
     }
 
     public EventLocation(
-            String name,
-            String address,
-            User manager,
-            Integer capacity,
-            List<EventLocationMarker> markers) {
+            String name, String address, User manager, List<EventLocationMarker> markers) {
         this.name = name;
         this.address = address;
         this.manager = manager;
-        this.capacity = capacity;
         this.markers = markers != null ? new ArrayList<>(markers) : new ArrayList<>();
     }
 
@@ -95,14 +88,6 @@ public class EventLocation extends AbstractEntity {
 
     public void setAddress(String address) {
         this.address = address;
-    }
-
-    public Integer getCapacity() {
-        return capacity;
-    }
-
-    public void setCapacity(Integer capacity) {
-        this.capacity = capacity;
     }
 
     public User getManager() {
@@ -155,7 +140,6 @@ public class EventLocation extends AbstractEntity {
         }
         return Objects.equals(name, that.name)
                 && Objects.equals(address, that.address)
-                && Objects.equals(capacity, that.capacity)
                 && Objects.equals(manager, that.manager)
                 && Objects.equals(seats, that.seats);
     }
@@ -165,7 +149,7 @@ public class EventLocation extends AbstractEntity {
         if (id != null) {
             return Objects.hash(id);
         }
-        return Objects.hash(name, address, capacity, manager, seats);
+        return Objects.hash(name, address, manager, seats);
     }
 
     @Override
@@ -177,8 +161,6 @@ public class EventLocation extends AbstractEntity {
                 + seats
                 + ", manager="
                 + manager
-                + ", capacity="
-                + capacity
                 + ", address='"
                 + address
                 + '\''

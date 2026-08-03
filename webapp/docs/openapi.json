@@ -280,17 +280,13 @@
       },
       "EventLocationRequestDTO" : {
         "type" : "object",
-        "required" : [ "name", "address", "capacity" ],
+        "required" : [ "name", "address" ],
         "properties" : {
           "name" : {
             "type" : "string"
           },
           "address" : {
             "type" : "string"
-          },
-          "capacity" : {
-            "type" : "integer",
-            "format" : "int32"
           },
           "markers" : {
             "type" : "array",
@@ -324,10 +320,6 @@
           "address" : {
             "type" : "string"
           },
-          "capacity" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
           "manager" : {
             "$ref" : "#/components/schemas/LimitedUserInfoDTO"
           },
@@ -355,17 +347,13 @@
       },
       "EventLocationUpdateDTO" : {
         "type" : "object",
-        "required" : [ "name", "address", "capacity" ],
+        "required" : [ "name", "address" ],
         "properties" : {
           "name" : {
             "type" : "string"
           },
           "address" : {
             "type" : "string"
-          },
-          "capacity" : {
-            "type" : "integer",
-            "format" : "int32"
           }
         }
       },
@@ -1001,10 +989,6 @@
           },
           "address" : {
             "type" : "string"
-          },
-          "capacity" : {
-            "type" : "integer",
-            "format" : "int32"
           },
           "manager" : {
             "$ref" : "#/components/schemas/LimitedUserInfoDTO"

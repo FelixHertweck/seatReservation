@@ -145,7 +145,7 @@ public class EventLocationResourceTest {
                             type = ClaimType.STRING))
     void testCreateEventLocation() {
         given().contentType("application/json")
-                .body("{\"name\":\"New Location\",\"address\":\"123 Main St\",\"capacity\":100}")
+                .body("{\"name\":\"New Location\",\"address\":\"123 Main St\"}")
                 .when()
                 .post("/api/manager/eventlocations")
                 .then()
@@ -175,8 +175,7 @@ public class EventLocationResourceTest {
     void testCreateEventLocationWithEmbeddedAreasAndMarkers() {
         given().contentType("application/json")
                 .body(
-                        "{\"name\":\"Hall With Areas\",\"address\":\"123 Main"
-                            + " St\",\"capacity\":100,"
+                        "{\"name\":\"Hall With Areas\",\"address\":\"123 Main St\","
                             + "\"areas\":[{\"name\":\"Parkett\",\"boundary\":[{\"xCoordinate\":1,\"yCoordinate\":1},"
                             + "{\"xCoordinate\":5,\"yCoordinate\":1}]}],"
                             + "\"markers\":[{\"label\":\"Bühne\",\"coordinate\":{\"xCoordinate\":3,\"yCoordinate\":9}}]}")
@@ -219,9 +218,7 @@ public class EventLocationResourceTest {
                             type = ClaimType.STRING))
     void testUpdateEventLocation() {
         given().contentType("application/json")
-                .body(
-                        "{\"name\":\"Updated Location\",\"address\":\"456 Main"
-                                + " St\",\"capacity\":150}")
+                .body("{\"name\":\"Updated Location\",\"address\":\"456 Main" + " St\"}")
                 .when()
                 .put("/api/manager/eventlocations/" + testLocation.getId())
                 .then()
@@ -260,9 +257,7 @@ public class EventLocationResourceTest {
                             type = ClaimType.STRING))
     void testUpdateEventLocationNotFound() {
         given().contentType("application/json")
-                .body(
-                        "{\"name\":\"Updated Location\",\"address\":\"456 Main"
-                                + " St\",\"capacity\":150}")
+                .body("{\"name\":\"Updated Location\",\"address\":\"456 Main" + " St\"}")
                 .when()
                 .put("/api/manager/eventlocations/" + id(999))
                 .then()
@@ -406,12 +401,12 @@ public class EventLocationResourceTest {
                             value = "00000000-0000-0000-0000-000000000002",
                             type = ClaimType.STRING))
     void testCreateEventLocationWithSeats() {
-        String requestBody =
+        String jsonPayload =
                 "{\"name\":\"New Location\",\"address\":\"123 Main"
-                    + " St\",\"capacity\":100,\"seats\":[{\"seatNumber\":\"A1\",\"coordinate\":{\"xCoordinate\":1,\"yCoordinate\":1}},{\"seatNumber\":\"A2\",\"coordinate\":{\"xCoordinate\":1,\"yCoordinate\":2}}]}";
+                    + " St\",\"seats\":[{\"seatNumber\":\"A1\",\"coordinate\":{\"xCoordinate\":1,\"yCoordinate\":1}},{\"seatNumber\":\"A2\",\"coordinate\":{\"xCoordinate\":1,\"yCoordinate\":2}}]}";
 
         given().contentType("application/json")
-                .body(requestBody)
+                .body(jsonPayload)
                 .when()
                 .post("/api/manager/eventlocations")
                 .then()

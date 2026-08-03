@@ -87,8 +87,7 @@ class NotificationServiceReminderDataTest {
         User manager = userRepository.findByUsernameOptional("manager").orElseThrow();
         User attendee = userRepository.findByUsernameOptional("user").orElseThrow();
 
-        EventLocation location =
-                new EventLocation("Reminder Test Hall", "Test Street 1", manager, 10);
+        EventLocation location = new EventLocation("Reminder Test Hall", "Test Street 1", manager);
         eventLocationRepository.persist(location);
 
         Seat seat = new Seat("A1", location, "A", 1, 1, null, null);

@@ -21,7 +21,6 @@ export default function NewLocationPage() {
   const [formData, setFormData] = useState({
     name: "",
     address: "",
-    capacity: "",
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -32,7 +31,6 @@ export default function NewLocationPage() {
       const location = await createLocation({
         name: formData.name,
         address: formData.address,
-        capacity: Number.parseInt(formData.capacity),
       });
       router.replace(`/management/locations/${location.id}`);
     } finally {
@@ -73,23 +71,6 @@ export default function NewLocationPage() {
                 value={formData.address}
                 onChange={(e) =>
                   setFormData({ ...formData, address: e.target.value })
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="capacity">
-                {t("management.locations.form.capacityLabel")}
-              </Label>
-              <Input
-                id="capacity"
-                type="number"
-                min={0}
-                required
-                placeholder={t("management.locations.form.capacityPlaceholder")}
-                value={formData.capacity}
-                onChange={(e) =>
-                  setFormData({ ...formData, capacity: e.target.value })
                 }
               />
             </div>

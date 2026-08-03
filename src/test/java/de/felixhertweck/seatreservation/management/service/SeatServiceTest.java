@@ -141,7 +141,7 @@ public class SeatServiceTest {
         managerAuth = new AuthenticatedUser(managerUser.id, managerUser.getRoles());
         regularAuth = new AuthenticatedUser(regularUser.id, regularUser.getRoles());
 
-        eventLocation = new EventLocation("Stadthalle", "Hauptstraße 1", managerUser, 100);
+        eventLocation = new EventLocation("Stadthalle", "Hauptstraße 1", managerUser);
         eventLocation.id = id(1);
         Event dummyEvent = new Event();
         dummyEvent.setEventLocation(eventLocation);
@@ -169,8 +169,7 @@ public class SeatServiceTest {
         entranceC.id = id(202);
         entranceC.setEventLocation(eventLocation);
 
-        EventLocation otherLocation =
-                new EventLocation("Other Hall", "Other Address", regularUser, 50);
+        EventLocation otherLocation = new EventLocation("Other Hall", "Other Address", regularUser);
         otherLocation.id = id(2);
         areaInOtherLocation = new EventLocationArea("Foreign Area");
         areaInOtherLocation.id = id(300);
@@ -389,8 +388,7 @@ public class SeatServiceTest {
 
     @Test
     void findSeatsForManagerByLocation_Forbidden_NotOwner() {
-        EventLocation otherLocation =
-                new EventLocation("Other Hall", "Other Address", regularUser, 50);
+        EventLocation otherLocation = new EventLocation("Other Hall", "Other Address", regularUser);
         otherLocation.id = id(2);
         when(eventLocationRepository.findByIdOptional(otherLocation.id))
                 .thenReturn(Optional.of(otherLocation));
@@ -449,8 +447,7 @@ public class SeatServiceTest {
 
     @Test
     void findSeatByIdForManager_ForbiddenException() {
-        EventLocation otherLocation =
-                new EventLocation("Other Hall", "Other Address", regularUser, 50);
+        EventLocation otherLocation = new EventLocation("Other Hall", "Other Address", regularUser);
         otherLocation.id = id(2);
         Seat seatInOtherLocation = new Seat("X1", "", otherLocation);
         seatInOtherLocation.id = id(2);
@@ -672,8 +669,7 @@ public class SeatServiceTest {
 
     @Test
     void updateSeat_ForbiddenException_NotManagerOfSeatLocation() {
-        EventLocation otherLocation =
-                new EventLocation("Other Hall", "Other Address", regularUser, 50);
+        EventLocation otherLocation = new EventLocation("Other Hall", "Other Address", regularUser);
         otherLocation.id = id(2);
         Seat seatInOtherLocation = new Seat("X1", "", otherLocation);
         seatInOtherLocation.id = id(2);
@@ -697,7 +693,7 @@ public class SeatServiceTest {
     @Test
     void updateSeat_ForbiddenException_NotManagerOfNewLocation() {
         EventLocation newOtherLocation =
-                new EventLocation("New Other Hall", "New Other Address", regularUser, 50);
+                new EventLocation("New Other Hall", "New Other Address", regularUser);
         newOtherLocation.id = id(3);
 
         SeatRequestDTO dto = new SeatRequestDTO();
@@ -750,8 +746,7 @@ public class SeatServiceTest {
 
     @Test
     void deleteSeat_ForbiddenException_NotManager() {
-        EventLocation otherLocation =
-                new EventLocation("Other Hall", "Other Address", regularUser, 50);
+        EventLocation otherLocation = new EventLocation("Other Hall", "Other Address", regularUser);
         otherLocation.id = id(2);
         Seat seatInOtherLocation = new Seat("X1", "", otherLocation);
         seatInOtherLocation.id = id(2);

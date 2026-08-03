@@ -158,8 +158,7 @@ public class ReservationServiceTest {
         when(userRepository.getReference(managerUser.id)).thenReturn(managerUser);
         when(userRepository.getReference(regularUser.id)).thenReturn(regularUser);
 
-        EventLocation eventLocation =
-                new EventLocation("Stadthalle", "Hauptstraße 1", managerUser, 100);
+        EventLocation eventLocation = new EventLocation("Stadthalle", "Hauptstraße 1", managerUser);
         eventLocation.id = id(1);
 
         event = new Event();

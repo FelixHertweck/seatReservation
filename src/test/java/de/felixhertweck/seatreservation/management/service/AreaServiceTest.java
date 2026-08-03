@@ -124,12 +124,12 @@ public class AreaServiceTest {
         managerAuth = new AuthenticatedUser(managerUser.id, managerUser.getRoles());
         regularAuth = new AuthenticatedUser(regularUser.id, regularUser.getRoles());
 
-        eventLocation = new EventLocation("Stadthalle", "Hauptstraße 1", managerUser, 100);
+        eventLocation = new EventLocation("Stadthalle", "Hauptstraße 1", managerUser);
         eventLocation.id = id(1);
-        otherLocation = new EventLocation("Other Hall", "Other Address", regularUser, 50);
+        otherLocation = new EventLocation("Other Hall", "Other Address", regularUser);
         otherLocation.id = id(2);
 
-        secondOwnedLocation = new EventLocation("Zweite Halle", "Nebenstraße 2", managerUser, 80);
+        secondOwnedLocation = new EventLocation("Zweite Halle", "Nebenstraße 2", managerUser);
         secondOwnedLocation.id = id(3);
 
         existingArea = new EventLocationArea("Parkett");

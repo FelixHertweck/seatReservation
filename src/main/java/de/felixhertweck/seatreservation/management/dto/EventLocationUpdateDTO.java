@@ -36,15 +36,11 @@ public class EventLocationUpdateDTO {
     @NotNull(message = "Address must not be null")
     private String address;
 
-    @NotNull(message = "Capacity must not be null")
-    private Integer capacity;
-
     public EventLocationUpdateDTO() {}
 
-    public EventLocationUpdateDTO(String name, String address, Integer capacity) {
+    public EventLocationUpdateDTO(String name, String address) {
         this.name = name;
         this.address = address;
-        this.capacity = capacity;
     }
 
     public String getName() {
@@ -61,13 +57,5 @@ public class EventLocationUpdateDTO {
 
     public void setAddress(String address) {
         this.address = address;
-    }
-
-    public Integer getCapacity() {
-        return capacity;
-    }
-
-    public void setCapacity(Integer capacity) {
-        this.capacity = capacity;
     }
 }

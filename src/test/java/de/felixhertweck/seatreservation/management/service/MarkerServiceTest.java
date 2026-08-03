@@ -120,9 +120,9 @@ public class MarkerServiceTest {
         managerAuth = new AuthenticatedUser(managerUser.id, managerUser.getRoles());
         regularAuth = new AuthenticatedUser(regularUser.id, regularUser.getRoles());
 
-        eventLocation = new EventLocation("Stadthalle", "Hauptstraße 1", managerUser, 100);
+        eventLocation = new EventLocation("Stadthalle", "Hauptstraße 1", managerUser);
         eventLocation.id = id(1);
-        otherLocation = new EventLocation("Other Hall", "Other Address", regularUser, 50);
+        otherLocation = new EventLocation("Other Hall", "Other Address", regularUser);
         otherLocation.id = id(2);
 
         existingMarker = new EventLocationMarker("Main Entrance", 10, 20);

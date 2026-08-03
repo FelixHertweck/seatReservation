@@ -89,7 +89,7 @@ class EventLocationResourceTest {
 
         var location =
                 new de.felixhertweck.seatreservation.model.entity.EventLocation(
-                        "My Test Location", "123 Test St", null, 100);
+                        "My Test Location", "123 Test St", null);
         eventLocationRepository.persist(location);
 
         var event = new de.felixhertweck.seatreservation.model.entity.Event();
@@ -130,8 +130,7 @@ class EventLocationResourceTest {
                 .statusCode(200)
                 .body("$", hasSize(1))
                 .body("[0].name", is("My Test Location"))
-                .body("[0].address", is("123 Test St"))
-                .body("[0].capacity", is(100));
+                .body("[0].address", is("123 Test St"));
     }
 
     @Test

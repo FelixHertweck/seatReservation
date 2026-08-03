@@ -36,7 +36,6 @@ export function LocationEditor({ locationId }: { locationId: string }) {
       serverId: locationId,
       name: "",
       address: "",
-      capacity: 0,
     }),
   );
 

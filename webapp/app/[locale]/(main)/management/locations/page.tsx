@@ -145,10 +145,6 @@ export default function ManagementLocationsPage() {
             sortOptions={[
               { key: "name", label: t("management.locations.sortByName") },
               {
-                key: "capacity",
-                label: t("management.locations.sortByCapacity"),
-              },
-              {
                 key: "address",
                 label: t("management.locations.sortByAddress"),
               },
@@ -214,10 +210,6 @@ export default function ManagementLocationsPage() {
                     </CardHeader>
                     <CardContent className="relative z-10 min-h-48 flex-1 space-y-2">
                       <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="secondary">
-                          {t("management.locations.capacityLabel")}:{" "}
-                          {location.capacity ?? 0}
-                        </Badge>
                         <Badge variant="secondary">
                           {t("management.locations.seatsLabel", {
                             count: location.seatIds?.length ?? 0,

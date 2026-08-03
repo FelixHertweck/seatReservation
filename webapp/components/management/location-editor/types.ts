@@ -54,7 +54,6 @@ export interface LocationMeta {
   serverId: string;
   name: string;
   address: string;
-  capacity: number;
 }
 
 export interface PendingDeletions {

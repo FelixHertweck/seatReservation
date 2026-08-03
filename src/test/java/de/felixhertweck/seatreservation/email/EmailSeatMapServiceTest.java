@@ -84,7 +84,6 @@ class EmailSeatMapServiceTest {
         testLocation = new EventLocation();
         testLocation.id = id(100);
         testLocation.setName("Test Location");
-        testLocation.setCapacity(50);
 
         testSeat = new Seat("A1", "A", testLocation);
         testSeat.id = id(1000);
