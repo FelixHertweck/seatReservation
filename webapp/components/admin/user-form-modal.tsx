@@ -20,7 +20,7 @@ import { useT } from "@/lib/i18n/hooks";
 import { customSerializer } from "@/lib/jsonBodySerializer";
 
 interface UserFormModalProps {
-  user: UserDto | null;
+  user: UserDto | AdminUserCreationDto | Partial<UserDto> | null;
   availableRoles: string[];
   isCreating: boolean;
   onSubmit: (
@@ -40,16 +40,32 @@ export function UserFormModal({
 }: UserFormModalProps) {
   const t = useT();
 
-  function getInitialFormState(user: UserDto | null, isCreating: boolean) {
+  function getInitialFormState(
+    user: UserDto | AdminUserCreationDto | Partial<UserDto> | null,
+    isCreating: boolean,
+  ) {
+    const isVerified =
+      user && "emailVerified" in user ? !!user.emailVerified : false;
+    const isSend =
+      user && "sendEmailVerification" in user
+        ? !!user.sendEmailVerification
+        : false;
+    let emailStatus: EmailStatus = "unverified";
+    if (isVerified) emailStatus = "verified";
+    else if (isSend) emailStatus = "send";
+
     return {
       username: user?.username || "",
       firstname: user?.firstname || "",
       lastname: user?.lastname || "",
       email: user?.email || "",
-      password: isCreating ? "" : "••••••••",
-      emailStatus: (user?.emailVerified
-        ? "verified"
-        : "unverified") as EmailStatus,
+      password:
+        user && "password" in user && user.password
+          ? user.password
+          : isCreating
+            ? ""
+            : "••••••••",
+      emailStatus,
       selectedRoles: user?.roles || [],
       tags: user?.tags || [],
     };
