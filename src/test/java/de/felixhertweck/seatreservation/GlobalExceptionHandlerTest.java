@@ -24,7 +24,6 @@ import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -226,7 +225,7 @@ class GlobalExceptionHandlerTest {
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
         assertTrue(response.getEntity() instanceof ErrorResponseDTO);
         ErrorResponseDTO errorResponse = (ErrorResponseDTO) response.getEntity();
-        assertEquals("Generic error", errorResponse.getMessage());
+        assertEquals("An unexpected error occurred", errorResponse.getMessage());
     }
 
     @Test
@@ -237,7 +236,7 @@ class GlobalExceptionHandlerTest {
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
         assertTrue(response.getEntity() instanceof ErrorResponseDTO);
         ErrorResponseDTO errorResponse = (ErrorResponseDTO) response.getEntity();
-        assertEquals("Null pointer", errorResponse.getMessage());
+        assertEquals("An unexpected error occurred", errorResponse.getMessage());
     }
 
     @Test
@@ -248,7 +247,7 @@ class GlobalExceptionHandlerTest {
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
         assertTrue(response.getEntity() instanceof ErrorResponseDTO);
         ErrorResponseDTO errorResponse = (ErrorResponseDTO) response.getEntity();
-        assertNull(errorResponse.getMessage());
+        assertEquals("An unexpected error occurred", errorResponse.getMessage());
     }
 
     @Test

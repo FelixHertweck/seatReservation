@@ -82,9 +82,9 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
      */
     @Override
     public Response toResponse(Exception exception) {
-        ErrorResponseDTO errorResponse = new ErrorResponseDTO(exception.getMessage());
         Response.Status status;
         List<NewCookie> cookies = new ArrayList<>();
+        String errorMessage = exception.getMessage();
 
         switch (exception) {
             case EventBookingClosedException ignored -> status = Response.Status.BAD_REQUEST;
@@ -139,11 +139,14 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
             }
             default -> {
                 status = Response.Status.INTERNAL_SERVER_ERROR;
+                errorMessage = "An unexpected error occurred";
             }
         }
 
         LOG.warnf(
                 "Exception occurred (handled by GlobalExceptionHandler): %s", exception.toString());
+
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(errorMessage);
 
         return Response.status(status)
                 .entity(errorResponse)
