@@ -52,15 +52,13 @@ public class EmailVerificationRepository implements PanacheRepositoryBase<EmailV
     }
 
     /**
-     * Deletes an EmailVerification by user ID in a new transaction.
+     * Deletes an EmailVerification by user ID.
      *
      * @param userId the user ID to delete the verification for
      */
-    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    @Transactional
     public void deleteByUserId(UUID userId) {
-        LOG.debugf(
-                "Attempting to delete EmailVerification for user ID: %s in new transaction.",
-                userId);
+        LOG.debugf("Attempting to delete EmailVerification for user ID: %s.", userId);
         long deletedCount = delete("user.id", userId);
         LOG.infof("Deleted %d EmailVerification entries for user ID: %s.", deletedCount, userId);
     }

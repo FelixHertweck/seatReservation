@@ -33,6 +33,7 @@ import de.felixhertweck.seatreservation.model.entity.EmailStatus;
 import de.felixhertweck.seatreservation.model.entity.OutboundEmail;
 import de.felixhertweck.seatreservation.model.entity.OutboundEmailAttachment;
 import de.felixhertweck.seatreservation.model.repository.OutboundEmailRepository;
+import io.micrometer.core.instrument.MeterRegistry;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import io.quarkus.scheduler.Scheduled;
@@ -63,6 +64,8 @@ public class EmailDispatcher {
     @Inject Mailer mailer;
 
     @Inject OutboundEmailRepository outboundEmailRepository;
+
+    @Inject MeterRegistry meterRegistry;
 
     @Inject EmailDispatcher self;
 
@@ -306,6 +309,9 @@ public class EmailDispatcher {
 
         if (attempts >= email.getMaxAttempts()) {
             email.setStatus(EmailStatus.FAILED);
+            if (meterRegistry != null) {
+                meterRegistry.counter("email.outbox.failed").increment();
+            }
             LOG.errorf(
                     error,
                     "Email id=%s permanently failed after %d attempt(s); moving to dead letter",

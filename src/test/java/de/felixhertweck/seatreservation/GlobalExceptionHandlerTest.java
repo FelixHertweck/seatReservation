@@ -308,4 +308,18 @@ class GlobalExceptionHandlerTest {
         ErrorResponseDTO errorResponse = (ErrorResponseDTO) response.getEntity();
         assertEquals(customMessage, errorResponse.getMessage());
     }
+
+    @Test
+    void testReservationConstraintViolationException() {
+        jakarta.persistence.PersistenceException exception =
+                new jakarta.persistence.PersistenceException(
+                        "ERROR: duplicate key value violates unique constraint"
+                                + " \"reservations_event_id_seat_id_key\"");
+        Response response = exceptionHandler.toResponse(exception);
+
+        assertEquals(Response.Status.CONFLICT.getStatusCode(), response.getStatus());
+        assertTrue(response.getEntity() instanceof ErrorResponseDTO);
+        ErrorResponseDTO errorResponse = (ErrorResponseDTO) response.getEntity();
+        assertEquals("Seat already reserved.", errorResponse.getMessage());
+    }
 }
