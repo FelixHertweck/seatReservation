@@ -23,6 +23,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import de.felixhertweck.seatreservation.model.entity.EmailPriority;
 import org.junit.jupiter.api.Test;
 
 class EmailMessageTest {
@@ -51,6 +52,22 @@ class EmailMessageTest {
         assertEquals("Test Subject", message.getSubject());
         assertEquals("<p>Test Body</p>", message.getHtmlBody());
         assertEquals(List.of(attachment1, attachment2), message.getAttachments());
+        assertEquals(EmailPriority.TRANSACTIONAL, message.getPriority());
+    }
+
+    @Test
+    void builder_withPriority_setsPriority() {
+        EmailMessage message =
+                EmailMessage.builder().to("to@example.com").priority(EmailPriority.BULK).build();
+
+        assertEquals(EmailPriority.BULK, message.getPriority());
+    }
+
+    @Test
+    void emailPriority_enum_valuesAndValueOfWork() {
+        assertEquals(EmailPriority.TRANSACTIONAL, EmailPriority.valueOf("TRANSACTIONAL"));
+        assertEquals(EmailPriority.BULK, EmailPriority.valueOf("BULK"));
+        assertEquals(2, EmailPriority.values().length);
     }
 
     @Test

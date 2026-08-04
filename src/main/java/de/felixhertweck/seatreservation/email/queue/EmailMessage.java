@@ -22,6 +22,8 @@ package de.felixhertweck.seatreservation.email.queue;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.felixhertweck.seatreservation.model.entity.EmailPriority;
+
 /**
  * Transport-agnostic, fully rendered email ready to be handed to {@link EmailQueueService}.
  *
@@ -39,6 +41,7 @@ public final class EmailMessage {
     private final String subject;
     private final String htmlBody;
     private final List<EmailAttachment> attachments;
+    private final EmailPriority priority;
 
     private EmailMessage(Builder builder) {
         this.to = List.copyOf(builder.to);
@@ -47,6 +50,7 @@ public final class EmailMessage {
         this.subject = builder.subject;
         this.htmlBody = builder.htmlBody;
         this.attachments = List.copyOf(builder.attachments);
+        this.priority = builder.priority;
     }
 
     public static Builder builder() {
@@ -77,6 +81,10 @@ public final class EmailMessage {
         return attachments;
     }
 
+    public EmailPriority getPriority() {
+        return priority;
+    }
+
     /** Fluent builder for {@link EmailMessage}. Null and blank addresses are ignored. */
     public static final class Builder {
         private final List<String> to = new ArrayList<>();
@@ -85,6 +93,7 @@ public final class EmailMessage {
         private String subject = "";
         private String htmlBody = "";
         private final List<EmailAttachment> attachments = new ArrayList<>();
+        private EmailPriority priority = EmailPriority.TRANSACTIONAL;
 
         private Builder() {}
 
@@ -124,6 +133,11 @@ public final class EmailMessage {
             if (attachment != null) {
                 attachments.add(attachment);
             }
+            return this;
+        }
+
+        public Builder priority(EmailPriority priority) {
+            this.priority = priority != null ? priority : EmailPriority.TRANSACTIONAL;
             return this;
         }
 

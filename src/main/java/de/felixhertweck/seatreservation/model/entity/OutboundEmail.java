@@ -50,7 +50,10 @@ import jakarta.persistence.Table;
         name = "outbound_emails",
         indexes = {
             @Index(name = "idx_outbound_email_status", columnList = "status"),
-            @Index(name = "idx_outbound_email_next_attempt", columnList = "next_attempt_at")
+            @Index(name = "idx_outbound_email_next_attempt", columnList = "next_attempt_at"),
+            @Index(
+                    name = "idx_outbound_email_status_priority_next_attempt",
+                    columnList = "status, priority, next_attempt_at")
         })
 public class OutboundEmail extends AbstractEntity {
 
@@ -88,6 +91,10 @@ public class OutboundEmail extends AbstractEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 16)
     private EmailStatus status = EmailStatus.PENDING;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 32)
+    private EmailPriority priority = EmailPriority.TRANSACTIONAL;
 
     @Column(name = "attempts", nullable = false)
     private int attempts = 0;
@@ -177,6 +184,14 @@ public class OutboundEmail extends AbstractEntity {
 
     public void setStatus(EmailStatus status) {
         this.status = status;
+    }
+
+    public EmailPriority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(EmailPriority priority) {
+        this.priority = priority != null ? priority : EmailPriority.TRANSACTIONAL;
     }
 
     public int getAttempts() {

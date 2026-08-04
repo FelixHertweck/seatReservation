@@ -78,6 +78,7 @@ public class EmailQueueService {
         email.setBcc(new ArrayList<>(message.getBcc()));
         email.setSubject(message.getSubject());
         email.setHtmlBody(message.getHtmlBody());
+        email.setPriority(message.getPriority());
         email.setMaxAttempts(maxAttempts);
         email.setNextAttemptAt(now);
         email.setCreatedAt(now);

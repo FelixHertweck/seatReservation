@@ -26,6 +26,7 @@ import jakarta.enterprise.event.Event;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import de.felixhertweck.seatreservation.model.entity.EmailPriority;
 import de.felixhertweck.seatreservation.model.entity.EmailStatus;
 import de.felixhertweck.seatreservation.model.entity.OutboundEmail;
 import de.felixhertweck.seatreservation.model.entity.OutboundEmailAttachment;
@@ -85,6 +86,7 @@ class EmailQueueServiceTest {
         assertEquals("<p>Hello</p>", result.getHtmlBody());
         assertEquals(5, result.getMaxAttempts());
         assertEquals(EmailStatus.PENDING, result.getStatus());
+        assertEquals(EmailPriority.TRANSACTIONAL, result.getPriority());
         assertEquals(0, result.getAttempts());
 
         assertNotNull(result.getCreatedAt());
