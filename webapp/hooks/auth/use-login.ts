@@ -37,9 +37,9 @@ export function useLogin() {
       }
       setRetryAfter(null);
       await queryClient.invalidateQueries();
-      await refetchUser();
+      const { data: freshUser } = await refetchUser();
       toast.success(t("login.success.title"));
-      redirectUser(router, locale, user, returnToUrl);
+      redirectUser(router, locale, freshUser ?? user, returnToUrl);
       return res;
     } catch (error) {
       const status = (error as ErrorWithResponse).response?.status;
