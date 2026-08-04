@@ -31,8 +31,8 @@ export function useRegister() {
       loading: t("common.loading"),
       success: async () => {
         await queryClient.invalidateQueries();
-        await refetchUser();
-        redirectUser(router, locale, user, returnToUrl);
+        const { data: freshUser } = await refetchUser();
+        redirectUser(router, locale, freshUser ?? user, returnToUrl);
         return t("register.success.title");
       },
       error: (error: ErrorWithResponse) => ({
