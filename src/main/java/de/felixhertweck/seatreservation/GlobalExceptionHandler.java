@@ -137,9 +137,11 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
                                 accountLockedException.getRetryAfter());
                 return Response.status(status).entity(errorResponseLogin).build();
             }
-            default -> {
-                status = Response.Status.INTERNAL_SERVER_ERROR;
+            case Exception e when isReservationConstraintViolation(e) -> {
+                status = Response.Status.CONFLICT;
+                errorResponse = new ErrorResponseDTO("Seat already reserved.");
             }
+            default -> status = Response.Status.INTERNAL_SERVER_ERROR;
         }
 
         LOG.warnf(
@@ -149,5 +151,17 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
                 .entity(errorResponse)
                 .cookie(cookies.toArray(NewCookie[]::new))
                 .build();
+    }
+
+    private boolean isReservationConstraintViolation(Throwable ex) {
+        Throwable current = ex;
+        while (current != null) {
+            String msg = current.getMessage();
+            if (msg != null && msg.contains("reservations_event_id_seat_id_key")) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
     }
 }

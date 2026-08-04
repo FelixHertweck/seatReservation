@@ -45,11 +45,11 @@ public class PasswordResetTokenRepository
     }
 
     /**
-     * Deletes any existing PasswordResetToken for the given user in a new transaction.
+     * Deletes any existing PasswordResetToken for the given user.
      *
      * @param userId the user ID to delete the token for
      */
-    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    @Transactional
     public void deleteByUserId(UUID userId) {
         long deletedCount = delete("user.id", userId);
         LOG.infof("Deleted %d PasswordResetToken entries for user ID: %s.", deletedCount, userId);
