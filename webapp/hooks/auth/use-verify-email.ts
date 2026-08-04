@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -12,7 +13,7 @@ import { ErrorWithResponse } from "@/components/init-query-client";
 import { redirectUser } from "@/lib/redirect-User";
 import { useSession } from "./use-session";
 
-const EMAIL_VERIFICATION_REDIRECT_DELAY_MS = 2000;
+const EMAIL_VERIFICATION_REDIRECT_DELAY_MS = 1000;
 
 export function useVerifyEmail() {
   const t = useT();
@@ -21,6 +22,7 @@ export function useVerifyEmail() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useSession();
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const { mutateAsync: verifyEmailMutation } = useMutation({
     ...postApiUserVerifyEmailCodeMutation(),
@@ -32,6 +34,7 @@ export function useVerifyEmail() {
       loading: t("common.loading"),
       success: async () => {
         await queryClient.invalidateQueries();
+        setIsRedirecting(true);
         await new Promise((resolve) =>
           setTimeout(resolve, EMAIL_VERIFICATION_REDIRECT_DELAY_MS),
         );
@@ -66,5 +69,6 @@ export function useVerifyEmail() {
   return {
     verifyEmail,
     resendConfirmation,
+    isRedirecting,
   };
 }

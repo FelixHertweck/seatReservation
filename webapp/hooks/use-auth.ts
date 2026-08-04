@@ -14,7 +14,7 @@ export function useAuth() {
   const { login, retryAfter } = useLogin();
   const { register } = useRegister();
   const { logout, logoutAll } = useLogout();
-  const { verifyEmail, resendConfirmation } = useVerifyEmail();
+  const { verifyEmail, resendConfirmation, isRedirecting } = useVerifyEmail();
   const { requestPasswordReset, confirmPasswordReset } = usePasswordReset();
   const { requestUsernameRecovery } = useUsernameRecovery();
 
@@ -30,6 +30,7 @@ export function useAuth() {
     logoutAll,
     verifyEmail,
     resendConfirmation,
+    isRedirecting,
     requestPasswordReset,
     requestUsernameRecovery,
     confirmPasswordReset,

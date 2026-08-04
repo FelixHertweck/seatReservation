@@ -32,10 +32,11 @@ export default function VerifyEmailPage() {
 
   const [verificationCode, setVerificationCode] = useState("");
   const [isLoadingForm, setIsLoadingForm] = useState(false);
+  const [isContinuing, setIsContinuing] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(
     null,
   );
-  const { user, isLoggedIn, verifyEmail } = useAuth();
+  const { user, isLoggedIn, verifyEmail, isRedirecting } = useAuth();
   const { resendConfirmation } = useProfile();
   const router = useRouter();
 
@@ -82,12 +83,10 @@ export default function VerifyEmailPage() {
 
   const handleCodeChange = (value: string) => {
     setVerificationCode(value);
-    if (value.length === 6) {
-      handleVerification(value);
-    }
   };
 
   const handleContinue = () => {
+    setIsContinuing(true);
     redirectUser(router, locale, user, searchParams.get("returnTo"));
   };
 
@@ -180,7 +179,12 @@ export default function VerifyEmailPage() {
             </Button>
             {alreadyVerified && (
               <div className="space-y-2">
-                <Button onClick={handleContinue} className="w-full">
+                <Button
+                  onClick={handleContinue}
+                  className="w-full"
+                  isLoading={isContinuing || isRedirecting}
+                  disabled={isContinuing || isRedirecting}
+                >
                   {t("emailVerification.continueButton")}
                 </Button>
               </div>
