@@ -17,5 +17,5 @@ jwt:
   cookie:
     secure: false
 
-email:  
+email:
   frontend-base-url: http://localhost:3000
