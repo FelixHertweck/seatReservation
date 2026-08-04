@@ -323,7 +323,10 @@
     "usersDataArrayError": "Benutzerdaten müssen ein Array sein",
     "userDataValidationError": "Jeder Benutzer muss username, password, firstname, lastname und roles haben",
     "invalidRoleError": "Ungültige Rolle gefunden. Verfügbare Rollen sind: ADMIN, MANAGER, USER",
-    "invalidJsonOrDataStructureError": "Ungültiges JSON-Format oder Datenstruktur"
+    "invalidJsonOrDataStructureError": "Ungültiges JSON-Format oder Datenstruktur",
+    "parsedUsersPreview": "Vorschau (Geparste Benutzer)",
+    "editUserButton": "Bearbeiten",
+    "noUsersParsed": "Keine gültigen Benutzer im JSON."
   },
   "emailVerification": {
     "title": "E-Mail-Verifizierung",
