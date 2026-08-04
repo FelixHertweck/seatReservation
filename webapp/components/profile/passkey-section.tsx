@@ -109,7 +109,10 @@ export function PasskeySection() {
   if (!isSupported) {
     return (
       <div className="border-t pt-4">
-        <Label>{t("webauthn.manage.title")}</Label>
+        <Label className="flex items-center gap-2">
+          <KeyRound className="h-5 w-5 text-primary" />
+          {t("webauthn.manage.title")}
+        </Label>
         <p className="mt-2 text-sm text-muted-foreground">
           {t("webauthn.manage.unsupported")}
         </p>
@@ -130,7 +133,7 @@ export function PasskeySection() {
             className="flex items-center justify-between rounded-lg border bg-muted/30 p-3"
           >
             <div className="flex flex-1 items-center gap-3">
-              <KeyRound className="h-5 w-5 shrink-0 text-muted-foreground" />
+              <KeyRound className="h-4 w-4 shrink-0 text-muted-foreground" />
               {isEditing ? (
                 <Input
                   autoFocus
@@ -233,6 +236,7 @@ export function PasskeySection() {
             >
               <div className="flex flex-col items-start gap-0.5 text-left">
                 <span className="flex items-center gap-2 text-base font-medium">
+                  <KeyRound className="h-5 w-5 text-primary" />
                   {t("webauthn.manage.title")}
                   {isCredentialsLoading ? (
                     <Skeleton className="h-5 w-6 rounded-full" />
