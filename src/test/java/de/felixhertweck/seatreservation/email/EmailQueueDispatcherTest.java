@@ -31,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import de.felixhertweck.seatreservation.email.queue.EmailDispatcher;
 import de.felixhertweck.seatreservation.email.queue.EmailMessage;
 import de.felixhertweck.seatreservation.email.queue.EmailQueueService;
+import de.felixhertweck.seatreservation.model.entity.EmailPriority;
 import de.felixhertweck.seatreservation.model.entity.EmailStatus;
 import de.felixhertweck.seatreservation.model.entity.OutboundEmail;
 import de.felixhertweck.seatreservation.model.repository.OutboundEmailRepository;
@@ -179,5 +180,54 @@ class EmailQueueDispatcherTest {
         assertEquals(0, emailDispatcher.drainQueue());
         assertEquals(
                 0L, QuarkusTransaction.requiringNew().call(() -> outboundEmailRepository.count()));
+    }
+
+    @Test
+    void claimDue_prioritizesTransactionalOverBulk() {
+        Instant now = Instant.now();
+
+        // Bulk email created first with earlier attempt time
+        OutboundEmail bulkEmail =
+                emailQueueService.enqueue(
+                        EmailMessage.builder()
+                                .to("bulk@example.com")
+                                .subject("Bulk Reminder")
+                                .htmlBody("<p>Bulk</p>")
+                                .priority(EmailPriority.BULK)
+                                .build());
+
+        // Transactional email created second with slightly later attempt time
+        OutboundEmail transactionalEmail =
+                emailQueueService.enqueue(
+                        EmailMessage.builder()
+                                .to("user@example.com")
+                                .subject("2FA Code")
+                                .htmlBody("<p>123456</p>")
+                                .priority(EmailPriority.TRANSACTIONAL)
+                                .build());
+
+        // Artificially set bulk email nextAttemptAt to 10 minutes ago, transactional to 5 minutes
+        // ago
+        QuarkusTransaction.requiringNew()
+                .run(
+                        () -> {
+                            OutboundEmail bulk = outboundEmailRepository.findById(bulkEmail.id);
+                            bulk.setNextAttemptAt(now.minusSeconds(600));
+                            outboundEmailRepository.persist(bulk);
+
+                            OutboundEmail trans =
+                                    outboundEmailRepository.findById(transactionalEmail.id);
+                            trans.setNextAttemptAt(now.minusSeconds(300));
+                            outboundEmailRepository.persist(trans);
+                        });
+
+        // Claim limit = 1. Even though bulk is older (600s ago vs 300s ago), transactional must be
+        // claimed first!
+        List<UUID> claimed =
+                QuarkusTransaction.requiringNew()
+                        .call(() -> outboundEmailRepository.claimDue(now, 1));
+
+        assertEquals(1, claimed.size());
+        assertEquals(transactionalEmail.id, claimed.getFirst());
     }
 }

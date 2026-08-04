@@ -46,24 +46,27 @@ public class OutboundEmailRepository implements PanacheRepositoryBase<OutboundEm
      * threads in the same instance or separate clustered instances) cannot both claim the same
      * message: the second claimer's subquery skips rows already locked by the first.
      *
+     * <p>The priority ordering is expressed as a {@code CASE} over {@link
+     * de.felixhertweck.seatreservation.model.entity.EmailPriority}; a new enum constant needs an
+     * explicit {@code WHEN} added here, otherwise it silently falls into the lowest-priority {@code
+     * ELSE} branch.
+     *
      * @param now the reference point in time
      * @param limit the maximum number of messages to claim
-     * @return the ids of the claimed messages, oldest scheduled attempt first
+     * @return the ids of the claimed messages, highest priority first, then oldest scheduled
+     *     attempt
      */
     @SuppressWarnings("unchecked")
     public List<UUID> claimDue(Instant now, int limit) {
         List<Object> ids =
                 getEntityManager()
                         .createNativeQuery(
-                                "UPDATE outbound_emails SET status = 'SENDING', updated_at = ?1 "
-                                        + "WHERE id IN ("
-                                        + "  SELECT id FROM outbound_emails"
-                                        + "  WHERE status = 'PENDING' AND next_attempt_at <= ?1"
-                                        + "  ORDER BY next_attempt_at ASC"
-                                        + "  LIMIT ?2"
-                                        + "  FOR UPDATE SKIP LOCKED"
-                                        + ") "
-                                        + "RETURNING id")
+                                "UPDATE outbound_emails SET status = 'SENDING', updated_at = ?1"
+                                    + " WHERE id IN (  SELECT id FROM outbound_emails  WHERE status"
+                                    + " = 'PENDING' AND next_attempt_at <= ?1  ORDER BY CASE"
+                                    + " priority WHEN 'TRANSACTIONAL' THEN 1 WHEN 'BULK' THEN 2"
+                                    + " ELSE 3 END ASC, next_attempt_at ASC  LIMIT ?2  FOR UPDATE"
+                                    + " SKIP LOCKED) RETURNING id")
                         .setParameter(1, now)
                         .setParameter(2, limit)
                         .getResultList();

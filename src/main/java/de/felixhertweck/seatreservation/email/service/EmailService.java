@@ -42,6 +42,7 @@ import de.felixhertweck.seatreservation.email.queue.EmailAttachment;
 import de.felixhertweck.seatreservation.email.queue.EmailMessage;
 import de.felixhertweck.seatreservation.email.queue.EmailQueueService;
 import de.felixhertweck.seatreservation.management.service.ReservationService;
+import de.felixhertweck.seatreservation.model.entity.EmailPriority;
 import de.felixhertweck.seatreservation.model.entity.EmailVerification;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.PasswordResetToken;
@@ -787,7 +788,8 @@ public class EmailService {
                 EMAIL_HEADER_REMINDER,
                 htmlContent,
                 buildImageAttachments(pngImage, qrCodeImage),
-                false);
+                false,
+                EmailPriority.BULK);
     }
 
     /**
@@ -845,7 +847,8 @@ public class EmailService {
                 EMAIL_HEADER_RESERVATION_OVERVIEW + event.getName(),
                 htmlContent,
                 List.of(csvAttachment),
-                false);
+                false,
+                EmailPriority.BULK);
     }
 
     /**
@@ -877,6 +880,25 @@ public class EmailService {
     }
 
     /**
+     * Builds an {@link EmailMessage} from the given content and hands it off to the email queue
+     * with default {@link EmailPriority#TRANSACTIONAL} priority.
+     */
+    private void enqueue(
+            List<String> recipients,
+            String subject,
+            String htmlContent,
+            List<EmailAttachment> attachments,
+            boolean includeBcc) {
+        enqueue(
+                recipients,
+                subject,
+                htmlContent,
+                attachments,
+                includeBcc,
+                EmailPriority.TRANSACTIONAL);
+    }
+
+    /**
      * Builds an {@link EmailMessage} from the given content and hands it off to the email queue.
      * The Bcc address is added only when {@code includeBcc} is {@code true} and the address is
      * present, non-empty, and not already included in the recipients.
@@ -886,15 +908,17 @@ public class EmailService {
      * @param htmlContent the rendered HTML body
      * @param attachments the attachments to include, if any
      * @param includeBcc whether the configured Bcc address should be added
+     * @param priority the priority of the email
      */
     private void enqueue(
             List<String> recipients,
             String subject,
             String htmlContent,
             List<EmailAttachment> attachments,
-            boolean includeBcc) {
+            boolean includeBcc,
+            EmailPriority priority) {
         EmailMessage.Builder builder =
-                EmailMessage.builder().subject(subject).htmlBody(htmlContent);
+                EmailMessage.builder().subject(subject).htmlBody(htmlContent).priority(priority);
 
         if (!recipients.isEmpty()) {
             builder.to(recipients.getFirst());
