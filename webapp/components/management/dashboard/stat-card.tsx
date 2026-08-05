@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { LucideIcon } from "lucide-react";
+import type { LucideIcon } from "@/components/icons";
 
 import { cn, formatCompactNumber } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";

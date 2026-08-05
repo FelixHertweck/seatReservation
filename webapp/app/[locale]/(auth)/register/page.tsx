@@ -19,7 +19,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Info, KeyRound } from "lucide-react";
+import { Info, KeyRound } from "@/components/icons";
 import { useAuth } from "@/hooks/use-auth";
 import { useWebAuthn } from "@/hooks/use-webauthn";
 import type { RegisterRequestDto, WebAuthnRegistrationStartDto } from "@/api";

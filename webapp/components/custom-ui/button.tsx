@@ -9,7 +9,7 @@
 // a single child (e.g. a `Link`) instead of rendering its own content.
 
 import * as React from "react";
-import { Loader2Icon } from "lucide-react";
+import { Loader2Icon } from "@/components/icons";
 import { Button as BaseButton, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 

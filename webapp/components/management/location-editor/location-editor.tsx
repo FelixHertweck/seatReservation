@@ -24,7 +24,7 @@ import type {
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/custom-ui/button";
 import Link from "next/link";
-import { ArrowLeft, AlertCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, AlertCircle, Loader2 } from "@/components/icons";
 
 export function LocationEditor({ locationId }: { locationId: string }) {
   const t = useT();

@@ -10,7 +10,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { Loader2, ChevronUp, X } from "lucide-react";
+import { Loader2, ChevronUp, X } from "@/components/icons";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import type { CheckInInfoResponseDto } from "@/api";

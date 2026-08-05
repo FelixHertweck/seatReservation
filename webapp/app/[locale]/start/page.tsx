@@ -1,4 +1,4 @@
-import { Calendar, ArrowRight } from "lucide-react";
+import { Calendar, ArrowRight } from "@/components/icons";
 import Link from "next/link";
 import { Button } from "@/components/custom-ui/button";
 import { createTranslation } from "@/lib/i18n/server";

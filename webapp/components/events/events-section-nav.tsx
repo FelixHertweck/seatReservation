@@ -3,8 +3,8 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { LucideIcon } from "lucide-react";
-import { CalendarDays, BookmarkCheck } from "lucide-react";
+import type { LucideIcon } from "@/components/icons";
+import { CalendarDays, BookmarkCheck } from "@/components/icons";
 
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n/hooks";

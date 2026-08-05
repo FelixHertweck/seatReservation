@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, CalendarPlus, BookmarkPlus, Ticket } from "lucide-react";
+import { Plus, CalendarPlus, BookmarkPlus, Ticket } from "@/components/icons";
 
 import { useT } from "@/lib/i18n/hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

@@ -20,7 +20,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useT } from "@/lib/i18n/hooks";
 import { ErrorWithResponse } from "@/components/init-query-client";
 import { redirectUser } from "@/lib/redirect-User";
-import { KeyRound } from "lucide-react";
+import { KeyRound } from "@/components/icons";
 
 export default function LoginPage() {
   const params = useParams();

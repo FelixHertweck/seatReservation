@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Calendar, Clock, MapPin, Users, BookmarkCheck } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, BookmarkCheck } from "@/components/icons";
 import { Button } from "@/components/custom-ui/button";
 import {
   Card,

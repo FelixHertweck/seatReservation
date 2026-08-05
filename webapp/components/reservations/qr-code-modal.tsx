@@ -11,7 +11,7 @@ import {
 } from "@/components/custom-ui/dialog";
 import { useT } from "@/lib/i18n/hooks";
 import { sanitizeFileName } from "@/lib/utils/filename";
-import { Download } from "lucide-react";
+import { Download } from "@/components/icons";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import QRCode from "qrcode";

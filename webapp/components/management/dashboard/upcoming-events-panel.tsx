@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays } from "@/components/icons";
 
 import { useT } from "@/lib/i18n/hooks";
 import { formatDateTime } from "@/lib/utils";

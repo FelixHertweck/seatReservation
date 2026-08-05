@@ -9,7 +9,7 @@ import {
   Plus,
   Trash2,
   X,
-} from "lucide-react";
+} from "@/components/icons";
 import { Button } from "@/components/custom-ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/custom-ui/label";

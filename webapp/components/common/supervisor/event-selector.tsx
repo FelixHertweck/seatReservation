@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useT } from "@/lib/i18n/hooks";
-import { CalendarDays, Loader2 } from "lucide-react";
+import { CalendarDays, Loader2 } from "@/components/icons";
 import {
   Select,
   SelectContent,

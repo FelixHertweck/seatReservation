@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/custom-ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/custom-ui/button";
-import { Check, Plus, Search, X } from "lucide-react";
+import { Check, Plus, Search, X } from "@/components/icons";
 import type { UserDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { cn } from "@/lib/utils";

@@ -11,7 +11,7 @@ import {
 } from "@/components/checkin/qr-code-scanner";
 import { ReservationSelector } from "@/components/checkin/reservation-selector";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ArrowUp, ChevronUp, Loader2 } from "lucide-react";
+import { ArrowUp, ChevronUp, Loader2 } from "@/components/icons";
 import {
   Tabs,
   TabsContent,

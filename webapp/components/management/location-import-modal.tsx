@@ -3,7 +3,7 @@
 import type React from "react";
 
 import { useState } from "react";
-import { Upload, FileText } from "lucide-react";
+import { Upload, FileText } from "@/components/icons";
 import { Button } from "@/components/custom-ui/button";
 import {
   Dialog,

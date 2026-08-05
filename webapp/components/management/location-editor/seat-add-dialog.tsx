@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus } from "@/components/icons";
 
 import { useT } from "@/lib/i18n/hooks";
 import {

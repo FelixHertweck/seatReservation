@@ -5,7 +5,7 @@ import { Label } from "@/components/custom-ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/custom-ui/button";
-import { Plus, Search, X } from "lucide-react";
+import { Plus, Search, X } from "@/components/icons";
 import type { UserDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 

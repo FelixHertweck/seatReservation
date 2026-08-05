@@ -3,7 +3,7 @@
 import type React from "react";
 
 import { useState } from "react";
-import { Calendar, Clock, MapPin, Users } from "lucide-react";
+import { Calendar, Clock, MapPin, Users } from "@/components/icons";
 import {
   Dialog,
   DialogContent,

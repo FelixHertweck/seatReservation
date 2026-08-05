@@ -1,6 +1,6 @@
 "use client";
 
-import { Eraser, PenLine, Trash2, Wand2 } from "lucide-react";
+import { Eraser, PenLine, Trash2, Wand2 } from "@/components/icons";
 
 import { useT } from "@/lib/i18n/hooks";
 import { Label } from "@/components/custom-ui/label";

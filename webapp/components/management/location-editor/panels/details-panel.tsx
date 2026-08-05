@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { Loader2, MapPinOff } from "lucide-react";
+import { Loader2, MapPinOff } from "@/components/icons";
 
 import { useT } from "@/lib/i18n/hooks";
 import { Label } from "@/components/custom-ui/label";

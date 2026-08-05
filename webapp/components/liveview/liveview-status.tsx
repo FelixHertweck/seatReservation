@@ -1,7 +1,7 @@
 "use client";
 
 import { useT } from "@/lib/i18n/hooks";
-import { Loader2 } from "lucide-react";
+import { Loader2 } from "@/components/icons";
 import type { SupervisorEventResponseDto } from "@/api";
 import { formatDateTime } from "@/lib/utils";
 

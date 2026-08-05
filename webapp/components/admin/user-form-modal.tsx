@@ -14,7 +14,7 @@ import { Label } from "@/components/custom-ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
+import { X } from "@/components/icons";
 import type { UserDto, AdminUserUpdateDto, AdminUserCreationDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { customSerializer } from "@/lib/jsonBodySerializer";

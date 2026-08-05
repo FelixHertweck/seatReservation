@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Edit, Trash2, FileText, Download } from "lucide-react";
+import { Plus, Edit, Trash2, FileText, Download } from "@/components/icons";
 import { Button } from "@/components/custom-ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {

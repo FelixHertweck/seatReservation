@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Layers } from "lucide-react";
+import { Layers } from "@/components/icons";
 
 import { useT } from "@/lib/i18n/hooks";
 import { Label } from "@/components/custom-ui/label";

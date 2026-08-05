@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { MoreVertical } from "lucide-react";
+import { MoreVertical } from "@/components/icons";
 
 import { useT } from "@/lib/i18n/hooks";
 import { Button, type buttonVariants } from "@/components/custom-ui/button";

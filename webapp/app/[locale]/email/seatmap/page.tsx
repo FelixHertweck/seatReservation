@@ -16,7 +16,7 @@ import {
   Download,
   Loader2,
   Languages,
-} from "lucide-react";
+} from "@/components/icons";
 import { toast } from "sonner";
 import { getApiEmailSeatmap } from "@/api";
 import { useT } from "@/lib/i18n/hooks";

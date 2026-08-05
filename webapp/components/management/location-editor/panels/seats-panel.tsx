@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "@/components/icons";
 
 import { useT } from "@/lib/i18n/hooks";
 import { cn } from "@/lib/utils";

@@ -11,7 +11,7 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Camera, CameraOff, Loader2, QrCode } from "lucide-react";
+import { Camera, CameraOff, Loader2, QrCode } from "@/components/icons";
 
 interface QrCodeScannerProps {
   onScan: (data: ScannedData) => void;

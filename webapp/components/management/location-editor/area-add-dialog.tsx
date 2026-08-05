@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PenLine, Plus } from "lucide-react";
+import { PenLine, Plus } from "@/components/icons";
 
 import { useT } from "@/lib/i18n/hooks";
 import { cn } from "@/lib/utils";

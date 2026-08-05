@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowUp, Plus, Trash2 } from "lucide-react";
+import { ArrowUp, Plus, Trash2 } from "@/components/icons";
 
 import { useT } from "@/lib/i18n/hooks";
 import { PageHeader } from "@/components/page-header";

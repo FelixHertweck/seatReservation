@@ -8,7 +8,7 @@ import {
   Eye,
   QrCode,
   CalendarDays,
-} from "lucide-react";
+} from "@/components/icons";
 import { Button } from "@/components/custom-ui/button";
 import {
   Card,

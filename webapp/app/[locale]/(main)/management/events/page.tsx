@@ -11,7 +11,7 @@ import {
   Users,
   BookmarkCheck,
   Ticket,
-} from "lucide-react";
+} from "@/components/icons";
 
 import { useT } from "@/lib/i18n/hooks";
 import { formatDateTime } from "@/lib/utils";

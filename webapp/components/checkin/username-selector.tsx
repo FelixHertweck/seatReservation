@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useT } from "@/lib/i18n/hooks";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2 } from "@/components/icons";
 import { cn } from "@/lib/utils";
 
 interface UsernameSelectorProps {

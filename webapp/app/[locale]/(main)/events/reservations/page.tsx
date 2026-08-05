@@ -19,7 +19,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/custom-ui/button";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays } from "@/components/icons";
 
 interface SelectedReservation {
   reservation: UserReservationResponseDto;

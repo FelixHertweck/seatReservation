@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowUp, Plus, Ban, Download, Trash2 } from "lucide-react";
+import { ArrowUp, Plus, Ban, Download, Trash2 } from "@/components/icons";
 
 import { useT } from "@/lib/i18n/hooks";
 import { sanitizeFileName } from "@/lib/utils/filename";

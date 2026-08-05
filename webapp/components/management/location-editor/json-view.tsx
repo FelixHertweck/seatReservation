@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Copy, Download, Upload, Check } from "lucide-react";
+import { Copy, Download, Upload, Check } from "@/components/icons";
 
 import { useT } from "@/lib/i18n/hooks";
 import { Button } from "@/components/custom-ui/button";

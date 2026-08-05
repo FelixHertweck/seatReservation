@@ -10,7 +10,7 @@ import { Button } from "@/components/custom-ui/button";
 import { Label } from "@/components/custom-ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/custom-ui/skeleton";
-import { X } from "lucide-react";
+import { X } from "@/components/icons";
 import { toast } from "sonner";
 import type { UserProfileUpdateDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";

@@ -2,7 +2,7 @@
 
 import type React from "react";
 import { useState, useEffect } from "react";
-import { Upload, FileText, Pencil } from "lucide-react";
+import { Upload, FileText, Pencil } from "@/components/icons";
 import { Button } from "@/components/custom-ui/button";
 import {
   Dialog,

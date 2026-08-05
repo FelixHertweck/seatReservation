@@ -15,7 +15,7 @@ import { useAuth } from "@/hooks/use-auth";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useT } from "@/lib/i18n/hooks";
-import { BadgeCheck, MailCheck, RefreshCw, User } from "lucide-react";
+import { BadgeCheck, MailCheck, RefreshCw, User } from "@/components/icons";
 
 export function EmailVerificationPrompt() {
   const t = useT();

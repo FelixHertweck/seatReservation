@@ -1,6 +1,6 @@
 "use client";
 
-import { Minus, Plus, Trash2 } from "lucide-react";
+import { Minus, Plus, Trash2 } from "@/components/icons";
 
 import { useT } from "@/lib/i18n/hooks";
 import { Button } from "@/components/custom-ui/button";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, Filter, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+import { Search, Filter, ArrowUp, ArrowDown, ArrowUpDown } from "@/components/icons";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/custom-ui/button";
 import { Checkbox } from "@/components/ui/checkbox";

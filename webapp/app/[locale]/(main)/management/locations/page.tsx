@@ -10,7 +10,7 @@ import {
   ArrowRight,
   MapPinned,
   Users,
-} from "lucide-react";
+} from "@/components/icons";
 
 import { useT } from "@/lib/i18n/hooks";
 import { PageHeader } from "@/components/page-header";
