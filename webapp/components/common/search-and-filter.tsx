@@ -109,7 +109,7 @@ export function SearchAndFilter({
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                size="icon-lg"
+                size="icon"
                 className="h-10 w-10 shrink-0 sm:w-auto sm:px-4"
               >
                 <Filter className="h-4 w-4" />
