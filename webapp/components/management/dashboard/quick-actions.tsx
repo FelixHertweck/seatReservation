@@ -1,5 +1,8 @@
 import Link from "next/link";
-import { Plus, CalendarPlus, BookmarkPlus, Ticket } from "lucide-react";
+import { PlusIcon } from "@/components/ui/plus";
+import { TicketIcon } from "@/components/ui/ticket";
+import { BookmarkPlusIcon } from "@/components/ui/bookmark-plus";
+import { CalendarPlus } from "lucide-react";
 
 import { useT } from "@/lib/i18n/hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +21,7 @@ export function QuickActions() {
       <CardContent className="flex flex-col gap-2">
         <Button variant="outline" className="justify-start" asChild>
           <Link href="/management/locations/new">
-            <Plus className="h-4 w-4" />
+            <PlusIcon size={16} />
             {t("management.overview.panels.quickActions.newLocation")}
           </Link>
         </Button>
@@ -30,13 +33,13 @@ export function QuickActions() {
         </Button>
         <Button variant="outline" className="justify-start" asChild>
           <Link href="/management/reservations">
-            <BookmarkPlus className="h-4 w-4" />
+            <BookmarkPlusIcon size={16} />
             {t("management.overview.panels.quickActions.newReservation")}
           </Link>
         </Button>
         <Button variant="outline" className="justify-start" asChild>
           <Link href="/management/allowances">
-            <Ticket className="h-4 w-4" />
+            <TicketIcon size={16} />
             {t("management.overview.panels.quickActions.grantAllowances")}
           </Link>
         </Button>

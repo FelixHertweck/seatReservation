@@ -1,7 +1,8 @@
 "use client";
 
+import { DeleteIcon } from "@/components/ui/delete";
 import { useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { PlusIcon } from "@/components/ui/plus";
 
 import { useT } from "@/lib/i18n/hooks";
 import { Button } from "@/components/custom-ui/button";
@@ -32,7 +33,7 @@ export function EntrancesPanel({ state, autosave }: EntrancesPanelProps) {
         className="w-full"
         onClick={() => setDialogOpen(true)}
       >
-        <Plus className="h-4 w-4" />
+        <PlusIcon size={16} />
         {t("management.locationEditor.entrances.addButton")}
       </Button>
 
@@ -67,7 +68,7 @@ export function EntrancesPanel({ state, autosave }: EntrancesPanelProps) {
                     autosave.deleteEntrances(new Set([entrance.localId]))
                   }
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
+                  <DeleteIcon size={14} />
                 </Button>
               </div>
             );

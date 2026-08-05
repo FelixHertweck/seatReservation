@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { PlusIcon } from "@/components/ui/plus";
 
 import { useT } from "@/lib/i18n/hooks";
 import {
@@ -106,7 +106,7 @@ function SingleSeatForm({
         onClick={handleAdd}
         disabled={!seatNumber.trim() || occupied}
       >
-        <Plus className="h-4 w-4" />
+        <PlusIcon size={16} />
         {t("management.locationEditor.seats.addButton")}
       </Button>
     </div>

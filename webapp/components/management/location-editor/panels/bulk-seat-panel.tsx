@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Layers } from "lucide-react";
+import { LayersIcon } from "@/components/ui/layers";
 
 import { useT } from "@/lib/i18n/hooks";
 import { Label } from "@/components/custom-ui/label";
@@ -316,7 +316,7 @@ export function BulkSeatPanel({ state, autosave }: BulkSeatPanelProps) {
         disabled={preview.length === 0}
         onClick={handleInsert}
       >
-        <Layers className="h-4 w-4" />
+        <LayersIcon size={16} />
         {t("management.locationEditor.bulk.insertButton", {
           count: preview.length,
         })}

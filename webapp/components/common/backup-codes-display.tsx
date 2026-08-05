@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Copy } from "lucide-react";
+import { CheckIcon } from "@/components/ui/check";
+import { CopyIcon } from "@/components/ui/copy";
 import { toast } from "sonner";
 import { Button } from "@/components/custom-ui/button";
 import { useT } from "@/lib/i18n/hooks";
@@ -36,9 +37,9 @@ export function BackupCodesDisplay({ codes }: { codes: string[] }) {
         onClick={handleCopy}
       >
         {isCopied ? (
-          <Check className="mr-2 h-4 w-4 text-green-500" />
+          <CheckIcon size={16} className="mr-2 text-green-500" />
         ) : (
-          <Copy className="mr-2 h-4 w-4" />
+          <CopyIcon size={16} className="mr-2" />
         )}
         {t("twoFactor.copyBackupCodes")}
       </Button>

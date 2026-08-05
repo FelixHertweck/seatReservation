@@ -3,6 +3,7 @@
 import type React from "react";
 
 import { useState, useEffect } from "react";
+import { useIconHover } from "@/hooks/use-icon-hover";
 import Link from "next/link";
 import { Button } from "@/components/custom-ui/button";
 import {
@@ -22,7 +23,9 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useT } from "@/lib/i18n/hooks";
 import { ErrorWithResponse } from "@/components/init-query-client";
 import { redirectUser } from "@/lib/redirect-User";
-import { KeyRound, ShieldCheck, ArrowLeft } from "lucide-react";
+import { ShieldCheckIcon } from "@/components/ui/shield-check";
+import { ArrowLeftIcon } from "@/components/ui/arrow-left";
+import { KeyIcon } from "@/components/ui/key";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -33,6 +36,11 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const {
+    ref: cancelIconRef,
+    onMouseEnter: handleCancelIconMouseEnter,
+    onMouseLeave: handleCancelIconMouseLeave,
+  } = useIconHover();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -250,7 +258,7 @@ export default function LoginPage() {
         <Card className="w-full max-w-md mx-4">
           <CardHeader className="space-y-1">
             <div className="flex items-center gap-2">
-              <ShieldCheck className="h-6 w-6 text-primary" />
+              <ShieldCheckIcon size={24} className="text-primary" />
               <CardTitle className="text-xl font-bold">
                 {t("twoFactor.challengeTitle")}
               </CardTitle>
@@ -287,9 +295,11 @@ export default function LoginPage() {
                     setTwoFactorChallenge(null);
                     setCurrentlyLoggingIn(false);
                   }}
+                  onMouseEnter={handleCancelIconMouseEnter}
+                  onMouseLeave={handleCancelIconMouseLeave}
                   className="text-muted-foreground hover:text-foreground flex items-center gap-1"
                 >
-                  <ArrowLeft className="h-3.5 w-3.5" />
+                  <ArrowLeftIcon ref={cancelIconRef} size={14} />
                   {t("common.cancel")}
                 </button>
               </div>
@@ -393,7 +403,7 @@ export default function LoginPage() {
                 isLoading={isPasskeyLoading}
                 disabled={isPasskeyLoading || isRetryAfterActive}
               >
-                <KeyRound className="mr-2 h-4 w-4" />
+                <KeyIcon size={16} className="mr-2" />
                 {t("webauthn.login.button")}
               </Button>
             </>

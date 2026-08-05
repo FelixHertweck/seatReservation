@@ -1,8 +1,12 @@
 "use client";
 
+import { DeleteIcon } from "@/components/ui/delete";
 import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowUp, Plus, Ban, Download, Trash2 } from "lucide-react";
+import { ArrowUpIcon } from "@/components/ui/arrow-up";
+import { PlusIcon } from "@/components/ui/plus";
+import { DownloadIcon } from "@/components/ui/download";
+import { BanIcon } from "@/components/ui/ban";
 
 import { useT } from "@/lib/i18n/hooks";
 import { sanitizeFileName } from "@/lib/utils/filename";
@@ -267,7 +271,7 @@ export default function ManagementReservationsPage() {
                         {
                           key: "delete",
                           label: `${selectedIds.size}`,
-                          icon: <Trash2 className="h-4 w-4" />,
+                          icon: <DeleteIcon size={16} />,
                           onClick: handleDeleteSelected,
                           variant: "destructive" as const,
                           isLoading: isDeletingSelected,
@@ -277,21 +281,21 @@ export default function ManagementReservationsPage() {
                   {
                     key: "csv",
                     label: t("management.reservations.exportCsv"),
-                    icon: <Download className="h-4 w-4" />,
+                    icon: <DownloadIcon size={16} />,
                     onClick: () => handleExport("csv"),
                     isLoading: exportingFormat === "csv",
                   },
                   {
                     key: "pdf",
                     label: t("management.reservations.exportPdf"),
-                    icon: <Download className="h-4 w-4" />,
+                    icon: <DownloadIcon size={16} />,
                     onClick: () => handleExport("pdf"),
                     isLoading: exportingFormat === "pdf",
                   },
                   {
                     key: "block",
                     label: t("management.reservations.blockSeats"),
-                    icon: <Ban className="h-4 w-4" />,
+                    icon: <BanIcon size={16} />,
                     onClick: handleStartBlock,
                   },
                 ]}
@@ -300,7 +304,7 @@ export default function ManagementReservationsPage() {
                 onClick={handleStartReserve}
                 aria-label={t("management.reservations.newReservation")}
               >
-                <Plus className="h-4 w-4" />
+                <PlusIcon size={16} />
                 <span className="hidden sm:inline">
                   {t("management.reservations.newReservation")}
                 </span>
@@ -321,7 +325,7 @@ export default function ManagementReservationsPage() {
       {!eventId ? (
         <Card>
           <CardContent className="flex flex-col items-center gap-2 py-12 text-center text-muted-foreground">
-            <ArrowUp className="h-5 w-5" />
+            <ArrowUpIcon size={20} />
             {t("management.reservations.selectEventPrompt")}
           </CardContent>
         </Card>

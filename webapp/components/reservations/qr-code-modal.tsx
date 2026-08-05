@@ -11,7 +11,7 @@ import {
 } from "@/components/custom-ui/dialog";
 import { useT } from "@/lib/i18n/hooks";
 import { sanitizeFileName } from "@/lib/utils/filename";
-import { Download } from "lucide-react";
+import { DownloadIcon } from "@/components/ui/download";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import QRCode from "qrcode";
@@ -125,7 +125,7 @@ export function QRCodeModal({
             disabled={!qrCodeDataUrl}
             className="flex-1"
           >
-            <Download className="mr-2 h-4 w-4" />
+            <DownloadIcon size={16} className="mr-2" />
             {t("qrCodeModal.downloadButton")}
           </Button>
         </DialogFooter>

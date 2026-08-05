@@ -1,26 +1,26 @@
 "use client";
 
 import {
-  CalendarDays,
-  BookmarkCheck,
-  Settings,
-  Users,
-  LogOut,
-  LogIn,
-  Sun,
-  Moon,
-  Monitor,
-  Globe,
-  UserLock,
-  UserRound,
-  ChevronRight,
-  Eye,
-  LogIn as CheckInIcon,
-  LucideIcon,
-  LayoutDashboard,
-  MapPinned,
-  Ticket,
-} from "lucide-react";
+  ChevronRightIcon,
+  type ChevronRightIconHandle,
+} from "@/components/ui/chevron-right";
+import { BookmarkCheckIcon } from "@/components/ui/bookmark-check";
+import { SettingsIcon } from "@/components/ui/settings";
+import { UsersIcon } from "@/components/ui/users";
+import { LogoutIcon } from "@/components/ui/logout";
+import { LogInIcon } from "@/components/ui/login";
+import { SunIcon } from "@/components/ui/sun";
+import { MoonIcon } from "@/components/ui/moon";
+import { EarthIcon } from "@/components/ui/earth";
+import { UserIcon } from "@/components/ui/user";
+import { LayoutGridIcon } from "@/components/ui/layout-grid";
+import { MapPinIcon } from "@/components/ui/map-pin";
+import { TicketIcon } from "@/components/ui/ticket";
+import { EyeIcon } from "@/components/ui/eye";
+import { CalendarDaysIcon } from "@/components/ui/calendar-days";
+import type { AppIcon, AnimatedIconHandle } from "@/lib/icon-type";
+import { MonitorCheckIcon } from "@/components/ui/monitor-check";
+import { UserLock } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
@@ -50,7 +50,13 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
-import { useEffect } from "react";
+import {
+  useEffect,
+  useRef,
+  cloneElement,
+  type ReactElement,
+  type Ref,
+} from "react";
 import { useTheme } from "next-themes";
 import { useT } from "@/lib/i18n/hooks";
 import { languages } from "@/lib/i18n/config";
@@ -68,6 +74,16 @@ export function AppSidebar() {
 
   const { hasUnsavedChanges, setPendingNavigation, setShowUnsavedDialog } =
     useUnsavedChanges();
+
+  // Trigger these on hover of the whole button, not just the (small) icon.
+  const profileChevronRef = useRef<ChevronRightIconHandle>(null);
+  const settingsChevronRef = useRef<ChevronRightIconHandle>(null);
+  // Shared between the expanded and collapsed footer, which render
+  // mutually exclusively, so only one of each is ever mounted at a time.
+  const profileUserIconRef = useRef<AnimatedIconHandle>(null);
+  const settingsIconRef = useRef<AnimatedIconHandle>(null);
+  const logoutIconRef = useRef<AnimatedIconHandle>(null);
+  const loginIconRef = useRef<AnimatedIconHandle>(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -97,9 +113,9 @@ export function AppSidebar() {
   type MenuItem = {
     title: string;
     url: string;
-    icon: LucideIcon;
+    icon: AppIcon;
     badge: string;
-    subItems?: Array<{ title: string; url: string; icon: LucideIcon }>;
+    subItems?: Array<{ title: string; url: string; icon: AppIcon }>;
   };
 
   const getMenuGroups = () => {
@@ -108,18 +124,18 @@ export function AppSidebar() {
       generalItems.push({
         title: t("sidebar.events"),
         url: "/events",
-        icon: CalendarDays,
+        icon: CalendarDaysIcon,
         badge: "",
         subItems: [
           {
             title: t("sidebar.eventsBrowse"),
             url: "/events",
-            icon: CalendarDays,
+            icon: CalendarDaysIcon,
           },
           {
             title: t("sidebar.reservations"),
             url: "/events/reservations",
-            icon: BookmarkCheck,
+            icon: BookmarkCheckIcon,
           },
         ],
       });
@@ -134,13 +150,13 @@ export function AppSidebar() {
       supervisionItems.push({
         title: t("sidebar.checkin"),
         url: "/checkin",
-        icon: CheckInIcon,
+        icon: LogInIcon,
         badge: t("sidebar.supervisor"),
       });
       supervisionItems.push({
         title: t("sidebar.liveview"),
         url: "/liveview",
-        icon: Eye,
+        icon: EyeIcon,
         badge: t("sidebar.supervisor"),
       });
     }
@@ -150,28 +166,28 @@ export function AppSidebar() {
       managementItems.push({
         title: t("sidebar.management"),
         url: "/management",
-        icon: LayoutDashboard,
+        icon: LayoutGridIcon,
         badge: t("sidebar.manager"),
         subItems: [
           {
             title: t("sidebar.managementLocations"),
             url: "/management/locations",
-            icon: MapPinned,
+            icon: MapPinIcon,
           },
           {
             title: t("sidebar.managementEvents"),
             url: "/management/events",
-            icon: CalendarDays,
+            icon: CalendarDaysIcon,
           },
           {
             title: t("sidebar.managementReservations"),
             url: "/management/reservations",
-            icon: BookmarkCheck,
+            icon: BookmarkCheckIcon,
           },
           {
             title: t("sidebar.managementAllowances"),
             url: "/management/allowances",
-            icon: Ticket,
+            icon: TicketIcon,
           },
         ],
       });
@@ -181,7 +197,7 @@ export function AppSidebar() {
       managementItems.push({
         title: t("sidebar.userManagement"),
         url: "/admin",
-        icon: Users,
+        icon: UsersIcon,
         badge: t("sidebar.admin"),
       });
     }
@@ -198,15 +214,15 @@ export function AppSidebar() {
     return `${user.firstname[0]}${user.lastname[0]}`;
   };
 
-  const getThemeIcon = (themeValue: string) => {
+  const getThemeIcon = (themeValue: string): AppIcon => {
     switch (themeValue) {
       case "light":
-        return Sun;
+        return SunIcon;
       case "dark":
-        return Moon;
+        return MoonIcon;
       case "system":
       default:
-        return Monitor;
+        return MonitorCheckIcon;
     }
   };
 
@@ -290,7 +306,10 @@ export function AppSidebar() {
               theme === themeOption ? "bg-sidebar-accent/30" : ""
             }`}
           >
-            <ThemeIcon className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
+            <ThemeIcon
+              size={16}
+              className="mr-2 group-hover:scale-110 transition-transform duration-200"
+            />
             {getThemeLabel(themeOption)}
             {theme === themeOption && (
               <div className="ml-auto w-2 h-2 rounded-full bg-sidebar-primary animate-pulse" />
@@ -312,7 +331,10 @@ export function AppSidebar() {
               isCurrentLanguage ? "bg-sidebar-accent/30" : ""
             }`}
           >
-            <Globe className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
+            <EarthIcon
+              size={16}
+              className="mr-2 group-hover:scale-110 transition-transform duration-200"
+            />
             {getLanguageLabel(lang)}
             {isCurrentLanguage && (
               <div className="ml-auto w-2 h-2 rounded-full bg-sidebar-primary animate-pulse" />
@@ -427,121 +449,164 @@ export function AppSidebar() {
             </SidebarGroupLabel>
             <SidebarGroupContent className="group-data-[collapsible=icon]:!p-0">
               <SidebarMenu className="space-y-1 group-data-[collapsible=icon]:space-y-1">
-                {group.items.map((item, index) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      tooltip={item.title}
-                      className={`hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground transition-all duration-300 hover:scale-[1.02] group relative overflow-hidden p-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 ${
-                        isPathActive(item.url)
-                          ? "bg-sidebar-accent/40 text-sidebar-accent-foreground"
-                          : ""
-                      }`}
-                      style={{
-                        animationDelay: `${index * 140}ms`,
-                      }}
-                    >
-                      <Link
-                        href={item.url}
-                        onClick={(e) => {
-                          if (e.button === 0 && !e.metaKey && !e.ctrlKey) {
-                            e.preventDefault();
-                            handleNavigation(item.url);
-                          }
-                        }}
-                        onContextMenu={(e) => {
-                          e.stopPropagation();
+                {group.items.map((item, index) => {
+                  // Plain closure var, not state: the icon's ref callback
+                  // (commit phase) fills it in, and the Link's mouse
+                  // handlers (later, async) read it - no re-render needed.
+                  let iconHandle: AnimatedIconHandle | null = null;
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton
+                        asChild
+                        tooltip={item.title}
+                        className={`hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground transition-all duration-300 hover:scale-[1.02] group relative overflow-hidden p-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 ${
+                          isPathActive(item.url)
+                            ? "bg-sidebar-accent/40 text-sidebar-accent-foreground"
+                            : ""
+                        }`}
+                        style={{
+                          animationDelay: `${index * 140}ms`,
                         }}
                       >
-                        <div className="flex items-center gap-3 w-full px-3 py-2 group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-3 group-data-[collapsible=icon]:justify-center">
-                          <div className="relative">
-                            <item.icon
-                              className={`group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 ${
-                                isPathActive(item.url) ? "scale-110" : ""
-                              }`}
-                            />
-                            <div
-                              className={`absolute inset-0 bg-sidebar-primary/20 rounded-full scale-0 group-hover:scale-150 transition-transform duration-500 opacity-0 group-hover:opacity-100 ${
-                                isPathActive(item.url)
-                                  ? "scale-125 opacity-100"
-                                  : ""
-                              }`}
-                            />
-                          </div>
-                          <span
-                            className={`font-medium ${
-                              isPathActive(item.url) ? "font-semibold" : ""
-                            } group-data-[collapsible=icon]:hidden`}
-                          >
-                            {item.title}
-                          </span>
-                          {item.badge && (
-                            <Badge
-                              variant="secondary"
-                              className={`ml-auto text-xs bg-linear-to-r from-sidebar-primary/10 to-sidebar-accent/10 border-sidebar-primary/20 group-hover:scale-105 transition-transform duration-300 ${
-                                isPathActive(item.url) ? "scale-110" : ""
+                        <Link
+                          href={item.url}
+                          onClick={(e) => {
+                            if (e.button === 0 && !e.metaKey && !e.ctrlKey) {
+                              e.preventDefault();
+                              handleNavigation(item.url);
+                            }
+                          }}
+                          onContextMenu={(e) => {
+                            e.stopPropagation();
+                          }}
+                          onMouseEnter={() => iconHandle?.startAnimation?.()}
+                          onMouseLeave={() => iconHandle?.stopAnimation?.()}
+                        >
+                          <div className="flex items-center gap-3 w-full px-3 py-2 group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-3 group-data-[collapsible=icon]:justify-center">
+                            <div className="relative">
+                              {cloneElement(
+                                (
+                                  <item.icon
+                                    size={24}
+                                    className={`group-hover:scale-110 transition-all duration-300 ${
+                                      isPathActive(item.url) ? "scale-110" : ""
+                                    }`}
+                                  />
+                                ) as ReactElement<{
+                                  ref?: Ref<AnimatedIconHandle>;
+                                }>,
+                                {
+                                  ref: (handle: AnimatedIconHandle | null) => {
+                                    iconHandle = handle;
+                                  },
+                                },
+                              )}
+                              <div
+                                className={`absolute inset-0 bg-sidebar-primary/20 rounded-full scale-0 group-hover:scale-150 transition-transform duration-500 opacity-0 group-hover:opacity-100 ${
+                                  isPathActive(item.url)
+                                    ? "scale-125 opacity-100"
+                                    : ""
+                                }`}
+                              />
+                            </div>
+                            <span
+                              className={`font-medium ${
+                                isPathActive(item.url) ? "font-semibold" : ""
                               } group-data-[collapsible=icon]:hidden`}
                             >
-                              {item.badge}
-                            </Badge>
-                          )}
-                          <div className="absolute inset-0 bg-linear-to-r from-transparent via-sidebar-primary/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                        </div>
-                      </Link>
-                    </SidebarMenuButton>
-                    {item.subItems && item.subItems.length > 0 && (
-                      <SidebarMenuSub className="ml-0 border-l border-sidebar-border/50 ml-4">
-                        {item.subItems.map((subItem) => (
-                          <SidebarMenuSubItem key={subItem.title}>
-                            <SidebarMenuSubButton
-                              asChild
-                              className={`hover:bg-sidebar-accent/50 transition-all duration-300 group p-0 ${
-                                isSubItemActive(subItem.url)
-                                  ? "bg-sidebar-accent/40 text-sidebar-accent-foreground"
-                                  : ""
-                              }`}
-                            >
-                              <Link
-                                href={subItem.url}
-                                onClick={(e) => {
-                                  if (
-                                    e.button === 0 &&
-                                    !e.metaKey &&
-                                    !e.ctrlKey
-                                  ) {
-                                    e.preventDefault();
-                                    handleNavigation(subItem.url);
-                                  }
-                                }}
-                                onContextMenu={(e) => {
-                                  e.stopPropagation();
-                                }}
-                                className="flex items-center gap-3 w-full px-3 py-2 group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
+                              {item.title}
+                            </span>
+                            {item.badge && (
+                              <Badge
+                                variant="secondary"
+                                className={`ml-auto text-xs bg-linear-to-r from-sidebar-primary/10 to-sidebar-accent/10 border-sidebar-primary/20 group-hover:scale-105 transition-transform duration-300 ${
+                                  isPathActive(item.url) ? "scale-110" : ""
+                                } group-data-[collapsible=icon]:hidden`}
                               >
-                                <subItem.icon
-                                  className={`h-4 w-4 group-hover:scale-110 transition-transform duration-300 ${
+                                {item.badge}
+                              </Badge>
+                            )}
+                            <div className="absolute inset-0 bg-linear-to-r from-transparent via-sidebar-primary/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                          </div>
+                        </Link>
+                      </SidebarMenuButton>
+                      {item.subItems && item.subItems.length > 0 && (
+                        <SidebarMenuSub className="ml-0 border-l border-sidebar-border/50 ml-4">
+                          {item.subItems.map((subItem) => {
+                            let subIconHandle: AnimatedIconHandle | null = null;
+                            return (
+                              <SidebarMenuSubItem key={subItem.title}>
+                                <SidebarMenuSubButton
+                                  asChild
+                                  className={`hover:bg-sidebar-accent/50 transition-all duration-300 group p-0 ${
                                     isSubItemActive(subItem.url)
-                                      ? "scale-110"
-                                      : ""
-                                  }`}
-                                />
-                                <span
-                                  className={`text-sm group-data-[collapsible=icon]:hidden ${
-                                    isSubItemActive(subItem.url)
-                                      ? "font-semibold"
+                                      ? "bg-sidebar-accent/40 text-sidebar-accent-foreground"
                                       : ""
                                   }`}
                                 >
-                                  {subItem.title}
-                                </span>
-                              </Link>
-                            </SidebarMenuSubButton>
-                          </SidebarMenuSubItem>
-                        ))}
-                      </SidebarMenuSub>
-                    )}
-                  </SidebarMenuItem>
-                ))}
+                                  <Link
+                                    href={subItem.url}
+                                    onClick={(e) => {
+                                      if (
+                                        e.button === 0 &&
+                                        !e.metaKey &&
+                                        !e.ctrlKey
+                                      ) {
+                                        e.preventDefault();
+                                        handleNavigation(subItem.url);
+                                      }
+                                    }}
+                                    onContextMenu={(e) => {
+                                      e.stopPropagation();
+                                    }}
+                                    onMouseEnter={() =>
+                                      subIconHandle?.startAnimation?.()
+                                    }
+                                    onMouseLeave={() =>
+                                      subIconHandle?.stopAnimation?.()
+                                    }
+                                    className="flex items-center gap-3 w-full px-3 py-2 group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
+                                  >
+                                    {cloneElement(
+                                      (
+                                        <subItem.icon
+                                          size={16}
+                                          className={`group-hover:scale-110 transition-transform duration-300 ${
+                                            isSubItemActive(subItem.url)
+                                              ? "scale-110"
+                                              : ""
+                                          }`}
+                                        />
+                                      ) as ReactElement<{
+                                        ref?: Ref<AnimatedIconHandle>;
+                                      }>,
+                                      {
+                                        ref: (
+                                          handle: AnimatedIconHandle | null,
+                                        ) => {
+                                          subIconHandle = handle;
+                                        },
+                                      },
+                                    )}
+                                    <span
+                                      className={`text-sm group-data-[collapsible=icon]:hidden ${
+                                        isSubItemActive(subItem.url)
+                                          ? "font-semibold"
+                                          : ""
+                                      }`}
+                                    >
+                                      {subItem.title}
+                                    </span>
+                                  </Link>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                            );
+                          })}
+                        </SidebarMenuSub>
+                      )}
+                    </SidebarMenuItem>
+                  );
+                })}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -571,22 +636,54 @@ export function AppSidebar() {
               <button
                 type="button"
                 onClick={() => handleNavigation("/profile")}
+                onMouseEnter={() => {
+                  profileUserIconRef.current?.startAnimation();
+                  profileChevronRef.current?.startAnimation();
+                }}
+                onMouseLeave={() => {
+                  profileUserIconRef.current?.stopAnimation();
+                  profileChevronRef.current?.stopAnimation();
+                }}
                 className="flex w-full items-center gap-2 px-3 py-2 text-sm font-medium hover:bg-sidebar-accent/50 transition-colors duration-200"
               >
-                <UserRound className="h-4 w-4 text-sidebar-primary" />
+                <UserIcon
+                  ref={profileUserIconRef}
+                  size={16}
+                  className="text-sidebar-primary"
+                />
                 {t("sidebar.viewProfile")}
-                <ChevronRight className="ml-auto h-4 w-4 text-sidebar-foreground/50" />
+                <ChevronRightIcon
+                  ref={profileChevronRef}
+                  size={16}
+                  className="ml-auto text-sidebar-foreground/50"
+                />
               </button>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
+                    onMouseEnter={() => {
+                      settingsIconRef.current?.startAnimation();
+                      settingsChevronRef.current?.startAnimation();
+                    }}
+                    onMouseLeave={() => {
+                      settingsIconRef.current?.stopAnimation();
+                      settingsChevronRef.current?.stopAnimation();
+                    }}
                     className="flex w-full items-center gap-2 border-t border-sidebar-border/50 px-3 py-2 text-sm font-medium hover:bg-sidebar-accent/50 transition-colors duration-200"
                   >
-                    <Settings className="h-4 w-4 text-sidebar-primary" />
+                    <SettingsIcon
+                      ref={settingsIconRef}
+                      size={16}
+                      className="text-sidebar-primary"
+                    />
                     {t("sidebar.settings")}
-                    <ChevronRight className="ml-auto h-4 w-4 text-sidebar-foreground/50" />
+                    <ChevronRightIcon
+                      ref={settingsChevronRef}
+                      size={16}
+                      className="ml-auto text-sidebar-foreground/50"
+                    />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
@@ -604,9 +701,11 @@ export function AppSidebar() {
                 onClick={() => {
                   void logout();
                 }}
+                onMouseEnter={() => logoutIconRef.current?.startAnimation()}
+                onMouseLeave={() => logoutIconRef.current?.stopAnimation()}
                 className="flex w-full items-center gap-2 border-t border-sidebar-border/50 px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors duration-200"
               >
-                <LogOut className="h-4 w-4" />
+                <LogoutIcon ref={logoutIconRef} size={16} />
                 {t("sidebar.logout")}
               </button>
             </div>
@@ -628,9 +727,19 @@ export function AppSidebar() {
                 <SidebarMenuButton
                   tooltip={t("sidebar.viewProfile")}
                   onClick={() => handleNavigation("/profile")}
+                  onMouseEnter={() =>
+                    profileUserIconRef.current?.startAnimation()
+                  }
+                  onMouseLeave={() =>
+                    profileUserIconRef.current?.stopAnimation()
+                  }
                   className="hover:bg-sidebar-accent/50 transition-all duration-300 hover:scale-[1.02] group group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:mx-auto"
                 >
-                  <UserRound className="group-hover:scale-110 transition-transform duration-300" />
+                  <UserIcon
+                    ref={profileUserIconRef}
+                    size={24}
+                    className="group-hover:scale-110 transition-transform duration-300"
+                  />
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
@@ -640,9 +749,19 @@ export function AppSidebar() {
                     <SidebarMenuButton
                       tooltip={t("sidebar.settings")}
                       onClick={() => renderSettingsMenuItems()}
+                      onMouseEnter={() =>
+                        settingsIconRef.current?.startAnimation()
+                      }
+                      onMouseLeave={() =>
+                        settingsIconRef.current?.stopAnimation()
+                      }
                       className="hover:bg-sidebar-accent/50 transition-all duration-300 hover:scale-[1.02] group group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:mx-auto"
                     >
-                      <Settings className="group-hover:scale-110 transition-transform duration-300" />
+                      <SettingsIcon
+                        ref={settingsIconRef}
+                        size={24}
+                        className="group-hover:scale-110 transition-transform duration-300"
+                      />
                     </SidebarMenuButton>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
@@ -662,9 +781,15 @@ export function AppSidebar() {
                   onClick={() => {
                     void logout();
                   }}
+                  onMouseEnter={() => logoutIconRef.current?.startAnimation()}
+                  onMouseLeave={() => logoutIconRef.current?.stopAnimation()}
                   className="text-destructive hover:bg-destructive/10 hover:text-destructive transition-all duration-300 hover:scale-[1.02] group group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:mx-auto"
                 >
-                  <LogOut className="group-hover:scale-110 transition-transform duration-300" />
+                  <LogoutIcon
+                    ref={logoutIconRef}
+                    size={24}
+                    className="group-hover:scale-110 transition-transform duration-300"
+                  />
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -675,6 +800,8 @@ export function AppSidebar() {
               <SidebarMenuButton
                 asChild
                 tooltip={t("sidebar.login")}
+                onMouseEnter={() => loginIconRef.current?.startAnimation()}
+                onMouseLeave={() => loginIconRef.current?.stopAnimation()}
                 className="hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground transition-all duration-300 hover:scale-[1.02] group"
               >
                 <Link
@@ -682,7 +809,11 @@ export function AppSidebar() {
                   onClick={handleLinkClick}
                   className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center"
                 >
-                  <LogIn className="group-hover:scale-110 group-hover:translate-x-1 transition-all duration-300" />
+                  <LogInIcon
+                    ref={loginIconRef}
+                    size={24}
+                    className="group-hover:scale-110 group-hover:translate-x-1 transition-all duration-300"
+                  />
                   <span className="font-medium group-data-[collapsible=icon]:hidden">
                     {t("sidebar.login")}
                   </span>

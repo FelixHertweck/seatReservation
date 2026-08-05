@@ -1,19 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import {
-  ShieldCheck,
-  ShieldAlert,
-  Copy,
-  Check,
-  Loader2,
-  RefreshCw,
-  Smartphone,
-  Mail,
-  Key,
-  Eye,
-  EyeOff,
-} from "lucide-react";
+import { useIconHover } from "@/hooks/use-icon-hover";
+import { ShieldCheckIcon } from "@/components/ui/shield-check";
+import { CopyIcon } from "@/components/ui/copy";
+import { CheckIcon } from "@/components/ui/check";
+import { RefreshCWIcon } from "@/components/ui/refresh-cw";
+import { KeyIcon } from "@/components/ui/key";
+import { EyeIcon } from "@/components/ui/eye";
+
+import { ShieldAlert, Loader2, Smartphone, Mail, EyeOff } from "lucide-react";
 import { Button } from "@/components/custom-ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -64,6 +60,11 @@ export function TwoFactorSection() {
   const params = useParams();
   const locale = params.locale as string;
   const router = useRouter();
+  const {
+    ref: shieldIconRef,
+    onMouseEnter: handleShieldIconMouseEnter,
+    onMouseLeave: handleShieldIconMouseLeave,
+  } = useIconHover();
   const {
     status,
     isStatusLoading,
@@ -313,10 +314,16 @@ export function TwoFactorSection() {
           <AccordionTrigger
             className="py-0 hover:no-underline disabled:cursor-not-allowed disabled:opacity-50"
             disabled={isStatusLoading}
+            onMouseEnter={handleShieldIconMouseEnter}
+            onMouseLeave={handleShieldIconMouseLeave}
           >
             <div className="flex flex-col items-start gap-0.5 text-left">
               <span className="flex items-center gap-2 text-base font-medium">
-                <ShieldCheck className="h-5 w-5 text-primary" />
+                <ShieldCheckIcon
+                  ref={shieldIconRef}
+                  size={20}
+                  className="text-primary"
+                />
                 {t("twoFactor.title")}
                 {isStatusLoading ? (
                   <Skeleton className="h-5 w-16 rounded-full" />
@@ -381,7 +388,7 @@ export function TwoFactorSection() {
                       size="sm"
                       onClick={openRegenerateConfirm}
                     >
-                      <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
+                      <RefreshCWIcon size={14} className="mr-1.5" />
                       {t("twoFactor.regenerateBackupCodes")}
                     </Button>
                   </div>
@@ -449,7 +456,7 @@ export function TwoFactorSection() {
                       {isSecretVisible ? (
                         <EyeOff className="h-4 w-4" />
                       ) : (
-                        <Eye className="h-4 w-4" />
+                        <EyeIcon size={16} />
                       )}
                     </Button>
                     <Button
@@ -459,9 +466,9 @@ export function TwoFactorSection() {
                       onClick={() => copyToClipboard(totpSetupData.secret!)}
                     >
                       {isCopiedSecret ? (
-                        <Check className="h-4 w-4 text-green-500" />
+                        <CheckIcon size={16} className="text-green-500" />
                       ) : (
-                        <Copy className="h-4 w-4" />
+                        <CopyIcon size={16} />
                       )}
                     </Button>
                   </div>
@@ -475,7 +482,7 @@ export function TwoFactorSection() {
             totpSetupStep === 2 && (
               <div className="space-y-2 py-2">
                 <div className="flex items-center gap-1.5 text-sm font-medium text-amber-700 dark:text-amber-400">
-                  <Key className="h-4 w-4" />
+                  <KeyIcon size={16} />
                   {t("twoFactor.backupCodesTitle")}
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -564,7 +571,7 @@ export function TwoFactorSection() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Key className="h-5 w-5 text-amber-500" />
+              <KeyIcon size={20} className="text-amber-500" />
               {t("twoFactor.backupCodesTitle")}
             </DialogTitle>
             <DialogDescription>
@@ -642,7 +649,7 @@ export function TwoFactorSection() {
         <AlertDialogContent>
           <AlertDialogHeader className="text-left">
             <AlertDialogTitle className="flex items-center gap-2">
-              <RefreshCw className="h-5 w-5 text-primary" />
+              <RefreshCWIcon size={20} className="text-primary" />
               {t("twoFactor.regenerateConfirmTitle")}
             </AlertDialogTitle>
             <AlertDialogDescription>

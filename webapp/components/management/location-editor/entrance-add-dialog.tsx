@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { PlusIcon } from "@/components/ui/plus";
 
 import { useT } from "@/lib/i18n/hooks";
 import {
@@ -58,7 +58,7 @@ export function EntranceAddDialog({
             onClick={handleAdd}
             disabled={!name.trim()}
           >
-            <Plus className="h-4 w-4" />
+            <PlusIcon size={16} />
             {t("management.locationEditor.entrances.addButton")}
           </Button>
         </div>

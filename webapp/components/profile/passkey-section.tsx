@@ -1,15 +1,14 @@
 "use client";
 
+import { DeleteIcon } from "@/components/ui/delete";
 import { useState } from "react";
-import {
-  Check,
-  KeyRound,
-  Loader2,
-  Pencil,
-  Plus,
-  Trash2,
-  X,
-} from "lucide-react";
+import { useIconHover } from "@/hooks/use-icon-hover";
+import { CheckIcon } from "@/components/ui/check";
+import { PlusIcon } from "@/components/ui/plus";
+import { XIcon } from "@/components/ui/x";
+import { KeyIcon } from "@/components/ui/key";
+import { SquarePenIcon } from "@/components/ui/square-pen";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/custom-ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/custom-ui/label";
@@ -46,6 +45,11 @@ export function PasskeySection() {
     useWebAuthn();
   const { status, credentials, isCredentialsLoading } =
     useWebAuthnStatus(isSupported);
+  const {
+    ref: keyIconRef,
+    onMouseEnter: handleKeyIconMouseEnter,
+    onMouseLeave: handleKeyIconMouseLeave,
+  } = useIconHover();
 
   const [isAdding, setIsAdding] = useState(false);
   const [pendingDelete, setPendingDelete] =
@@ -110,7 +114,7 @@ export function PasskeySection() {
     return (
       <div className="border-t pt-4">
         <Label className="flex items-center gap-2">
-          <KeyRound className="h-5 w-5 text-primary" />
+          <KeyIcon size={20} className="text-primary" />
           {t("webauthn.manage.title")}
         </Label>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -133,7 +137,7 @@ export function PasskeySection() {
             className="flex items-center justify-between rounded-lg border bg-muted/30 p-3"
           >
             <div className="flex flex-1 items-center gap-3">
-              <KeyRound className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <KeyIcon size={16} className="shrink-0 text-muted-foreground" />
               {isEditing ? (
                 <Input
                   autoFocus
@@ -181,7 +185,7 @@ export function PasskeySection() {
                   disabled={isRenaming || !editValue.trim()}
                   aria-label={t("webauthn.manage.saveRename")}
                 >
-                  <Check className="h-4 w-4" />
+                  <CheckIcon size={16} />
                 </Button>
                 <Button
                   type="button"
@@ -191,7 +195,7 @@ export function PasskeySection() {
                   disabled={isRenaming}
                   aria-label={t("webauthn.manage.cancel")}
                 >
-                  <X className="h-4 w-4" />
+                  <XIcon size={16} />
                 </Button>
               </div>
             ) : (
@@ -203,7 +207,7 @@ export function PasskeySection() {
                   onClick={() => startEditing(credential)}
                   aria-label={t("webauthn.manage.renameButton")}
                 >
-                  <Pencil className="h-4 w-4" />
+                  <SquarePenIcon size={16} />
                 </Button>
                 <Button
                   type="button"
@@ -213,7 +217,7 @@ export function PasskeySection() {
                   onClick={() => setPendingDelete(credential)}
                   aria-label={t("webauthn.manage.deleteButton")}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <DeleteIcon size={16} />
                 </Button>
               </div>
             )}
@@ -233,10 +237,16 @@ export function PasskeySection() {
             <AccordionTrigger
               className="flex-1 py-0 hover:no-underline disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:no-underline"
               disabled={!isExpandable}
+              onMouseEnter={handleKeyIconMouseEnter}
+              onMouseLeave={handleKeyIconMouseLeave}
             >
               <div className="flex flex-col items-start gap-0.5 text-left">
                 <span className="flex items-center gap-2 text-base font-medium">
-                  <KeyRound className="h-5 w-5 text-primary" />
+                  <KeyIcon
+                    ref={keyIconRef}
+                    size={20}
+                    className="text-primary"
+                  />
                   {t("webauthn.manage.title")}
                   {isCredentialsLoading ? (
                     <Skeleton className="h-5 w-6 rounded-full" />
@@ -264,7 +274,7 @@ export function PasskeySection() {
               isLoading={isAdding}
               disabled={isAdding}
             >
-              <Plus className="mr-1 h-4 w-4" />
+              <PlusIcon size={16} className="mr-1" />
               {t("webauthn.manage.addButton")}
             </Button>
           </div>

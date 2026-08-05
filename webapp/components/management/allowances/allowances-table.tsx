@@ -1,6 +1,8 @@
 "use client";
 
-import { Minus, Plus, Trash2 } from "lucide-react";
+import { DeleteIcon } from "@/components/ui/delete";
+import { PlusIcon } from "@/components/ui/plus";
+import { Minus } from "lucide-react";
 
 import { useT } from "@/lib/i18n/hooks";
 import { Button } from "@/components/custom-ui/button";
@@ -115,7 +117,7 @@ export function AllowancesTable({
                     className="h-7 w-7"
                     onClick={() => onChangeCount(allowance, 1)}
                   >
-                    <Plus className="h-3.5 w-3.5" />
+                    <PlusIcon size={14} />
                   </Button>
                 </div>
               </TableCell>
@@ -127,7 +129,7 @@ export function AllowancesTable({
                   onClick={() => onDeleteAllowance(allowance)}
                   isLoading={deletingId === allowance.id}
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
+                  <DeleteIcon size={14} />
                 </Button>
               </TableCell>
             </TableRow>

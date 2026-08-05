@@ -1,9 +1,11 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Armchair, DoorOpen, MapPin, Shapes } from "lucide-react";
+import { MapPinIcon } from "@/components/ui/map-pin";
+import { Armchair, DoorOpen, Shapes } from "lucide-react";
 
 import { useT } from "@/lib/i18n/hooks";
+import { useIconHover } from "@/hooks/use-icon-hover";
 import {
   Accordion,
   AccordionContent,
@@ -66,6 +68,11 @@ export function EditorSidePanel({
   onDrawAreaBoundary,
 }: EditorSidePanelProps) {
   const t = useT();
+  const {
+    ref: markersIconRef,
+    onMouseEnter: handleMarkersIconMouseEnter,
+    onMouseLeave: handleMarkersIconMouseLeave,
+  } = useIconHover();
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3">
@@ -111,9 +118,13 @@ export function EditorSidePanel({
           value="markers"
           className="rounded-lg border bg-card px-3"
         >
-          <AccordionTrigger className="hover:no-underline">
+          <AccordionTrigger
+            className="hover:no-underline"
+            onMouseEnter={handleMarkersIconMouseEnter}
+            onMouseLeave={handleMarkersIconMouseLeave}
+          >
             <SectionTrigger
-              icon={<MapPin className="h-4 w-4" />}
+              icon={<MapPinIcon ref={markersIconRef} size={16} />}
               label={t("management.locationEditor.markers.title")}
               count={state.markers.length}
             />

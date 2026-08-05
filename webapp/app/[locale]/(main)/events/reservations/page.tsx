@@ -19,7 +19,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/custom-ui/button";
-import { CalendarDays } from "lucide-react";
+import { CalendarDaysIcon } from "@/components/ui/calendar-days";
 
 interface SelectedReservation {
   reservation: UserReservationResponseDto;
@@ -248,7 +248,7 @@ const NoReservationAvailable = ({
         </p>
         <Button variant="outline" className="mt-4" asChild>
           <Link href="/events">
-            <CalendarDays className="h-4 w-4" />
+            <CalendarDaysIcon size={16} />
             {t("eventsNav.browse")}
           </Link>
         </Button>

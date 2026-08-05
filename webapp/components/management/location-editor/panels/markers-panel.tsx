@@ -1,7 +1,8 @@
 "use client";
 
+import { DeleteIcon } from "@/components/ui/delete";
 import { useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { PlusIcon } from "@/components/ui/plus";
 
 import { useT } from "@/lib/i18n/hooks";
 import { cn } from "@/lib/utils";
@@ -37,7 +38,7 @@ export function MarkersPanel({
         className="w-full"
         onClick={() => setDialogOpen(true)}
       >
-        <Plus className="h-4 w-4" />
+        <PlusIcon size={16} />
         {t("management.locationEditor.markers.addButton")}
       </Button>
 
@@ -75,7 +76,7 @@ export function MarkersPanel({
                     onSelectionChange(new Set());
                 }}
               >
-                <Trash2 className="h-3.5 w-3.5" />
+                <DeleteIcon size={14} />
               </Button>
             </div>
           ))

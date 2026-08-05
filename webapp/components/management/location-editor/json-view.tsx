@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Copy, Download, Upload, Check } from "lucide-react";
+import { CopyIcon } from "@/components/ui/copy";
+import { DownloadIcon } from "@/components/ui/download";
+import { UploadIcon } from "@/components/ui/upload";
+import { CheckIcon } from "@/components/ui/check";
 
 import { useT } from "@/lib/i18n/hooks";
 import { Button } from "@/components/custom-ui/button";
@@ -151,19 +154,15 @@ export function JsonView({ state, autosave }: JsonViewProps) {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={handleCopy}>
-            {copied ? (
-              <Check className="h-4 w-4" />
-            ) : (
-              <Copy className="h-4 w-4" />
-            )}
+            {copied ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
             {t("management.locationEditor.json.copyButton")}
           </Button>
           <Button variant="outline" size="sm" onClick={handleDownload}>
-            <Download className="h-4 w-4" />
+            <DownloadIcon size={16} />
             {t("management.locationEditor.json.downloadButton")}
           </Button>
           <Button variant="outline" size="sm" onClick={handleUploadClick}>
-            <Upload className="h-4 w-4" />
+            <UploadIcon size={16} />
             {t("management.locationEditor.json.uploadButton")}
           </Button>
         </div>

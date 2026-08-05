@@ -2,7 +2,9 @@
 
 import type React from "react";
 import { useState, useEffect } from "react";
-import { Upload, FileText, Pencil } from "lucide-react";
+import { UploadIcon } from "@/components/ui/upload";
+import { FileTextIcon } from "@/components/ui/file-text";
+import { SquarePenIcon } from "@/components/ui/square-pen";
 import { Button } from "@/components/custom-ui/button";
 import {
   Dialog,
@@ -168,7 +170,7 @@ export function UserImportModal({
         >
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
+              <FileTextIcon size={20} />
               {t("userImportModal.importUserDataTitle")}
             </DialogTitle>
             <DialogDescription>
@@ -280,7 +282,7 @@ export function UserImportModal({
                           onClick={() => handleEditCard(idx)}
                           className="h-8 px-2 shrink-0"
                         >
-                          <Pencil className="h-3.5 w-3.5 mr-1" />
+                          <SquarePenIcon size={14} className="mr-1" />
                           <span className="text-xs">
                             {t("userImportModal.editUserButton") ||
                               "Bearbeiten"}
@@ -310,7 +312,7 @@ export function UserImportModal({
                 isLoading={isLoading}
                 disabled={isLoading || parsedUsers.length === 0}
               >
-                <Upload className="mr-2 h-4 w-4" />
+                <UploadIcon size={16} className="mr-2" />
                 {t("userImportModal.importUsersButton")}
               </Button>
             </div>

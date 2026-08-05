@@ -1,4 +1,5 @@
-import { Calendar, ArrowRight } from "lucide-react";
+import { ArrowRightIcon } from "@/components/ui/arrow-right";
+import { CalendarDaysIcon } from "@/components/ui/calendar-days";
 import Link from "next/link";
 import { Button } from "@/components/custom-ui/button";
 import { createTranslation } from "@/lib/i18n/server";
@@ -176,7 +177,7 @@ export default async function StartPage({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-linear-to-br from-primary to-primary/80 text-primary-foreground shadow-lg">
-                <Calendar className="size-4" />
+                <CalendarDaysIcon size={16} />
               </div>
               <span className="text-xl font-bold">
                 {t("startPage.eventManagerTitle")}
@@ -219,7 +220,10 @@ export default async function StartPage({
                 className="group hover:scale-105 transition-all duration-300"
               >
                 {t("startPage.getStartedButton")}
-                <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
+                <ArrowRightIcon
+                  size={16}
+                  className="ml-2 group-hover:translate-x-1 transition-transform duration-300"
+                />
               </Button>
             </Link>
           </div>

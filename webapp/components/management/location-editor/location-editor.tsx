@@ -24,7 +24,8 @@ import type {
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/custom-ui/button";
 import Link from "next/link";
-import { ArrowLeft, AlertCircle, Loader2 } from "lucide-react";
+import { ArrowLeftIcon } from "@/components/ui/arrow-left";
+import { AlertCircle, Loader2 } from "lucide-react";
 
 export function LocationEditor({ locationId }: { locationId: string }) {
   const t = useT();
@@ -121,7 +122,7 @@ export function LocationEditor({ locationId }: { locationId: string }) {
           <span>{t("management.locationEditor.notFound")}</span>
           <Button variant="outline" size="sm" asChild>
             <Link href="/management/locations">
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeftIcon size={16} />
               {t("management.locationEditor.backToLocations")}
             </Link>
           </Button>

@@ -1,14 +1,11 @@
 "use client";
 
+import { DeleteIcon } from "@/components/ui/delete";
 import Link from "next/link";
-import {
-  Calendar,
-  MapPin,
-  Trash2,
-  Eye,
-  QrCode,
-  CalendarDays,
-} from "lucide-react";
+import { MapPinIcon } from "@/components/ui/map-pin";
+import { EyeIcon } from "@/components/ui/eye";
+import { CalendarDaysIcon } from "@/components/ui/calendar-days";
+import { QrCode } from "lucide-react";
 import { Button } from "@/components/custom-ui/button";
 import {
   Card,
@@ -130,13 +127,13 @@ export function ReservationCard({
 
         <CardContent className="flex-1 space-y-2">
           <div className="flex items-center text-sm text-muted-foreground">
-            <MapPin className="mr-2 h-4 w-4" />
+            <MapPinIcon size={16} className="mr-2" />
             {t("reservationCard.locationLabel")}:{" "}
             {locationName || t("reservationCard.unknownLocation")}
           </div>
 
           <div className="flex items-center text-sm text-muted-foreground">
-            <Calendar className="mr-2 h-4 w-4" />
+            <CalendarDaysIcon size={16} className="mr-2" />
             {t("reservationCard.bookingUntil")}:{" "}
             {bookingDeadline
               ? bookingDeadline.toLocaleDateString() +
@@ -170,7 +167,7 @@ export function ReservationCard({
                 disabled={selectedReservations.size === 0}
                 className="h-8 text-xs px-2"
               >
-                <Trash2 className="mr-1 h-3 w-3" />
+                <DeleteIcon size={12} className="mr-1" />
                 {selectedReservations.size > 0
                   ? selectedReservations.size
                   : "0"}
@@ -222,7 +219,7 @@ export function ReservationCard({
             onClick={() => onViewSeats(firstReservation)}
             className="flex-1 hover:scale-[1.02] transition-all duration-300 active:scale-[0.98]"
           >
-            <Eye className="mr-2 h-4 w-4" />
+            <EyeIcon size={16} className="mr-2" />
             {reservations.length > 1
               ? t("reservationCard.viewSeatMultipleButton")
               : t("reservationCard.viewSeatButton")}
@@ -244,7 +241,7 @@ export function ReservationCard({
               className="flex-1 hover:scale-[1.02] transition-all duration-300 active:scale-[0.98]"
             >
               <Link href={viewEventHref}>
-                <CalendarDays className="mr-2 h-4 w-4" />
+                <CalendarDaysIcon size={16} className="mr-2" />
                 {t("reservationsPage.viewEventButton")}
               </Link>
             </Button>

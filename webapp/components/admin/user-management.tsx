@@ -1,7 +1,12 @@
 "use client";
 
+import { DeleteIcon } from "@/components/ui/delete";
 import { useState } from "react";
-import { Plus, Edit, Trash2, FileText, Download } from "lucide-react";
+import { PlusIcon } from "@/components/ui/plus";
+import { FileTextIcon } from "@/components/ui/file-text";
+import { DownloadIcon } from "@/components/ui/download";
+import { SquarePenIcon } from "@/components/ui/square-pen";
+
 import { Button } from "@/components/custom-ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -207,7 +212,7 @@ export function UserManagement({
                       {
                         key: "delete",
                         label: `${selectedIds.size}`,
-                        icon: <Trash2 className="h-4 w-4" />,
+                        icon: <DeleteIcon size={16} />,
                         onClick: handleDeleteSelected,
                         variant: "destructive" as const,
                         isLoading: isDeletingSelected,
@@ -219,7 +224,7 @@ export function UserManagement({
                       {
                         key: "import",
                         label: t("userManagement.importJsonButton"),
-                        icon: <FileText className="h-4 w-4" />,
+                        icon: <FileTextIcon size={16} />,
                         onClick: () => setIsImportModalOpen(true),
                       },
                     ]
@@ -227,7 +232,7 @@ export function UserManagement({
                 {
                   key: "export",
                   label: t("userExport.exportUsersAsJson"),
-                  icon: <Download className="h-4 w-4" />,
+                  icon: <DownloadIcon size={16} />,
                   onClick: handleExport,
                 },
               ]}
@@ -236,7 +241,7 @@ export function UserManagement({
               onClick={handleCreateUser}
               aria-label={t("userManagement.addUserButton")}
             >
-              <Plus className="h-4 w-4" />
+              <PlusIcon size={16} />
               <span className="hidden sm:inline">
                 {t("userManagement.addUserButton")}
               </span>
@@ -419,7 +424,7 @@ export function UserManagement({
                                     size="sm"
                                     onClick={() => handleEditUser(user)}
                                   >
-                                    <Edit className="h-4 w-4" />
+                                    <SquarePenIcon size={16} />
                                   </Button>
                                   <Button
                                     variant="destructive"
@@ -427,7 +432,7 @@ export function UserManagement({
                                     onClick={() => handleDeleteUser(user)}
                                     isLoading={deletingUserId === user.id}
                                   >
-                                    <Trash2 className="h-4 w-4" />
+                                    <DeleteIcon size={16} />
                                   </Button>
                                 </div>
                               </TableCell>
@@ -550,7 +555,10 @@ export function UserManagement({
                                 className="flex-1"
                                 onClick={() => handleEditUser(user)}
                               >
-                                <Edit className="h-4 w-4 min-[400px]:mr-2" />
+                                <SquarePenIcon
+                                  size={16}
+                                  className="min-[400px]:mr-2"
+                                />
                                 <span className="hidden min-[400px]:inline">
                                   {t("userManagement.editButtonLabel")}
                                 </span>
@@ -562,7 +570,10 @@ export function UserManagement({
                                 onClick={() => handleDeleteUser(user)}
                                 isLoading={deletingUserId === user.id}
                               >
-                                <Trash2 className="h-4 w-4 min-[400px]:mr-2" />
+                                <DeleteIcon
+                                  size={16}
+                                  className="min-[400px]:mr-2"
+                                />
                                 <span className="hidden min-[400px]:inline">
                                   {t("userManagement.deleteButtonLabel")}
                                 </span>

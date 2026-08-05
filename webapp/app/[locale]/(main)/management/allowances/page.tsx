@@ -1,8 +1,10 @@
 "use client";
 
+import { DeleteIcon } from "@/components/ui/delete";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowUp, Plus, Trash2 } from "lucide-react";
+import { ArrowUpIcon } from "@/components/ui/arrow-up";
+import { PlusIcon } from "@/components/ui/plus";
 
 import { useT } from "@/lib/i18n/hooks";
 import { PageHeader } from "@/components/page-header";
@@ -172,7 +174,7 @@ export default function ManagementAllowancesPage() {
                           label: t("management.allowances.deleteSelected", {
                             count: selectedIds.size,
                           }),
-                          icon: <Trash2 className="h-4 w-4" />,
+                          icon: <DeleteIcon size={16} />,
                           onClick: handleDeleteSelected,
                           variant: "destructive" as const,
                           isLoading: isDeletingSelected,
@@ -185,7 +187,7 @@ export default function ManagementAllowancesPage() {
                 onClick={() => setIsModalOpen(true)}
                 aria-label={t("management.allowances.grantButton")}
               >
-                <Plus className="h-4 w-4" />
+                <PlusIcon size={16} />
                 <span className="hidden sm:inline">
                   {t("management.allowances.grantButton")}
                 </span>
@@ -206,7 +208,7 @@ export default function ManagementAllowancesPage() {
       {!eventId ? (
         <Card>
           <CardContent className="flex flex-col items-center gap-2 py-12 text-center text-muted-foreground">
-            <ArrowUp className="h-5 w-5" />
+            <ArrowUpIcon size={20} />
             {t("management.allowances.selectEventPrompt")}
           </CardContent>
         </Card>

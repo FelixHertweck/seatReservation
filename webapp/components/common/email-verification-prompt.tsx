@@ -20,7 +20,10 @@ import { ErrorWithResponse } from "@/components/init-query-client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useT } from "@/lib/i18n/hooks";
-import { BadgeCheck, MailCheck, RefreshCw, User } from "lucide-react";
+import { RefreshCWIcon } from "@/components/ui/refresh-cw";
+import { UserIcon } from "@/components/ui/user";
+import { MailCheckIcon } from "@/components/ui/mail-check";
+import { CircleCheckIcon } from "@/components/ui/circle-check";
 
 export function EmailVerificationPrompt() {
   const t = useT();
@@ -228,7 +231,7 @@ const EmailVerified = () => {
       className="w-full sm:w-auto"
       variant="outline"
     >
-      <RefreshCw className="mr-2 h-4 w-4" />
+      <RefreshCWIcon size={16} className="mr-2" />
       {t("emailVerificationPrompt.reloadPageButton")}
     </Button>
   );
@@ -243,7 +246,7 @@ const NoEmailProvided = ({
 
   return (
     <Button onClick={handleGoToProfile} className="w-full sm:w-auto">
-      <User className="mr-2 h-4 w-4" />
+      <UserIcon size={16} className="mr-2" />
       {t("emailVerificationPrompt.goToProfileButton")}
     </Button>
   );
@@ -265,11 +268,11 @@ const EmailVerificationAlreadySent = ({
         className="w-full sm:w-auto"
         variant="outline"
       >
-        <User className="mr-2 h-4 w-4" />
+        <UserIcon size={16} className="mr-2" />
         {t("emailVerificationPrompt.goToProfileButton")}
       </Button>
       <Button onClick={handleGoToVerify} className="w-full sm:w-auto">
-        <BadgeCheck className="mr-2 h-4 w-4" />
+        <CircleCheckIcon size={16} className="mr-2" />
         {t("emailVerificationPrompt.goToVerifyButton")}
       </Button>
     </>
@@ -299,7 +302,7 @@ const EmailVerificationNotSent = ({
         variant="outline"
         disabled={isSending}
       >
-        <User className="mr-2 h-4 w-4" />
+        <UserIcon size={16} className="mr-2" />
         {t("emailVerificationPrompt.goToProfileButton")}
       </Button>
       <Button
@@ -308,7 +311,7 @@ const EmailVerificationNotSent = ({
         isLoading={isSending}
         disabled={isSending || cooldownActive}
       >
-        <MailCheck className="mr-2 h-4 w-4" />
+        <MailCheckIcon size={16} className="mr-2" />
         {cooldownActive
           ? `${t("emailVerificationPrompt.sendVerificationMail")} (${remainingSeconds}s)`
           : t("emailVerificationPrompt.sendVerificationMail")}

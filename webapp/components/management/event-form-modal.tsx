@@ -3,7 +3,10 @@
 import type React from "react";
 
 import { useState } from "react";
-import { Calendar, Clock, MapPin, Users } from "lucide-react";
+import { MapPinIcon } from "@/components/ui/map-pin";
+import { ClockIcon } from "@/components/ui/clock";
+import { CalendarDaysIcon } from "@/components/ui/calendar-days";
+import { UsersIcon } from "@/components/ui/users";
 import {
   Dialog,
   DialogContent,
@@ -141,7 +144,7 @@ export function EventFormModal({
             {/* Basic information */}
             <div className="space-y-4">
               <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                <Calendar className="h-4 w-4" />
+                <CalendarDaysIcon size={16} />
                 {t("eventFormModal.basicInfoSectionTitle")}
               </h3>
               <div className="space-y-2">
@@ -178,7 +181,7 @@ export function EventFormModal({
             {/* Location */}
             <div className="space-y-4 border-t pt-6">
               <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                <MapPin className="h-4 w-4" />
+                <MapPinIcon size={16} />
                 {t("eventFormModal.locationSectionTitle")}
               </h3>
               <div className="space-y-2">
@@ -218,7 +221,7 @@ export function EventFormModal({
             {/* Schedule */}
             <div className="space-y-4 border-t pt-6">
               <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                <Clock className="h-4 w-4" />
+                <ClockIcon size={16} />
                 {t("eventFormModal.scheduleSectionTitle")}
               </h3>
               <div className="grid grid-cols-2 gap-4">
@@ -326,7 +329,7 @@ export function EventFormModal({
             {/* Supervisors */}
             <div className="space-y-4 border-t pt-6">
               <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                <Users className="h-4 w-4" />
+                <UsersIcon size={16} />
                 {t("eventFormModal.supervisorsSectionTitle")}
               </h3>
               <UserMultiSelect

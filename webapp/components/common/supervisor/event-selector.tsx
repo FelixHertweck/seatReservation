@@ -2,7 +2,8 @@
 
 import React from "react";
 import { useT } from "@/lib/i18n/hooks";
-import { CalendarDays, Loader2 } from "lucide-react";
+import { CalendarDaysIcon } from "@/components/ui/calendar-days";
+import { Loader2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -54,7 +55,7 @@ export default function EventSelector({
             : "gap-2 border-primary/60 ring-2 ring-primary/20 data-[placeholder]:text-foreground data-[placeholder]:font-medium"
         }
       >
-        <CalendarDays className="h-4 w-4 shrink-0 opacity-70" />
+        <CalendarDaysIcon size={16} className="shrink-0 opacity-70" />
         <SelectValue placeholder={t(placeholderKey)} />
       </SelectTrigger>
       <SelectContent>

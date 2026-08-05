@@ -4,8 +4,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/custom-ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/custom-ui/button";
-import { Check, Plus, Search, X } from "lucide-react";
+import { CheckIcon } from "@/components/ui/check";
+import { PlusIcon } from "@/components/ui/plus";
+import { SearchIcon } from "@/components/ui/search";
+import { XIcon } from "@/components/ui/x";
 import type { UserDto } from "@/api";
+import type { AnimatedIconHandle } from "@/lib/icon-type";
+import { useIconHover } from "@/hooks/use-icon-hover";
 import { useT } from "@/lib/i18n/hooks";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +36,11 @@ export function UserSearchSelect({
   const [isTagPickerOpen, setIsTagPickerOpen] = useState(false);
   const [tagQuery, setTagQuery] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
+  const {
+    ref: clearIconRef,
+    onMouseEnter: handleClearIconMouseEnter,
+    onMouseLeave: handleClearIconMouseLeave,
+  } = useIconHover();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -125,7 +135,10 @@ export function UserSearchSelect({
 
       {/* Name / email search */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <SearchIcon
+          size={16}
+          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+        />
         <Input
           placeholder={placeholder || t("userSearchSelect.searchPlaceholder")}
           value={searchTerm}
@@ -147,9 +160,11 @@ export function UserSearchSelect({
           <button
             type="button"
             onClick={handleClearSelection}
+            onMouseEnter={handleClearIconMouseEnter}
+            onMouseLeave={handleClearIconMouseLeave}
             className="hover:bg-muted rounded-full p-0.5 transition-colors shrink-0"
           >
-            <X className="h-3.5 w-3.5" />
+            <XIcon ref={clearIconRef} size={14} />
           </button>
         </div>
       )}
@@ -173,22 +188,32 @@ export function UserSearchSelect({
           </div>
 
           <div className="flex flex-wrap items-center gap-1.5">
-            {activeTags.map((tag) => (
-              <Badge
-                key={tag}
-                variant="secondary"
-                className="pl-2 pr-1 py-1 gap-1"
-              >
-                <span className="text-xs">{tag}</span>
-                <button
-                  type="button"
-                  onClick={() => handleRemoveTag(tag)}
-                  className="hover:bg-muted rounded-full p-0.5 transition-colors"
+            {activeTags.map((tag) => {
+              let removeIconHandle: AnimatedIconHandle | null = null;
+              return (
+                <Badge
+                  key={tag}
+                  variant="secondary"
+                  className="pl-2 pr-1 py-1 gap-1"
                 >
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            ))}
+                  <span className="text-xs">{tag}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveTag(tag)}
+                    onMouseEnter={() => removeIconHandle?.startAnimation()}
+                    onMouseLeave={() => removeIconHandle?.stopAnimation()}
+                    className="hover:bg-muted rounded-full p-0.5 transition-colors"
+                  >
+                    <XIcon
+                      ref={(handle) => {
+                        removeIconHandle = handle;
+                      }}
+                      size={12}
+                    />
+                  </button>
+                </Badge>
+              );
+            })}
 
             <div className="relative">
               <Button
@@ -198,7 +223,7 @@ export function UserSearchSelect({
                 className="h-6 px-2 text-xs gap-1"
                 onClick={() => setIsTagPickerOpen((prev) => !prev)}
               >
-                <Plus className="h-3 w-3" />
+                <PlusIcon size={12} />
                 {t("userSearchSelect.addTagButton")}
               </Button>
 
@@ -273,7 +298,7 @@ export function UserSearchSelect({
                     className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer transition-colors"
                     onClick={() => handleSelectUser(userId)}
                   >
-                    <Check
+                    <CheckIcon
                       className={cn(
                         "h-4 w-4 shrink-0",
                         isSelected ? "opacity-100" : "opacity-0",

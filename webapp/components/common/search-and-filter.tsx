@@ -1,7 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Search, Filter, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+import {
+  useEffect,
+  useState,
+  cloneElement,
+  type ReactElement,
+  type Ref,
+} from "react";
+import { SearchIcon } from "@/components/ui/search";
+import { SlidersHorizontalIcon } from "@/components/ui/sliders-horizontal";
+import { ChevronsUpDownIcon } from "@/components/ui/chevrons-up-down";
+import { ArrowDownIcon } from "@/components/ui/arrow-down";
+import { ArrowUpIcon } from "@/components/ui/arrow-up";
+import type { AppIcon, AnimatedIconHandle } from "@/lib/icon-type";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/custom-ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -96,7 +107,10 @@ export function SearchAndFilter({
       {/* Search Bar and Filter Toggle */}
       <div className="group flex w-full items-center justify-end gap-3">
         <div className="relative h-10 w-10 shrink-0 max-sm:has-[input:focus]:w-full max-sm:group-has-[button]:has-[input:focus]:w-[calc(100%-3.25rem)] sm:w-auto sm:min-w-0 sm:flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <SearchIcon
+            size={16}
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+          />
           <Input
             placeholder={t("searchAndFilter.searchPlaceholder")}
             value={searchQuery}
@@ -112,7 +126,7 @@ export function SearchAndFilter({
                 size="icon"
                 className="h-10 w-10 shrink-0 sm:w-auto sm:px-4"
               >
-                <Filter className="h-4 w-4" />
+                <SlidersHorizontalIcon size={16} />
                 <span className="hidden sm:inline">
                   {t("searchAndFilter.filtersButton")}
                 </span>
@@ -135,20 +149,33 @@ export function SearchAndFilter({
                   </p>
                   {sortOptions.map((option) => {
                     const isActive = sortKey === option.key;
-                    let Icon = ArrowUpDown;
-                    if (isActive && sortDirection === "asc") Icon = ArrowUp;
+                    let Icon: AppIcon = ChevronsUpDownIcon;
+                    if (isActive && sortDirection === "asc") Icon = ArrowUpIcon;
                     else if (isActive && sortDirection === "desc")
-                      Icon = ArrowDown;
+                      Icon = ArrowDownIcon;
+                    let sortIconHandle: AnimatedIconHandle | null = null;
                     return (
                       <button
                         key={option.key}
                         type="button"
                         onClick={() => onSort(option.key)}
+                        onMouseEnter={() => sortIconHandle?.startAnimation()}
+                        onMouseLeave={() => sortIconHandle?.stopAnimation()}
                         className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent"
                       >
-                        <Icon
-                          className={`h-4 w-4 shrink-0 ${isActive ? "" : "invisible"}`}
-                        />
+                        {cloneElement(
+                          (
+                            <Icon
+                              size={16}
+                              className={`shrink-0 ${isActive ? "" : "invisible"}`}
+                            />
+                          ) as ReactElement<{ ref?: Ref<AnimatedIconHandle> }>,
+                          {
+                            ref: (handle: AnimatedIconHandle | null) => {
+                              sortIconHandle = handle;
+                            },
+                          },
+                        )}
                         {option.label}
                       </button>
                     );

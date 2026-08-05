@@ -3,7 +3,8 @@
 import type React from "react";
 
 import { useState } from "react";
-import { Upload, FileText } from "lucide-react";
+import { UploadIcon } from "@/components/ui/upload";
+import { FileTextIcon } from "@/components/ui/file-text";
 import { Button } from "@/components/custom-ui/button";
 import {
   Dialog,
@@ -79,7 +80,7 @@ export function LocationImportModal({
       >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
+            <FileTextIcon size={20} />
             {t("locationImportModal.importLocationDataTitle")}
           </DialogTitle>
           <DialogDescription>
@@ -122,7 +123,7 @@ export function LocationImportModal({
               isLoading={isLoading}
               disabled={isLoading || !jsonData.trim()}
             >
-              <Upload className="mr-2 h-4 w-4" />
+              <UploadIcon size={16} className="mr-2" />
               {t("locationImportModal.importDataButton")}
             </Button>
           </div>

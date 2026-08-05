@@ -10,7 +10,9 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { Loader2, ChevronUp, X } from "lucide-react";
+import { ChevronUpIcon } from "@/components/ui/chevron-up";
+import { XIcon } from "@/components/ui/x";
+import { Loader2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import type { CheckInInfoResponseDto } from "@/api";
@@ -194,7 +196,7 @@ export function ReservationSelector({
               {t("checkin.actions.submit")}
             </Button>
             <Button variant="outline" onClick={onClear}>
-              <X className="mr-2 h-4 w-4" />
+              <XIcon size={16} className="mr-2" />
               {t("checkin.actions.close")}
             </Button>
           </div>
@@ -235,7 +237,7 @@ export function ReservationSelector({
           className="fixed bottom-0 left-0 right-0 bg-background border-t p-2 flex justify-center cursor-pointer shadow-lg"
           onClick={() => setIsDrawerOpen(true)}
         >
-          <ChevronUp className="h-6 w-6 text-muted-foreground" />
+          <ChevronUpIcon size={24} className="text-muted-foreground" />
           <span className="sr-only">
             {t("checkin.reservations.openDrawer")}
           </span>

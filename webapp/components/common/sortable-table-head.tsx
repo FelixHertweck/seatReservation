@@ -1,5 +1,7 @@
 import * as React from "react";
-import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { ArrowUpIcon } from "@/components/ui/arrow-up";
+import { ArrowDownIcon } from "@/components/ui/arrow-down";
+import { ChevronsUpDownIcon } from "@/components/ui/chevrons-up-down";
 import { cn } from "@/lib/utils";
 
 export type SortDirection = "asc" | "desc" | null;
@@ -46,12 +48,14 @@ export function SortableTableHead({
         <span>{children}</span>
         {canSort && (
           <div className="flex-shrink-0 w-4 h-4">
-            {!isSorted && <ArrowUpDown className="h-4 w-4 opacity-40" />}
+            {!isSorted && (
+              <ChevronsUpDownIcon size={16} className="opacity-40" />
+            )}
             {isSorted && currentSortDirection === "asc" && (
-              <ArrowUp className="h-4 w-4" />
+              <ArrowUpIcon size={16} />
             )}
             {isSorted && currentSortDirection === "desc" && (
-              <ArrowDown className="h-4 w-4" />
+              <ArrowDownIcon size={16} />
             )}
           </div>
         )}

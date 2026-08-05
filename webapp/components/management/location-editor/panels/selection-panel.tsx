@@ -1,6 +1,9 @@
 "use client";
 
-import { Eraser, PenLine, Trash2, Wand2 } from "lucide-react";
+import { DeleteIcon } from "@/components/ui/delete";
+import { SquarePenIcon } from "@/components/ui/square-pen";
+import { SparklesIcon } from "@/components/ui/sparkles";
+import { Eraser } from "lucide-react";
 
 import { useT } from "@/lib/i18n/hooks";
 import { Label } from "@/components/custom-ui/label";
@@ -198,7 +201,7 @@ export function SelectionPanel({
           </div>
         )}
         <Button variant="destructive" size="sm" onClick={handleDelete}>
-          <Trash2 className="h-4 w-4" />
+          <DeleteIcon size={16} />
           {t("management.locationEditor.selection.deleteButton")}
         </Button>
       </div>
@@ -322,7 +325,7 @@ export function SelectionPanel({
         </div>
 
         <Button variant="destructive" size="sm" onClick={handleDelete}>
-          <Trash2 className="h-4 w-4" />
+          <DeleteIcon size={16} />
           {t("management.locationEditor.selection.deleteButton")}
         </Button>
       </div>
@@ -374,7 +377,7 @@ export function SelectionPanel({
           </p>
         )}
         <Button variant="destructive" size="sm" onClick={handleDelete}>
-          <Trash2 className="h-4 w-4" />
+          <DeleteIcon size={16} />
           {t("management.locationEditor.selection.deleteButton")}
         </Button>
       </div>
@@ -421,7 +424,7 @@ export function SelectionPanel({
               );
             }}
           >
-            <Wand2 className="h-4 w-4" />
+            <SparklesIcon size={16} />
             {t("management.locationEditor.areas.autoAssign")}
           </Button>
           {selectedArea.boundary.length > 0 ? (
@@ -443,7 +446,7 @@ export function SelectionPanel({
               title={t("management.locationEditor.areas.drawBoundaryHint")}
               onClick={() => onDrawAreaBoundary(selectedArea.localId)}
             >
-              <PenLine className="h-4 w-4" />
+              <SquarePenIcon size={16} />
               {t("management.locationEditor.areas.drawBoundary")}
             </Button>
           )}
@@ -459,7 +462,7 @@ export function SelectionPanel({
             }
             onClick={() => handleDeleteArea(selectedArea.localId)}
           >
-            <Trash2 className="h-4 w-4" />
+            <DeleteIcon size={16} />
             {t("management.locationEditor.selection.deleteButton")}
           </Button>
         </div>

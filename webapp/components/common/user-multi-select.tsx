@@ -5,8 +5,11 @@ import { Label } from "@/components/custom-ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/custom-ui/button";
-import { Plus, Search, X } from "lucide-react";
+import { PlusIcon } from "@/components/ui/plus";
+import { SearchIcon } from "@/components/ui/search";
+import { XIcon } from "@/components/ui/x";
 import type { UserDto } from "@/api";
+import type { AnimatedIconHandle } from "@/lib/icon-type";
 import { useT } from "@/lib/i18n/hooks";
 
 interface UserMultiSelectProps {
@@ -160,7 +163,10 @@ export function UserMultiSelect({
       {/* Name / email search + floating results popup */}
       <div className="relative">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <SearchIcon
+            size={16}
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+          />
           <Input
             placeholder={placeholder || t("userMultiSelect.searchPlaceholder")}
             value={searchTerm}
@@ -277,22 +283,32 @@ export function UserMultiSelect({
           </div>
 
           <div className="flex flex-wrap items-center gap-1.5">
-            {activeTags.map((tag) => (
-              <Badge
-                key={tag}
-                variant="secondary"
-                className="pl-2 pr-1 py-1 gap-1"
-              >
-                <span className="text-xs">{tag}</span>
-                <button
-                  type="button"
-                  onClick={() => handleRemoveTag(tag)}
-                  className="hover:bg-muted rounded-full p-0.5 transition-colors"
+            {activeTags.map((tag) => {
+              let removeIconHandle: AnimatedIconHandle | null = null;
+              return (
+                <Badge
+                  key={tag}
+                  variant="secondary"
+                  className="pl-2 pr-1 py-1 gap-1"
                 >
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            ))}
+                  <span className="text-xs">{tag}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveTag(tag)}
+                    onMouseEnter={() => removeIconHandle?.startAnimation()}
+                    onMouseLeave={() => removeIconHandle?.stopAnimation()}
+                    className="hover:bg-muted rounded-full p-0.5 transition-colors"
+                  >
+                    <XIcon
+                      ref={(handle) => {
+                        removeIconHandle = handle;
+                      }}
+                      size={12}
+                    />
+                  </button>
+                </Badge>
+              );
+            })}
 
             <div className="relative">
               <Button
@@ -302,7 +318,7 @@ export function UserMultiSelect({
                 className="h-6 px-2 text-xs gap-1"
                 onClick={() => setIsTagPickerOpen((prev) => !prev)}
               >
-                <Plus className="h-3 w-3" />
+                <PlusIcon size={12} />
                 {t("userMultiSelect.addTagButton")}
               </Button>
 
@@ -369,6 +385,7 @@ export function UserMultiSelect({
             <div className="flex flex-wrap gap-1.5">
               {selectedUsers.map((user) => {
                 const userId = user.id?.toString() || "";
+                let removeIconHandle: AnimatedIconHandle | null = null;
 
                 return (
                   <Badge
@@ -383,9 +400,16 @@ export function UserMultiSelect({
                         e.stopPropagation();
                         handleRemoveUser(userId);
                       }}
+                      onMouseEnter={() => removeIconHandle?.startAnimation()}
+                      onMouseLeave={() => removeIconHandle?.stopAnimation()}
                       className="hover:bg-muted rounded-full p-0.5 transition-colors"
                     >
-                      <X className="h-3 w-3" />
+                      <XIcon
+                        ref={(handle) => {
+                          removeIconHandle = handle;
+                        }}
+                        size={12}
+                      />
                     </button>
                   </Badge>
                 );

@@ -1,7 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { Loader2, MapPinOff } from "lucide-react";
+import { MapPinOffIcon } from "@/components/ui/map-pin-off";
+import { Loader2 } from "lucide-react";
 
 import { useT } from "@/lib/i18n/hooks";
 import { Label } from "@/components/custom-ui/label";
@@ -38,7 +39,7 @@ function AddressMapPlaceholder({
   if (notFound) {
     return (
       <>
-        <MapPinOff className="h-4 w-4" />
+        <MapPinOffIcon size={16} />
         {t("management.locationEditor.details.addressNotFound")}
       </>
     );

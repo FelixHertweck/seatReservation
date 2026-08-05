@@ -11,7 +11,9 @@ import {
 } from "@/components/checkin/qr-code-scanner";
 import { ReservationSelector } from "@/components/checkin/reservation-selector";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ArrowUp, ChevronUp, Loader2 } from "lucide-react";
+import { ArrowUpIcon } from "@/components/ui/arrow-up";
+import { ChevronUpIcon } from "@/components/ui/chevron-up";
+import { Loader2 } from "lucide-react";
 import {
   Tabs,
   TabsContent,
@@ -181,7 +183,7 @@ function CheckInPageContent() {
       {!selectedEventId ? (
         <Card>
           <CardContent className="flex flex-col items-center gap-2 py-12 text-center text-muted-foreground">
-            <ArrowUp className="h-5 w-5" />
+            <ArrowUpIcon size={20} />
             {t("checkin.eventSelector.selectFirst")}
           </CardContent>
         </Card>
@@ -257,7 +259,7 @@ function CheckInPageContent() {
           }`}
           onClick={() => setIsDrawerOpen(true)}
         >
-          <ChevronUp className="h-6 w-6 text-muted-foreground" />
+          <ChevronUpIcon size={24} className="text-muted-foreground" />
           <span className="sr-only">
             {t("checkin.reservations.openDrawer")}
           </span>

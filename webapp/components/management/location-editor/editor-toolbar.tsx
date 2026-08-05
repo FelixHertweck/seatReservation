@@ -2,20 +2,15 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  Undo2,
-  Redo2,
-  Loader2,
-  CheckCircle2,
-  AlertCircle,
-  CircleDot,
-  Save,
-  Settings,
-  Map,
-  Eye,
-  FileJson,
-} from "lucide-react";
+import { ArrowLeftIcon } from "@/components/ui/arrow-left";
+import { EyeIcon } from "@/components/ui/eye";
+import { UndoIcon } from "@/components/ui/undo";
+import { RedoIcon } from "@/components/ui/redo";
+import { CircleCheckIcon } from "@/components/ui/circle-check";
+import { CircleDashedIcon } from "@/components/ui/circle-dashed";
+import { SettingsIcon } from "@/components/ui/settings";
+import { Loader2, AlertCircle, Save, Map, FileJson } from "lucide-react";
+import { useIconHover } from "@/hooks/use-icon-hover";
 
 import { useT } from "@/lib/i18n/hooks";
 import { cn } from "@/lib/utils";
@@ -54,6 +49,11 @@ export function EditorToolbar({
   const t = useT();
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const { setPendingNavigation, setShowUnsavedDialog } = useUnsavedChanges();
+  const {
+    ref: previewIconRef,
+    onMouseEnter: handlePreviewIconMouseEnter,
+    onMouseLeave: handlePreviewIconMouseLeave,
+  } = useIconHover();
 
   const unsaved = hasUnsavedChanges(state);
 
@@ -92,7 +92,7 @@ export function EditorToolbar({
               }
             }}
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeftIcon size={16} />
             {t("management.locationEditor.backToLocations")}
           </Link>
         </Button>
@@ -103,7 +103,7 @@ export function EditorToolbar({
           onClick={() => setIsDetailsOpen(true)}
         >
           <span className="truncate font-medium">{state.meta.name}</span>
-          <Settings className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          <SettingsIcon size={14} className="shrink-0 text-muted-foreground" />
         </Button>
       </div>
 
@@ -120,8 +120,13 @@ export function EditorToolbar({
             <Map className="h-3.5 w-3.5" />
             {t("management.locationEditor.tabs.map")}
           </TabsTrigger>
-          <TabsTrigger value="preview" className="gap-1.5">
-            <Eye className="h-3.5 w-3.5" />
+          <TabsTrigger
+            value="preview"
+            className="gap-1.5"
+            onMouseEnter={handlePreviewIconMouseEnter}
+            onMouseLeave={handlePreviewIconMouseLeave}
+          >
+            <EyeIcon ref={previewIconRef} size={14} />
             {t("management.locationEditor.tabs.preview")}
           </TabsTrigger>
           <TabsTrigger value="json" className="gap-1.5">
@@ -139,7 +144,7 @@ export function EditorToolbar({
           onClick={onUndo}
           title={t("management.locationEditor.undo")}
         >
-          <Undo2 className="h-4 w-4" />
+          <UndoIcon size={16} />
         </Button>
         <Button
           variant="ghost"
@@ -148,7 +153,7 @@ export function EditorToolbar({
           onClick={onRedo}
           title={t("management.locationEditor.redo")}
         >
-          <Redo2 className="h-4 w-4" />
+          <RedoIcon size={16} />
         </Button>
 
         <div
@@ -160,9 +165,9 @@ export function EditorToolbar({
             status.kind === "error" && "text-red-600",
           )}
         >
-          {status.kind === "saved" && <CheckCircle2 className="h-3.5 w-3.5" />}
+          {status.kind === "saved" && <CircleCheckIcon size={14} />}
           {(status.kind === "dirty" || status.kind === "saving") && (
-            <CircleDot className="h-3.5 w-3.5" />
+            <CircleDashedIcon size={14} />
           )}
           {status.kind === "error" && <AlertCircle className="h-3.5 w-3.5" />}
           <span>

@@ -9,14 +9,10 @@ import {
 } from "next/navigation";
 import { Button } from "@/components/custom-ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  ZoomIn,
-  ZoomOut,
-  RotateCcw,
-  Download,
-  Loader2,
-  Languages,
-} from "lucide-react";
+import { DownloadIcon } from "@/components/ui/download";
+import { RotateCCWIcon } from "@/components/ui/rotate-ccw";
+import { LanguagesIcon } from "@/components/ui/languages";
+import { ZoomIn, ZoomOut, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { getApiEmailSeatmap } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
@@ -284,7 +280,7 @@ export default function EmailSeatmapPage() {
                     title="Change language"
                     className="h-9 w-9"
                   >
-                    <Languages className="h-4 w-4" />
+                    <LanguagesIcon size={16} />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -320,7 +316,7 @@ export default function EmailSeatmapPage() {
                 title={t("emailSeatmap.controls.reset")}
                 className="min-w-[80px]"
               >
-                <RotateCcw className="h-4 w-4 mr-2" />
+                <RotateCCWIcon size={16} className="mr-2" />
                 {Math.round(scale * 100)}%
               </Button>
 
@@ -340,7 +336,7 @@ export default function EmailSeatmapPage() {
                 onClick={handleDownload}
                 title={t("emailSeatmap.controls.download")}
               >
-                <Download className="h-4 w-4 mr-2" />
+                <DownloadIcon size={16} className="mr-2" />
                 <span className="hidden sm:inline">
                   {t("emailSeatmap.controls.download")}
                 </span>

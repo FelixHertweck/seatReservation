@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { PenLine, Plus } from "lucide-react";
+import { PlusIcon } from "@/components/ui/plus";
+import { SquarePenIcon } from "@/components/ui/square-pen";
 
 import { useT } from "@/lib/i18n/hooks";
 import { cn } from "@/lib/utils";
@@ -173,11 +174,11 @@ export function AreaAddDialog({
             onClick={handleDraw}
             disabled={!name.trim()}
           >
-            <PenLine className="h-4 w-4" />
+            <SquarePenIcon size={16} />
             {t("management.locationEditor.areas.drawButton")}
           </Button>
           <Button onClick={handleApply} disabled={!name.trim()}>
-            <Plus className="h-4 w-4" />
+            <PlusIcon size={16} />
             {t("management.locationEditor.areas.applyButton")}
           </Button>
         </DialogFooter>

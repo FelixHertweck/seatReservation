@@ -19,7 +19,11 @@ import { Button } from "@/components/custom-ui/button";
 import { Label } from "@/components/custom-ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/custom-ui/skeleton";
-import { X, AtSign, User, Mail, Lock, Tag, Save } from "lucide-react";
+import { XIcon } from "@/components/ui/x";
+import { UserIcon } from "@/components/ui/user";
+import { LockIcon } from "@/components/ui/lock";
+import { AtSignIcon } from "@/components/ui/at-sign";
+import { Mail, Tag, Save } from "lucide-react";
 import { toast } from "sonner";
 import type { UserProfileUpdateDto } from "@/api";
 import { useT } from "@/lib/i18n/hooks";
@@ -231,7 +235,7 @@ export default function ProfilePage() {
                 htmlFor="username"
                 className="flex items-center gap-2 pb-2"
               >
-                <AtSign className="h-4 w-4 text-muted-foreground" />
+                <AtSignIcon size={16} className="text-muted-foreground" />
                 {t("profilePage.usernameLabel")}
               </Label>
               {isLoading ? (
@@ -245,7 +249,7 @@ export default function ProfilePage() {
                 htmlFor="firstname"
                 className="flex items-center gap-2 pb-2"
               >
-                <User className="h-4 w-4 text-muted-foreground" />
+                <UserIcon size={16} className="text-muted-foreground" />
                 {t("profilePage.firstNameLabel")}
               </Label>
               {isLoading ? (
@@ -268,7 +272,7 @@ export default function ProfilePage() {
                 htmlFor="lastname"
                 className="flex items-center gap-2 pb-2"
               >
-                <User className="h-4 w-4 text-muted-foreground" />
+                <UserIcon size={16} className="text-muted-foreground" />
                 {t("profilePage.lastNameLabel")}
               </Label>
               {isLoading ? (
@@ -337,7 +341,7 @@ export default function ProfilePage() {
             <div className="border-t pt-4">
               <div className="flex items-center justify-between mb-4">
                 <Label className="flex items-center gap-2 text-base font-medium">
-                  <Lock className="h-5 w-5 text-primary" />
+                  <LockIcon size={20} className="text-primary" />
                   {t("profilePage.passwordSectionTitle")}
                 </Label>
                 {isLoading ? (
@@ -452,7 +456,7 @@ export default function ProfilePage() {
                           onClick={() => handleRemoveTag(tag)}
                           className="h-auto p-0.5"
                         >
-                          <X className="h-3 w-3" />
+                          <XIcon size={12} />
                         </Button>
                       </Badge>
                     ))}

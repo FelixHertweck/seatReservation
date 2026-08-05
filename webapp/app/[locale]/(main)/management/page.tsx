@@ -1,12 +1,10 @@
 "use client";
 
-import {
-  Gauge,
-  CalendarDays,
-  DoorOpen,
-  BookmarkCheck,
-  Ticket,
-} from "lucide-react";
+import { GaugeIcon } from "@/components/ui/gauge";
+import { BookmarkCheckIcon } from "@/components/ui/bookmark-check";
+import { TicketIcon } from "@/components/ui/ticket";
+import { CalendarDaysIcon } from "@/components/ui/calendar-days";
+import { DoorOpen } from "lucide-react";
 
 import { useT } from "@/lib/i18n/hooks";
 import { PageHeader } from "@/components/page-header";
@@ -45,7 +43,7 @@ export default function ManagementOverviewPage() {
               reserved: stats.occupancyReserved,
               capacity: stats.occupancyCapacity,
             })}
-            icon={Gauge}
+            icon={GaugeIcon}
             href="/management/events"
           />
           <StatCard
@@ -54,7 +52,7 @@ export default function ManagementOverviewPage() {
             subLabel={t("management.overview.stats.eventsSub", {
               count: stats.upcomingEventsCount,
             })}
-            icon={CalendarDays}
+            icon={CalendarDaysIcon}
             href="/management/events"
           />
           <StatCard
@@ -72,7 +70,7 @@ export default function ManagementOverviewPage() {
               blocked: stats.reservationsBlocked,
               pending: stats.reservationsPending,
             })}
-            icon={BookmarkCheck}
+            icon={BookmarkCheckIcon}
             href="/management/reservations"
           />
         </div>
@@ -98,7 +96,7 @@ export default function ManagementOverviewPage() {
             used: stats.contingentUsed,
             total: stats.contingentGranted,
           })}
-          icon={Ticket}
+          icon={TicketIcon}
           href="/management/allowances"
         />
       </div>

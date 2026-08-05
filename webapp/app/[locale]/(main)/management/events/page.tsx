@@ -1,17 +1,15 @@
 "use client";
 
+import { DeleteIcon } from "@/components/ui/delete";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import {
-  Plus,
-  Edit,
-  Trash2,
-  CalendarDays,
-  Users,
-  BookmarkCheck,
-  Ticket,
-} from "lucide-react";
+import { PlusIcon } from "@/components/ui/plus";
+import { CalendarDaysIcon } from "@/components/ui/calendar-days";
+import { TicketIcon } from "@/components/ui/ticket";
+import { SquarePenIcon } from "@/components/ui/square-pen";
+import { BookmarkCheckIcon } from "@/components/ui/bookmark-check";
+import { UsersIcon } from "@/components/ui/users";
 
 import { useT } from "@/lib/i18n/hooks";
 import { formatDateTime } from "@/lib/utils";
@@ -124,7 +122,7 @@ export default function ManagementEventsPage() {
             onClick={handleCreate}
             aria-label={t("management.events.newEvent")}
           >
-            <Plus className="h-4 w-4" />
+            <PlusIcon size={16} />
             <span className="hidden sm:inline">
               {t("management.events.newEvent")}
             </span>
@@ -195,7 +193,10 @@ export default function ManagementEventsPage() {
                       <Card key={event.id}>
                         <CardHeader>
                           <CardTitle className="flex items-center gap-2 truncate">
-                            <CalendarDays className="h-4 w-4 shrink-0 text-muted-foreground" />
+                            <CalendarDaysIcon
+                              size={16}
+                              className="shrink-0 text-muted-foreground"
+                            />
                             <span className="truncate">{event.name}</span>
                           </CardTitle>
                           {start && (
@@ -220,7 +221,7 @@ export default function ManagementEventsPage() {
                                   variant="secondary"
                                   className="flex items-center gap-1"
                                 >
-                                  <Users className="h-3 w-3" />
+                                  <UsersIcon size={12} />
                                   {t("management.events.supervisorsCount", {
                                     count: event.supervisorIds.length,
                                   })}
@@ -240,7 +241,7 @@ export default function ManagementEventsPage() {
                               <Link
                                 href={`/management/reservations?eventId=${event.id}`}
                               >
-                                <BookmarkCheck className="h-3.5 w-3.5" />
+                                <BookmarkCheckIcon size={14} />
                                 {t("management.events.viewReservations")}
                               </Link>
                             </Button>
@@ -248,7 +249,7 @@ export default function ManagementEventsPage() {
                               <Link
                                 href={`/management/allowances?eventId=${event.id}`}
                               >
-                                <Ticket className="h-3.5 w-3.5" />
+                                <TicketIcon size={14} />
                                 {t("management.events.viewAllowances")}
                               </Link>
                             </Button>
@@ -257,7 +258,7 @@ export default function ManagementEventsPage() {
                               size="sm"
                               onClick={() => handleEdit(event)}
                             >
-                              <Edit className="h-3.5 w-3.5" />
+                              <SquarePenIcon size={14} />
                             </Button>
                             <Button
                               variant="destructive"
@@ -265,7 +266,7 @@ export default function ManagementEventsPage() {
                               onClick={() => handleDelete(event)}
                               isLoading={deletingEventId === event.id}
                             >
-                              <Trash2 className="h-3.5 w-3.5" />
+                              <DeleteIcon size={14} />
                             </Button>
                           </div>
                         </CardContent>

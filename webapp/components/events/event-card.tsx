@@ -1,7 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Calendar, Clock, MapPin, Users, BookmarkCheck } from "lucide-react";
+import { MapPinIcon } from "@/components/ui/map-pin";
+import { ClockIcon } from "@/components/ui/clock";
+import { CalendarDaysIcon } from "@/components/ui/calendar-days";
+import { UsersIcon } from "@/components/ui/users";
+import { BookmarkCheckIcon } from "@/components/ui/bookmark-check";
+import { useIconHover } from "@/hooks/use-icon-hover";
 import { Button } from "@/components/custom-ui/button";
 import {
   Card,
@@ -30,6 +35,11 @@ export function EventCard({
   onReserve,
 }: EventCardProps) {
   const t = useT();
+  const {
+    ref: myReservationsIconRef,
+    onMouseEnter: handleMyReservationsIconMouseEnter,
+    onMouseLeave: handleMyReservationsIconMouseLeave,
+  } = useIconHover();
 
   const bookingAlreadyStarted = event.bookingStartTime
     ? new Date(event.bookingStartTime) < new Date()
@@ -83,13 +93,15 @@ export function EventCard({
             <Link
               href={`/events/reservations?eventId=${event.id}`}
               onClick={(e) => e.stopPropagation()}
+              onMouseEnter={handleMyReservationsIconMouseEnter}
+              onMouseLeave={handleMyReservationsIconMouseLeave}
               className="shrink-0"
             >
               <Badge
                 variant="outline"
                 className="flex items-center gap-1 whitespace-nowrap hover:bg-accent transition-colors"
               >
-                <BookmarkCheck className="h-3 w-3" />
+                <BookmarkCheckIcon ref={myReservationsIconRef} size={12} />
                 {t("eventCard.myReservationsButton", {
                   count: reservationCount,
                 })}
@@ -109,26 +121,26 @@ export function EventCard({
 
       <CardContent className="relative z-10 flex-1 space-y-3">
         <div className="flex items-center text-sm text-muted-foreground">
-          <Calendar className="mr-2 h-4 w-4" />
+          <CalendarDaysIcon size={16} className="mr-2" />
           {event.startTime
             ? new Date(event.startTime).toLocaleDateString()
             : t("eventCard.tbd")}
         </div>
 
         <div className="flex items-center text-sm text-muted-foreground">
-          <Clock className="mr-2 h-4 w-4" />
+          <ClockIcon size={16} className="mr-2" />
           {event.startTime && event.endTime
             ? `${new Date(event.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} - ${new Date(event.endTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
             : t("eventCard.timeTbd")}
         </div>
 
         <div className="flex items-center text-sm text-muted-foreground">
-          <MapPin className="mr-2 h-4 w-4" />
+          <MapPinIcon size={16} className="mr-2" />
           {location?.name || t("eventCard.locationTbd")}
         </div>
 
         <div className="flex items-center text-sm text-muted-foreground">
-          <Users className="mr-2 h-4 w-4" />
+          <UsersIcon size={16} className="mr-2" />
           {t("eventCard.seatsAvailable", { count: event.reservationsAllowed })}
         </div>
 

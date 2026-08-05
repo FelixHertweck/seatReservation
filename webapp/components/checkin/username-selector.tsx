@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useT } from "@/lib/i18n/hooks";
-import { Check, Loader2 } from "lucide-react";
+import { CheckIcon } from "@/components/ui/check";
+import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface UsernameSelectorProps {
@@ -117,7 +118,7 @@ export const UsernameSelector = ({
                         }}
                         className="cursor-pointer px-2 py-1.5 text-sm rounded hover:bg-accent hover:text-accent-foreground flex items-center"
                       >
-                        <Check
+                        <CheckIcon
                           className={cn(
                             "mr-2 h-4 w-4",
                             selectedUsername === username

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { AlarmClock } from "lucide-react";
+import { AlarmClockIcon } from "@/components/ui/alarm-clock";
+import type { AnimatedIconHandle } from "@/lib/icon-type";
 
 import { useT } from "@/lib/i18n/hooks";
 import { formatDateTime } from "@/lib/utils";
@@ -41,14 +42,23 @@ export function DeadlinesPanel({
   } else {
     content = events.map(({ event }) => {
       const deadline = formatDateTime(event.bookingDeadline);
+      let iconHandle: AnimatedIconHandle | null = null;
       return (
         <Link
           key={event.id}
           href={`/management/events`}
+          onMouseEnter={() => iconHandle?.startAnimation()}
+          onMouseLeave={() => iconHandle?.stopAnimation()}
           className="flex items-center justify-between gap-3 rounded-md px-2 py-2 -mx-2 transition-colors hover:bg-accent/40"
         >
           <div className="flex min-w-0 items-center gap-3">
-            <AlarmClock className="h-4 w-4 shrink-0 text-amber-500" />
+            <AlarmClockIcon
+              ref={(handle) => {
+                iconHandle = handle;
+              }}
+              size={16}
+              className="shrink-0 text-amber-500"
+            />
             <p className="truncate text-sm font-medium">{event.name}</p>
           </div>
           {deadline && (

@@ -1,16 +1,14 @@
 "use client";
 
+import { DeleteIcon } from "@/components/ui/delete";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  Plus,
-  Upload,
-  Trash2,
-  ArrowRight,
-  MapPinned,
-  Users,
-} from "lucide-react";
+import { PlusIcon } from "@/components/ui/plus";
+import { UploadIcon } from "@/components/ui/upload";
+import { ArrowRightIcon } from "@/components/ui/arrow-right";
+import { MapPinIcon } from "@/components/ui/map-pin";
+import { UsersIcon } from "@/components/ui/users";
 
 import { useT } from "@/lib/i18n/hooks";
 import { PageHeader } from "@/components/page-header";
@@ -107,7 +105,7 @@ export default function ManagementLocationsPage() {
               onClick={() => setIsImportOpen(true)}
               aria-label={t("management.locations.importJson")}
             >
-              <Upload className="h-4 w-4" />
+              <UploadIcon size={16} />
               <span className="hidden sm:inline">
                 {t("management.locations.importJson")}
               </span>
@@ -118,7 +116,7 @@ export default function ManagementLocationsPage() {
                 href="/management/locations/new"
                 aria-label={t("management.locations.newLocation")}
               >
-                <Plus className="h-4 w-4" />
+                <PlusIcon size={16} />
                 <span className="hidden sm:inline">
                   {t("management.locations.newLocation")}
                 </span>
@@ -199,7 +197,7 @@ export default function ManagementLocationsPage() {
                     )}
                     <CardHeader className="relative z-10">
                       <CardTitle className="flex items-center gap-2 truncate">
-                        <MapPinned className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <MapPinIcon size={16} className="shrink-0 text-muted-foreground" />
                         <span className="truncate">{location.name}</span>
                       </CardTitle>
                       {location.address && (
@@ -232,7 +230,7 @@ export default function ManagementLocationsPage() {
                       </div>
                       {location.manager?.username && (
                         <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                          <Users className="h-3.5 w-3.5" />
+                          <UsersIcon size={14} />
                           {location.manager.username}
                         </p>
                       )}
@@ -241,7 +239,7 @@ export default function ManagementLocationsPage() {
                       <Button asChild className="flex-1">
                         <Link href={`/management/locations/${location.id}`}>
                           {t("management.locations.openEditor")}
-                          <ArrowRight className="h-4 w-4" />
+                          <ArrowRightIcon size={16} />
                         </Link>
                       </Button>
                       <Button
@@ -253,7 +251,7 @@ export default function ManagementLocationsPage() {
                         }
                         isLoading={deletingLocationId === location.id}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <DeleteIcon size={16} />
                       </Button>
                     </CardFooter>
                   </Card>

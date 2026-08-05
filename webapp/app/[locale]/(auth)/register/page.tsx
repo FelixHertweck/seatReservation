@@ -19,7 +19,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Info, KeyRound } from "lucide-react";
+import { KeyIcon } from "@/components/ui/key";
+import { CircleHelpIcon } from "@/components/ui/circle-help";
 import { useAuth } from "@/hooks/use-auth";
 import { useWebAuthn } from "@/hooks/use-webauthn";
 import type { RegisterRequestDto, WebAuthnRegistrationStartDto } from "@/api";
@@ -131,7 +132,10 @@ export default function RegisterPage() {
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                      <CircleHelpIcon
+                        size={16}
+                        className="text-muted-foreground cursor-help"
+                      />
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>{t("validation.usernameHint")}</p>
@@ -190,7 +194,7 @@ export default function RegisterPage() {
               )}
               {usePasskey && isPasskeySupported && (
                 <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                  <KeyRound className="h-3.5 w-3.5" />
+                  <KeyIcon size={14} />
                   {t("register.passkeyHint")}
                 </p>
               )}

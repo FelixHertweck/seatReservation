@@ -4,7 +4,8 @@ import { Suspense, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useLiveView } from "@/hooks/use-liveview";
 import { useT } from "@/lib/i18n/hooks";
-import { ArrowUp, Loader2 } from "lucide-react";
+import { ArrowUpIcon } from "@/components/ui/arrow-up";
+import { Loader2 } from "lucide-react";
 import { SeatMap } from "@/components/common/seat-map";
 import { ReservationList } from "@/components/liveview/reservation-list";
 import EventSelector from "@/components/common/supervisor/event-selector";
@@ -82,7 +83,7 @@ function LiveViewPageContent() {
       {!selectedEventId ? (
         <Card>
           <CardContent className="flex flex-col items-center gap-2 py-12 text-center text-muted-foreground">
-            <ArrowUp className="h-5 w-5" />
+            <ArrowUpIcon size={20} />
             {t("liveview.eventSelector.selectFirst")}
           </CardContent>
         </Card>
