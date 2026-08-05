@@ -29,13 +29,17 @@ import jakarta.transaction.Transactional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import de.felixhertweck.seatreservation.model.entity.EmailStatus;
 import de.felixhertweck.seatreservation.model.entity.EmailVerification;
+import de.felixhertweck.seatreservation.model.entity.OutboundEmail;
 import de.felixhertweck.seatreservation.model.entity.RefreshToken;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
 import de.felixhertweck.seatreservation.model.repository.LoginAttemptRepository;
+import de.felixhertweck.seatreservation.model.repository.OutboundEmailRepository;
 import de.felixhertweck.seatreservation.model.repository.RefreshTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import io.quarkus.test.junit.QuarkusTest;
@@ -52,6 +56,8 @@ class DatabaseCleanupTest {
     @Inject RefreshTokenRepository refreshTokenRepository;
 
     @Inject LoginAttemptRepository loginAttemptRepository;
+
+    @Inject OutboundEmailRepository outboundEmailRepository;
 
     @Inject UserRepository userRepository;
 
@@ -274,5 +280,51 @@ class DatabaseCleanupTest {
 
         // Verify nothing was deleted
         assertEquals(3, loginAttemptRepository.count());
+    }
+
+    @Test
+    @Transactional
+    void testCleanupFinishedOutboundEmails() {
+        Instant oldCutoff = Instant.now().minus(35, ChronoUnit.DAYS);
+        Instant recent = Instant.now().minus(1, ChronoUnit.DAYS);
+
+        OutboundEmail oldSent = new OutboundEmail();
+        oldSent.setTo(java.util.List.of("old@example.com"));
+        oldSent.setSubject("Old Sent");
+        oldSent.setHtmlBody("<p>Old</p>");
+        oldSent.setStatus(EmailStatus.SENT);
+        oldSent.setMaxAttempts(5);
+        oldSent.setNextAttemptAt(oldCutoff);
+        oldSent.setCreatedAt(oldCutoff);
+        oldSent.setUpdatedAt(oldCutoff);
+        outboundEmailRepository.persist(oldSent);
+
+        OutboundEmail recentSent = new OutboundEmail();
+        recentSent.setTo(java.util.List.of("recent@example.com"));
+        recentSent.setSubject("Recent Sent");
+        recentSent.setHtmlBody("<p>Recent</p>");
+        recentSent.setStatus(EmailStatus.SENT);
+        recentSent.setMaxAttempts(5);
+        recentSent.setNextAttemptAt(recent);
+        recentSent.setCreatedAt(recent);
+        recentSent.setUpdatedAt(recent);
+        outboundEmailRepository.persist(recentSent);
+
+        OutboundEmail oldPending = new OutboundEmail();
+        oldPending.setTo(java.util.List.of("pending@example.com"));
+        oldPending.setSubject("Old Pending");
+        oldPending.setHtmlBody("<p>Pending</p>");
+        oldPending.setStatus(EmailStatus.PENDING);
+        oldPending.setMaxAttempts(5);
+        oldPending.setNextAttemptAt(oldCutoff);
+        oldPending.setCreatedAt(oldCutoff);
+        oldPending.setUpdatedAt(oldCutoff);
+        outboundEmailRepository.persist(oldPending);
+
+        cleanupScheduler.cleanupFinishedOutboundEmails();
+
+        assertNotNull(outboundEmailRepository.findById(recentSent.id));
+        assertNotNull(outboundEmailRepository.findById(oldPending.id));
+        assertNull(outboundEmailRepository.findById(oldSent.id));
     }
 }
