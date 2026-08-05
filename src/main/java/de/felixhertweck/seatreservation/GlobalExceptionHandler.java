@@ -47,9 +47,11 @@ import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReserve
 import de.felixhertweck.seatreservation.reservation.exception.SeatBlockedException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatCartAccessNotGrantedException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatPendingException;
+import de.felixhertweck.seatreservation.security.dto.EmailCooldownDTO;
 import de.felixhertweck.seatreservation.security.dto.LoginLockedDTO;
 import de.felixhertweck.seatreservation.security.exceptions.AccountLockedException;
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
+import de.felixhertweck.seatreservation.security.exceptions.EmailCooldownException;
 import de.felixhertweck.seatreservation.security.exceptions.EmailNotVerifiedException;
 import de.felixhertweck.seatreservation.security.exceptions.InvalidTwoFactorCodeException;
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
@@ -146,6 +148,13 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
             case Exception e when isReservationConstraintViolation(e) -> {
                 status = Response.Status.CONFLICT;
                 errorResponse = new ErrorResponseDTO("Seat already reserved.");
+            }
+            case EmailCooldownException cooldownException -> {
+                status = Response.Status.TOO_MANY_REQUESTS;
+                EmailCooldownDTO errorResponseCooldown =
+                        new EmailCooldownDTO(
+                                cooldownException.getMessage(), cooldownException.getRetryAfter());
+                return Response.status(status).entity(errorResponseCooldown).build();
             }
             default -> status = Response.Status.INTERNAL_SERVER_ERROR;
         }

@@ -20,10 +20,12 @@
 package de.felixhertweck.seatreservation.security.service;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -62,6 +64,15 @@ public class AuthService {
 
     private static final Logger LOG = Logger.getLogger(AuthService.class);
 
+    private record LockoutTier(int attempts, Duration window, Duration lockoutDuration) {}
+
+    private static final List<LockoutTier> LOGIN_LOCKOUT_TIERS =
+            List.of(
+                    new LockoutTier(3, Duration.ofMinutes(15), Duration.ofSeconds(30)),
+                    new LockoutTier(5, Duration.ofMinutes(15), Duration.ofMinutes(2)),
+                    new LockoutTier(10, Duration.ofHours(1), Duration.ofMinutes(15)),
+                    new LockoutTier(15, Duration.ofHours(24), Duration.ofHours(1)));
+
     @Inject UserRepository userRepository;
 
     @Inject UserService userService;
@@ -74,14 +85,10 @@ public class AuthService {
 
     @Inject TokenService tokenService;
 
+    @Inject EmailCooldownService emailCooldownService;
+
     @ConfigProperty(name = "registration.enabled", defaultValue = "true")
     boolean registrationEnabled;
-
-    @ConfigProperty(name = "login.max-failed-attempts", defaultValue = "5")
-    int maxFailedAttempts;
-
-    @ConfigProperty(name = "login.lockout-duration-seconds", defaultValue = "300")
-    int lockoutDurationSeconds;
 
     private String randomPasswordHash;
 
@@ -160,39 +167,31 @@ public class AuthService {
      * @throws AccountLockedException if the account is locked
      */
     private void checkAccountLockout(String username) throws AccountLockedException {
-        Instant lockoutWindowStart = Instant.now().minusSeconds(lockoutDurationSeconds);
-        long failedAttempts =
-                loginAttemptRepository.countFailedAttempts(username, lockoutWindowStart);
+        Instant now = Instant.now();
+        Instant strictestRetryAfter = null;
 
-        if (failedAttempts >= maxFailedAttempts) {
-            Instant retryAfter = calculateRemainingLockoutTime(username, lockoutWindowStart);
+        for (LockoutTier tier : LOGIN_LOCKOUT_TIERS) {
+            Instant windowStart = now.minus(tier.window());
+            long failedAttempts = loginAttemptRepository.countFailedAttempts(username, windowStart);
+            if (failedAttempts >= tier.attempts()) {
+                Instant oldest =
+                        loginAttemptRepository.getOldestFailedAttemptTime(username, windowStart);
+                Instant retryAfter = (oldest != null ? oldest : now).plus(tier.lockoutDuration());
+                if (strictestRetryAfter == null || retryAfter.isAfter(strictestRetryAfter)) {
+                    strictestRetryAfter = retryAfter;
+                }
+            }
+        }
+
+        if (strictestRetryAfter != null) {
             LOG.warnf(
-                    "Account locked for username %s due to %d failed attempts. Remaining lockout"
-                            + " time: %s",
-                    username, failedAttempts, retryAfter.toString());
+                    "Account locked for username %s. Remaining lockout time: %s",
+                    username, strictestRetryAfter);
             throw new AccountLockedException(
                     "Account temporarily locked due to too many failed login attempts. Please try"
                             + " again later.",
-                    retryAfter);
+                    strictestRetryAfter);
         }
-    }
-
-    /**
-     * Calculates the instant when the lockout for an account will expire.
-     *
-     * @param username the username to check
-     * @param lockoutWindowStart the start of the lockout window
-     * @return the instant when the lockout expires
-     */
-    private Instant calculateRemainingLockoutTime(String username, Instant lockoutWindowStart) {
-        Instant oldestFailedAttempt =
-                loginAttemptRepository.getOldestFailedAttemptTime(username, lockoutWindowStart);
-        if (oldestFailedAttempt == null) {
-            return Instant.now().plusSeconds(lockoutDurationSeconds);
-        }
-
-        // Calculate when the lockout will expire based on the oldest failed attempt
-        return oldestFailedAttempt.plusSeconds(lockoutDurationSeconds);
     }
 
     public boolean passwordMatches(String password, String passwordSalt, String storedHash) {
@@ -284,6 +283,15 @@ public class AuthService {
             return;
         }
 
+        if (emailCooldownService
+                .checkAndRecord(EmailCooldownService.Purpose.PASSWORD_RESET, user.getUsername())
+                .isPresent()) {
+            LOG.infof(
+                    "Password reset requested for username %s while on cooldown; ignoring.",
+                    user.getUsername());
+            return;
+        }
+
         passwordResetTokenRepository.deleteByUserId(user.id);
 
         String token =
@@ -333,6 +341,14 @@ public class AuthService {
         List<User> users = userRepository.findAllByEmail(requestDTO.getEmail());
         if (users.isEmpty()) {
             LOG.info("Username recovery requested for an email with no associated accounts.");
+            return;
+        }
+
+        String normalizedEmail = requestDTO.getEmail().trim().toLowerCase(Locale.ROOT);
+        if (emailCooldownService
+                .checkAndRecord(EmailCooldownService.Purpose.USERNAME_RECOVERY, normalizedEmail)
+                .isPresent()) {
+            LOG.info("Username recovery requested for email while on cooldown; ignoring.");
             return;
         }
 

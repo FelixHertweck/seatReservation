@@ -74,6 +74,11 @@ export type CoordinateDto = {
     yCoordinate?: number;
 };
 
+export type EmailCooldownDto = {
+    message?: string;
+    retryAfter?: Instant;
+};
+
 export type EntranceRequestDto = {
     eventLocationId: Uuid;
     name: string;
@@ -2844,6 +2849,10 @@ export type PostApiUserResendEmailConfirmationErrors = {
      * Not Found: User not found
      */
     404: unknown;
+    /**
+     * Too Many Requests: Email resend cooldown active
+     */
+    429: unknown;
     /**
      * Internal Server Error: Error sending email
      */

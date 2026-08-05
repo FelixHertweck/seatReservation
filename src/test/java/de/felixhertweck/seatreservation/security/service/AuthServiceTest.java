@@ -76,6 +76,8 @@ public class AuthServiceTest {
 
     @InjectMock EmailService emailService;
 
+    @InjectMock EmailCooldownService emailCooldownService;
+
     AuthService authService;
 
     @BeforeEach
@@ -85,15 +87,15 @@ public class AuthServiceTest {
                 tokenService,
                 loginAttemptRepository,
                 passwordResetTokenRepository,
-                emailService);
+                emailService,
+                emailCooldownService);
         authService = new AuthService();
         authService.userRepository = userRepository;
         authService.loginAttemptRepository = loginAttemptRepository;
         authService.passwordResetTokenRepository = passwordResetTokenRepository;
         authService.emailService = emailService;
         authService.tokenService = tokenService;
-        authService.maxFailedAttempts = 5;
-        authService.lockoutDurationSeconds = 300;
+        authService.emailCooldownService = emailCooldownService;
         authService.init();
 
         // Mock loginAttemptRepository to return 0 failed attempts by default

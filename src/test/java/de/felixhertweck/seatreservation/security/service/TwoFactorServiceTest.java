@@ -68,6 +68,7 @@ public class TwoFactorServiceTest {
     @InjectMock TwoFactorChallengeRepository challengeRepository;
     @InjectMock TwoFactorAttemptRepository twoFactorAttemptRepository;
     @InjectMock EmailService emailService;
+    @InjectMock EmailCooldownService emailCooldownService;
 
     TwoFactorService twoFactorService;
 
@@ -78,15 +79,18 @@ public class TwoFactorServiceTest {
                 backupCodeRepository,
                 challengeRepository,
                 twoFactorAttemptRepository,
-                emailService);
+                emailService,
+                emailCooldownService);
         twoFactorService = new TwoFactorService();
         twoFactorService.userRepository = userRepository;
         twoFactorService.backupCodeRepository = backupCodeRepository;
         twoFactorService.challengeRepository = challengeRepository;
         twoFactorService.twoFactorAttemptRepository = twoFactorAttemptRepository;
         twoFactorService.emailService = emailService;
+        twoFactorService.emailCooldownService = emailCooldownService;
         twoFactorService.maxFailedAttempts = 5;
         twoFactorService.lockoutDurationSeconds = 300;
+        when(emailCooldownService.checkAndRecord(any(), any())).thenReturn(Optional.empty());
     }
 
     /** Generates a currently-valid TOTP code for the given raw secret bytes. */
@@ -602,6 +606,7 @@ public class TwoFactorServiceTest {
     @Test
     void testResendEmailCode() {
         User user = new User();
+        user.id = UUID.randomUUID();
         user.setUsername("emailuser");
 
         TwoFactorChallenge challenge =
@@ -614,6 +619,27 @@ public class TwoFactorServiceTest {
 
         verify(challengeRepository, times(1)).persist(challenge);
         verify(emailService, times(1)).sendTwoFactorCode(eq(user), any(String.class));
+    }
+
+    @Test
+    void testResendEmailCode_OnCooldown_DoesNotResend() {
+        User user = new User();
+        user.id = UUID.randomUUID();
+        user.setUsername("emailuser");
+
+        TwoFactorChallenge challenge =
+                new TwoFactorChallenge(user, "token123", "111111", Instant.now().plusSeconds(300));
+
+        when(challengeRepository.findByChallengeToken("token123"))
+                .thenReturn(Optional.of(challenge));
+        when(emailCooldownService.checkAndRecord(
+                        EmailCooldownService.Purpose.TWO_FACTOR_RESEND, user.id.toString()))
+                .thenReturn(Optional.of(Instant.now().plusSeconds(30)));
+
+        twoFactorService.resendEmailCode("token123");
+
+        verify(challengeRepository, never()).persist(any(TwoFactorChallenge.class));
+        verify(emailService, never()).sendTwoFactorCode(any(), any());
     }
 
     @Test

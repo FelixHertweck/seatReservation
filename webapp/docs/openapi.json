@@ -235,6 +235,17 @@
           }
         }
       },
+      "EmailCooldownDTO" : {
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string"
+          },
+          "retryAfter" : {
+            "$ref" : "#/components/schemas/Instant"
+          }
+        }
+      },
       "EntranceRequestDTO" : {
         "type" : "object",
         "required" : [ "eventLocationId", "name" ],
@@ -4072,6 +4083,10 @@
           },
           "404" : {
             "description" : "Not Found: User not found"
+          },
+          "429" : {
+            "description" : "Too Many Requests: Email resend cooldown active",
+            "content" : { }
           },
           "500" : {
             "description" : "Internal Server Error: Error sending email"

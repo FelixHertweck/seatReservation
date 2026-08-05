@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -45,7 +46,9 @@ import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.security.exceptions.EmailCooldownException;
 import de.felixhertweck.seatreservation.security.exceptions.InvalidTwoFactorCodeException;
+import de.felixhertweck.seatreservation.security.service.EmailCooldownService;
 import de.felixhertweck.seatreservation.security.service.TwoFactorService;
 import de.felixhertweck.seatreservation.userManagment.dto.AdminUserCreationDto;
 import de.felixhertweck.seatreservation.userManagment.dto.AdminUserUpdateDTO;
@@ -71,6 +74,8 @@ public class UserService {
     @Inject EmailVerificationRepository emailVerificationRepository;
 
     @Inject TwoFactorService twoFactorService;
+
+    @Inject EmailCooldownService emailCooldownService;
 
     /**
      * Imports a set of users from the provided DTOs. Send directly email verification if email is
@@ -685,6 +690,14 @@ public class UserService {
             LOG.warnf("User %s has no email address, cannot resend confirmation.", username);
             throw new IllegalArgumentException(
                     "User has no email address to send confirmation to.");
+        }
+
+        Optional<Instant> retryAfter =
+                emailCooldownService.checkAndRecord(
+                        EmailCooldownService.Purpose.EMAIL_CONFIRMATION_RESEND, user.id.toString());
+        if (retryAfter.isPresent()) {
+            throw new EmailCooldownException(
+                    "Please wait before requesting another confirmation email.", retryAfter.get());
         }
 
         // Find existing email verification entry

@@ -267,6 +267,18 @@ export const CoordinateDTOSchema = {
     }
 } as const;
 
+export const EmailCooldownDTOSchema = {
+    type: 'object',
+    properties: {
+        message: {
+            type: 'string'
+        },
+        retryAfter: {
+            $ref: '#/components/schemas/Instant'
+        }
+    }
+} as const;
+
 export const EntranceRequestDTOSchema = {
     type: 'object',
     required: [
