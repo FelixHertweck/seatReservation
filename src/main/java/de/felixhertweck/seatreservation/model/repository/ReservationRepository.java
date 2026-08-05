@@ -75,6 +75,21 @@ public class ReservationRepository implements PanacheRepositoryBase<Reservation,
     }
 
     /**
+     * Finds all reservations for a specific event ID eagerly fetching each reservation's user and
+     * seat.
+     *
+     * @param eventId the event ID to search for
+     * @return a list of reservations for the specified event, with the user and seat pre-fetched
+     */
+    public List<Reservation> findByEventIdWithUserAndSeat(UUID eventId) {
+        return find(
+                        "select r from Reservation r left join fetch r.user left join fetch r.seat"
+                                + " where r.event.id = ?1",
+                        eventId)
+                .list();
+    }
+
+    /**
      * Finds all reservations for a specific event ID whose seat is among the given seat IDs.
      *
      * @param eventId the event ID to search for

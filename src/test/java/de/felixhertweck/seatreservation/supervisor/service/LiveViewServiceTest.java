@@ -94,7 +94,7 @@ public class LiveViewServiceTest {
         mockEvent.setEventLocation(mockLocation);
 
         Mockito.when(eventRepository.findById(parsedEventId)).thenReturn(mockEvent);
-        Mockito.when(reservationRepository.findByEventId(parsedEventId))
+        Mockito.when(reservationRepository.findByEventIdWithUserAndSeat(parsedEventId))
                 .thenReturn(new java.util.ArrayList<>());
 
         assertDoesNotThrow(
@@ -188,7 +188,7 @@ public class LiveViewServiceTest {
             mockEvent.setEventLocation(mockLocation);
 
             Mockito.when(eventRepository.findById(testEventId)).thenReturn(mockEvent);
-            Mockito.when(reservationRepository.findByEventId(testEventId))
+            Mockito.when(reservationRepository.findByEventIdWithUserAndSeat(testEventId))
                     .thenReturn(new java.util.ArrayList<>());
 
             assertDoesNotThrow(
@@ -221,7 +221,7 @@ public class LiveViewServiceTest {
         mockLocation.id = id(1);
         mockEvent.setEventLocation(mockLocation);
         Mockito.when(eventRepository.findById(testEventId)).thenReturn(mockEvent);
-        Mockito.when(reservationRepository.findByEventId(testEventId))
+        Mockito.when(reservationRepository.findByEventIdWithUserAndSeat(testEventId))
                 .thenReturn(new java.util.ArrayList<>());
 
         // Register the mock connection for the event

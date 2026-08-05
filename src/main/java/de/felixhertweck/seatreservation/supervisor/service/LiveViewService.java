@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -38,7 +37,6 @@ import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
-import de.felixhertweck.seatreservation.supervisor.dto.SupervisorReservationResponseDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.WebsocketInitialDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.WebsocketUpdateDTO;
 import de.felixhertweck.seatreservation.supervisor.exception.InvalidEventIdException;
@@ -217,12 +215,8 @@ public class LiveViewService {
         try {
             Event event = eventRepository.findById(eventId);
             EventLocation location = event.getEventLocation();
-            List<Reservation> reservations = reservationRepository.findByEventId(eventId);
-
-            List<SupervisorReservationResponseDTO> dtos =
-                    reservations.stream()
-                            .map(SupervisorReservationResponseDTO::new)
-                            .collect(Collectors.toList());
+            List<Reservation> reservations =
+                    reservationRepository.findByEventIdWithUserAndSeat(eventId);
 
             WebsocketInitialDTO initialMessage =
                     WebsocketInitialDTO.initial(location, event, reservations);
@@ -233,7 +227,7 @@ public class LiveViewService {
 
             LOG.debugf(
                     "Sent %d initial reservations to connection for event %s",
-                    dtos.size(), eventId);
+                    reservations.size(), eventId);
         } catch (IOException e) {
             LOG.errorf(e, "Error sending initial reservations for event %s to connection", eventId);
         }
