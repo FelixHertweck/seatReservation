@@ -217,7 +217,8 @@ public class LiveViewService {
         try {
             Event event = eventRepository.findById(eventId);
             EventLocation location = event.getEventLocation();
-            List<Reservation> reservations = reservationRepository.findByEventId(eventId);
+            List<Reservation> reservations =
+                    reservationRepository.findByEventIdWithUserAndSeat(eventId);
 
             List<SupervisorReservationResponseDTO> dtos =
                     reservations.stream()
