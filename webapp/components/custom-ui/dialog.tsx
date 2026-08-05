@@ -15,17 +15,21 @@ import { cn } from "@/lib/utils";
 
 type DialogContentProps = React.ComponentPropsWithoutRef<
   typeof BaseDialogContent
->;
+> & { noX?: boolean };
 
 const DialogContent = React.forwardRef<
   React.ComponentRef<typeof BaseDialogContent>,
   DialogContentProps
->(({ className, ...props }, ref) => (
+>(({ className, noX = false, ...props }, ref) => (
   <BaseDialogContent
     ref={ref}
     className={cn(
       "inset-0 top-0 left-0 flex h-full w-full max-w-none flex-col translate-x-0 translate-y-0 overflow-y-auto rounded-none border-0 p-4",
       "sm:inset-auto sm:top-[50%] sm:left-[50%] sm:grid sm:h-auto sm:max-h-[85vh] sm:w-full sm:max-w-xl sm:-translate-x-1/2 sm:-translate-y-1/2 sm:overflow-visible sm:rounded-lg sm:border sm:p-6",
+      // `ui/dialog.tsx` renders its close button unconditionally as the sole
+      // direct <button> child of DialogContent, so it can't be toggled via a
+      // prop without editing that generated file. Hide it with CSS instead.
+      noX && "[&>button]:hidden",
       className,
     )}
     {...props}
