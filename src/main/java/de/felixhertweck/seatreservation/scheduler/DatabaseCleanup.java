@@ -26,6 +26,7 @@ import jakarta.inject.Inject;
 import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 
+import de.felixhertweck.seatreservation.model.repository.EmailCooldownRepository;
 import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
 import de.felixhertweck.seatreservation.model.repository.LoginAttemptRepository;
@@ -57,6 +58,8 @@ public class DatabaseCleanup {
     @Inject TwoFactorAttemptRepository twoFactorAttemptRepository;
 
     @Inject OutboundEmailRepository outboundEmailRepository;
+
+    @Inject EmailCooldownRepository emailCooldownRepository;
 
     @ConfigProperty(name = "email.queue.retention-days", defaultValue = "30")
     long outboundEmailRetentionDays;
@@ -254,5 +257,29 @@ public class DatabaseCleanup {
         Instant cutoffTime = Instant.now().minus(30, ChronoUnit.DAYS);
         long deletedCount = twoFactorAttemptRepository.deleteOldAttempts(cutoffTime);
         LOG.infof("Manually cleaned up %d old 2FA attempts.", deletedCount);
+    }
+
+    /**
+     * Cleans up old email cooldown entries older than 30 days.
+     *
+     * <p>Runs daily at 2:20 AM.
+     */
+    @Scheduled(cron = "0 20 2 * * ?") // Every day at 2:20 AM
+    public void cleanupOldEmailCooldowns() {
+        LOG.info("Starting scheduled cleanup of old email cooldowns.");
+        Instant cutoffTime = Instant.now().minus(30, ChronoUnit.DAYS);
+        long deletedCount = emailCooldownRepository.deleteOldEntries(cutoffTime);
+        if (deletedCount > 0) {
+            LOG.infof("Successfully cleaned up %d old email cooldown entries.", deletedCount);
+        } else {
+            LOG.debug("No old email cooldown entries found to clean up.");
+        }
+    }
+
+    public void manualCleanupOldEmailCooldowns() {
+        LOG.info("Manual cleanup of old email cooldowns triggered.");
+        Instant cutoffTime = Instant.now().minus(30, ChronoUnit.DAYS);
+        long deletedCount = emailCooldownRepository.deleteOldEntries(cutoffTime);
+        LOG.infof("Manually cleaned up %d old email cooldown entries.", deletedCount);
     }
 }

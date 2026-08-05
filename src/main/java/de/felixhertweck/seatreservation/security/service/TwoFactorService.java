@@ -73,6 +73,7 @@ public class TwoFactorService {
     @Inject TwoFactorChallengeRepository challengeRepository;
     @Inject TwoFactorAttemptRepository twoFactorAttemptRepository;
     @Inject EmailService emailService;
+    @Inject EmailCooldownService emailCooldownService;
 
     @ConfigProperty(name = "two-factor.max-failed-attempts", defaultValue = "5")
     int maxFailedAttempts;
@@ -428,6 +429,14 @@ public class TwoFactorService {
             TwoFactorChallenge challenge = opt.get();
             if (!challenge.isUsed() && challenge.getExpiresAt().isAfter(Instant.now())) {
                 User user = challenge.getUser();
+                // Keyed by user (not by challenge token), so requesting a fresh challenge --
+                // which happens on every new login attempt -- does not reset the cooldown.
+                if (emailCooldownService
+                        .checkAndRecord(
+                                EmailCooldownService.Purpose.TWO_FACTOR_RESEND, user.id.toString())
+                        .isPresent()) {
+                    return;
+                }
                 String newCode = String.format("%06d", random.nextInt(1000000));
                 challenge.setEmailCode(newCode);
                 challengeRepository.persist(challenge);

@@ -58,8 +58,6 @@ public class LoginRateLimitingTest {
         authService = new AuthService();
         authService.userRepository = userRepository;
         authService.loginAttemptRepository = loginAttemptRepository;
-        authService.maxFailedAttempts = 5;
-        authService.lockoutDurationSeconds = 300;
         authService.init();
     }
 
@@ -111,29 +109,7 @@ public class LoginRateLimitingTest {
     }
 
     @Test
-    void testAccountLockedAfterMaxFailedAttempts() {
-        String username = "testuser";
-        String password = "anypassword";
-
-        when(loginAttemptRepository.countFailedAttempts(anyString(), any(Instant.class)))
-                .thenReturn(5L);
-
-        AccountLockedException thrown =
-                assertThrows(
-                        AccountLockedException.class,
-                        () -> authService.authenticate(username, password));
-
-        assertNotNull(thrown.getMessage());
-        assertNotNull(thrown.getRetryAfter());
-        Instant retryAfter = thrown.getRetryAfter();
-        assertTrue(retryAfter.isAfter(Instant.now()), "Retry after should be in the future");
-        assertTrue(
-                retryAfter.isBefore(Instant.now().plusSeconds(301)),
-                "Retry after should be within 5 minutes");
-    }
-
-    @Test
-    void testAccountNotLockedBelowThreshold() throws AuthenticationFailedException {
+    void testNoLockoutBelowTier1() throws AuthenticationFailedException {
         String username = "testuser";
         String password = "testpassword";
         String salt = "randomSalt";
@@ -145,37 +121,71 @@ public class LoginRateLimitingTest {
         user.setPasswordSalt(salt);
 
         when(loginAttemptRepository.countFailedAttempts(anyString(), any(Instant.class)))
-                .thenReturn(4L);
+                .thenReturn(2L);
         when(userRepository.findByUsername(username)).thenReturn(user);
 
         User authenticatedUser = authService.authenticate(username, password);
 
         assertNotNull(authenticatedUser);
-        verify(loginAttemptRepository, times(1)).recordAttempt(any(User.class), Mockito.eq(true));
     }
 
     @Test
-    void testAccountLockedExactlyAtThreshold() {
+    void testTier1LockoutAt3Attempts() {
         String username = "testuser";
         String password = "anypassword";
 
         when(loginAttemptRepository.countFailedAttempts(anyString(), any(Instant.class)))
-                .thenReturn(5L);
+                .thenAnswer(
+                        invocation -> {
+                            Instant windowStart = invocation.getArgument(1);
+                            Instant now = Instant.now();
+                            // 15 minute window check returns 3 attempts
+                            if (windowStart.isAfter(now.minusSeconds(16 * 60))) {
+                                return 3L;
+                            }
+                            return 0L;
+                        });
 
-        assertThrows(
-                AccountLockedException.class, () -> authService.authenticate(username, password));
+        AccountLockedException thrown =
+                assertThrows(
+                        AccountLockedException.class,
+                        () -> authService.authenticate(username, password));
+
+        assertNotNull(thrown.getRetryAfter());
+        assertTrue(thrown.getRetryAfter().isAfter(Instant.now()));
+        assertTrue(
+                thrown.getRetryAfter().isBefore(Instant.now().plusSeconds(35)),
+                "Tier 1 lockout should be around 30s");
     }
 
     @Test
-    void testAccountLockedAboveThreshold() {
+    void testTier2LockoutAt5AttemptsOverrulesTier1() {
         String username = "testuser";
         String password = "anypassword";
 
         when(loginAttemptRepository.countFailedAttempts(anyString(), any(Instant.class)))
-                .thenReturn(10L);
+                .thenAnswer(
+                        invocation -> {
+                            Instant windowStart = invocation.getArgument(1);
+                            Instant now = Instant.now();
+                            if (windowStart.isAfter(now.minusSeconds(16 * 60))) {
+                                return 5L;
+                            }
+                            return 0L;
+                        });
 
-        assertThrows(
-                AccountLockedException.class, () -> authService.authenticate(username, password));
+        AccountLockedException thrown =
+                assertThrows(
+                        AccountLockedException.class,
+                        () -> authService.authenticate(username, password));
+
+        assertNotNull(thrown.getRetryAfter());
+        assertTrue(
+                thrown.getRetryAfter().isAfter(Instant.now().plusSeconds(30)),
+                "Tier 2 duration (2m) should exceed Tier 1 (30s)");
+        assertTrue(
+                thrown.getRetryAfter().isBefore(Instant.now().plusSeconds(125)),
+                "Tier 2 duration should be within 2 minutes");
     }
 
     @Test
@@ -192,51 +202,5 @@ public class LoginRateLimitingTest {
                 () -> authService.authenticate(username, password));
 
         verify(loginAttemptRepository, times(1)).recordAttempt(username, false);
-    }
-
-    @Test
-    void testAccountLockoutWithDifferentLockoutDuration() {
-        String username = "testuser";
-        String password = "anypassword";
-
-        authService.lockoutDurationSeconds = 600;
-
-        when(loginAttemptRepository.countFailedAttempts(anyString(), any(Instant.class)))
-                .thenReturn(5L);
-
-        AccountLockedException thrown =
-                assertThrows(
-                        AccountLockedException.class,
-                        () -> authService.authenticate(username, password));
-
-        assertNotNull(thrown.getRetryAfter());
-        Instant retryAfter = thrown.getRetryAfter();
-        assertTrue(retryAfter.isAfter(Instant.now()), "Retry after should be in the future");
-        assertTrue(
-                retryAfter.isBefore(Instant.now().plusSeconds(601)),
-                "Retry after should be within 10 minutes");
-    }
-
-    @Test
-    void testAccountLockoutWithDifferentMaxAttempts() throws AuthenticationFailedException {
-        String username = "testuser";
-        String password = "testpassword";
-        String salt = "randomSalt";
-        String passwordHash = BcryptUtil.bcryptHash(password + salt);
-
-        User user = new User();
-        user.setUsername(username);
-        user.setPasswordHash(passwordHash);
-        user.setPasswordSalt(salt);
-
-        authService.maxFailedAttempts = 3;
-
-        when(loginAttemptRepository.countFailedAttempts(anyString(), any(Instant.class)))
-                .thenReturn(2L);
-        when(userRepository.findByUsername(username)).thenReturn(user);
-
-        User authenticatedUser = authService.authenticate(username, password);
-
-        assertNotNull(authenticatedUser);
     }
 }

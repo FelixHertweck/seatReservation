@@ -12,6 +12,11 @@ import {
 } from "@/components/custom-ui/dialog";
 import { Button } from "@/components/custom-ui/button";
 import { useAuth } from "@/hooks/use-auth";
+import {
+  useCooldown,
+  EMAIL_RESEND_COOLDOWN_SECONDS,
+} from "@/hooks/use-cooldown";
+import { ErrorWithResponse } from "@/components/init-query-client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useT } from "@/lib/i18n/hooks";
@@ -150,6 +155,7 @@ function DynamicDialogFooter({
   const router = useRouter();
   const { user, resendConfirmation } = useAuth();
   const [isSending, setIsSending] = useState(false);
+  const cooldown = useCooldown();
 
   const handleGoToProfile = () => {
     setShowPopup(false);
@@ -162,12 +168,25 @@ function DynamicDialogFooter({
   };
 
   const handleSendVerification = async () => {
+    if (cooldown.isActive) return;
     setIsSending(true);
     try {
       await resendConfirmation();
+      cooldown.startForSeconds(EMAIL_RESEND_COOLDOWN_SECONDS);
       setTimeout(() => {
         handleGoToVerify();
       }, 700);
+    } catch (error) {
+      const err = error as ErrorWithResponse;
+      if (err?.response?.status === 429) {
+        const retryAfter = (err?.response?.rawData as { retryAfter?: string })
+          ?.retryAfter;
+        if (retryAfter) {
+          cooldown.startUntil(retryAfter);
+        } else {
+          cooldown.startForSeconds(EMAIL_RESEND_COOLDOWN_SECONDS);
+        }
+      }
     } finally {
       setIsSending(false);
     }
@@ -191,6 +210,8 @@ function DynamicDialogFooter({
           handleGoToProfile={handleGoToProfile}
           handleSendVerification={handleSendVerification}
           isSending={isSending}
+          cooldownActive={cooldown.isActive}
+          remainingSeconds={cooldown.remainingSeconds}
         />
       );
     }
@@ -259,10 +280,14 @@ const EmailVerificationNotSent = ({
   handleGoToProfile,
   handleSendVerification,
   isSending,
+  cooldownActive,
+  remainingSeconds,
 }: {
   handleGoToProfile: () => void;
   handleSendVerification: () => void;
   isSending: boolean;
+  cooldownActive: boolean;
+  remainingSeconds: number;
 }) => {
   const t = useT();
 
@@ -281,9 +306,12 @@ const EmailVerificationNotSent = ({
         onClick={handleSendVerification}
         className="w-full sm:w-auto"
         isLoading={isSending}
+        disabled={isSending || cooldownActive}
       >
         <MailCheck className="mr-2 h-4 w-4" />
-        {t("emailVerificationPrompt.sendVerificationMail")}
+        {cooldownActive
+          ? `${t("emailVerificationPrompt.sendVerificationMail")} (${remainingSeconds}s)`
+          : t("emailVerificationPrompt.sendVerificationMail")}
       </Button>
     </>
   );

@@ -19,6 +19,10 @@ import {
 } from "@/components/ui/input-otp";
 import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
+import {
+  useCooldown,
+  EMAIL_RESEND_COOLDOWN_SECONDS,
+} from "@/hooks/use-cooldown";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useT } from "@/lib/i18n/hooks";
 import { ErrorWithResponse } from "@/components/init-query-client";
@@ -38,6 +42,7 @@ export default function VerifyEmailPage() {
   );
   const { user, isLoggedIn, verifyEmail, isRedirecting } = useAuth();
   const { resendConfirmation } = useProfile();
+  const cooldown = useCooldown();
   const router = useRouter();
 
   const handleVerification = useCallback(
@@ -91,7 +96,22 @@ export default function VerifyEmailPage() {
   };
 
   const handleResendCode = async () => {
-    await resendConfirmation();
+    if (cooldown.isActive) return;
+    try {
+      await resendConfirmation();
+      cooldown.startForSeconds(EMAIL_RESEND_COOLDOWN_SECONDS);
+    } catch (error) {
+      const err = error as ErrorWithResponse;
+      if (err?.response?.status === 429) {
+        const retryAfter = (err?.response?.rawData as { retryAfter?: string })
+          ?.retryAfter;
+        if (retryAfter) {
+          cooldown.startUntil(retryAfter);
+        } else {
+          cooldown.startForSeconds(EMAIL_RESEND_COOLDOWN_SECONDS);
+        }
+      }
+    }
   };
 
   if (isLoggedIn && !user?.email) {
@@ -195,9 +215,12 @@ export default function VerifyEmailPage() {
               <div className="mt-4 text-center text-sm space-y-2">
                 <button
                   onClick={handleResendCode}
-                  className="text-primary hover:underline bg-transparent border-none cursor-pointer text-sm"
+                  disabled={cooldown.isActive}
+                  className="text-primary hover:underline bg-transparent border-none cursor-pointer text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:no-underline"
                 >
-                  {t("emailVerification.resendCode")}
+                  {cooldown.isActive
+                    ? `${t("emailVerification.resendCode")} (${cooldown.remainingSeconds}s)`
+                    : t("emailVerification.resendCode")}
                 </button>
               </div>
               <div className="mt-4 text-center text-sm">

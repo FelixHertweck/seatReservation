@@ -31,11 +31,14 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 
+import de.felixhertweck.seatreservation.security.dto.EmailCooldownDTO;
 import de.felixhertweck.seatreservation.userManagment.dto.VerifyEmailCodeRequestDto;
 import de.felixhertweck.seatreservation.userManagment.dto.VerifyEmailCodeResponseDto;
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
 import io.quarkus.security.Authenticated;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.logging.Logger;
@@ -68,6 +71,10 @@ public class EmailConfirmationResource {
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(responseCode = "403", description = "Forbidden: User not authenticated")
     @APIResponse(responseCode = "404", description = "Not Found: User not found")
+    @APIResponse(
+            responseCode = "429",
+            description = "Too Many Requests: Email resend cooldown active",
+            content = @Content(schema = @Schema(implementation = EmailCooldownDTO.class)))
     @APIResponse(responseCode = "500", description = "Internal Server Error: Error sending email")
     public Response resendEmailConfirmation() throws IOException {
         String username = securityContext.getUserPrincipal().getName();
