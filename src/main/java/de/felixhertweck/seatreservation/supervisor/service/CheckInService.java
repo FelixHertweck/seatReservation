@@ -321,7 +321,7 @@ public class CheckInService {
             throw new ReservationNotFoundException("User with specified username not found.");
         }
 
-        List<Reservation> reservations = reservationRepository.findByUser(user);
+        List<Reservation> reservations = reservationRepository.findByUserWithDetails(user);
         if (reservations.isEmpty()) {
             LOG.warnf("No reservations found for user %s.", username);
             throw new ReservationNotFoundException(

@@ -43,6 +43,28 @@ public class ReservationRepository implements PanacheRepositoryBase<Reservation,
     }
 
     /**
+     * Finds all reservations for a given user that are not blocked, eagerly fetching each
+     * reservation's event and seat with location details.
+     *
+     * @param user the user to search for
+     * @return a list of non-blocked reservations for the specified user, with the event, seat, and
+     *     location details pre-fetched
+     */
+    public List<Reservation> findByUserWithDetails(User user) {
+        return find(
+                        "select r from Reservation r"
+                                + " left join fetch r.event"
+                                + " left join fetch r.seat s"
+                                + " left join fetch s.location"
+                                + " left join fetch s.entrance"
+                                + " left join fetch s.area"
+                                + " where r.user = ?1 and r.status != ?2",
+                        user,
+                        ReservationStatus.BLOCKED)
+                .list();
+    }
+
+    /**
      * Finds all reservations for a specific event ID.
      *
      * @param eventId the event ID to search for
