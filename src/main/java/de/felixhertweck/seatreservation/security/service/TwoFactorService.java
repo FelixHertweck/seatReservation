@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
-import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -57,6 +56,7 @@ import de.felixhertweck.seatreservation.security.exceptions.EmailNotVerifiedExce
 import de.felixhertweck.seatreservation.security.exceptions.InvalidTwoFactorCodeException;
 import de.felixhertweck.seatreservation.security.exceptions.TwoFactorAlreadyEnabledException;
 import de.felixhertweck.seatreservation.utils.QRCodeImage;
+import de.felixhertweck.seatreservation.utils.SecurityUtils;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import org.apache.commons.codec.binary.Base32;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -80,8 +80,6 @@ public class TwoFactorService {
 
     @ConfigProperty(name = "two-factor.lockout-duration-seconds", defaultValue = "300")
     int lockoutDurationSeconds;
-
-    private final SecureRandom random = new SecureRandom();
 
     public TwoFactorStatusDTO getStatus(User user) {
         return buildStatus(user, null);
@@ -116,7 +114,7 @@ public class TwoFactorService {
         }
 
         byte[] secretBytes = new byte[20];
-        random.nextBytes(secretBytes);
+        SecurityUtils.getSecureRandom().nextBytes(secretBytes);
         String secret = encodeBase32(secretBytes);
 
         String appName = "SeatReservation";
@@ -152,7 +150,7 @@ public class TwoFactorService {
     public void sendSetupEmailCode(User user) {
         challengeRepository.deleteByUser(user);
         String token = UUID.randomUUID().toString();
-        String code = String.format("%06d", random.nextInt(1000000));
+        String code = String.format("%06d", SecurityUtils.nextInt(1000000));
         Instant expiresAt = Instant.now().plus(Duration.ofMinutes(5));
 
         TwoFactorChallenge challenge = new TwoFactorChallenge(user, token, code, expiresAt);
@@ -409,7 +407,7 @@ public class TwoFactorService {
         // also active -- the client may let the user pick either method for this challenge.
         String emailCode = null;
         if (user.isEmailEnabled()) {
-            emailCode = String.format("%06d", random.nextInt(1000000));
+            emailCode = String.format("%06d", SecurityUtils.nextInt(1000000));
         }
 
         TwoFactorChallenge challenge = new TwoFactorChallenge(user, token, emailCode, expiresAt);
@@ -437,7 +435,7 @@ public class TwoFactorService {
                         .isPresent()) {
                     return;
                 }
-                String newCode = String.format("%06d", random.nextInt(1000000));
+                String newCode = String.format("%06d", SecurityUtils.nextInt(1000000));
                 challenge.setEmailCode(newCode);
                 challengeRepository.persist(challenge);
                 emailService.sendTwoFactorCode(user, newCode);
@@ -574,7 +572,7 @@ public class TwoFactorService {
             StringBuilder sb = new StringBuilder();
             for (int j = 0; j < 8; j++) {
                 if (j == 4) sb.append("-");
-                sb.append(chars.charAt(random.nextInt(chars.length())));
+                sb.append(chars.charAt(SecurityUtils.nextInt(chars.length())));
             }
             String code = sb.toString();
             plainCodes.add(code);
