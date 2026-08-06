@@ -117,7 +117,7 @@ class EventLocationServiceTest {
 
         io.quarkus.hibernate.orm.panache.PanacheQuery query =
                 mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
-        when(eventLocationRepository.find(anyString(), any(java.util.Set.class))).thenReturn(query);
+        when(eventLocationRepository.find(anyString(), (Object) any())).thenReturn(query);
         when(query.list()).thenReturn(List.of(locationA));
 
         List<UserEventLocationResponseDTO> result =
@@ -269,7 +269,7 @@ class EventLocationServiceTest {
 
         io.quarkus.hibernate.orm.panache.PanacheQuery query =
                 mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
-        when(eventLocationRepository.find(anyString(), any(java.util.Set.class))).thenReturn(query);
+        when(eventLocationRepository.find(anyString(), (Object) any())).thenReturn(query);
         when(query.list()).thenReturn(List.of(locationA));
 
         List<UserEventLocationResponseDTO> result =
@@ -307,7 +307,7 @@ class EventLocationServiceTest {
 
         io.quarkus.hibernate.orm.panache.PanacheQuery query =
                 mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
-        when(eventLocationRepository.find(anyString(), any(java.util.Set.class))).thenReturn(query);
+        when(eventLocationRepository.find(anyString(), (Object) any())).thenReturn(query);
         when(query.list()).thenReturn(List.of(locationA));
 
         List<UserEventLocationResponseDTO> result =
@@ -351,7 +351,7 @@ class EventLocationServiceTest {
 
         io.quarkus.hibernate.orm.panache.PanacheQuery query =
                 mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
-        when(eventLocationRepository.find(anyString(), any(java.util.Set.class))).thenReturn(query);
+        when(eventLocationRepository.find(anyString(), (Object) any())).thenReturn(query);
         when(query.list()).thenReturn(List.of(locationB));
 
         List<UserEventLocationResponseDTO> result =
@@ -391,7 +391,7 @@ class EventLocationServiceTest {
 
         io.quarkus.hibernate.orm.panache.PanacheQuery query =
                 mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
-        when(eventLocationRepository.find(anyString(), any(java.util.Set.class))).thenReturn(query);
+        when(eventLocationRepository.find(anyString(), (Object) any())).thenReturn(query);
         when(query.list()).thenReturn(List.of(locationA, locationB));
 
         List<UserEventLocationResponseDTO> result =
