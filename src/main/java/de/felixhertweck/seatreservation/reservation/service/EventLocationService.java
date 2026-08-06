@@ -27,8 +27,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
-import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
@@ -42,6 +42,7 @@ public class EventLocationService {
     @Inject UserRepository userRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
     @Inject ReservationRepository reservationRepository;
+    @Inject EventLocationRepository eventLocationRepository;
 
     /**
      * Retrieves all event locations for which the specified user has event allowances or active
@@ -62,20 +63,32 @@ public class EventLocationService {
         }
         LOG.debugf("User %s found. Retrieving event allowances.", username);
 
-        Set<EventLocation> locations = new HashSet<>();
+        Set<java.util.UUID> locationIds = new HashSet<>();
 
         // Get all locations from allowances
-        locations.addAll(
+        locationIds.addAll(
                 eventUserAllowanceRepository.findByUserWithEventAndLocation(user).stream()
-                        .map(allowance -> allowance.getEvent().getEventLocation())
+                        .map(allowance -> allowance.getEvent().getEventLocation().getId())
                         .collect(Collectors.toSet()));
 
         // Get all locations from reservations
-        locations.addAll(
+        locationIds.addAll(
                 reservationRepository.findByUserWithEventAndLocation(user).stream()
-                        .map(reservation -> reservation.getEvent().getEventLocation())
+                        .map(reservation -> reservation.getEvent().getEventLocation().getId())
                         .collect(Collectors.toSet()));
 
-        return locations.stream().map(UserEventLocationResponseDTO::new).toList();
+        if (locationIds.isEmpty()) {
+            return List.of();
+        }
+
+        return eventLocationRepository
+                .find(
+                        "select el from EventLocation el left join fetch el.manager where el.id in"
+                                + " ?1",
+                        locationIds)
+                .list()
+                .stream()
+                .map(UserEventLocationResponseDTO::new)
+                .toList();
     }
 }
