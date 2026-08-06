@@ -28,10 +28,14 @@ import java.util.List;
 import jakarta.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.*;
+import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
@@ -52,6 +56,8 @@ class EventLocationServiceTest {
     @InjectMock EventUserAllowanceRepository eventUserAllowanceRepository;
 
     @InjectMock ReservationRepository reservationRepository;
+
+    @InjectMock EventLocationRepository eventLocationRepository;
 
     private User user;
     private EventLocation locationA;
@@ -108,6 +114,11 @@ class EventLocationServiceTest {
                 .thenReturn(List.of(allowance));
         when(reservationRepository.findByUserWithEventAndLocation(user))
                 .thenReturn(List.of(reservation));
+
+        io.quarkus.hibernate.orm.panache.PanacheQuery query =
+                mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
+        when(eventLocationRepository.find(anyString(), any(java.util.Set.class))).thenReturn(query);
+        when(query.list()).thenReturn(List.of(locationA));
 
         List<UserEventLocationResponseDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");
@@ -256,6 +267,11 @@ class EventLocationServiceTest {
         when(reservationRepository.findByUserWithEventAndLocation(user))
                 .thenReturn(List.of(reservationB));
 
+        io.quarkus.hibernate.orm.panache.PanacheQuery query =
+                mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
+        when(eventLocationRepository.find(anyString(), any(java.util.Set.class))).thenReturn(query);
+        when(query.list()).thenReturn(List.of(locationA));
+
         List<UserEventLocationResponseDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");
 
@@ -288,6 +304,11 @@ class EventLocationServiceTest {
                 .thenReturn(List.of(allowanceA));
         when(reservationRepository.findByUserWithEventAndLocation(user))
                 .thenReturn(List.of(reservationB));
+
+        io.quarkus.hibernate.orm.panache.PanacheQuery query =
+                mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
+        when(eventLocationRepository.find(anyString(), any(java.util.Set.class))).thenReturn(query);
+        when(query.list()).thenReturn(List.of(locationA));
 
         List<UserEventLocationResponseDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");
@@ -328,6 +349,11 @@ class EventLocationServiceTest {
         when(reservationRepository.findByUserWithEventAndLocation(user))
                 .thenReturn(List.of(reservationC));
 
+        io.quarkus.hibernate.orm.panache.PanacheQuery query =
+                mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
+        when(eventLocationRepository.find(anyString(), any(java.util.Set.class))).thenReturn(query);
+        when(query.list()).thenReturn(List.of(locationB));
+
         List<UserEventLocationResponseDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");
 
@@ -362,6 +388,11 @@ class EventLocationServiceTest {
                 .thenReturn(List.of(allowance));
         when(reservationRepository.findByUserWithEventAndLocation(user))
                 .thenReturn(Collections.emptyList());
+
+        io.quarkus.hibernate.orm.panache.PanacheQuery query =
+                mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
+        when(eventLocationRepository.find(anyString(), any(java.util.Set.class))).thenReturn(query);
+        when(query.list()).thenReturn(List.of(locationA, locationB));
 
         List<UserEventLocationResponseDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");
