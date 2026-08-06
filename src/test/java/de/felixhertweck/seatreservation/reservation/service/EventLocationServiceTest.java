@@ -28,7 +28,6 @@ import java.util.List;
 import jakarta.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -117,7 +116,9 @@ class EventLocationServiceTest {
 
         io.quarkus.hibernate.orm.panache.PanacheQuery query =
                 mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
-        when(eventLocationRepository.find(anyString(), (Object) any())).thenReturn(query);
+        when(eventLocationRepository.find(
+                        anyString(), org.mockito.ArgumentMatchers.<java.util.Collection<?>>any()))
+                .thenReturn(query);
         when(query.list()).thenReturn(List.of(locationA));
 
         List<UserEventLocationResponseDTO> result =
@@ -269,7 +270,9 @@ class EventLocationServiceTest {
 
         io.quarkus.hibernate.orm.panache.PanacheQuery query =
                 mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
-        when(eventLocationRepository.find(anyString(), (Object) any())).thenReturn(query);
+        when(eventLocationRepository.find(
+                        anyString(), org.mockito.ArgumentMatchers.<java.util.Collection<?>>any()))
+                .thenReturn(query);
         when(query.list()).thenReturn(List.of(locationA));
 
         List<UserEventLocationResponseDTO> result =
@@ -307,7 +310,9 @@ class EventLocationServiceTest {
 
         io.quarkus.hibernate.orm.panache.PanacheQuery query =
                 mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
-        when(eventLocationRepository.find(anyString(), (Object) any())).thenReturn(query);
+        when(eventLocationRepository.find(
+                        anyString(), org.mockito.ArgumentMatchers.<java.util.Collection<?>>any()))
+                .thenReturn(query);
         when(query.list()).thenReturn(List.of(locationA));
 
         List<UserEventLocationResponseDTO> result =
@@ -351,7 +356,9 @@ class EventLocationServiceTest {
 
         io.quarkus.hibernate.orm.panache.PanacheQuery query =
                 mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
-        when(eventLocationRepository.find(anyString(), (Object) any())).thenReturn(query);
+        when(eventLocationRepository.find(
+                        anyString(), org.mockito.ArgumentMatchers.<java.util.Collection<?>>any()))
+                .thenReturn(query);
         when(query.list()).thenReturn(List.of(locationB));
 
         List<UserEventLocationResponseDTO> result =
@@ -391,7 +398,9 @@ class EventLocationServiceTest {
 
         io.quarkus.hibernate.orm.panache.PanacheQuery query =
                 mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
-        when(eventLocationRepository.find(anyString(), (Object) any())).thenReturn(query);
+        when(eventLocationRepository.find(
+                        anyString(), org.mockito.ArgumentMatchers.<java.util.Collection<?>>any()))
+                .thenReturn(query);
         when(query.list()).thenReturn(List.of(locationA, locationB));
 
         List<UserEventLocationResponseDTO> result =
