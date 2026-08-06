@@ -19,29 +19,30 @@
  */
 package de.felixhertweck.seatreservation.supervisor.dto;
 
+import java.time.Instant;
 import java.util.UUID;
 
+import de.felixhertweck.seatreservation.common.dto.SeatDTO;
 import de.felixhertweck.seatreservation.model.entity.GuestSeatAssignment;
-import de.felixhertweck.seatreservation.model.entity.Reservation;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
-public record WebsocketUpdateDTO(
-        String type,
-        SupervisorSeatStatusDTO seatStatus,
-        GuestSeatAssignmentResponseDTO guestAssignment,
-        UUID removedSeatId) {
-    public static WebsocketUpdateDTO update(Reservation reservation) {
-        return new WebsocketUpdateDTO(
-                "UPDATE", new SupervisorSeatStatusDTO(reservation), null, null);
-    }
-
-    public static WebsocketUpdateDTO guestAssigned(GuestSeatAssignment assignment) {
-        return new WebsocketUpdateDTO(
-                "GUEST_ASSIGNED", null, new GuestSeatAssignmentResponseDTO(assignment), null);
-    }
-
-    public static WebsocketUpdateDTO guestRemoved(UUID seatId) {
-        return new WebsocketUpdateDTO("GUEST_REMOVED", null, null, seatId);
+public record GuestSeatAssignmentResponseDTO(
+        UUID id,
+        UUID eventId,
+        SeatDTO seat,
+        String guestName,
+        String assignedByUsername,
+        Instant assignedAt) {
+    public GuestSeatAssignmentResponseDTO(GuestSeatAssignment assignment) {
+        this(
+                assignment.id,
+                assignment.getEvent().getId(),
+                new SeatDTO(assignment.getSeat()),
+                assignment.getGuestName(),
+                assignment.getAssignedBy() != null
+                        ? assignment.getAssignedBy().getUsername()
+                        : null,
+                assignment.getAssignedAt());
     }
 }

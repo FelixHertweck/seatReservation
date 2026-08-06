@@ -1,9 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { useT } from "@/lib/i18n/hooks";
-import { Loader2 } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
 import type { SupervisorEventResponseDto } from "@/api";
-import { formatDateTime } from "@/lib/utils";
+import { formatDateTime, cn } from "@/lib/utils";
 
 interface LiveviewStatusProps {
   isConnected: boolean;
@@ -11,6 +12,7 @@ interface LiveviewStatusProps {
   isInitialLoading: boolean;
   error?: string | null;
   event?: SupervisorEventResponseDto | null;
+  defaultOpen?: boolean;
 }
 
 export function LiveviewStatus({
@@ -19,16 +21,22 @@ export function LiveviewStatus({
   isInitialLoading,
   error,
   event,
+  defaultOpen = false,
 }: LiveviewStatusProps) {
   const t = useT();
+  const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className="p-4 border rounded-lg bg-card">
-      {/* Connection Status */}
-      <div>
-        <div className="flex items-center gap-2 mb-4">
+    <div className="border rounded-lg bg-card overflow-hidden">
+      {/* Header Button */}
+      <button
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        className="w-full flex items-center justify-between p-4 font-medium text-sm hover:bg-muted/50 transition-colors text-left"
+      >
+        <div className="flex items-center gap-2">
           <div
-            className={`w-3 h-3 rounded-full ${
+            className={`w-3 h-3 rounded-full shrink-0 ${
               isConnected
                 ? "bg-green-500"
                 : isConnecting
@@ -42,75 +50,83 @@ export function LiveviewStatus({
             {!isConnected && !isConnecting && t("liveview.status.disconnected")}
           </span>
         </div>
+        <ChevronDown
+          className={cn(
+            "h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200",
+            isOpen && "rotate-180",
+          )}
+        />
+      </button>
 
-        {isInitialLoading && (
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span className="text-sm">{t("liveview.status.loading")}</span>
-          </div>
-        )}
+      {/* Collapsible Content */}
+      {isOpen && (
+        <div className="px-4 pb-4 border-t pt-3 space-y-3 text-sm">
+          {isInitialLoading && (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span className="text-sm">{t("liveview.status.loading")}</span>
+            </div>
+          )}
 
-        {error && (
-          <div className="text-sm text-destructive">
-            <p className="font-medium">{t("liveview.error.title")}:</p>
-            <p>{error}</p>
-          </div>
-        )}
-      </div>
+          {error && (
+            <div className="text-sm text-destructive">
+              <p className="font-medium">{t("liveview.error.title")}:</p>
+              <p>{error}</p>
+            </div>
+          )}
 
-      {/* Event Information */}
-      {event && !isInitialLoading && (
-        <div className="mt-6 pt-6 border-t">
-          <h2 className="text-lg font-bold mb-4">
-            {t("liveview.event.title")}
-          </h2>
-          <div className="space-y-2 text-sm">
-            {event.name && (
-              <p>
-                <strong>{t("liveview.event.name")}</strong>: {event.name}
-              </p>
-            )}
-            {event.description && (
-              <p className="text-muted-foreground line-clamp-3">
-                <strong>{t("liveview.event.description")}</strong>
-                {": "}
-                {event.description}
-              </p>
-            )}
-            {event.startTime && (
-              <p>
-                <strong>{t("liveview.event.startTime")}</strong>{" "}
-                {(() => {
-                  const formatted = formatDateTime(event.startTime);
-                  return formatted ? (
-                    <span className="flex flex-col text-sm">
-                      <span>{formatted.date}</span>
-                      <span>{formatted.time}</span>
-                    </span>
-                  ) : (
-                    "-"
-                  );
-                })()}
-              </p>
-            )}
-            {event.endTime && (
-              <p>
-                <strong>{t("liveview.event.endTime")}</strong>
-                {": "}
-                {(() => {
-                  const formatted = formatDateTime(event.endTime);
-                  return formatted ? (
-                    <span className="flex flex-col text-sm">
-                      <span>{formatted.date}</span>
-                      <span>{formatted.time}</span>
-                    </span>
-                  ) : (
-                    "-"
-                  );
-                })()}
-              </p>
-            )}
-          </div>
+          {event && !isInitialLoading && (
+            <div className="space-y-2">
+              <h2 className="text-base font-bold mb-2">
+                {t("liveview.event.title")}
+              </h2>
+              {event.name && (
+                <p>
+                  <strong>{t("liveview.event.name")}</strong>: {event.name}
+                </p>
+              )}
+              {event.description && (
+                <p className="text-muted-foreground line-clamp-3">
+                  <strong>{t("liveview.event.description")}</strong>
+                  {": "}
+                  {event.description}
+                </p>
+              )}
+              {event.startTime && (
+                <p>
+                  <strong>{t("liveview.event.startTime")}</strong>{" "}
+                  {(() => {
+                    const formatted = formatDateTime(event.startTime);
+                    return formatted ? (
+                      <span className="flex flex-col text-sm">
+                        <span>{formatted.date}</span>
+                        <span>{formatted.time}</span>
+                      </span>
+                    ) : (
+                      "-"
+                    );
+                  })()}
+                </p>
+              )}
+              {event.endTime && (
+                <p>
+                  <strong>{t("liveview.event.endTime")}</strong>
+                  {": "}
+                  {(() => {
+                    const formatted = formatDateTime(event.endTime);
+                    return formatted ? (
+                      <span className="flex flex-col text-sm">
+                        <span>{formatted.date}</span>
+                        <span>{formatted.time}</span>
+                      </span>
+                    ) : (
+                      "-"
+                    );
+                  })()}
+                </p>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -188,7 +188,7 @@ public class UserResource {
      */
     @GET
     @Path("/manager")
-    @RolesAllowed({Roles.ADMIN, Roles.MANAGER})
+    @RolesAllowed({Roles.ADMIN, Roles.MANAGER, Roles.SUPERVISOR})
     @APIResponse(
             responseCode = "200",
             description = "List of users (limited info) retrieved successfully")

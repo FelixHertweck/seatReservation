@@ -565,6 +565,17 @@
   "liveview": {
     "title": "Live View",
     "description": "Monitor check-in in real-time",
+    "assignMode": "Assign Seats",
+    "exitAssignMode": "Exit Assign Mode",
+    "assignDescription": "Select seats on the seat map and assign/check-in for a guest.",
+    "guestNameLabel": "Guest Name",
+    "guestNamePlaceholder": "e.g. John Doe",
+    "guestNameRequired": "Please enter the guest's name",
+    "assignButton": "Assign Seats & Check In",
+    "assignSuccess": "Seats assigned successfully",
+    "assignError": "Error assigning seats",
+    "guestAssignError": "Error assigning seats",
+    "guestBadge": "Guest",
     "eventSelector": {
       "label": "Select Event",
       "placeholder": "Choose an event...",

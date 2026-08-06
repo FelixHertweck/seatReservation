@@ -34,6 +34,7 @@ interface SeatMapProps {
   userReservedSeats?: SeatDto[];
   onSeatSelect: (seat: SeatDto) => void;
   readonly?: boolean;
+  allowNoShowSeats?: boolean;
 }
 
 const SeatComponent = React.memo(
@@ -303,6 +304,7 @@ export function SeatMap({
   userReservedSeats = [],
   onSeatSelect,
   readonly = false,
+  allowNoShowSeats = false,
 }: SeatMapProps): ReactElement {
   const t = useT();
 
@@ -546,11 +548,14 @@ export function SeatMap({
 
       // Check if we're working with SupervisorSeatStatusDto
       if (seatStatuses.length > 0 && isSupervisorSeatStatus(seatStatuses[0])) {
-        // Handle SupervisorSeatStatusDto - can only select seats without status
         const supervisorStatus = (
           seatStatuses as SupervisorSeatStatusDto[]
         ).find((s) => s.seatId === seat.id);
-        return !supervisorStatus; // Can only select seats without status (available)
+        if (!supervisorStatus) return true; // Available free seat
+        if (supervisorStatus.status === "BLOCKED") return false;
+        if (supervisorStatus.liveStatus === "CHECKED_IN") return false;
+        if (allowNoShowSeats) return true; // Allow selecting NO_SHOW, CANCELLED, or un-checked-in seats
+        return false;
       } else {
         // Handle regular SeatStatusDto
         const seatStatus = findSeatStatus(
@@ -560,7 +565,7 @@ export function SeatMap({
         return !seatStatus; // Can only select seats without status (available)
       }
     },
-    [readonly, selectedSeatIds, userReservedSeatIds, seatStatuses],
+    [readonly, allowNoShowSeats, selectedSeatIds, userReservedSeatIds, seatStatuses],
   );
 
   const gridStructure = useMemo(() => {

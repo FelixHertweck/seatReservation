@@ -53,7 +53,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.jboss.logging.Logger;
 
 @Path("/api/manager/reservations")
-@RolesAllowed({Roles.MANAGER, Roles.ADMIN})
+@RolesAllowed({Roles.MANAGER, Roles.ADMIN, Roles.SUPERVISOR})
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class ReservationResource {

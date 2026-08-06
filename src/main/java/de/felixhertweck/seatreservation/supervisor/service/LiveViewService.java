@@ -34,8 +34,10 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
+import de.felixhertweck.seatreservation.model.entity.GuestSeatAssignment;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
+import de.felixhertweck.seatreservation.model.repository.GuestSeatAssignmentRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.supervisor.dto.WebsocketInitialDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.WebsocketUpdateDTO;
@@ -51,6 +53,8 @@ public class LiveViewService {
     private static final Logger LOG = Logger.getLogger(LiveViewService.class);
 
     @Inject ReservationRepository reservationRepository;
+
+    @Inject GuestSeatAssignmentRepository guestSeatAssignmentRepository;
 
     @Inject EventRepository eventRepository;
 
@@ -210,24 +214,27 @@ public class LiveViewService {
      * @param connection the WebSocket connection to send to
      */
     private void sendInitialReservations(UUID eventId, WebSocketConnection connection) {
-        LOG.debugf("Sending initial reservations for event %s", eventId);
+        LOG.debugf("Sending initial reservations and guest assignments for event %s", eventId);
 
         try {
             Event event = eventRepository.findById(eventId);
             EventLocation location = event.getEventLocation();
             List<Reservation> reservations =
                     reservationRepository.findByEventIdWithUserAndSeat(eventId);
+            List<GuestSeatAssignment> guestAssignments =
+                    guestSeatAssignmentRepository.findByEventIdWithDetails(eventId);
 
             WebsocketInitialDTO initialMessage =
-                    WebsocketInitialDTO.initial(location, event, reservations);
+                    WebsocketInitialDTO.initial(location, event, reservations, guestAssignments);
             connection
                     .sendText(objectMapper.writeValueAsString(initialMessage))
                     .await()
                     .indefinitely();
 
             LOG.debugf(
-                    "Sent %d initial reservations to connection for event %s",
-                    reservations.size(), eventId);
+                    "Sent %d initial reservations and %d guest assignments to connection for event"
+                            + " %s",
+                    reservations.size(), guestAssignments.size(), eventId);
         } catch (IOException e) {
             LOG.errorf(e, "Error sending initial reservations for event %s to connection", eventId);
         }
@@ -250,6 +257,28 @@ public class LiveViewService {
         }
 
         WebsocketUpdateDTO update = WebsocketUpdateDTO.update(reservation);
+        broadcastToConnections(connections, update, eventId);
+    }
+
+    public void broadcastGuestAssigned(UUID eventId, GuestSeatAssignment assignment) {
+        LOG.debugf(
+                "Broadcasting guest assignment for event %s, seat: %s",
+                eventId, assignment.getSeat().getId());
+        List<WebSocketConnection> connections = eventSubscriptions.get(eventId);
+        if (connections == null || connections.isEmpty()) {
+            return;
+        }
+        WebsocketUpdateDTO update = WebsocketUpdateDTO.guestAssigned(assignment);
+        broadcastToConnections(connections, update, eventId);
+    }
+
+    public void broadcastGuestRemoved(UUID eventId, UUID seatId) {
+        LOG.debugf("Broadcasting guest assignment removal for event %s, seat: %s", eventId, seatId);
+        List<WebSocketConnection> connections = eventSubscriptions.get(eventId);
+        if (connections == null || connections.isEmpty()) {
+            return;
+        }
+        WebsocketUpdateDTO update = WebsocketUpdateDTO.guestRemoved(seatId);
         broadcastToConnections(connections, update, eventId);
     }
 

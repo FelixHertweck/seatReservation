@@ -23,6 +23,7 @@ import java.util.List;
 
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
+import de.felixhertweck.seatreservation.model.entity.GuestSeatAssignment;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
@@ -31,13 +32,22 @@ public record WebsocketInitialDTO(
         String type,
         SupervisorEventLocationDTO location,
         SupervisorEventResponseDTO event,
-        List<SupervisorReservationResponseDTO> reservations) {
+        List<SupervisorReservationResponseDTO> reservations,
+        List<GuestSeatAssignmentResponseDTO> guestAssignments) {
     public static WebsocketInitialDTO initial(
-            EventLocation location, Event event, List<Reservation> reservations) {
+            EventLocation location,
+            Event event,
+            List<Reservation> reservations,
+            List<GuestSeatAssignment> guestAssignments) {
         return new WebsocketInitialDTO(
                 "INITIAL",
                 new SupervisorEventLocationDTO(location),
                 new SupervisorEventResponseDTO(event),
-                reservations.stream().map(SupervisorReservationResponseDTO::new).toList());
+                reservations.stream().map(SupervisorReservationResponseDTO::new).toList(),
+                guestAssignments != null
+                        ? guestAssignments.stream()
+                                .map(GuestSeatAssignmentResponseDTO::new)
+                                .toList()
+                        : List.of());
     }
 }

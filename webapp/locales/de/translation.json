@@ -1064,6 +1064,17 @@
   "liveview": {
     "title": "Live View",
     "description": "Überwachen Sie Check-In in Echtzeit",
+    "assignMode": "Plätze vergeben",
+    "exitAssignMode": "Vergabe beenden",
+    "assignDescription": "Plätze auf dem Saalplan auswählen und für einen Gast reservieren / einchecken.",
+    "guestNameLabel": "Gast Name",
+    "guestNamePlaceholder": "z.B. Max Mustermann",
+    "guestNameRequired": "Bitte Namen des Gastes angeben",
+    "assignButton": "Plätze vergeben & einchecken",
+    "assignSuccess": "Plätze erfolgreich vergeben",
+    "assignError": "Fehler bei der Platzvergabe",
+    "guestAssignError": "Fehler bei der Platzvergabe",
+    "guestBadge": "Gast",
     "eventSelector": {
       "label": "Event auswählen",
       "placeholder": "Wähle ein Event...",

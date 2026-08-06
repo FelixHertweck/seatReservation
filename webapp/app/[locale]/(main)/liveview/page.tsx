@@ -4,10 +4,14 @@ import { Suspense, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useLiveView } from "@/hooks/use-liveview";
 import { useT } from "@/lib/i18n/hooks";
-import { ArrowUp, Loader2 } from "lucide-react";
+import { ArrowUp, Loader2, Plus, X } from "lucide-react";
+import { toast } from "sonner";
 import { SeatMap } from "@/components/common/seat-map";
 import { ReservationList } from "@/components/liveview/reservation-list";
 import EventSelector from "@/components/common/supervisor/event-selector";
+import { GuestAssignPanel } from "@/components/liveview/guest-assign-panel";
+import { Button } from "@/components/custom-ui/button";
+import type { GuestSeatAssignmentDto } from "@/lib/websocket-types";
 import {
   Accordion,
   AccordionContent,
@@ -32,7 +36,10 @@ function LiveViewPageContent() {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(() =>
     searchParams.get("eventId"),
   );
+  const [mode, setMode] = useState<"view" | "assign">("view");
   const [selectedSeats, setSelectedSeats] = useState<SeatDto[]>([]);
+  const [guestName, setGuestName] = useState("");
+  const [isAssignSubmitting, setIsAssignSubmitting] = useState(false);
   const [expandedAccordion, setExpandedAccordion] = useState<string[]>([]);
 
   const {
@@ -44,28 +51,101 @@ function LiveViewPageContent() {
     event,
     location,
     reservations,
+    guestAssignments,
+    assignGuestSeats,
+    removeGuestAssignment,
     error,
   } = useLiveView(selectedEventId, !!selectedEventId);
 
   const handleEventSelect = (eventId: string) => {
     setSelectedEventId(eventId);
     setSelectedSeats([]);
+    setMode("view");
+    setGuestName("");
 
     const params = new URLSearchParams(searchParams.toString());
     params.set("eventId", eventId);
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
-  // TODO: Implement
-  const handleSeatSelect = (seat: SeatDto) => {
-    console.log("Selected seat:", seat);
+  const handleToggleAssignMode = () => {
+    if (mode === "assign") {
+      setMode("view");
+      setSelectedSeats([]);
+      setGuestName("");
+    } else {
+      setMode("assign");
+      setSelectedSeats([]);
+      setGuestName("");
+    }
   };
+
+  const handleSeatSelect = (seat: SeatDto) => {
+    if (mode !== "assign") return;
+    setSelectedSeats((prev) => {
+      const isSelected = prev.some((s) => s.id === seat.id);
+      if (isSelected) {
+        return prev.filter((s) => s.id !== seat.id);
+      }
+      return [...prev, seat];
+    });
+  };
+
+  const handleSubmitAssign = async () => {
+    if (!selectedEventId || selectedSeats.length === 0 || !guestName.trim()) return;
+    setIsAssignSubmitting(true);
+    try {
+      await assignGuestSeats({
+        eventId: selectedEventId,
+        seatIds: selectedSeats.map((s) => s.id!).filter(Boolean),
+        guestName: guestName.trim(),
+      });
+      toast.success(t("liveview.assignSuccess") || "Plätze erfolgreich vergeben");
+      setMode("view");
+      setSelectedSeats([]);
+      setGuestName("");
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : t("common.error.default");
+      toast.error(t("liveview.assignError") || "Fehler bei der Platzvergabe", {
+        description: message,
+      });
+    } finally {
+      setIsAssignSubmitting(false);
+    }
+  };
+
+  const seatStatuses = convertReservationsAndGuestsToStatuses(
+    reservations,
+    guestAssignments,
+  );
 
   return (
     <div className="container mx-auto p-4 sm:p-6">
       <PageHeader
         title={t("liveview.title")}
         description={t("liveview.description")}
+        actions={
+          selectedEventId ? (
+            <Button
+              variant={mode === "assign" ? "destructive" : "default"}
+              onClick={handleToggleAssignMode}
+              className="gap-2"
+            >
+              {mode === "assign" ? (
+                <>
+                  <X className="h-4 w-4" />
+                  {t("liveview.exitAssignMode")}
+                </>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4" />
+                  {t("liveview.assignMode")}
+                </>
+              )}
+            </Button>
+          ) : undefined
+        }
         search={
           <EventSelector
             events={events}
@@ -95,8 +175,9 @@ function LiveViewPageContent() {
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:h-[calc(100vh-220px)] min-h-auto">
-          {/* Left Sidebar - Desktop: Normal Layout, Mobile: Accordion */}
+          {/* Left Sidebar - Desktop: Normal Layout, Mobile: Accordion / Panel */}
           <div className="lg:col-span-1 space-y-6 overflow-y-auto pr-2 lg:min-h-0">
+            {/* Desktop Sidebar (Status, Legend, and Action/List Panel) */}
             <div className="hidden lg:block space-y-6">
               {/* Connection Status & Event Information */}
               <LiveviewStatus
@@ -112,63 +193,121 @@ function LiveViewPageContent() {
                 <SeatmapLegend areas={location.areas ?? []} />
               )}
 
-              {/* Reservations List */}
-              {reservations && !isInitialLoading && (
-                <div className="p-4 border rounded-lg bg-card">
-                  <h3 className="text-lg font-bold mb-4">
-                    {t("liveview.reservations.title")} ({reservations.length})
-                  </h3>
-                  <div className="max-h-96 overflow-y-auto pr-2">
-                    <ReservationList
-                      reservations={reservations}
-                      isLoading={isInitialLoading}
-                    />
+              {/* Reservations List OR Guest Assign Panel */}
+              {!isInitialLoading && (
+                mode === "assign" ? (
+                  <GuestAssignPanel
+                    selectedSeats={selectedSeats}
+                    guestName={guestName}
+                    onGuestNameChange={setGuestName}
+                    isSubmitting={isAssignSubmitting}
+                    onSubmit={handleSubmitAssign}
+                    onCancel={handleToggleAssignMode}
+                  />
+                ) : (
+                  <div className="p-4 border rounded-lg bg-card">
+                    <h3 className="text-lg font-bold mb-4">
+                      {t("liveview.reservations.title")} (
+                      {reservations.length + guestAssignments.length})
+                    </h3>
+                    <div className="max-h-96 overflow-y-auto pr-2">
+                      <ReservationList
+                        reservations={reservations}
+                        guestAssignments={guestAssignments}
+                        onRemoveGuestAssignment={removeGuestAssignment}
+                        isLoading={isInitialLoading}
+                      />
+                    </div>
                   </div>
-                </div>
+                )
               )}
             </div>
 
-            {/* Mobile: Accordion */}
-            <div className="lg:hidden">
-              <Accordion
-                type="multiple"
-                value={expandedAccordion}
-                onValueChange={setExpandedAccordion}
-              >
-                {/* Connection Status & Event Information */}
-                <AccordionItem value="status">
-                  <AccordionTrigger className="text-base font-semibold">
-                    {t("liveview.title")}
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="pt-2">
-                      <LiveviewStatus
-                        isConnected={isConnected}
-                        isConnecting={isConnecting}
-                        isInitialLoading={isInitialLoading}
-                        error={error}
-                        event={event}
-                      />
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
+            {/* Mobile: GuestAssignPanel in assign mode */}
+            {mode === "assign" && (
+              <div className="lg:hidden">
+                <GuestAssignPanel
+                  selectedSeats={selectedSeats}
+                  guestName={guestName}
+                  onGuestNameChange={setGuestName}
+                  isSubmitting={isAssignSubmitting}
+                  onSubmit={handleSubmitAssign}
+                  onCancel={handleToggleAssignMode}
+                />
+              </div>
+            )}
 
-                {/* Legend */}
-                {location && !isInitialLoading && (
-                  <AccordionItem value="legend">
+            {/* Mobile: Accordion (only in view mode) */}
+            {mode === "view" && (
+              <div className="lg:hidden">
+                <Accordion
+                  type="multiple"
+                  value={expandedAccordion}
+                  onValueChange={setExpandedAccordion}
+                >
+                  {/* Connection Status & Event Information */}
+                  <AccordionItem value="status">
                     <AccordionTrigger className="text-base font-semibold">
-                      {t("liveview.legend.title") || "Legende"}
+                      {t("liveview.title")}
                     </AccordionTrigger>
                     <AccordionContent>
                       <div className="pt-2">
-                        <SeatmapLegend areas={location.areas ?? []} />
+                        <LiveviewStatus
+                          isConnected={isConnected}
+                          isConnecting={isConnecting}
+                          isInitialLoading={isInitialLoading}
+                          error={error}
+                          event={event}
+                        />
                       </div>
                     </AccordionContent>
                   </AccordionItem>
-                )}
 
-                {/* SeatMap */}
-                {location && reservations && !isInitialLoading && (
+                  {/* Legend */}
+                  {location && !isInitialLoading && (
+                    <AccordionItem value="legend">
+                      <AccordionTrigger className="text-base font-semibold">
+                        {t("liveview.legend.title") || "Legende"}
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="pt-2">
+                          <SeatmapLegend areas={location.areas ?? []} />
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  )}
+
+                  {/* Reservations List */}
+                  {!isInitialLoading && (
+                    <AccordionItem value="reservations">
+                      <AccordionTrigger className="text-base font-semibold">
+                        {t("liveview.reservations.title")} (
+                        {reservations.length + guestAssignments.length})
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="max-h-96 overflow-y-auto pr-2 pt-2">
+                          <ReservationList
+                            reservations={reservations}
+                            guestAssignments={guestAssignments}
+                            onRemoveGuestAssignment={removeGuestAssignment}
+                            isLoading={isInitialLoading}
+                          />
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  )}
+                </Accordion>
+              </div>
+            )}
+
+            {/* Mobile: SeatMap (shown in both view and assign mode) */}
+            {location && !isInitialLoading && (
+              <div className="lg:hidden">
+                <Accordion
+                  type="multiple"
+                  value={expandedAccordion}
+                  onValueChange={setExpandedAccordion}
+                >
                   <AccordionItem value="seatmap">
                     <AccordionTrigger className="text-base font-semibold">
                       {location.name}
@@ -179,57 +318,40 @@ function LiveViewPageContent() {
                           <div className="flex-1 w-full h-full overflow-hidden">
                             <SeatMap
                               seats={location.seats || []}
-                              seatStatuses={convertReservationsToStatuses(
-                                reservations,
-                              )}
+                              seatStatuses={seatStatuses}
                               markers={location.markers || []}
                               areas={location.areas ?? []}
                               selectedSeats={selectedSeats}
                               onSeatSelect={handleSeatSelect}
-                              readonly={true}
+                              readonly={mode === "view"}
+                              allowNoShowSeats={mode === "assign"}
                             />
                           </div>
                         </div>
                       </div>
                     </AccordionContent>
                   </AccordionItem>
-                )}
-
-                {/* Reservations List */}
-                {reservations && !isInitialLoading && (
-                  <AccordionItem value="reservations">
-                    <AccordionTrigger className="text-base font-semibold">
-                      {t("liveview.reservations.title")} ({reservations.length})
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="max-h-96 overflow-y-auto pr-2 pt-2">
-                        <ReservationList
-                          reservations={reservations}
-                          isLoading={isInitialLoading}
-                        />
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                )}
-              </Accordion>
-            </div>
+                </Accordion>
+              </div>
+            )}
           </div>
 
-          {/* Right Main Content - Desktop Only */}
-          <div className="hidden lg:flex lg:col-span-2 flex-col min-h-0 max-h-[76vh]">
+          {/* Right Main Content - Desktop & Mobile in Assign Mode */}
+          <div className="flex lg:col-span-2 flex-col min-h-0 max-h-[76vh]">
             {/* SeatMap */}
-            {location && reservations && !isInitialLoading && (
+            {location && !isInitialLoading && (
               <div className="p-4 border rounded-lg bg-card flex flex-col overflow-hidden max-h-[76vh]">
                 <h3 className="text-lg font-bold mb-4">{location.name}</h3>
                 <div className="flex-1 overflow-hidden">
                   <SeatMap
                     seats={location.seats || []}
-                    seatStatuses={convertReservationsToStatuses(reservations)}
+                    seatStatuses={seatStatuses}
                     markers={location.markers || []}
                     areas={location.areas ?? []}
                     selectedSeats={selectedSeats}
                     onSeatSelect={handleSeatSelect}
-                    readonly={true}
+                    readonly={mode === "view"}
+                    allowNoShowSeats={mode === "assign"}
                   />
                 </div>
               </div>
@@ -258,13 +380,27 @@ export default function LiveViewPage() {
   );
 }
 
-const convertReservationsToStatuses = (
+const convertReservationsAndGuestsToStatuses = (
   reservations: SupervisorReservationResponseDto[],
+  guestAssignments: GuestSeatAssignmentDto[],
 ): SupervisorSeatStatusDto[] => {
-  return reservations.map((reservation) => ({
-    seatId: reservation.seat?.id,
-    status: reservation.status,
-    reservationId: reservation.id,
-    liveStatus: reservation.liveStatus,
-  }));
+  const reservationStatuses: SupervisorSeatStatusDto[] = reservations.map(
+    (reservation) => ({
+      seatId: reservation.seat?.id,
+      status: reservation.status,
+      reservationId: reservation.id,
+      liveStatus: reservation.liveStatus,
+    }),
+  );
+
+  const guestStatuses: SupervisorSeatStatusDto[] = guestAssignments.map(
+    (guest) => ({
+      seatId: guest.seat?.id,
+      status: "RESERVED",
+      reservationId: guest.id,
+      liveStatus: "CHECKED_IN",
+    }),
+  );
+
+  return [...reservationStatuses, ...guestStatuses];
 };

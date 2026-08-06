@@ -1,18 +1,33 @@
 import { useState, useCallback, useEffect } from "react";
 import { useWebSocket } from "./use-webSocket";
 import {
+  isGuestAssignedMessage,
+  isGuestRemovedMessage,
   isInitialMessage,
+  isReservationUpdateMessage,
   isUpdateMessage,
-  WebsocketInitialMessage,
-  WebsocketUpdateMessage,
+  type GuestSeatAssignmentDto,
+  type GuestSeatAssignRequestDto,
+  type WebsocketInitialMessage,
+  type WebsocketUpdateMessage,
 } from "@/lib/websocket-types";
 import type {
+  ReservationRequestDto,
+  ReservationResponseDto,
   SupervisorEventLocationDto,
   SupervisorEventResponseDto,
   SupervisorReservationResponseDto,
+  UserDto,
 } from "@/api";
-import { getApiSupervisorCheckinEventsOptions } from "@/api/@tanstack/react-query.gen";
-import { useQuery } from "@tanstack/react-query";
+import {
+  getApiSupervisorCheckinEventsOptions,
+  getApiUsersManagerOptions,
+  postApiManagerReservationsMutation,
+} from "@/api/@tanstack/react-query.gen";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { useT } from "@/lib/i18n/hooks";
+import type { ErrorWithResponse } from "@/components/init-query-client";
 
 /**
  * Public interface for the LiveView hook
@@ -24,6 +39,10 @@ export interface LiveViewState {
   isLoadingEvents: boolean;
   isErrorEvents: boolean;
 
+  // Users data
+  users: UserDto[];
+  isLoadingUsers: boolean;
+
   // Connection status
   isConnected: boolean;
   isConnecting: boolean;
@@ -34,6 +53,17 @@ export interface LiveViewState {
   location: SupervisorEventLocationDto | null;
 
   reservations: SupervisorReservationResponseDto[];
+  guestAssignments: GuestSeatAssignmentDto[];
+
+  // Reservation creation
+  createReservation: (
+    data: ReservationRequestDto,
+  ) => Promise<ReservationResponseDto[]>;
+  isSubmittingReservation: boolean;
+
+  // Guest seat assignment
+  assignGuestSeats: (data: GuestSeatAssignRequestDto) => Promise<GuestSeatAssignmentDto[]>;
+  removeGuestAssignment: (id: string) => Promise<void>;
 
   // Error information
   error: string | null;
@@ -50,6 +80,7 @@ export const useLiveView = (
   eventId: string | null,
   enabled: boolean = true,
 ): LiveViewState => {
+  const t = useT();
   const [isConnecting, setIsConnecting] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(false);
   const [event, setEvent] = useState<SupervisorEventResponseDto | null>(null);
@@ -58,6 +89,9 @@ export const useLiveView = (
   );
   const [reservations, setReservations] = useState<
     SupervisorReservationResponseDto[]
+  >([]);
+  const [guestAssignments, setGuestAssignments] = useState<
+    GuestSeatAssignmentDto[]
   >([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -69,9 +103,59 @@ export const useLiveView = (
     ...getApiSupervisorCheckinEventsOptions(),
   });
 
+  const { data: users, isLoading: isLoadingUsers } = useQuery({
+    ...getApiUsersManagerOptions(),
+    enabled: enabled,
+  });
+
+  const createMutation = useMutation({
+    ...postApiManagerReservationsMutation(),
+  });
+
+  const createReservation = async (data: ReservationRequestDto) => {
+    const request = createMutation.mutateAsync({ body: data });
+    toast.promise(request, {
+      loading: t("common.loading"),
+      success: t("management.reservations.createSuccess"),
+      error: (error: ErrorWithResponse) => ({
+        message: t("management.reservations.createError"),
+        description: error.response?.description ?? t("common.error.default"),
+      }),
+    });
+    return request;
+  };
+
+  const assignGuestSeats = async (data: GuestSeatAssignRequestDto): Promise<GuestSeatAssignmentDto[]> => {
+    const response = await fetch("/api/supervisor/liveview/guest-assignments", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message ||
+          t("liveview.guestAssignError") ||
+          "Fehler bei der Platzvergabe",
+      );
+    }
+    return response.json();
+  };
+
+  const removeGuestAssignment = async (id: string): Promise<void> => {
+    const response = await fetch(
+      `/api/supervisor/liveview/guest-assignments/${id}`,
+      { method: "DELETE" },
+    );
+    if (!response.ok) {
+      throw new Error(t("common.error.default"));
+    }
+  };
+
   const handleMessage = useCallback((data: unknown) => {
     const dataWithType = data as
-      WebsocketInitialMessage | WebsocketUpdateMessage;
+      | WebsocketInitialMessage
+      | WebsocketUpdateMessage;
     try {
       if (isInitialMessage(dataWithType)) {
         const initialData = data as WebsocketInitialMessage;
@@ -79,22 +163,37 @@ export const useLiveView = (
         setLocation(initialData.location);
         setEvent(initialData.event);
         setReservations(initialData.reservations);
+        setGuestAssignments(initialData.guestAssignments ?? []);
         setError(null);
 
         setIsInitialLoading(false);
       } else if (isUpdateMessage(dataWithType)) {
-        const updatedSeatStatus = data as WebsocketUpdateMessage;
-        setReservations((prevReservations) => {
-          return prevReservations.map((res) => {
-            if (res.seat?.id === updatedSeatStatus.seatStatus.seatId) {
-              return {
-                ...res,
-                liveStatus: updatedSeatStatus.seatStatus.liveStatus,
-              };
-            }
-            return res;
+        if (isReservationUpdateMessage(dataWithType)) {
+          const updatedSeatStatus = dataWithType.seatStatus;
+          setReservations((prevReservations) => {
+            return prevReservations.map((res) => {
+              if (res.seat?.id === updatedSeatStatus.seatId) {
+                return {
+                  ...res,
+                  liveStatus: updatedSeatStatus.liveStatus,
+                };
+              }
+              return res;
+            });
           });
-        });
+        } else if (isGuestAssignedMessage(dataWithType)) {
+          const newAssignment = dataWithType.guestAssignment;
+          setGuestAssignments((prev) => {
+            const exists = prev.some((a) => a.id === newAssignment.id);
+            if (exists) return prev;
+            return [...prev, newAssignment];
+          });
+        } else if (isGuestRemovedMessage(dataWithType)) {
+          const removedSeatId = dataWithType.removedSeatId;
+          setGuestAssignments((prev) =>
+            prev.filter((a) => a.seat?.id !== removedSeatId),
+          );
+        }
 
         setIsInitialLoading(false);
       } else {
@@ -145,12 +244,19 @@ export const useLiveView = (
     events,
     isLoadingEvents,
     isErrorEvents,
+    users: users ?? [],
+    isLoadingUsers,
     isConnected,
     isConnecting,
     isInitialLoading,
     event,
     location,
     reservations,
+    guestAssignments,
+    createReservation,
+    isSubmittingReservation: createMutation.isPending,
+    assignGuestSeats,
+    removeGuestAssignment,
     error,
   };
 };
