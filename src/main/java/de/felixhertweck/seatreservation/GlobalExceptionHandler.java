@@ -156,7 +156,10 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
                                 cooldownException.getMessage(), cooldownException.getRetryAfter());
                 return Response.status(status).entity(errorResponseCooldown).build();
             }
-            default -> status = Response.Status.INTERNAL_SERVER_ERROR;
+            default -> {
+                status = Response.Status.INTERNAL_SERVER_ERROR;
+                errorResponse = new ErrorResponseDTO("An unexpected error occurred");
+            }
         }
 
         LOG.warnf(
