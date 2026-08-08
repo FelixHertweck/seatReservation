@@ -46,13 +46,14 @@ export function QRCodeModal({
       const firstReservation = reservations[0];
       const eventId = firstReservation.eventId;
 
-      // Generate the code: eventId;userId;reservationId1,reservationId2,...
+      // Generate the code: userId;eventId;checkInCode1,checkInCode2,... -- must match
+      // EmailService.generateQrCodeContent and the check-in scanner's parsing order.
       const codes = reservations
         .map((r) => r.checkInCode)
         .filter((c) => c)
         .join(",");
 
-      const code = `${eventId};${userId};${codes}`;
+      const code = `${userId};${eventId};${codes}`;
 
       try {
         const dataUrl = await QRCode.toDataURL(code, {

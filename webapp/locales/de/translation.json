@@ -843,6 +843,7 @@
     "supervisor": "Supervisor",
     "liveview": "Liveview",
     "checkin": "Check-In",
+    "boxOffice": "Abendkasse",
     "theme": "Theme",
     "light": "Hell",
     "dark": "Dunkel",
@@ -1505,6 +1506,44 @@
       "updateError": "Kontingent konnte nicht aktualisiert werden.",
       "deleteSuccess": "Kontingent(e) gelöscht.",
       "deleteError": "Kontingent(e) konnten nicht gelöscht werden."
+    }
+  },
+  "boxOffice": {
+    "title": "Abendkasse",
+    "pageDescription": "Plätze persönlich verkaufen oder reservieren, nachdem die Online-Buchung geschlossen wurde.",
+    "eventSelector": {
+      "placeholder": "Veranstaltung wählen...",
+      "noEvents": "Noch keine Veranstaltung für die Abendkasse verfügbar"
+    },
+    "selectEventPrompt": "Wähle oben auf der Seite eine Veranstaltung aus.",
+    "deadlineNotPassed": "Die Abendkasse ist erst verfügbar, sobald die Buchungsfrist dieser Veranstaltung abgelaufen ist.",
+    "newReservation": "Neue Reservierung",
+    "description": "Wähle Plätze auf dem Plan aus und lege dann fest, für wen sie sind.",
+    "modeUser": "Bestehender Benutzer",
+    "modeGuest": "Laufkunde",
+    "userLabel": "Benutzer",
+    "selectUserPlaceholder": "Benutzer auswählen",
+    "deductAllowanceLabel": "Vom Kontingent des Benutzers abziehen",
+    "guestNameLabel": "Name",
+    "guestNamePlaceholder": "Max Mustermann",
+    "guestEmailLabel": "E-Mail (optional)",
+    "guestEmailPlaceholder": "gast@example.com",
+    "guestEmailHint": "Falls angegeben, wird sofort eine Bestätigung mit Check-in-QR-Code per E-Mail versendet. Sie wird nicht gespeichert.",
+    "checkedInLabel": "Sofort einchecken",
+    "selectSeatsHint": "Klicke Plätze auf dem Plan an, um sie auszuwählen.",
+    "selectedSeatsTitle": "Ausgewählte Plätze",
+    "createButton": "Reservierung erstellen",
+    "userValidationError": "Bitte wähle einen Benutzer und mindestens einen Platz aus.",
+    "guestValidationError": "Bitte wähle mindestens einen Platz aus.",
+    "createSuccess": "Abendkassen-Reservierung erstellt.",
+    "createError": "Abendkassen-Reservierung konnte nicht erstellt werden.",
+    "confirmation": {
+      "title": "Reservierung bestätigt",
+      "description": "Zeige oder drucke diesen QR-Code für den Check-in.",
+      "emailedTo": "Bestätigung an {{email}} gesendet",
+      "emailedToUser": "Bestätigung an die hinterlegte Adresse von {{username}} gesendet",
+      "printButton": "Bestätigung drucken",
+      "createAnotherButton": "Erledigt"
     }
   }
 }

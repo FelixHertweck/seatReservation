@@ -25,6 +25,7 @@ import java.time.Year;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -76,6 +77,11 @@ public class EmailService {
             name = "email.header.reservation-confirmation",
             defaultValue = "Reservation Confirmation")
     String EMAIL_HEADER_RESERVATION_CONFIRMATION;
+
+    @ConfigProperty(
+            name = "email.header.boxoffice-confirmation",
+            defaultValue = "Box Office Reservation Confirmation")
+    String EMAIL_HEADER_BOXOFFICE_CONFIRMATION;
 
     @ConfigProperty(name = "email.header.reservation-update", defaultValue = "Reservation Update")
     String EMAIL_HEADER_RESERVATION_UPDATE;
@@ -142,6 +148,10 @@ public class EmailService {
     @Inject
     @Location("email/reservation-confirmation")
     Template reservationConfirmationTemplate;
+
+    @Inject
+    @Location("email/boxoffice-reservation-confirmation")
+    Template boxOfficeConfirmationTemplate;
 
     @Inject
     @Location("email/reservation-update-confirmation")
@@ -449,6 +459,28 @@ public class EmailService {
     public void sendReservationConfirmation(
             User user, List<Reservation> reservations, String additionalMailAddress)
             throws IOException {
+        sendReservationConfirmation(user, reservations, additionalMailAddress, true);
+    }
+
+    /**
+     * Sends a reservation confirmation email to the user.
+     *
+     * @param user The user to whom the email will be sent.
+     * @param reservations The list of reservations to include in the email.
+     * @param additionalMailAddress An optional email address to override the user's email.
+     * @param includeExistingReservations when {@code false}, the "already reserved" seat list is
+     *     not computed from {@code user}'s other reservations for the event. Needed for the box
+     *     office's shared guest account, where every walk-in reservation is stored under the same
+     *     {@code User} row -- without this, one guest's confirmation would list every other guest's
+     *     box-office seats for the same event as "already reserved".
+     * @throws IOException If an error occurs while sending the email.
+     */
+    public void sendReservationConfirmation(
+            User user,
+            List<Reservation> reservations,
+            String additionalMailAddress,
+            boolean includeExistingReservations)
+            throws IOException {
         List<String> emailAddresses = new ArrayList<>();
         if (!skipForNullOrEmptyAddress(user.getEmail())
                 && !skipForLocalhostAddress(user.getEmail())) {
@@ -492,7 +524,9 @@ public class EmailService {
 
         // Prepare data for seat list rendering
         List<Reservation> allUserReservationsForEvent =
-                reservationRepository.findByUserAndEvent(user, event);
+                includeExistingReservations
+                        ? reservationRepository.findByUserAndEvent(user, event)
+                        : reservations;
         LOG.debugf(
                 "Retrieved %d user reservations for event %s.",
                 allUserReservationsForEvent.size(), eventName);
@@ -565,6 +599,152 @@ public class EmailService {
     public void sendReservationConfirmation(User user, List<Reservation> reservations)
             throws IOException {
         sendReservationConfirmation(user, reservations, null);
+    }
+
+    /**
+     * The rendered box office confirmation, returned by {@link #sendBoxOfficeConfirmation} so the
+     * caller can also offer a print copy -- {@code displayHtml} embeds the QR code as a {@code
+     * data:} URI instead of the {@code cid:} reference {@code emailHtml} uses, since an API
+     * response has no MIME attachment channel to resolve a content-id against.
+     *
+     * @param emailHtml the HTML queued for the email, referencing the QR via {@code
+     *     cid:qrcode-image}
+     * @param displayHtml the same content with the QR embedded as a {@code data:} URI, for
+     *     on-screen/print display
+     * @param qrCodeImage the QR code PNG bytes, or an empty array when no QR code was requested
+     */
+    public record BoxOfficeConfirmationContent(
+            String emailHtml, String displayHtml, byte[] qrCodeImage) {}
+
+    /**
+     * Renders the dedicated "box office" confirmation used for both known-user and walk-in guest
+     * box office reservations, in place of {@link #sendReservationConfirmation}'s normal template
+     * (which assumes an account with an interactive seatmap). Unlike the normal confirmation, this
+     * template has no "already reserved"/seatmap-link section and optionally omits the QR code
+     * entirely.
+     *
+     * @param recipientName the name to greet in the email (the target user's full name, or a
+     *     walk-in guest's typed-in name)
+     * @param event the event the reservations belong to
+     * @param reservations the newly created box office reservations
+     * @param includeQrCode whether to generate and embed a check-in QR code; {@code false} when the
+     *     reservation was created already checked-in, since there is nothing left to scan
+     */
+    private BoxOfficeConfirmationContent renderBoxOfficeConfirmation(
+            String recipientName,
+            Event event,
+            List<Reservation> reservations,
+            boolean includeQrCode) {
+        Map<UUID, Seat> seatById = loadSeatsForReservations(reservations);
+        List<SeatView> seats = toSeatViews(reservations, seatById);
+        String entranceInfo = generateEntranceInfo(reservations, seatById);
+
+        byte[] qrCodeImage = new byte[0];
+        String qrCodeDataUri = null;
+        if (includeQrCode) {
+            User qrOwner = reservations.getFirst().getUser();
+            String qrCodeContent = generateQrCodeContent(qrOwner, event, reservations);
+            qrCodeImage = generateQrCodeImage(qrCodeContent);
+            if (qrCodeImage.length > 0) {
+                qrCodeDataUri =
+                        "data:image/png;base64," + Base64.getEncoder().encodeToString(qrCodeImage);
+            }
+        }
+        boolean showQrCode = includeQrCode && qrCodeImage.length > 0;
+
+        String emailHtml =
+                boxOfficeConfirmationTemplate
+                        .data("recipientName", recipientName)
+                        .data("eventName", event.getName() != null ? event.getName() : "")
+                        .data("eventLocation", event.getEventLocation().getName())
+                        .data("eventStartTime", formatDateTime(event.getStartTime()))
+                        .data("eventEndTime", formatDateTime(event.getEndTime()))
+                        .data("seats", seats)
+                        .data("entranceInfo", entranceInfo)
+                        .data("showQrCode", showQrCode)
+                        .data("qrCodeImageSrc", "cid:qrcode-image")
+                        .data("currentYear", currentYear())
+                        .render();
+
+        String displayHtml =
+                boxOfficeConfirmationTemplate
+                        .data("recipientName", recipientName)
+                        .data("eventName", event.getName() != null ? event.getName() : "")
+                        .data("eventLocation", event.getEventLocation().getName())
+                        .data("eventStartTime", formatDateTime(event.getStartTime()))
+                        .data("eventEndTime", formatDateTime(event.getEndTime()))
+                        .data("seats", seats)
+                        .data("entranceInfo", entranceInfo)
+                        .data("showQrCode", showQrCode)
+                        .data("qrCodeImageSrc", qrCodeDataUri)
+                        .data("currentYear", currentYear())
+                        .render();
+
+        return new BoxOfficeConfirmationContent(emailHtml, displayHtml, qrCodeImage);
+    }
+
+    /**
+     * Sends the dedicated box office confirmation email and always returns the rendered content,
+     * regardless of whether a valid recipient address was found, so the caller can offer a print
+     * copy even when no email was sent.
+     *
+     * @param user the reservation owner (the target user for a known-user booking, or the shared
+     *     {@code boxoffice} system user for a guest booking)
+     * @param reservations the newly created box office reservations
+     * @param recipientName the name to greet in the email
+     * @param additionalMailAddress an optional email address to use in addition to (or instead of)
+     *     {@code user}'s own address
+     * @param includeQrCode whether to generate and embed a check-in QR code
+     * @return the rendered confirmation content
+     */
+    public BoxOfficeConfirmationContent sendBoxOfficeConfirmation(
+            User user,
+            List<Reservation> reservations,
+            String recipientName,
+            String additionalMailAddress,
+            boolean includeQrCode) {
+        if (reservations == null || reservations.isEmpty()) {
+            LOG.warn("No reservations provided for box office confirmation.");
+            return new BoxOfficeConfirmationContent("", "", new byte[0]);
+        }
+
+        Event event = reservations.getFirst().getEvent();
+        BoxOfficeConfirmationContent content =
+                renderBoxOfficeConfirmation(recipientName, event, reservations, includeQrCode);
+
+        List<String> emailAddresses = new ArrayList<>();
+        if (!skipForNullOrEmptyAddress(user.getEmail())
+                && !skipForLocalhostAddress(user.getEmail())) {
+            emailAddresses.add(user.getEmail());
+        }
+        if (!skipForNullOrEmptyAddress(additionalMailAddress)
+                && !skipForLocalhostAddress(additionalMailAddress)
+                && !emailAddresses.contains(additionalMailAddress)) {
+            emailAddresses.add(additionalMailAddress);
+        }
+        if (emailAddresses.isEmpty()) {
+            LOG.warn("No valid email addresses provided for box office confirmation.");
+            return content;
+        }
+
+        List<EmailAttachment> attachments =
+                content.qrCodeImage().length > 0
+                        ? List.of(
+                                EmailAttachment.inline(
+                                        "qrcode.png",
+                                        "image/png",
+                                        "qrcode-image",
+                                        content.qrCodeImage()))
+                        : List.of();
+
+        enqueue(
+                emailAddresses,
+                EMAIL_HEADER_BOXOFFICE_CONFIRMATION,
+                content.emailHtml(),
+                attachments,
+                true);
+
+        return content;
     }
 
     /**

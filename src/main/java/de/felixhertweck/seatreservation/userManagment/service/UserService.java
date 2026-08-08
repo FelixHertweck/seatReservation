@@ -67,6 +67,11 @@ public class UserService {
 
     private static final Logger LOG = Logger.getLogger(UserService.class);
 
+    // Usernames that must never be chosen by self-registration, admin creation, import, or
+    // passkey registration -- "boxoffice" is the shared system account reservations at the box
+    // office are booked under (see supervisor.service.BoxOfficeService).
+    private static final Set<String> RESERVED_USERNAMES = Set.of("boxoffice");
+
     @Inject UserRepository userRepository;
 
     @Inject EmailService emailService;
@@ -191,6 +196,17 @@ public class UserService {
         if (!passwordProvided && !allowNoPassword) {
             LOG.warn("Password is empty or null during user creation.");
             throw new InvalidUserException("Password cannot be empty.");
+        }
+
+        if (RESERVED_USERNAMES.contains(userCreationDTO.getUsername().trim().toLowerCase())) {
+            LOG.warnf(
+                    "Attempt to create user with reserved username: %s",
+                    userCreationDTO.getUsername());
+            throw new DuplicateUserException(
+                    "Username '"
+                            + userCreationDTO.getUsername()
+                            + "' is reserved and cannot be"
+                            + " used.");
         }
 
         boolean isDuplicate =
@@ -508,6 +524,10 @@ public class UserService {
             if (currentUser != null && id.equals(currentUser.id())) {
                 LOG.warnf("User %s attempted to delete their own account.", currentUser.id());
                 throw new SecurityException("Admins cannot delete their own accounts.");
+            }
+            if (RESERVED_USERNAMES.contains(user.getUsername().toLowerCase())) {
+                LOG.warnf("Attempt to delete reserved system account: %s", user.getUsername());
+                throw new SecurityException("The box office system account cannot be deleted.");
             }
         }
 

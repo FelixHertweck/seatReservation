@@ -228,6 +228,30 @@ public class UserServiceTest {
     }
 
     @Test
+    void createUser_DuplicateUserException_ReservedUsername_Boxoffice() {
+        final UserCreationDTO dto =
+                new UserCreationDTO(
+                        "boxoffice", "test@example.com", "password", "John", "Doe", null);
+
+        assertThrows(
+                DuplicateUserException.class,
+                () -> userService.createUser(dto, Set.of(Roles.USER), false));
+        verify(userRepository, never()).persist(any(User.class));
+    }
+
+    @Test
+    void createUser_DuplicateUserException_ReservedUsername_CaseInsensitive() {
+        final UserCreationDTO dto =
+                new UserCreationDTO(
+                        "BoxOffice", "test@example.com", "password", "John", "Doe", null);
+
+        assertThrows(
+                DuplicateUserException.class,
+                () -> userService.createUser(dto, Set.of(Roles.USER), false));
+        verify(userRepository, never()).persist(any(User.class));
+    }
+
+    @Test
     void createUser_DuplicateUserException_ExistingUsername() throws IOException {
         final UserCreationDTO dto =
                 new UserCreationDTO(
@@ -986,6 +1010,34 @@ public class UserServiceTest {
         AuthenticatedUser caller = new AuthenticatedUser(id(1), Set.of(Roles.ADMIN));
 
         assertThrows(SecurityException.class, () -> userService.deleteUser(List.of(id(1)), caller));
+        verify(userRepository, never()).delete(any(User.class));
+    }
+
+    @Test
+    void deleteUser_SecurityException_CannotDeleteBoxofficeSystemAccount() {
+        User boxofficeUser =
+                new User(
+                        "boxoffice",
+                        null,
+                        false,
+                        false,
+                        null,
+                        null,
+                        null,
+                        null,
+                        Collections.emptySet(),
+                        Collections.emptySet());
+        boxofficeUser.id = id(5);
+
+        PanacheQuery<User> mockQuery = Mockito.mock(PanacheQuery.class);
+        when(mockQuery.list()).thenReturn(List.of(boxofficeUser));
+        when(userRepository.find("id in ?1", List.of(id(5)))).thenReturn(mockQuery);
+
+        // Caller is a different admin, not deleting themselves -- only the reserved-username
+        // guard should fire here.
+        AuthenticatedUser caller = new AuthenticatedUser(id(1), Set.of(Roles.ADMIN));
+
+        assertThrows(SecurityException.class, () -> userService.deleteUser(List.of(id(5)), caller));
         verify(userRepository, never()).delete(any(User.class));
     }
 

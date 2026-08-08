@@ -20,9 +20,15 @@
 package de.felixhertweck.seatreservation.migration;
 
 import java.util.Map;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.QuarkusTestProfile;
 import io.quarkus.test.junit.TestProfile;
@@ -40,12 +46,25 @@ import org.junit.jupiter.api.Test;
 @TestProfile(UuidMigrationSchemaValidationTest.MigratedSchemaProfile.class)
 class UuidMigrationSchemaValidationTest {
 
+    @Inject UserRepository userRepository;
+
     @Test
     void applicationStartsAgainstTheMigratedSchema() {
         // Reaching this line at all is the real assertion: if V1+V2 no longer produced exactly
         // what the entity model expects, Hibernate's `validate` strategy would have thrown during
         // Quarkus's startup, failing this test before the method body ever ran.
         assertTrue(true);
+    }
+
+    @Test
+    @Transactional
+    void migrationSeedsTheBoxofficeSystemUser() {
+        // V8__add_boxoffice_user.sql must have run as part of the same migrate-at-start pass;
+        // this also implicitly validates its column list against the Hibernate-validated schema.
+        User boxofficeUser = userRepository.findByUsername("boxoffice");
+        assertNotNull(boxofficeUser);
+        assertNull(boxofficeUser.getPasswordHash());
+        assertNull(boxofficeUser.getEmail());
     }
 
     public static class MigratedSchemaProfile implements QuarkusTestProfile {

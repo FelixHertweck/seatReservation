@@ -100,6 +100,9 @@ const supervisorEventResponseDtoSchemaResponseTransformer = (data: any) => {
     if (data.endTime) {
         data.endTime = instantSchemaResponseTransformer(data.endTime);
     }
+    if (data.bookingDeadline) {
+        data.bookingDeadline = instantSchemaResponseTransformer(data.bookingDeadline);
+    }
     return data;
 };
 

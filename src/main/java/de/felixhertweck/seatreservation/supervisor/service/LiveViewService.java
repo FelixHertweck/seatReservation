@@ -26,18 +26,23 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import de.felixhertweck.seatreservation.model.entity.BoxOfficeGuestInfo;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
+import de.felixhertweck.seatreservation.model.repository.BoxOfficeGuestInfoRepository;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
+import de.felixhertweck.seatreservation.supervisor.dto.SupervisorReservationResponseDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.WebsocketInitialDTO;
+import de.felixhertweck.seatreservation.supervisor.dto.WebsocketNewReservationDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.WebsocketUpdateDTO;
 import de.felixhertweck.seatreservation.supervisor.exception.InvalidEventIdException;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
@@ -53,6 +58,8 @@ public class LiveViewService {
     @Inject ReservationRepository reservationRepository;
 
     @Inject EventRepository eventRepository;
+
+    @Inject BoxOfficeGuestInfoRepository boxOfficeGuestInfoRepository;
 
     // Map: eventId -> List of WebSocket Connections
     private final Map<UUID, List<WebSocketConnection>> eventSubscriptions =
@@ -218,8 +225,25 @@ public class LiveViewService {
             List<Reservation> reservations =
                     reservationRepository.findByEventIdWithUserAndSeat(eventId);
 
+            Map<UUID, String> guestNamesByReservationId =
+                    boxOfficeGuestInfoRepository
+                            .findByReservationIdIn(reservations.stream().map(r -> r.id).toList())
+                            .stream()
+                            .collect(
+                                    Collectors.toMap(
+                                            info -> info.getReservation().id,
+                                            BoxOfficeGuestInfo::getGuestName));
+
+            List<SupervisorReservationResponseDTO> reservationDtos =
+                    reservations.stream()
+                            .map(
+                                    r ->
+                                            new SupervisorReservationResponseDTO(
+                                                    r, guestNamesByReservationId.get(r.id)))
+                            .toList();
+
             WebsocketInitialDTO initialMessage =
-                    WebsocketInitialDTO.initial(location, event, reservations);
+                    WebsocketInitialDTO.initial(location, event, reservationDtos);
             connection
                     .sendText(objectMapper.writeValueAsString(initialMessage))
                     .await()
@@ -251,6 +275,31 @@ public class LiveViewService {
 
         WebsocketUpdateDTO update = WebsocketUpdateDTO.update(reservation);
         broadcastToConnections(connections, update, eventId);
+    }
+
+    /**
+     * Broadcasts a brand new reservation to all subscribed clients for an event, so they can add it
+     * to their reservation list instead of only patching the live status of a reservation they
+     * already knew about (which {@link #broadcastUpdate} does). Currently only used by the box
+     * office creation flow.
+     *
+     * @param eventId the event ID
+     * @param reservation the reservation that was just created
+     * @param guestName the walk-in guest's name for a box office guest reservation, or {@code null}
+     */
+    public void broadcastNewReservation(UUID eventId, Reservation reservation, String guestName) {
+        LOG.debugf(
+                "Broadcasting new reservation for event %s, reservation: %s", eventId, reservation);
+
+        List<WebSocketConnection> connections = eventSubscriptions.get(eventId);
+        if (connections == null || connections.isEmpty()) {
+            LOG.debugf("No active connections for event %s", eventId);
+            return;
+        }
+
+        WebsocketNewReservationDTO newReservation =
+                WebsocketNewReservationDTO.newReservation(reservation, guestName);
+        broadcastToConnections(connections, newReservation, eventId);
     }
 
     /**

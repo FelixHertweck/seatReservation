@@ -38,8 +38,18 @@ public record SupervisorReservationResponseDTO(
         Instant reservationDateTime,
         ReservationStatus status,
         ReservationLiveStatus liveStatus,
-        Instant reservationDate) {
+        Instant reservationDate,
+        String guestName) {
     public SupervisorReservationResponseDTO(Reservation reservation) {
+        this(reservation, null);
+    }
+
+    /**
+     * @param guestName the walk-in guest's name for a box office reservation booked under the
+     *     shared {@code boxoffice} system user, or {@code null} for a reservation with a real
+     *     owning user
+     */
+    public SupervisorReservationResponseDTO(Reservation reservation, String guestName) {
         this(
                 reservation.id,
                 reservation.getUser().getId(),
@@ -49,6 +59,7 @@ public record SupervisorReservationResponseDTO(
                 reservation.getReservationDate(),
                 reservation.getStatus(),
                 reservation.getLiveStatus(),
-                reservation.getReservationDate());
+                reservation.getReservationDate(),
+                guestName);
     }
 }

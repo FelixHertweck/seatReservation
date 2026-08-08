@@ -41,6 +41,11 @@ INSERT INTO user_tags (user_id, tags) VALUES ('00000000-0000-0000-0000-000000000
 -- Assign USER role to regular user
 INSERT INTO user_roles (user_id, role) VALUES ('00000000-0000-0000-0000-000000000004','SUPERVISOR');
 
+-- Shared, passwordless system user used as Reservation.user for walk-in/guest reservations
+-- created at the box office (no real account). Null passwordHash means AuthService.authenticate
+-- always rejects login for this account. No roles/tags -- it must never pass a RolesAllowed check.
+INSERT INTO users (id, username, email, passwordHash, passwordSalt, firstname, lastname, emailVerified) VALUES ('00000000-0000-0000-0000-000000000005','boxoffice',NULL,NULL,NULL,NULL,NULL,false);
+
 
 -- Insert event location
 INSERT INTO eventlocations (id, name, address, manager_id) VALUES ('00000000-0000-0000-0000-000000000001','City Hall','Hauptstraße 1, 12345 Musterstadt','00000000-0000-0000-0000-000000000002');

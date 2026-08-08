@@ -182,6 +182,110 @@ export const BlockSeatsRequestDTOSchema = {
     }
 } as const;
 
+export const BoxOfficeGuestReservationRequestDTOSchema = {
+    type: 'object',
+    required: [
+        'eventId',
+        'seatIds',
+        'guestName'
+    ],
+    properties: {
+        eventId: {
+            $ref: '#/components/schemas/UUID'
+        },
+        seatIds: {
+            type: 'array',
+            uniqueItems: true,
+            items: {
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+            }
+        },
+        guestName: {
+            type: 'string',
+            pattern: '\\S'
+        },
+        guestEmail: {
+            type: 'string'
+        },
+        checkedIn: {
+            type: 'boolean'
+        }
+    }
+} as const;
+
+export const BoxOfficeReservationRequestDTOSchema = {
+    type: 'object',
+    required: [
+        'eventId',
+        'userId',
+        'seatIds'
+    ],
+    properties: {
+        eventId: {
+            $ref: '#/components/schemas/UUID'
+        },
+        userId: {
+            $ref: '#/components/schemas/UUID'
+        },
+        seatIds: {
+            type: 'array',
+            uniqueItems: true,
+            items: {
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+            }
+        },
+        deductAllowance: {
+            type: 'boolean'
+        },
+        checkedIn: {
+            type: 'boolean'
+        }
+    }
+} as const;
+
+export const BoxOfficeReservationResponseDTOSchema = {
+    type: 'object',
+    properties: {
+        eventId: {
+            $ref: '#/components/schemas/UUID'
+        },
+        reservationUserId: {
+            $ref: '#/components/schemas/UUID'
+        },
+        seats: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/BoxOfficeSeatDTO'
+            }
+        },
+        confirmationHtml: {
+            type: 'string'
+        }
+    }
+} as const;
+
+export const BoxOfficeSeatDTOSchema = {
+    type: 'object',
+    properties: {
+        seatId: {
+            $ref: '#/components/schemas/UUID'
+        },
+        seatNumber: {
+            type: 'string'
+        },
+        checkInCode: {
+            type: 'string'
+        },
+        liveStatus: {
+            $ref: '#/components/schemas/ReservationLiveStatus'
+        }
+    }
+} as const;
+
 export const CheckInInfoRequestDTOSchema = {
     type: 'object',
     required: [
@@ -1028,6 +1132,9 @@ export const SupervisorEventResponseDTOSchema = {
         },
         endTime: {
             $ref: '#/components/schemas/Instant'
+        },
+        bookingDeadline: {
+            $ref: '#/components/schemas/Instant'
         }
     }
 } as const;
@@ -1061,6 +1168,9 @@ export const SupervisorReservationResponseDTOSchema = {
         },
         reservationDate: {
             $ref: '#/components/schemas/Instant'
+        },
+        guestName: {
+            type: 'string'
         }
     }
 } as const;

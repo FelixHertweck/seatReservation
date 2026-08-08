@@ -27,14 +27,20 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
 public record SupervisorEventResponseDTO(
-        UUID id, String name, String description, Instant startTime, Instant endTime) {
+        UUID id,
+        String name,
+        String description,
+        Instant startTime,
+        Instant endTime,
+        Instant bookingDeadline) {
     public SupervisorEventResponseDTO(Event event, Integer reservationsAllowed) {
         this(
                 event.getId(),
                 event.getName(),
                 event.getDescription(),
                 event.getStartTime(),
-                event.getEndTime());
+                event.getEndTime(),
+                event.getBookingDeadline());
     }
 
     public SupervisorEventResponseDTO(Event event) {
@@ -43,6 +49,7 @@ public record SupervisorEventResponseDTO(
                 event.getName(),
                 event.getDescription(),
                 event.getStartTime(),
-                event.getEndTime());
+                event.getEndTime(),
+                event.getBookingDeadline());
     }
 }

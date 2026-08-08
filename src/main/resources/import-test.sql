@@ -45,6 +45,10 @@ INSERT INTO user_tags (user_id, tags) VALUES ('00000000-0000-0000-0000-000000000
 -- Assign USER role to regular user
 INSERT INTO user_roles (user_id, role) VALUES ('00000000-0000-0000-0000-000000000003', 'SUPERVISOR');
 
+-- Shared, passwordless system user used as Reservation.user for walk-in/guest box-office
+-- reservations. Matches TestIds.id(5) so Java tests can reference it directly.
+INSERT INTO users (id, username, email, passwordHash, passwordSalt, firstname, lastname, emailVerified) VALUES ('00000000-0000-0000-0000-000000000005', 'boxoffice', NULL, NULL, NULL, NULL, NULL, false);
+
 -- Insert a minimal event location for tests
 INSERT INTO eventlocations (id, name, address, manager_id) VALUES ('00000000-0000-0000-0000-000000000001', 'Test Hall', 'Teststraße 1, 12345 Teststadt', '00000000-0000-0000-0000-000000000002');
 

@@ -2,8 +2,10 @@ import { useState, useCallback, useEffect } from "react";
 import { useWebSocket } from "./use-webSocket";
 import {
   isInitialMessage,
+  isNewReservationMessage,
   isUpdateMessage,
   WebsocketInitialMessage,
+  WebsocketNewReservationMessage,
   WebsocketUpdateMessage,
 } from "@/lib/websocket-types";
 import type {
@@ -71,7 +73,9 @@ export const useLiveView = (
 
   const handleMessage = useCallback((data: unknown) => {
     const dataWithType = data as
-      WebsocketInitialMessage | WebsocketUpdateMessage;
+      | WebsocketInitialMessage
+      | WebsocketUpdateMessage
+      | WebsocketNewReservationMessage;
     try {
       if (isInitialMessage(dataWithType)) {
         const initialData = data as WebsocketInitialMessage;
@@ -94,6 +98,16 @@ export const useLiveView = (
             }
             return res;
           });
+        });
+
+        setIsInitialLoading(false);
+      } else if (isNewReservationMessage(dataWithType)) {
+        const newReservation = dataWithType.reservation;
+        setReservations((prevReservations) => {
+          if (prevReservations.some((res) => res.id === newReservation.id)) {
+            return prevReservations;
+          }
+          return [...prevReservations, newReservation];
         });
 
         setIsInitialLoading(false);

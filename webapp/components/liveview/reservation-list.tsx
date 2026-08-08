@@ -81,7 +81,9 @@ export function ReservationList({
                 {reservation.seat?.seatNumber} ({reservation.seat?.seatRow})
               </p>
               <p className="text-xs text-muted-foreground">
-                {reservation.username || `User ${reservation.userId}`}
+                {reservation.guestName ||
+                  reservation.username ||
+                  `User ${reservation.userId}`}
               </p>
             </div>
             {reservation.liveStatus && (

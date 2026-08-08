@@ -322,6 +322,98 @@ class EmailServiceTest {
     }
 
     @Test
+    void sendBoxOfficeConfirmation_WithQrCode_SendsEmailAndReturnsDisplayHtmlWithDataUri() {
+        User boxofficeUser = new User();
+        boxofficeUser.id = id(5);
+        boxofficeUser.setUsername("boxoffice");
+        EventLocation location = createTestEventLocation();
+        Event event = createTestEvent(location);
+        Seat seat = createTestSeat(location, "A1");
+        seat.setSeatRow("1");
+        Reservation reservation = createTestReservation(boxofficeUser, event, seat);
+        reservation.setCheckInCode("CODE123");
+        List<Reservation> reservations = Collections.singletonList(reservation);
+
+        when(seatRepository.findByIdsWithAreaAndEntrance(any())).thenReturn(List.of(seat));
+
+        EmailService.BoxOfficeConfirmationContent content =
+                emailService.sendBoxOfficeConfirmation(
+                        boxofficeUser, reservations, "Jane Doe", "guest@example.com", true);
+        emailDispatcher.drainQueue();
+
+        List<Mail> sentMails = mailbox.getMailsSentTo("guest@example.com");
+        assertEquals(1, sentMails.size());
+
+        Mail sentMail = sentMails.getFirst();
+        assertEquals("Box Office Reservation Confirmation", sentMail.getSubject());
+        assertTrue(sentMail.getHtml().contains("Jane Doe"));
+        assertTrue(sentMail.getHtml().contains("<li>A1 (1) - Parkett</li>"));
+        assertTrue(sentMail.getHtml().contains("<img src=\"cid:qrcode-image\""));
+        assertEquals(1, sentMail.getAttachments().size());
+
+        // The API response (used for the frontend print copy) has no MIME attachment channel to
+        // resolve a cid: reference against, so it must embed the QR as a data: URI instead.
+        assertNotNull(content);
+        assertTrue(content.displayHtml().contains("data:image/png;base64,"));
+        assertFalse(content.displayHtml().contains("cid:qrcode-image"));
+        assertTrue(content.emailHtml().contains("cid:qrcode-image"));
+        assertTrue(content.qrCodeImage().length > 0);
+    }
+
+    @Test
+    void sendBoxOfficeConfirmation_CheckedInAtCreation_OmitsQrCode() {
+        User targetUser = createTestUser();
+        EventLocation location = createTestEventLocation();
+        Event event = createTestEvent(location);
+        Seat seat = createTestSeat(location, "A1");
+        List<Reservation> reservations =
+                Collections.singletonList(createTestReservation(targetUser, event, seat));
+
+        when(seatRepository.findByIdsWithAreaAndEntrance(any())).thenReturn(List.of(seat));
+
+        EmailService.BoxOfficeConfirmationContent content =
+                emailService.sendBoxOfficeConfirmation(
+                        targetUser, reservations, "Test User", null, false);
+        emailDispatcher.drainQueue();
+
+        List<Mail> sentMails = mailbox.getMailsSentTo(targetUser.getEmail());
+        assertEquals(1, sentMails.size());
+        assertTrue(
+                sentMails.getFirst().getAttachments().isEmpty(),
+                "No QR attachment should be queued when the reservation was already checked in");
+        assertFalse(sentMails.getFirst().getHtml().contains("<img"));
+
+        assertEquals(0, content.qrCodeImage().length);
+        assertFalse(content.displayHtml().contains("data:image/png;base64,"));
+    }
+
+    @Test
+    void sendBoxOfficeConfirmation_NoValidRecipient_SendsNoEmailButReturnsRenderedContent() {
+        User boxofficeUser = new User();
+        boxofficeUser.id = id(5);
+        boxofficeUser.setUsername("boxoffice");
+        EventLocation location = createTestEventLocation();
+        Event event = createTestEvent(location);
+        Seat seat = createTestSeat(location, "A1");
+        List<Reservation> reservations =
+                Collections.singletonList(createTestReservation(boxofficeUser, event, seat));
+
+        when(seatRepository.findByIdsWithAreaAndEntrance(any())).thenReturn(List.of(seat));
+
+        // boxofficeUser has no email and no additionalMailAddress is given (guest didn't type
+        // one) -- no valid recipient exists, so the confirmation must still render (for print)
+        // without queuing an email.
+        EmailService.BoxOfficeConfirmationContent content =
+                emailService.sendBoxOfficeConfirmation(
+                        boxofficeUser, reservations, "Jane Doe", null, true);
+        emailDispatcher.drainQueue();
+
+        assertEquals(0, mailbox.getTotalMessagesSent());
+        assertFalse(content.displayHtml().isEmpty());
+        assertTrue(content.displayHtml().contains("Jane Doe"));
+    }
+
+    @Test
     void sendEventReminder_QrCodeGenerationThrowsException() throws Exception {
         User user = createTestUser();
         EventLocation location = createTestEventLocation();
