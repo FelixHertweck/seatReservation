@@ -991,6 +991,7 @@
     "supervisor": "Supervisor",
     "liveview": "Liveview",
     "checkin": "Check-In",
+    "boxOffice": "Box Office",
     "theme": "Theme",
     "light": "Light",
     "dark": "Dark",
@@ -1505,6 +1506,44 @@
       "updateError": "Failed to update allowance.",
       "deleteSuccess": "Allowance(s) deleted.",
       "deleteError": "Failed to delete allowance(s)."
+    }
+  },
+  "boxOffice": {
+    "title": "Box Office",
+    "pageDescription": "Sell or reserve seats in person after online booking has closed.",
+    "eventSelector": {
+      "placeholder": "Choose an event...",
+      "noEvents": "No events available for box office yet"
+    },
+    "selectEventPrompt": "Select an event at the top of the page.",
+    "deadlineNotPassed": "Box office is only available once this event's booking deadline has passed.",
+    "newReservation": "New reservation",
+    "description": "Select seats on the map, then choose who they're for.",
+    "modeUser": "Existing user",
+    "modeGuest": "Walk-in guest",
+    "userLabel": "User",
+    "selectUserPlaceholder": "Select a user",
+    "deductAllowanceLabel": "Deduct from user allowance",
+    "guestNameLabel": "Name",
+    "guestNamePlaceholder": "Jane Doe",
+    "guestEmailLabel": "Email (optional)",
+    "guestEmailPlaceholder": "guest@example.com",
+    "guestEmailHint": "If provided, a confirmation with a check-in QR code is emailed immediately. It is never stored.",
+    "checkedInLabel": "Check in immediately",
+    "selectSeatsHint": "Click seats on the map to select them.",
+    "selectedSeatsTitle": "Selected seats",
+    "createButton": "Create reservation",
+    "userValidationError": "Please select a user and at least one seat.",
+    "guestValidationError": "Please select at least one seat.",
+    "createSuccess": "Box office reservation created.",
+    "createError": "Failed to create box office reservation.",
+    "confirmation": {
+      "title": "Reservation confirmed",
+      "description": "Show or print this QR code for check-in.",
+      "emailedTo": "Confirmation emailed to {{email}}",
+      "emailedToUser": "Confirmation emailed to {{username}}'s registered address",
+      "printButton": "Print confirmation",
+      "createAnotherButton": "Done"
     }
   }
 }

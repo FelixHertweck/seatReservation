@@ -20,6 +20,7 @@ import {
   LayoutDashboard,
   MapPinned,
   Ticket,
+  Store,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -141,6 +142,12 @@ export function AppSidebar() {
         title: t("sidebar.liveview"),
         url: "/liveview",
         icon: Eye,
+        badge: t("sidebar.supervisor"),
+      });
+      supervisionItems.push({
+        title: t("sidebar.boxOffice"),
+        url: "/box-office",
+        icon: Store,
         badge: t("sidebar.supervisor"),
       });
     }

@@ -51,6 +51,36 @@ export type BlockSeatsRequestDto = {
     seatIds?: Array<string>;
 };
 
+export type BoxOfficeGuestReservationRequestDto = {
+    eventId: Uuid;
+    seatIds: Array<string>;
+    guestName: string;
+    guestEmail?: string;
+    checkedIn?: boolean;
+};
+
+export type BoxOfficeReservationRequestDto = {
+    eventId: Uuid;
+    userId: Uuid;
+    seatIds: Array<string>;
+    deductAllowance?: boolean;
+    checkedIn?: boolean;
+};
+
+export type BoxOfficeReservationResponseDto = {
+    eventId?: Uuid;
+    reservationUserId?: Uuid;
+    seats?: Array<BoxOfficeSeatDto>;
+    confirmationHtml?: string;
+};
+
+export type BoxOfficeSeatDto = {
+    seatId?: Uuid;
+    seatNumber?: string;
+    checkInCode?: string;
+    liveStatus?: ReservationLiveStatus;
+};
+
 export type CheckInInfoRequestDto = {
     userId: Uuid;
     eventId: Uuid;
@@ -332,6 +362,7 @@ export type SupervisorEventResponseDto = {
     description?: string;
     startTime?: Instant;
     endTime?: Instant;
+    bookingDeadline?: Instant;
 };
 
 export type SupervisorReservationResponseDto = {
@@ -344,6 +375,7 @@ export type SupervisorReservationResponseDto = {
     status?: ReservationStatus;
     liveStatus?: ReservationLiveStatus;
     reservationDate?: Instant;
+    guestName?: string;
 };
 
 /**
@@ -2611,6 +2643,111 @@ export type PutApiManagerSeatsByIdResponses = {
 };
 
 export type PutApiManagerSeatsByIdResponse = PutApiManagerSeatsByIdResponses[keyof PutApiManagerSeatsByIdResponses];
+
+export type PostApiSupervisorBoxofficeReservationsData = {
+    body: BoxOfficeReservationRequestDto;
+    path?: never;
+    query?: never;
+    url: '/api/supervisor/boxoffice/reservations';
+};
+
+export type PostApiSupervisorBoxofficeReservationsErrors = {
+    /**
+     * Bad Request: Invalid input or deadline not passed
+     */
+    400: unknown;
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Forbidden: Not authorized for this event
+     */
+    403: unknown;
+    /**
+     * Not Found: Event, user or seat not found
+     */
+    404: unknown;
+    /**
+     * Conflict: Seat already reserved
+     */
+    409: unknown;
+};
+
+export type PostApiSupervisorBoxofficeReservationsResponses = {
+    /**
+     * OK - Box office reservation created for a known user
+     */
+    200: BoxOfficeReservationResponseDto;
+};
+
+export type PostApiSupervisorBoxofficeReservationsResponse = PostApiSupervisorBoxofficeReservationsResponses[keyof PostApiSupervisorBoxofficeReservationsResponses];
+
+export type PostApiSupervisorBoxofficeReservationsGuestData = {
+    body: BoxOfficeGuestReservationRequestDto;
+    path?: never;
+    query?: never;
+    url: '/api/supervisor/boxoffice/reservations/guest';
+};
+
+export type PostApiSupervisorBoxofficeReservationsGuestErrors = {
+    /**
+     * Bad Request: Invalid input or deadline not passed
+     */
+    400: unknown;
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Forbidden: Not authorized for this event
+     */
+    403: unknown;
+    /**
+     * Not Found: Event or seat not found
+     */
+    404: unknown;
+    /**
+     * Conflict: Seat already reserved
+     */
+    409: unknown;
+};
+
+export type PostApiSupervisorBoxofficeReservationsGuestResponses = {
+    /**
+     * OK - Box office reservation created for a walk-in guest
+     */
+    200: BoxOfficeReservationResponseDto;
+};
+
+export type PostApiSupervisorBoxofficeReservationsGuestResponse = PostApiSupervisorBoxofficeReservationsGuestResponses[keyof PostApiSupervisorBoxofficeReservationsGuestResponses];
+
+export type GetApiSupervisorBoxofficeUsersData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/supervisor/boxoffice/users';
+};
+
+export type GetApiSupervisorBoxofficeUsersErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Not Allowed
+     */
+    403: unknown;
+};
+
+export type GetApiSupervisorBoxofficeUsersResponses = {
+    /**
+     * OK - Users available for box office reservations
+     */
+    200: Array<LimitedUserInfoDto>;
+};
+
+export type GetApiSupervisorBoxofficeUsersResponse = GetApiSupervisorBoxofficeUsersResponses[keyof GetApiSupervisorBoxofficeUsersResponses];
 
 export type GetApiSupervisorCheckinEventsData = {
     body?: never;

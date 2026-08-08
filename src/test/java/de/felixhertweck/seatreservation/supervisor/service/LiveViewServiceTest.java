@@ -27,13 +27,16 @@ import jakarta.inject.Inject;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import de.felixhertweck.seatreservation.model.entity.BoxOfficeGuestInfo;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationLiveStatus;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.BoxOfficeGuestInfoRepository;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.supervisor.exception.InvalidEventIdException;
@@ -42,6 +45,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.websockets.next.WebSocketConnection;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 @QuarkusTest
@@ -53,12 +57,15 @@ public class LiveViewServiceTest {
 
     @InjectMock EventRepository eventRepository;
 
+    @InjectMock BoxOfficeGuestInfoRepository boxOfficeGuestInfoRepository;
+
     private final UUID eventId = id(1);
 
     @BeforeEach
     public void setUp() {
         Mockito.reset(reservationRepository);
         Mockito.reset(eventRepository);
+        Mockito.reset(boxOfficeGuestInfoRepository);
     }
 
     @Test
@@ -200,8 +207,10 @@ public class LiveViewServiceTest {
             // Verify that writeValueAsString was indeed called
             Mockito.verify(mockMapper).writeValueAsString(Mockito.any());
         } finally {
-            // Restore original mapper
-            mapperField.set(webSocketService, originalMapper);
+            // Restore on realInstance, not the proxy -- the proxy has no field state of its own,
+            // so setting it there is a no-op and previously left the mock mapper permanently
+            // swapped into the shared singleton, leaking into every test that ran afterward.
+            mapperField.set(realInstance, originalMapper);
         }
     }
 
@@ -260,6 +269,88 @@ public class LiveViewServiceTest {
             // Restore original mapper
             mapperField.set(realInstance, originalMapper);
             webSocketService.unregisterConnection(testEventId, mockConnection); // cleanup
+        }
+    }
+
+    @Test
+    void testBroadcastNewReservation_NoActiveConnections() {
+        // Should not throw exception when no connections are active
+        Reservation reservation = createTestReservation();
+
+        assertDoesNotThrow(
+                () -> webSocketService.broadcastNewReservation(eventId, reservation, "Jane Doe"));
+    }
+
+    @Test
+    void testBroadcastNewReservation_SendsNewReservationMessageWithGuestName() throws Exception {
+        UUID testEventId = id(200);
+        WebSocketConnection mockConnection = Mockito.mock(WebSocketConnection.class);
+
+        Event mockEvent = new Event();
+        mockEvent.id = testEventId;
+        mockEvent.setName("Test Broadcast Event");
+        EventLocation mockLocation = new EventLocation();
+        mockLocation.id = id(1);
+        mockEvent.setEventLocation(mockLocation);
+        Mockito.when(eventRepository.findById(testEventId)).thenReturn(mockEvent);
+        Mockito.when(reservationRepository.findByEventIdWithUserAndSeat(testEventId))
+                .thenReturn(new java.util.ArrayList<>());
+
+        // registerConnection sends an initial snapshot (1st sendText call) before the
+        // broadcastNewReservation under test triggers a 2nd one.
+        webSocketService.registerConnection(testEventId, mockConnection);
+
+        Reservation reservation = createTestReservation();
+        reservation.setEvent(mockEvent);
+
+        try {
+            webSocketService.broadcastNewReservation(testEventId, reservation, "Jane Doe");
+
+            ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+            Mockito.verify(mockConnection, Mockito.times(2)).sendText(captor.capture());
+
+            String newReservationMessage = captor.getAllValues().get(1);
+            assertTrue(newReservationMessage.contains("NEW_RESERVATION"));
+            assertTrue(newReservationMessage.contains("Jane Doe"));
+        } finally {
+            webSocketService.unregisterConnection(testEventId, mockConnection);
+        }
+    }
+
+    @Test
+    void testSendInitialReservations_IncludesGuestNameForBoxOfficeReservation() throws Exception {
+        UUID testEventId = id(300);
+        WebSocketConnection mockConnection = Mockito.mock(WebSocketConnection.class);
+
+        Event mockEvent = new Event();
+        mockEvent.id = testEventId;
+        mockEvent.setName("Test Guest Name Event");
+        EventLocation mockLocation = new EventLocation();
+        mockLocation.id = id(1);
+        mockEvent.setEventLocation(mockLocation);
+
+        Reservation reservation = createTestReservation();
+        reservation.setEvent(mockEvent);
+
+        Mockito.when(eventRepository.findById(testEventId)).thenReturn(mockEvent);
+        Mockito.when(reservationRepository.findByEventIdWithUserAndSeat(testEventId))
+                .thenReturn(java.util.List.of(reservation));
+
+        BoxOfficeGuestInfo guestInfo = new BoxOfficeGuestInfo(reservation, "Jane Doe");
+        Mockito.when(
+                        boxOfficeGuestInfoRepository.findByReservationIdIn(
+                                java.util.List.of(reservation.id)))
+                .thenReturn(java.util.List.of(guestInfo));
+
+        try {
+            ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+
+            webSocketService.registerConnection(testEventId, mockConnection);
+
+            Mockito.verify(mockConnection).sendText(captor.capture());
+            assertTrue(captor.getValue().contains("Jane Doe"));
+        } finally {
+            webSocketService.unregisterConnection(testEventId, mockConnection);
         }
     }
 

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Box Office Reservation Confirmation</title>
+      <style>
+{#include email/fragments/simple-card-styles /}
+      </style>
+  </head>
+  <body>
+      <div class="container">
+          <div class="header">Box Office Reservation Confirmation</div>
+          <p>Hello {recipientName},</p>
+          <p>Here is your reservation confirmation for the event "{eventName}".</p>
+          <p><strong>Location:</strong> {eventLocation}</p>
+          <p><strong>Start:</strong> {eventStartTime}</p>
+          <p><strong>End:</strong> {eventEndTime}</p>
+          <p>The following seats have been reserved:</p>
+          <ul>
+              {#for seat in seats}<li>{seat.number} ({seat.row}){#if seat.area} - {seat.area}{/if}</li>{/for}
+          </ul>
+{#include email/fragments/entrance-info-block /}
+          {#if showQrCode}
+          <div style="text-align: center; margin: 30px 0;">
+              <p style="font-size: 16px; font-weight: bold; color: #2c3e50; margin-bottom: 10px;">Your Check-in QR Code:</p>
+              <p style="font-size: 16px; font-weight: bold; color: #7f8c8d; margin-bottom: 15px;">Please present this QR code at check-in for the event.</p>
+              <img src="{qrCodeImageSrc}" alt="Check-in QR Code" style="max-width: 150px; height: auto; border: 1px solid #a0a0a0; border-radius: 5px; margin-bottom: 5px;" />
+          </div>
+          {#else}
+          <p style="text-align: center; margin: 30px 0; font-weight: bold; color: #2c3e50;">You are already checked in for this event.</p>
+          {/if}
+          <p style="margin-top: 20px;">We wish you a great time at the event!</p>
+          <p>Best regards</p>
+          <div class="footer">
+              &copy; {currentYear} - All rights reserved
+          </div>
+      </div>
+  </body>
+</html>

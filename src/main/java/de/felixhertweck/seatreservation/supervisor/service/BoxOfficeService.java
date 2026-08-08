@@ -1,0 +1,336 @@
+/*
+ * #%L
+ * seat-reservation
+ * %%
+ * Copyright (C) 2025 Felix Hertweck
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+package de.felixhertweck.seatreservation.supervisor.service;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceException;
+import jakarta.transaction.Transactional;
+
+import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
+import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
+import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
+import de.felixhertweck.seatreservation.email.service.EmailService;
+import de.felixhertweck.seatreservation.email.service.EmailService.BoxOfficeConfirmationContent;
+import de.felixhertweck.seatreservation.model.entity.BoxOfficeGuestInfo;
+import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
+import de.felixhertweck.seatreservation.model.entity.Reservation;
+import de.felixhertweck.seatreservation.model.entity.ReservationLiveStatus;
+import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
+import de.felixhertweck.seatreservation.model.entity.Seat;
+import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.BoxOfficeGuestInfoRepository;
+import de.felixhertweck.seatreservation.model.repository.EventRepository;
+import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
+import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
+import de.felixhertweck.seatreservation.model.repository.SeatRepository;
+import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeGuestReservationRequestDTO;
+import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeReservationRequestDTO;
+import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeReservationResponseDTO;
+import de.felixhertweck.seatreservation.supervisor.exception.BoxOfficeNotAvailableException;
+import de.felixhertweck.seatreservation.userManagment.service.UserService;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
+import de.felixhertweck.seatreservation.utils.CodeGenerator;
+import org.jboss.logging.Logger;
+
+@ApplicationScoped
+public class BoxOfficeService {
+
+    private static final Logger LOG = Logger.getLogger(BoxOfficeService.class);
+
+    // Shared, passwordless system user reservations are booked under when there is no real
+    // account (see db/migration/V8__add_boxoffice_user.sql and import.sql/import-test.sql).
+    public static final String BOXOFFICE_USERNAME = "boxoffice";
+
+    @Inject ReservationRepository reservationRepository;
+    @Inject EventRepository eventRepository;
+    @Inject UserRepository userRepository;
+    @Inject SeatRepository seatRepository;
+    @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
+    @Inject EmailService emailService;
+    @Inject LiveViewService liveViewService;
+    @Inject UserService userService;
+    @Inject BoxOfficeGuestInfoRepository boxOfficeGuestInfoRepository;
+
+    /**
+     * Returns all users a box office reservation can be created for, excluding the shared {@code
+     * boxoffice} system account itself.
+     */
+    public List<LimitedUserInfoDTO> getUsersForBoxOffice() {
+        return userService.getAllUsers().stream()
+                .filter(u -> !BOXOFFICE_USERNAME.equalsIgnoreCase(u.username()))
+                .toList();
+    }
+
+    /**
+     * Creates box office reservations for a known, registered user -- the supervisor-accessible
+     * equivalent of {@code management.service.ReservationService.createReservations}.
+     */
+    @Transactional
+    public BoxOfficeReservationResponseDTO reserveForKnownUser(
+            BoxOfficeReservationRequestDTO dto, AuthenticatedUser currentUser) {
+        Event event = loadEvent(dto.getEventId());
+        assertAuthorizedForEvent(currentUser, dto.getEventId());
+        assertBookingDeadlinePassed(event);
+
+        User targetUser =
+                userRepository
+                        .findByIdOptional(dto.getUserId())
+                        .orElseThrow(
+                                () ->
+                                        new UserNotFoundException(
+                                                "User with id " + dto.getUserId() + " not found."));
+
+        List<Reservation> newReservations =
+                createReservationsForSeats(
+                        event,
+                        targetUser,
+                        dto.getSeatIds(),
+                        dto.isCheckedIn(),
+                        dto.isDeductAllowance());
+
+        reservationRepository.persistAll(newReservations);
+
+        // AuthenticatedUser only carries id/roles (no DB round trip); fetch the acting
+        // supervisor's email so they receive a CC, matching
+        // management.service.ReservationService.createReservations's behavior for managers.
+        User actingUser = userRepository.findById(currentUser.id());
+        String ccEmail = actingUser != null ? actingUser.getEmail() : null;
+        BoxOfficeConfirmationContent confirmation =
+                sendConfirmationSafely(
+                        targetUser,
+                        newReservations,
+                        fullName(targetUser),
+                        ccEmail,
+                        !dto.isCheckedIn());
+        broadcast(event.getId(), newReservations, null);
+
+        LOG.infof(
+                "Box office reservation created for known user %s, event %s, %d seat(s) by"
+                        + " supervisor %s.",
+                targetUser.id, event.getId(), newReservations.size(), currentUser.id());
+
+        return new BoxOfficeReservationResponseDTO(
+                targetUser.id, newReservations, confirmation.displayHtml());
+    }
+
+    /**
+     * Creates box office reservations for a walk-in guest with no account, booked under the shared
+     * {@code boxoffice} system user. {@code guestEmail} is used once to send a confirmation and is
+     * never persisted.
+     */
+    @Transactional
+    public BoxOfficeReservationResponseDTO reserveForGuest(
+            BoxOfficeGuestReservationRequestDTO dto, AuthenticatedUser currentUser) {
+        Event event = loadEvent(dto.getEventId());
+        assertAuthorizedForEvent(currentUser, dto.getEventId());
+        assertBookingDeadlinePassed(event);
+
+        User boxofficeUser = userRepository.findByUsername(BOXOFFICE_USERNAME);
+        if (boxofficeUser == null) {
+            LOG.error(
+                    "Box office system user not found -- seed data (import.sql / Flyway"
+                            + " V8__add_boxoffice_user.sql) is missing.");
+            throw new IllegalStateException("Box office system user is not configured.");
+        }
+
+        List<Reservation> newReservations =
+                createReservationsForSeats(
+                        event, boxofficeUser, dto.getSeatIds(), dto.isCheckedIn(), false);
+
+        reservationRepository.persistAll(newReservations);
+
+        for (Reservation reservation : newReservations) {
+            boxOfficeGuestInfoRepository.persist(
+                    new BoxOfficeGuestInfo(reservation, dto.getGuestName()));
+        }
+
+        String additionalMailAddress =
+                dto.getGuestEmail() != null && !dto.getGuestEmail().isBlank()
+                        ? dto.getGuestEmail()
+                        : null;
+        BoxOfficeConfirmationContent confirmation =
+                sendConfirmationSafely(
+                        boxofficeUser,
+                        newReservations,
+                        dto.getGuestName(),
+                        additionalMailAddress,
+                        !dto.isCheckedIn());
+        broadcast(event.getId(), newReservations, dto.getGuestName());
+
+        LOG.infof(
+                "Box office guest reservation created for event %s, %d seat(s) by supervisor %s.",
+                event.getId(), newReservations.size(), currentUser.id());
+
+        return new BoxOfficeReservationResponseDTO(
+                boxofficeUser.id, newReservations, confirmation.displayHtml());
+    }
+
+    private List<Reservation> createReservationsForSeats(
+            Event event,
+            User reservationOwner,
+            Set<UUID> seatIds,
+            boolean checkedIn,
+            boolean deductAllowance) {
+        if (seatIds == null || seatIds.isEmpty()) {
+            throw new IllegalArgumentException("No seat IDs provided.");
+        }
+
+        Map<UUID, Seat> seatMap =
+                seatRepository.find("id in ?1", seatIds).list().stream()
+                        .collect(Collectors.toMap(s -> s.id, s -> s, (s1, s2) -> s1));
+
+        // Proactive conflict check (mirrors management.service.ReservationService.blockSeats) so
+        // a taken seat is rejected before any email/broadcast side effect runs, rather than only
+        // surfacing as a late unique-constraint violation at transaction commit.
+        List<Reservation> conflicting =
+                reservationRepository.findByEventIdAndSeatIds(
+                        event.getId(), new ArrayList<>(seatIds));
+        if (!conflicting.isEmpty()) {
+            UUID conflictingSeatId = conflicting.getFirst().getSeat().id;
+            throw new IllegalStateException(
+                    "Seat with id " + conflictingSeatId + " is already reserved or blocked.");
+        }
+
+        EventUserAllowance allowance = null;
+        if (deductAllowance) {
+            try {
+                allowance =
+                        eventUserAllowanceRepository
+                                .find("user = ?1 and event = ?2", reservationOwner, event)
+                                .singleResult();
+            } catch (NoResultException e) {
+                throw new IllegalArgumentException(
+                        "User has no reservation allowance for this event.");
+            }
+        }
+
+        List<Reservation> newReservations = new ArrayList<>();
+        for (UUID seatId : seatIds) {
+            Seat seat = seatMap.get(seatId);
+            if (seat == null) {
+                throw new IllegalArgumentException("Seat with id " + seatId + " not found");
+            }
+
+            if (deductAllowance) {
+                if (allowance.getReservationsAllowedCount() <= 0) {
+                    throw new IllegalArgumentException(
+                            "No more reservations allowed for this user and event.");
+                }
+                allowance.setReservationsAllowedCount(allowance.getReservationsAllowedCount() - 1);
+                eventUserAllowanceRepository.persist(allowance);
+            }
+
+            Reservation reservation =
+                    new Reservation(
+                            reservationOwner,
+                            event,
+                            seat,
+                            Instant.now(),
+                            ReservationStatus.RESERVED,
+                            CodeGenerator.generateRandomCode());
+            if (checkedIn) {
+                reservation.setLiveStatus(ReservationLiveStatus.CHECKED_IN);
+            }
+            newReservations.add(reservation);
+        }
+        return newReservations;
+    }
+
+    private BoxOfficeConfirmationContent sendConfirmationSafely(
+            User user,
+            List<Reservation> reservations,
+            String recipientName,
+            String additionalMailAddress,
+            boolean includeQrCode) {
+        try {
+            return emailService.sendBoxOfficeConfirmation(
+                    user, reservations, recipientName, additionalMailAddress, includeQrCode);
+        } catch (PersistenceException | IllegalStateException e) {
+            LOG.errorf(
+                    e,
+                    "Failed to send box office reservation confirmation email for user ID %s.",
+                    user.id);
+            return new BoxOfficeConfirmationContent("", "", new byte[0]);
+        }
+    }
+
+    private void broadcast(UUID eventId, List<Reservation> reservations, String guestName) {
+        for (Reservation reservation : reservations) {
+            liveViewService.broadcastNewReservation(eventId, reservation, guestName);
+        }
+    }
+
+    /**
+     * Builds a user's display name from first and last name, for the box office confirmation
+     * greeting.
+     */
+    private String fullName(User user) {
+        return user.getFirstname() + " " + user.getLastname();
+    }
+
+    private Event loadEvent(UUID eventId) {
+        Event event = eventRepository.findById(eventId);
+        if (event == null) {
+            throw new EventNotFoundException("Event with id " + eventId + " not found");
+        }
+        return event;
+    }
+
+    private void assertBookingDeadlinePassed(Event event) {
+        Instant deadline = event.getBookingDeadline();
+        if (deadline == null || !Instant.now().isAfter(deadline)) {
+            throw new BoxOfficeNotAvailableException(
+                    "Box office reservations are only available after the event's booking"
+                            + " deadline has passed.");
+        }
+    }
+
+    /** Mirrors CheckInService/LiveViewService's private isAuthorizedForEvent check. */
+    private void assertAuthorizedForEvent(AuthenticatedUser user, UUID eventId) {
+        if (user != null && isAuthorizedForEvent(user, eventId)) {
+            return;
+        }
+        throw new SecurityException("User is not authorized to access event " + eventId);
+    }
+
+    private boolean isAuthorizedForEvent(AuthenticatedUser user, UUID eventId) {
+        if (user == null || eventId == null) return false;
+        if (eventRepository.isUserSupervisor(eventId, user.id())) return true;
+        Event event = eventRepository.findById(eventId);
+        if (event != null
+                && event.getManager() != null
+                && Objects.equals(event.getManager().id, user.id())) {
+            return true;
+        }
+        return user.isAdmin();
+    }
+}

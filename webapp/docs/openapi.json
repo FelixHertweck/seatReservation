@@ -160,6 +160,98 @@
           }
         }
       },
+      "BoxOfficeGuestReservationRequestDTO" : {
+        "type" : "object",
+        "required" : [ "eventId", "seatIds", "guestName" ],
+        "properties" : {
+          "eventId" : {
+            "$ref" : "#/components/schemas/UUID"
+          },
+          "seatIds" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+            }
+          },
+          "guestName" : {
+            "type" : "string",
+            "pattern" : "\\S"
+          },
+          "guestEmail" : {
+            "type" : "string"
+          },
+          "checkedIn" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "BoxOfficeReservationRequestDTO" : {
+        "type" : "object",
+        "required" : [ "eventId", "userId", "seatIds" ],
+        "properties" : {
+          "eventId" : {
+            "$ref" : "#/components/schemas/UUID"
+          },
+          "userId" : {
+            "$ref" : "#/components/schemas/UUID"
+          },
+          "seatIds" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+            }
+          },
+          "deductAllowance" : {
+            "type" : "boolean"
+          },
+          "checkedIn" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "BoxOfficeReservationResponseDTO" : {
+        "type" : "object",
+        "properties" : {
+          "eventId" : {
+            "$ref" : "#/components/schemas/UUID"
+          },
+          "reservationUserId" : {
+            "$ref" : "#/components/schemas/UUID"
+          },
+          "seats" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/BoxOfficeSeatDTO"
+            }
+          },
+          "confirmationHtml" : {
+            "type" : "string"
+          }
+        }
+      },
+      "BoxOfficeSeatDTO" : {
+        "type" : "object",
+        "properties" : {
+          "seatId" : {
+            "$ref" : "#/components/schemas/UUID"
+          },
+          "seatNumber" : {
+            "type" : "string"
+          },
+          "checkInCode" : {
+            "type" : "string"
+          },
+          "liveStatus" : {
+            "$ref" : "#/components/schemas/ReservationLiveStatus"
+          }
+        }
+      },
       "CheckInInfoRequestDTO" : {
         "type" : "object",
         "required" : [ "userId", "eventId" ],
@@ -891,6 +983,9 @@
           },
           "endTime" : {
             "$ref" : "#/components/schemas/Instant"
+          },
+          "bookingDeadline" : {
+            "$ref" : "#/components/schemas/Instant"
           }
         }
       },
@@ -923,6 +1018,9 @@
           },
           "reservationDate" : {
             "$ref" : "#/components/schemas/Instant"
+          },
+          "guestName" : {
+            "type" : "string"
           }
         }
       },
@@ -3815,6 +3913,128 @@
         "tags" : [ "Seat Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]
+        } ]
+      }
+    },
+    "/api/supervisor/boxoffice/reservations" : {
+      "post" : {
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/BoxOfficeReservationRequestDTO"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK - Box office reservation created for a known user",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BoxOfficeReservationResponseDTO"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad Request: Invalid input or deadline not passed"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Forbidden: Not authorized for this event"
+          },
+          "404" : {
+            "description" : "Not Found: Event, user or seat not found"
+          },
+          "409" : {
+            "description" : "Conflict: Seat already reserved"
+          }
+        },
+        "summary" : "Create Reservation For Known User",
+        "tags" : [ "Box Office Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "SUPERVISOR", "MANAGER", "ADMIN" ]
+        } ]
+      }
+    },
+    "/api/supervisor/boxoffice/reservations/guest" : {
+      "post" : {
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/BoxOfficeGuestReservationRequestDTO"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK - Box office reservation created for a walk-in guest",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BoxOfficeReservationResponseDTO"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad Request: Invalid input or deadline not passed"
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Forbidden: Not authorized for this event"
+          },
+          "404" : {
+            "description" : "Not Found: Event or seat not found"
+          },
+          "409" : {
+            "description" : "Conflict: Seat already reserved"
+          }
+        },
+        "summary" : "Create Reservation For Guest",
+        "tags" : [ "Box Office Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "SUPERVISOR", "MANAGER", "ADMIN" ]
+        } ]
+      }
+    },
+    "/api/supervisor/boxoffice/users" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK - Users available for box office reservations",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/LimitedUserInfoDTO"
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Not Allowed"
+          }
+        },
+        "summary" : "Get Users",
+        "tags" : [ "Box Office Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "SUPERVISOR", "MANAGER", "ADMIN" ]
         } ]
       }
     },
