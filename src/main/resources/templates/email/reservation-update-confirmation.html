@@ -26,10 +26,8 @@
           <ul>
               {#for seat in activeSeats}<li>{seat.number} ({seat.row}){#if seat.area} - {seat.area}{/if}</li>{/for}
           </ul>
-          {/if}
 {#include email/fragments/qrcode-block /}
 {#include email/fragments/entrance-info-block /}
-          <p>You can view the event details here: <a href="{eventLink}">View Event</a></p>
           <div class="seatmap-container">
               <p><strong>Here is an overview of your current seats:</strong></p>
               <img src="cid:seatmap-image" alt="Seat Map" class="seatmap-image" />
@@ -41,6 +39,8 @@
               </div>
               <a href="{seatmapLink}" class="button">🪑 View Interactive Seat Map</a>
           </div>
+          {/if}
+          <p>You can view the event details here: <a href="{eventLink}">View Event</a></p>
           <p style="margin-top: 20px;">We wish you a great time at the event!</p>
           <p>Best regards</p>
           <div class="footer">

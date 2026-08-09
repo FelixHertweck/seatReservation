@@ -20,10 +20,10 @@
 package de.felixhertweck.seatreservation.model.repository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 
+import de.felixhertweck.seatreservation.model.entity.CheckInToken;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
@@ -204,23 +204,13 @@ public class ReservationRepository implements PanacheRepositoryBase<Reservation,
     }
 
     /**
-     * Finds a reservation by its check-in code.
+     * Finds all reservations associated with a specific check-in token.
      *
-     * @param checkInCode the check-in code to search for
-     * @return an Optional containing the reservation if found, or empty otherwise
-     */
-    public Optional<Reservation> findByCheckInCode(String checkInCode) {
-        return find("checkInCode = ?1", checkInCode).firstResultOptional();
-    }
-
-    /**
-     * Finds reservations by their check-in codes.
-     *
-     * @param checkInCodes the list of check-in codes to search for
+     * @param checkInToken the CheckInToken entity to search for
      * @return a list containing the reservations found
      */
-    public List<Reservation> findByCheckInCodeIn(List<String> checkInCodes) {
-        return find("checkInCode in ?1", checkInCodes).list();
+    public List<Reservation> findByCheckInToken(CheckInToken checkInToken) {
+        return find("checkInToken", checkInToken).list();
     }
 
     /**

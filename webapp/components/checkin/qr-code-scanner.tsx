@@ -24,7 +24,7 @@ interface QrCodeScannerProps {
 export interface ScannedData {
   userId: string;
   eventId: string;
-  checkInTokens: string[];
+  checkInToken: string;
 }
 
 export function QrCodeScanner({
@@ -127,7 +127,7 @@ export function QrCodeScanner({
   // Handle scanned QR code
   const handleQRCodeScanned = (data: string) => {
     try {
-      // Expected format: userId;eventId;token1,token2,...
+      // Expected format: userId;eventId;token
       const parts = data.split(";");
       if (parts.length !== 3) {
         throw new Error(t("checkin.error.invalidQrFormat"));
@@ -143,11 +143,12 @@ export function QrCodeScanner({
         throw new Error(t("checkin.error.invalidUserOrEventId"));
       }
 
-      const checkInTokens = parts[2]
-        .split(",")
-        .filter((token) => token.trim() !== "");
+      const checkInToken = parts[2].trim();
+      if (!checkInToken) {
+        throw new Error(t("checkin.error.invalidQrFormat"));
+      }
 
-      onScan({ userId, eventId, checkInTokens });
+      onScan({ userId, eventId, checkInToken });
 
       // Stop scanning after successful scan
       stopScanning();
@@ -254,8 +255,7 @@ export function QrCodeScanner({
                   <strong>Event ID:</strong> {scannedData.eventId}
                 </p>
                 <p>
-                  <strong>Tokens:</strong>{" "}
-                  {scannedData.checkInTokens.join(", ")}
+                  <strong>Token:</strong> {scannedData.checkInToken}
                 </p>
               </div>
             </CardContent>

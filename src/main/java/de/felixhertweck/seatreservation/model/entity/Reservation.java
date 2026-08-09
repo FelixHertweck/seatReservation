@@ -25,16 +25,17 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 @Entity
 @Table(
-        uniqueConstraints = {
-            @UniqueConstraint(columnNames = {"event_id", "seat_id"}),
-            @UniqueConstraint(columnNames = {"event_id", "user_id", "checkInCode"})
-        },
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"event_id", "seat_id"})},
         name = "reservations")
 public class Reservation extends AbstractEntity {
 
@@ -52,7 +53,10 @@ public class Reservation extends AbstractEntity {
     @Enumerated(EnumType.STRING)
     private ReservationStatus status;
 
-    private String checkInCode;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "check_in_token_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    private CheckInToken checkInToken;
 
     @Enumerated(EnumType.STRING)
     private ReservationLiveStatus liveStatus;
@@ -65,13 +69,13 @@ public class Reservation extends AbstractEntity {
             Seat seat,
             Instant reservationDate,
             ReservationStatus status,
-            String checkInCode) {
+            CheckInToken checkInToken) {
         this.user = user;
         this.event = event;
         this.seat = seat;
         this.reservationDate = reservationDate;
         this.status = status;
-        this.checkInCode = checkInCode;
+        this.checkInToken = checkInToken;
         this.liveStatus = null;
     }
 
@@ -115,12 +119,12 @@ public class Reservation extends AbstractEntity {
         this.reservationDate = reservationDate;
     }
 
-    public String getCheckInCode() {
-        return checkInCode;
+    public CheckInToken getCheckInToken() {
+        return checkInToken;
     }
 
-    public void setCheckInCode(String checkInCode) {
-        this.checkInCode = checkInCode;
+    public void setCheckInToken(CheckInToken checkInToken) {
+        this.checkInToken = checkInToken;
     }
 
     public ReservationLiveStatus getLiveStatus() {

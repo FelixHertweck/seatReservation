@@ -244,7 +244,7 @@
           "seatNumber" : {
             "type" : "string"
           },
-          "checkInCode" : {
+          "checkInToken" : {
             "type" : "string"
           },
           "liveStatus" : {
@@ -262,11 +262,8 @@
           "eventId" : {
             "$ref" : "#/components/schemas/UUID"
           },
-          "checkInTokens" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
+          "checkInToken" : {
+            "type" : "string"
           }
         }
       },
@@ -1357,7 +1354,7 @@
           "reservationDateTime" : {
             "$ref" : "#/components/schemas/Instant"
           },
-          "checkInCode" : {
+          "checkInToken" : {
             "type" : "string"
           }
         }

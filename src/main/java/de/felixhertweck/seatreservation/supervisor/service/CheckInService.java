@@ -36,11 +36,13 @@ import jakarta.transaction.Transactional;
 import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.ReservationNotFoundException;
+import de.felixhertweck.seatreservation.model.entity.CheckInToken;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationLiveStatus;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.CheckInTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
@@ -63,6 +65,8 @@ public class CheckInService {
 
     @Inject ReservationRepository reservationRepository;
 
+    @Inject CheckInTokenRepository checkInTokenRepository;
+
     @Inject UserRepository userRepository;
 
     @Inject EventRepository eventRepository;
@@ -70,11 +74,11 @@ public class CheckInService {
     @Inject LiveViewService webSocketService;
 
     /**
-     * Validates and processes check-in/cancel requests based on reservation tokens.
+     * Validates and processes check-in/cancel requests based on a check-in token.
      *
      * @param userId the ID of the user
      * @param eventId the ID of the event
-     * @param checkInTokens list of check-in tokens
+     * @param checkInToken the check-in token string
      * @return list of processed reservations
      * @throws UserMismatchException if the reservation does not belong to the user
      * @throws EventMismatchException if the reservation does not belong to the event
@@ -82,12 +86,12 @@ public class CheckInService {
      */
     @Transactional
     public CheckInInfoResponseDTO getReservationInfos(
-            AuthenticatedUser currentUser, UUID userId, UUID eventId, List<String> checkInTokens)
+            AuthenticatedUser currentUser, UUID userId, UUID eventId, String checkInToken)
             throws UserMismatchException, EventMismatchException, CheckInTokenNotFoundException {
 
         LOG.debugf(
-                "Getting reservation infos for targetUser %s, event %s with %d check-in tokens.",
-                userId, eventId, (Object) (checkInTokens != null ? checkInTokens.size() : 0));
+                "Getting reservation infos for targetUser %s, event %s with check-in token %s.",
+                userId, eventId, checkInToken);
 
         if (currentUser != null && !isAuthorizedForEvent(currentUser, eventId)) {
             throw new SecurityException("User is not authorized to access event " + eventId);
@@ -96,26 +100,25 @@ public class CheckInService {
         List<SupervisorReservationResponseDTO> processedReservations = new ArrayList<>();
         User user = userRepository.findById(userId);
 
-        if (checkInTokens != null && !checkInTokens.isEmpty()) {
-            List<Reservation> foundReservations =
-                    reservationRepository.findByCheckInCodeIn(checkInTokens);
-            Map<String, Reservation> reservationMap =
-                    foundReservations.stream()
-                            .collect(Collectors.toMap(Reservation::getCheckInCode, r -> r));
+        if (checkInToken != null && !checkInToken.isBlank()) {
+            CheckInToken token =
+                    checkInTokenRepository
+                            .findByToken(checkInToken)
+                            .orElseThrow(
+                                    () ->
+                                            new CheckInTokenNotFoundException(
+                                                    String.format(
+                                                            "Check-in token %s not found.",
+                                                            checkInToken)));
 
-            for (String token : checkInTokens) {
-                Reservation reservation = reservationMap.get(token);
+            validateToken(token, userId, eventId);
 
-                if (reservation == null) {
-                    LOG.warnf("Check-in token %s not found.", token);
-                    throw new CheckInTokenNotFoundException(
-                            String.format("Check-in token %s not found.", token));
+            List<Reservation> reservations = reservationRepository.findByCheckInToken(token);
+            for (Reservation reservation : reservations) {
+                if (reservation.getStatus() != ReservationStatus.BLOCKED) {
+                    LOG.debugf("Processed reservation %s for token %s.", reservation, checkInToken);
+                    processedReservations.add(new SupervisorReservationResponseDTO(reservation));
                 }
-
-                validateReservation(reservation, userId, eventId);
-                LOG.debugf("Processed reservation %s for token %s.", reservation, token);
-
-                processedReservations.add(new SupervisorReservationResponseDTO(reservation));
             }
         }
 
@@ -129,11 +132,11 @@ public class CheckInService {
     // Backwards-compatible overload for existing tests/usage that provide userId
     @Transactional
     public CheckInInfoResponseDTO getReservationInfos(
-            UUID userId, UUID eventId, List<String> checkInTokens)
+            UUID userId, UUID eventId, String checkInToken)
             throws UserMismatchException, EventMismatchException, CheckInTokenNotFoundException {
         // Skip authorization (useful for tests or internal calls) and use userId as the
         // reservation owner id to look up reservations
-        return getReservationInfos(null, userId, eventId, checkInTokens);
+        return getReservationInfos(null, userId, eventId, checkInToken);
     }
 
     /**
@@ -353,23 +356,19 @@ public class CheckInService {
         return new CheckInInfoResponseDTO(processedReservations, new LimitedUserInfoDTO(user));
     }
 
-    private void validateReservation(Reservation reservation, UUID userId, UUID eventId)
+    private void validateToken(CheckInToken token, UUID userId, UUID eventId)
             throws UserMismatchException, EventMismatchException {
-        if (!Objects.equals(reservation.getUser().id, userId)) {
+        if (!Objects.equals(token.getUser().id, userId)) {
             throw new UserMismatchException(
                     String.format(
-                            "Reservation %s does not belong to user %s.",
-                            reservation.getCheckInCode(), userId));
+                            "Check-in token %s does not belong to user %s.",
+                            token.getToken(), userId));
         }
-        if (!Objects.equals(reservation.getEvent().id, eventId)) {
+        if (!Objects.equals(token.getEvent().id, eventId)) {
             throw new EventMismatchException(
                     String.format(
-                            "Reservation %s does not belong to event %s.",
-                            reservation.getCheckInCode(), eventId));
-        }
-        if (reservation.getStatus() == ReservationStatus.BLOCKED) {
-            throw new IllegalStateException(
-                    String.format("Reservation %s is blocked.", reservation.getCheckInCode()));
+                            "Check-in token %s does not belong to event %s.",
+                            token.getToken(), eventId));
         }
     }
 

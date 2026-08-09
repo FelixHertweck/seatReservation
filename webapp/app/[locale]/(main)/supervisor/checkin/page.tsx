@@ -107,7 +107,7 @@ function CheckInPageContent() {
       setScannedData(data);
 
       if (data) {
-        const scannedDataKey = `${data.userId}-${data.eventId}-${data.checkInTokens.join(",")}`;
+        const scannedDataKey = `${data.userId}-${data.eventId}-${data.checkInToken}`;
 
         // Only fetch if this is a new scan (different from last scanned data)
         if (lastScannedDataRef.current !== scannedDataKey) {
@@ -116,7 +116,7 @@ function CheckInPageContent() {
           const checkInInfoRequest: CheckInInfoRequestDto = {
             userId: data.userId,
             eventId: data.eventId,
-            checkInTokens: data.checkInTokens,
+            checkInToken: data.checkInToken,
           };
           fetchCheckInInfo(checkInInfoRequest).then((info) => {
             setCheckInInfo(info);

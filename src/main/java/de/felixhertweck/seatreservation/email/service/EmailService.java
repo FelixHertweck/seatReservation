@@ -25,11 +25,13 @@ import java.time.Year;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -43,6 +45,7 @@ import de.felixhertweck.seatreservation.email.queue.EmailAttachment;
 import de.felixhertweck.seatreservation.email.queue.EmailMessage;
 import de.felixhertweck.seatreservation.email.queue.EmailQueueService;
 import de.felixhertweck.seatreservation.management.service.ReservationService;
+import de.felixhertweck.seatreservation.model.entity.CheckInToken;
 import de.felixhertweck.seatreservation.model.entity.EmailPriority;
 import de.felixhertweck.seatreservation.model.entity.EmailVerification;
 import de.felixhertweck.seatreservation.model.entity.Event;
@@ -578,7 +581,11 @@ public class EmailService {
                         .data("currentYear", currentYear())
                         .render();
 
-        String qrCodeContent = generateQrCodeContent(user, event, reservations);
+        CheckInToken token =
+                reservations != null && !reservations.isEmpty()
+                        ? reservations.getFirst().getCheckInToken()
+                        : null;
+        String qrCodeContent = generateQrCodeContent(user, event, token);
         byte[] qrCodeImage = generateQrCodeImage(qrCodeContent);
 
         enqueue(
@@ -614,7 +621,39 @@ public class EmailService {
      * @param qrCodeImage the QR code PNG bytes, or an empty array when no QR code was requested
      */
     public record BoxOfficeConfirmationContent(
-            String emailHtml, String displayHtml, byte[] qrCodeImage) {}
+            String emailHtml, String displayHtml, byte[] qrCodeImage) {
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof BoxOfficeConfirmationContent that)) {
+                return false;
+            }
+            return Objects.equals(emailHtml, that.emailHtml)
+                    && Objects.equals(displayHtml, that.displayHtml)
+                    && Arrays.equals(qrCodeImage, that.qrCodeImage);
+        }
+
+        @Override
+        public int hashCode() {
+            return 31 * Objects.hash(emailHtml, displayHtml) + Arrays.hashCode(qrCodeImage);
+        }
+
+        @Override
+        public String toString() {
+            return "BoxOfficeConfirmationContent{"
+                    + "emailHtml='"
+                    + emailHtml
+                    + '\''
+                    + ", displayHtml='"
+                    + displayHtml
+                    + '\''
+                    + ", qrCodeImage="
+                    + Arrays.toString(qrCodeImage)
+                    + '}';
+        }
+    }
 
     /**
      * Renders the dedicated "box office" confirmation used for both known-user and walk-in guest
@@ -641,9 +680,10 @@ public class EmailService {
 
         byte[] qrCodeImage = new byte[0];
         String qrCodeDataUri = null;
-        if (includeQrCode) {
+        if (includeQrCode && reservations != null && !reservations.isEmpty()) {
             User qrOwner = reservations.getFirst().getUser();
-            String qrCodeContent = generateQrCodeContent(qrOwner, event, reservations);
+            CheckInToken token = reservations.getFirst().getCheckInToken();
+            String qrCodeContent = generateQrCodeContent(qrOwner, event, token);
             qrCodeImage = generateQrCodeImage(qrCodeContent);
             if (qrCodeImage.length > 0) {
                 qrCodeDataUri =
@@ -795,30 +835,38 @@ public class EmailService {
         String eventName = event.getName();
         LOG.debugf("Event for reservation confirmation: %s (ID: %s)", eventName, event.id);
 
-        // Create email seatmap token with active reservations
+        boolean hasActiveSeats = activeReservations != null && !activeReservations.isEmpty();
+
+        // Create email seatmap token with active reservations if there are active seats
         String seatmapToken =
-                emailSeatMapService.createEmailSeatMapToken(
-                        user, event, activeReservations != null ? activeReservations : List.of());
-        String seatmapLink = generateSeatmapLink(seatmapToken);
+                hasActiveSeats
+                        ? emailSeatMapService.createEmailSeatMapToken(
+                                user, event, activeReservations)
+                        : null;
+        String seatmapLink = seatmapToken != null ? generateSeatmapLink(seatmapToken) : "";
         LOG.debugf("Created email seatmap token: %s", seatmapToken);
 
         // Get PNG image from EmailSeatMapService
-        Optional<byte[]> pngImageOpt = emailSeatMapService.getPngImage(seatmapToken);
-        byte[] pngImage = pngImageOpt.orElse(new byte[0]);
+        byte[] pngImage =
+                seatmapToken != null
+                        ? emailSeatMapService.getPngImage(seatmapToken).orElse(new byte[0])
+                        : new byte[0];
         LOG.debugf("Retrieved PNG image with size: %d bytes", pngImage.length);
 
         // Prepare data for seat list rendering
         LOG.debugf(
                 "Retrieved %d user reservations for event %s.",
-                activeReservations != null ? activeReservations.size() : 0, eventName);
+                hasActiveSeats ? activeReservations.size() : 0, eventName);
 
         Map<UUID, Seat> seatById =
                 loadSeatsForReservations(deletedReservations, activeReservations);
 
         List<SeatView> deletedSeats = toSeatViews(deletedReservations, seatById);
-        List<SeatView> activeSeats = toSeatViews(activeReservations, seatById);
+        List<SeatView> activeSeats =
+                hasActiveSeats ? toSeatViews(activeReservations, seatById) : List.of();
 
-        String entranceInfo = generateEntranceInfo(activeReservations, seatById);
+        String entranceInfo =
+                hasActiveSeats ? generateEntranceInfo(activeReservations, seatById) : "";
 
         String htmlContent =
                 reservationUpdateTemplate
@@ -829,7 +877,7 @@ public class EmailService {
                         .data("eventStartTime", formatDateTime(event.getStartTime()))
                         .data("eventEndTime", formatDateTime(event.getEndTime()))
                         .data("deletedSeats", deletedSeats)
-                        .data("hasActiveSeats", !activeSeats.isEmpty())
+                        .data("hasActiveSeats", hasActiveSeats)
                         .data("activeSeats", activeSeats)
                         .data("entranceInfo", entranceInfo)
                         .data("eventLink", generateEventLink(event.id))
@@ -837,8 +885,12 @@ public class EmailService {
                         .data("currentYear", currentYear())
                         .render();
 
-        String qrCodeContent = generateQrCodeContent(user, event, activeReservations);
-        byte[] qrCodeImage = generateQrCodeImage(qrCodeContent);
+        byte[] qrCodeImage = new byte[0];
+        if (hasActiveSeats) {
+            CheckInToken token = activeReservations.getFirst().getCheckInToken();
+            String qrCodeContent = generateQrCodeContent(user, event, token);
+            qrCodeImage = generateQrCodeImage(qrCodeContent);
+        }
 
         enqueue(
                 emailAddresses,
@@ -960,7 +1012,11 @@ public class EmailService {
         // Queue the email for asynchronous, retried delivery
         LOG.debugf("Event reminder subject: %s", EMAIL_HEADER_REMINDER);
 
-        String qrCodeContent = generateQrCodeContent(user, event, reservations);
+        CheckInToken token =
+                reservations != null && !reservations.isEmpty()
+                        ? reservations.getFirst().getCheckInToken()
+                        : null;
+        String qrCodeContent = generateQrCodeContent(user, event, token);
         byte[] qrCodeImage = generateQrCodeImage(qrCodeContent);
 
         enqueue(
@@ -1200,20 +1256,14 @@ public class EmailService {
      *
      * @param user The user for whom the QR code is generated.
      * @param event The event for which the QR code is generated.
-     * @param reservations The list of reservations to include in the QR code content.
+     * @param token The check-in token.
      * @return The formatted QR code content string.
      */
-    private String generateQrCodeContent(User user, Event event, List<Reservation> reservations) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(user.id.toString());
-        sb.append(";");
-        sb.append(event.id.toString());
-        sb.append(";");
-        reservations.stream()
-                .map(Reservation::getCheckInCode)
-                .forEach(code -> sb.append(code).append(","));
-        sb.deleteCharAt(sb.length() - 1);
-        return sb.toString();
+    private String generateQrCodeContent(User user, Event event, CheckInToken token) {
+        if (token == null || token.getToken() == null) {
+            return "";
+        }
+        return user.id.toString() + ";" + event.id.toString() + ";" + token.getToken();
     }
 
     /**

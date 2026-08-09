@@ -50,6 +50,7 @@ import static org.mockito.Mockito.when;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.email.service.EmailService;
+import de.felixhertweck.seatreservation.model.entity.CheckInToken;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
@@ -69,7 +70,6 @@ import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableEx
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatBlockedException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatPendingException;
-import de.felixhertweck.seatreservation.utils.CodeGenerator;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -95,6 +95,8 @@ class ReservationServiceTest {
     @InjectMock EmailService emailService;
 
     @InjectMock SeatCartService seatCartService;
+
+    @InjectMock CheckInTokenService checkInTokenService;
 
     private User currentUser;
     private User otherUser;
@@ -139,6 +141,9 @@ class ReservationServiceTest {
         seat2 = new Seat("", "", location);
         seat2.id = id(2);
 
+        CheckInToken token = new CheckInToken(currentUser, event, "CODE123");
+        when(checkInTokenService.getOrCreateForUser(any(), any())).thenReturn(token);
+
         reservation =
                 new Reservation(
                         currentUser,
@@ -146,7 +151,7 @@ class ReservationServiceTest {
                         seat1,
                         Instant.now(),
                         ReservationStatus.RESERVED,
-                        CodeGenerator.generateRandomCode());
+                        token);
         reservation.id = id(1);
 
         allowance = new EventUserAllowance();
@@ -400,7 +405,7 @@ class ReservationServiceTest {
                         seat1,
                         Instant.now(),
                         ReservationStatus.RESERVED,
-                        CodeGenerator.generateRandomCode());
+                        new CheckInToken(otherUser, event, "CODE123"));
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
         mockSeatFind(dto.getSeatIds(), List.of(seat1));
         when(eventUserAllowanceRepository.findByUserAndEventId(currentUser, event.id))
@@ -424,7 +429,12 @@ class ReservationServiceTest {
 
         Reservation existingReservation =
                 new Reservation(
-                        otherUser, event, seat1, Instant.now(), ReservationStatus.BLOCKED, "12345");
+                        otherUser,
+                        event,
+                        seat1,
+                        Instant.now(),
+                        ReservationStatus.BLOCKED,
+                        (CheckInToken) null);
         existingReservation.id = id(2);
 
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
@@ -516,7 +526,7 @@ class ReservationServiceTest {
     }
 
     @Test
-    void createReservationForUser_CheckInCodeIsSet() {
+    void createReservationForUser_CheckInTokenIsSet() {
         UserReservationsRequestDTO dto = new UserReservationsRequestDTO();
         dto.setEventId(event.id);
         dto.setSeatIds(Set.of(seat1.id));
@@ -533,6 +543,6 @@ class ReservationServiceTest {
 
         ArgumentCaptor<List<Reservation>> argumentCaptor = ArgumentCaptor.forClass(List.class);
         verify(reservationRepository, times(1)).persistAll(argumentCaptor.capture());
-        assertNotNull(argumentCaptor.getValue().getFirst().getCheckInCode());
+        assertNotNull(argumentCaptor.getValue().getFirst().getCheckInToken());
     }
 }

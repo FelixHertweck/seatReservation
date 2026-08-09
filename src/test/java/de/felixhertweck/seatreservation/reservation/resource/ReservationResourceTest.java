@@ -37,6 +37,7 @@ import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.Seat;
+import de.felixhertweck.seatreservation.model.repository.CheckInTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationEntranceRepository;
@@ -69,6 +70,9 @@ public class ReservationResourceTest {
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
     @Inject SeatRepository seatRepository;
     @Inject ReservationRepository reservationRepository;
+
+    @Inject CheckInTokenRepository checkInTokenRepository;
+
     @Inject EmailSeatMapTokenRepository emailSeatMapTokenRepository;
 
     private Event testEvent;
@@ -120,6 +124,11 @@ public class ReservationResourceTest {
         var allowance = new EventUserAllowance(testUser, testEvent, 2);
         eventUserAllowanceRepository.persist(allowance);
 
+        var token =
+                new de.felixhertweck.seatreservation.model.entity.CheckInToken(
+                        testUser, testEvent, CodeGenerator.generateRandomCode());
+        checkInTokenRepository.persist(token);
+
         testReservation =
                 new Reservation(
                         testUser,
@@ -127,7 +136,7 @@ public class ReservationResourceTest {
                         testSeat1,
                         Instant.now(),
                         ReservationStatus.RESERVED,
-                        CodeGenerator.generateRandomCode());
+                        token);
         reservationRepository.persist(testReservation);
 
         allowance.setReservationsAllowedCount(allowance.getReservationsAllowedCount() - 1);
@@ -140,6 +149,7 @@ public class ReservationResourceTest {
     void tearDown() {
         emailSeatMapTokenRepository.deleteAll();
         reservationRepository.deleteAll();
+        checkInTokenRepository.deleteAll();
         eventUserAllowanceRepository.deleteAll();
         eventRepository.deleteAll();
         seatRepository.deleteAll();
@@ -374,6 +384,9 @@ public class ReservationResourceTest {
     void testDeleteMultipleReservations_Success() {
         // Create additional reservations for bulk delete test
         var testUser = userRepository.findByUsernameOptional("user").orElseThrow();
+        var token2 =
+                new de.felixhertweck.seatreservation.model.entity.CheckInToken(
+                        testUser, testEvent, CodeGenerator.generateRandomCode());
         var reservation2 =
                 new Reservation(
                         testUser,
@@ -381,9 +394,9 @@ public class ReservationResourceTest {
                         testSeat2,
                         Instant.now(),
                         ReservationStatus.RESERVED,
-                        CodeGenerator.generateRandomCode());
+                        token2);
 
-        seedUserReservation(reservation2);
+        seedUserReservation(token2, reservation2);
 
         // Delete multiple reservations
         given().when()
@@ -411,7 +424,10 @@ public class ReservationResourceTest {
     }
 
     @Transactional
-    void seedUserReservation(Reservation reservation) {
+    void seedUserReservation(
+            de.felixhertweck.seatreservation.model.entity.CheckInToken token,
+            Reservation reservation) {
+        checkInTokenRepository.persist(token);
         reservationRepository.persist(reservation);
     }
 }

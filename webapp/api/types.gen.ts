@@ -77,14 +77,14 @@ export type BoxOfficeReservationResponseDto = {
 export type BoxOfficeSeatDto = {
     seatId?: Uuid;
     seatNumber?: string;
-    checkInCode?: string;
+    checkInToken?: string;
     liveStatus?: ReservationLiveStatus;
 };
 
 export type CheckInInfoRequestDto = {
     userId: Uuid;
     eventId: Uuid;
-    checkInTokens?: Array<string>;
+    checkInToken?: string;
 };
 
 export type CheckInInfoResponseDto = {
@@ -503,7 +503,7 @@ export type UserReservationResponseDto = {
     eventId?: Uuid;
     seat?: SeatDto;
     reservationDateTime?: Instant;
-    checkInCode?: string;
+    checkInToken?: string;
 };
 
 export type UserReservationsRequestDto = {

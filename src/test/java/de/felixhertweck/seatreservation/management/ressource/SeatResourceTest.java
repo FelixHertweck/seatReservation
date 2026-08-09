@@ -34,6 +34,7 @@ import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
 import de.felixhertweck.seatreservation.model.entity.EventLocationEntrance;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.Seat;
+import de.felixhertweck.seatreservation.model.repository.CheckInTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationEntranceRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
@@ -63,6 +64,8 @@ public class SeatResourceTest {
     @Inject EventRepository eventRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
     @Inject ReservationRepository reservationRepository;
+
+    @Inject CheckInTokenRepository checkInTokenRepository;
 
     private Seat testSeat;
     private EventLocation testLocation;
@@ -123,6 +126,7 @@ public class SeatResourceTest {
     void tearDown() {
         // It's safer to delete all created entities to clean up the state
         reservationRepository.deleteAll();
+        checkInTokenRepository.deleteAll();
         seatRepository.deleteAll();
         eventUserAllowanceRepository.deleteAll();
         eventRepository.deleteAll();

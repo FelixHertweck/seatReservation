@@ -39,6 +39,7 @@ import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
 import de.felixhertweck.seatreservation.email.service.EmailService;
 import de.felixhertweck.seatreservation.email.service.EmailService.BoxOfficeConfirmationContent;
 import de.felixhertweck.seatreservation.model.entity.BoxOfficeGuestInfo;
+import de.felixhertweck.seatreservation.model.entity.CheckInToken;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
@@ -52,13 +53,13 @@ import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepos
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.reservation.service.CheckInTokenService;
 import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeGuestReservationRequestDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeReservationRequestDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeReservationResponseDTO;
 import de.felixhertweck.seatreservation.supervisor.exception.BookingDeadlineNotPassedException;
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
-import de.felixhertweck.seatreservation.utils.CodeGenerator;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
@@ -78,6 +79,9 @@ public class BoxOfficeService {
     @Inject EmailService emailService;
     @Inject LiveViewService liveViewService;
     @Inject UserService userService;
+
+    @Inject CheckInTokenService checkInTokenService;
+
     @Inject BoxOfficeGuestInfoRepository boxOfficeGuestInfoRepository;
 
     /**
@@ -109,13 +113,15 @@ public class BoxOfficeService {
                                         new UserNotFoundException(
                                                 "User with id " + dto.getUserId() + " not found."));
 
+        CheckInToken checkInToken = checkInTokenService.getOrCreateForUser(targetUser, event);
         List<Reservation> newReservations =
                 createReservationsForSeats(
                         event,
                         targetUser,
                         dto.getSeatIds(),
                         dto.isCheckedIn(),
-                        dto.isDeductAllowance());
+                        dto.isDeductAllowance(),
+                        checkInToken);
 
         reservationRepository.persistAll(newReservations);
 
@@ -162,9 +168,15 @@ public class BoxOfficeService {
             throw new IllegalStateException("Box office system user is not configured.");
         }
 
+        CheckInToken checkInToken = checkInTokenService.createFresh(boxofficeUser, event);
         List<Reservation> newReservations =
                 createReservationsForSeats(
-                        event, boxofficeUser, dto.getSeatIds(), dto.isCheckedIn(), false);
+                        event,
+                        boxofficeUser,
+                        dto.getSeatIds(),
+                        dto.isCheckedIn(),
+                        false,
+                        checkInToken);
 
         reservationRepository.persistAll(newReservations);
 
@@ -199,7 +211,8 @@ public class BoxOfficeService {
             User reservationOwner,
             Set<UUID> seatIds,
             boolean checkedIn,
-            boolean deductAllowance) {
+            boolean deductAllowance,
+            CheckInToken checkInToken) {
         if (seatIds == null || seatIds.isEmpty()) {
             throw new IllegalArgumentException("No seat IDs provided.");
         }
@@ -256,7 +269,7 @@ public class BoxOfficeService {
                             seat,
                             Instant.now(),
                             ReservationStatus.RESERVED,
-                            CodeGenerator.generateRandomCode());
+                            checkInToken);
             if (checkedIn) {
                 reservation.setLiveStatus(ReservationLiveStatus.CHECKED_IN);
             }

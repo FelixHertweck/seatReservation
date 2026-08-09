@@ -62,6 +62,7 @@ import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepos
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.reservation.service.CheckInTokenService;
 import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeGuestReservationRequestDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeReservationRequestDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeReservationResponseDTO;
@@ -88,6 +89,9 @@ class BoxOfficeServiceTest {
     @InjectMock EmailService emailService;
     @InjectMock LiveViewService liveViewService;
     @InjectMock UserService userService;
+
+    @InjectMock CheckInTokenService checkInTokenService;
+
     @InjectMock BoxOfficeGuestInfoRepository boxOfficeGuestInfoRepository;
 
     private static final UUID EVENT_ID = id(10);
@@ -141,6 +145,19 @@ class BoxOfficeServiceTest {
                 .thenReturn(
                         new BoxOfficeConfirmationContent(
                                 "<html>email</html>", "<html>display</html>", new byte[0]));
+
+        when(checkInTokenService.getOrCreateForUser(any(), any()))
+                .thenAnswer(
+                        inv ->
+                                new de.felixhertweck.seatreservation.model.entity.CheckInToken(
+                                        inv.getArgument(0), inv.getArgument(1), "TOKEN_USER"));
+        when(checkInTokenService.createFresh(any(), any()))
+                .thenAnswer(
+                        inv ->
+                                new de.felixhertweck.seatreservation.model.entity.CheckInToken(
+                                        inv.getArgument(0),
+                                        inv.getArgument(1),
+                                        UUID.randomUUID().toString()));
     }
 
     private static AuthenticatedUser supervisorAuth() {
@@ -355,6 +372,31 @@ class BoxOfficeServiceTest {
                         boxOfficeService.reserveForGuest(
                                 guestRequest(null, false), supervisorAuth()));
         verify(reservationRepository, never()).persistAll(anyList());
+    }
+
+    @Test
+    void reserveForGuest_multipleGuests_receiveDistinctTokens() {
+        de.felixhertweck.seatreservation.model.entity.CheckInToken tokenGuest1 =
+                new de.felixhertweck.seatreservation.model.entity.CheckInToken(
+                        boxofficeUser, pastDeadlineEvent, "TOKEN_GUEST_1");
+        de.felixhertweck.seatreservation.model.entity.CheckInToken tokenGuest2 =
+                new de.felixhertweck.seatreservation.model.entity.CheckInToken(
+                        boxofficeUser, pastDeadlineEvent, "TOKEN_GUEST_2");
+
+        when(checkInTokenService.createFresh(eq(boxofficeUser), eq(pastDeadlineEvent)))
+                .thenReturn(tokenGuest1)
+                .thenReturn(tokenGuest2);
+
+        BoxOfficeReservationResponseDTO result1 =
+                boxOfficeService.reserveForGuest(guestRequest(null, false), supervisorAuth());
+        BoxOfficeReservationResponseDTO result2 =
+                boxOfficeService.reserveForGuest(guestRequest(null, false), supervisorAuth());
+
+        assertEquals("TOKEN_GUEST_1", result1.seats().getFirst().checkInToken());
+        assertEquals("TOKEN_GUEST_2", result2.seats().getFirst().checkInToken());
+        org.junit.jupiter.api.Assertions.assertNotEquals(
+                result1.seats().getFirst().checkInToken(),
+                result2.seats().getFirst().checkInToken());
     }
 
     // -- user listing --

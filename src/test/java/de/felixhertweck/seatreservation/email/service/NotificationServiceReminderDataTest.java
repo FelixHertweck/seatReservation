@@ -29,6 +29,7 @@ import jakarta.transaction.Transactional;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import de.felixhertweck.seatreservation.model.entity.CheckInToken;
 import de.felixhertweck.seatreservation.model.entity.Coordinate;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
@@ -38,6 +39,7 @@ import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.CheckInTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationEntranceRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationMarkerRepository;
@@ -76,6 +78,7 @@ class NotificationServiceReminderDataTest {
     @Inject SeatRepository seatRepository;
     @Inject EventRepository eventRepository;
     @Inject ReservationRepository reservationRepository;
+    @Inject CheckInTokenRepository checkInTokenRepository;
 
     private UUID eventId;
 
@@ -120,14 +123,12 @@ class NotificationServiceReminderDataTest {
         eventRepository.persist(event);
         eventId = event.id;
 
+        CheckInToken token = new CheckInToken(attendee, event, CodeGenerator.generateRandomCode());
+        checkInTokenRepository.persist(token);
+
         Reservation reservation =
                 new Reservation(
-                        attendee,
-                        event,
-                        seat,
-                        Instant.now(),
-                        ReservationStatus.RESERVED,
-                        CodeGenerator.generateRandomCode());
+                        attendee, event, seat, Instant.now(), ReservationStatus.RESERVED, token);
         reservationRepository.persist(reservation);
     }
 
@@ -139,6 +140,7 @@ class NotificationServiceReminderDataTest {
 
     private void cleanUpDatabase() {
         reservationRepository.deleteAll();
+        checkInTokenRepository.deleteAll();
         eventRepository.deleteAll();
         seatRepository.deleteAll();
         areaRepository.deleteAll();

@@ -67,8 +67,8 @@ import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepos
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.reservation.service.CheckInTokenService;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
-import de.felixhertweck.seatreservation.utils.CodeGenerator;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -85,6 +85,8 @@ public class ReservationServiceTest {
     @InjectMock UserRepository userRepository;
     @InjectMock EventUserAllowanceRepository eventUserAllowanceRepository;
     @InjectMock EmailService emailService;
+
+    @InjectMock CheckInTokenService checkInTokenService;
 
     @Inject ReservationService reservationService;
 
@@ -109,6 +111,12 @@ public class ReservationServiceTest {
         Mockito.reset(userRepository);
         Mockito.reset(eventUserAllowanceRepository);
         Mockito.reset(emailService);
+        Mockito.reset(checkInTokenService);
+        when(checkInTokenService.getOrCreateForUser(any(), any()))
+                .thenAnswer(
+                        inv ->
+                                new de.felixhertweck.seatreservation.model.entity.CheckInToken(
+                                        inv.getArgument(0), inv.getArgument(1), "CODE123"));
 
         adminUser =
                 new User(
@@ -191,7 +199,8 @@ public class ReservationServiceTest {
                         seat,
                         Instant.now(),
                         ReservationStatus.RESERVED,
-                        CodeGenerator.generateRandomCode());
+                        new de.felixhertweck.seatreservation.model.entity.CheckInToken(
+                                regularUser, event, "CODE123"));
         reservation.id = id(1);
 
         allowance = new EventUserAllowance(regularUser, event, 1);
@@ -519,7 +528,7 @@ public class ReservationServiceTest {
                         seat,
                         Instant.now(),
                         ReservationStatus.BLOCKED,
-                        CodeGenerator.generateRandomCode());
+                        (de.felixhertweck.seatreservation.model.entity.CheckInToken) null);
         blockedReservation.id = id(2);
 
         mockReservationFind(List.of(blockedReservation.id), List.of(blockedReservation));
@@ -543,7 +552,8 @@ public class ReservationServiceTest {
                         seat2,
                         Instant.now(),
                         ReservationStatus.RESERVED,
-                        CodeGenerator.generateRandomCode());
+                        new de.felixhertweck.seatreservation.model.entity.CheckInToken(
+                                regularUser, event, "CODE123"));
         reservation2.id = id(2);
 
         // Set up allowance with initial count
@@ -574,7 +584,7 @@ public class ReservationServiceTest {
                         seat,
                         Instant.now(),
                         ReservationStatus.BLOCKED,
-                        CodeGenerator.generateRandomCode());
+                        (de.felixhertweck.seatreservation.model.entity.CheckInToken) null);
         blockedReservation.id = id(2);
 
         Seat seat2 =
@@ -594,7 +604,8 @@ public class ReservationServiceTest {
                         seat2,
                         Instant.now(),
                         ReservationStatus.RESERVED,
-                        CodeGenerator.generateRandomCode());
+                        new de.felixhertweck.seatreservation.model.entity.CheckInToken(
+                                regularUser, event, "CODE123"));
         reservedReservation.id = id(3);
 
         allowance.setReservationsAllowedCount(0);

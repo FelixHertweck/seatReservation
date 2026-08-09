@@ -157,7 +157,7 @@ class CheckInResourceTest {
         CheckInInfoRequestDTO requestDTO = new CheckInInfoRequestDTO();
         requestDTO.userId = id(1);
         requestDTO.eventId = id(10);
-        requestDTO.checkInTokens = Collections.emptyList();
+        requestDTO.checkInToken = "";
 
         given().contentType(ContentType.JSON)
                 .body(requestDTO)
@@ -180,7 +180,7 @@ class CheckInResourceTest {
         CheckInInfoRequestDTO requestDTO = new CheckInInfoRequestDTO();
         requestDTO.userId = id(1);
         requestDTO.eventId = id(10);
-        requestDTO.checkInTokens = List.of("invalidToken");
+        requestDTO.checkInToken = "invalidToken";
 
         given().contentType(ContentType.JSON)
                 .body(requestDTO)
@@ -202,7 +202,7 @@ class CheckInResourceTest {
         CheckInInfoRequestDTO requestDTO = new CheckInInfoRequestDTO();
         requestDTO.userId = null;
         requestDTO.eventId = id(10);
-        requestDTO.checkInTokens = Collections.emptyList();
+        requestDTO.checkInToken = "";
 
         given().contentType(ContentType.JSON)
                 .body(requestDTO)
@@ -224,7 +224,7 @@ class CheckInResourceTest {
         CheckInInfoRequestDTO requestDTO = new CheckInInfoRequestDTO();
         requestDTO.userId = id(1);
         requestDTO.eventId = null;
-        requestDTO.checkInTokens = Collections.emptyList();
+        requestDTO.checkInToken = "";
 
         given().contentType(ContentType.JSON)
                 .body(requestDTO)
@@ -337,7 +337,7 @@ class CheckInResourceTest {
         CheckInInfoRequestDTO requestDTO = new CheckInInfoRequestDTO();
         requestDTO.userId = id(1);
         requestDTO.eventId = id(10);
-        requestDTO.checkInTokens = Collections.emptyList();
+        requestDTO.checkInToken = "";
 
         given().contentType(ContentType.JSON)
                 .body(requestDTO)

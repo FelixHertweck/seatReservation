@@ -38,6 +38,7 @@ import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.Seat;
+import de.felixhertweck.seatreservation.model.repository.CheckInTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationEntranceRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
@@ -71,6 +72,9 @@ public class SeatCartResourceTest {
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
     @Inject SeatRepository seatRepository;
     @Inject ReservationRepository reservationRepository;
+
+    @Inject CheckInTokenRepository checkInTokenRepository;
+
     @Inject SeatCartService seatCartService;
 
     private Event testEvent;
@@ -136,6 +140,10 @@ public class SeatCartResourceTest {
         eventUserAllowanceRepository.persist(new EventUserAllowance(testUser, testEvent, 2));
         eventUserAllowanceRepository.persist(new EventUserAllowance(adminUser, testEvent, 2));
 
+        var token =
+                new de.felixhertweck.seatreservation.model.entity.CheckInToken(
+                        testUser, testEvent, CodeGenerator.generateRandomCode());
+        checkInTokenRepository.persist(token);
         var reservedSeatReservation =
                 new Reservation(
                         testUser,
@@ -143,7 +151,7 @@ public class SeatCartResourceTest {
                         testSeat1,
                         Instant.now(),
                         ReservationStatus.RESERVED,
-                        CodeGenerator.generateRandomCode());
+                        token);
         reservationRepository.persist(reservedSeatReservation);
     }
 
@@ -152,6 +160,7 @@ public class SeatCartResourceTest {
     @SuppressWarnings("unused")
     void tearDown() {
         reservationRepository.deleteAll();
+        checkInTokenRepository.deleteAll();
         eventUserAllowanceRepository.deleteAll();
         eventRepository.deleteAll();
         seatRepository.deleteAll();

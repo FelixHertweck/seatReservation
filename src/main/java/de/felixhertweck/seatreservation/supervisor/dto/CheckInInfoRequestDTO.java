@@ -19,7 +19,6 @@
  */
 package de.felixhertweck.seatreservation.supervisor.dto;
 
-import java.util.List;
 import java.util.UUID;
 import jakarta.validation.constraints.NotNull;
 
@@ -33,5 +32,5 @@ public class CheckInInfoRequestDTO {
     @NotNull(message = "eventId must not be null")
     public UUID eventId;
 
-    public List<String> checkInTokens;
+    public String checkInToken;
 }
