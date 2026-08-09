@@ -51,7 +51,7 @@ INSERT INTO users (id, username, email, passwordHash, passwordSalt, firstname, l
 INSERT INTO eventlocations (id, name, address, manager_id) VALUES ('00000000-0000-0000-0000-000000000001','City Hall','Hauptstraße 1, 12345 Musterstadt','00000000-0000-0000-0000-000000000002');
 
 -- Insert event
-INSERT INTO events (id, name, startTime, endTime, bookingStartTime, bookingDeadline, reminderSent, event_location_id, manager_id) VALUES ('00000000-0000-0000-0000-000000000001','City Band Concert','2024-12-31 19:00:00','2024-12-31 21:00:00','2024-12-12 17:00:00','2026-12-12 17:00:00',false,'00000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000002');
+INSERT INTO events (id, name, startTime, endTime, bookingStartTime, bookingDeadline, reminderSent, event_location_id, manager_id) VALUES ('00000000-0000-0000-0000-000000000001','City Band Concert','2027-12-31 19:00:00','2027-12-31 21:00:00','2024-12-12 17:00:00','2026-12-12 17:00:00',false,'00000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000002');
 
 -- Assign supervisor user (id 4) to the event (id 1)
 INSERT INTO event_supervisors (event_id, user_id) VALUES ('00000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000004');
