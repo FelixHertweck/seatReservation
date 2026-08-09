@@ -19,16 +19,14 @@
  */
 package de.felixhertweck.seatreservation.reservation.service;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
@@ -42,6 +40,7 @@ public class EventLocationService {
     @Inject UserRepository userRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
     @Inject ReservationRepository reservationRepository;
+    @Inject EventLocationRepository eventLocationRepository;
 
     /**
      * Retrieves all event locations for which the specified user has event allowances or active
@@ -62,19 +61,8 @@ public class EventLocationService {
         }
         LOG.debugf("User %s found. Retrieving event allowances.", username);
 
-        Set<EventLocation> locations = new HashSet<>();
-
-        // Get all locations from allowances
-        locations.addAll(
-                eventUserAllowanceRepository.findByUserWithEventAndLocation(user).stream()
-                        .map(allowance -> allowance.getEvent().getEventLocation())
-                        .collect(Collectors.toSet()));
-
-        // Get all locations from reservations
-        locations.addAll(
-                reservationRepository.findByUserWithEventAndLocation(user).stream()
-                        .map(reservation -> reservation.getEvent().getEventLocation())
-                        .collect(Collectors.toSet()));
+        List<EventLocation> locations =
+                eventLocationRepository.findByUserAllowancesOrReservations(user);
 
         return locations.stream().map(UserEventLocationResponseDTO::new).toList();
     }

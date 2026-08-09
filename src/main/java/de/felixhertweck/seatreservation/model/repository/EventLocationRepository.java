@@ -24,6 +24,7 @@ import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
+import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.User;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
@@ -37,5 +38,24 @@ public class EventLocationRepository implements PanacheRepositoryBase<EventLocat
      */
     public List<EventLocation> findByManager(User manager) {
         return find("manager", manager).list();
+    }
+
+    /**
+     * Finds all distinct event locations where the user has event allowances or active
+     * reservations.
+     *
+     * @param user the user to search for
+     * @return a list of event locations the user is allowed to access
+     */
+    public List<EventLocation> findByUserAllowancesOrReservations(User user) {
+        return find(
+                        "select distinct el from EventLocation el where el.id in (  select"
+                            + " e1.eventLocation.id from EventUserAllowance a join a.event e1 where"
+                            + " a.user = ?1) or el.id in (  select e2.eventLocation.id from"
+                            + " Reservation r join r.event e2 where r.user = ?1 and r.status != ?2"
+                            + ")",
+                        user,
+                        ReservationStatus.BLOCKED)
+                .list();
     }
 }
