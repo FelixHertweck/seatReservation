@@ -72,7 +72,7 @@ public class Reservation extends AbstractEntity {
         this.reservationDate = reservationDate;
         this.status = status;
         this.checkInCode = checkInCode;
-        this.liveStatus = ReservationLiveStatus.NO_SHOW;
+        this.liveStatus = null;
     }
 
     public ReservationStatus getStatus() {

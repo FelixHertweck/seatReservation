@@ -256,11 +256,11 @@ class BoxOfficeServiceTest {
     }
 
     @Test
-    void reserveForKnownUser_checkedInFalse_defaultsToNoShow() {
+    void reserveForKnownUser_checkedInFalse_leavesLiveStatusUnset() {
         BoxOfficeReservationResponseDTO result =
                 boxOfficeService.reserveForKnownUser(knownUserRequest(false), supervisorAuth());
 
-        assertEquals(ReservationLiveStatus.NO_SHOW, result.seats().getFirst().liveStatus());
+        assertNull(result.seats().getFirst().liveStatus());
     }
 
     // -- guest path --
