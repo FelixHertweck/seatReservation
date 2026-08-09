@@ -114,7 +114,10 @@ export function BoxOfficeActionPanel({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="boxOfficeGuestEmail" className="text-sm font-medium">
+            <Label
+              htmlFor="boxOfficeGuestEmail"
+              className="text-sm font-medium"
+            >
               {t("boxOffice.guestEmailLabel")}
             </Label>
             <Input

@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/custom-ui/button";
 import EventSelector from "@/components/common/supervisor/event-selector";
 import { OverflowActionBar } from "@/components/common/overflow-action-bar";
+import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { AllowanceFormModal } from "@/components/management/allowance-form-modal";
 import { AllowancesTable } from "@/components/management/allowances/allowances-table";
 import { useManagementAllowances } from "@/hooks/use-management-allowances";
@@ -27,6 +28,7 @@ export default function ManagementAllowancesPage() {
     allowances,
     isLoading,
     isAllowancesLoading,
+    capacity,
     grantAllowances,
     updateAllowance,
     deleteAllowances,
@@ -41,6 +43,7 @@ export default function ManagementAllowancesPage() {
   const [pendingCounts, setPendingCounts] = useState<Record<string, number>>(
     {},
   );
+  const [searchQuery, setSearchQuery] = useState("");
   const debounceTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(
     new Map(),
   );
@@ -137,11 +140,21 @@ export default function ManagementAllowancesPage() {
     [allowances, pendingCounts],
   );
 
+  const filteredAllowances = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return displayAllowances;
+    return displayAllowances.filter((a) => {
+      const username =
+        users.find((u) => u.id === a.userId)?.username?.toLowerCase() ?? "";
+      return username.includes(query);
+    });
+  }, [displayAllowances, users, searchQuery]);
+
   const toggleAll = () => {
-    if (selectedIds.size === allowances.length) {
+    if (selectedIds.size === filteredAllowances.length) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(allowances.map((a) => a.id ?? "")));
+      setSelectedIds(new Set(filteredAllowances.map((a) => a.id ?? "")));
     }
   };
 
@@ -213,19 +226,29 @@ export default function ManagementAllowancesPage() {
       ) : (
         <div className="space-y-3">
           <Card>
-            <CardContent className="flex flex-wrap items-center gap-4 py-4 text-sm text-muted-foreground">
+            <CardContent className="flex flex-wrap items-center justify-between gap-4 py-4 text-sm text-muted-foreground">
               <div>
                 {t("management.allowances.totalGranted", {
                   count: totalGranted,
                 })}
+                {" · "}
+                {t("management.allowances.locationCapacity", {
+                  count: capacity,
+                })}
               </div>
+              <SearchAndFilter
+                onSearch={setSearchQuery}
+                onFilter={() => {}}
+                filterOptions={[]}
+                className="w-full sm:w-64"
+              />
             </CardContent>
           </Card>
 
           <Card>
             <CardContent className="p-0">
               <AllowancesTable
-                allowances={displayAllowances}
+                allowances={filteredAllowances}
                 users={users}
                 isLoading={isAllowancesLoading}
                 selectedIds={selectedIds}
