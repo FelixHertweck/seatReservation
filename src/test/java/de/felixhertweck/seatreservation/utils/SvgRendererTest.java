@@ -58,7 +58,7 @@ class SvgRendererTest {
         assertTrue(result.contains("<svg"));
         assertTrue(result.contains("</svg>"));
         assertTrue(result.contains("A1"));
-        assertTrue(result.contains("#CCCCCC")); // Default color
+        assertTrue(result.contains("#22C55E")); // Default (available) color
     }
 
     @Test

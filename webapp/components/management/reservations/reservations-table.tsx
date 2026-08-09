@@ -17,6 +17,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { ReservationResponseDto } from "@/api";
+import {
+  SEAT_STATUS_BG,
+  SEAT_STATUS_LABEL_KEY,
+  SEAT_STATUS_TEXT,
+  getSeatVisualStatus,
+} from "@/lib/seatStatusStyles";
 
 interface ReservationsTableProps {
   reservations: ReservationResponseDto[];
@@ -224,15 +230,22 @@ export function ReservationsTable({
                         {reservation.seat?.seatRow})
                       </TableCell>
                       <TableCell>
-                        <Badge
-                          variant={
-                            reservation.status === "BLOCKED"
-                              ? "secondary"
-                              : "default"
-                          }
-                        >
-                          {reservation.status}
-                        </Badge>
+                        {(() => {
+                          const visualStatus = getSeatVisualStatus(
+                            reservation.status,
+                            reservation.liveStatus,
+                          );
+                          return (
+                            <Badge
+                              className={cn(
+                                SEAT_STATUS_BG[visualStatus],
+                                SEAT_STATUS_TEXT[visualStatus],
+                              )}
+                            >
+                              {t(SEAT_STATUS_LABEL_KEY[visualStatus])}
+                            </Badge>
+                          );
+                        })()}
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">
                         {date ? `${date.date} ${date.time}` : "—"}
