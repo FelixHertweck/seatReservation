@@ -14,6 +14,7 @@ import {
   getApiUsersManagerOptions,
   getApiManagerReservationAllowanceEventByEventIdOptions,
   getApiManagerReservationAllowanceEventByEventIdQueryKey,
+  getApiManagerSeatsOptions,
   postApiManagerReservationAllowanceMutation,
   putApiManagerReservationAllowanceMutation,
   deleteApiManagerReservationAllowanceMutation,
@@ -30,6 +31,15 @@ export function useManagementAllowances(eventId: string | null) {
   const { data: users, isLoading: usersLoading } = useQuery({
     ...getApiUsersManagerOptions(),
   });
+
+  const eventLocationId = events?.find(
+    (e) => e.id === eventId,
+  )?.eventLocationId;
+  const { data: locationSeats, isLoading: capacityLoading } = useQuery({
+    ...getApiManagerSeatsOptions({ query: { eventLocationId } }),
+    enabled: !!eventLocationId,
+  });
+  const capacity = locationSeats?.length ?? 0;
 
   const { data: allowances, isLoading: allowancesLoading } = useQuery({
     ...getApiManagerReservationAllowanceEventByEventIdOptions({
@@ -121,6 +131,8 @@ export function useManagementAllowances(eventId: string | null) {
     allowances: allowances ?? [],
     isLoading: eventsLoading || usersLoading,
     isAllowancesLoading: allowancesLoading,
+    capacity,
+    isCapacityLoading: capacityLoading,
     grantAllowances,
     updateAllowance,
     deleteAllowances,

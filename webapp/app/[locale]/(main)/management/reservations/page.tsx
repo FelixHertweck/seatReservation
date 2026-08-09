@@ -12,6 +12,7 @@ import { Button } from "@/components/custom-ui/button";
 import { Skeleton } from "@/components/custom-ui/skeleton";
 import EventSelector from "@/components/common/supervisor/event-selector";
 import { OverflowActionBar } from "@/components/common/overflow-action-bar";
+import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { SeatMap } from "@/components/common/seat-map";
 import SeatmapLegend from "@/components/common/seatmap-legend";
 import { ReservationActionPanel } from "@/components/management/reservations/reservation-action-panel";
@@ -28,6 +29,12 @@ interface ReservationsViewPanelProps {
   selectedIds: Set<string>;
   onSelectedIdsChange: (ids: Set<string>) => void;
   onToggleAll: () => void;
+  onDeleteOne: (id: string) => void;
+  onDeleteGroup: (ids: string[]) => void;
+  deletingIds: Set<string>;
+  onSearch: (query: string) => void;
+  highlightedSeatId: string | null;
+  onSeatClick: (seatId: string) => void;
 }
 
 function ReservationsViewPanel({
@@ -36,19 +43,37 @@ function ReservationsViewPanel({
   selectedIds,
   onSelectedIdsChange,
   onToggleAll,
+  onDeleteOne,
+  onDeleteGroup,
+  deletingIds,
+  onSearch,
+  highlightedSeatId,
+  onSeatClick,
 }: ReservationsViewPanelProps) {
   return (
-    <Card>
-      <CardContent className="p-0">
-        <ReservationsTable
-          reservations={reservations}
-          isLoading={isReservationsLoading}
-          selectedIds={selectedIds}
-          onSelectedIdsChange={onSelectedIdsChange}
-          onToggleAll={onToggleAll}
-        />
-      </CardContent>
-    </Card>
+    <div className="space-y-3">
+      <SearchAndFilter
+        onSearch={onSearch}
+        onFilter={() => {}}
+        filterOptions={[]}
+      />
+      <Card>
+        <CardContent className="p-0">
+          <ReservationsTable
+            reservations={reservations}
+            isLoading={isReservationsLoading}
+            selectedIds={selectedIds}
+            onSelectedIdsChange={onSelectedIdsChange}
+            onToggleAll={onToggleAll}
+            onDeleteOne={onDeleteOne}
+            onDeleteGroup={onDeleteGroup}
+            deletingIds={deletingIds}
+            highlightedSeatId={highlightedSeatId}
+            onSeatClick={onSeatClick}
+          />
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
@@ -81,6 +106,11 @@ export default function ManagementReservationsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isDeletingSelected, setIsDeletingSelected] = useState(false);
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
+  const [highlightedSeatId, setHighlightedSeatId] = useState<string | null>(
+    null,
+  );
   const [exportingFormat, setExportingFormat] = useState<"csv" | "pdf" | null>(
     null,
   );
@@ -94,6 +124,17 @@ export default function ManagementReservationsPage() {
     () => seats.filter((s) => s.locationId === location?.id),
     [seats, location?.id],
   );
+
+  const filteredReservations = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return reservations;
+    return reservations.filter((r) => {
+      const username = r.user?.username?.toLowerCase() ?? "";
+      const seat =
+        `${r.seat?.seatNumber ?? ""} ${r.seat?.seatRow ?? ""}`.toLowerCase();
+      return username.includes(query) || seat.includes(query);
+    });
+  }, [reservations, searchQuery]);
 
   const userReservedSeats = useMemo(() => {
     if (mode !== "reserve" || !reserveUserId || !eventId) return [];
@@ -113,6 +154,11 @@ export default function ManagementReservationsPage() {
     setSelectedSeats([]);
     setReserveUserId("");
     setDeductAllowance(true);
+    setHighlightedSeatId(null);
+  };
+
+  const handleSeatClick = (seatId: string) => {
+    setHighlightedSeatId((prev) => (prev === seatId ? null : seatId));
   };
 
   const handleEventSelect = (id: string) => {
@@ -185,6 +231,35 @@ export default function ManagementReservationsPage() {
     }
   };
 
+  const handleDeleteIds = async (ids: string[]) => {
+    if (ids.length === 0) return;
+    if (
+      !confirm(
+        t("management.reservations.deleteConfirm", { count: ids.length }),
+      )
+    ) {
+      return;
+    }
+    setDeletingIds((prev) => new Set([...prev, ...ids]));
+    try {
+      await deleteReservations(ids);
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        ids.forEach((id) => next.delete(id));
+        return next;
+      });
+    } finally {
+      setDeletingIds((prev) => {
+        const next = new Set(prev);
+        ids.forEach((id) => next.delete(id));
+        return next;
+      });
+    }
+  };
+
+  const handleDeleteOne = (id: string) => handleDeleteIds([id]);
+  const handleDeleteGroup = (ids: string[]) => handleDeleteIds(ids);
+
   const handleExport = async (format: "csv" | "pdf") => {
     if (!eventId) return;
     setExportingFormat(format);
@@ -205,10 +280,10 @@ export default function ManagementReservationsPage() {
   };
 
   const toggleAll = () => {
-    if (selectedIds.size === reservations.length) {
+    if (selectedIds.size === filteredReservations.length) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(reservations.map((r) => r.id ?? "")));
+      setSelectedIds(new Set(filteredReservations.map((r) => r.id ?? "")));
     }
   };
 
@@ -218,11 +293,17 @@ export default function ManagementReservationsPage() {
   if (mode === "view") {
     actionColumn = (
       <ReservationsViewPanel
-        reservations={reservations}
+        reservations={filteredReservations}
         isReservationsLoading={isReservationsLoading}
         selectedIds={selectedIds}
         onSelectedIdsChange={setSelectedIds}
         onToggleAll={toggleAll}
+        onDeleteOne={handleDeleteOne}
+        onDeleteGroup={handleDeleteGroup}
+        deletingIds={deletingIds}
+        onSearch={setSearchQuery}
+        highlightedSeatId={highlightedSeatId}
+        onSeatClick={handleSeatClick}
       />
     );
   } else if (mode === "reserve") {
@@ -355,6 +436,7 @@ export default function ManagementReservationsPage() {
                   areas={location?.areas ?? []}
                   selectedSeats={isInteractive ? selectedSeats : []}
                   userReservedSeats={userReservedSeats}
+                  highlightedSeatId={!isInteractive ? highlightedSeatId : null}
                   onSeatSelect={isInteractive ? handleSeatToggle : () => {}}
                 />
               </div>

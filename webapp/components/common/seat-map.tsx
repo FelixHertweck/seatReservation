@@ -32,6 +32,7 @@ interface SeatMapProps {
   areas?: AreaDto[];
   selectedSeats: SeatDto[];
   userReservedSeats?: SeatDto[];
+  highlightedSeatId?: string | null;
   onSeatSelect: (seat: SeatDto) => void;
   readonly?: boolean;
 }
@@ -41,12 +42,14 @@ const SeatComponent = React.memo(
     seat,
     seatColor,
     clickable,
+    highlighted,
     showSeatNumber,
     onSeatSelect,
   }: {
     seat: SeatDto | undefined;
     seatColor: string;
     clickable: boolean;
+    highlighted: boolean;
     showSeatNumber: boolean;
     onSeatSelect: (seat: SeatDto) => void;
   }) => {
@@ -67,6 +70,8 @@ const SeatComponent = React.memo(
         className={cn(
           "w-8 h-8 flex items-center justify-center text-xs font-medium relative z-10",
           clickable && "cursor-pointer",
+          highlighted &&
+            "rounded-full ring-4 ring-primary ring-offset-2 ring-offset-seatmap animate-pulse",
         )}
         onClick={handleClick}
         title={t("seatMap.seatTitle", {
@@ -90,6 +95,7 @@ const SeatComponent = React.memo(
       prevProps.seat?.id === nextProps.seat?.id &&
       prevProps.seatColor === nextProps.seatColor &&
       prevProps.clickable === nextProps.clickable &&
+      prevProps.highlighted === nextProps.highlighted &&
       prevProps.showSeatNumber === nextProps.showSeatNumber &&
       prevProps.onSeatSelect === nextProps.onSeatSelect
     );
@@ -301,6 +307,7 @@ export function SeatMap({
   areas = [],
   selectedSeats,
   userReservedSeats = [],
+  highlightedSeatId = null,
   onSeatSelect,
   readonly = false,
 }: SeatMapProps): ReactElement {
@@ -569,16 +576,25 @@ export function SeatMap({
         const seat = seatPositionMap.get(`${x + 1}-${y + 1}`);
         const seatColor = getSeatColor(seat);
         const clickable = canSelectSeat(seat);
+        const highlighted = !!seat && seat.id === highlightedSeatId;
 
         return {
           key: `${x}-${y}`,
           seat,
           seatColor,
           clickable,
+          highlighted,
         };
       }),
     ).flat();
-  }, [maxX, maxY, seatPositionMap, getSeatColor, canSelectSeat]);
+  }, [
+    maxX,
+    maxY,
+    seatPositionMap,
+    getSeatColor,
+    canSelectSeat,
+    highlightedSeatId,
+  ]);
 
   const displayFlags = useMemo(
     () => ({
@@ -588,16 +604,19 @@ export function SeatMap({
   );
 
   const gridItems = useMemo(() => {
-    return gridStructure.map(({ key, seat, seatColor, clickable }) => (
-      <SeatComponent
-        key={key}
-        seat={seat}
-        seatColor={seatColor}
-        clickable={clickable}
-        showSeatNumber={displayFlags.showSeatNumber}
-        onSeatSelect={onSeatSelect}
-      />
-    ));
+    return gridStructure.map(
+      ({ key, seat, seatColor, clickable, highlighted }) => (
+        <SeatComponent
+          key={key}
+          seat={seat}
+          seatColor={seatColor}
+          clickable={clickable}
+          highlighted={highlighted}
+          showSeatNumber={displayFlags.showSeatNumber}
+          onSeatSelect={onSeatSelect}
+        />
+      ),
+    );
   }, [gridStructure, displayFlags.showSeatNumber, onSeatSelect]);
 
   return (

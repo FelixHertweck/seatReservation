@@ -62,5 +62,7 @@ export function isUpdateMessage(
 export function isNewReservationMessage(
   message: unknown,
 ): message is WebsocketNewReservationMessage {
-  return (message as WebsocketNewReservationMessage)?.type === "NEW_RESERVATION";
+  return (
+    (message as WebsocketNewReservationMessage)?.type === "NEW_RESERVATION"
+  );
 }
