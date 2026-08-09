@@ -3,6 +3,7 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -10,7 +11,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/custom-ui/dialog";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import { Button } from "@/components/custom-ui/button";
+import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { SeatMap } from "@/components/common/seat-map";
 import SeatmapLegend from "@/components/common/seatmap-legend";
 import type {
@@ -45,9 +55,14 @@ export function EventReservationModal({
   const t = useT();
   const queryClient = useQueryClient();
   const { addSeatToCart, removeSeatFromCart } = useSeatCart();
+  const isMobile = useIsMobile();
 
   const [selectedSeats, setSelectedSeats] = useState<SeatDto[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [highlightedSeatId, setHighlightedSeatId] = useState<string | null>(
+    null,
+  );
+  const [isSeatDrawerOpen, setIsSeatDrawerOpen] = useState(false);
 
   // Mirrors selectedSeats so the unmount cleanup effect below can release the
   // latest held seats without depending on (and re-running for) every selection change.
@@ -61,6 +76,7 @@ export function EventReservationModal({
 
   useEffect(() => {
     selectedSeatsRef.current = selectedSeats;
+    if (selectedSeats.length === 0) setIsSeatDrawerOpen(false);
   }, [selectedSeats]);
 
   const clearExpiryTimer = useCallback((seatId: string) => {
@@ -134,6 +150,7 @@ export function EventReservationModal({
       // seat map report it as PENDING - that PENDING is this cart's own hold.
       clearExpiryTimer(seat.id);
       setSelectedSeats((prev) => prev.filter((s) => s.id !== seat.id));
+      setHighlightedSeatId((prev) => (prev === seat.id ? null : prev));
       removeSeatFromCart(event.id, seat.id).catch(() => {
         // Best-effort release; the Redis TTL will clean this up regardless.
       });
@@ -155,6 +172,10 @@ export function EventReservationModal({
       // cart) - roll back the optimistic selection. useSeatCart already toasted.
       setSelectedSeats((prev) => prev.filter((s) => s.id !== seat.id));
     }
+  };
+
+  const handleSeatChipClick = (seatId: string) => {
+    setHighlightedSeatId((prev) => (prev === seatId ? null : seatId));
   };
 
   const handleReserve = async () => {
@@ -194,9 +215,11 @@ export function EventReservationModal({
 
         <div className="flex-1 flex flex-col min-h-0">
           <SeatmapLegend
-            variant="selection"
             layout="bar"
             areas={location?.areas ?? []}
+            showSelected
+            showUserReserved
+            showPending
           />
 
           <div className="flex-1 min-h-0">
@@ -207,6 +230,7 @@ export function EventReservationModal({
               areas={location?.areas ?? []}
               selectedSeats={selectedSeats}
               userReservedSeats={userReservedSeats}
+              highlightedSeatId={highlightedSeatId}
               onSeatSelect={handleSeatSelect}
             />
           </div>
@@ -214,21 +238,69 @@ export function EventReservationModal({
           <div className="flex justify-between items-center gap-2 pt-2 border-t">
             <div className="flex-1 min-w-0">
               {selectedSeats.length > 0 && (
-                <div className="overflow-x-auto scrollbar-thin">
-                  <div className="flex gap-1.5 md:gap-2 pb-0">
-                    {selectedSeats.map((seat) => (
-                      <button
-                        key={seat.id?.toString()}
-                        type="button"
-                        onClick={() => handleSeatSelect(seat)}
-                        className="flex-shrink-0 px-2 py-1.5 md:px-3 md:py-2 text-sm rounded-md border bg-seatmap border rounded shadow-xs hover:bg-secondary"
-                      >
-                        {seat.seatNumber +
-                          (seat.seatRow ? " (" + seat.seatRow + ")" : "")}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                <Drawer
+                  open={isSeatDrawerOpen}
+                  onOpenChange={setIsSeatDrawerOpen}
+                  direction={isMobile ? "bottom" : "right"}
+                >
+                  <DrawerTrigger asChild>
+                    <button
+                      type="button"
+                      className="rounded-md border bg-seatmap px-3 py-1.5 text-sm hover:bg-secondary transition-colors"
+                    >
+                      {selectedSeats.length === 1
+                        ? t("eventReservationModal.selectedSeatButton")
+                        : t("eventReservationModal.selectedSeatsButton", {
+                            count: selectedSeats.length,
+                          })}
+                    </button>
+                  </DrawerTrigger>
+                  <DrawerContent>
+                    <DrawerHeader>
+                      <DrawerTitle>
+                        {t("eventReservationModal.selectedSeatsTitle")}
+                      </DrawerTitle>
+                    </DrawerHeader>
+                    <div className="flex flex-col gap-1.5 px-4 pb-6 max-h-[50vh] overflow-y-auto">
+                      {selectedSeats.map((seat) => {
+                        const isHighlighted = highlightedSeatId === seat.id;
+                        return (
+                          <div
+                            key={seat.id?.toString()}
+                            className={cn(
+                              "flex items-center justify-between gap-2 rounded-md border px-2 py-2 text-sm transition-colors",
+                              isHighlighted
+                                ? "bg-primary/10 border-primary"
+                                : "bg-seatmap hover:bg-secondary",
+                            )}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (seat.id) handleSeatChipClick(seat.id);
+                                setIsSeatDrawerOpen(false);
+                              }}
+                              className="flex-1 text-left px-1"
+                            >
+                              {seat.seatNumber +
+                                (seat.seatRow ? " (" + seat.seatRow + ")" : "")}
+                            </button>
+                            <button
+                              type="button"
+                              aria-label={t(
+                                "eventReservationModal.removeSeatAriaLabel",
+                              )}
+                              onClick={() => handleSeatSelect(seat)}
+                              className="rounded-full p-1 hover:bg-destructive/20 hover:text-destructive transition-colors"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </DrawerContent>
+                </Drawer>
               )}
             </div>
             <div className="flex gap-2 flex-shrink-0">

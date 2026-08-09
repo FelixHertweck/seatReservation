@@ -13,7 +13,16 @@ import {
 import { Loader2, ChevronUp, X } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import {
+  SEAT_STATUS_BG,
+  SEAT_STATUS_LABEL_KEY,
+  SEAT_STATUS_TEXT,
+  getSeatVisualStatus,
+} from "@/lib/seatStatusStyles";
 import type { CheckInInfoResponseDto } from "@/api";
+
+export type ReservationAction = "CHECK_IN" | "CANCEL" | "NONE";
 
 interface ReservationSelectorProps {
   checkInInfo: CheckInInfoResponseDto | null | undefined;
@@ -23,8 +32,10 @@ interface ReservationSelectorProps {
   isMobile: boolean;
   isDrawerOpen: boolean;
   setIsDrawerOpen: (isOpen: boolean) => void;
-  selectedReservations: Set<string>;
-  setSelectedReservations: Dispatch<SetStateAction<Set<string>>>;
+  reservationActions: Record<string, ReservationAction>;
+  setReservationActions: Dispatch<
+    SetStateAction<Record<string, ReservationAction>>
+  >;
   onSubmit: (userId: string, eventId: string) => void;
   onClear: () => void;
 }
@@ -37,42 +48,38 @@ export function ReservationSelector({
   isMobile,
   isDrawerOpen,
   setIsDrawerOpen,
-  selectedReservations,
-  setSelectedReservations,
+  reservationActions,
+  setReservationActions,
   onSubmit,
   onClear,
 }: ReservationSelectorProps) {
   const t = useT();
 
-  // Initialize selected reservations when check-in info loads
+  // Initialize reservation actions when check-in info loads. Reservations
+  // default to being checked in, but can be switched to "cancel" or "do
+  // nothing" individually before submitting.
   useEffect(() => {
     if (checkInInfo?.reservations && checkInInfo.reservations.length > 0) {
-      const initialSelected = new Set<string>();
+      const initialActions: Record<string, ReservationAction> = {};
       checkInInfo.reservations.forEach((reservation) => {
         if (reservation.id) {
-          initialSelected.add(reservation.id);
+          initialActions[reservation.id] = "CHECK_IN";
         }
       });
-      setSelectedReservations(initialSelected);
+      setReservationActions(initialActions);
 
       // Open drawer on mobile, show on desktop
       if (isMobile) {
         setIsDrawerOpen(true);
       }
     }
-  }, [checkInInfo, isMobile, setIsDrawerOpen, setSelectedReservations]);
+  }, [checkInInfo, isMobile, setIsDrawerOpen, setReservationActions]);
 
-  // Toggle reservation selection
-  const toggleReservation = (reservationId: string) => {
-    setSelectedReservations((prev: Set<string>) => {
-      const newSet = new Set(prev);
-      if (newSet.has(reservationId)) {
-        newSet.delete(reservationId);
-      } else {
-        newSet.add(reservationId);
-      }
-      return newSet;
-    });
+  const setReservationAction = (
+    reservationId: string,
+    action: ReservationAction,
+  ) => {
+    setReservationActions((prev) => ({ ...prev, [reservationId]: action }));
   };
 
   const onProcessingSubmit = () => {
@@ -116,73 +123,150 @@ export function ReservationSelector({
           )}
 
           <div className="space-y-2">
-            {checkInInfo.reservations.map((reservation, index) => (
-              <Card
-                key={reservation.id?.toString() || `reservation-${index}`}
-                className={`p-4 cursor-pointer transition-colors ${
-                  selectedReservations.has(reservation.id!)
-                    ? "bg-primary/10 border-primary"
-                    : "hover:bg-muted"
-                }`}
-                onClick={() => toggleReservation(reservation.id!)}
-              >
-                <div className="flex items-start gap-3 justify-between">
-                  <div className="flex-1">
-                    <div className="text-sm font-medium">
-                      {t("checkin.reservations.seat")}:{" "}
-                      {reservation.seat?.seatNumber || "N/A"}
-                      {reservation.seat?.seatRow &&
-                        ` (${reservation.seat.seatRow})`}
-                    </div>
-                    <div className="mt-2 flex gap-2">
-                      <Badge variant="outline">
-                        {(() => {
-                          const status = reservation.liveStatus || "NO_SHOW";
-                          const statusMap: Record<string, string> = {
-                            NO_SHOW: "noShow",
-                            CHECKED_IN: "checkedIn",
-                            CANCELLED: "cancelled",
-                          };
-                          return t(
-                            `seatStatus.${statusMap[status] || "noShow"}`,
-                          );
-                        })()}
-                      </Badge>
-                      <span className="mx-2">{"-->"}</span>
-                      <Badge
-                        variant={
-                          selectedReservations.has(reservation.id!)
-                            ? "default"
-                            : "secondary"
-                        }
-                      >
-                        {selectedReservations.has(reservation.id!)
-                          ? t("seatStatus.checkedIn")
-                          : t("seatStatus.cancelled")}
-                      </Badge>
-                    </div>
+            {checkInInfo.reservations.map((reservation, index) => {
+              const reservationId = reservation.id!;
+              const action = reservationActions[reservationId] ?? "NONE";
+              const currentStatus = getSeatVisualStatus(
+                "RESERVED",
+                reservation.liveStatus,
+              );
+              const targetStatus =
+                action === "CHECK_IN"
+                  ? "CHECKED_IN"
+                  : action === "CANCEL"
+                    ? "CANCELLED"
+                    : currentStatus;
+
+              return (
+                <Card
+                  key={reservationId.toString() || `reservation-${index}`}
+                  className="p-4"
+                >
+                  <div className="text-sm font-medium">
+                    {t("checkin.reservations.seat")}:{" "}
+                    {reservation.seat?.seatNumber || "N/A"}
+                    {reservation.seat?.seatRow &&
+                      ` (${reservation.seat.seatRow})`}
                   </div>
-                </div>
-              </Card>
-            ))}
+                  <div className="mt-2 flex items-center gap-2">
+                    <Badge
+                      className={cn(
+                        SEAT_STATUS_BG[currentStatus],
+                        SEAT_STATUS_TEXT[currentStatus],
+                      )}
+                    >
+                      {t(SEAT_STATUS_LABEL_KEY[currentStatus])}
+                    </Badge>
+                    {action !== "NONE" && (
+                      <>
+                        <span>{"-->"}</span>
+                        <Badge
+                          className={cn(
+                            SEAT_STATUS_BG[targetStatus],
+                            SEAT_STATUS_TEXT[targetStatus],
+                          )}
+                        >
+                          {t(SEAT_STATUS_LABEL_KEY[targetStatus])}
+                        </Badge>
+                      </>
+                    )}
+                  </div>
+                  <div className="mt-3 flex gap-1 rounded-md border p-1">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setReservationAction(reservationId, "CHECK_IN")
+                      }
+                      className={cn(
+                        "flex-1 rounded-sm px-2 py-1 text-xs font-medium transition-colors",
+                        action === "CHECK_IN"
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:bg-muted",
+                      )}
+                    >
+                      {t("checkin.reservations.actionCheckIn")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setReservationAction(reservationId, "NONE")
+                      }
+                      className={cn(
+                        "flex-1 rounded-sm px-2 py-1 text-xs font-medium transition-colors",
+                        action === "NONE"
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:bg-muted",
+                      )}
+                    >
+                      {t("checkin.reservations.actionNone")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setReservationAction(reservationId, "CANCEL")
+                      }
+                      className={cn(
+                        "flex-1 rounded-sm px-2 py-1 text-xs font-medium transition-colors",
+                        action === "CANCEL"
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:bg-muted",
+                      )}
+                    >
+                      {t("checkin.reservations.actionCancel")}
+                    </button>
+                  </div>
+                </Card>
+              );
+            })}
           </div>
         </div>{" "}
         <div className="sticky bottom-0 bg-background p-4 border-t">
           <Separator className="mb-4" />
 
-          <div className="flex justify-between text-sm mb-4">
-            <span>
-              {t("checkin.reservations.checkInCount", {
-                count: selectedReservations.size,
-              })}
-            </span>
-            <span>
-              {t("checkin.reservations.cancelledCount", {
-                count:
-                  checkInInfo.reservations.length - selectedReservations.size,
-              })}
-            </span>
-          </div>
+          {(() => {
+            const actions = Object.values(reservationActions);
+            const tiles: {
+              key: ReservationAction;
+              label: string;
+              dot: string;
+            }[] = [
+              {
+                key: "CHECK_IN",
+                label: t("checkin.reservations.checkInLabel"),
+                dot: SEAT_STATUS_BG.CHECKED_IN,
+              },
+              {
+                key: "NONE",
+                label: t("checkin.reservations.noActionLabel"),
+                dot: "bg-muted-foreground/40",
+              },
+              {
+                key: "CANCEL",
+                label: t("checkin.reservations.cancelLabel"),
+                dot: SEAT_STATUS_BG.CANCELLED,
+              },
+            ];
+            return (
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                {tiles.map((tile) => (
+                  <div
+                    key={tile.key}
+                    className="flex flex-col items-center gap-1 rounded-md border bg-muted/30 py-2"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span className={cn("h-2 w-2 rounded-full", tile.dot)} />
+                      <span className="text-lg font-semibold tabular-nums">
+                        {actions.filter((a) => a === tile.key).length}
+                      </span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {tile.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
 
           <div className="flex gap-2">
             <Button
