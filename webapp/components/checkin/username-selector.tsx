@@ -82,23 +82,23 @@ export const UsernameSelector = ({
                 setOpen(false);
               }, 200);
             }}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring disabled:cursor-not-allowed disabled:opacity-50"
             disabled={isLoadingUsernames}
           />
           {isLoadingUsernames && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
-              <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
             </div>
           )}
         </div>
         {open && (
-          <div className="absolute top-full left-0 right-0 z-50 border border-gray-300 rounded-md bg-white shadow-lg">
+          <div className="absolute top-full left-0 right-0 z-50 border border-border rounded-md bg-popover shadow-lg">
             <div className="w-full">
               <div>
                 {isLoadingUsernames ? (
                   <div className="p-4 flex items-center justify-center">
-                    <Loader2 className="h-4 w-4 animate-spin mr-2 text-gray-500" />
-                    <span className="text-sm text-gray-500">
+                    <Loader2 className="h-4 w-4 animate-spin mr-2 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">
                       {t("checkin.usernameSelector.loadingUsers")}
                     </span>
                   </div>

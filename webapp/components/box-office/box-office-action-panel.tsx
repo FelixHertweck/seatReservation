@@ -1,7 +1,7 @@
 "use client";
 
+import { X } from "lucide-react";
 import { Button } from "@/components/custom-ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/custom-ui/label";
@@ -27,6 +27,9 @@ interface BoxOfficeActionPanelProps {
   checkedIn: boolean;
   onCheckedInChange: (checked: boolean) => void;
   selectedSeats: SeatDto[];
+  highlightedSeatId?: string | null;
+  onSeatChipClick?: (seatId: string) => void;
+  onSeatRemove?: (seat: SeatDto) => void;
   isSubmitting: boolean;
   onSubmit: () => void;
 }
@@ -46,6 +49,9 @@ export function BoxOfficeActionPanel({
   checkedIn,
   onCheckedInChange,
   selectedSeats,
+  highlightedSeatId = null,
+  onSeatChipClick,
+  onSeatRemove,
   isSubmitting,
   onSubmit,
 }: BoxOfficeActionPanelProps) {
@@ -145,16 +151,38 @@ export function BoxOfficeActionPanel({
               {t("boxOffice.selectedSeatsTitle")}
             </h4>
             <div className="flex max-h-20 flex-wrap gap-2 overflow-y-auto">
-              {selectedSeats.map((seat) => (
-                <Badge
-                  key={seat.id?.toString()}
-                  variant="outline"
-                  className="bg-blue-100 border-blue-300 dark:bg-blue-900 dark:border-blue-700"
-                >
-                  {seat.seatNumber +
-                    (seat.seatRow ? " (" + seat.seatRow + ")" : "")}
-                </Badge>
-              ))}
+              {selectedSeats.map((seat) => {
+                const isHighlighted =
+                  !!seat.id && seat.id === highlightedSeatId;
+                return (
+                  <div
+                    key={seat.id?.toString()}
+                    className={cn(
+                      "flex items-center gap-1 pl-1 pr-1 py-1 text-sm rounded-md border transition-colors",
+                      isHighlighted
+                        ? "bg-primary/10 border-primary"
+                        : "bg-blue-100 border-blue-300 hover:bg-blue-200 dark:bg-blue-900 dark:border-blue-700 dark:hover:bg-blue-800",
+                    )}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => seat.id && onSeatChipClick?.(seat.id)}
+                      className="px-1"
+                    >
+                      {seat.seatNumber +
+                        (seat.seatRow ? " (" + seat.seatRow + ")" : "")}
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={t("boxOffice.removeSeatAriaLabel")}
+                      onClick={() => onSeatRemove?.(seat)}
+                      className="rounded-full p-0.5 hover:bg-destructive/20 hover:text-destructive transition-colors"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </>
         )}

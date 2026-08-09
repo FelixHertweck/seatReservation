@@ -94,7 +94,7 @@ export function QRCodeModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent noX={true} className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t("qrCodeModal.title")}</DialogTitle>
           <DialogDescription>{t("qrCodeModal.description")}</DialogDescription>
