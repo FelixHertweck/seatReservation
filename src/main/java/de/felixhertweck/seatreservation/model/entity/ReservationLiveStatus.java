@@ -19,8 +19,18 @@
  */
 package de.felixhertweck.seatreservation.model.entity;
 
+/**
+ * Day-of check-in tracking for a {@link Reservation}, independent of its {@link ReservationStatus}.
+ * {@code null} on the reservation means no check-in decision has been made yet ("still reserved,
+ * not checked in") - it is NOT the same as {@link #NO_SHOW}.
+ */
 public enum ReservationLiveStatus {
+    /** Set by {@code CheckInService} when the reservation holder is let in. */
     CHECKED_IN,
+
+    /** Set by {@code CheckInService} when staff cancel the reservation at the door. */
     CANCELLED,
+
+    /** Reserved for marking a reservation as a confirmed no-show after the fact. */
     NO_SHOW
 }
