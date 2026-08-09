@@ -15,6 +15,7 @@ import type {
 import { useT } from "@/lib/i18n/hooks";
 import { findSeatStatus, isSupervisorSeatStatus } from "@/lib/reservationSeat";
 import { getAreaColor } from "@/lib/areaColors";
+import { SEAT_STATUS_BG, getSeatVisualStatus } from "@/lib/seatStatusStyles";
 import {
   SEAT_SIZE,
   ZONE_INSET,
@@ -476,10 +477,10 @@ export function SeatMap({
       if (!seat) return "transparent";
 
       const isSelected = selectedSeatIds.has(seat.id);
-      if (isSelected) return "bg-blue-500 dark:bg-blue-600";
+      if (isSelected) return SEAT_STATUS_BG.SELECTED;
 
       const isUserReserved = userReservedSeatIds.has(seat.id);
-      if (isUserReserved) return "bg-yellow-500 dark:bg-yellow-600";
+      if (isUserReserved) return SEAT_STATUS_BG.USER_RESERVED;
 
       // Check if we're working with SupervisorSeatStatusDto (has liveStatus)
       if (seatStatuses.length > 0 && isSupervisorSeatStatus(seatStatuses[0])) {
@@ -488,36 +489,12 @@ export function SeatMap({
           seatStatuses as SupervisorSeatStatusDto[]
         ).find((s) => s.seatId === seat.id);
 
-        if (supervisorStatus) {
-          // If status is RESERVED and has live status, show live status color
-          if (
-            supervisorStatus.status === "RESERVED" &&
-            supervisorStatus.liveStatus
-          ) {
-            switch (supervisorStatus.liveStatus) {
-              case "CHECKED_IN":
-                return "bg-yellow-300 dark:bg-yellow-600";
-              case "CANCELLED":
-                return "bg-violet-500 dark:bg-violet-500";
-              case "NO_SHOW":
-                return "bg-orange-500 dark:bg-orange-600";
-              default:
-                return "bg-red-500 dark:bg-red-600";
-            }
-          }
-
-          // Otherwise use regular status
-          switch (supervisorStatus.status) {
-            case "RESERVED":
-              return "bg-red-500 dark:bg-red-600";
-            case "BLOCKED":
-              return "bg-gray-500 dark:bg-gray-600";
-            default:
-              return "bg-green-500 dark:bg-green-600";
-          }
-        }
-
-        return "bg-green-500 dark:bg-green-600";
+        return SEAT_STATUS_BG[
+          getSeatVisualStatus(
+            supervisorStatus?.status,
+            supervisorStatus?.liveStatus,
+          )
+        ];
       } else {
         // Handle regular SeatStatusDto
         const seatStatus = findSeatStatus(
@@ -525,16 +502,7 @@ export function SeatMap({
           seatStatuses as SeatStatusDto[],
         );
 
-        switch (seatStatus) {
-          case "RESERVED":
-            return "bg-red-500 dark:bg-red-600";
-          case "BLOCKED":
-            return "bg-gray-500 dark:bg-gray-600";
-          case "PENDING":
-            return "bg-amber-500 dark:bg-amber-600";
-          default:
-            return "bg-green-500 dark:bg-green-600";
-        }
+        return SEAT_STATUS_BG[getSeatVisualStatus(seatStatus)];
       }
     },
     [selectedSeatIds, userReservedSeatIds, seatStatuses],

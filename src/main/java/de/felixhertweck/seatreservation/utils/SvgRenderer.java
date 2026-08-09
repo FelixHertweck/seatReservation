@@ -37,7 +37,7 @@ import de.felixhertweck.seatreservation.model.entity.Seat;
  */
 public class SvgRenderer {
 
-    // Distinct from the seat-status colors below (#2B7FFF/#F0B100/#CCCCCC) and mirroring the
+    // Distinct from the seat-status colors below (#2B7FFF/#F0B100/#22C55E) and mirroring the
     // palette used for area zones in the web app's seat map, so the same area always looks the
     // same across the UI and the emailed image.
     private static final String[] AREA_COLORS = {
@@ -210,7 +210,9 @@ public class SvgRenderer {
             } else if (existingReservedSeatNumbers.contains(seat.getSeatNumber())) {
                 color = "#F0B100";
             } else {
-                color = "#CCCCCC";
+                // Matches the "available" green used by every other seatmap in the app
+                // (Tailwind's green-500), so this color means the same thing everywhere.
+                color = "#22C55E";
             }
 
             // Apply scaling to the coordinates when drawing

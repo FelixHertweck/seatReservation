@@ -414,9 +414,9 @@ export default function ManagementReservationsPage() {
             style={{ height: seatMapColumnHeight }}
           >
             <SeatmapLegend
-              variant={isInteractive ? "selection" : "supervisor"}
               layout="bar"
               areas={location?.areas ?? []}
+              showSelected={isInteractive}
               showUserReserved={mode === "reserve"}
               userReservedLabel={
                 mode === "reserve"

@@ -2,19 +2,39 @@ import { useT } from "@/lib/i18n/hooks";
 import type { AreaDto } from "@/api";
 import { getAreaColor } from "@/lib/areaColors";
 import { cn } from "@/lib/utils";
+import {
+  SEAT_STATUS_BG,
+  SEAT_STATUS_LABEL_KEY,
+  type SeatVisualStatus,
+} from "@/lib/seatStatusStyles";
 
 interface SeatmapLegendProps {
   areas?: AreaDto[];
-  // "supervisor": read-only liveview coloring (checked-in/cancelled/no-show tracked separately,
-  // so red always means "reserved" consistently with the "selection" variant below).
-  // "selection": interactive seat picking (selected + optionally the user's own reservation).
-  variant?: "supervisor" | "selection";
+  // Every swatch below is gated by whether its category can structurally occur for the data
+  // this particular page shows - NOT by whether it currently happens to occur. A category
+  // that could appear (e.g. "Blocked" on a location with no blocked seats yet) still needs
+  // to show, so viewers learn what the color means before they ever encounter it; only
+  // categories that can never occur here (e.g. "Pending" on a page whose data never carries
+  // cart-hold info) should be omitted.
+
+  // Blue "Selected" - shown on any map where the viewer can mark seats as selected/chosen,
+  // whether by clicking the map itself or via an external control (e.g. checkboxes).
+  showSelected?: boolean;
+  // Yellow "My reservation" - highlights seats already reserved by a specific user.
   showUserReserved?: boolean;
   // Overrides the label of the "my reserved" swatch. Useful when the yellow
   // status doesn't mean "reserved by me" (e.g. the manager's reservation
   // form, where it highlights seats already reserved by the user being
   // booked for).
   userReservedLabel?: string;
+  // Amber "Selected by another user" - only possible for data sourced from the cart-aware
+  // user booking endpoints (event-reservation-modal, reservation-modal); never appears for
+  // supervisor or management data, which don't track Redis cart holds at all.
+  showPending?: boolean;
+  // Checked-in/Cancelled/No-show - only possible when the underlying data is
+  // SupervisorSeatStatusDto (box office, live view); management/booking data never carries
+  // a liveStatus field, so these can never occur there.
+  showLiveStatus?: boolean;
   // "card": boxed, vertical list (liveview sidebar). "bar": compact, wraps horizontally (dialogs).
   layout?: "card" | "bar";
   className?: string;
@@ -39,72 +59,38 @@ function LegendSwatch({
 
 export default function SeatmapLegend({
   areas = [],
-  variant = "supervisor",
-  showUserReserved = true,
+  showSelected = false,
+  showUserReserved = false,
   userReservedLabel,
+  showPending = false,
+  showLiveStatus = false,
   layout = "card",
   className,
-}: SeatmapLegendProps) {
+}: Readonly<SeatmapLegendProps>) {
   const t = useT();
   const bar = layout === "bar";
 
+  const swatch = (status: SeatVisualStatus, label?: string) => (
+    <LegendSwatch
+      key={status}
+      color={SEAT_STATUS_BG[status]}
+      label={label ?? t(SEAT_STATUS_LABEL_KEY[status])}
+      bar={bar}
+    />
+  );
+
   const swatches = (
     <>
-      <LegendSwatch
-        color="bg-green-500"
-        label={t("seatStatus.available")}
-        bar={bar}
-      />
-      {variant === "selection" && (
-        <LegendSwatch
-          color="bg-blue-500"
-          label={t("seatStatus.selected")}
-          bar={bar}
-        />
-      )}
-      {variant === "selection" && showUserReserved && (
-        <LegendSwatch
-          color="bg-yellow-500"
-          label={userReservedLabel ?? t("seatStatus.myReserved")}
-          bar={bar}
-        />
-      )}
-      <LegendSwatch
-        color="bg-red-500"
-        label={t("seatStatus.reserved")}
-        bar={bar}
-      />
-      <LegendSwatch
-        color="bg-gray-500"
-        label={t("seatStatus.blocked")}
-        bar={bar}
-      />
-      {variant === "selection" && (
-        <LegendSwatch
-          color="bg-amber-500"
-          label={t("seatStatus.pending")}
-          bar={bar}
-        />
-      )}
-      {variant === "supervisor" && (
-        <>
-          <LegendSwatch
-            color="bg-yellow-300"
-            label={t("seatStatus.checkedIn")}
-            bar={bar}
-          />
-          <LegendSwatch
-            color="bg-violet-500"
-            label={t("seatStatus.cancelled")}
-            bar={bar}
-          />
-          <LegendSwatch
-            color="bg-orange-500"
-            label={t("seatStatus.noShow")}
-            bar={bar}
-          />
-        </>
-      )}
+      {/* Available/Reserved/Blocked are structurally possible on every seatmap. */}
+      {swatch("AVAILABLE")}
+      {showSelected && swatch("SELECTED")}
+      {showUserReserved && swatch("USER_RESERVED", userReservedLabel)}
+      {swatch("RESERVED")}
+      {swatch("BLOCKED")}
+      {showPending && swatch("PENDING")}
+      {showLiveStatus && swatch("CHECKED_IN")}
+      {showLiveStatus && swatch("CANCELLED")}
+      {showLiveStatus && swatch("NO_SHOW")}
     </>
   );
 
