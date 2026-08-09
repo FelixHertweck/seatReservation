@@ -21,6 +21,7 @@ import {
   MapPinned,
   Ticket,
   Store,
+  ShieldCheck,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -133,22 +134,27 @@ export function AppSidebar() {
       user?.roles?.includes("ADMIN")
     ) {
       supervisionItems.push({
-        title: t("sidebar.checkin"),
-        url: "/checkin",
-        icon: CheckInIcon,
+        title: t("sidebar.supervision"),
+        url: "/supervisor",
+        icon: ShieldCheck,
         badge: t("sidebar.supervisor"),
-      });
-      supervisionItems.push({
-        title: t("sidebar.liveview"),
-        url: "/liveview",
-        icon: Eye,
-        badge: t("sidebar.supervisor"),
-      });
-      supervisionItems.push({
-        title: t("sidebar.boxOffice"),
-        url: "/box-office",
-        icon: Store,
-        badge: t("sidebar.supervisor"),
+        subItems: [
+          {
+            title: t("sidebar.checkin"),
+            url: "/supervisor/checkin",
+            icon: CheckInIcon,
+          },
+          {
+            title: t("sidebar.liveview"),
+            url: "/supervisor/liveview",
+            icon: Eye,
+          },
+          {
+            title: t("sidebar.boxOffice"),
+            url: "/supervisor/box-office",
+            icon: Store,
+          },
+        ],
       });
     }
 

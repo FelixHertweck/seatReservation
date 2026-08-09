@@ -1,10 +1,11 @@
 "use client";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { ArrowUp, Clock, Loader2 } from "lucide-react";
 
 import { useT } from "@/lib/i18n/hooks";
+import { formatDateTime } from "@/lib/utils";
+import { useSupervisorEvent } from "@/hooks/use-supervisor-event";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/custom-ui/skeleton";
@@ -17,6 +18,7 @@ import {
 } from "@/components/box-office/box-office-action-panel";
 import { BoxOfficeConfirmation } from "@/components/box-office/box-office-confirmation";
 import { useLiveView } from "@/hooks/use-liveview";
+import { useCheckin } from "@/hooks/use-checkin";
 import { useBoxOffice } from "@/hooks/use-box-office";
 import { useFillHeight } from "@/hooks/use-fill-height";
 import type {
@@ -38,14 +40,12 @@ const convertReservationsToStatuses = (
 
 function BoxOfficePageContent() {
   const t = useT();
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(() =>
-    searchParams.get("eventId"),
-  );
+  const { selectedEventId, selectEvent } = useSupervisorEvent();
 
   const [selectedSeats, setSelectedSeats] = useState<SeatDto[]>([]);
+  const [highlightedSeatId, setHighlightedSeatId] = useState<string | null>(
+    null,
+  );
   const [reserveMode, setReserveMode] = useState<BoxOfficeReserveMode>("user");
   const [userId, setUserId] = useState("");
   const [deductAllowance, setDeductAllowance] = useState(true);
@@ -61,14 +61,7 @@ function BoxOfficePageContent() {
   const { ref: seatMapColumnRef, height: seatMapColumnHeight } =
     useFillHeight<HTMLDivElement>();
 
-  const {
-    events,
-    isLoadingEvents,
-    isInitialLoading,
-    event,
-    location,
-    reservations,
-  } = useLiveView(selectedEventId, !!selectedEventId);
+  const { events, isLoadingEvents } = useCheckin();
   const {
     users,
     isLoadingUsers,
@@ -96,10 +89,26 @@ function BoxOfficePageContent() {
       (e) => !!e.bookingDeadline && new Date(e.bookingDeadline).getTime() < now,
     );
   }, [events, now]);
+  const selectedEvent = useMemo(
+    () => (events ?? []).find((e) => e.id === selectedEventId),
+    [events, selectedEventId],
+  );
+  // Derived from the plain REST event list rather than the live-view websocket's own
+  // `event` field: that connection is itself gated behind the booking deadline on the
+  // backend now, so relying on it here would be circular -- it would never populate
+  // (and the reconnect budget would run out) before we already know the deadline passed.
   const isDeadlinePassed = useMemo(() => {
-    if (now === null || !event?.bookingDeadline) return false;
-    return new Date(event.bookingDeadline).getTime() < now;
-  }, [event, now]);
+    if (now === null || !selectedEvent?.bookingDeadline) return false;
+    return new Date(selectedEvent.bookingDeadline).getTime() < now;
+  }, [selectedEvent, now]);
+
+  // Only open the live-view websocket once the deadline has passed -- the backend
+  // rejects the connection until then, so connecting earlier would just burn through
+  // useWebSocket's limited reconnect attempts for nothing.
+  const { isInitialLoading, location, reservations } = useLiveView(
+    selectedEventId,
+    !!selectedEventId && isDeadlinePassed,
+  );
 
   const seatStatuses = useMemo(
     () => convertReservationsToStatuses(reservations),
@@ -108,6 +117,7 @@ function BoxOfficePageContent() {
 
   const resetForm = () => {
     setSelectedSeats([]);
+    setHighlightedSeatId(null);
     setUserId("");
     setDeductAllowance(true);
     setGuestName("");
@@ -116,13 +126,9 @@ function BoxOfficePageContent() {
   };
 
   const handleEventSelect = (eventId: string) => {
-    setSelectedEventId(eventId);
+    selectEvent(eventId);
     resetForm();
     setConfirmation(null);
-
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("eventId", eventId);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   const handleSeatToggle = (seat: SeatDto) => {
@@ -133,6 +139,11 @@ function BoxOfficePageContent() {
       }
       return [...prev, seat];
     });
+    setHighlightedSeatId((prev) => (prev === seat.id ? null : prev));
+  };
+
+  const handleSeatChipClick = (seatId: string) => {
+    setHighlightedSeatId((prev) => (prev === seatId ? null : seatId));
   };
 
   const handleSubmit = async () => {
@@ -202,7 +213,15 @@ function BoxOfficePageContent() {
         <Card>
           <CardContent className="flex flex-col items-center gap-2 py-12 text-center text-muted-foreground">
             <Clock className="h-5 w-5" />
-            {t("boxOffice.deadlineNotPassed")}
+            <span>{t("boxOffice.deadlineNotPassed")}</span>
+            {(() => {
+              const formatted = formatDateTime(selectedEvent?.bookingDeadline);
+              return formatted ? (
+                <span className="text-sm">
+                  {t("boxOffice.deadlineNotPassedAvailableFrom", formatted)}
+                </span>
+              ) : null;
+            })()}
           </CardContent>
         </Card>
       ) : (
@@ -213,9 +232,10 @@ function BoxOfficePageContent() {
             style={{ height: seatMapColumnHeight }}
           >
             <SeatmapLegend
-              variant="selection"
               layout="bar"
               areas={location?.areas ?? []}
+              showSelected
+              showLiveStatus
             />
             {!location ? (
               <Skeleton className="flex-1 rounded-lg" />
@@ -228,6 +248,7 @@ function BoxOfficePageContent() {
                   markers={location.markers ?? []}
                   areas={location.areas ?? []}
                   selectedSeats={confirmation ? [] : selectedSeats}
+                  highlightedSeatId={confirmation ? null : highlightedSeatId}
                   onSeatSelect={confirmation ? () => {} : handleSeatToggle}
                 />
               </div>
@@ -258,6 +279,9 @@ function BoxOfficePageContent() {
                 checkedIn={checkedIn}
                 onCheckedInChange={setCheckedIn}
                 selectedSeats={selectedSeats}
+                highlightedSeatId={highlightedSeatId}
+                onSeatChipClick={handleSeatChipClick}
+                onSeatRemove={handleSeatToggle}
                 isSubmitting={isSubmitting}
                 onSubmit={handleSubmit}
               />

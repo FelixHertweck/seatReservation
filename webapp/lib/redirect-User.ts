@@ -13,7 +13,7 @@ export function redirectUser(
   } else if (currentUser?.roles?.includes("USER")) {
     router.push(`/${locale}/events`);
   } else if (currentUser?.roles?.includes("SUPERVISOR")) {
-    router.push(`/${locale}/liveview`);
+    router.push(`/${locale}/supervisor`);
   } else if (currentUser?.roles?.includes("MANAGER")) {
     router.push(`/${locale}/management`);
   } else if (currentUser?.roles?.includes("ADMIN")) {

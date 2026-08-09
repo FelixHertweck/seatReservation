@@ -37,7 +37,7 @@ export function LiveviewConnectionBadge({
                 : "bg-red-500"
           }`}
         />
-        <span className="font-medium whitespace-nowrap">
+        <span className="hidden font-medium whitespace-nowrap sm:inline">
           {isConnected
             ? t("liveview.status.connected")
             : isConnecting

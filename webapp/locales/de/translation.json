@@ -844,6 +844,7 @@
     "userManagement": "Benutzer-Verwaltung",
     "admin": "Admin",
     "supervisor": "Supervisor",
+    "supervision": "Aufsicht",
     "liveview": "Liveview",
     "checkin": "Check-In",
     "boxOffice": "Abendkasse",
@@ -977,6 +978,8 @@
   "checkin": {
     "title": "Check-In",
     "description": "Verarbeiten Sie Event-Check-Ins über QR-Code-Scannen oder Benutzerauswahl.",
+    "deadlineNotPassed": "Check-In ist erst verfügbar, sobald die Buchungsfrist dieser Veranstaltung abgelaufen ist.",
+    "deadlineNotPassedAvailableFrom": "Verfügbar ab {{date}} {{time}} Uhr.",
     "success": {
       "title": "Check-In erfolgreich",
       "description": "Der Check-In wurde erfolgreich verarbeitet."
@@ -1072,6 +1075,8 @@
   "liveview": {
     "title": "Live View",
     "description": "Überwachen Sie Check-In in Echtzeit",
+    "deadlineNotPassed": "Live View ist erst verfügbar, sobald die Buchungsfrist dieser Veranstaltung abgelaufen ist.",
+    "deadlineNotPassedAvailableFrom": "Verfügbar ab {{date}} {{time}} Uhr.",
     "eventSelector": {
       "label": "Event auswählen",
       "placeholder": "Wähle ein Event...",
@@ -1521,6 +1526,26 @@
       "deleteError": "Kontingent(e) konnten nicht gelöscht werden."
     }
   },
+  "supervisor": {
+    "nav": {
+      "label": "Aufsichtsbereiche",
+      "overview": "Übersicht",
+      "checkin": "Check-In",
+      "liveview": "Liveview",
+      "boxOffice": "Abendkasse"
+    },
+    "overview": {
+      "title": "Aufsicht Dashboard",
+      "description": "Gäste einchecken, den Sitzplan live verfolgen und Tickets vor Ort verkaufen.",
+      "stats": {
+        "reservations": "Reservierungen",
+        "checkedIn": "Eingecheckt",
+        "checkedInSub": "von {{total}} Reservierungen",
+        "boxOfficeGuests": "Abendkasse Gäste",
+        "boxOfficeGuestsSub": "Walk-in-Gastverkäufe, ohne Verkäufe an bekannte Nutzer"
+      }
+    }
+  },
   "boxOffice": {
     "title": "Abendkasse",
     "pageDescription": "Plätze persönlich verkaufen oder reservieren, nachdem die Online-Buchung geschlossen wurde.",
@@ -1530,6 +1555,7 @@
     },
     "selectEventPrompt": "Wähle oben auf der Seite eine Veranstaltung aus.",
     "deadlineNotPassed": "Die Abendkasse ist erst verfügbar, sobald die Buchungsfrist dieser Veranstaltung abgelaufen ist.",
+    "deadlineNotPassedAvailableFrom": "Verfügbar ab {{date}} {{time}} Uhr.",
     "newReservation": "Neue Reservierung",
     "description": "Wähle Plätze auf dem Plan aus und lege dann fest, für wen sie sind.",
     "modeUser": "Bestehender Benutzer",
