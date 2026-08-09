@@ -25,7 +25,15 @@ export default function EventsPage() {
   const { isLoading: reservationsLoading, reservations } = useReservations();
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [eventSearchQuery, setEventSearchQuery] = useState<string>("");
-  const [filters, setFilters] = useState<Record<string, unknown>>({});
+  // "onlyUpcoming" defaults to on (present + true) so past events are hidden
+  // out of the box, and the filter badge correctly counts it as 1 active
+  // filter from the start rather than treating the default as "no filter".
+  const [filters, setFilters] = useState<Record<string, unknown>>({
+    onlyUpcoming: true,
+  });
+  // Computed once on mount rather than read at render time (Date.now() is
+  // impure) - "past" only needs to be accurate as of page load here.
+  const [now] = useState(() => Date.now());
 
   // Deep link from the "My Reservations" tab (or a shared link): open the
   // matching event's reservation modal once the events have loaded.
@@ -73,6 +81,10 @@ export default function EventsPage() {
     if (!events) return [];
 
     const locationId = filters.locationId as string | undefined;
+    // Absent only once the user has explicitly switched it off (see
+    // handleFilterChange in SearchAndFilter, which deletes false values) -
+    // any other state means the default "on" still applies.
+    const onlyUpcoming = filters.onlyUpcoming === true;
     const filtered = events.filter((event) => {
       const matchesQuery =
         event.name?.toLowerCase().includes(eventSearchQuery.toLowerCase()) ||
@@ -80,7 +92,10 @@ export default function EventsPage() {
           ?.toLowerCase()
           .includes(eventSearchQuery.toLowerCase());
       const matchesLocation = !locationId || event.locationId === locationId;
-      return matchesQuery && matchesLocation;
+      const eventEnd = event.endTime ?? event.startTime;
+      const isPast = !!eventEnd && new Date(eventEnd).getTime() < now;
+      const matchesPast = !onlyUpcoming || !isPast;
+      return matchesQuery && matchesLocation && matchesPast;
     });
 
     return [...filtered].sort((a, b) => {
@@ -91,7 +106,7 @@ export default function EventsPage() {
       if (!aHasSeats && bHasSeats) return 1;
       return 0;
     });
-  }, [events, eventSearchQuery, filters]);
+  }, [events, eventSearchQuery, filters, now]);
 
   const handleEventSearch = (query: string) => {
     setEventSearchQuery(query);
@@ -123,18 +138,24 @@ export default function EventsPage() {
           <SearchAndFilter
             onSearch={handleEventSearch}
             onFilter={setFilters}
-            filterOptions={
-              locationOptions.length > 0
+            filterOptions={[
+              ...(locationOptions.length > 0
                 ? [
                     {
                       key: "locationId",
                       label: t("eventsPage.locationFilterLabel"),
-                      type: "select",
+                      type: "select" as const,
                       options: locationOptions,
                     },
                   ]
-                : []
-            }
+                : []),
+              {
+                key: "onlyUpcoming",
+                label: t("eventsPage.onlyUpcomingFilterLabel"),
+                type: "switch" as const,
+              },
+            ]}
+            initialFilters={{ onlyUpcoming: true }}
             initialQuery={eventSearchQuery}
             className="w-full"
           />
@@ -147,6 +168,12 @@ export default function EventsPage() {
         <NoEventsAvailable eventsLength={events.length} />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
+          <p className="col-span-full text-sm text-muted-foreground">
+            {t("eventsPage.resultsCount", {
+              shown: filteredEvents.length,
+              total: events.length,
+            })}
+          </p>
           {filteredEvents.map((event) => (
             <EventCard
               key={event.id?.toString()}

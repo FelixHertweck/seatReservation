@@ -46,9 +46,16 @@ export default function MyReservationsPage() {
   const eventIdFromUrl = searchParams.get("eventId");
 
   const [userSearchQuery, setUserSearchQuery] = useState<string>("");
-  const [filters, setFilters] = useState<Record<string, unknown>>(() =>
-    eventIdFromUrl ? { eventId: eventIdFromUrl } : {},
-  );
+  // "onlyUpcoming" defaults to on (present + true) so past events are hidden
+  // out of the box, and the filter badge correctly counts it as 1 active
+  // filter from the start rather than treating the default as "no filter".
+  const [filters, setFilters] = useState<Record<string, unknown>>(() => ({
+    ...(eventIdFromUrl ? { eventId: eventIdFromUrl } : {}),
+    onlyUpcoming: true,
+  }));
+  // Computed once on mount rather than read at render time (Date.now() is
+  // impure) - "past" only needs to be accurate as of page load here.
+  const [now] = useState(() => Date.now());
 
   const eventOptions = useMemo(() => {
     const seen = new Map<string, string>();
@@ -74,6 +81,10 @@ export default function MyReservationsPage() {
     const query = userSearchQuery.toLowerCase();
     const eventIdFilter = filters.eventId as string | undefined;
     const locationIdFilter = filters.locationId as string | undefined;
+    // Absent only once the user has explicitly switched it off (see
+    // handleFilterChange in SearchAndFilter, which deletes false values) -
+    // any other state means the default "on" still applies.
+    const onlyUpcoming = filters.onlyUpcoming === true;
 
     const filtered = reservations.filter((reservation) => {
       const event = events.find((e) => e.id === reservation.eventId);
@@ -83,7 +94,10 @@ export default function MyReservationsPage() {
         !eventIdFilter || reservation.eventId === eventIdFilter;
       const matchesLocation =
         !locationIdFilter || event?.locationId === locationIdFilter;
-      return matchesQuery && matchesEvent && matchesLocation;
+      const eventEnd = event?.endTime ?? event?.startTime;
+      const isPast = !!eventEnd && new Date(eventEnd).getTime() < now;
+      const matchesPast = !onlyUpcoming || !isPast;
+      return matchesQuery && matchesEvent && matchesLocation && matchesPast;
     });
 
     const grouped = filtered.reduce(
@@ -100,7 +114,12 @@ export default function MyReservationsPage() {
     );
 
     return Object.values(grouped);
-  }, [reservations, userSearchQuery, filters, events]);
+  }, [reservations, userSearchQuery, filters, events, now]);
+
+  const totalEventCount = useMemo(
+    () => new Set(reservations.map((r) => r.eventId).filter(Boolean)).size,
+    [reservations],
+  );
 
   const handleDeleteReservation = async (reservationIds: string[]) => {
     await deleteReservation(reservationIds);
@@ -164,10 +183,16 @@ export default function MyReservationsPage() {
                     },
                   ]
                 : []),
+              {
+                key: "onlyUpcoming",
+                label: t("reservationsPage.onlyUpcomingFilterLabel"),
+                type: "switch" as const,
+              },
             ]}
-            initialFilters={
-              eventIdFromUrl ? { eventId: eventIdFromUrl } : undefined
-            }
+            initialFilters={{
+              ...(eventIdFromUrl ? { eventId: eventIdFromUrl } : {}),
+              onlyUpcoming: true,
+            }}
             initialQuery={userSearchQuery}
             className="w-full"
           />
@@ -180,6 +205,12 @@ export default function MyReservationsPage() {
         <NoReservationAvailable reservationLength={reservations.length} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 lg:gap-4">
+          <p className="col-span-full text-sm text-muted-foreground">
+            {t("reservationsPage.resultsCount", {
+              shown: groupedReservations.length,
+              total: totalEventCount,
+            })}
+          </p>
           {groupedReservations.map((eventReservations) => {
             const firstReservation = eventReservations[0];
             const event = events?.find(
@@ -194,7 +225,6 @@ export default function MyReservationsPage() {
                 locationName={location?.name}
                 bookingDeadline={event?.bookingDeadline}
                 onViewSeats={handleViewReservationSeats}
-                onDelete={handleDeleteReservation}
                 viewEventHref={
                   firstReservation.eventId
                     ? `/events?eventId=${firstReservation.eventId}`
@@ -215,6 +245,7 @@ export default function MyReservationsPage() {
           reservation={selectedReservation.reservation}
           eventReservations={selectedReservation.eventReservations || []}
           onClose={() => setSelectedReservation(null)}
+          onDelete={handleDeleteReservation}
           isLoading={false}
         />
       )}

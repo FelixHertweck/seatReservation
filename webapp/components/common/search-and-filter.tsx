@@ -5,6 +5,7 @@ import { Search, Filter, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/custom-ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -23,7 +24,7 @@ import type { SortDirection } from "@/components/common/sortable-table-head";
 interface FilterOption {
   key: string;
   label: string;
-  type: "boolean" | "string" | "number" | "select";
+  type: "boolean" | "string" | "number" | "select" | "switch";
   options?: { value: string; label: string }[];
 }
 
@@ -36,7 +37,7 @@ interface SearchAndFilterProps {
   onSearch: (query: string) => void;
   onFilter: (filters: Record<string, unknown>) => void;
   filterOptions: FilterOption[];
-  initialFilters?: Record<string, string>;
+  initialFilters?: Record<string, unknown>;
   initialQuery?: string;
   className?: string;
   // Sort lives in the same dropdown as the filter fields - it's the same
@@ -65,6 +66,7 @@ export function SearchAndFilter({
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [filters, setFilters] =
     useState<Record<string, unknown>>(initialFilters);
+  const activeFilterCount = Object.keys(filters).length;
 
   useEffect(() => {
     setSearchQuery(initialQuery);
@@ -101,7 +103,7 @@ export function SearchAndFilter({
             placeholder={t("searchAndFilter.searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
-            className="h-10 pl-8 pr-1 max-sm:not-focus:placeholder:text-transparent focus:pr-3 sm:pr-3"
+            className="h-10 pl-8 pr-1 max-sm:not-focus:placeholder:text-transparent focus:pr-3 sm:pr-3 focus-visible:ring-inset focus-visible:ring-offset-0"
           />
         </div>
         {(filterOptions.length > 0 || sortOptions.length > 0) && (
@@ -110,12 +112,22 @@ export function SearchAndFilter({
               <Button
                 variant="outline"
                 size="icon"
-                className="h-10 w-10 shrink-0 sm:w-auto sm:px-4"
+                className="relative h-10 w-10 shrink-0 sm:w-auto sm:px-4"
               >
                 <Filter className="h-4 w-4" />
                 <span className="hidden sm:inline">
                   {t("searchAndFilter.filtersButton")}
                 </span>
+                {activeFilterCount > 0 && (
+                  // The mobile search/filter slot (PageHeaderSlot) clips
+                  // overflow to animate its width, so a badge hanging past
+                  // the button's edge gets cut off there - keep it inset on
+                  // mobile and only let it hang off the corner from `sm` up,
+                  // where that wrapper switches to overflow-visible.
+                  <span className="absolute top-0.5 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium leading-none text-primary-foreground ring-2 ring-background sm:-top-1.5 sm:-right-1.5">
+                    {activeFilterCount}
+                  </span>
+                )}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -158,9 +170,28 @@ export function SearchAndFilter({
               <div className="grid grid-cols-1 gap-4">
                 {filterOptions.map((option) => (
                   <div key={option.key} className="space-y-2">
-                    <label className="text-sm font-medium">
-                      {option.label}
-                    </label>
+                    {option.type !== "switch" && (
+                      <label className="text-sm font-medium">
+                        {option.label}
+                      </label>
+                    )}
+                    {option.type === "switch" && (
+                      <div className="flex items-center justify-between gap-2">
+                        <label
+                          htmlFor={option.key}
+                          className="text-sm font-medium"
+                        >
+                          {option.label}
+                        </label>
+                        <Switch
+                          id={option.key}
+                          checked={!!filters[option.key]}
+                          onCheckedChange={(checked) =>
+                            handleFilterChange(option.key, checked)
+                          }
+                        />
+                      </div>
+                    )}
                     {option.type === "boolean" && (
                       <div className="flex items-center space-x-2">
                         <Checkbox
