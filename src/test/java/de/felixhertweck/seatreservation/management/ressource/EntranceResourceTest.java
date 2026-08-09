@@ -31,6 +31,7 @@ import de.felixhertweck.seatreservation.management.dto.EntranceRequestDTO;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationEntrance;
 import de.felixhertweck.seatreservation.model.entity.Seat;
+import de.felixhertweck.seatreservation.model.repository.CheckInTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationEntranceRepository;
@@ -59,6 +60,9 @@ public class EntranceResourceTest {
     @Inject EventRepository eventRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
     @Inject ReservationRepository reservationRepository;
+
+    @Inject CheckInTokenRepository checkInTokenRepository;
+
     @Inject EmailSeatMapTokenRepository emailSeatMapTokenRepository;
     @Inject UserRepository userRepository;
 
@@ -96,6 +100,7 @@ public class EntranceResourceTest {
     private void cleanUpDatabase() {
         emailSeatMapTokenRepository.deleteAll();
         reservationRepository.deleteAll();
+        checkInTokenRepository.deleteAll();
         eventUserAllowanceRepository.deleteAll();
         eventRepository.deleteAll();
         seatRepository.deleteAll();

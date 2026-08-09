@@ -30,10 +30,10 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
  * Response for a box office reservation creation call.
  *
  * <p>{@code reservationUserId} is the id that must be embedded in the QR/print/email check-in
- * payload (built as {@code "<reservationUserId>;<eventId>;<checkInCode1>,<checkInCode2>,..."},
- * matching {@code EmailService.generateQrCodeContent} and the check-in scanner) -- the target
- * user's id for a "known user" reservation, or the shared {@code boxoffice} system user's id for a
- * guest reservation.
+ * payload (built as {@code "<reservationUserId>;<eventId>;<checkInToken>"}, matching {@code
+ * EmailService.generateQrCodeContent} and the check-in scanner) -- the target user's id for a
+ * "known user" reservation, or the shared {@code boxoffice} system user's id for a guest
+ * reservation.
  *
  * <p>{@code confirmationHtml} is the server-rendered "Abendkasse" confirmation (see {@code
  * EmailService.sendBoxOfficeConfirmation}), returned regardless of whether an email was actually
@@ -48,12 +48,14 @@ public record BoxOfficeReservationResponseDTO(
 
     @RegisterForReflection
     public record BoxOfficeSeatDTO(
-            UUID seatId, String seatNumber, String checkInCode, ReservationLiveStatus liveStatus) {
+            UUID seatId, String seatNumber, String checkInToken, ReservationLiveStatus liveStatus) {
         public BoxOfficeSeatDTO(Reservation reservation) {
             this(
                     reservation.getSeat().getId(),
                     reservation.getSeat().getSeatNumber(),
-                    reservation.getCheckInCode(),
+                    reservation.getCheckInToken() != null
+                            ? reservation.getCheckInToken().getToken()
+                            : null,
                     reservation.getLiveStatus());
         }
     }

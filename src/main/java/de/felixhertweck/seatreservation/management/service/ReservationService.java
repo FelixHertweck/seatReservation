@@ -55,8 +55,8 @@ import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepos
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.reservation.service.CheckInTokenService;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
-import de.felixhertweck.seatreservation.utils.CodeGenerator;
 import de.felixhertweck.seatreservation.utils.ReservationExporter;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
@@ -76,6 +76,8 @@ public class ReservationService {
     @Inject SeatRepository seatRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
     @Inject EmailService emailService;
+
+    @Inject CheckInTokenService checkInTokenService;
 
     /**
      * Retrieves all reservations. Access is restricted based on user roles: - ADMIN: Returns all
@@ -281,11 +283,13 @@ public class ReservationService {
                         "User has no reservation allowance for this event.");
             }
         }
-
+        de.felixhertweck.seatreservation.model.entity.CheckInToken checkInToken =
+                checkInTokenService.getOrCreateForUser(targetUser, event);
         for (UUID dtoSeatId : dto.getSeatIds()) {
             Seat seat = seatMap.get(dtoSeatId);
             if (seat == null) {
-                LOG.warnf("Seat with ID %s not found for reservation creation.", dtoSeatId);
+                LOG.errorf(
+                        "Seat with ID %s not found for event ID %s.", dtoSeatId, dto.getEventId());
                 throw new IllegalArgumentException("Seat with id " + dtoSeatId + " not found");
             }
 
@@ -319,7 +323,7 @@ public class ReservationService {
                             seat,
                             Instant.now(),
                             ReservationStatus.RESERVED,
-                            CodeGenerator.generateRandomCode());
+                            checkInToken);
             existingReservations.add(reservation);
             LOG.infof(
                     "Reservation created successfully for seat ID %s, user ID %s, event ID %s.",
@@ -591,7 +595,7 @@ public class ReservationService {
                                                 seat,
                                                 Instant.now(),
                                                 ReservationStatus.BLOCKED,
-                                                CodeGenerator.generateRandomCode()))
+                                                null))
                         .toList();
 
         reservationRepository.persist(newReservations);

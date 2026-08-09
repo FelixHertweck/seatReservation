@@ -31,6 +31,7 @@ import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
 import de.felixhertweck.seatreservation.management.dto.MakerRequestDTO;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
+import de.felixhertweck.seatreservation.model.repository.CheckInTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationEntranceRepository;
@@ -60,6 +61,9 @@ public class MarkerResourceTest {
     @Inject EventRepository eventRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
     @Inject ReservationRepository reservationRepository;
+
+    @Inject CheckInTokenRepository checkInTokenRepository;
+
     @Inject EmailSeatMapTokenRepository emailSeatMapTokenRepository;
     @Inject EventLocationRepository eventLocationRepository;
     @Inject UserRepository userRepository;
@@ -98,6 +102,7 @@ public class MarkerResourceTest {
     private void cleanUpDatabase() {
         emailSeatMapTokenRepository.deleteAll();
         reservationRepository.deleteAll();
+        checkInTokenRepository.deleteAll();
         eventUserAllowanceRepository.deleteAll();
         eventRepository.deleteAll();
         seatRepository.deleteAll();

@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -40,6 +41,7 @@ import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.email.service.EmailService;
 import de.felixhertweck.seatreservation.email.service.EmailService.BoxOfficeConfirmationContent;
+import de.felixhertweck.seatreservation.model.entity.CheckInToken;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.Roles;
@@ -50,6 +52,7 @@ import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.reservation.service.CheckInTokenService;
 import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeGuestReservationRequestDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeReservationRequestDTO;
 import de.felixhertweck.seatreservation.supervisor.service.LiveViewService;
@@ -74,6 +77,7 @@ class BoxOfficeResourceTest {
     @InjectMock SeatRepository seatRepository;
     @InjectMock LiveViewService liveViewService;
     @InjectMock EmailService emailService;
+    @InjectMock CheckInTokenService checkInTokenService;
     @InjectMock BoxOfficeGuestInfoRepository boxOfficeGuestInfoRepository;
 
     private static final String SUPERVISOR_UID = "00000000-0000-0000-0000-000000000001";
@@ -134,6 +138,19 @@ class BoxOfficeResourceTest {
                 .thenReturn(
                         new BoxOfficeConfirmationContent(
                                 "<html>email</html>", "<html>display</html>", new byte[0]));
+
+        when(checkInTokenService.getOrCreateForUser(any(), any()))
+                .thenAnswer(
+                        inv ->
+                                new CheckInToken(
+                                        inv.getArgument(0), inv.getArgument(1), "TOKEN_USER"));
+        when(checkInTokenService.createFresh(any(), any()))
+                .thenAnswer(
+                        inv ->
+                                new CheckInToken(
+                                        inv.getArgument(0),
+                                        inv.getArgument(1),
+                                        UUID.randomUUID().toString()));
     }
 
     @Test

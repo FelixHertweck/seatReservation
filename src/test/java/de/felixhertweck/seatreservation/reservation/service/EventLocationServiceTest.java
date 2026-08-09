@@ -31,12 +31,19 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
-import de.felixhertweck.seatreservation.model.entity.*;
+import de.felixhertweck.seatreservation.model.entity.CheckInToken;
+import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.EventLocation;
+import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
+import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
+import de.felixhertweck.seatreservation.model.entity.Reservation;
+import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
+import de.felixhertweck.seatreservation.model.entity.Seat;
+import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.reservation.dto.UserEventLocationResponseDTO;
-import de.felixhertweck.seatreservation.utils.CodeGenerator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -101,7 +108,7 @@ class EventLocationServiceTest {
                         seat,
                         Instant.now(),
                         ReservationStatus.RESERVED,
-                        CodeGenerator.generateRandomCode());
+                        new CheckInToken(user, eventB, "CODE123"));
 
         when(userRepository.findByUsername("testuser")).thenReturn(user);
         when(eventUserAllowanceRepository.findByUserWithEventAndLocation(user))
@@ -133,7 +140,7 @@ class EventLocationServiceTest {
                         seat,
                         Instant.now(),
                         ReservationStatus.RESERVED,
-                        CodeGenerator.generateRandomCode());
+                        new CheckInToken(user, eventA, "CODE123"));
 
         when(userRepository.findByUsername("testuser")).thenReturn(user);
         when(eventUserAllowanceRepository.findByUserWithEventAndLocation(user))
@@ -202,7 +209,7 @@ class EventLocationServiceTest {
                         seat,
                         Instant.now(),
                         ReservationStatus.RESERVED,
-                        CodeGenerator.generateRandomCode());
+                        new CheckInToken(user, eventB, "CODE123"));
 
         when(userRepository.findByUsername("testuser")).thenReturn(user);
         when(eventUserAllowanceRepository.findByUserWithEventAndLocation(user))
@@ -248,7 +255,7 @@ class EventLocationServiceTest {
                         seatB,
                         Instant.now(),
                         ReservationStatus.RESERVED,
-                        CodeGenerator.generateRandomCode());
+                        new CheckInToken(user, eventB, "CODE123"));
 
         when(userRepository.findByUsername("testuser")).thenReturn(user);
         when(eventUserAllowanceRepository.findByUserWithEventAndLocation(user))
@@ -281,7 +288,7 @@ class EventLocationServiceTest {
                         seatB,
                         Instant.now(),
                         ReservationStatus.RESERVED,
-                        CodeGenerator.generateRandomCode());
+                        new CheckInToken(user, eventB, "CODE123"));
 
         when(userRepository.findByUsername("testuser")).thenReturn(user);
         when(eventUserAllowanceRepository.findByUserWithEventAndLocation(user))
@@ -320,7 +327,7 @@ class EventLocationServiceTest {
                         seatC,
                         Instant.now(),
                         ReservationStatus.RESERVED,
-                        CodeGenerator.generateRandomCode());
+                        new CheckInToken(user, eventC, "CODE123"));
 
         when(userRepository.findByUsername("testuser")).thenReturn(user);
         when(eventUserAllowanceRepository.findByUserWithEventAndLocation(user))

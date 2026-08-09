@@ -29,6 +29,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
+import de.felixhertweck.seatreservation.model.repository.CheckInTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationEntranceRepository;
@@ -63,6 +64,8 @@ public class EventLocationResourceTest {
 
     @Inject UserRepository userRepository;
 
+    @Inject CheckInTokenRepository checkInTokenRepository;
+
     @Inject EmailSeatMapTokenRepository emailSeatMapTokenRepository;
 
     private EventLocation testLocation;
@@ -73,6 +76,7 @@ public class EventLocationResourceTest {
     void setUp() {
         // Clean up any leftover data from previous tests
         emailSeatMapTokenRepository.deleteAll();
+        checkInTokenRepository.deleteAll();
         seatRepository.deleteAll();
         eventRepository.deleteAll();
         eventLocationAreaRepository.deleteAll();
@@ -94,6 +98,7 @@ public class EventLocationResourceTest {
     @SuppressWarnings("unused")
     void tearDown() {
         emailSeatMapTokenRepository.deleteAll();
+        checkInTokenRepository.deleteAll();
         seatRepository.deleteAll();
         eventRepository.deleteAll();
         eventLocationAreaRepository.deleteAll();

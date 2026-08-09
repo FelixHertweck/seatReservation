@@ -277,7 +277,7 @@ export const BoxOfficeSeatDTOSchema = {
         seatNumber: {
             type: 'string'
         },
-        checkInCode: {
+        checkInToken: {
             type: 'string'
         },
         liveStatus: {
@@ -299,11 +299,8 @@ export const CheckInInfoRequestDTOSchema = {
         eventId: {
             $ref: '#/components/schemas/UUID'
         },
-        checkInTokens: {
-            type: 'array',
-            items: {
-                type: 'string'
-            }
+        checkInToken: {
+            type: 'string'
         }
     }
 } as const;
@@ -1546,7 +1543,7 @@ export const UserReservationResponseDTOSchema = {
         reservationDateTime: {
             $ref: '#/components/schemas/Instant'
         },
-        checkInCode: {
+        checkInToken: {
             type: 'string'
         }
     }

@@ -33,7 +33,7 @@ public record UserReservationResponseDTO(
         UUID eventId,
         SeatDTO seat,
         Instant reservationDateTime,
-        String checkInCode) {
+        String checkInToken) {
     public UserReservationResponseDTO(Reservation reservation) {
         this(
                 reservation.id,
@@ -41,6 +41,8 @@ public record UserReservationResponseDTO(
                 reservation.getEvent().id,
                 new SeatDTO(reservation.getSeat()),
                 reservation.getReservationDate(),
-                reservation.getCheckInCode());
+                reservation.getCheckInToken() != null
+                        ? reservation.getCheckInToken().getToken()
+                        : null);
     }
 }

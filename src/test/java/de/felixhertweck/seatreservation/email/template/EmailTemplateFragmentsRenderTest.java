@@ -116,6 +116,32 @@ class EmailTemplateFragmentsRenderTest {
     }
 
     @Test
+    void reservationUpdateConfirmation_whenNoActiveSeats_omitsQrCodeSeatmapAndEntranceInfo() {
+        String html =
+                reservationUpdateConfirmation
+                        .data("userName", "jane")
+                        .data("fullName", "Jane Doe")
+                        .data("eventName", "Concert")
+                        .data("eventLocation", "Main Hall")
+                        .data("eventStartTime", "2026-07-10 20:00")
+                        .data("eventEndTime", "2026-07-10 23:00")
+                        .data("deletedSeats", List.of(new SeatView("A1", "1", "Parkett")))
+                        .data("hasActiveSeats", false)
+                        .data("activeSeats", List.of())
+                        .data("entranceInfo", "")
+                        .data("eventLink", "https://example.com/e")
+                        .data("seatmapLink", "")
+                        .data("currentYear", "2026")
+                        .render();
+
+        assertFalse(html.contains("Your Check-in QR Code"));
+        assertFalse(html.contains("Entrance Information"));
+        assertFalse(html.contains("<div class=\"seatmap-container\">"));
+        assertFalse(html.contains("cid:seatmap-image"));
+        assertTrue(html.contains("<li>A1 (1) - Parkett</li>"));
+    }
+
+    @Test
     void eventReminder_rendersIncludedFragments() {
         String html =
                 eventReminder

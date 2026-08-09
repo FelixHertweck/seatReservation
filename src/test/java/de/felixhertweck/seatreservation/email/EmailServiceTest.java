@@ -48,6 +48,7 @@ import com.google.zxing.WriterException;
 import de.felixhertweck.seatreservation.email.queue.EmailDispatcher;
 import de.felixhertweck.seatreservation.email.service.EmailSeatMapService;
 import de.felixhertweck.seatreservation.email.service.EmailService;
+import de.felixhertweck.seatreservation.model.entity.CheckInToken;
 import de.felixhertweck.seatreservation.model.entity.EmailVerification;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
@@ -132,6 +133,7 @@ class EmailServiceTest {
         reservation.setUser(user);
         reservation.setEvent(event);
         reservation.setSeat(seat);
+        reservation.setCheckInToken(new CheckInToken(user, event, "CODE123"));
         return reservation;
     }
 
@@ -331,7 +333,7 @@ class EmailServiceTest {
         Seat seat = createTestSeat(location, "A1");
         seat.setSeatRow("1");
         Reservation reservation = createTestReservation(boxofficeUser, event, seat);
-        reservation.setCheckInCode("CODE123");
+        reservation.setCheckInToken(new CheckInToken(boxofficeUser, event, "CODE123"));
         List<Reservation> reservations = Collections.singletonList(reservation);
 
         when(seatRepository.findByIdsWithAreaAndEntrance(any())).thenReturn(List.of(seat));
@@ -444,5 +446,73 @@ class EmailServiceTest {
         assertTrue(
                 sentMail.getAttachments().isEmpty(),
                 "Mail should have no attachments when QR code generation fails");
+    }
+
+    @Test
+    void sendUpdateReservationConfirmation_AllSeatsDeleted_OmitsQrCodeAndSeatmap()
+            throws IOException {
+        User user = createTestUser();
+        EventLocation location = createTestEventLocation();
+        Event event = createTestEvent(location);
+        Seat seat = createTestSeat(location, "A1");
+        seat.setSeatRow("1");
+        Reservation deletedRes = createTestReservation(user, event, seat);
+
+        when(seatRepository.findByIdsWithAreaAndEntrance(any())).thenReturn(List.of(seat));
+
+        emailService.sendUpdateReservationConfirmation(user, List.of(deletedRes), List.of());
+        emailDispatcher.drainQueue();
+
+        List<Mail> sentMails = mailbox.getMailsSentTo(user.getEmail());
+        assertEquals(1, sentMails.size());
+
+        Mail sentMail = sentMails.getFirst();
+        assertEquals("Your Reservation Update", sentMail.getSubject());
+        assertTrue(sentMail.getHtml().contains("You have deleted the following seats:"));
+        assertFalse(
+                sentMail.getHtml().contains("Your Check-in QR Code"),
+                "QR code block should be omitted when all reservations are deleted");
+        assertFalse(
+                sentMail.getHtml().contains("cid:seatmap-image"),
+                "Seatmap image should be omitted when all reservations are deleted");
+        assertTrue(
+                sentMail.getAttachments().isEmpty(),
+                "Attachments list should be empty when no active seats remain");
+    }
+
+    @Test
+    void sendUpdateReservationConfirmation_WithActiveSeats_IncludesQrCodeAndSeatmap()
+            throws IOException {
+        User user = createTestUser();
+        EventLocation location = createTestEventLocation();
+        Event event = createTestEvent(location);
+        Seat seat1 = createTestSeat(location, "A1");
+        seat1.setSeatRow("1");
+        Seat seat2 = createTestSeat(location, "A2");
+        seat2.id = id(1001);
+        seat2.setSeatRow("1");
+        Reservation deletedRes = createTestReservation(user, event, seat1);
+        Reservation activeRes = createTestReservation(user, event, seat2);
+        activeRes.setCheckInToken(new CheckInToken(user, event, "ACTIVE_TOKEN"));
+
+        when(seatRepository.findByIdsWithAreaAndEntrance(any())).thenReturn(List.of(seat1, seat2));
+        when(emailSeatMapService.createEmailSeatMapToken(any(), any(), any()))
+                .thenReturn("test-update-token");
+        when(emailSeatMapService.getPngImage(anyString()))
+                .thenReturn(Optional.of(new byte[] {1, 2, 3}));
+
+        emailService.sendUpdateReservationConfirmation(
+                user, List.of(deletedRes), List.of(activeRes));
+        emailDispatcher.drainQueue();
+
+        List<Mail> sentMails = mailbox.getMailsSentTo(user.getEmail());
+        assertEquals(1, sentMails.size());
+
+        Mail sentMail = sentMails.getFirst();
+        assertEquals("Your Reservation Update", sentMail.getSubject());
+        assertTrue(sentMail.getHtml().contains("You have deleted the following seats:"));
+        assertTrue(sentMail.getHtml().contains("You have still reserved the following seats:"));
+        assertTrue(sentMail.getHtml().contains("Your Check-in QR Code"));
+        assertEquals(2, sentMail.getAttachments().size(), "Should attach seatmap and qrcode PNGs");
     }
 }

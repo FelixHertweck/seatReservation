@@ -29,6 +29,7 @@ import static org.hamcrest.Matchers.hasSize;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.Seat;
+import de.felixhertweck.seatreservation.model.repository.CheckInTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationEntranceRepository;
@@ -58,6 +59,8 @@ class EventLocationResourceTest {
     @Inject SeatRepository seatRepository;
 
     @Inject ReservationRepository reservationRepository;
+
+    @Inject CheckInTokenRepository checkInTokenRepository;
 
     @Inject EmailSeatMapTokenRepository emailSeatMapTokenRepository;
 
@@ -184,6 +187,10 @@ class EventLocationResourceTest {
         var event = eventRepository.findAll().firstResult();
         var seat = new Seat("S1", "Row 1", location);
         seatRepository.persist(seat);
+        var token =
+                new de.felixhertweck.seatreservation.model.entity.CheckInToken(
+                        user, event, CodeGenerator.generateRandomCode());
+        checkInTokenRepository.persist(token);
         var reservation =
                 new Reservation(
                         user,
@@ -191,7 +198,7 @@ class EventLocationResourceTest {
                         seat,
                         java.time.Instant.now(),
                         ReservationStatus.RESERVED,
-                        CodeGenerator.generateRandomCode());
+                        token);
         reservationRepository.persist(reservation);
     }
 }

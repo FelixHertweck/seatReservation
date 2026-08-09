@@ -75,11 +75,10 @@ public class CheckInResource {
     @APIResponse(responseCode = "404", description = "Token not found")
     @Consumes(MediaType.APPLICATION_JSON)
     public CheckInInfoResponseDTO getCheckInInfo(@Valid CheckInInfoRequestDTO requestDTO) {
-        int tokenCount = requestDTO.checkInTokens != null ? requestDTO.checkInTokens.size() : 0;
         LOG.debug(
                 String.format(
-                        "Received check-in info request for user %s and event %s with %d tokens.",
-                        requestDTO.userId, requestDTO.eventId, tokenCount));
+                        "Received check-in info request for user %s and event %s with token %s.",
+                        requestDTO.userId, requestDTO.eventId, requestDTO.checkInToken));
 
         AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         CheckInInfoResponseDTO responseDto =
@@ -87,7 +86,7 @@ public class CheckInResource {
                         currentUser,
                         requestDTO.userId,
                         requestDTO.eventId,
-                        requestDTO.checkInTokens);
+                        requestDTO.checkInToken);
 
         LOG.debug(
                 String.format(

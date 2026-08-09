@@ -25,6 +25,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -42,6 +43,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import de.felixhertweck.seatreservation.model.entity.CheckInToken;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
@@ -50,6 +52,8 @@ import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.CheckInTokenRepository;
+import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.supervisor.dto.CheckInInfoResponseDTO;
@@ -71,7 +75,8 @@ class CheckInServiceTest {
     @Inject CheckInService checkInService;
 
     @InjectMock ReservationRepository reservationRepository;
-    @InjectMock de.felixhertweck.seatreservation.model.repository.EventRepository eventRepository;
+    @InjectMock CheckInTokenRepository checkInTokenRepository;
+    @InjectMock EventRepository eventRepository;
     @InjectMock UserRepository userRepository;
 
     @BeforeEach
@@ -317,20 +322,19 @@ class CheckInServiceTest {
                 () -> checkInService.processCheckIn(requestDTO, auth(user)));
     }
 
-    // Tests for getReservationInfos(userId, eventId, tokens) method
-
     @Test
     void testGetReservationInfos_successfulCheckIn()
             throws UserMismatchException, EventMismatchException, CheckInTokenNotFoundException {
         UUID userId = id(1);
         UUID eventId = id(10);
-        String token1 = "token1";
-        String token2 = "token2";
+        String tokenStr = "token1";
 
         User user = new User();
         user.id = userId;
         Event event = new Event();
         event.id = eventId;
+
+        CheckInToken token = new CheckInToken(user, event, tokenStr);
 
         EventLocation location = new EventLocation();
         location.id = id(1);
@@ -339,33 +343,33 @@ class CheckInServiceTest {
         seat.id = id(1);
 
         Reservation reservation1 = new Reservation();
-        reservation1.setCheckInCode(token1);
+        reservation1.setCheckInToken(token);
         reservation1.setUser(user);
         reservation1.setEvent(event);
         reservation1.setSeat(seat);
         reservation1.setStatus(ReservationStatus.RESERVED);
 
         Reservation reservation2 = new Reservation();
-        reservation2.setCheckInCode(token2);
+        reservation2.setCheckInToken(token);
         reservation2.setUser(user);
         reservation2.setEvent(event);
         reservation2.setSeat(seat);
         reservation2.setStatus(ReservationStatus.RESERVED);
 
-        when(reservationRepository.findByCheckInCodeIn(Arrays.asList(token1, token2)))
+        when(checkInTokenRepository.findByToken(tokenStr)).thenReturn(Optional.of(token));
+        when(reservationRepository.findByCheckInToken(token))
                 .thenReturn(Arrays.asList(reservation1, reservation2));
         when(userRepository.findById(userId)).thenReturn(user);
 
         CheckInInfoResponseDTO result =
-                checkInService.getReservationInfos(
-                        auth(user), userId, eventId, Arrays.asList(token1, token2));
+                checkInService.getReservationInfos(auth(user), userId, eventId, tokenStr);
 
         assertNotNull(result);
         assertEquals(2, result.reservations().size());
     }
 
     @Test
-    void testGetReservationInfos_emptyTokenList()
+    void testGetReservationInfos_emptyToken()
             throws UserMismatchException, EventMismatchException, CheckInTokenNotFoundException {
         UUID userId = id(1);
         UUID eventId = id(10);
@@ -374,8 +378,7 @@ class CheckInServiceTest {
         when(userRepository.findById(userId)).thenReturn(user);
 
         CheckInInfoResponseDTO result =
-                checkInService.getReservationInfos(
-                        auth(user), userId, eventId, Collections.emptyList());
+                checkInService.getReservationInfos(auth(user), userId, eventId, "");
 
         assertNotNull(result);
         assertEquals(0, result.reservations().size());
@@ -428,7 +431,7 @@ class CheckInServiceTest {
     void testGetReservationInfos_userMismatchException() {
         UUID userId = id(1);
         UUID eventId = id(10);
-        String token1 = "token1";
+        String tokenStr = "token1";
 
         User otherUser = new User();
         otherUser.id = id(2);
@@ -436,114 +439,45 @@ class CheckInServiceTest {
         user.id = userId;
         Event event = new Event();
         event.id = eventId;
-        Reservation reservation1 = new Reservation();
-        reservation1.setCheckInCode(token1);
-        reservation1.setUser(otherUser);
-        reservation1.setEvent(event);
-        reservation1.setStatus(ReservationStatus.RESERVED);
+        CheckInToken token = new CheckInToken(otherUser, event, tokenStr);
 
-        when(reservationRepository.findByCheckInCodeIn(Collections.singletonList(token1)))
-                .thenReturn(Collections.singletonList(reservation1));
+        when(checkInTokenRepository.findByToken(tokenStr)).thenReturn(Optional.of(token));
 
         assertThrows(
                 UserMismatchException.class,
-                () ->
-                        checkInService.getReservationInfos(
-                                auth(user), userId, eventId, Collections.singletonList(token1)));
+                () -> checkInService.getReservationInfos(auth(user), userId, eventId, tokenStr));
     }
 
     @Test
     void testGetReservationInfos_eventMismatchException() {
         UUID userId = id(1);
         UUID eventId = id(10);
-        String token1 = "token1";
+        String tokenStr = "token1";
 
         User user = new User();
         user.id = userId;
         Event otherEvent = new Event();
         otherEvent.id = id(11);
+        CheckInToken token = new CheckInToken(user, otherEvent, tokenStr);
 
-        EventLocation location = new EventLocation();
-        location.id = id(1);
-
-        Seat seat = new Seat("", "", location);
-        seat.id = id(1);
-
-        Reservation reservation1 = new Reservation();
-        reservation1.setCheckInCode(token1);
-        reservation1.setUser(user);
-        reservation1.setEvent(otherEvent);
-        reservation1.setSeat(seat);
-        reservation1.setStatus(ReservationStatus.RESERVED);
-
-        when(reservationRepository.findByCheckInCodeIn(Collections.singletonList(token1)))
-                .thenReturn(Collections.singletonList(reservation1));
+        when(checkInTokenRepository.findByToken(tokenStr)).thenReturn(Optional.of(token));
 
         assertThrows(
                 EventMismatchException.class,
-                () ->
-                        checkInService.getReservationInfos(
-                                userId, eventId, Collections.singletonList(token1)));
+                () -> checkInService.getReservationInfos(userId, eventId, tokenStr));
     }
 
     @Test
     void testGetReservationInfos_tokenNotFound() {
         UUID userId = id(1);
         UUID eventId = id(10);
-        String token1 = "token1";
+        String tokenStr = "token1";
 
-        when(reservationRepository.findByCheckInCodeIn(Collections.singletonList(token1)))
-                .thenReturn(Collections.emptyList());
+        when(checkInTokenRepository.findByToken(tokenStr)).thenReturn(Optional.empty());
 
         assertThrows(
                 CheckInTokenNotFoundException.class,
-                () ->
-                        checkInService.getReservationInfos(
-                                userId, eventId, Collections.singletonList(token1)));
-    }
-
-    @Test
-    void testGetReservationInfos_multipleTokens()
-            throws UserMismatchException, EventMismatchException, CheckInTokenNotFoundException {
-        UUID userId = id(1);
-        UUID eventId = id(10);
-        String token1 = "token1";
-        String token2 = "token2";
-
-        User user = new User();
-        user.id = userId;
-        Event event = new Event();
-        event.id = eventId;
-
-        EventLocation location = new EventLocation();
-        location.id = id(1);
-
-        Seat seat = new Seat("", "", location);
-        seat.id = id(1);
-
-        Reservation reservation1 = new Reservation();
-        reservation1.setCheckInCode(token1);
-        reservation1.setUser(user);
-        reservation1.setEvent(event);
-        reservation1.setSeat(seat);
-        reservation1.setStatus(ReservationStatus.RESERVED);
-
-        Reservation reservation2 = new Reservation();
-        reservation2.setCheckInCode(token2);
-        reservation2.setUser(user);
-        reservation2.setEvent(event);
-        reservation2.setSeat(seat);
-        reservation2.setStatus(ReservationStatus.RESERVED);
-
-        when(reservationRepository.findByCheckInCodeIn(Arrays.asList(token1, token2)))
-                .thenReturn(Arrays.asList(reservation1, reservation2));
-        when(userRepository.findById(userId)).thenReturn(user);
-
-        CheckInInfoResponseDTO result =
-                checkInService.getReservationInfos(userId, eventId, Arrays.asList(token1, token2));
-
-        assertNotNull(result);
-        assertEquals(2, result.reservations().size());
+                () -> checkInService.getReservationInfos(userId, eventId, tokenStr));
     }
 
     @Test

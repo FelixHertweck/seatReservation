@@ -36,6 +36,7 @@ import jakarta.transaction.Transactional;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.email.service.EmailService;
+import de.felixhertweck.seatreservation.model.entity.CheckInToken;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
@@ -53,7 +54,6 @@ import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableEx
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatBlockedException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatPendingException;
-import de.felixhertweck.seatreservation.utils.CodeGenerator;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
@@ -68,6 +68,7 @@ public class ReservationService {
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
     @Inject EmailService emailService;
     @Inject SeatCartService seatCartService;
+    @Inject CheckInTokenService checkInTokenService;
 
     /**
      * Retrieves all reservations for the currently authenticated user.
@@ -265,6 +266,7 @@ public class ReservationService {
             }
         }
 
+        CheckInToken checkInToken = checkInTokenService.getOrCreateForUser(currentUser, event);
         List<Reservation> newReservations = new ArrayList<>();
         for (Seat seat : seats) {
             if (reservedSeatIds.contains(seat.id)) {
@@ -280,7 +282,6 @@ public class ReservationService {
                 throw new SeatPendingException(
                         "One or more seats are currently being selected by another user");
             }
-            String checkInCode = CodeGenerator.generateRandomCode();
             newReservations.add(
                     new Reservation(
                             currentUser,
@@ -288,7 +289,7 @@ public class ReservationService {
                             seat,
                             reservationTime,
                             ReservationStatus.RESERVED,
-                            checkInCode));
+                            checkInToken));
             LOG.debugf("Prepared new reservation for seat ID: %s.", seat.id);
         }
 

@@ -37,6 +37,7 @@ import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.CheckInTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationEntranceRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
@@ -66,6 +67,8 @@ public class ReservationResourceTest {
     @Inject SeatRepository seatRepository;
     @Inject UserRepository userRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
+
+    @Inject CheckInTokenRepository checkInTokenRepository;
 
     private Reservation testReservation;
     private Event testEvent;
@@ -115,6 +118,7 @@ public class ReservationResourceTest {
     @SuppressWarnings("unused")
     void tearDown() {
         reservationRepository.deleteAll();
+        checkInTokenRepository.deleteAll();
         eventUserAllowanceRepository.deleteAll();
         seatRepository.deleteAll();
         eventRepository.deleteAll();
