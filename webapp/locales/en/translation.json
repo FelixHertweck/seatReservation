@@ -474,6 +474,8 @@
   "checkin": {
     "title": "Check-In",
     "description": "Process event check-ins via QR code scanning or user selection.",
+    "deadlineNotPassed": "Check-in is only available once this event's booking deadline has passed.",
+    "deadlineNotPassedAvailableFrom": "Available from {{date}} {{time}}.",
     "success": {
       "title": "Check-In Successful",
       "description": "The check-in has been processed successfully."
@@ -569,6 +571,8 @@
   "liveview": {
     "title": "Live View",
     "description": "Monitor check-in in real-time",
+    "deadlineNotPassed": "Live view is only available once this event's booking deadline has passed.",
+    "deadlineNotPassedAvailableFrom": "Available from {{date}} {{time}}.",
     "eventSelector": {
       "label": "Select Event",
       "placeholder": "Choose an event...",
@@ -998,6 +1002,7 @@
     "userManagement": "User Management",
     "admin": "Admin",
     "supervisor": "Supervisor",
+    "supervision": "Supervision",
     "liveview": "Liveview",
     "checkin": "Check-In",
     "boxOffice": "Box Office",
@@ -1520,6 +1525,26 @@
       "deleteError": "Failed to delete allowance(s)."
     }
   },
+  "supervisor": {
+    "nav": {
+      "label": "Supervisor sections",
+      "overview": "Overview",
+      "checkin": "Check-In",
+      "liveview": "Liveview",
+      "boxOffice": "Box Office"
+    },
+    "overview": {
+      "title": "Supervisor Dashboard",
+      "description": "Check in attendees, monitor the live seat map, and sell walk-in tickets.",
+      "stats": {
+        "reservations": "Reservations",
+        "checkedIn": "Checked in",
+        "checkedInSub": "of {{total}} reservations",
+        "boxOfficeGuests": "Box office guests",
+        "boxOfficeGuestsSub": "Walk-in guest sales, excludes known-user sales"
+      }
+    }
+  },
   "boxOffice": {
     "title": "Box Office",
     "pageDescription": "Sell or reserve seats in person after online booking has closed.",
@@ -1529,6 +1554,7 @@
     },
     "selectEventPrompt": "Select an event at the top of the page.",
     "deadlineNotPassed": "Box office is only available once this event's booking deadline has passed.",
+    "deadlineNotPassedAvailableFrom": "Available from {{date}} {{time}}.",
     "newReservation": "New reservation",
     "description": "Select seats on the map, then choose who they're for.",
     "modeUser": "Existing user",

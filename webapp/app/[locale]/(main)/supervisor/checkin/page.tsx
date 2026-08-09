@@ -1,17 +1,29 @@
 "use client";
 
-import { Suspense, useState, useRef, useCallback } from "react";
+import {
+  Suspense,
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+  useCallback,
+} from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useT } from "@/lib/i18n/hooks";
+import { formatDateTime } from "@/lib/utils";
 import { useCheckin } from "@/hooks/use-checkin";
+import { useSupervisorEvent } from "@/hooks/use-supervisor-event";
 import type { CheckInInfoRequestDto, CheckInInfoResponseDto } from "@/api";
 import {
   QrCodeScanner,
   type ScannedData,
 } from "@/components/checkin/qr-code-scanner";
-import { ReservationSelector } from "@/components/checkin/reservation-selector";
+import {
+  ReservationSelector,
+  type ReservationAction,
+} from "@/components/checkin/reservation-selector";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ArrowUp, ChevronUp, Loader2 } from "lucide-react";
+import { ArrowUp, ChevronUp, Clock, Loader2 } from "lucide-react";
 import {
   Tabs,
   TabsContent,
@@ -28,15 +40,13 @@ function CheckInPageContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { selectedEventId, selectEvent } = useSupervisorEvent();
   const [isScanning, setIsScanning] = useState(false);
   const [scannedData, setScannedData] = useState<ScannedData | null>(null);
-  const [selectedReservations, setSelectedReservations] = useState<Set<string>>(
-    new Set(),
-  );
+  const [reservationActions, setReservationActions] = useState<
+    Record<string, ReservationAction>
+  >({});
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(() =>
-    searchParams.get("eventId"),
-  );
   const [activeTab, setActiveTab] = useState<string>(
     () => searchParams.get("tab") || "qr-code-scanner",
   );
@@ -62,6 +72,34 @@ function CheckInPageContent() {
 
     fetchCheckInInfoByUsername,
   } = useCheckin();
+
+  // Read via an effect rather than at render time (Date.now() is impure) -- refreshed
+  // periodically so an event crossing its booking deadline while this page stays open
+  // becomes available without a manual reload.
+  const [now, setNow] = useState<number | null>(null);
+  useEffect(() => {
+    // Ticking clock synced from an external source (the system clock), so the
+    // initial read + periodic refresh both belong here rather than in render.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setNow(Date.now());
+    const interval = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const availableEvents = useMemo(() => {
+    if (now === null) return [];
+    return (events ?? []).filter(
+      (e) => !!e.bookingDeadline && new Date(e.bookingDeadline).getTime() < now,
+    );
+  }, [events, now]);
+  const selectedEvent = useMemo(
+    () => (events ?? []).find((e) => e.id === selectedEventId),
+    [events, selectedEventId],
+  );
+  const isDeadlinePassed = useMemo(() => {
+    if (now === null || !selectedEvent?.bookingDeadline) return false;
+    return new Date(selectedEvent.bookingDeadline).getTime() < now;
+  }, [selectedEvent, now]);
 
   const handleScan = useCallback(
     (data: ScannedData) => {
@@ -98,9 +136,10 @@ function CheckInPageContent() {
 
     checkInInfo.reservations.forEach((reservation) => {
       if (reservation.id) {
-        if (selectedReservations.has(reservation.id)) {
+        const action = reservationActions[reservation.id];
+        if (action === "CHECK_IN") {
           checkIn.push(reservation.id);
-        } else {
+        } else if (action === "CANCEL") {
           cancel.push(reservation.id);
         }
       }
@@ -113,7 +152,7 @@ function CheckInPageContent() {
     setCheckInInfo(null);
     setScannedData(null);
     setResetUsernameSelector((prev) => !prev);
-    setSelectedReservations(new Set());
+    setReservationActions({});
     lastScannedDataRef.current = null;
     setIsScanning(true); // Restart scanning after submission
   };
@@ -124,7 +163,7 @@ function CheckInPageContent() {
     setScannedData(null);
     setCheckInInfo(null);
     setResetUsernameSelector((prev) => !prev);
-    setSelectedReservations(new Set());
+    setReservationActions({});
     lastScannedDataRef.current = null;
     setIsScanning(true); // Restart scanning after clearing data
   };
@@ -138,17 +177,13 @@ function CheckInPageContent() {
   };
 
   const handleEventSelect = (eventId: string) => {
-    setSelectedEventId(eventId);
+    selectEvent(eventId);
     setCheckInInfo(null);
     setScannedData(null);
     setResetUsernameSelector((prev) => !prev);
-    setSelectedReservations(new Set());
+    setReservationActions({});
     lastScannedDataRef.current = null;
     setIsScanning(true);
-
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("eventId", eventId);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   const handleTabChange = (value: string) => {
@@ -167,7 +202,7 @@ function CheckInPageContent() {
         description={t("checkin.description")}
         search={
           <EventSelector
-            events={events}
+            events={availableEvents}
             isLoadingEvents={isLoadingEvents}
             selectedEventId={selectedEventId}
             onEventSelect={handleEventSelect}
@@ -192,6 +227,21 @@ function CheckInPageContent() {
             <span>{t("checkin.reservations.loading")}</span>
           </div>
         </div>
+      ) : !isDeadlinePassed ? (
+        <Card>
+          <CardContent className="flex flex-col items-center gap-2 py-12 text-center text-muted-foreground">
+            <Clock className="h-5 w-5" />
+            <span>{t("checkin.deadlineNotPassed")}</span>
+            {(() => {
+              const formatted = formatDateTime(selectedEvent?.bookingDeadline);
+              return formatted ? (
+                <span className="text-sm">
+                  {t("checkin.deadlineNotPassedAvailableFrom", formatted)}
+                </span>
+              ) : null;
+            })()}
+          </CardContent>
+        </Card>
       ) : (
         <div
           className={`grid gap-6 ${isMobile ? "grid-cols-1" : "md:grid-cols-2"}`}
@@ -241,8 +291,8 @@ function CheckInPageContent() {
             isMobile={isMobile}
             isDrawerOpen={isDrawerOpen}
             setIsDrawerOpen={setIsDrawerOpen}
-            selectedReservations={selectedReservations}
-            setSelectedReservations={setSelectedReservations}
+            reservationActions={reservationActions}
+            setReservationActions={setReservationActions}
             onSubmit={handleSubmit}
             onClear={handleClear}
           />
