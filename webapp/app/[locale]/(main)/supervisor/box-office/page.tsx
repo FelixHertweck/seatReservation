@@ -189,8 +189,6 @@ function BoxOfficePageContent() {
             isLoadingEvents={isLoadingEvents}
             selectedEventId={selectedEventId}
             onEventSelect={handleEventSelect}
-            placeholderKey="boxOffice.eventSelector.placeholder"
-            noEventsKey="boxOffice.eventSelector.noEvents"
           />
         }
       />

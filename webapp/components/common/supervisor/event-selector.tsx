@@ -29,8 +29,8 @@ export default function EventSelector({
   isLoadingEvents,
   selectedEventId,
   onEventSelect,
-  placeholderKey = "liveview.eventSelector.placeholder",
-  noEventsKey = "eventsPage.noEventsAvailable",
+  placeholderKey = "common.eventSelector.placeholder",
+  noEventsKey = "common.eventSelector.noEvents",
 }: Props) {
   const t = useT();
 
@@ -42,20 +42,28 @@ export default function EventSelector({
     );
   }
 
+  // Surfaced directly in the (always-visible) trigger rather than only inside
+  // the disabled dropdown item, so the header itself explains why there's
+  // nothing to pick instead of implying a choice that doesn't exist yet.
+  const hasNoEvents = !events || events.length === 0;
+
   return (
     <Select
       value={selectedEventId?.toString() || ""}
       onValueChange={onEventSelect}
+      disabled={hasNoEvents}
     >
       <SelectTrigger
         className={
-          selectedEventId
+          selectedEventId || hasNoEvents
             ? "gap-2"
             : "gap-2 border-primary/60 ring-2 ring-primary/20 data-[placeholder]:text-foreground data-[placeholder]:font-medium"
         }
       >
         <CalendarDays className="h-4 w-4 shrink-0 opacity-70" />
-        <SelectValue placeholder={t(placeholderKey)} />
+        <SelectValue
+          placeholder={hasNoEvents ? t(noEventsKey) : t(placeholderKey)}
+        />
       </SelectTrigger>
       <SelectContent>
         {events && events.length > 0 ? (

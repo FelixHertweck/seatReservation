@@ -212,7 +212,7 @@ export function QrCodeScanner({
           )}
 
           {isCameraActive && !isScanning && scannedData && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-white text-lg font-semibold">
+            <div className="absolute top-0 inset-x-0 bg-black/70 text-white text-sm sm:text-base font-semibold text-center py-2 px-3">
               {t("checkin.qrScanner.reservationsOpen")}
             </div>
           )}

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   BookmarkCheck,
@@ -18,6 +19,7 @@ import { StatCard } from "@/components/management/dashboard/stat-card";
 import { Skeleton } from "@/components/custom-ui/skeleton";
 import EventSelector from "@/components/common/supervisor/event-selector";
 import { useLiveView } from "@/hooks/use-liveview";
+import { useCheckin } from "@/hooks/use-checkin";
 import { useSupervisorEvent } from "@/hooks/use-supervisor-event";
 import { ReservationLiveStatus } from "@/api";
 
@@ -55,8 +57,40 @@ function ToolCard({
 export default function SupervisorOverviewPage() {
   const t = useT();
   const { selectedEventId, selectEvent } = useSupervisorEvent();
-  const { events, isLoadingEvents, isInitialLoading, reservations } =
-    useLiveView(selectedEventId, !!selectedEventId);
+  const { events, isLoadingEvents } = useCheckin();
+
+  // Read via an effect rather than at render time (Date.now() is impure) -- refreshed
+  // periodically so an event crossing its booking deadline while this page stays open
+  // becomes available without a manual reload.
+  const [now, setNow] = useState<number | null>(null);
+  useEffect(() => {
+    // Ticking clock synced from an external source (the system clock), so the
+    // initial read + periodic refresh both belong here rather than in render.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setNow(Date.now());
+    const interval = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const availableEvents = useMemo(() => {
+    if (now === null) return [];
+    return (events ?? []).filter(
+      (e) => !!e.bookingDeadline && new Date(e.bookingDeadline).getTime() < now,
+    );
+  }, [events, now]);
+  const selectedEvent = useMemo(
+    () => (events ?? []).find((e) => e.id === selectedEventId),
+    [events, selectedEventId],
+  );
+  const isDeadlinePassed = useMemo(() => {
+    if (now === null || !selectedEvent?.bookingDeadline) return false;
+    return new Date(selectedEvent.bookingDeadline).getTime() < now;
+  }, [selectedEvent, now]);
+
+  const { isInitialLoading, reservations } = useLiveView(
+    selectedEventId,
+    !!selectedEventId && isDeadlinePassed,
+  );
 
   const totalReservations = reservations.length;
   const checkedInCount = reservations.filter(
@@ -71,12 +105,10 @@ export default function SupervisorOverviewPage() {
         description={t("supervisor.overview.description")}
         search={
           <EventSelector
-            events={events}
+            events={availableEvents}
             isLoadingEvents={isLoadingEvents}
             selectedEventId={selectedEventId}
             onEventSelect={selectEvent}
-            placeholderKey="liveview.eventSelector.placeholder"
-            noEventsKey="liveview.eventSelector.noEvents"
           />
         }
       />

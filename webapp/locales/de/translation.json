@@ -974,6 +974,10 @@
     "back": "Zurück",
     "loading": "Wird geladen...",
     "moreActions": "Weitere Aktionen",
+    "eventSelector": {
+      "placeholder": "Wähle ein Event...",
+      "noEvents": "Keine Veranstaltungen verfügbar"
+    },
     "error": {
       "default": "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
       "forbidden": "Sie haben keine Berechtigung für diese Aktion."
@@ -1021,9 +1025,7 @@
     },
     "eventSelector": {
       "label": "Event auswählen",
-      "placeholder": "Wähle ein Event...",
       "loading": "Events werden geladen...",
-      "noEvents": "Keine Veranstaltungen verfügbar",
       "selectFirst": "Wähle oben im Header ein Event aus, um mit dem Check-In fortzufahren."
     },
     "qrScanner": {
@@ -1083,9 +1085,7 @@
     "deadlineNotPassedAvailableFrom": "Verfügbar ab {{date}} {{time}} Uhr.",
     "eventSelector": {
       "label": "Event auswählen",
-      "placeholder": "Wähle ein Event...",
       "loading": "Events werden geladen...",
-      "noEvents": "Keine Veranstaltungen verfügbar",
       "selectFirst": "Wähle oben im Header ein Event aus"
     },
     "status": {
@@ -1553,10 +1553,6 @@
   "boxOffice": {
     "title": "Abendkasse",
     "pageDescription": "Plätze persönlich verkaufen oder reservieren, nachdem die Online-Buchung geschlossen wurde.",
-    "eventSelector": {
-      "placeholder": "Veranstaltung wählen...",
-      "noEvents": "Noch keine Veranstaltung für die Abendkasse verfügbar"
-    },
     "selectEventPrompt": "Wähle oben auf der Seite eine Veranstaltung aus.",
     "deadlineNotPassed": "Die Abendkasse ist erst verfügbar, sobald die Buchungsfrist dieser Veranstaltung abgelaufen ist.",
     "deadlineNotPassedAvailableFrom": "Verfügbar ab {{date}} {{time}} Uhr.",
