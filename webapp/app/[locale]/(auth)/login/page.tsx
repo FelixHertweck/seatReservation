@@ -219,14 +219,14 @@ export default function LoginPage() {
   if (isLoggedIn && !currentlyLoggingIn && !twoFactorChallenge) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center bg-background">
-        <Card className="w-full max-w-md mx-4">
-          <CardHeader className="space-y-1">
+        <Card className="w-full max-w-md mx-4 rounded-none border-0 bg-transparent shadow-none md:rounded-lg md:border md:bg-card md:shadow-sm">
+          <CardHeader className="space-y-1 p-0 pb-4 md:p-6">
             <CardTitle className="text-2xl font-bold">
               {t("login.welcomeBack")}
             </CardTitle>
             <CardDescription>{t("login.alreadyLoggedIn")}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 p-0 md:p-6 md:pt-0">
             <Button onClick={handleContinue} className="w-full">
               {t("login.continueWithUser", { username: user?.username })}
             </Button>
@@ -247,8 +247,8 @@ export default function LoginPage() {
   if (twoFactorChallenge) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center bg-background">
-        <Card className="w-full max-w-md mx-4">
-          <CardHeader className="space-y-1">
+        <Card className="w-full max-w-md mx-4 rounded-none border-0 bg-transparent shadow-none md:rounded-lg md:border md:bg-card md:shadow-sm">
+          <CardHeader className="space-y-1 p-0 pb-4 md:p-6">
             <div className="flex items-center gap-2">
               <ShieldCheck className="h-6 w-6 text-primary" />
               <CardTitle className="text-xl font-bold">
@@ -256,7 +256,7 @@ export default function LoginPage() {
               </CardTitle>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0 md:p-6 md:pt-0">
             <form onSubmit={handleVerify2Fa} className="space-y-4">
               <TwoFactorCodeInput
                 id="2fa-code"
@@ -303,14 +303,14 @@ export default function LoginPage() {
   // Standard Login Form UI
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-background">
-      <Card className="w-full max-w-md mx-4">
-        <CardHeader className="space-y-1">
+      <Card className="w-full max-w-md mx-4 rounded-none border-0 bg-transparent shadow-none md:rounded-lg md:border md:bg-card md:shadow-sm">
+        <CardHeader className="space-y-1 p-0 pb-4 md:p-6">
           <CardTitle className="text-2xl font-bold">
             {t("login.signIn")}
           </CardTitle>
           <CardDescription>{t("login.enterCredentials")}</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0 md:p-6 md:pt-0">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -375,16 +375,7 @@ export default function LoginPage() {
           </form>
           {isPasskeySupported && (
             <>
-              <div className="relative my-4">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">
-                    {t("login.or")}
-                  </span>
-                </div>
-              </div>
+              <div className="my-4 border-t" />
               <Button
                 type="button"
                 variant="outline"

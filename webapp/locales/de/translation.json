@@ -139,7 +139,6 @@
       "accountLocked": "Konto gesperrt bis {{time}} ({{duration}})",
       "tooManyAttemptsDescription": "Zu viele fehlgeschlagene Anmeldeversuche. Ihr Konto wurde vorübergehend gesperrt."
     },
-    "or": "oder",
     "forgotPassword": "Passwort vergessen?",
     "forgotUsername": "Benutzername vergessen?"
   },

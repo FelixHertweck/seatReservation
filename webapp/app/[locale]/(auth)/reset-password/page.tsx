@@ -72,13 +72,13 @@ export default function ResetPasswordPage() {
   if (!token) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center bg-background px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1">
+        <Card className="w-full max-w-md rounded-none border-0 bg-transparent shadow-none md:rounded-lg md:border md:bg-card md:shadow-sm">
+          <CardHeader className="space-y-1 p-0 pb-4 md:p-6">
             <CardTitle className="text-2xl font-bold">
               {t("resetPassword.title")}
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0 md:p-6 md:pt-0">
             <Alert
               variant="destructive"
               className="mb-4 border-destructive bg-destructive text-destructive-foreground"
@@ -100,14 +100,14 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
+      <Card className="w-full max-w-md rounded-none border-0 bg-transparent shadow-none md:rounded-lg md:border md:bg-card md:shadow-sm">
+        <CardHeader className="space-y-1 p-0 pb-4 md:p-6">
           <CardTitle className="text-2xl font-bold">
             {t("resetPassword.title")}
           </CardTitle>
           <CardDescription>{t("resetPassword.description")}</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0 md:p-6 md:pt-0">
           {isSuccess ? (
             <div className="space-y-4">
               <Alert>

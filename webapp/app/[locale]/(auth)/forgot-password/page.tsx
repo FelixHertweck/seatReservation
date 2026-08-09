@@ -44,14 +44,14 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
+      <Card className="w-full max-w-md rounded-none border-0 bg-transparent shadow-none md:rounded-lg md:border md:bg-card md:shadow-sm">
+        <CardHeader className="space-y-1 p-0 pb-4 md:p-6">
           <CardTitle className="text-2xl font-bold">
             {t("forgotPassword.title")}
           </CardTitle>
           <CardDescription>{t("forgotPassword.description")}</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0 md:p-6 md:pt-0">
           {isSuccess ? (
             <Alert className="mb-4 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
               <AlertDescription>

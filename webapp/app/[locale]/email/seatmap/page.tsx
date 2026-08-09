@@ -221,8 +221,8 @@ export default function EmailSeatmapPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <Card className="w-full max-w-md mx-4">
-          <CardContent className="pt-6">
+        <Card className="w-full max-w-md mx-4 rounded-none border-0 bg-transparent shadow-none md:rounded-lg md:border md:bg-card md:shadow-sm">
+          <CardContent className="p-0 md:p-6">
             <div className="flex flex-col items-center gap-4">
               <Loader2 className="h-12 w-12 animate-spin text-primary" />
               <p className="text-lg font-medium">
@@ -241,13 +241,13 @@ export default function EmailSeatmapPage() {
   if (error || !svgContent) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader>
+        <Card className="w-full max-w-md rounded-none border-0 bg-transparent shadow-none md:rounded-lg md:border md:bg-card md:shadow-sm">
+          <CardHeader className="p-0 pb-4 md:p-6">
             <CardTitle className="text-destructive">
               {t("emailSeatmap.error.title")}
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0 md:p-6 md:pt-0">
             <p className="text-muted-foreground mb-4">
               {error || t("emailSeatmap.error.failedToLoad")}
             </p>
