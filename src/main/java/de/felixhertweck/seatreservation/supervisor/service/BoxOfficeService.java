@@ -55,7 +55,7 @@ import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeGuestReservationRequestDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeReservationRequestDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeReservationResponseDTO;
-import de.felixhertweck.seatreservation.supervisor.exception.BoxOfficeNotAvailableException;
+import de.felixhertweck.seatreservation.supervisor.exception.BookingDeadlineNotPassedException;
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.CodeGenerator;
@@ -308,7 +308,7 @@ public class BoxOfficeService {
     private void assertBookingDeadlinePassed(Event event) {
         Instant deadline = event.getBookingDeadline();
         if (deadline == null || !Instant.now().isAfter(deadline)) {
-            throw new BoxOfficeNotAvailableException(
+            throw new BookingDeadlineNotPassedException(
                     "Box office reservations are only available after the event's booking"
                             + " deadline has passed.");
         }

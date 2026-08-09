@@ -34,12 +34,15 @@ import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationLiveStatus;
+import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.BoxOfficeGuestInfoRepository;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
+import de.felixhertweck.seatreservation.supervisor.exception.BookingDeadlineNotPassedException;
 import de.felixhertweck.seatreservation.supervisor.exception.InvalidEventIdException;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.websockets.next.WebSocketConnection;
@@ -159,6 +162,55 @@ public class LiveViewServiceTest {
         assertThrows(
                 InvalidEventIdException.class,
                 () -> webSocketService.registerConnection(nullEventIdStr, mockConnection));
+    }
+
+    @Test
+    void
+            testRegisterConnection_Authenticated_BeforeDeadline_ThrowsBookingDeadlineNotPassedException() {
+        UUID testEventId = id(400);
+        WebSocketConnection mockConnection = Mockito.mock(WebSocketConnection.class);
+        AuthenticatedUser supervisor =
+                new AuthenticatedUser(id(1), java.util.Set.of(Roles.SUPERVISOR));
+
+        Event mockEvent = new Event();
+        mockEvent.id = testEventId;
+        mockEvent.setBookingDeadline(java.time.Instant.now().plusSeconds(3600));
+
+        Mockito.when(eventRepository.isUserSupervisor(testEventId, supervisor.id()))
+                .thenReturn(true);
+        Mockito.when(eventRepository.findById(testEventId)).thenReturn(mockEvent);
+
+        assertThrows(
+                BookingDeadlineNotPassedException.class,
+                () ->
+                        webSocketService.registerConnection(
+                                testEventId.toString(), mockConnection, supervisor));
+    }
+
+    @Test
+    void testRegisterConnection_Authenticated_AfterDeadline_Success() {
+        UUID testEventId = id(401);
+        WebSocketConnection mockConnection = Mockito.mock(WebSocketConnection.class);
+        AuthenticatedUser supervisor =
+                new AuthenticatedUser(id(1), java.util.Set.of(Roles.SUPERVISOR));
+
+        Event mockEvent = new Event();
+        mockEvent.id = testEventId;
+        mockEvent.setBookingDeadline(java.time.Instant.now().minusSeconds(3600));
+        EventLocation mockLocation = new EventLocation();
+        mockLocation.id = id(1);
+        mockEvent.setEventLocation(mockLocation);
+
+        Mockito.when(eventRepository.isUserSupervisor(testEventId, supervisor.id()))
+                .thenReturn(true);
+        Mockito.when(eventRepository.findById(testEventId)).thenReturn(mockEvent);
+        Mockito.when(reservationRepository.findByEventIdWithUserAndSeat(testEventId))
+                .thenReturn(new java.util.ArrayList<>());
+
+        assertDoesNotThrow(
+                () ->
+                        webSocketService.registerConnection(
+                                testEventId.toString(), mockConnection, supervisor));
     }
 
     @Test

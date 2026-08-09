@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.supervisor.service;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +45,7 @@ import de.felixhertweck.seatreservation.supervisor.dto.SupervisorReservationResp
 import de.felixhertweck.seatreservation.supervisor.dto.WebsocketInitialDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.WebsocketNewReservationDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.WebsocketUpdateDTO;
+import de.felixhertweck.seatreservation.supervisor.exception.BookingDeadlineNotPassedException;
 import de.felixhertweck.seatreservation.supervisor.exception.InvalidEventIdException;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import io.quarkus.arc.Lock;
@@ -105,6 +107,7 @@ public class LiveViewService {
         if (!isAuthorizedForEvent(currentUser, eventId)) {
             throw new SecurityException("User is not authorized to access event " + eventId);
         }
+        assertBookingDeadlinePassed(eventRepository.findById(eventId));
         registerConnection(eventId, connection);
     }
 
@@ -166,7 +169,7 @@ public class LiveViewService {
         LOG.debugf("Registering WebSocket connection for event %s", eventId);
 
         eventSubscriptions.computeIfAbsent(eventId, k -> new ArrayList<>()).add(connection);
-        LOG.infof(
+        LOG.debugf(
                 "Connection registered for event %s. Total connections: %d",
                 eventId, eventSubscriptions.get(eventId).size());
 
@@ -187,7 +190,7 @@ public class LiveViewService {
         List<WebSocketConnection> connections = eventSubscriptions.get(eventId);
         if (connections != null) {
             connections.remove(connection);
-            LOG.infof(
+            LOG.debugf(
                     "Connection unregistered for event %s. Remaining connections: %d",
                     eventId, connections.size());
 
@@ -197,6 +200,16 @@ public class LiveViewService {
                 LOG.debugf(
                         "No more connections for event %s, removing subscription entry.", eventId);
             }
+        }
+    }
+
+    /** Mirrors BoxOfficeService/CheckInService's private assertBookingDeadlinePassed check. */
+    private void assertBookingDeadlinePassed(Event event) {
+        Instant deadline = event != null ? event.getBookingDeadline() : null;
+        if (deadline == null || !Instant.now().isAfter(deadline)) {
+            throw new BookingDeadlineNotPassedException(
+                    "Live view is only available after the event's booking deadline has"
+                            + " passed.");
         }
     }
 

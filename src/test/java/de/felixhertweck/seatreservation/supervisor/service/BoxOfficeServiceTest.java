@@ -65,7 +65,7 @@ import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeGuestReservationRequestDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeReservationRequestDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeReservationResponseDTO;
-import de.felixhertweck.seatreservation.supervisor.exception.BoxOfficeNotAvailableException;
+import de.felixhertweck.seatreservation.supervisor.exception.BookingDeadlineNotPassedException;
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
@@ -170,11 +170,11 @@ class BoxOfficeServiceTest {
     // -- known user path --
 
     @Test
-    void reserveForKnownUser_beforeDeadline_throwsBoxOfficeNotAvailableException() {
+    void reserveForKnownUser_beforeDeadline_throwsBookingDeadlineNotPassedException() {
         pastDeadlineEvent.setBookingDeadline(Instant.now().plusSeconds(3600));
 
         assertThrows(
-                BoxOfficeNotAvailableException.class,
+                BookingDeadlineNotPassedException.class,
                 () ->
                         boxOfficeService.reserveForKnownUser(
                                 knownUserRequest(false), supervisorAuth()));
@@ -182,11 +182,11 @@ class BoxOfficeServiceTest {
     }
 
     @Test
-    void reserveForKnownUser_nullDeadline_throwsBoxOfficeNotAvailableException() {
+    void reserveForKnownUser_nullDeadline_throwsBookingDeadlineNotPassedException() {
         pastDeadlineEvent.setBookingDeadline(null);
 
         assertThrows(
-                BoxOfficeNotAvailableException.class,
+                BookingDeadlineNotPassedException.class,
                 () ->
                         boxOfficeService.reserveForKnownUser(
                                 knownUserRequest(false), supervisorAuth()));

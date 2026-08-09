@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.supervisor.service;
 
 import static de.felixhertweck.seatreservation.testutil.TestIds.id;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -53,6 +54,7 @@ import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.supervisor.dto.CheckInInfoResponseDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.CheckInProcessRequestDTO;
+import de.felixhertweck.seatreservation.supervisor.exception.BookingDeadlineNotPassedException;
 import de.felixhertweck.seatreservation.supervisor.exception.CheckInException;
 import de.felixhertweck.seatreservation.supervisor.exception.CheckInTokenNotFoundException;
 import de.felixhertweck.seatreservation.supervisor.exception.EventMismatchException;
@@ -76,6 +78,11 @@ class CheckInServiceTest {
     void setup() {
         // Authorize the test user (id 1) for any event in these tests
         when(eventRepository.isUserSupervisor(any(UUID.class), eq(id(1)))).thenReturn(true);
+        // Default event used by loadEvent()/assertBookingDeadlinePassed(): deadline already
+        // passed, so existing process-check-in tests keep working without per-test stubbing.
+        Event defaultEvent = new Event();
+        defaultEvent.setBookingDeadline(Instant.now().minusSeconds(3600));
+        when(eventRepository.findById(any(UUID.class))).thenReturn(defaultEvent);
     }
 
     private static AuthenticatedUser auth(User user) {
@@ -265,6 +272,49 @@ class CheckInServiceTest {
         checkInService.processCheckIn(requestDTO, auth(user));
 
         verify(reservationRepository, never()).persist(any(Reservation.class));
+    }
+
+    @Test
+    void testProcessCheckInByIds_beforeDeadline_throwsBookingDeadlineNotPassedException() {
+        UUID userId = id(1);
+        UUID eventId = id(10);
+        User user = new User();
+        user.id = userId;
+
+        Event event = new Event();
+        event.id = eventId;
+        event.setBookingDeadline(Instant.now().plusSeconds(3600));
+        when(eventRepository.findById(eventId)).thenReturn(event);
+
+        CheckInProcessRequestDTO requestDTO =
+                new CheckInProcessRequestDTO(
+                        eventId, userId, Collections.singletonList(id(1)), Collections.emptyList());
+
+        assertThrows(
+                BookingDeadlineNotPassedException.class,
+                () -> checkInService.processCheckIn(requestDTO, auth(user)));
+        verify(reservationRepository, never()).persistAll(anyList());
+    }
+
+    @Test
+    void testProcessCheckInByIds_nullDeadline_throwsBookingDeadlineNotPassedException() {
+        UUID userId = id(1);
+        UUID eventId = id(10);
+        User user = new User();
+        user.id = userId;
+
+        Event event = new Event();
+        event.id = eventId;
+        event.setBookingDeadline(null);
+        when(eventRepository.findById(eventId)).thenReturn(event);
+
+        CheckInProcessRequestDTO requestDTO =
+                new CheckInProcessRequestDTO(
+                        eventId, userId, Collections.singletonList(id(1)), Collections.emptyList());
+
+        assertThrows(
+                BookingDeadlineNotPassedException.class,
+                () -> checkInService.processCheckIn(requestDTO, auth(user)));
     }
 
     // Tests for getReservationInfos(userId, eventId, tokens) method
