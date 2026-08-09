@@ -21,6 +21,7 @@ package de.felixhertweck.seatreservation.supervisor.resource;
 
 import static de.felixhertweck.seatreservation.testutil.TestIds.id;
 
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -106,6 +107,8 @@ class CheckInResourceTest {
         Event event10 = new Event();
         event10.id = id(10);
         event10.setManager(managerUser);
+        // Check-in is gated behind the booking deadline having passed.
+        event10.setBookingDeadline(Instant.now().minusSeconds(3600));
 
         Event event20 = new Event();
         event20.id = id(20);

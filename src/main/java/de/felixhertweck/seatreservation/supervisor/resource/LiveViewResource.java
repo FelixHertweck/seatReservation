@@ -59,7 +59,7 @@ public class LiveViewResource {
 
         webSocketService.registerConnection(eventIdStr, connection, currentUser);
 
-        LOG.infof("WebSocket connection successfully registered for event %s", eventIdStr);
+        LOG.debugf("WebSocket connection successfully registered for event %s", eventIdStr);
     }
 
     /**
@@ -71,12 +71,12 @@ public class LiveViewResource {
     @OnClose
     public void onClose(WebSocketConnection connection, @PathParam("eventId") String eventIdStr) {
         AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
-        LOG.infof(
+        LOG.debugf(
                 "WebSocket connection closed for event %s by user ID: %s",
                 eventIdStr, currentUser.id());
 
         webSocketService.unregisterConnection(eventIdStr, connection, currentUser);
 
-        LOG.infof("WebSocket connection unregistered for event %s", eventIdStr);
+        LOG.debugf("WebSocket connection unregistered for event %s", eventIdStr);
     }
 }

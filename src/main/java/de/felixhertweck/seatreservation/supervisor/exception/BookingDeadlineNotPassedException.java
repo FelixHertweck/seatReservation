@@ -19,9 +19,12 @@
  */
 package de.felixhertweck.seatreservation.supervisor.exception;
 
-/** Thrown when a box office reservation is attempted before an event's booking deadline. */
-public class BoxOfficeNotAvailableException extends RuntimeException {
-    public BoxOfficeNotAvailableException(String message) {
+/**
+ * Thrown when a supervisor feature (box office, check-in, live view) is used before an event's
+ * booking deadline has passed.
+ */
+public class BookingDeadlineNotPassedException extends RuntimeException {
+    public BookingDeadlineNotPassedException(String message) {
         super(message);
     }
 }

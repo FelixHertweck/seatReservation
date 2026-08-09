@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.supervisor.service;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +34,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
+import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
@@ -46,6 +48,7 @@ import de.felixhertweck.seatreservation.supervisor.dto.CheckInInfoResponseDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.CheckInProcessRequestDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.SupervisorEventResponseDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.SupervisorReservationResponseDTO;
+import de.felixhertweck.seatreservation.supervisor.exception.BookingDeadlineNotPassedException;
 import de.felixhertweck.seatreservation.supervisor.exception.CheckInException;
 import de.felixhertweck.seatreservation.supervisor.exception.CheckInTokenNotFoundException;
 import de.felixhertweck.seatreservation.supervisor.exception.EventMismatchException;
@@ -89,6 +92,7 @@ public class CheckInService {
         if (currentUser != null && !isAuthorizedForEvent(currentUser, eventId)) {
             throw new SecurityException("User is not authorized to access event " + eventId);
         }
+        assertBookingDeadlinePassed(loadEvent(eventId));
         List<SupervisorReservationResponseDTO> processedReservations = new ArrayList<>();
         User user = userRepository.findById(userId);
 
@@ -147,6 +151,7 @@ public class CheckInService {
         if (currentUser != null && !isAuthorizedForEvent(currentUser, eventId)) {
             throw new SecurityException("User is not authorized to access event " + eventId);
         }
+        assertBookingDeadlinePassed(loadEvent(eventId));
         UUID userId = requestDTO.userId;
         List<UUID> checkInIds = requestDTO.checkIn;
         List<UUID> cancelIds = requestDTO.cancel;
@@ -365,6 +370,23 @@ public class CheckInService {
         if (reservation.getStatus() == ReservationStatus.BLOCKED) {
             throw new IllegalStateException(
                     String.format("Reservation %s is blocked.", reservation.getCheckInCode()));
+        }
+    }
+
+    private Event loadEvent(UUID eventId) {
+        Event event = eventRepository.findById(eventId);
+        if (event == null) {
+            throw new EventNotFoundException("Event with id " + eventId + " not found");
+        }
+        return event;
+    }
+
+    /** Mirrors BoxOfficeService/LiveViewService's private assertBookingDeadlinePassed check. */
+    private void assertBookingDeadlinePassed(Event event) {
+        Instant deadline = event.getBookingDeadline();
+        if (deadline == null || !Instant.now().isAfter(deadline)) {
+            throw new BookingDeadlineNotPassedException(
+                    "Check-in is only available after the event's booking deadline has passed.");
         }
     }
 

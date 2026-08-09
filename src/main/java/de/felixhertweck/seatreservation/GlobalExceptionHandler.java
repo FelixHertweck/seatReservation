@@ -60,7 +60,7 @@ import de.felixhertweck.seatreservation.security.exceptions.PasswordResetTokenEx
 import de.felixhertweck.seatreservation.security.exceptions.PasswordResetTokenNotFoundException;
 import de.felixhertweck.seatreservation.security.exceptions.TwoFactorAlreadyEnabledException;
 import de.felixhertweck.seatreservation.security.service.TokenService;
-import de.felixhertweck.seatreservation.supervisor.exception.BoxOfficeNotAvailableException;
+import de.felixhertweck.seatreservation.supervisor.exception.BookingDeadlineNotPassedException;
 import de.felixhertweck.seatreservation.supervisor.exception.CheckInException;
 import de.felixhertweck.seatreservation.supervisor.exception.CheckInTokenNotFoundException;
 import de.felixhertweck.seatreservation.userManagment.exceptions.VerificationCodeNotFoundException;
@@ -110,7 +110,7 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
             case SeatCartAccessNotGrantedException ignored -> status = Response.Status.FORBIDDEN;
             case CheckInTokenNotFoundException ignored -> status = Response.Status.NOT_FOUND;
             case CheckInException ignored -> status = Response.Status.BAD_REQUEST;
-            case BoxOfficeNotAvailableException ignored -> status = Response.Status.BAD_REQUEST;
+            case BookingDeadlineNotPassedException ignored -> status = Response.Status.BAD_REQUEST;
             case JwtInvalidException ignored -> {
                 NewCookie jwtAccessCookie = tokenService.createNewNullCookie("jwt", true);
                 NewCookie refreshTokenCookie =
