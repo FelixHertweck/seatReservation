@@ -976,7 +976,8 @@
     "loading": "Wird geladen...",
     "moreActions": "Weitere Aktionen",
     "error": {
-      "default": "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
+      "default": "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+      "forbidden": "Sie haben keine Berechtigung für diese Aktion."
     }
   },
   "checkin": {

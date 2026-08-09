@@ -1,8 +1,14 @@
 "use client";
 
 import type React from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  QueryCache,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
+import { toast } from "sonner";
 import { client } from "@/api/client.gen";
+import { useT } from "@/lib/i18n/hooks";
 import { useLoginRequiredPopup } from "@/hooks/use-login-popup";
 import { getRefreshTokenExpiration } from "@/lib/refreshTokenExpirationCookie";
 
@@ -39,6 +45,7 @@ export default function InitQueryClient({
 }: {
   children: React.ReactNode;
 }) {
+  const t = useT();
   const { triggerLoginRequired, setIsOpen, isOpen } = useLoginRequiredPopup();
 
   const scheduleTriggerLoginRequired = () => {
@@ -100,6 +107,23 @@ export default function InitQueryClient({
   });
 
   const queryClient = new QueryClient({
+    queryCache: new QueryCache({
+      onError: (error) => {
+        const status = (error as ErrorWithResponse)?.response?.status;
+        // 401s are handled by the login-required popup above, not a toast.
+        if (status === 401) return;
+        const description = (error as ErrorWithResponse)?.response?.description;
+        const message =
+          description ||
+          (status === 403
+            ? t("common.error.forbidden")
+            : t("common.error.default"));
+        // Same id for identical status+message so simultaneous queries that
+        // fail the same way (e.g. several parallel requests all getting a
+        // 403) collapse into a single toast instead of stacking.
+        toast.error(message, { id: `query-error-${status}-${message}` });
+      },
+    }),
     defaultOptions: {
       queries: {
         staleTime: 60000,

@@ -38,7 +38,7 @@ export function LoginRequiredPopup() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent
-        className="sm:max-w-xl"
+        className="sm:max-w-md"
         noX={true}
         onInteractOutside={(e) => e.preventDefault()}
       >
