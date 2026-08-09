@@ -36,9 +36,18 @@ export function QRCodeModal({
   const t = useT();
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>("");
 
+  const firstReservation = reservations[0];
+  const hasCheckInToken = !!firstReservation?.checkInToken;
+
   // Generate QR code data when modal opens
   useEffect(() => {
-    if (!isOpen || !reservations || reservations.length === 0 || !userId) {
+    if (
+      !isOpen ||
+      !reservations ||
+      reservations.length === 0 ||
+      !userId ||
+      !hasCheckInToken
+    ) {
       return;
     }
 
@@ -70,7 +79,7 @@ export function QRCodeModal({
     };
 
     generateQRCode();
-  }, [isOpen, reservations, userId, t]);
+  }, [isOpen, reservations, userId, hasCheckInToken, t]);
 
   const handleDownloadQRCode = () => {
     if (!qrCodeDataUrl) return;
@@ -97,7 +106,13 @@ export function QRCodeModal({
         </DialogHeader>
 
         <div className="flex flex-col items-center justify-center gap-6 py-6">
-          {qrCodeDataUrl ? (
+          {!hasCheckInToken ? (
+            <div className="flex items-center justify-center w-full h-32">
+              <p className="text-sm text-muted-foreground">
+                {t("qrCodeModal.noCheckInCode")}
+              </p>
+            </div>
+          ) : qrCodeDataUrl ? (
             <div className="flex flex-col items-center gap-4">
               <Image
                 src={qrCodeDataUrl}

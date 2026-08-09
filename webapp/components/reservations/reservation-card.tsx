@@ -104,15 +104,17 @@ export function ReservationCard({
             <Pencil className="mr-2 h-4 w-4" />
             {t("reservationCard.manageSeatsButton")}
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setQrCodeModalOpen(true)}
-            className="flex-1 hover:scale-[1.02] transition-all duration-300 active:scale-[0.98]"
-          >
-            <QrCode className="mr-2 h-4 w-4" />
-            {t("reservationCard.showQRCodeButton")}
-          </Button>
+          {firstReservation.checkInToken && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setQrCodeModalOpen(true)}
+              className="flex-1 hover:scale-[1.02] transition-all duration-300 active:scale-[0.98]"
+            >
+              <QrCode className="mr-2 h-4 w-4" />
+              {t("reservationCard.showQRCodeButton")}
+            </Button>
+          )}
           {viewEventHref && (
             <Button
               variant="outline"

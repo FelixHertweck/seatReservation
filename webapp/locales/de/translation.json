@@ -566,7 +566,8 @@
     "codeReady": "Der Reservierungscode wurde kopiert",
     "downloadButton": "QR-Code herunterladen",
     "downloadStarted": "Download gestartet",
-    "qrCodeDownloading": "Der QR-Code wird heruntergeladen"
+    "qrCodeDownloading": "Der QR-Code wird heruntergeladen",
+    "noCheckInCode": "Für diese Reservierung ist kein Check-in-Code verfügbar"
   },
   "seatMapModal": {
     "yourReservedSeatsTitle": "Ihre reservierten Plätze",
