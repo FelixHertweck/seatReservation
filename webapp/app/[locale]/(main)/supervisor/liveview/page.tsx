@@ -121,8 +121,6 @@ function LiveViewPageContent() {
             isLoadingEvents={isLoadingEvents}
             selectedEventId={selectedEventId}
             onEventSelect={handleEventSelect}
-            placeholderKey="liveview.eventSelector.placeholder"
-            noEventsKey="liveview.eventSelector.noEvents"
           />
         }
       />

@@ -470,6 +470,10 @@
     "back": "Back",
     "loading": "Loading...",
     "moreActions": "More actions",
+    "eventSelector": {
+      "placeholder": "Choose an event...",
+      "noEvents": "No events available"
+    },
     "error": {
       "default": "An error occurred. Please try again.",
       "forbidden": "You don't have permission to do that."
@@ -517,9 +521,7 @@
     },
     "eventSelector": {
       "label": "Select Event",
-      "placeholder": "Choose an event...",
       "loading": "Loading events...",
-      "noEvents": "No events available",
       "selectFirst": "Select an event at the top of the page to proceed with check-in."
     },
     "qrScanner": {
@@ -579,9 +581,7 @@
     "deadlineNotPassedAvailableFrom": "Available from {{date}} {{time}}.",
     "eventSelector": {
       "label": "Select Event",
-      "placeholder": "Choose an event...",
       "loading": "Loading events...",
-      "noEvents": "No events available",
       "selectFirst": "Select an event at the top of the page"
     },
     "status": {
@@ -1552,10 +1552,6 @@
   "boxOffice": {
     "title": "Box Office",
     "pageDescription": "Sell or reserve seats in person after online booking has closed.",
-    "eventSelector": {
-      "placeholder": "Choose an event...",
-      "noEvents": "No events available for box office yet"
-    },
     "selectEventPrompt": "Select an event at the top of the page.",
     "deadlineNotPassed": "Box office is only available once this event's booking deadline has passed.",
     "deadlineNotPassedAvailableFrom": "Available from {{date}} {{time}}.",

@@ -206,8 +206,6 @@ function CheckInPageContent() {
             isLoadingEvents={isLoadingEvents}
             selectedEventId={selectedEventId}
             onEventSelect={handleEventSelect}
-            placeholderKey="checkin.eventSelector.placeholder"
-            noEventsKey="checkin.eventSelector.noEvents"
           />
         }
       />
@@ -220,7 +218,7 @@ function CheckInPageContent() {
             {t("checkin.eventSelector.selectFirst")}
           </CardContent>
         </Card>
-      ) : isLoadingEvents || isLoadingInfo ? (
+      ) : isLoadingEvents ? (
         <div className="p-4 border rounded-lg bg-card flex items-center justify-center max-h-[70vh]">
           <div className="flex flex-col items-center gap-2 text-muted-foreground">
             <Loader2 className="h-8 w-8 animate-spin" />
