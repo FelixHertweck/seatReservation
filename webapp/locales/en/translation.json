@@ -472,7 +472,8 @@
     "loading": "Loading...",
     "moreActions": "More actions",
     "error": {
-      "default": "An error occurred. Please try again."
+      "default": "An error occurred. Please try again.",
+      "forbidden": "You don't have permission to do that."
     }
   },
   "checkin": {
