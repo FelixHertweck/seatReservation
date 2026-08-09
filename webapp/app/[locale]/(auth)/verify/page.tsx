@@ -117,8 +117,8 @@ export default function VerifyEmailPage() {
   if (isLoggedIn && !user?.email) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center bg-background">
-        <Card className="w-full max-w-md mx-4">
-          <CardHeader className="space-y-1">
+        <Card className="w-full max-w-md mx-4 rounded-none border-0 bg-transparent shadow-none md:rounded-lg md:border md:bg-card md:shadow-sm">
+          <CardHeader className="space-y-1 p-0 pb-4 md:p-6">
             <CardTitle className="text-2xl font-bold">
               {t("emailVerification.noEmailTitle")}
             </CardTitle>
@@ -126,7 +126,7 @@ export default function VerifyEmailPage() {
               {t("emailVerification.noEmailDescription")}
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 p-0 md:p-6 md:pt-0">
             <Button
               onClick={() => router.push(`/${locale}/profile`)}
               className="w-full"
@@ -143,8 +143,8 @@ export default function VerifyEmailPage() {
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-background">
-      <Card className="w-full max-w-md mx-4">
-        <CardHeader className="space-y-1">
+      <Card className="w-full max-w-md mx-4 rounded-none border-0 bg-transparent shadow-none md:rounded-lg md:border md:bg-card md:shadow-sm">
+        <CardHeader className="space-y-1 p-0 pb-4 md:p-6">
           <CardTitle className="text-2xl font-bold">
             {t("emailVerification.title")}
           </CardTitle>
@@ -155,7 +155,7 @@ export default function VerifyEmailPage() {
             )}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0 md:p-6 md:pt-0">
           {isLoggedIn && user?.emailVerified && (
             <div className="mb-4 text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md p-3">
               {t("emailVerification.alreadyVerified")}

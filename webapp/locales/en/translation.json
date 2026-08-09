@@ -139,7 +139,6 @@
       "accountLocked": "Account locked until {{time}} ({{duration}})",
       "tooManyAttemptsDescription": "Too many failed login attempts. Your account has been temporarily locked."
     },
-    "or": "or",
     "forgotPassword": "Forgot Password?",
     "forgotUsername": "Forgot Username?"
   },
