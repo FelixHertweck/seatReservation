@@ -69,18 +69,27 @@ public class EmailSeatMapService {
     @Transactional
     public String createEmailSeatMapToken(
             User user, Event event, List<Reservation> newReservations) {
-        // Generate secure unique token
-        String token =
-                Base64.getUrlEncoder()
-                        .withoutPadding()
-                        .encodeToString(SecurityUtils.generateRandomBytes(32));
-
         // Extract seat numbers from new reservations
         Set<String> newReservedSeatNumbers =
                 newReservations.stream()
                         .map(Reservation::getSeat)
                         .map(Seat::getSeatNumber)
                         .collect(java.util.stream.Collectors.toSet());
+
+        // Reuse an existing, still-valid token for the identical seat set instead of persisting a
+        // new one
+        Optional<EmailSeatMapToken> existing =
+                tokenRepository.findValidByUserEventAndSeats(user, event, newReservedSeatNumbers);
+        if (existing.isPresent()) {
+            LOG.debug("Reusing existing EmailSeatMapToken for identical seat set.");
+            return existing.get().getToken();
+        }
+
+        // Generate secure unique token
+        String token =
+                Base64.getUrlEncoder()
+                        .withoutPadding()
+                        .encodeToString(SecurityUtils.generateRandomBytes(32));
 
         // Calculate expiration time
         Instant now = Instant.now();

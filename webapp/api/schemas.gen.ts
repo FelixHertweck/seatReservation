@@ -920,6 +920,24 @@ export const RegistrationStatusDTOSchema = {
     }
 } as const;
 
+export const ReservationConfirmationEmailDTOSchema = {
+    description: 'DTO representing the confirmation email content for a reservation.',
+    type: 'object',
+    properties: {
+        subject: {
+            type: 'string',
+            description: 'The email subject',
+            examples: [
+                'Your reservation confirmation'
+            ]
+        },
+        htmlContent: {
+            type: 'string',
+            description: 'The rendered HTML content of the confirmation email'
+        }
+    }
+} as const;
+
 export const ReservationLiveStatusSchema = {
     type: 'string',
     enum: [

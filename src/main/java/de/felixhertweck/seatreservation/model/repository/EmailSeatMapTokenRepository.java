@@ -22,11 +22,13 @@ package de.felixhertweck.seatreservation.model.repository;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.model.entity.EmailSeatMapToken;
+import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.User;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import org.jboss.logging.Logger;
@@ -55,6 +57,24 @@ public class EmailSeatMapTokenRepository implements PanacheRepositoryBase<EmailS
             LOG.debug("No EmailSeatMapToken found for token.");
         }
         return result;
+    }
+
+    /**
+     * Finds an existing, unexpired token for the given user, event, and exact set of newly reserved
+     * seat numbers, if one exists. Used to avoid persisting a fresh token (and re-rendering the
+     * seat map) every time the same confirmation is previewed or resent.
+     *
+     * @param user the user the token was created for
+     * @param event the event the token was created for
+     * @param newReservedSeatNumbers the exact seat number set the token must match
+     * @return Optional containing a matching, still-valid token if found
+     */
+    public Optional<EmailSeatMapToken> findValidByUserEventAndSeats(
+            User user, Event event, Set<String> newReservedSeatNumbers) {
+        Instant now = Instant.now();
+        return list("user = ?1 and event = ?2 and expirationTime > ?3", user, event, now).stream()
+                .filter(t -> t.getNewReservedSeatNumbers().equals(newReservedSeatNumbers))
+                .findFirst();
     }
 
     /**

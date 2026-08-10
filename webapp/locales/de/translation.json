@@ -1509,7 +1509,16 @@
       "blockSeatButton": "Platz blockieren",
       "blockSeatsButton": "{{count}} Plätze blockieren",
       "blockingButton": "Blockiere...",
-      "blockValidationError": "Bitte wähle mindestens einen Platz aus."
+      "blockValidationError": "Bitte wähle mindestens einen Platz aus.",
+      "viewConfirmation": "Bestätigungs-E-Mail anzeigen",
+      "confirmationModalTitle": "Reservierungsbestätigung",
+      "confirmationModalDescription": "Reservierungsbestätigung für {{user}} anzeigen, ausdrucken oder erneut versenden.",
+      "printButton": "Drucken",
+      "resendEmailButton": "Erneut per E-Mail senden",
+      "resendSending": "Wird gesendet...",
+      "resendSuccess": "Reservierungsbestätigung wurde erneut per E-Mail gesendet.",
+      "resendError": "Fehler beim erneuten Senden der Reservierungsbestätigung.",
+      "loadError": "Bestätigungs-E-Mail konnte nicht geladen werden."
     },
     "allowances": {
       "title": "Kontingente",

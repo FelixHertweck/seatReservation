@@ -281,6 +281,20 @@ export type RegistrationStatusDto = {
     enabled?: boolean;
 };
 
+/**
+ * DTO representing the confirmation email content for a reservation.
+ */
+export type ReservationConfirmationEmailDto = {
+    /**
+     * The email subject
+     */
+    subject?: string;
+    /**
+     * The rendered HTML content of the confirmation email
+     */
+    htmlContent?: string;
+};
+
 export const ReservationLiveStatus = {
     CHECKED_IN: 'CHECKED_IN',
     CANCELLED: 'CANCELLED',
@@ -2319,6 +2333,40 @@ export type PostApiManagerReservationsBlockResponses = {
 
 export type PostApiManagerReservationsBlockResponse = PostApiManagerReservationsBlockResponses[keyof PostApiManagerReservationsBlockResponses];
 
+export type GetApiManagerReservationsConfirmationEmailByEventIdByUserIdData = {
+    body?: never;
+    path: {
+        eventId: Uuid;
+        userId: Uuid;
+    };
+    query?: never;
+    url: '/api/manager/reservations/confirmation-email/{eventId}/{userId}';
+};
+
+export type GetApiManagerReservationsConfirmationEmailByEventIdByUserIdErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
+     */
+    403: unknown;
+    /**
+     * Not Found: Event, user or reservations not found
+     */
+    404: unknown;
+};
+
+export type GetApiManagerReservationsConfirmationEmailByEventIdByUserIdResponses = {
+    /**
+     * OK
+     */
+    200: ReservationConfirmationEmailDto;
+};
+
+export type GetApiManagerReservationsConfirmationEmailByEventIdByUserIdResponse = GetApiManagerReservationsConfirmationEmailByEventIdByUserIdResponses[keyof GetApiManagerReservationsConfirmationEmailByEventIdByUserIdResponses];
+
 export type GetApiManagerReservationsEventByIdData = {
     body?: never;
     path: {
@@ -2423,6 +2471,38 @@ export type GetApiManagerReservationsExportByEventIdPdfResponses = {
 };
 
 export type GetApiManagerReservationsExportByEventIdPdfResponse = GetApiManagerReservationsExportByEventIdPdfResponses[keyof GetApiManagerReservationsExportByEventIdPdfResponses];
+
+export type PostApiManagerReservationsResendConfirmationByEventIdByUserIdData = {
+    body?: never;
+    path: {
+        eventId: Uuid;
+        userId: Uuid;
+    };
+    query?: never;
+    url: '/api/manager/reservations/resend-confirmation/{eventId}/{userId}';
+};
+
+export type PostApiManagerReservationsResendConfirmationByEventIdByUserIdErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
+     */
+    403: unknown;
+    /**
+     * Not Found: Event, user or reservations not found
+     */
+    404: unknown;
+};
+
+export type PostApiManagerReservationsResendConfirmationByEventIdByUserIdResponses = {
+    /**
+     * Confirmation email resent successfully
+     */
+    200: unknown;
+};
 
 export type GetApiManagerReservationsByIdData = {
     body?: never;

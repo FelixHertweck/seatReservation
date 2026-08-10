@@ -112,6 +112,18 @@ public class ReservationRepository implements PanacheRepositoryBase<Reservation,
     }
 
     /**
+     * Finds all reservations for a specific user and event with a given status.
+     *
+     * @param user the user to search for
+     * @param event the event to search for
+     * @param status the status to filter by
+     * @return a list of reservations for the specified user, event, and status
+     */
+    public List<Reservation> findByUserAndEvent(User user, Event event, ReservationStatus status) {
+        return find("user = ?1 and event = ?2 and status = ?3", user, event, status).list();
+    }
+
+    /**
      * Finds all reservations for a specific user and event, eagerly fetching each reservation's
      * seat.
      *

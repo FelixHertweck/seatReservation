@@ -39,6 +39,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import de.felixhertweck.seatreservation.management.dto.BlockSeatsRequestDTO;
+import de.felixhertweck.seatreservation.management.dto.ReservationConfirmationEmailDTO;
 import de.felixhertweck.seatreservation.management.dto.ReservationRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.ReservationResponseDTO;
 import de.felixhertweck.seatreservation.management.service.ReservationService;
@@ -279,5 +280,55 @@ public class ReservationResource {
                         "Content-Disposition",
                         "attachment; filename=\"reservations_event_" + eventId + ".pdf\"")
                 .build();
+    }
+
+    @GET
+    @Path("/confirmation-email/{eventId}/{userId}")
+    @RolesAllowed({Roles.MANAGER, Roles.ADMIN})
+    @APIResponse(
+            responseCode = "200",
+            description = "OK",
+            content =
+                    @Content(
+                            schema =
+                                    @Schema(
+                                            implementation =
+                                                    ReservationConfirmationEmailDTO.class)))
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(
+            responseCode = "404",
+            description = "Not Found: Event, user or reservations not found")
+    public ReservationConfirmationEmailDTO getConfirmationEmail(
+            @PathParam("eventId") UUID eventId, @PathParam("userId") UUID userId) {
+        LOG.debugf(
+                "Received GET request to /api/manager/reservations/confirmation-email/%s/%s",
+                eventId, userId);
+        User currentUser = userSecurityContext.getCurrentUser();
+        return reservationService.getConfirmationEmail(eventId, userId, currentUser);
+    }
+
+    @POST
+    @Path("/resend-confirmation/{eventId}/{userId}")
+    @RolesAllowed({Roles.MANAGER, Roles.ADMIN})
+    @APIResponse(responseCode = "200", description = "Confirmation email resent successfully")
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
+    @APIResponse(
+            responseCode = "404",
+            description = "Not Found: Event, user or reservations not found")
+    public Response resendConfirmationEmail(
+            @PathParam("eventId") UUID eventId, @PathParam("userId") UUID userId)
+            throws IOException {
+        LOG.debugf(
+                "Received POST request to /api/manager/reservations/resend-confirmation/%s/%s",
+                eventId, userId);
+        User currentUser = userSecurityContext.getCurrentUser();
+        reservationService.resendConfirmationEmail(eventId, userId, currentUser);
+        return Response.ok().build();
     }
 }

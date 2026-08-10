@@ -25,8 +25,10 @@ import {
   getApiManagerSeatsOptions,
   getApiManagerReservationsEventByIdOptions,
   getApiManagerReservationsEventByIdQueryKey,
+  getApiManagerReservationsConfirmationEmailByEventIdByUserIdOptions,
   postApiManagerReservationsMutation,
   postApiManagerReservationsBlockMutation,
+  postApiManagerReservationsResendConfirmationByEventIdByUserIdMutation,
   deleteApiManagerReservationsMutation,
 } from "@/api/@tanstack/react-query.gen";
 import type { ErrorWithResponse } from "@/components/init-query-client";
@@ -165,6 +167,16 @@ export function useManagementReservations(eventId: string | null) {
     return new Blob([response.data as File], { type: "application/pdf" });
   };
 
+  const resendConfirmationMutation = useMutation({
+    ...postApiManagerReservationsResendConfirmationByEventIdByUserIdMutation(),
+  });
+
+  const resendConfirmationEmail = async (evtId: string, usrId: string) => {
+    return resendConfirmationMutation.mutateAsync({
+      path: { eventId: evtId, userId: usrId },
+    });
+  };
+
   return {
     events: events ?? [],
     locations: locations ?? [],
@@ -179,5 +191,6 @@ export function useManagementReservations(eventId: string | null) {
     deleteReservations,
     exportCsv,
     exportPdf,
+    resendConfirmationEmail,
   };
 }
