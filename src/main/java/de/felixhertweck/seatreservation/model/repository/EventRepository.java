@@ -27,11 +27,22 @@ import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.User;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
 @ApplicationScoped
 public class EventRepository implements PanacheRepositoryBase<Event, UUID> {
+
+    /**
+     * Finds all events associated with a specific event location.
+     *
+     * @param location the event location
+     * @return a list of events taking place at the given location
+     */
+    public List<Event> findByEventLocation(EventLocation location) {
+        return list("event_location", location);
+    }
 
     /**
      * Finds events with start times between the specified start and end timestamps.

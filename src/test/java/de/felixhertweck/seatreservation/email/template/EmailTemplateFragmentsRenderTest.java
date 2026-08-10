@@ -201,4 +201,64 @@ class EmailTemplateFragmentsRenderTest {
         assertFalse(html.contains("{#include"), "an include tag was left unrendered");
         assertTrue(html.contains("h1 {"), "card-layout-styles fragment did not render");
     }
+
+    @Test
+    void reservationConfirmation_withWalletLinks_rendersWalletBadges() {
+        String html =
+                reservationConfirmation
+                        .data("userName", "jane")
+                        .data("fullName", "Jane Doe")
+                        .data("eventName", "Concert")
+                        .data("eventLocation", "Main Hall")
+                        .data("eventStartTime", "2026-07-10 20:00")
+                        .data("eventEndTime", "2026-07-10 23:00")
+                        .data("newSeats", List.of(new SeatView("A1", "1", "Parkett")))
+                        .data("hasExistingSeats", false)
+                        .data("existingSeats", List.of())
+                        .data("entranceInfo", "Use the north entrance")
+                        .data("eventLink", "https://example.com/e")
+                        .data("seatmapLink", "https://example.com/s")
+                        .data("googleWalletLink", "https://pay.google.com/gp/v/save/abc123token")
+                        .data(
+                                "appleWalletLink",
+                                "https://example.com/api/email/wallet/apple?token=xyz")
+                        .data("frontendBaseUrl", "https://tickets.example.com")
+                        .data("currentYear", "2026")
+                        .render();
+
+        assertFragmentsRendered(html);
+        assertTrue(html.contains("Add your ticket to your digital wallet:"));
+        assertTrue(html.contains("https://pay.google.com/gp/v/save/abc123token"));
+        assertTrue(html.contains("https://example.com/api/email/wallet/apple?token=xyz"));
+        assertTrue(
+                html.contains(
+                        "https://tickets.example.com/wallet/google/de_add_to_google_wallet_add-wallet-badge.png"));
+        assertTrue(
+                html.contains(
+                        "https://tickets.example.com/wallet/apple/DE_Add_to_Apple_Wallet_RGB_101421.png"));
+        assertTrue(html.contains("Google Wallet is a trademark of Google LLC."));
+    }
+
+    @Test
+    void reservationConfirmation_withoutWalletLinks_omitsWalletBlock() {
+        String html =
+                reservationConfirmation
+                        .data("userName", "jane")
+                        .data("fullName", "Jane Doe")
+                        .data("eventName", "Concert")
+                        .data("eventLocation", "Main Hall")
+                        .data("eventStartTime", "2026-07-10 20:00")
+                        .data("eventEndTime", "2026-07-10 23:00")
+                        .data("newSeats", List.of(new SeatView("A1", "1", "Parkett")))
+                        .data("hasExistingSeats", false)
+                        .data("existingSeats", List.of())
+                        .data("entranceInfo", "Use the north entrance")
+                        .data("eventLink", "https://example.com/e")
+                        .data("seatmapLink", "https://example.com/s")
+                        .data("currentYear", "2026")
+                        .render();
+
+        assertFalse(html.contains("Add your ticket to your digital wallet:"));
+        assertFalse(html.contains("Google Wallet is a trademark"));
+    }
 }

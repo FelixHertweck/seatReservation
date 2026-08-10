@@ -1,0 +1,18 @@
+{#if googleWalletLink?? || appleWalletLink??}
+<div style="margin-top: 25px; text-align: center;">
+    <p style="font-size: 14px; font-weight: bold; color: #2c3e50; margin-bottom: 12px;">Add your ticket to your digital wallet:</p>
+    <div style="text-align: center;">
+        {#if googleWalletLink??}
+        <a href="{googleWalletLink}" target="_blank" rel="noopener noreferrer" style="display: inline-block; margin: 5px; text-decoration: none;">
+            <img src="{frontendBaseUrl}/wallet/google/de_add_to_google_wallet_add-wallet-badge.png" alt="In Google Wallet speichern" height="42" style="height: 42px; width: auto; vertical-align: middle; border: 0; outline: none; text-decoration: none;" />
+        </a>
+        {/if}
+        {#if appleWalletLink??}
+        <a href="{appleWalletLink}" target="_blank" rel="noopener noreferrer" style="display: inline-block; margin: 5px; text-decoration: none;">
+            <img src="{frontendBaseUrl}/wallet/apple/DE_Add_to_Apple_Wallet_RGB_101421.png" alt="Zu Apple Wallet hinzufügen" height="42" style="height: 42px; width: auto; vertical-align: middle; border: 0; outline: none; text-decoration: none;" />
+        </a>
+        {/if}
+    </div>
+    <p style="font-size: 11px; color: #7f8c8d; margin-top: 8px; margin-bottom: 0;">Google Wallet is a trademark of Google LLC. Apple Wallet is a trademark of Apple Inc.</p>
+</div>
+{/if}

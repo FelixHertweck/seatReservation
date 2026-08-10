@@ -15,6 +15,8 @@ import type { useLocationEditorSave } from "@/components/management/location-edi
 import type { LocationMeta } from "@/components/management/location-editor/types";
 import type { UserDto } from "@/api";
 
+import { useState } from "react";
+
 const AddressMap = dynamic(
   () => import("@/components/management/location-editor/address-map"),
   { ssr: false, loading: () => <Skeleton className="h-full w-full" /> },
@@ -65,6 +67,7 @@ export function DetailsPanel({
   const [name, setName] = useSyncedField(meta.name);
   const [address, setAddress] = useSyncedField(meta.address);
   const [managerIds, setManagerIds] = useSyncedField(meta.managerIds);
+  const [isSaving, setIsSaving] = useState(false);
   const {
     result: geocoded,
     isLoading: isGeocoding,
@@ -78,7 +81,7 @@ export function DetailsPanel({
   const isDirty =
     name !== meta.name || address !== meta.address || managerIdsChanged;
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const changes: Partial<{
       name: string;
       address: string;
@@ -88,9 +91,18 @@ export function DetailsPanel({
     if (address !== meta.address) changes.address = address;
     if (managerIdsChanged) changes.managerIds = managerIds;
     if (Object.keys(changes).length > 0) {
-      autosave.updateMeta(changes);
+      setIsSaving(true);
+      try {
+        const ok = await autosave.updateMeta(changes);
+        if (ok) {
+          onSaved?.();
+        }
+      } finally {
+        setIsSaving(false);
+      }
+    } else {
+      onSaved?.();
     }
-    onSaved?.();
   };
 
   return (
@@ -155,7 +167,8 @@ export function DetailsPanel({
       <Button
         type="button"
         className="w-full"
-        disabled={!isDirty}
+        disabled={!isDirty || isSaving}
+        isLoading={isSaving}
         onClick={handleSave}
       >
         {t("management.locationEditor.details.saveButton")}

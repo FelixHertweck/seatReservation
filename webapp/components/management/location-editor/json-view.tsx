@@ -21,12 +21,12 @@ interface JsonViewProps {
   autosave: ReturnType<typeof useLocationEditorSave>;
 }
 
-function applyDiff(
+async function applyDiff(
   diff: JsonDiff,
   autosave: ReturnType<typeof useLocationEditorSave>,
 ) {
   if (Object.keys(diff.metaChanges).length > 0) {
-    autosave.updateMeta(diff.metaChanges);
+    await autosave.updateMeta(diff.metaChanges);
   }
 
   const entranceIdByName = new Map<string, string>();
@@ -96,7 +96,7 @@ export function JsonView({ state, autosave }: JsonViewProps) {
     setWarnings([]);
   };
 
-  const handleApply = () => {
+  const handleApply = async () => {
     let parsed: unknown;
     try {
       parsed = JSON.parse(jsonText);
@@ -111,7 +111,7 @@ export function JsonView({ state, autosave }: JsonViewProps) {
     if (result.errors.length > 0 || !result.diff) return;
 
     if (!isDiffEmpty(result.diff)) {
-      applyDiff(result.diff, autosave);
+      await applyDiff(result.diff, autosave);
     }
     setBaselineText(jsonText);
   };

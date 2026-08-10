@@ -1820,6 +1820,52 @@ export const VerifyEmailCodeRequestDtoSchema = {
     }
 } as const;
 
+export const WalletConfigDTOSchema = {
+    type: 'object',
+    properties: {
+        googleEnabled: {
+            type: 'boolean'
+        },
+        appleEnabled: {
+            type: 'boolean'
+        },
+        genericEnabled: {
+            type: 'boolean'
+        }
+    }
+} as const;
+
+export const WalletPassResponseDTOSchema = {
+    type: 'object',
+    properties: {
+        provider: {
+            $ref: '#/components/schemas/WalletProvider'
+        },
+        url: {
+            type: 'string'
+        },
+        content: {
+            type: 'string',
+            format: 'binary'
+        },
+        contentType: {
+            type: 'string'
+        },
+        filename: {
+            type: 'string'
+        }
+    }
+} as const;
+
+export const WalletProviderSchema = {
+    type: 'string',
+    enum: [
+        'GOOGLE',
+        'APPLE',
+        'GENERIC_PKPASS'
+    ]
+} as const;
+
 export const WebAuthnCredentialDTOSchema = {
     type: 'object',
     properties: {

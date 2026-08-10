@@ -698,6 +698,8 @@
     "showQRCodeButton": "QR Code",
     "cancelButton": "Cancel",
     "seatsDrawerTitle": "Seats",
+    "manageSeatButton": "Manage Seats",
+    "manageSeatsButton": "Manage Seats",
     "deleteSeatButton": "Delete 1 seat",
     "deleteSeatsButton": "Delete {{count}} seats",
     "seatSingular": "Seat",
@@ -726,10 +728,14 @@
     "generationErrorDescription": "The QR code could not be generated. Please try again.",
     "copiedToClipboard": "Copied to clipboard",
     "codeReady": "The reservation code has been copied",
-    "downloadButton": "Download QR Code",
+    "downloadButton": "Download PKPass (Ticket)",
     "downloadStarted": "Download started",
     "qrCodeDownloading": "The QR code is being downloaded",
-    "noCheckInCode": "No check-in code is available for this reservation"
+    "noCheckInCode": "No check-in code is available for this reservation",
+    "googleWalletButton": "Add to Google Wallet",
+    "appleWalletButton": "Add to Apple Wallet",
+    "walletError": "Error creating wallet pass",
+    "trademarkNotice": "Google Wallet is a trademark of Google LLC. Apple Wallet is a trademark of Apple Inc."
   },
   "seatMapModal": {
     "yourReservedSeatsTitle": "Your Reserved Seats",

@@ -1605,6 +1605,45 @@
           }
         }
       },
+      "WalletConfigDTO" : {
+        "type" : "object",
+        "properties" : {
+          "googleEnabled" : {
+            "type" : "boolean"
+          },
+          "appleEnabled" : {
+            "type" : "boolean"
+          },
+          "genericEnabled" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "WalletPassResponseDTO" : {
+        "type" : "object",
+        "properties" : {
+          "provider" : {
+            "$ref" : "#/components/schemas/WalletProvider"
+          },
+          "url" : {
+            "type" : "string"
+          },
+          "content" : {
+            "type" : "string",
+            "format" : "binary"
+          },
+          "contentType" : {
+            "type" : "string"
+          },
+          "filename" : {
+            "type" : "string"
+          }
+        }
+      },
+      "WalletProvider" : {
+        "type" : "string",
+        "enum" : [ "GOOGLE", "APPLE", "GENERIC_PKPASS" ]
+      },
       "WebAuthnCredentialDTO" : {
         "type" : "object",
         "properties" : {
@@ -2369,6 +2408,50 @@
           }
         },
         "summary" : "Get Seat Map",
+        "tags" : [ "Email Seat Map Resource" ]
+      }
+    },
+    "/api/email/wallet/apple" : {
+      "get" : {
+        "parameters" : [ {
+          "name" : "token",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/vnd.apple.pkpass" : { }
+            }
+          }
+        },
+        "summary" : "Get Apple Wallet Pass",
+        "tags" : [ "Email Seat Map Resource" ]
+      }
+    },
+    "/api/email/wallet/google" : {
+      "get" : {
+        "parameters" : [ {
+          "name" : "token",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : { }
+              }
+            }
+          }
+        },
+        "summary" : "Get Google Wallet Pass",
         "tags" : [ "Email Seat Map Resource" ]
       }
     },
@@ -5036,6 +5119,79 @@
             "description" : "Gone: Verification code expired"
           }
         }
+      }
+    },
+    "/api/user/wallet/config" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/WalletConfigDTO"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Wallet Config",
+        "tags" : [ "Wallet Resource" ]
+      }
+    },
+    "/api/user/wallet/reservations/{id}/{provider}" : {
+      "get" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
+        }, {
+          "name" : "provider",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/WalletPassResponseDTO"
+                }
+              },
+              "application/vnd.apple.pkpass" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/WalletPassResponseDTO"
+                }
+              },
+              "application/vnd.apple.pkpasses" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/WalletPassResponseDTO"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "description" : "Reservation not found"
+          }
+        },
+        "summary" : "Get Wallet Pass",
+        "tags" : [ "Wallet Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "USER" ]
+        } ]
       }
     },
     "/api/users/admin" : {

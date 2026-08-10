@@ -21,6 +21,7 @@
               {#for seat in seats}<li>{seat.number} ({seat.row}){#if seat.area} - {seat.area}{/if}</li>{/for}
           </ul>
 {#include email/fragments/entrance-info-block /}
+{#include email/fragments/wallet-block /}
           {#if showQrCode}
           <div style="text-align: center; margin: 30px 0;">
               <p style="font-size: 16px; font-weight: bold; color: #2c3e50; margin-bottom: 10px;">Your Check-in QR Code:</p>

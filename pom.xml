@@ -34,6 +34,7 @@
     <java-otp.version>0.4.0</java-otp.version>
     <commons-codec.version>1.22.1</commons-codec.version>
     <testcontainers.version>1.21.4</testcontainers.version>
+    <bouncycastle.version>1.80</bouncycastle.version>
   </properties>
 
   <dependencyManagement>
@@ -277,6 +278,16 @@
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
       <version>${commons-codec.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcpkix-jdk18on</artifactId>
+      <version>${bouncycastle.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-jdk18on</artifactId>
+      <version>${bouncycastle.version}</version>
     </dependency>
   </dependencies>
 

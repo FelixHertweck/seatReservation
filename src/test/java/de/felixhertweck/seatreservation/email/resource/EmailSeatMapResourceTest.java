@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.email.service.EmailSeatMapService;
+import de.felixhertweck.seatreservation.wallet.service.WalletPassService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -38,6 +39,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class EmailSeatMapResourceTest {
 
     @Mock private EmailSeatMapService service;
+    @Mock private WalletPassService walletPassService;
 
     @InjectMocks private EmailSeatMapResource emailSeatMapResource;
 
@@ -122,5 +124,37 @@ class EmailSeatMapResourceTest {
         assertTrue(entity.contains("<svg"));
         assertTrue(entity.contains("circle"));
         assertTrue(entity.contains("rect"));
+    }
+
+    @Test
+    void getAppleWalletPass_BadRequest_WhenTokenMissing() {
+        when(walletPassService.isAppleWalletEnabled()).thenReturn(true);
+        Response response = emailSeatMapResource.getAppleWalletPass(null);
+        assertNotNull(response);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+    }
+
+    @Test
+    void getGoogleWalletPass_BadRequest_WhenTokenMissing() {
+        when(walletPassService.isGoogleWalletEnabled()).thenReturn(true);
+        Response response = emailSeatMapResource.getGoogleWalletPass(null);
+        assertNotNull(response);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+    }
+
+    @Test
+    void getAppleWalletPass_Forbidden_WhenDisabled() {
+        when(walletPassService.isAppleWalletEnabled()).thenReturn(false);
+        Response response = emailSeatMapResource.getAppleWalletPass("valid-token");
+        assertNotNull(response);
+        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), response.getStatus());
+    }
+
+    @Test
+    void getGoogleWalletPass_Forbidden_WhenDisabled() {
+        when(walletPassService.isGoogleWalletEnabled()).thenReturn(false);
+        Response response = emailSeatMapResource.getGoogleWalletPass("valid-token");
+        assertNotNull(response);
+        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), response.getStatus());
     }
 }

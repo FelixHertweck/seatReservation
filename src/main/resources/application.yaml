@@ -93,4 +93,28 @@ email:
     reservation-update: "Your Reservation Update"
     reminder: "Reminder: Your event is starting soon!"
     reservation-overview: "Reservation overview for your event:"
-    
+
+wallet:
+  google:
+    enabled: "${GOOGLE_WALLET_ENABLED:false}"
+    default-language: "${GOOGLE_WALLET_DEFAULT_LANGUAGE:en-US}"
+    issuer-id: "${GOOGLE_WALLET_ISSUER_ID:3388000000001234567}"
+    service-account-email: "${GOOGLE_WALLET_SA_EMAIL:wallet-sa@project.iam.gserviceaccount.com}"
+    service-account-key-path: "keys/google-wallet-sa.pem"
+    # Comma-separated list of allowed origins for the "Save to Google Wallet" web button
+    allowed-origins: "${GOOGLE_WALLET_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:8080}"
+    # Optional: publicly accessible HTTPS URL to the logo shown on the pass
+    logo-uri: "${GOOGLE_WALLET_LOGO_URI:https://raw.githubusercontent.com/FelixHertweck/seatReservation/master/webapp/public/logo.png}"
+    # Review status of the pass class: UNDER_REVIEW (default for demo/test mode) or APPROVED (for approved production accounts)
+    review-status: "${GOOGLE_WALLET_REVIEW_STATUS:UNDER_REVIEW}"
+#  apple:
+#    enabled: "${APPLE_WALLET_ENABLED:false}"
+#    pass-type-identifier: "${APPLE_WALLET_PASS_TYPE_ID:pass.de.felixhertweck.seatreservation}"
+#    team-id: "${APPLE_WALLET_TEAM_ID:ABC1234567}"
+#    certificate-path: "${APPLE_WALLET_CERT_PATH:keys/pass.p12}"
+#    certificate-password: "${APPLE_WALLET_CERT_PASSWORD:}"
+#    wwdr-certificate-path: "${APPLE_WALLET_WWDR_PATH:keys/wwdr.pem}"
+  generic:
+    enabled: "${GENERIC_WALLET_ENABLED:true}"
+    pass-type-identifier: "${GENERIC_WALLET_PASS_TYPE_ID:pass.de.felixhertweck.seatreservation}"
+    team-id: "${GENERIC_WALLET_TEAM_ID:FelixHertweck}"
