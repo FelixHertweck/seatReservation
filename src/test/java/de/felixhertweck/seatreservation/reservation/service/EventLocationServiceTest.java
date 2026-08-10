@@ -21,7 +21,6 @@ package de.felixhertweck.seatreservation.reservation.service;
 
 import static de.felixhertweck.seatreservation.testutil.TestIds.id;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,13 +31,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
-import de.felixhertweck.seatreservation.model.entity.CheckInToken;
-import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
-import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
-import de.felixhertweck.seatreservation.model.entity.Reservation;
-import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
@@ -68,8 +62,6 @@ class EventLocationServiceTest {
     private User user;
     private EventLocation locationA;
     private EventLocation locationB;
-    private Event eventA;
-    private Event eventB;
 
     @BeforeEach
     void setUp() {
@@ -84,42 +76,15 @@ class EventLocationServiceTest {
         locationB = new EventLocation();
         locationB.id = id(20);
         locationB.setName("Location B");
-
-        eventA = new Event();
-        eventA.id = id(100);
-        eventA.setName("Event A");
-        eventA.setEventLocation(locationA);
-
-        eventB = new Event();
-        eventB.id = id(200);
-        eventB.setName("Event B");
-        eventB.setEventLocation(locationB);
     }
 
     @Test
     void getLocationsForCurrentUser_Success_FromAllowanceAndReservation() {
-        // Allowance provides Location A
-        var allowance = new EventUserAllowance();
-        allowance.setUser(user);
-        allowance.setEvent(eventA);
-        allowance.setReservationsAllowedCount(3);
-
-        // Reservation provides Location B
-        var seat = new Seat("S1", "Row 1", locationB);
-        var reservation =
-                new Reservation(
-                        user,
-                        eventB,
-                        seat,
-                        Instant.now(),
-                        ReservationStatus.RESERVED,
-                        new CheckInToken(user, eventB, "CODE123"));
-
         when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(eventUserAllowanceRepository.findByUserWithEventAndLocation(user))
-                .thenReturn(List.of(allowance));
-        when(reservationRepository.findByUserWithEventAndLocation(user))
-                .thenReturn(List.of(reservation));
+        when(eventUserAllowanceRepository.findDistinctEventLocationsByUser(user))
+                .thenReturn(List.of(locationA));
+        when(reservationRepository.findDistinctEventLocationsByUser(user))
+                .thenReturn(List.of(locationB));
 
         List<UserEventLocationSummaryDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");
@@ -131,27 +96,11 @@ class EventLocationServiceTest {
 
     @Test
     void getLocationsForCurrentUser_Deduplicates_Locations() {
-        // Same location from allowance and reservation should appear once
-        var allowance = new EventUserAllowance();
-        allowance.setUser(user);
-        allowance.setEvent(eventA);
-        allowance.setReservationsAllowedCount(3);
-
-        var seat = new Seat("S1", "Row 1", locationA);
-        var reservation =
-                new Reservation(
-                        user,
-                        eventA,
-                        seat,
-                        Instant.now(),
-                        ReservationStatus.RESERVED,
-                        new CheckInToken(user, eventA, "CODE123"));
-
         when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(eventUserAllowanceRepository.findByUserWithEventAndLocation(user))
-                .thenReturn(List.of(allowance));
-        when(reservationRepository.findByUserWithEventAndLocation(user))
-                .thenReturn(List.of(reservation));
+        when(eventUserAllowanceRepository.findDistinctEventLocationsByUser(user))
+                .thenReturn(List.of(locationA));
+        when(reservationRepository.findDistinctEventLocationsByUser(user))
+                .thenReturn(List.of(locationA));
 
         List<UserEventLocationSummaryDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");
@@ -163,9 +112,9 @@ class EventLocationServiceTest {
     @Test
     void getLocationsForCurrentUser_Empty() {
         when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(eventUserAllowanceRepository.findByUserWithEventAndLocation(user))
+        when(eventUserAllowanceRepository.findDistinctEventLocationsByUser(user))
                 .thenReturn(Collections.emptyList());
-        when(reservationRepository.findByUserWithEventAndLocation(user))
+        when(reservationRepository.findDistinctEventLocationsByUser(user))
                 .thenReturn(Collections.emptyList());
 
         List<UserEventLocationSummaryDTO> result =
@@ -184,16 +133,10 @@ class EventLocationServiceTest {
 
     @Test
     void getLocationsForCurrentUser_Success_OnlyFromAllowance() {
-        // Allowance provides Location A
-        var allowance = new EventUserAllowance();
-        allowance.setUser(user);
-        allowance.setEvent(eventA);
-        allowance.setReservationsAllowedCount(3);
-
         when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(eventUserAllowanceRepository.findByUserWithEventAndLocation(user))
-                .thenReturn(List.of(allowance));
-        when(reservationRepository.findByUserWithEventAndLocation(user))
+        when(eventUserAllowanceRepository.findDistinctEventLocationsByUser(user))
+                .thenReturn(List.of(locationA));
+        when(reservationRepository.findDistinctEventLocationsByUser(user))
                 .thenReturn(Collections.emptyList()); // No reservations
 
         List<UserEventLocationSummaryDTO> result =
@@ -205,22 +148,11 @@ class EventLocationServiceTest {
 
     @Test
     void getLocationsForCurrentUser_Success_OnlyFromReservation() {
-        // Reservation provides Location B
-        var seat = new Seat("S1", "Row 1", locationB);
-        var reservation =
-                new Reservation(
-                        user,
-                        eventB,
-                        seat,
-                        Instant.now(),
-                        ReservationStatus.RESERVED,
-                        new CheckInToken(user, eventB, "CODE123"));
-
         when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(eventUserAllowanceRepository.findByUserWithEventAndLocation(user))
+        when(eventUserAllowanceRepository.findDistinctEventLocationsByUser(user))
                 .thenReturn(Collections.emptyList()); // No allowances
-        when(reservationRepository.findByUserWithEventAndLocation(user))
-                .thenReturn(List.of(reservation));
+        when(reservationRepository.findDistinctEventLocationsByUser(user))
+                .thenReturn(List.of(locationB));
 
         List<UserEventLocationSummaryDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");
@@ -232,9 +164,9 @@ class EventLocationServiceTest {
     @Test
     void getLocationsForCurrentUser_NoAllowanceNoReservation() {
         when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(eventUserAllowanceRepository.findByUserWithEventAndLocation(user))
+        when(eventUserAllowanceRepository.findDistinctEventLocationsByUser(user))
                 .thenReturn(Collections.emptyList());
-        when(reservationRepository.findByUserWithEventAndLocation(user))
+        when(reservationRepository.findDistinctEventLocationsByUser(user))
                 .thenReturn(Collections.emptyList());
 
         List<UserEventLocationSummaryDTO> result =
@@ -245,28 +177,11 @@ class EventLocationServiceTest {
 
     @Test
     void getLocationsForCurrentUser_OneLocationWithAllowance_OneLocationWithReservation() {
-        // Allowance provides Location A
-        var allowanceA = new EventUserAllowance();
-        allowanceA.setUser(user);
-        allowanceA.setEvent(eventA);
-        allowanceA.setReservationsAllowedCount(3);
-
-        // Reservation provides Location B
-        var seatB = new Seat("S1", "Row 1", locationB);
-        var reservationB =
-                new Reservation(
-                        user,
-                        eventB,
-                        seatB,
-                        Instant.now(),
-                        ReservationStatus.RESERVED,
-                        new CheckInToken(user, eventB, "CODE123"));
-
         when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(eventUserAllowanceRepository.findByUserWithEventAndLocation(user))
-                .thenReturn(List.of(allowanceA));
-        when(reservationRepository.findByUserWithEventAndLocation(user))
-                .thenReturn(List.of(reservationB));
+        when(eventUserAllowanceRepository.findDistinctEventLocationsByUser(user))
+                .thenReturn(List.of(locationA));
+        when(reservationRepository.findDistinctEventLocationsByUser(user))
+                .thenReturn(List.of(locationB));
 
         List<UserEventLocationSummaryDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");
@@ -278,28 +193,11 @@ class EventLocationServiceTest {
 
     @Test
     void getLocationsForCurrentUser_TwoDifferentLocations_OneAllowanceOneReservation() {
-        // Event A for Location A with Allowance
-        var allowanceA = new EventUserAllowance();
-        allowanceA.setUser(user);
-        allowanceA.setEvent(eventA);
-        allowanceA.setReservationsAllowedCount(3);
-
-        // Event B for Location B with Reservation
-        var seatB = new Seat("S1", "Row 1", locationB);
-        var reservationB =
-                new Reservation(
-                        user,
-                        eventB,
-                        seatB,
-                        Instant.now(),
-                        ReservationStatus.RESERVED,
-                        new CheckInToken(user, eventB, "CODE123"));
-
         when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(eventUserAllowanceRepository.findByUserWithEventAndLocation(user))
-                .thenReturn(List.of(allowanceA));
-        when(reservationRepository.findByUserWithEventAndLocation(user))
-                .thenReturn(List.of(reservationB));
+        when(eventUserAllowanceRepository.findDistinctEventLocationsByUser(user))
+                .thenReturn(List.of(locationA));
+        when(reservationRepository.findDistinctEventLocationsByUser(user))
+                .thenReturn(List.of(locationB));
 
         List<UserEventLocationSummaryDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");
@@ -311,34 +209,11 @@ class EventLocationServiceTest {
 
     @Test
     void getLocationsForCurrentUser_OneLocationTwoEvents_OneAllowanceOneReservation() {
-        // Create a new eventC for locationA
-        Event eventC = new Event();
-        eventC.id = id(300);
-        eventC.setName("Event C");
-        eventC.setEventLocation(locationA);
-
-        // Allowance for eventA (Location A)
-        var allowanceA = new EventUserAllowance();
-        allowanceA.setUser(user);
-        allowanceA.setEvent(eventA);
-        allowanceA.setReservationsAllowedCount(3);
-
-        // Reservation for eventC (Location A)
-        var seatC = new Seat("S2", "Row 2", locationA);
-        var reservationC =
-                new Reservation(
-                        user,
-                        eventC,
-                        seatC,
-                        Instant.now(),
-                        ReservationStatus.RESERVED,
-                        new CheckInToken(user, eventC, "CODE123"));
-
         when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(eventUserAllowanceRepository.findByUserWithEventAndLocation(user))
-                .thenReturn(List.of(allowanceA));
-        when(reservationRepository.findByUserWithEventAndLocation(user))
-                .thenReturn(List.of(reservationC));
+        when(eventUserAllowanceRepository.findDistinctEventLocationsByUser(user))
+                .thenReturn(List.of(locationA));
+        when(reservationRepository.findDistinctEventLocationsByUser(user))
+                .thenReturn(List.of(locationA));
 
         List<UserEventLocationSummaryDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");
@@ -362,15 +237,10 @@ class EventLocationServiceTest {
         parkett.setEventLocation(locationA);
         locationA.setAreas(new ArrayList<>(List.of(parkett)));
 
-        var allowance = new EventUserAllowance();
-        allowance.setUser(user);
-        allowance.setEvent(eventA);
-        allowance.setReservationsAllowedCount(3);
-
         when(userRepository.findByUsername("testuser")).thenReturn(user);
-        when(eventUserAllowanceRepository.findByUserWithEventAndLocation(user))
-                .thenReturn(List.of(allowance));
-        when(reservationRepository.findByUserWithEventAndLocation(user))
+        when(eventUserAllowanceRepository.findDistinctEventLocationsByUser(user))
+                .thenReturn(List.of(locationA));
+        when(reservationRepository.findDistinctEventLocationsByUser(user))
                 .thenReturn(Collections.emptyList());
         when(eventLocationRepository.findByIdOptional(locationA.id))
                 .thenReturn(Optional.of(locationA));

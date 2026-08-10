@@ -27,6 +27,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.reservation.service.SeatCartAccessGrantStore;
@@ -161,21 +162,20 @@ public class EventUserAllowanceRepository
     }
 
     /**
-     * Finds all event user allowances for a specific user, eagerly fetching each allowance's event
-     * and that event's event location.
+     * Finds distinct event locations from all event user allowances for a specific user.
      *
      * @param user the user to search for
-     * @return a list of event user allowances for the specified user, with the event and its
-     *     location pre-fetched
+     * @return a list of distinct event locations
      */
-    public List<EventUserAllowance> findByUserWithEventAndLocation(User user) {
-        return find(
-                        "select a from EventUserAllowance a"
-                                + " join fetch a.event e"
-                                + " join fetch e.event_location"
-                                + " where a.user = ?1",
-                        user)
-                .list();
+    public List<EventLocation> findDistinctEventLocationsByUser(User user) {
+        return getEntityManager()
+                .createQuery(
+                        "select distinct e.event_location from EventUserAllowance a"
+                                + " join a.event e"
+                                + " where a.user = :user",
+                        EventLocation.class)
+                .setParameter("user", user)
+                .getResultList();
     }
 
     /**

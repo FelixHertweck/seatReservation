@@ -28,6 +28,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 
 import de.felixhertweck.seatreservation.model.entity.CheckInToken;
 import de.felixhertweck.seatreservation.model.entity.Event;
+import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.User;
@@ -147,6 +148,24 @@ public class ReservationRepository implements PanacheRepositoryBase<Reservation,
     }
 
     /**
+     * Finds distinct event locations from all active reservations for a specific user.
+     *
+     * @param user the user to search for
+     * @return a list of distinct event locations
+     */
+    public List<EventLocation> findDistinctEventLocationsByUser(User user) {
+        return getEntityManager()
+                .createQuery(
+                        "select distinct e.event_location from Reservation r"
+                                + " join r.event e"
+                                + " where r.user = :user and r.status != :status",
+                        EventLocation.class)
+                .setParameter("user", user)
+                .setParameter("status", ReservationStatus.BLOCKED)
+                .getResultList();
+    }
+
+    /**
      * Finds all reservations for a specific event ID.
      *
      * @param eventId the event ID to search for
@@ -232,25 +251,6 @@ public class ReservationRepository implements PanacheRepositoryBase<Reservation,
     public List<Reservation> findByUserWithEvent(User user) {
         return find(
                         "select r from Reservation r join fetch r.event"
-                                + " where r.user = ?1 and r.status != ?2",
-                        user,
-                        ReservationStatus.BLOCKED)
-                .list();
-    }
-
-    /**
-     * Finds all reservations for a given user that are not blocked, eagerly fetching each
-     * reservation's event and that event's event location.
-     *
-     * @param user the user to search for
-     * @return a list of non-blocked reservations for the specified user, with the event and its
-     *     location pre-fetched
-     */
-    public List<Reservation> findByUserWithEventAndLocation(User user) {
-        return find(
-                        "select r from Reservation r"
-                                + " join fetch r.event e"
-                                + " join fetch e.event_location"
                                 + " where r.user = ?1 and r.status != ?2",
                         user,
                         ReservationStatus.BLOCKED)
