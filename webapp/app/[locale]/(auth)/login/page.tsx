@@ -117,8 +117,14 @@ export default function LoginPage() {
     return "";
   };
 
+  const isEmailUsername = username.includes("@");
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isEmailUsername) {
+      setLoginError(t("login.error.emailNotAllowed"));
+      return;
+    }
     setIsLoadingForm(true);
     setLoginError(null);
     try {
@@ -146,6 +152,10 @@ export default function LoginPage() {
   };
 
   const handlePasskeyLogin = async () => {
+    if (username.trim() && isEmailUsername) {
+      setLoginError(t("login.error.emailNotAllowed"));
+      return;
+    }
     setIsPasskeyLoading(true);
     setLoginError(null);
     try {
@@ -331,10 +341,20 @@ export default function LoginPage() {
                   setUsername(e.target.value);
                   setLoginError(null);
                 }}
+                className={
+                  isEmailUsername
+                    ? "border-destructive focus-visible:ring-destructive"
+                    : ""
+                }
                 autoCapitalize="none"
                 autoComplete="username"
                 required
               />
+              {isEmailUsername && (
+                <p className="text-xs text-destructive mt-1">
+                  {t("login.error.emailNotAllowed")}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -365,7 +385,12 @@ export default function LoginPage() {
               className="w-full"
               variant={loginError ? "destructive" : "default"}
               isLoading={isLoadingForm}
-              disabled={isLoadingForm || isRetryAfterActive || !!loginError}
+              disabled={
+                isLoadingForm ||
+                isRetryAfterActive ||
+                !!loginError ||
+                isEmailUsername
+              }
             >
               {loginError ||
                 (isRetryAfterActive

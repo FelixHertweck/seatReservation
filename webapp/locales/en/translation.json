@@ -137,7 +137,8 @@
       "title": "Login Error",
       "description": "An error occurred while logging in. Please try again.",
       "accountLocked": "Account locked until {{time}} ({{duration}})",
-      "tooManyAttemptsDescription": "Too many failed login attempts. Your account has been temporarily locked."
+      "tooManyAttemptsDescription": "Too many failed login attempts. Your account has been temporarily locked.",
+      "emailNotAllowed": "Your username is not your email address. Please enter your username."
     },
     "forgotPassword": "Forgot Password?",
     "forgotUsername": "Forgot Username?"
