@@ -391,7 +391,8 @@ public class UserServiceTest {
 
         when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existingUser));
 
-        UserDTO updatedUser = userService.updateUser(id(1), dto);
+        AuthenticatedUser caller = new AuthenticatedUser(id(2), Set.of(Roles.ADMIN));
+        UserDTO updatedUser = userService.updateUser(id(1), dto, caller);
 
         assertNotNull(updatedUser);
         assertEquals("New", updatedUser.firstname());
@@ -434,7 +435,8 @@ public class UserServiceTest {
 
         when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existingUser));
 
-        UserDTO updatedUser = userService.updateUser(id(1), dto);
+        AuthenticatedUser caller = new AuthenticatedUser(id(2), Set.of(Roles.ADMIN));
+        UserDTO updatedUser = userService.updateUser(id(1), dto, caller);
 
         assertNotNull(updatedUser);
         assertEquals("John", updatedUser.firstname());
@@ -477,7 +479,8 @@ public class UserServiceTest {
 
         when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existingUser));
 
-        UserDTO updatedUser = userService.updateUser(id(1), dto);
+        AuthenticatedUser caller = new AuthenticatedUser(id(2), Set.of(Roles.ADMIN));
+        UserDTO updatedUser = userService.updateUser(id(1), dto, caller);
 
         assertNotNull(updatedUser);
         assertTrue(
@@ -522,7 +525,8 @@ public class UserServiceTest {
 
         when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existingUser));
 
-        userService.updateUser(id(1), dto);
+        AuthenticatedUser caller = new AuthenticatedUser(id(2), Set.of(Roles.ADMIN));
+        userService.updateUser(id(1), dto, caller);
 
         verify(emailService, times(1)).sendPasswordChangedNotification(existingUser);
     }
@@ -560,7 +564,8 @@ public class UserServiceTest {
 
         when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existingUser));
 
-        userService.updateUser(id(1), dto);
+        AuthenticatedUser caller = new AuthenticatedUser(id(2), Set.of(Roles.ADMIN));
+        userService.updateUser(id(1), dto, caller);
 
         assertNotEquals(initialSalt, existingUser.getPasswordSalt());
         assertTrue(
@@ -602,7 +607,8 @@ public class UserServiceTest {
 
         when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existingUser));
 
-        UserDTO updatedUser = userService.updateUser(id(1), dto);
+        AuthenticatedUser caller = new AuthenticatedUser(id(2), Set.of(Roles.ADMIN));
+        UserDTO updatedUser = userService.updateUser(id(1), dto, caller);
 
         assertNotNull(updatedUser);
         assertEquals(newRoles, existingUser.getRoles());
@@ -643,7 +649,8 @@ public class UserServiceTest {
 
         when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existingUser));
 
-        UserDTO updatedUser = userService.updateUser(id(1), dto);
+        AuthenticatedUser caller = new AuthenticatedUser(id(2), Set.of(Roles.ADMIN));
+        UserDTO updatedUser = userService.updateUser(id(1), dto, caller);
 
         assertNotNull(updatedUser);
         assertEquals("New", updatedUser.firstname());
@@ -708,7 +715,8 @@ public class UserServiceTest {
                                 "token",
                                 Instant.now()));
 
-        UserDTO updatedUser = userService.updateUser(id(1), dto);
+        AuthenticatedUser caller = new AuthenticatedUser(id(2), Set.of(Roles.ADMIN));
+        UserDTO updatedUser = userService.updateUser(id(1), dto, caller);
 
         assertNotNull(updatedUser);
         assertEquals("new@example.com", updatedUser.email());
@@ -733,7 +741,7 @@ public class UserServiceTest {
                         Collections.emptySet());
         when(userRepository.findByIdOptional(any(UUID.class))).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> userService.updateUser(id(1), dto));
+        assertThrows(UserNotFoundException.class, () -> userService.updateUser(id(1), dto, null));
         verify(userRepository, never()).persist(any(User.class));
         verify(emailService, never())
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
@@ -741,7 +749,7 @@ public class UserServiceTest {
 
     @Test
     void updateUser_InvalidUserException_NullDTO() throws IOException {
-        assertThrows(InvalidUserException.class, () -> userService.updateUser(id(1), null));
+        assertThrows(InvalidUserException.class, () -> userService.updateUser(id(1), null, null));
         verify(userRepository, never()).persist(any(User.class));
         verify(emailService, never())
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
@@ -800,7 +808,8 @@ public class UserServiceTest {
         // Simulate another user already has this email, but it should not prevent update
         // (assuming email uniqueness is not enforced at this layer for update)
 
-        UserDTO updatedUser = userService.updateUser(id(1), dto);
+        AuthenticatedUser caller = new AuthenticatedUser(id(2), Set.of(Roles.ADMIN));
+        UserDTO updatedUser = userService.updateUser(id(1), dto, caller);
 
         assertNotNull(updatedUser);
         assertEquals("duplicate@example.com", updatedUser.email());
@@ -859,7 +868,8 @@ public class UserServiceTest {
                 .when(emailService)
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
 
-        assertThrows(RuntimeException.class, () -> userService.updateUser(id(1), dto));
+        AuthenticatedUser caller = new AuthenticatedUser(id(2), Set.of(Roles.ADMIN));
+        assertThrows(RuntimeException.class, () -> userService.updateUser(id(1), dto, caller));
         verify(emailService, times(1)).createEmailVerification(any(User.class));
         verify(emailService, times(1))
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
@@ -894,7 +904,8 @@ public class UserServiceTest {
 
         when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existingUser));
 
-        UserDTO updatedUser = userService.updateUser(id(1), dto);
+        AuthenticatedUser caller = new AuthenticatedUser(id(2), Set.of(Roles.ADMIN));
+        UserDTO updatedUser = userService.updateUser(id(1), dto, caller);
 
         assertNotNull(updatedUser);
         assertEquals("new@example.com", updatedUser.email());
@@ -934,7 +945,8 @@ public class UserServiceTest {
 
         when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existingUser));
 
-        UserDTO updatedUser = userService.updateUser(id(1), dto);
+        AuthenticatedUser caller = new AuthenticatedUser(id(2), Set.of(Roles.ADMIN));
+        UserDTO updatedUser = userService.updateUser(id(1), dto, caller);
 
         assertNotNull(updatedUser);
         assertEquals("old@example.com", updatedUser.email());
@@ -1942,5 +1954,129 @@ public class UserServiceTest {
         assertThrows(
                 VerificationCodeNotFoundException.class,
                 () -> userService.verifyEmailWithCode("123456"));
+    }
+
+    @Test
+    void updateUser_SecurityException_AdminRemovesOwnAdminRole() {
+        AdminUserUpdateDTO dto =
+                new AdminUserUpdateDTO(
+                        "First",
+                        "Last",
+                        null,
+                        "test@example.com",
+                        false,
+                        true,
+                        Set.of(Roles.USER),
+                        Set.of());
+
+        User existingUser = new User();
+        existingUser.id = id(1);
+        existingUser.setUsername("admin");
+        existingUser.setRoles(Set.of(Roles.ADMIN, Roles.USER));
+
+        when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existingUser));
+
+        AuthenticatedUser caller = new AuthenticatedUser(id(1), Set.of(Roles.ADMIN));
+
+        assertThrows(SecurityException.class, () -> userService.updateUser(id(1), dto, caller));
+    }
+
+    @Test
+    void updateUser_SecurityException_SelfLockout_DoesNotSendPasswordEmail() throws IOException {
+        User existingUser =
+                new User(
+                        "admin",
+                        "admin@example.com",
+                        true,
+                        false,
+                        "oldhash",
+                        "salt",
+                        "First",
+                        "Last",
+                        Set.of(Roles.ADMIN, Roles.USER),
+                        Collections.emptySet());
+        existingUser.id = id(1);
+        AdminUserUpdateDTO dto =
+                new AdminUserUpdateDTO(
+                        "First",
+                        "Last",
+                        "newpassword",
+                        "admin@example.com",
+                        false,
+                        true,
+                        Set.of(Roles.USER),
+                        Collections.emptySet());
+
+        when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existingUser));
+
+        AuthenticatedUser caller = new AuthenticatedUser(id(1), Set.of(Roles.ADMIN));
+
+        assertThrows(SecurityException.class, () -> userService.updateUser(id(1), dto, caller));
+
+        verify(emailService, never()).sendPasswordChangedNotification(any(User.class));
+        verify(userRepository, never()).persist(any(User.class));
+        assertEquals(Set.of(Roles.ADMIN, Roles.USER), existingUser.getRoles());
+    }
+
+    @Test
+    void updateUser_SecurityException_BoxOfficeAccountCannotBeGrantedRoles() {
+        User existingUser =
+                new User(
+                        "boxoffice",
+                        null,
+                        false,
+                        false,
+                        null,
+                        null,
+                        null,
+                        null,
+                        Collections.emptySet(),
+                        Collections.emptySet());
+        existingUser.id = id(1);
+        AdminUserUpdateDTO dto =
+                new AdminUserUpdateDTO(
+                        null, null, null, null, false, false, Set.of(Roles.ADMIN), Set.of());
+
+        when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existingUser));
+
+        AuthenticatedUser caller = new AuthenticatedUser(id(2), Set.of(Roles.ADMIN));
+
+        assertThrows(SecurityException.class, () -> userService.updateUser(id(1), dto, caller));
+
+        verify(userRepository, never()).persist(any(User.class));
+        assertTrue(existingUser.getRoles().isEmpty());
+    }
+
+    @Test
+    void updateUser_SecurityException_NullCurrentUser_WhenRolesProvided() {
+        User existingUser =
+                new User(
+                        "testuser",
+                        "old@example.com",
+                        true,
+                        false,
+                        "oldhash",
+                        "salt",
+                        "John",
+                        "Doe",
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
+        existingUser.id = id(1);
+        AdminUserUpdateDTO dto =
+                new AdminUserUpdateDTO(
+                        null,
+                        null,
+                        null,
+                        null,
+                        false,
+                        false,
+                        Collections.singleton(Roles.USER),
+                        Collections.emptySet());
+
+        when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existingUser));
+
+        assertThrows(SecurityException.class, () -> userService.updateUser(id(1), dto, null));
+
+        verify(userRepository, never()).persist(any(User.class));
     }
 }

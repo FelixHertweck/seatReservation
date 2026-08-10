@@ -4838,7 +4838,7 @@
             "description" : "Unauthorized"
           },
           "403" : {
-            "description" : "Forbidden: Only ADMIN role can access this resource"
+            "description" : "Forbidden: Caller does not have the ADMIN role, an admin attempted to remove their own admin role, or roles were requested to be granted to the reserved \"boxoffice\" system account"
           },
           "404" : {
             "description" : "Not Found: User with specified ID not found"

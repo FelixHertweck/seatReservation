@@ -3465,7 +3465,7 @@ export type PutApiUsersAdminByIdErrors = {
      */
     401: unknown;
     /**
-     * Forbidden: Only ADMIN role can access this resource
+     * Forbidden: Caller does not have the ADMIN role, an admin attempted to remove their own admin role, or roles were requested to be granted to the reserved "boxoffice" system account
      */
     403: unknown;
     /**

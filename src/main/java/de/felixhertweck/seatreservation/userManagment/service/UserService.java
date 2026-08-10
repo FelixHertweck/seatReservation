@@ -446,14 +446,21 @@ public class UserService {
      *
      * @param id The ID of the user to update.
      * @param user The DTO containing user profile update data.
+     * @param currentUser The authenticated user performing the update. Required (must not be null)
+     *     whenever {@code user.getRoles()} is non-null, so role changes can be checked against
+     *     self-lockout rules.
      * @return The updated UserDTO.
      * @throws UserNotFoundException If the user with the given ID does not exist.
      * @throws InvalidUserException If the provided data is invalid.
      * @throws DuplicateUserException If a user with the same username or email already exists.
      * @throws SendEmailException If an error occurs while sending email confirmation.
+     * @throws SecurityException If roles are being updated without a known authenticated user, if
+     *     an admin attempts to remove their own admin role, or if roles are being granted to the
+     *     reserved "boxoffice" system account.
      */
     @Transactional
-    public UserDTO updateUser(UUID id, AdminUserUpdateDTO user) throws UserNotFoundException {
+    public UserDTO updateUser(UUID id, AdminUserUpdateDTO user, AuthenticatedUser currentUser)
+            throws UserNotFoundException, SecurityException {
         if (user == null) {
             LOG.warnf("AdminUserUpdateDTO is null for user ID: %s.", id);
             throw new InvalidUserException("User update data cannot be null.");
@@ -470,6 +477,28 @@ public class UserService {
                                     return new UserNotFoundException(
                                             "User with id " + id + " not found.");
                                 });
+
+        if (user.getRoles() != null) {
+            if (currentUser == null) {
+                LOG.warnf(
+                        "Refusing role update for user ID %s: no authenticated user available to"
+                                + " check self-lockout.",
+                        id);
+                throw new SecurityException("Authenticated user is required to update roles.");
+            }
+            if (id.equals(currentUser.id()) && !user.getRoles().contains(Roles.ADMIN)) {
+                LOG.warnf("User %s attempted to remove their own admin role.", currentUser.id());
+                throw new SecurityException("Admins cannot remove their own admin role.");
+            }
+            if ("boxoffice".equalsIgnoreCase(existingUser.getUsername())
+                    && !user.getRoles().isEmpty()) {
+                LOG.warnf(
+                        "Attempt to grant roles to reserved system account: %s",
+                        existingUser.getUsername());
+                throw new SecurityException(
+                        "The box office system account must never be granted roles.");
+            }
+        }
 
         updateUserCore(
                 existingUser,

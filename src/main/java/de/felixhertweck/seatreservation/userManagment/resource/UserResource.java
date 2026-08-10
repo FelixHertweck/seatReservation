@@ -141,7 +141,10 @@ public class UserResource {
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
-            description = "Forbidden: Only ADMIN role can access this resource")
+            description =
+                    "Forbidden: Caller does not have the ADMIN role, an admin attempted to"
+                            + " remove their own admin role, or roles were requested to be"
+                            + " granted to the reserved \"boxoffice\" system account")
     @APIResponse(responseCode = "404", description = "Not Found: User with specified ID not found")
     @APIResponse(
             responseCode = "409",
@@ -150,8 +153,9 @@ public class UserResource {
             responseCode = "500",
             description = "Internal Server Error: Error sending email confirmation")
     public UserDTO updateUser(@PathParam("id") UUID id, @Valid AdminUserUpdateDTO user) {
+        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         LOG.debugf("Received PUT request to /api/users/admin/%s for user update.", id);
-        UserDTO updatedUser = userService.updateUser(id, user);
+        UserDTO updatedUser = userService.updateUser(id, user, currentUser);
         LOG.debugf("User with ID %s updated successfully by admin.", id);
         return updatedUser;
     }
