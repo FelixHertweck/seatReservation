@@ -24,7 +24,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -214,12 +213,9 @@ public class LiveViewService {
     }
 
     private boolean isAuthorizedForEvent(AuthenticatedUser user, UUID eventId) {
-        if (user == null) return false;
+        if (user == null || eventId == null) return false;
         if (eventRepository.isUserSupervisor(eventId, user.id())) return true;
-        Event event = eventRepository.findById(eventId);
-        if (event != null
-                && event.getManager() != null
-                && Objects.equals(event.getManager().id, user.id())) return true;
+        if (eventRepository.isUserManager(eventId, user.id())) return true;
         return user.isAdmin();
     }
 

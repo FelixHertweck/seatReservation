@@ -226,6 +226,18 @@ export default function ManagementEventsPage() {
                                   })}
                                 </Badge>
                               )}
+                            {event.managerIds &&
+                              event.managerIds.length > 0 && (
+                                <Badge
+                                  variant="secondary"
+                                  className="flex items-center gap-1"
+                                >
+                                  <Users className="h-3 w-3" />
+                                  {t("management.events.managersCount", {
+                                    count: event.managerIds.length,
+                                  })}
+                                </Badge>
+                              )}
                           </div>
                           {bookingStart && bookingDeadline && (
                             <p className="text-xs text-muted-foreground">

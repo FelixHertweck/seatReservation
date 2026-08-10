@@ -338,12 +338,13 @@ public class NotificationService {
 
             try {
                 // Get the event manager/owner
-                User manager = event.getManager();
-                if (manager != null) {
-                    LOG.debugf(
-                            "Sending CSV export to manager: %s for event: %s",
-                            manager.id, event.getName());
-                    emailService.sendEventReservationsCsvToManager(manager, event);
+                if (event.getManagers() != null && !event.getManagers().isEmpty()) {
+                    for (User manager : event.getManagers()) {
+                        LOG.debugf(
+                                "Sending CSV export to manager: %s for event: %s",
+                                manager.id, event.getName());
+                        emailService.sendEventReservationsCsvToManager(manager, event);
+                    }
                 } else {
                     LOG.warnf("No manager found for event: %s (ID: %s)", event.getName(), event.id);
                 }

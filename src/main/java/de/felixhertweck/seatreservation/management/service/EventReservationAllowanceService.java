@@ -76,7 +76,7 @@ public class EventReservationAllowanceService {
                 manager.id());
         Event event = getEventById(dto.getEventId());
 
-        if (!event.getManager().id.equals(manager.id()) && !manager.isAdmin()) {
+        if (!eventRepository.isUserManager(dto.getEventId(), manager.id()) && !manager.isAdmin()) {
             LOG.warnf(
                     "manager ID: %s is not authorized to set reservation allowance for event ID"
                             + " %s.",
@@ -158,7 +158,7 @@ public class EventReservationAllowanceService {
                                     return new EventNotFoundException("Allowance not found");
                                 });
 
-        if (!allowance.getEvent().getManager().equals(manager)
+        if (!eventRepository.isUserManager(allowance.getEvent().getId(), manager.getId())
                 && !manager.getRoles().contains(Roles.ADMIN)) {
             LOG.warnf(
                     "user ID: %s (ID: %s) is not authorized to update reservation allowance with ID"
@@ -205,7 +205,7 @@ public class EventReservationAllowanceService {
                                     return new EventNotFoundException("Allowance not found");
                                 });
 
-        if (!allowance.getEvent().getManager().equals(manager)
+        if (!eventRepository.isUserManager(allowance.getEvent().getId(), manager.getId())
                 && !manager.getRoles().contains(Roles.ADMIN)) {
             LOG.warnf(
                     "user ID: %s (ID: %s) is not authorized to view reservation allowance with ID"
@@ -243,9 +243,8 @@ public class EventReservationAllowanceService {
                             + " %s",
                     currentUser.id());
             allowances =
-                    eventUserAllowanceRepository
-                            .find("event.manager", userRepository.getReference(currentUser.id()))
-                            .list();
+                    eventUserAllowanceRepository.findByEventManager(
+                            userRepository.getReference(currentUser.id()));
         }
         LOG.debugf(
                 "Retrieved %d reservation allowances for user ID: %s",
@@ -271,7 +270,7 @@ public class EventReservationAllowanceService {
                         + " %s)",
                 eventId, currentUser.id, currentUser.getId());
         Event event = getEventById(eventId);
-        if (!event.getManager().equals(currentUser)
+        if (!eventRepository.isUserManager(eventId, currentUser.getId())
                 && !currentUser.getRoles().contains(Roles.ADMIN)) {
             LOG.warnf(
                     "user ID: %s (ID: %s) is not authorized to view allowances for event ID %s.",
@@ -328,7 +327,7 @@ public class EventReservationAllowanceService {
                 throw new EventNotFoundException("Allowance not found");
             }
 
-            if (!allowance.getEvent().getManager().equals(currentUser)
+            if (!eventRepository.isUserManager(allowance.getEvent().getId(), currentUser.getId())
                     && !currentUser.getRoles().contains(Roles.ADMIN)) {
                 LOG.warnf(
                         "user ID: %s (ID: %s) is not authorized to delete reservation allowance"

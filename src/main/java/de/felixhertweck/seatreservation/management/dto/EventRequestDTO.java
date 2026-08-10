@@ -54,6 +54,8 @@ public class EventRequestDTO {
 
     @Nullable private Set<UUID> supervisorIds;
 
+    @Nullable private Set<UUID> managerIds;
+
     public String getName() {
         return name;
     }
@@ -124,5 +126,13 @@ public class EventRequestDTO {
 
     public void setSupervisorIds(Set<UUID> supervisorIds) {
         this.supervisorIds = supervisorIds;
+    }
+
+    public Set<UUID> getManagerIds() {
+        return managerIds;
+    }
+
+    public void setManagerIds(Set<UUID> managerIds) {
+        this.managerIds = managerIds;
     }
 }

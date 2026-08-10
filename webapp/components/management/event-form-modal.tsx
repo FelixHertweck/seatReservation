@@ -72,6 +72,7 @@ export function EventFormModal({
     eventLocationId: event?.eventLocationId?.toString() || "",
     supervisorIds:
       event?.supervisorIds?.map((id: string) => id.toString()) || [],
+    managerIds: event?.managerIds?.map((id: string) => id.toString()) || [],
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -94,10 +95,11 @@ export function EventFormModal({
           : undefined,
         eventLocationId: formData.eventLocationId,
       };
-      // Attach supervisors if provided
+      // Attach supervisors and managers if provided
       const payload: EventRequestDto = {
         ...eventData,
         supervisorIds: formData.supervisorIds || [],
+        managerIds: formData.managerIds || [],
       };
       await onSubmit(payload);
     } finally {
@@ -335,8 +337,25 @@ export function EventFormModal({
                 onSelectionChange={(sel) =>
                   setFormData((prev) => ({ ...prev, supervisorIds: sel }))
                 }
-                label=""
+                label={t("eventFormModal.supervisorsLabel")}
                 placeholder={t("eventFormModal.supervisorsPlaceholder")}
+              />
+            </div>
+
+            {/* Managers */}
+            <div className="space-y-4 border-t pt-6">
+              <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Users className="h-4 w-4" />
+                {t("eventFormModal.managersSectionTitle")}
+              </h3>
+              <UserMultiSelect
+                users={users}
+                selectedUserIds={formData.managerIds}
+                onSelectionChange={(sel) =>
+                  setFormData((prev) => ({ ...prev, managerIds: sel }))
+                }
+                label={t("eventFormModal.managersLabel")}
+                placeholder={t("eventFormModal.managersPlaceholder")}
               />
             </div>
           </div>

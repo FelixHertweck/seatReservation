@@ -120,6 +120,7 @@ class CheckInResourceTest {
         when(eventRepository.isUserSupervisor(any(UUID.class), eq(id(2)))).thenReturn(false);
         when(eventRepository.isUserSupervisor(any(UUID.class), eq(id(3)))).thenReturn(false);
         when(eventRepository.isUserSupervisor(any(UUID.class), eq(id(4)))).thenReturn(false);
+        when(eventRepository.isUserManager(eq(id(10)), eq(id(3)))).thenReturn(true);
 
         // eventRepository.findById to allow manager checks
         when(eventRepository.findById(id(10))).thenReturn(event10);

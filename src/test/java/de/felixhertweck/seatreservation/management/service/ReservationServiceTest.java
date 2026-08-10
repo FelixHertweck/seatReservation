@@ -181,6 +181,18 @@ public class ReservationServiceTest {
         event.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(1).toSeconds()));
         event.setManager(managerUser);
 
+        when(eventRepository.isUserManager(any(UUID.class), any(UUID.class)))
+                .thenAnswer(
+                        invocation -> {
+                            UUID eventId = invocation.getArgument(0);
+                            UUID userId = invocation.getArgument(1);
+                            return event != null
+                                    && event.id.equals(eventId)
+                                    && event.getManagers() != null
+                                    && event.getManagers().stream()
+                                            .anyMatch(u -> u.id != null && u.id.equals(userId));
+                        });
+
         seat =
                 new Seat(
                         "A1",
@@ -681,7 +693,10 @@ public class ReservationServiceTest {
         @SuppressWarnings("unchecked")
         PanacheQuery<Reservation> reservationQuery = mock(PanacheQuery.class);
         when(reservationQuery.list()).thenReturn(List.of(reservation));
-        when(reservationRepository.find("event.manager", managerUser)).thenReturn(reservationQuery);
+        when(reservationRepository.find(
+                        "SELECT r FROM Reservation r JOIN r.event e JOIN e.managers m WHERE m = ?1",
+                        managerUser))
+                .thenReturn(reservationQuery);
 
         var result = reservationService.findAllReservations(managerAuth);
 
@@ -695,7 +710,10 @@ public class ReservationServiceTest {
         @SuppressWarnings("unchecked")
         PanacheQuery<Reservation> reservationQuery = mock(PanacheQuery.class);
         when(reservationQuery.list()).thenReturn(Collections.emptyList());
-        when(reservationRepository.find("event.manager", managerUser)).thenReturn(reservationQuery);
+        when(reservationRepository.find(
+                        "SELECT r FROM Reservation r JOIN r.event e JOIN e.managers m WHERE m = ?1",
+                        managerUser))
+                .thenReturn(reservationQuery);
 
         var result = reservationService.findAllReservations(managerAuth);
 
@@ -708,7 +726,10 @@ public class ReservationServiceTest {
         @SuppressWarnings("unchecked")
         PanacheQuery<Reservation> reservationQuery = mock(PanacheQuery.class);
         when(reservationQuery.list()).thenReturn(Collections.emptyList());
-        when(reservationRepository.find("event.manager", regularUser)).thenReturn(reservationQuery);
+        when(reservationRepository.find(
+                        "SELECT r FROM Reservation r JOIN r.event e JOIN e.managers m WHERE m = ?1",
+                        regularUser))
+                .thenReturn(reservationQuery);
 
         var result = reservationService.findAllReservations(regularAuth);
         assertTrue(result.isEmpty());

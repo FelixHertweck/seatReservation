@@ -172,4 +172,37 @@ public class EventResource {
                 "Events with IDs %s deleted successfully.",
                 ids != null ? ids : Collections.emptyList());
     }
+
+    @POST
+    @Path("/{id}/managers/{userId}")
+    @APIResponse(
+            responseCode = "200",
+            description = "OK",
+            content = @Content(schema = @Schema(implementation = EventResponseDTO.class)))
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(responseCode = "403", description = "Forbidden")
+    @APIResponse(responseCode = "404", description = "Not Found")
+    public EventResponseDTO addManager(
+            @PathParam("id") UUID eventId, @PathParam("userId") UUID userId) {
+        LOG.debugf("Received POST request to /api/manager/events/%s/managers/%s", eventId, userId);
+        User currentUser = userSecurityContext.getCurrentUser();
+        return eventService.addManager(eventId, userId, currentUser);
+    }
+
+    @DELETE
+    @Path("/{id}/managers/{userId}")
+    @APIResponse(
+            responseCode = "200",
+            description = "OK",
+            content = @Content(schema = @Schema(implementation = EventResponseDTO.class)))
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(responseCode = "403", description = "Forbidden")
+    @APIResponse(responseCode = "404", description = "Not Found")
+    public EventResponseDTO removeManager(
+            @PathParam("id") UUID eventId, @PathParam("userId") UUID userId) {
+        LOG.debugf(
+                "Received DELETE request to /api/manager/events/%s/managers/%s", eventId, userId);
+        User currentUser = userSecurityContext.getCurrentUser();
+        return eventService.removeManager(eventId, userId, currentUser);
+    }
 }

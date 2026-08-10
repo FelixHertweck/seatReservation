@@ -101,7 +101,10 @@ public class ReservationService {
         }
         List<ReservationResponseDTO> result =
                 reservationRepository
-                        .find("event.manager", userRepository.getReference(currentUser.id()))
+                        .find(
+                                "SELECT r FROM Reservation r JOIN r.event e JOIN e.managers m WHERE"
+                                        + " m = ?1",
+                                userRepository.getReference(currentUser.id()))
                         .list()
                         .stream()
                         .map(ReservationResponseDTO::new)
@@ -508,7 +511,7 @@ public class ReservationService {
         LOG.debugf(
                 "Checking if manager %s (ID: %s) is allowed to access event ID %s.",
                 manager.id, manager.getId(), event.getId());
-        boolean isAllowed = event.getManager().equals(manager);
+        boolean isAllowed = eventRepository.isUserManager(event.getId(), manager.getId());
         if (isAllowed) {
             LOG.debugf(
                     "Manager %s (ID: %s) is allowed to access event ID %s.",
@@ -698,7 +701,7 @@ public class ReservationService {
                                             "Event with id " + eventId + " not found");
                                 });
 
-        if (!event.getManager().equals(currentUser)
+        if (!eventRepository.isUserManager(event.getId(), currentUser.getId())
                 && !currentUser.getRoles().contains(Roles.ADMIN)) {
             LOG.warnf(
                     "user ID: %s (ID: %s) is not authorized to export reservations for event ID"

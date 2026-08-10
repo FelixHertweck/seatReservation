@@ -561,6 +561,15 @@ export const EventRequestDTOSchema = {
                 format: 'uuid',
                 pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
             }
+        },
+        managerIds: {
+            type: 'array',
+            uniqueItems: true,
+            items: {
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+            }
         }
     }
 } as const;
@@ -612,8 +621,16 @@ export const EventResponseDTOSchema = {
         eventLocationId: {
             $ref: '#/components/schemas/UUID'
         },
-        managerId: {
+        createdByUserId: {
             $ref: '#/components/schemas/UUID'
+        },
+        managerIds: {
+            type: 'array',
+            items: {
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+            }
         },
         supervisorIds: {
             type: 'array',

@@ -38,7 +38,28 @@ public class EventRepository implements PanacheRepositoryBase<Event, UUID> {
      * @return a list of events managed by the specified user
      */
     public List<Event> findByManager(User manager) {
-        return find("manager", manager).list();
+        return find("SELECT DISTINCT e FROM Event e JOIN e.managers m WHERE m = ?1", manager)
+                .list();
+    }
+
+    /**
+     * Checks if a user is a manager for a specific event.
+     *
+     * @param eventId the event ID
+     * @param userId the user ID
+     * @return true if the user is a manager for the event, false otherwise
+     */
+    public boolean isUserManager(UUID eventId, UUID userId) {
+        if (eventId == null || userId == null) {
+            return false;
+        }
+
+        return find(
+                        "SELECT e FROM Event e JOIN e.managers m WHERE e.id = ?1 AND m.id = ?2",
+                        eventId,
+                        userId)
+                .firstResultOptional()
+                .isPresent();
     }
 
     /**
@@ -79,8 +100,8 @@ public class EventRepository implements PanacheRepositoryBase<Event, UUID> {
      */
     public List<Event> findAuthorizedEvents(User user) {
         return find(
-                        "SELECT DISTINCT e FROM Event e LEFT JOIN e.supervisors s WHERE e.manager ="
-                                + " ?1 OR s = ?1",
+                        "SELECT DISTINCT e FROM Event e LEFT JOIN e.supervisors s LEFT JOIN"
+                                + " e.managers m WHERE m = ?1 OR s = ?1",
                         user)
                 .list();
     }

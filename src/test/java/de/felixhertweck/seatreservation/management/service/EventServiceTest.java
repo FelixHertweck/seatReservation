@@ -174,6 +174,19 @@ public class EventServiceTest {
                         Instant.now().plusSeconds(Duration.ofHours(13).toSeconds()),
                         Set.of(supervisorUser));
         existingEvent.id = id(1);
+
+        when(eventRepository.isUserManager(any(UUID.class), any(UUID.class)))
+                .thenAnswer(
+                        invocation -> {
+                            UUID eventId = invocation.getArgument(0);
+                            UUID userId = invocation.getArgument(1);
+                            if (existingEvent != null && existingEvent.id.equals(eventId)) {
+                                return existingEvent.getManagers() != null
+                                        && existingEvent.getManagers().stream()
+                                                .anyMatch(u -> u.id != null && u.id.equals(userId));
+                            }
+                            return false;
+                        });
     }
 
     @Test
@@ -999,5 +1012,97 @@ public class EventServiceTest {
         // Should cancel old reminder and schedule new one
         verify(notificationService, times(1)).cancelEventReminder(existingEvent.id);
         verify(notificationService, times(1)).scheduleEventReminder(any(Event.class));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void createEvent_WithManagers_Success() {
+        User extraManager =
+                new User(
+                        "extra",
+                        "extra@example.com",
+                        true,
+                        false,
+                        "h",
+                        "s",
+                        "Ex",
+                        "Tra",
+                        Set.of(Roles.MANAGER),
+                        Set.of());
+        extraManager.id = id(5);
+
+        EventRequestDTO dto = new EventRequestDTO();
+        dto.setName("Multi Manager Event");
+        dto.setDescription("Description");
+        dto.setStartTime(Instant.now().plusSeconds(Duration.ofDays(5).toSeconds()));
+        dto.setEndTime(Instant.now().plusSeconds(Duration.ofDays(6).toSeconds()));
+        dto.setBookingStartTime(Instant.now().plusSeconds(Duration.ofDays(3).toSeconds()));
+        dto.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(4).toSeconds()));
+        dto.setEventLocationId(eventLocation.id);
+        dto.setManagerIds(Set.of(extraManager.id));
+
+        when(eventLocationRepository.findByIdOptional(eventLocation.id))
+                .thenReturn(Optional.of(eventLocation));
+        PanacheQuery<User> panacheQuery = mock(PanacheQuery.class);
+        when(panacheQuery.list()).thenReturn(List.of(extraManager));
+        when(userRepository.find("id in ?1", Set.of(extraManager.id))).thenReturn(panacheQuery);
+
+        EventResponseDTO createdEvent = eventService.createEvent(dto, managerUser);
+        assertNotNull(createdEvent);
+        assertTrue(createdEvent.managerIds().contains(managerUser.id));
+        assertTrue(createdEvent.managerIds().contains(extraManager.id));
+    }
+
+    @Test
+    void addManager_Success() {
+        User newManager =
+                new User(
+                        "newmgr",
+                        "newmgr@example.com",
+                        true,
+                        false,
+                        "h",
+                        "s",
+                        "New",
+                        "Mgr",
+                        Set.of(Roles.MANAGER),
+                        Set.of());
+        newManager.id = id(6);
+
+        when(eventRepository.findByIdOptional(existingEvent.id))
+                .thenReturn(Optional.of(existingEvent));
+        when(userRepository.findByIdOptional(newManager.id)).thenReturn(Optional.of(newManager));
+
+        EventResponseDTO result =
+                eventService.addManager(existingEvent.id, newManager.id, managerUser);
+        assertNotNull(result);
+        assertTrue(result.managerIds().contains(newManager.id));
+    }
+
+    @Test
+    void removeManager_Success() {
+        User coManager =
+                new User(
+                        "comgr",
+                        "comgr@example.com",
+                        true,
+                        false,
+                        "h",
+                        "s",
+                        "Co",
+                        "Mgr",
+                        Set.of(Roles.MANAGER),
+                        Set.of());
+        coManager.id = id(7);
+        existingEvent.getManagers().add(coManager);
+
+        when(eventRepository.findByIdOptional(existingEvent.id))
+                .thenReturn(Optional.of(existingEvent));
+        when(userRepository.findByIdOptional(coManager.id)).thenReturn(Optional.of(coManager));
+
+        EventResponseDTO result =
+                eventService.removeManager(existingEvent.id, coManager.id, managerUser);
+        assertNotNull(result);
+        assertTrue(!result.managerIds().contains(coManager.id));
     }
 }

@@ -41,7 +41,8 @@ public record EventResponseDTO(
         List<SeatStatusDTO> seatStatuses,
         List<UUID> eventUserAllowancesIds,
         UUID eventLocationId,
-        UUID managerId,
+        UUID createdByUserId,
+        List<UUID> managerIds,
         List<UUID> supervisorIds) {
     public EventResponseDTO(Event event) {
         this(
@@ -61,7 +62,12 @@ public record EventResponseDTO(
                                 .toList()
                         : List.of(),
                 event.getEventLocation() != null ? event.getEventLocation().getId() : null,
-                event.getManager() != null ? event.getManager().getId() : null,
-                event.getSupervisors().stream().map(u -> u.id).toList());
+                event.getCreatedBy() != null ? event.getCreatedBy().getId() : null,
+                event.getManagers() != null
+                        ? event.getManagers().stream().map(u -> u.id).toList()
+                        : List.of(),
+                event.getSupervisors() != null
+                        ? event.getSupervisors().stream().map(u -> u.id).toList()
+                        : List.of());
     }
 }

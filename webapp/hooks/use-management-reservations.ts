@@ -25,7 +25,6 @@ import {
   getApiManagerSeatsOptions,
   getApiManagerReservationsEventByIdOptions,
   getApiManagerReservationsEventByIdQueryKey,
-  getApiManagerReservationsConfirmationEmailByEventIdByUserIdOptions,
   postApiManagerReservationsMutation,
   postApiManagerReservationsBlockMutation,
   postApiManagerReservationsResendConfirmationByEventIdByUserIdMutation,
