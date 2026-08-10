@@ -32,6 +32,7 @@
               {#for seat in seats}<li>{seat.number} ({seat.row}){#if seat.area} - {seat.area}{/if}</li>{/for}
           </ul>
 {#include email/fragments/qrcode-block /}
+{#include email/fragments/wallet-block /}
 {#include email/fragments/entrance-info-block /}
           <p>You can view the event details here: <a href="{eventLink}">View Event</a></p>
           <div class="seatmap-container">

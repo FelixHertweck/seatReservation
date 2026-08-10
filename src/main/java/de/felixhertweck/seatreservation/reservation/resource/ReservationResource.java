@@ -88,7 +88,7 @@ public class ReservationResource {
     }
 
     @GET
-    @Path("/{id}")
+    @Path("/{id:[a-fA-F0-9-]{36}}")
     @APIResponse(
             responseCode = "200",
             description = "OK",

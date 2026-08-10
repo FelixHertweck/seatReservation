@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/custom-ui/button";
 import {
   Dialog,
   DialogContent,
@@ -11,12 +10,18 @@ import {
 } from "@/components/custom-ui/dialog";
 import { useT } from "@/lib/i18n/hooks";
 import { sanitizeFileName } from "@/lib/utils/filename";
-import { Download } from "lucide-react";
+import { Loader2, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import QRCode from "qrcode";
-import type { UserReservationResponseDto } from "@/api";
+import {
+  getApiUserWalletReservationsByIdByProvider,
+  getApiUserWalletConfig,
+  type UserReservationResponseDto,
+  type WalletConfigDto,
+} from "@/api";
 import Image from "next/image";
+import { useParams } from "next/navigation";
 
 interface QRCodeModalProps {
   isOpen: boolean;
@@ -34,7 +39,23 @@ export function QRCodeModal({
   userId,
 }: QRCodeModalProps) {
   const t = useT();
+  const params = useParams();
+  const locale = (params?.locale as string) ?? "en";
+
+  // Official wallet badges — locale-aware as required by Apple and Google brand guidelines
+  const googleBadgeSrc =
+    locale === "de"
+      ? "/wallet/google/de_add_to_google_wallet_add-wallet-badge.svg"
+      : "/wallet/google/enUS_add_to_google_wallet_add-wallet-badge.svg";
+  const appleBadgeSrc =
+    locale === "de"
+      ? "/wallet/apple/DE_Add_to_Apple_Wallet_RGB_101421.svg"
+      : "/wallet/apple/US-UK_Add_to_Apple_Wallet_RGB_101421.svg";
+
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>("");
+  const [walletConfig, setWalletConfig] = useState<WalletConfigDto | null>(
+    null,
+  );
 
   const firstReservation = reservations[0];
   const hasCheckInToken = !!firstReservation?.checkInToken;
@@ -81,20 +102,69 @@ export function QRCodeModal({
     generateQRCode();
   }, [isOpen, reservations, userId, hasCheckInToken, t]);
 
-  const handleDownloadQRCode = () => {
-    if (!qrCodeDataUrl) return;
+  useEffect(() => {
+    if (!isOpen) return;
 
-    const link = document.createElement("a");
-    link.href = qrCodeDataUrl;
-    const fileName = `${sanitizeFileName(eventName)}-check-in-code.png`;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const fetchWalletConfig = async () => {
+      try {
+        const response = await getApiUserWalletConfig();
+        if (response.data) {
+          setWalletConfig(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching wallet config:", error);
+      }
+    };
 
-    toast.success(t("qrCodeModal.downloadStarted"), {
-      description: t("qrCodeModal.qrCodeDownloading"),
-    });
+    fetchWalletConfig();
+  }, [isOpen]);
+
+  const [loadingProvider, setLoadingProvider] = useState<
+    "GOOGLE" | "APPLE" | "GENERIC_PKPASS" | null
+  >(null);
+
+  const handleWalletPass = async (
+    provider: "GOOGLE" | "APPLE" | "GENERIC_PKPASS",
+  ) => {
+    if (!firstReservation?.id) return;
+    setLoadingProvider(provider);
+
+    try {
+      const response = await getApiUserWalletReservationsByIdByProvider({
+        path: {
+          id: firstReservation.id,
+          provider: provider as "GOOGLE" | "APPLE",
+        },
+        parseAs: provider === "GOOGLE" ? "json" : "blob",
+      });
+
+      if (response.error || !response.data) {
+        throw new Error(`Failed to generate ${provider} wallet pass`);
+      }
+
+      if (provider === "GOOGLE") {
+        const data = response.data as { url?: string };
+        if (data.url) {
+          window.open(data.url, "_blank");
+        }
+      } else {
+        const blob = response.data as unknown as Blob;
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        const ext = reservations.length > 1 ? "pkpasses" : "pkpass";
+        a.download = `${sanitizeFileName(eventName || "ticket")}.${ext}`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }
+    } catch (error) {
+      console.error(`Error adding to ${provider} wallet:`, error);
+      toast.error(t("qrCodeModal.walletError"));
+    } finally {
+      setLoadingProvider(null);
+    }
   };
 
   return (
@@ -131,15 +201,84 @@ export function QRCodeModal({
           )}
         </div>
 
-        <DialogFooter className="gap-2">
-          <Button
-            onClick={handleDownloadQRCode}
-            disabled={!qrCodeDataUrl}
-            className="flex-1"
-          >
-            <Download className="mr-2 h-4 w-4" />
-            {t("qrCodeModal.downloadButton")}
-          </Button>
+        <DialogFooter className="flex-col sm:flex-col gap-2">
+          {hasCheckInToken &&
+            (walletConfig?.googleEnabled ||
+              walletConfig?.appleEnabled ||
+              walletConfig?.genericEnabled) && (
+              <div className="flex flex-col sm:flex-row gap-3 w-full pt-2 items-center justify-center flex-wrap">
+                {/* Google Wallet — official badge, must not be modified per Google brand guidelines */}
+                {walletConfig?.googleEnabled && (
+                  <button
+                    type="button"
+                    onClick={() => handleWalletPass("GOOGLE")}
+                    disabled={loadingProvider !== null}
+                    aria-label={t("qrCodeModal.googleWalletButton")}
+                    className="flex items-center justify-center w-48 h-12 rounded-lg overflow-hidden disabled:opacity-50 transition-opacity hover:opacity-85 active:opacity-70"
+                  >
+                    {loadingProvider === "GOOGLE" ? (
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    ) : (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={googleBadgeSrc}
+                        alt={t("qrCodeModal.googleWalletButton")}
+                        className="h-full w-full object-contain"
+                      />
+                    )}
+                  </button>
+                )}
+
+                {/* Apple Wallet — official badge, must not be modified per Apple brand guidelines */}
+                {walletConfig?.appleEnabled && (
+                  <button
+                    type="button"
+                    onClick={() => handleWalletPass("APPLE")}
+                    disabled={loadingProvider !== null}
+                    aria-label={t("qrCodeModal.appleWalletButton")}
+                    className="flex items-center justify-center w-48 h-12 rounded-lg overflow-hidden disabled:opacity-50 transition-opacity hover:opacity-85 active:opacity-70"
+                  >
+                    {loadingProvider === "APPLE" ? (
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    ) : (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={appleBadgeSrc}
+                        alt={t("qrCodeModal.appleWalletButton")}
+                        className="h-full w-full object-contain"
+                      />
+                    )}
+                  </button>
+                )}
+
+                {/* Generic Wallet / PKPass Button */}
+                {walletConfig?.genericEnabled && (
+                  <button
+                    type="button"
+                    onClick={() => handleWalletPass("GENERIC_PKPASS")}
+                    disabled={loadingProvider !== null}
+                    aria-label={t("qrCodeModal.genericWalletButton")}
+                    className="flex items-center justify-center gap-2 px-4 py-2.5 h-12 rounded-lg bg-slate-900 text-white hover:bg-slate-800 active:bg-slate-700 disabled:opacity-50 transition-all font-medium text-sm border border-slate-700 shadow-sm min-w-[192px]"
+                  >
+                    {loadingProvider === "GENERIC_PKPASS" ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <>
+                        <Wallet className="h-5 w-5 text-white" />
+                        <span>{t("qrCodeModal.genericWalletButton")}</span>
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+            )}
+
+          {hasCheckInToken &&
+            (walletConfig?.googleEnabled || walletConfig?.appleEnabled) && (
+              <p className="text-xs text-muted-foreground text-center">
+                {t("qrCodeModal.trademarkNotice")}
+              </p>
+            )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -54,6 +54,7 @@ import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
+import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
@@ -68,6 +69,7 @@ import org.mockito.Mockito;
 public class EventLocationServiceTest {
 
     @InjectMock EventLocationRepository eventLocationRepository;
+    @InjectMock EventRepository eventRepository;
     @InjectMock UserRepository userRepository;
     @InjectMock SeatRepository seatRepository;
 
@@ -86,7 +88,7 @@ public class EventLocationServiceTest {
     @BeforeEach
     @SuppressWarnings("unused")
     void setUp() {
-        Mockito.reset(eventLocationRepository, userRepository, seatRepository);
+        Mockito.reset(eventLocationRepository, eventRepository, userRepository, seatRepository);
 
         adminUser =
                 new User(
@@ -299,6 +301,7 @@ public class EventLocationServiceTest {
         assertEquals("Updated Hall", updatedLocation.name());
         assertEquals("Updated Street 1", updatedLocation.address());
         verify(eventLocationRepository, times(1)).persist(existingLocation);
+        verify(eventRepository, times(1)).findByEventLocation(existingLocation);
     }
 
     @Test

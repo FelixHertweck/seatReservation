@@ -287,10 +287,46 @@ export function useLocationEditorSave({
   );
 
   const updateMeta = useCallback(
-    (changes: Partial<Omit<LocationMeta, "serverId">>) => {
-      dispatch({ type: "SET_META", meta: changes });
+    async (changes: Partial<Omit<LocationMeta, "serverId">>) => {
+      const currentMeta = stateRef.current.meta;
+      const updatedMeta = { ...currentMeta, ...changes };
+      const body: EventLocationUpdateDto = {
+        name: updatedMeta.name,
+        address: updatedMeta.address,
+      };
+      try {
+        const data = await metaUpdate.mutateAsync({
+          path: { id: currentMeta.serverId },
+          body,
+        });
+        dispatch({
+          type: "SET_META",
+          meta: {
+            name: data.name ?? updatedMeta.name,
+            address: data.address ?? updatedMeta.address,
+          },
+          dirty: false,
+        });
+        queryClient.setQueriesData(
+          { queryKey: getApiManagerEventlocationsQueryKey() },
+          (oldData: EventLocationResponseDto[] | undefined) =>
+            oldData
+              ? oldData.map((location) =>
+                  location.id === data.id ? data : location,
+                )
+              : oldData,
+        );
+        toast.success(t("management.locations.updateSuccess"));
+        return true;
+      } catch (err) {
+        const error = err as ErrorWithResponse;
+        toast.error(t("management.locationEditor.saveFailed"), {
+          description: error?.response?.description,
+        });
+        return false;
+      }
     },
-    [dispatch],
+    [metaUpdate, queryClient, dispatch, t],
   );
 
   // ---- saveAll: the only place that talks to the network ----

@@ -76,6 +76,10 @@ public class EventServiceTest {
     @InjectMock EventUserAllowanceRepository eventUserAllowanceRepository;
     @InjectMock NotificationService notificationService;
 
+    @InjectMock
+    jakarta.enterprise.event.Event<de.felixhertweck.seatreservation.common.events.EventUpdatedEvent>
+            eventUpdatedBus;
+
     @Inject EventService eventService;
     @Inject EventReservationAllowanceService eventReservationAllowanceService;
 
@@ -308,6 +312,11 @@ public class EventServiceTest {
         assertNotNull(updatedEvent);
         assertEquals("Updated Event", updatedEvent.name());
         verify(eventRepository, times(1)).persist(existingEvent);
+        verify(eventUpdatedBus, times(1))
+                .fireAsync(
+                        any(
+                                de.felixhertweck.seatreservation.common.events.EventUpdatedEvent
+                                        .class));
     }
 
     @Test

@@ -29,7 +29,11 @@ function withPendingDeletion<T extends { localId: string; serverId?: string }>(
 // the same tick, to fire the create request and later reconcile it.
 export type EditorAction =
   | { type: "HYDRATE"; state: LocationEditorState }
-  | { type: "SET_META"; meta: Partial<Omit<LocationMeta, "serverId">> }
+  | {
+      type: "SET_META";
+      meta: Partial<Omit<LocationMeta, "serverId">>;
+      dirty?: boolean;
+    }
   | { type: "ADD_SEAT"; seat: Omit<EditorSeat, "syncState"> }
   | {
       type: "ADD_SEATS_BULK";
@@ -123,7 +127,7 @@ export function editorReducer(
       return {
         ...state,
         meta: { ...state.meta, ...action.meta },
-        metaDirty: true,
+        metaDirty: action.dirty ?? true,
       };
 
     case "ADD_SEAT":

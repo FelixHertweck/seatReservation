@@ -52,6 +52,9 @@ import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.utils.QRCodeImage;
+import de.felixhertweck.seatreservation.wallet.dto.WalletPassResponseDTO;
+import de.felixhertweck.seatreservation.wallet.dto.WalletProvider;
+import de.felixhertweck.seatreservation.wallet.service.WalletPassService;
 import io.quarkus.qute.Location;
 import io.quarkus.qute.Template;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -80,6 +83,9 @@ public class ReservationEmailContent {
     private static final String KEY_SEATMAP_LINK = "seatmapLink";
     private static final String KEY_CURRENT_YEAR = "currentYear";
     private static final String KEY_SEATS = "seats";
+    private static final String KEY_GOOGLE_WALLET_LINK = "googleWalletLink";
+    private static final String KEY_APPLE_WALLET_LINK = "appleWalletLink";
+    private static final String KEY_FRONTEND_BASE_URL = "frontendBaseUrl";
 
     @Inject SeatRepository seatRepository;
 
@@ -88,6 +94,8 @@ public class ReservationEmailContent {
     @Inject EmailSeatMapService emailSeatMapService;
 
     @Inject EmailSender emailSender;
+
+    @Inject WalletPassService walletPassService;
 
     @ConfigProperty(name = "email.frontend-base-url", defaultValue = "")
     String frontendBaseUrl;
@@ -281,6 +289,25 @@ public class ReservationEmailContent {
         return frontendBaseUrl.trim() + "/email/seatmap?token=" + token;
     }
 
+    private String generateAppleWalletLink(String token) {
+        if (!walletPassService.isAppleWalletEnabled()) return null;
+        if (token == null || token.isBlank()) return null;
+        return frontendBaseUrl.trim() + "/api/email/wallet/apple?token=" + token;
+    }
+
+    private String generateGoogleWalletLink(User user, Reservation reservation) {
+        if (!walletPassService.isGoogleWalletEnabled()) return null;
+        if (user == null || reservation == null || reservation.id == null) return null;
+        try {
+            WalletPassResponseDTO dto =
+                    walletPassService.generatePass(reservation.id, user, WalletProvider.GOOGLE);
+            return dto != null ? dto.url() : null;
+        } catch (Exception e) {
+            LOG.debugf("Could not generate Google Wallet link for email: %s", e.getMessage());
+            return null;
+        }
+    }
+
     private String embedImageAsDataUri(String htmlContent, String cidPlaceholder, byte[] image) {
         if (image != null && image.length > 0) {
             String dataUri = "data:image/png;base64," + Base64.getEncoder().encodeToString(image);
@@ -377,6 +404,9 @@ public class ReservationEmailContent {
 
         String entranceInfo = generateEntranceInfo(reservations, seatById);
 
+        String googleWalletLink = generateGoogleWalletLink(user, reservations.getFirst());
+        String appleWalletLink = generateAppleWalletLink(seatmapToken);
+
         String htmlContent =
                 reservationConfirmationTemplate
                         .data(KEY_USER_NAME, user.getUsername())
@@ -391,6 +421,9 @@ public class ReservationEmailContent {
                         .data(KEY_ENTRANCE_INFO, entranceInfo)
                         .data(KEY_EVENT_LINK, generateEventLink(event.id))
                         .data(KEY_SEATMAP_LINK, seatmapLink)
+                        .data(KEY_GOOGLE_WALLET_LINK, googleWalletLink)
+                        .data(KEY_APPLE_WALLET_LINK, appleWalletLink)
+                        .data(KEY_FRONTEND_BASE_URL, frontendBaseUrl.trim())
                         .data(KEY_CURRENT_YEAR, currentYear())
                         .render();
 
@@ -522,6 +555,23 @@ public class ReservationEmailContent {
         }
         boolean showQrCode = includeQrCode && qrCodeImage.length > 0;
 
+        User qrOwner =
+                (reservations != null && !reservations.isEmpty())
+                        ? reservations.getFirst().getUser()
+                        : null;
+        String seatmapToken =
+                (qrOwner != null
+                                && event != null
+                                && reservations != null
+                                && !reservations.isEmpty())
+                        ? emailSeatMapService.createEmailSeatMapToken(qrOwner, event, reservations)
+                        : null;
+        String googleWalletLink =
+                (qrOwner != null && reservations != null && !reservations.isEmpty())
+                        ? generateGoogleWalletLink(qrOwner, reservations.getFirst())
+                        : null;
+        String appleWalletLink = generateAppleWalletLink(seatmapToken);
+
         String emailHtml =
                 boxOfficeConfirmationTemplate
                         .data("recipientName", recipientName)
@@ -533,6 +583,9 @@ public class ReservationEmailContent {
                         .data(KEY_ENTRANCE_INFO, entranceInfo)
                         .data("showQrCode", showQrCode)
                         .data("qrCodeImageSrc", "cid:qrcode-image")
+                        .data(KEY_GOOGLE_WALLET_LINK, googleWalletLink)
+                        .data(KEY_APPLE_WALLET_LINK, appleWalletLink)
+                        .data(KEY_FRONTEND_BASE_URL, frontendBaseUrl.trim())
                         .data(KEY_CURRENT_YEAR, currentYear())
                         .render();
 
@@ -547,6 +600,9 @@ public class ReservationEmailContent {
                         .data(KEY_ENTRANCE_INFO, entranceInfo)
                         .data("showQrCode", showQrCode)
                         .data("qrCodeImageSrc", qrCodeDataUri)
+                        .data(KEY_GOOGLE_WALLET_LINK, googleWalletLink)
+                        .data(KEY_APPLE_WALLET_LINK, appleWalletLink)
+                        .data(KEY_FRONTEND_BASE_URL, frontendBaseUrl.trim())
                         .data(KEY_CURRENT_YEAR, currentYear())
                         .render();
 
@@ -619,6 +675,12 @@ public class ReservationEmailContent {
         String entranceInfo =
                 hasActiveSeats ? generateEntranceInfo(activeReservations, seatById) : "";
 
+        String googleWalletLink =
+                hasActiveSeats
+                        ? generateGoogleWalletLink(user, activeReservations.getFirst())
+                        : null;
+        String appleWalletLink = generateAppleWalletLink(seatmapToken);
+
         String htmlContent =
                 reservationUpdateTemplate
                         .data(KEY_USER_NAME, user.getUsername())
@@ -633,6 +695,9 @@ public class ReservationEmailContent {
                         .data(KEY_ENTRANCE_INFO, entranceInfo)
                         .data(KEY_EVENT_LINK, generateEventLink(event.id))
                         .data(KEY_SEATMAP_LINK, seatmapLink)
+                        .data(KEY_GOOGLE_WALLET_LINK, googleWalletLink)
+                        .data(KEY_APPLE_WALLET_LINK, appleWalletLink)
+                        .data(KEY_FRONTEND_BASE_URL, frontendBaseUrl.trim())
                         .data(KEY_CURRENT_YEAR, currentYear())
                         .render();
 
@@ -667,6 +732,12 @@ public class ReservationEmailContent {
         List<SeatView> seats = toSeatViews(reservations, seatById);
         String entranceInfo = generateEntranceInfo(reservations, seatById);
 
+        String googleWalletLink =
+                (reservations != null && !reservations.isEmpty())
+                        ? generateGoogleWalletLink(user, reservations.getFirst())
+                        : null;
+        String appleWalletLink = generateAppleWalletLink(seatmapToken);
+
         String htmlContent =
                 eventReminderTemplate
                         .data(KEY_USER_NAME, user.getUsername())
@@ -689,6 +760,9 @@ public class ReservationEmailContent {
                         .data(KEY_ENTRANCE_INFO, entranceInfo)
                         .data(KEY_SEATMAP_LINK, seatmapLink)
                         .data(KEY_EVENT_LINK, generateEventLink(event.id))
+                        .data(KEY_GOOGLE_WALLET_LINK, googleWalletLink)
+                        .data(KEY_APPLE_WALLET_LINK, appleWalletLink)
+                        .data(KEY_FRONTEND_BASE_URL, frontendBaseUrl.trim())
                         .data(KEY_CURRENT_YEAR, currentYear())
                         .render();
 

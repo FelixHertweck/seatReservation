@@ -31,6 +31,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
+import de.felixhertweck.seatreservation.common.events.EventUpdatedEvent;
 import de.felixhertweck.seatreservation.management.dto.EventLocationRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationResponseDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationUpdateDTO;
@@ -38,6 +39,7 @@ import de.felixhertweck.seatreservation.management.dto.ImportAreaDto;
 import de.felixhertweck.seatreservation.management.dto.ImportMarkerDto;
 import de.felixhertweck.seatreservation.management.dto.ImportSeatDto;
 import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
+import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
 import de.felixhertweck.seatreservation.model.entity.EventLocationEntrance;
@@ -45,6 +47,7 @@ import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
+import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
@@ -57,9 +60,11 @@ public class EventLocationService {
     private static final Logger LOG = Logger.getLogger(EventLocationService.class);
 
     @Inject EventLocationRepository eventLocationRepository;
+    @Inject EventRepository eventRepository;
     @Inject SeatRepository seatRepository;
     @Inject UserRepository userRepository;
     @Inject EventLocationAccessService eventLocationAccessService;
+    @Inject jakarta.enterprise.event.Event<EventUpdatedEvent> eventUpdatedBus;
 
     /**
      * Retrieves a list of EventLocations belonging to the currently authenticated manager. If the
@@ -227,6 +232,21 @@ public class EventLocationService {
         LOG.infof(
                 "Event location '%s' (ID: %s) updated successfully by manager ID: %s",
                 location.getName(), location.getId(), manager.id());
+
+        // Notify observers (e.g. Google Wallet) that events at this location have updated venue
+        // information
+        List<Event> associatedEvents = eventRepository.findByEventLocation(location);
+        for (Event ev : associatedEvents) {
+            eventUpdatedBus.fireAsync(
+                    new EventUpdatedEvent(
+                            ev.getId(),
+                            ev.getName(),
+                            location.getName(),
+                            location.getAddress(),
+                            ev.getStartTime(),
+                            ev.getEndTime()));
+        }
+
         return new EventLocationResponseDTO(location);
     }
 

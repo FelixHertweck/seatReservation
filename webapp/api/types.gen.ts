@@ -661,6 +661,28 @@ export type VerifyEmailCodeRequestDto = {
     verificationCode: string;
 };
 
+export type WalletConfigDto = {
+    googleEnabled?: boolean;
+    appleEnabled?: boolean;
+    genericEnabled?: boolean;
+};
+
+export type WalletPassResponseDto = {
+    provider?: WalletProvider;
+    url?: string;
+    content?: Blob | File;
+    contentType?: string;
+    filename?: string;
+};
+
+export const WalletProvider = {
+    GOOGLE: 'GOOGLE',
+    APPLE: 'APPLE',
+    GENERIC_PKPASS: 'GENERIC_PKPASS'
+} as const;
+
+export type WalletProvider = typeof WalletProvider[keyof typeof WalletProvider];
+
 export type WebAuthnCredentialDto = {
     id?: Uuid;
     label?: string;
@@ -1250,6 +1272,38 @@ export type GetApiEmailSeatmapResponses = {
 };
 
 export type GetApiEmailSeatmapResponse = GetApiEmailSeatmapResponses[keyof GetApiEmailSeatmapResponses];
+
+export type GetApiEmailWalletAppleData = {
+    body?: never;
+    path?: never;
+    query?: {
+        token?: string;
+    };
+    url: '/api/email/wallet/apple';
+};
+
+export type GetApiEmailWalletAppleResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type GetApiEmailWalletGoogleData = {
+    body?: never;
+    path?: never;
+    query?: {
+        token?: string;
+    };
+    url: '/api/email/wallet/google';
+};
+
+export type GetApiEmailWalletGoogleResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
 
 export type DeleteApiManagerAreasData = {
     body?: never;
@@ -3573,6 +3627,56 @@ export type PostApiUserVerifyEmailCodeResponses = {
      */
     200: unknown;
 };
+
+export type GetApiUserWalletConfigData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/user/wallet/config';
+};
+
+export type GetApiUserWalletConfigResponses = {
+    /**
+     * OK
+     */
+    200: WalletConfigDto;
+};
+
+export type GetApiUserWalletConfigResponse = GetApiUserWalletConfigResponses[keyof GetApiUserWalletConfigResponses];
+
+export type GetApiUserWalletReservationsByIdByProviderData = {
+    body?: never;
+    path: {
+        id: Uuid;
+        provider: string;
+    };
+    query?: never;
+    url: '/api/user/wallet/reservations/{id}/{provider}';
+};
+
+export type GetApiUserWalletReservationsByIdByProviderErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Forbidden
+     */
+    403: unknown;
+    /**
+     * Reservation not found
+     */
+    404: unknown;
+};
+
+export type GetApiUserWalletReservationsByIdByProviderResponses = {
+    /**
+     * OK
+     */
+    200: WalletPassResponseDto;
+};
+
+export type GetApiUserWalletReservationsByIdByProviderResponse = GetApiUserWalletReservationsByIdByProviderResponses[keyof GetApiUserWalletReservationsByIdByProviderResponses];
 
 export type GetApiUsersAdminData = {
     body?: never;

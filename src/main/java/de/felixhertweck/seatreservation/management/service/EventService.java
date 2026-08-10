@@ -31,6 +31,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import de.felixhertweck.seatreservation.common.events.EventUpdatedEvent;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.email.service.NotificationService;
 import de.felixhertweck.seatreservation.management.dto.EventRequestDTO;
@@ -63,6 +64,8 @@ public class EventService {
     @Inject NotificationService notificationService;
 
     @Inject EventAccessService eventAccessService;
+
+    @Inject jakarta.enterprise.event.Event<EventUpdatedEvent> eventUpdatedBus;
 
     /**
      * Creates a new Event and assigns the currently authenticated manager as its creator. Access
@@ -247,6 +250,15 @@ public class EventService {
             // Cancel reminder if reminder date was removed
             notificationService.cancelEventReminder(event.getId());
         }
+
+        eventUpdatedBus.fireAsync(
+                new de.felixhertweck.seatreservation.common.events.EventUpdatedEvent(
+                        event.getId(),
+                        event.getName(),
+                        location != null ? location.getName() : null,
+                        location != null ? location.getAddress() : null,
+                        event.getStartTime(),
+                        event.getEndTime()));
 
         return new EventResponseDTO(event);
     }

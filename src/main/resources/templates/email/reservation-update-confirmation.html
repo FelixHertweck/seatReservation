@@ -27,6 +27,7 @@
               {#for seat in activeSeats}<li>{seat.number} ({seat.row}){#if seat.area} - {seat.area}{/if}</li>{/for}
           </ul>
 {#include email/fragments/qrcode-block /}
+{#include email/fragments/wallet-block /}
 {#include email/fragments/entrance-info-block /}
           <div class="seatmap-container">
               <p><strong>Here is an overview of your current seats:</strong></p>
