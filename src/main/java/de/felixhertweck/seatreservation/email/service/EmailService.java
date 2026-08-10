@@ -452,64 +452,34 @@ public class EmailService {
     }
 
     /**
-     * Sends a reservation confirmation email to the user.
+     * The rendered reservation confirmation, shared by {@link #sendReservationConfirmation} and
+     * {@link #getReservationConfirmationDisplayContent} -- {@code htmlContent} still references the
+     * seatmap/QR images via {@code cid:} placeholders, which the email path resolves through MIME
+     * attachments and the display path resolves by inlining them as {@code data:} URIs.
      *
-     * @param user The user to whom the email will be sent.
-     * @param reservations The list of reservations to include in the email.
-     * @param additionalMailAddress An optional email address to override the user's email.
-     * @throws IOException If an error occurs while sending the email.
+     * @param htmlContent the rendered HTML, referencing images via {@code cid:seatmap-image} and
+     *     {@code cid:qrcode-image}
+     * @param seatmapPng the rendered seat map PNG (may be empty)
+     * @param qrCodeImage the QR code PNG (may be empty)
      */
-    public void sendReservationConfirmation(
-            User user, List<Reservation> reservations, String additionalMailAddress)
-            throws IOException {
-        sendReservationConfirmation(user, reservations, additionalMailAddress, true);
-    }
+    private record ReservationConfirmationContent(
+            String htmlContent, byte[] seatmapPng, byte[] qrCodeImage) {}
 
     /**
-     * Sends a reservation confirmation email to the user.
+     * Renders the reservation confirmation email content shared by the queued email and the
+     * on-screen display view.
      *
-     * @param user The user to whom the email will be sent.
-     * @param reservations The list of reservations to include in the email.
-     * @param additionalMailAddress An optional email address to override the user's email.
+     * @param user The user to whom the reservations belong.
+     * @param reservations The list of reservations to include (must be non-null and non-empty).
      * @param includeExistingReservations when {@code false}, the "already reserved" seat list is
      *     not computed from {@code user}'s other reservations for the event. Needed for the box
      *     office's shared guest account, where every walk-in reservation is stored under the same
      *     {@code User} row -- without this, one guest's confirmation would list every other guest's
      *     box-office seats for the same event as "already reserved".
-     * @throws IOException If an error occurs while sending the email.
+     * @return the rendered content, with images still referenced via {@code cid:} placeholders
      */
-    public void sendReservationConfirmation(
-            User user,
-            List<Reservation> reservations,
-            String additionalMailAddress,
-            boolean includeExistingReservations)
-            throws IOException {
-        List<String> emailAddresses = new ArrayList<>();
-        if (!skipForNullOrEmptyAddress(user.getEmail())
-                && !skipForLocalhostAddress(user.getEmail())) {
-            emailAddresses.add(user.getEmail());
-        }
-        if (!skipForNullOrEmptyAddress(additionalMailAddress)
-                && !skipForLocalhostAddress(additionalMailAddress)
-                && !emailAddresses.contains(additionalMailAddress)) {
-            emailAddresses.add(additionalMailAddress);
-        }
-        if (emailAddresses.isEmpty()) {
-            LOG.warn("No valid email addresses provided for reservation confirmation.");
-            return;
-        }
-
-        LOG.debug(
-                String.format(
-                        "User ID: %s, Number of reservations: %d",
-                        user.id, reservations != null ? reservations.size() : 0));
-
-        if (reservations == null || reservations.isEmpty()) {
-            LOG.warnf(
-                    "No reservations provided for confirmation email to user %s.", user.getEmail());
-            return;
-        }
-
+    private ReservationConfirmationContent renderReservationConfirmation(
+            User user, List<Reservation> reservations, boolean includeExistingReservations) {
         Event event = reservations.getFirst().getEvent();
         String eventName = event.getName();
         LOG.debugf("Event for reservation confirmation: %s (ID: %s)", eventName, event.id);
@@ -581,19 +551,28 @@ public class EmailService {
                         .data("currentYear", currentYear())
                         .render();
 
-        CheckInToken token =
-                reservations != null && !reservations.isEmpty()
-                        ? reservations.getFirst().getCheckInToken()
-                        : null;
+        CheckInToken token = reservations.getFirst().getCheckInToken();
         String qrCodeContent = generateQrCodeContent(user, event, token);
         byte[] qrCodeImage = generateQrCodeImage(qrCodeContent);
 
-        enqueue(
-                emailAddresses,
-                EMAIL_HEADER_RESERVATION_CONFIRMATION,
-                htmlContent,
-                buildImageAttachments(pngImage, qrCodeImage),
-                true);
+        return new ReservationConfirmationContent(htmlContent, pngImage, qrCodeImage);
+    }
+
+    /**
+     * Replaces a {@code cid:} image placeholder with an inline {@code data:} URI, or with an empty
+     * string when the image could not be rendered.
+     *
+     * @param htmlContent the HTML containing the placeholder
+     * @param cidPlaceholder the {@code cid:...} placeholder to replace
+     * @param image the image bytes to embed (may be empty)
+     * @return the HTML with the placeholder resolved
+     */
+    private String embedImageAsDataUri(String htmlContent, String cidPlaceholder, byte[] image) {
+        if (image != null && image.length > 0) {
+            String dataUri = "data:image/png;base64," + Base64.getEncoder().encodeToString(image);
+            return htmlContent.replace(cidPlaceholder, dataUri);
+        }
+        return htmlContent.replace(cidPlaceholder, "");
     }
 
     /**
@@ -601,11 +580,117 @@ public class EmailService {
      *
      * @param user The user to whom the email will be sent.
      * @param reservations The list of reservations to include in the email.
+     * @param additionalMailAddress An optional email address to override the user's email.
+     * @return {@code true} if the email was enqueued, {@code false} if it was skipped (e.g. no
+     *     valid email address or no reservations to include).
      * @throws IOException If an error occurs while sending the email.
      */
-    public void sendReservationConfirmation(User user, List<Reservation> reservations)
+    public boolean sendReservationConfirmation(
+            User user, List<Reservation> reservations, String additionalMailAddress)
             throws IOException {
-        sendReservationConfirmation(user, reservations, null);
+        return sendReservationConfirmation(user, reservations, additionalMailAddress, true);
+    }
+
+    /**
+     * Sends a reservation confirmation email to the user.
+     *
+     * @param user The user to whom the email will be sent.
+     * @param reservations The list of reservations to include in the email.
+     * @param additionalMailAddress An optional email address to override the user's email.
+     * @param includeExistingReservations when {@code false}, the "already reserved" seat list is
+     *     not computed from {@code user}'s other reservations for the event. Needed for the box
+     *     office's shared guest account, where every walk-in reservation is stored under the same
+     *     {@code User} row -- without this, one guest's confirmation would list every other guest's
+     *     box-office seats for the same event as "already reserved".
+     * @return {@code true} if the email was enqueued, {@code false} if it was skipped (e.g. no
+     *     valid email address or no reservations to include).
+     * @throws IOException If an error occurs while sending the email.
+     */
+    public boolean sendReservationConfirmation(
+            User user,
+            List<Reservation> reservations,
+            String additionalMailAddress,
+            boolean includeExistingReservations)
+            throws IOException {
+        List<String> emailAddresses = new ArrayList<>();
+        if (!skipForNullOrEmptyAddress(user.getEmail())
+                && !skipForLocalhostAddress(user.getEmail())) {
+            emailAddresses.add(user.getEmail());
+        }
+        if (!skipForNullOrEmptyAddress(additionalMailAddress)
+                && !skipForLocalhostAddress(additionalMailAddress)
+                && !emailAddresses.contains(additionalMailAddress)) {
+            emailAddresses.add(additionalMailAddress);
+        }
+        if (emailAddresses.isEmpty()) {
+            LOG.warn("No valid email addresses provided for reservation confirmation.");
+            return false;
+        }
+
+        LOG.debug(
+                String.format(
+                        "User ID: %s, Number of reservations: %d",
+                        user.id, reservations != null ? reservations.size() : 0));
+
+        if (reservations == null || reservations.isEmpty()) {
+            LOG.warnf(
+                    "No reservations provided for confirmation email to user %s.", user.getEmail());
+            return false;
+        }
+
+        ReservationConfirmationContent content =
+                renderReservationConfirmation(user, reservations, includeExistingReservations);
+
+        enqueue(
+                emailAddresses,
+                EMAIL_HEADER_RESERVATION_CONFIRMATION,
+                content.htmlContent(),
+                buildImageAttachments(content.seatmapPng(), content.qrCodeImage()),
+                true);
+        return true;
+    }
+
+    /**
+     * Sends a reservation confirmation email to the user.
+     *
+     * @param user The user to whom the email will be sent.
+     * @param reservations The list of reservations to include in the email.
+     * @return {@code true} if the email was enqueued, {@code false} if it was skipped (e.g. no
+     *     valid email address or no reservations to include).
+     * @throws IOException If an error occurs while sending the email.
+     */
+    public boolean sendReservationConfirmation(User user, List<Reservation> reservations)
+            throws IOException {
+        return sendReservationConfirmation(user, reservations, null);
+    }
+
+    /**
+     * Renders the reservation confirmation email HTML with inline base64 image URIs for on-screen
+     * or print display.
+     *
+     * @param user The user to whom the reservation belongs.
+     * @param reservations The list of reservations for the user.
+     * @return The rendered HTML content with embedded data URIs.
+     */
+    public String getReservationConfirmationDisplayContent(
+            User user, List<Reservation> reservations) {
+        if (reservations == null || reservations.isEmpty()) {
+            return "";
+        }
+
+        ReservationConfirmationContent content =
+                renderReservationConfirmation(user, reservations, true);
+
+        String htmlContent =
+                embedImageAsDataUri(
+                        content.htmlContent(), "cid:seatmap-image", content.seatmapPng());
+        htmlContent = embedImageAsDataUri(htmlContent, "cid:qrcode-image", content.qrCodeImage());
+
+        return htmlContent;
+    }
+
+    public String getReservationConfirmationSubject() {
+        return EMAIL_HEADER_RESERVATION_CONFIRMATION;
     }
 
     /**

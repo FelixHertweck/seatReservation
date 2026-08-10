@@ -16,10 +16,13 @@ import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { SeatMap } from "@/components/common/seat-map";
 import SeatmapLegend from "@/components/common/seatmap-legend";
 import { ReservationActionPanel } from "@/components/management/reservations/reservation-action-panel";
+import { ReservationConfirmationModal } from "@/components/management/reservations/reservation-confirmation-modal";
 import { ReservationsTable } from "@/components/management/reservations/reservations-table";
 import { useManagementReservations } from "@/hooks/use-management-reservations";
 import { useFillHeight } from "@/hooks/use-fill-height";
 import type { ReservationResponseDto, SeatDto } from "@/api";
+import { useQuery } from "@tanstack/react-query";
+import { getApiManagerReservationsConfirmationEmailByEventIdByUserIdOptions } from "@/api/@tanstack/react-query.gen";
 
 type ActionMode = "view" | "reserve" | "block";
 
@@ -35,6 +38,7 @@ interface ReservationsViewPanelProps {
   onSearch: (query: string) => void;
   highlightedSeatId: string | null;
   onSeatClick: (seatId: string) => void;
+  onViewConfirmation: (userId: string, userName: string) => void;
 }
 
 function ReservationsViewPanel({
@@ -49,6 +53,7 @@ function ReservationsViewPanel({
   onSearch,
   highlightedSeatId,
   onSeatClick,
+  onViewConfirmation,
 }: ReservationsViewPanelProps) {
   return (
     <div className="space-y-3">
@@ -70,6 +75,7 @@ function ReservationsViewPanel({
             deletingIds={deletingIds}
             highlightedSeatId={highlightedSeatId}
             onSeatClick={onSeatClick}
+            onViewConfirmation={onViewConfirmation}
           />
         </CardContent>
       </Card>
@@ -97,6 +103,7 @@ export default function ManagementReservationsPage() {
     deleteReservations,
     exportCsv,
     exportPdf,
+    resendConfirmationEmail,
   } = useManagementReservations(eventId);
 
   const [mode, setMode] = useState<ActionMode>("view");
@@ -114,6 +121,29 @@ export default function ManagementReservationsPage() {
   const [exportingFormat, setExportingFormat] = useState<"csv" | "pdf" | null>(
     null,
   );
+  const [confirmationUser, setConfirmationUser] = useState<{
+    userId: string;
+    userName: string;
+  } | null>(null);
+
+  const {
+    data: confirmationEmailData,
+    isLoading: isConfirmationLoading,
+    isError: isConfirmationError,
+  } = useQuery({
+    ...getApiManagerReservationsConfirmationEmailByEventIdByUserIdOptions({
+      path: {
+        eventId: eventId ?? "",
+        userId: confirmationUser?.userId ?? "",
+      },
+    }),
+    enabled: !!eventId && !!confirmationUser?.userId,
+  });
+
+  const handleResendConfirmation = async () => {
+    if (!eventId || !confirmationUser?.userId) return;
+    await resendConfirmationEmail(eventId, confirmationUser.userId);
+  };
 
   const { ref: seatMapColumnRef, height: seatMapColumnHeight } =
     useFillHeight<HTMLDivElement>();
@@ -304,6 +334,9 @@ export default function ManagementReservationsPage() {
         onSearch={setSearchQuery}
         highlightedSeatId={highlightedSeatId}
         onSeatClick={handleSeatClick}
+        onViewConfirmation={(userId, userName) =>
+          setConfirmationUser({ userId, userName })
+        }
       />
     );
   } else if (mode === "reserve") {
@@ -446,6 +479,16 @@ export default function ManagementReservationsPage() {
           <div className="space-y-3">{actionColumn}</div>
         </div>
       )}
+
+      <ReservationConfirmationModal
+        open={!!confirmationUser}
+        onOpenChange={(open) => !open && setConfirmationUser(null)}
+        userName={confirmationUser?.userName ?? ""}
+        emailData={confirmationEmailData}
+        isLoading={isConfirmationLoading}
+        isError={isConfirmationError}
+        onResend={handleResendConfirmation}
+      />
     </div>
   );
 }

@@ -41,6 +41,7 @@ import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.ReservationNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
 import de.felixhertweck.seatreservation.email.service.EmailService;
+import de.felixhertweck.seatreservation.management.dto.ReservationConfirmationEmailDTO;
 import de.felixhertweck.seatreservation.management.dto.ReservationRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.ReservationResponseDTO;
 import de.felixhertweck.seatreservation.model.entity.Event;
@@ -56,6 +57,7 @@ import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.reservation.service.CheckInTokenService;
+import de.felixhertweck.seatreservation.supervisor.service.BoxOfficeService;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.ReservationExporter;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -732,5 +734,105 @@ public class ReservationService {
      */
     public List<Reservation> findByEvent(Event event) {
         return reservationRepository.find("event", event).list();
+    }
+
+    /**
+     * Resolves the user and their RESERVED reservations for an event, enforcing the same
+     * access-control and not-found rules used by both {@link #getConfirmationEmail} and {@link
+     * #resendConfirmationEmail}.
+     *
+     * <p>BLOCKED reservations are deliberately excluded: they represent seats a manager set aside,
+     * not seats the target user actually reserved, so they must never appear in a "your reservation
+     * confirmation" email. The shared box office system user is rejected outright, since all
+     * walk-in guests for an event are stored under that single account and there is no way to
+     * attribute a "confirmation" to one guest without mixing in every other guest's seats.
+     *
+     * @param eventId The ID of the event
+     * @param userId The ID of the user
+     * @param currentUser The user requesting access
+     * @return the resolved user together with their RESERVED reservations for the event
+     */
+    private ConfirmationTarget resolveConfirmationTarget(
+            UUID eventId, UUID userId, User currentUser) {
+        Event event =
+                eventRepository
+                        .findByIdOptional(eventId)
+                        .orElseThrow(
+                                () ->
+                                        new EventNotFoundException(
+                                                "Event with id " + eventId + " not found"));
+
+        if (!currentUser.getRoles().contains(Roles.ADMIN)
+                && !isManagerAllowedToAccessEvent(currentUser, event)) {
+            throw new SecurityException("You are not allowed to access this event.");
+        }
+
+        User user =
+                userRepository
+                        .findByIdOptional(userId)
+                        .orElseThrow(
+                                () ->
+                                        new UserNotFoundException(
+                                                "User with id " + userId + " not found"));
+
+        if (BoxOfficeService.BOXOFFICE_USERNAME.equalsIgnoreCase(user.getUsername())) {
+            throw new IllegalArgumentException(
+                    "Box office guest reservations share a single account and do not support"
+                            + " per-guest confirmation emails.");
+        }
+
+        List<Reservation> userReservations =
+                reservationRepository.findByUserAndEvent(user, event, ReservationStatus.RESERVED);
+        if (userReservations.isEmpty()) {
+            throw new ReservationNotFoundException(
+                    "No reservations found for user " + userId + " and event " + eventId);
+        }
+
+        return new ConfirmationTarget(user, userReservations);
+    }
+
+    private record ConfirmationTarget(User user, List<Reservation> reservations) {}
+
+    /**
+     * Gets the confirmation email HTML content and subject for a specific user and event.
+     *
+     * @param eventId The ID of the event
+     * @param userId The ID of the user
+     * @param currentUser The user requesting the email
+     * @return ReservationConfirmationEmailDTO containing subject and htmlContent
+     */
+    public ReservationConfirmationEmailDTO getConfirmationEmail(
+            UUID eventId, UUID userId, User currentUser) {
+        ConfirmationTarget target = resolveConfirmationTarget(eventId, userId, currentUser);
+
+        String htmlContent =
+                emailService.getReservationConfirmationDisplayContent(
+                        target.user(), target.reservations());
+        String subject = emailService.getReservationConfirmationSubject();
+
+        return new ReservationConfirmationEmailDTO(subject, htmlContent);
+    }
+
+    /**
+     * Resends the confirmation email for a specific user and event.
+     *
+     * @param eventId The ID of the event
+     * @param userId The ID of the user
+     * @param currentUser The user requesting the resend
+     * @throws IOException If sending the email fails
+     */
+    public void resendConfirmationEmail(UUID eventId, UUID userId, User currentUser)
+            throws IOException {
+        ConfirmationTarget target = resolveConfirmationTarget(eventId, userId, currentUser);
+
+        boolean sent =
+                emailService.sendReservationConfirmation(target.user(), target.reservations());
+        if (!sent) {
+            throw new IllegalStateException(
+                    "User "
+                            + userId
+                            + " has no valid email address to resend the confirmation"
+                            + " to.");
+        }
     }
 }

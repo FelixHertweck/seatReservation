@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useState } from "react";
-import { ChevronDown, ChevronRight, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight, Mail, Trash2 } from "lucide-react";
 import { useT } from "@/lib/i18n/hooks";
 import { cn, formatDateTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { ReservationResponseDto } from "@/api";
+import { ReservationStatus, type ReservationResponseDto } from "@/api";
 import {
   SEAT_STATUS_BG,
   SEAT_STATUS_LABEL_KEY,
@@ -35,6 +35,7 @@ interface ReservationsTableProps {
   deletingIds: Set<string>;
   highlightedSeatId?: string | null;
   onSeatClick?: (seatId: string) => void;
+  onViewConfirmation?: (userId: string, userName: string) => void;
 }
 
 const UNKNOWN_USER_KEY = "—";
@@ -50,6 +51,7 @@ export function ReservationsTable({
   deletingIds,
   highlightedSeatId = null,
   onSeatClick,
+  onViewConfirmation,
 }: ReservationsTableProps) {
   const t = useT();
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
@@ -140,7 +142,7 @@ export function ReservationsTable({
           <TableHead className="w-[24%]">
             {t("management.reservations.tableDate")}
           </TableHead>
-          <TableHead className="w-16 py-2 pl-2 pr-4" />
+          <TableHead className="w-20 py-2 pl-2 pr-4 text-right" />
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -151,6 +153,9 @@ export function ReservationsTable({
           const someSelected =
             !allSelected && groupIds.some((id) => selectedIds.has(id));
           const isCollapsed = collapsedGroups.has(groupKey);
+          const isBlockedGroup =
+            groupReservations[0]?.status === ReservationStatus.BLOCKED;
+          const groupUser = groupReservations.find((r) => r.user?.id)?.user;
 
           return (
             <Fragment key={groupKey}>
@@ -187,17 +192,37 @@ export function ReservationsTable({
                     </Badge>
                   </div>
                 </TableCell>
-                <TableCell className="py-2 pl-2 pr-4">
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    className="h-8 w-8"
-                    aria-label={t("management.reservations.deleteUserGroup")}
-                    isLoading={groupIds.some((id) => deletingIds.has(id))}
-                    onClick={() => onDeleteGroup(groupIds)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                <TableCell className="py-2 pl-2 pr-4 text-right">
+                  <div className="flex items-center justify-end gap-2">
+                    {!isBlockedGroup && groupUser?.id && onViewConfirmation && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        title={t("management.reservations.viewConfirmation")}
+                        aria-label={t(
+                          "management.reservations.viewConfirmation",
+                        )}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onViewConfirmation(
+                            groupUser.id!.toString(),
+                            groupKey,
+                          );
+                        }}
+                      >
+                        <Mail className="h-4 w-4" />
+                      </Button>
+                    )}
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      aria-label={t("management.reservations.deleteUserGroup")}
+                      isLoading={groupIds.some((id) => deletingIds.has(id))}
+                      onClick={() => onDeleteGroup(groupIds)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
               {!isCollapsed &&
@@ -250,14 +275,16 @@ export function ReservationsTable({
                       <TableCell className="text-xs text-muted-foreground">
                         {date ? `${date.date} ${date.time}` : "—"}
                       </TableCell>
-                      <TableCell className="py-2 pl-2 pr-4">
+                      <TableCell className="py-2 pl-2 pr-4 text-right">
                         <Button
                           variant="destructive"
-                          size="icon"
-                          className="h-8 w-8"
+                          size="sm"
                           aria-label={t("management.reservations.deleteOne")}
                           isLoading={deletingIds.has(id)}
-                          onClick={() => onDeleteOne(id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteOne(id);
+                          }}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

@@ -1507,7 +1507,16 @@
       "blockSeatButton": "Block seat",
       "blockSeatsButton": "Block {{count}} seats",
       "blockingButton": "Blocking...",
-      "blockValidationError": "Please select at least one seat."
+      "blockValidationError": "Please select at least one seat.",
+      "viewConfirmation": "View confirmation email",
+      "confirmationModalTitle": "Reservation Confirmation",
+      "confirmationModalDescription": "View, print or resend reservation confirmation for {{user}}.",
+      "printButton": "Print",
+      "resendEmailButton": "Resend via email",
+      "resendSending": "Sending...",
+      "resendSuccess": "Reservation confirmation resent via email.",
+      "resendError": "Failed to resend reservation confirmation.",
+      "loadError": "Failed to load confirmation email."
     },
     "allowances": {
       "title": "Allowances",
