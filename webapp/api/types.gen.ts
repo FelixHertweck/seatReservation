@@ -141,11 +141,11 @@ export type EventLocationResponseDto = {
     id?: Uuid;
     name?: string;
     address?: string;
-    manager?: LimitedUserInfoDto;
+    createdBy?: LimitedUserInfoDto;
     managerIds?: Array<string>;
-    seatIds?: Array<string>;
-    markers?: Array<EventLocationMakerDto>;
-    areas?: Array<AreaDto>;
+    seatCount?: number;
+    markerCount?: number;
+    areaCount?: number;
 };
 
 export type EventLocationUpdateDto = {
@@ -489,10 +489,15 @@ export type UserEventLocationResponseDto = {
     id?: Uuid;
     name?: string;
     address?: string;
-    manager?: LimitedUserInfoDto;
     seats?: Array<SeatDto>;
     markers?: Array<EventLocationMakerDto>;
     areas?: Array<AreaDto>;
+};
+
+export type UserEventLocationSummaryDto = {
+    id?: Uuid;
+    name?: string;
+    address?: string;
 };
 
 export type UserEventResponseDto = {
@@ -3115,10 +3120,43 @@ export type GetApiUserLocationsResponses = {
     /**
      * OK
      */
-    200: Array<UserEventLocationResponseDto>;
+    200: Array<UserEventLocationSummaryDto>;
 };
 
 export type GetApiUserLocationsResponse = GetApiUserLocationsResponses[keyof GetApiUserLocationsResponses];
+
+export type GetApiUserLocationsByIdData = {
+    body?: never;
+    path: {
+        id: Uuid;
+    };
+    query?: never;
+    url: '/api/user/locations/{id}';
+};
+
+export type GetApiUserLocationsByIdErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Forbidden: User does not have access to this location
+     */
+    403: unknown;
+    /**
+     * Not Found: Location not found
+     */
+    404: unknown;
+};
+
+export type GetApiUserLocationsByIdResponses = {
+    /**
+     * OK
+     */
+    200: UserEventLocationResponseDto;
+};
+
+export type GetApiUserLocationsByIdResponse = GetApiUserLocationsByIdResponses[keyof GetApiUserLocationsByIdResponses];
 
 export type PostApiUserResendEmailConfirmationData = {
     body?: never;

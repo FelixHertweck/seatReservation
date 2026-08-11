@@ -333,7 +333,7 @@ public class EventLocationResourceTest {
                 .then()
                 .statusCode(200)
                 .body("name", is("Hall With Areas"))
-                .body("markers[0].label", is("Bühne"));
+                .body("markerCount", is(1));
     }
 
     @Test
@@ -561,6 +561,6 @@ public class EventLocationResourceTest {
                 .then()
                 .statusCode(200)
                 .body("name", is("New Location"))
-                .body("seatIds.size()", is(2));
+                .body("seatCount", is(2));
     }
 }

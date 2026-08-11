@@ -226,7 +226,7 @@ public class EventLocationServiceTest {
         assertNotNull(createdLocation);
         assertEquals("New Hall", createdLocation.name());
         assertEquals("New Street 1", createdLocation.address());
-        assertEquals(managerUser.getUsername(), createdLocation.manager().username());
+        assertEquals(managerUser.getUsername(), createdLocation.createdBy().username());
         verify(eventLocationRepository, times(1)).persist(any(EventLocation.class));
     }
 
@@ -569,7 +569,7 @@ public class EventLocationServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals("New Location with Seats", result.name());
-        assertEquals(managerUser.getUsername(), result.manager().username());
+        assertEquals(managerUser.getUsername(), result.createdBy().username());
 
         verify(eventLocationRepository, times(1)).persist(any(EventLocation.class));
 
@@ -586,10 +586,7 @@ public class EventLocationServiceTest {
         assertEquals("Parkett", persistedLocation.getSeats().get(0).getArea().getName());
         assertEquals("Parkett", persistedLocation.getSeats().get(1).getArea().getName());
 
-        // Seats sharing an area are grouped into a single AreaDTO on the response
-        assertEquals(1, result.areas().size());
-        assertEquals("Parkett", result.areas().get(0).name());
-        assertEquals(2, result.areas().get(0).seatIds().size());
+        assertEquals(2, result.seatCount());
     }
 
     @Test
@@ -619,21 +616,18 @@ public class EventLocationServiceTest {
 
         assertNotNull(result);
         assertEquals("Concert Hall", result.name());
-        assertEquals(3, result.markers().size());
-
-        // Verify marker content
-        assertEquals("Main Entrance", result.markers().get(0).label());
-        assertEquals(100, result.markers().get(0).coordinate().xCoordinate());
-        assertEquals(200, result.markers().get(0).coordinate().yCoordinate());
-
-        assertEquals("Emergency Exit", result.markers().get(1).label());
-        assertEquals("Stage", result.markers().get(2).label());
+        assertEquals(3, result.markerCount());
 
         ArgumentCaptor<EventLocation> locationCaptor = ArgumentCaptor.forClass(EventLocation.class);
         verify(eventLocationRepository, times(1)).persist(locationCaptor.capture());
 
         EventLocation capturedLocation = locationCaptor.getValue();
         assertEquals(3, capturedLocation.getMarkers().size());
+        assertEquals("Main Entrance", capturedLocation.getMarkers().get(0).getLabel());
+        assertEquals(100, capturedLocation.getMarkers().get(0).getCoordinate().xCoordinate());
+        assertEquals(200, capturedLocation.getMarkers().get(0).getCoordinate().yCoordinate());
+        assertEquals("Emergency Exit", capturedLocation.getMarkers().get(1).getLabel());
+        assertEquals("Stage", capturedLocation.getMarkers().get(2).getLabel());
     }
 
     @Test
@@ -657,7 +651,7 @@ public class EventLocationServiceTest {
 
         assertNotNull(result);
         assertEquals("Simple Hall", result.name());
-        assertTrue(result.markers().isEmpty());
+        assertEquals(0, result.markerCount());
 
         ArgumentCaptor<EventLocation> locationCaptor = ArgumentCaptor.forClass(EventLocation.class);
         verify(eventLocationRepository, times(1)).persist(locationCaptor.capture());
@@ -687,7 +681,7 @@ public class EventLocationServiceTest {
 
         assertNotNull(result);
         assertEquals("Empty Markers Hall", result.name());
-        assertTrue(result.markers().isEmpty());
+        assertEquals(0, result.markerCount());
     }
 
     @Test
@@ -718,15 +712,23 @@ public class EventLocationServiceTest {
                 eventLocationService.createEventLocation(dto, managerAuth);
 
         assertNotNull(result);
-        assertEquals(3, result.markers().size());
+        assertEquals(3, result.markerCount());
 
-        // Test boundary values are preserved
-        assertEquals(0, result.markers().get(0).coordinate().xCoordinate());
-        assertEquals(0, result.markers().get(0).coordinate().yCoordinate());
-        assertEquals(-50, result.markers().get(1).coordinate().xCoordinate());
-        assertEquals(-100, result.markers().get(1).coordinate().yCoordinate());
-        assertEquals(Integer.MAX_VALUE, result.markers().get(2).coordinate().xCoordinate());
-        assertEquals(Integer.MIN_VALUE, result.markers().get(2).coordinate().yCoordinate());
+        ArgumentCaptor<EventLocation> locationCaptor = ArgumentCaptor.forClass(EventLocation.class);
+        verify(eventLocationRepository, times(1)).persist(locationCaptor.capture());
+
+        EventLocation capturedLocation = locationCaptor.getValue();
+        assertEquals(3, capturedLocation.getMarkers().size());
+        assertEquals(0, capturedLocation.getMarkers().get(0).getCoordinate().xCoordinate());
+        assertEquals(0, capturedLocation.getMarkers().get(0).getCoordinate().yCoordinate());
+        assertEquals(-50, capturedLocation.getMarkers().get(1).getCoordinate().xCoordinate());
+        assertEquals(-100, capturedLocation.getMarkers().get(1).getCoordinate().yCoordinate());
+        assertEquals(
+                Integer.MAX_VALUE,
+                capturedLocation.getMarkers().get(2).getCoordinate().xCoordinate());
+        assertEquals(
+                Integer.MIN_VALUE,
+                capturedLocation.getMarkers().get(2).getCoordinate().yCoordinate());
     }
 
     @Test

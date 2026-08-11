@@ -25,6 +25,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import jakarta.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -40,10 +41,12 @@ import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.reservation.dto.UserEventLocationResponseDTO;
+import de.felixhertweck.seatreservation.reservation.dto.UserEventLocationSummaryDTO;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,6 +58,8 @@ class EventLocationServiceTest {
     @Inject EventLocationService eventLocationService;
 
     @InjectMock UserRepository userRepository;
+
+    @InjectMock EventLocationRepository eventLocationRepository;
 
     @InjectMock EventUserAllowanceRepository eventUserAllowanceRepository;
 
@@ -116,7 +121,7 @@ class EventLocationServiceTest {
         when(reservationRepository.findByUserWithEventAndLocation(user))
                 .thenReturn(List.of(reservation));
 
-        List<UserEventLocationResponseDTO> result =
+        List<UserEventLocationSummaryDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");
 
         assertEquals(2, result.size());
@@ -148,7 +153,7 @@ class EventLocationServiceTest {
         when(reservationRepository.findByUserWithEventAndLocation(user))
                 .thenReturn(List.of(reservation));
 
-        List<UserEventLocationResponseDTO> result =
+        List<UserEventLocationSummaryDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");
 
         assertEquals(1, result.size());
@@ -163,7 +168,7 @@ class EventLocationServiceTest {
         when(reservationRepository.findByUserWithEventAndLocation(user))
                 .thenReturn(Collections.emptyList());
 
-        List<UserEventLocationResponseDTO> result =
+        List<UserEventLocationSummaryDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");
 
         assertTrue(result.isEmpty());
@@ -191,7 +196,7 @@ class EventLocationServiceTest {
         when(reservationRepository.findByUserWithEventAndLocation(user))
                 .thenReturn(Collections.emptyList()); // No reservations
 
-        List<UserEventLocationResponseDTO> result =
+        List<UserEventLocationSummaryDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");
 
         assertEquals(1, result.size());
@@ -217,7 +222,7 @@ class EventLocationServiceTest {
         when(reservationRepository.findByUserWithEventAndLocation(user))
                 .thenReturn(List.of(reservation));
 
-        List<UserEventLocationResponseDTO> result =
+        List<UserEventLocationSummaryDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");
 
         assertEquals(1, result.size());
@@ -232,7 +237,7 @@ class EventLocationServiceTest {
         when(reservationRepository.findByUserWithEventAndLocation(user))
                 .thenReturn(Collections.emptyList());
 
-        List<UserEventLocationResponseDTO> result =
+        List<UserEventLocationSummaryDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");
 
         assertTrue(result.isEmpty());
@@ -263,7 +268,7 @@ class EventLocationServiceTest {
         when(reservationRepository.findByUserWithEventAndLocation(user))
                 .thenReturn(List.of(reservationB));
 
-        List<UserEventLocationResponseDTO> result =
+        List<UserEventLocationSummaryDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");
 
         assertEquals(2, result.size());
@@ -296,7 +301,7 @@ class EventLocationServiceTest {
         when(reservationRepository.findByUserWithEventAndLocation(user))
                 .thenReturn(List.of(reservationB));
 
-        List<UserEventLocationResponseDTO> result =
+        List<UserEventLocationSummaryDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");
 
         assertEquals(2, result.size());
@@ -335,7 +340,7 @@ class EventLocationServiceTest {
         when(reservationRepository.findByUserWithEventAndLocation(user))
                 .thenReturn(List.of(reservationC));
 
-        List<UserEventLocationResponseDTO> result =
+        List<UserEventLocationSummaryDTO> result =
                 eventLocationService.getLocationsForCurrentUser("testuser");
 
         assertEquals(1, result.size());
@@ -343,7 +348,7 @@ class EventLocationServiceTest {
     }
 
     @Test
-    void getLocationsForCurrentUser_GroupsSeatsIntoAreas() {
+    void getLocationByIdForCurrentUser_GroupsSeatsIntoAreas() {
         // Location A has two seats sharing an area, exposed via the allowance
         var parkett = new EventLocationArea("Parkett");
         parkett.id = id(1);
@@ -354,8 +359,6 @@ class EventLocationServiceTest {
         seat2.id = id(2);
         seat2.setArea(parkett);
         locationA.setSeats(List.of(seat1, seat2));
-        // Areas hang off the location in JPA; the response is derived from them, not from the
-        // seats.
         parkett.setEventLocation(locationA);
         locationA.setAreas(new ArrayList<>(List.of(parkett)));
 
@@ -369,12 +372,12 @@ class EventLocationServiceTest {
                 .thenReturn(List.of(allowance));
         when(reservationRepository.findByUserWithEventAndLocation(user))
                 .thenReturn(Collections.emptyList());
+        when(eventLocationRepository.findByIdOptional(locationA.id))
+                .thenReturn(Optional.of(locationA));
 
-        List<UserEventLocationResponseDTO> result =
-                eventLocationService.getLocationsForCurrentUser("testuser");
+        UserEventLocationResponseDTO locationDto =
+                eventLocationService.getLocationByIdForCurrentUser(locationA.id, "testuser");
 
-        assertEquals(1, result.size());
-        UserEventLocationResponseDTO locationDto = result.getFirst();
         assertEquals(1, locationDto.areas().size());
         assertEquals("Parkett", locationDto.areas().getFirst().name());
         assertEquals(2, locationDto.areas().getFirst().seatIds().size());

@@ -23,6 +23,8 @@ import {
   getApiManagerEventlocationsOptions,
   getApiUsersManagerOptions,
   getApiManagerSeatsOptions,
+  getApiManagerAreasOptions,
+  getApiManagerMarkersOptions,
   getApiManagerReservationsEventByIdOptions,
   getApiManagerReservationsEventByIdQueryKey,
   postApiManagerReservationsMutation,
@@ -44,6 +46,23 @@ export function useManagementReservations(eventId: string | null) {
   });
   const { data: users, isLoading: usersLoading } = useQuery({
     ...getApiUsersManagerOptions(),
+  });
+
+  const selectedEvent = (events ?? []).find((e) => e.id === eventId);
+  const locationId = selectedEvent?.eventLocationId;
+
+  const { data: areas } = useQuery({
+    ...getApiManagerAreasOptions({
+      query: { eventLocationId: locationId ?? "" },
+    }),
+    enabled: !!locationId,
+  });
+
+  const { data: markers } = useQuery({
+    ...getApiManagerMarkersOptions({
+      query: { eventLocationId: locationId ?? "" },
+    }),
+    enabled: !!locationId,
   });
 
   // Broad seats across every location - the reused ReservationFormModal /
@@ -181,6 +200,8 @@ export function useManagementReservations(eventId: string | null) {
     locations: locations ?? [],
     users: users ?? [],
     seats,
+    areas: areas ?? [],
+    markers: markers ?? [],
     reservations: reservations ?? [],
     isLoading: eventsLoading || locationsLoading || usersLoading,
     isSeatsLoading: seatsLoading,

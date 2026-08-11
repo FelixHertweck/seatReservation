@@ -21,7 +21,9 @@ package de.felixhertweck.seatreservation.model.repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
@@ -84,5 +86,73 @@ public class EventLocationRepository implements PanacheRepositoryBase<EventLocat
         }
         return find("from EventLocation el left join fetch el.createdBy where el.id in ?1", ids)
                 .list();
+    }
+
+    /**
+     * Retrieves seat counts aggregated by location ID for a collection of location IDs.
+     *
+     * @param locationIds collection of event location IDs
+     * @return map of location ID to seat count
+     */
+    public Map<UUID, Integer> getSeatCountsByLocationIds(Collection<UUID> locationIds) {
+        if (locationIds == null || locationIds.isEmpty()) {
+            return Map.of();
+        }
+        List<Object[]> results =
+                getEntityManager()
+                        .createQuery(
+                                "SELECT s.location.id, COUNT(s) FROM Seat s WHERE"
+                                        + " s.location.id IN ?1 GROUP BY s.location.id",
+                                Object[].class)
+                        .setParameter(1, locationIds)
+                        .getResultList();
+        return results.stream()
+                .collect(Collectors.toMap(row -> (UUID) row[0], row -> ((Long) row[1]).intValue()));
+    }
+
+    /**
+     * Retrieves marker counts aggregated by location ID for a collection of location IDs.
+     *
+     * @param locationIds collection of event location IDs
+     * @return map of location ID to marker count
+     */
+    public Map<UUID, Integer> getMarkerCountsByLocationIds(Collection<UUID> locationIds) {
+        if (locationIds == null || locationIds.isEmpty()) {
+            return Map.of();
+        }
+        List<Object[]> results =
+                getEntityManager()
+                        .createQuery(
+                                "SELECT m.eventLocation.id, COUNT(m) FROM EventLocationMarker m"
+                                        + " WHERE m.eventLocation.id IN ?1 GROUP BY"
+                                        + " m.eventLocation.id",
+                                Object[].class)
+                        .setParameter(1, locationIds)
+                        .getResultList();
+        return results.stream()
+                .collect(Collectors.toMap(row -> (UUID) row[0], row -> ((Long) row[1]).intValue()));
+    }
+
+    /**
+     * Retrieves area counts aggregated by location ID for a collection of location IDs.
+     *
+     * @param locationIds collection of event location IDs
+     * @return map of location ID to area count
+     */
+    public Map<UUID, Integer> getAreaCountsByLocationIds(Collection<UUID> locationIds) {
+        if (locationIds == null || locationIds.isEmpty()) {
+            return Map.of();
+        }
+        List<Object[]> results =
+                getEntityManager()
+                        .createQuery(
+                                "SELECT a.eventLocation.id, COUNT(a) FROM EventLocationArea a"
+                                        + " WHERE a.eventLocation.id IN ?1 GROUP BY"
+                                        + " a.eventLocation.id",
+                                Object[].class)
+                        .setParameter(1, locationIds)
+                        .getResultList();
+        return results.stream()
+                .collect(Collectors.toMap(row -> (UUID) row[0], row -> ((Long) row[1]).intValue()));
     }
 }

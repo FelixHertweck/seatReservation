@@ -22,11 +22,8 @@ package de.felixhertweck.seatreservation.management.dto;
 import java.util.List;
 import java.util.UUID;
 
-import de.felixhertweck.seatreservation.common.dto.AreaDTO;
-import de.felixhertweck.seatreservation.common.dto.EventLocationMakerDTO;
 import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
-import de.felixhertweck.seatreservation.model.entity.Seat;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
@@ -34,12 +31,13 @@ public record EventLocationResponseDTO(
         UUID id,
         String name,
         String address,
-        LimitedUserInfoDTO manager,
+        LimitedUserInfoDTO createdBy,
         List<UUID> managerIds,
-        List<UUID> seatIds,
-        List<EventLocationMakerDTO> markers,
-        List<AreaDTO> areas) {
-    public EventLocationResponseDTO(EventLocation eventLocation) {
+        int seatCount,
+        int markerCount,
+        int areaCount) {
+    public EventLocationResponseDTO(
+            EventLocation eventLocation, int seatCount, int markerCount, int areaCount) {
         this(
                 eventLocation.getId(),
                 eventLocation.getName(),
@@ -50,14 +48,16 @@ public record EventLocationResponseDTO(
                 (eventLocation.getManagers() != null
                         ? eventLocation.getManagers().stream().map(u -> u.id).toList()
                         : List.of()),
-                (eventLocation.getSeats() != null
-                        ? eventLocation.getSeats().stream().map(Seat::getId).toList()
-                        : List.of()),
-                (eventLocation.getMarkers() != null
-                        ? eventLocation.getMarkers().stream()
-                                .map(EventLocationMakerDTO::new)
-                                .toList()
-                        : List.of()),
-                AreaDTO.fromEventLocation(eventLocation));
+                seatCount,
+                markerCount,
+                areaCount);
+    }
+
+    public EventLocationResponseDTO(EventLocation eventLocation) {
+        this(
+                eventLocation,
+                (eventLocation.getSeats() != null ? eventLocation.getSeats().size() : 0),
+                (eventLocation.getMarkers() != null ? eventLocation.getMarkers().size() : 0),
+                (eventLocation.getAreas() != null ? eventLocation.getAreas().size() : 0));
     }
 }

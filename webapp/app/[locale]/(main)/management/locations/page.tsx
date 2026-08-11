@@ -45,8 +45,8 @@ export default function ManagementLocationsPage() {
   const managerOptions = useMemo(() => {
     const managers = new Map<string, string>();
     for (const location of locations) {
-      if (location.manager?.id && location.manager.username) {
-        managers.set(location.manager.id, location.manager.username);
+      if (location.createdBy?.id && location.createdBy.username) {
+        managers.set(location.createdBy.id, location.createdBy.username);
       }
     }
     return [...managers.entries()].map(([value, label]) => ({
@@ -63,7 +63,7 @@ export default function ManagementLocationsPage() {
         !query ||
         location.name?.toLowerCase().includes(query) ||
         location.address?.toLowerCase().includes(query);
-      const matchesManager = !managerId || location.manager?.id === managerId;
+      const matchesManager = !managerId || location.createdBy?.id === managerId;
       return matchesQuery && matchesManager;
     });
   }, [locations, searchQuery, filters]);
@@ -212,28 +212,28 @@ export default function ManagementLocationsPage() {
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge variant="secondary">
                           {t("management.locations.seatsLabel", {
-                            count: location.seatIds?.length ?? 0,
+                            count: location.seatCount ?? 0,
                           })}
                         </Badge>
-                        {location.markers && location.markers.length > 0 && (
+                        {(location.markerCount ?? 0) > 0 && (
                           <Badge variant="secondary">
                             {t("management.locations.markersLabel", {
-                              count: location.markers.length,
+                              count: location.markerCount,
                             })}
                           </Badge>
                         )}
-                        {location.areas && location.areas.length > 0 && (
+                        {(location.areaCount ?? 0) > 0 && (
                           <Badge variant="secondary">
                             {t("management.locations.areasLabel", {
-                              count: location.areas.length,
+                              count: location.areaCount,
                             })}
                           </Badge>
                         )}
                       </div>
-                      {location.manager?.username && (
+                      {location.createdBy?.username && (
                         <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
                           <Users className="h-3.5 w-3.5" />
-                          {location.manager.username}
+                          {location.createdBy.username}
                         </p>
                       )}
                     </CardContent>

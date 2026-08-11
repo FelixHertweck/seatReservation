@@ -432,7 +432,7 @@
           "address" : {
             "type" : "string"
           },
-          "manager" : {
+          "createdBy" : {
             "$ref" : "#/components/schemas/LimitedUserInfoDTO"
           },
           "managerIds" : {
@@ -443,25 +443,17 @@
               "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
             }
           },
-          "seatIds" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string",
-              "format" : "uuid",
-              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
-            }
+          "seatCount" : {
+            "type" : "integer",
+            "format" : "int32"
           },
-          "markers" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/EventLocationMakerDTO"
-            }
+          "markerCount" : {
+            "type" : "integer",
+            "format" : "int32"
           },
-          "areas" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/AreaDTO"
-            }
+          "areaCount" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         }
       },
@@ -1306,9 +1298,6 @@
           "address" : {
             "type" : "string"
           },
-          "manager" : {
-            "$ref" : "#/components/schemas/LimitedUserInfoDTO"
-          },
           "seats" : {
             "type" : "array",
             "items" : {
@@ -1326,6 +1315,20 @@
             "items" : {
               "$ref" : "#/components/schemas/AreaDTO"
             }
+          }
+        }
+      },
+      "UserEventLocationSummaryDTO" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "$ref" : "#/components/schemas/UUID"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "address" : {
+            "type" : "string"
           }
         }
       },
@@ -4497,7 +4500,7 @@
                 "schema" : {
                   "type" : "array",
                   "items" : {
-                    "$ref" : "#/components/schemas/UserEventLocationResponseDTO"
+                    "$ref" : "#/components/schemas/UserEventLocationSummaryDTO"
                   }
                 }
               }
@@ -4514,6 +4517,44 @@
           }
         },
         "summary" : "Get Locations",
+        "tags" : [ "Event Location Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "USER" ]
+        } ]
+      }
+    },
+    "/api/user/locations/{id}" : {
+      "get" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserEventLocationResponseDTO"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Forbidden: User does not have access to this location"
+          },
+          "404" : {
+            "description" : "Not Found: Location not found"
+          }
+        },
+        "summary" : "Get Location By Id",
         "tags" : [ "Event Location Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "USER" ]

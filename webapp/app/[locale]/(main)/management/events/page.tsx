@@ -181,7 +181,7 @@ export default function ManagementEventsPage() {
                 </h2>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {locationEvents.map((event) => {
-                    const capacity = location?.seatIds?.length ?? 0;
+                    const capacity = location?.seatCount ?? 0;
                     const reserved =
                       event.seatStatuses?.filter((s) => s.status === "RESERVED")
                         .length ?? 0;

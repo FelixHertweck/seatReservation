@@ -168,6 +168,32 @@ class EventLocationResourceTest {
                 .body("[0].name", is("My Test Location"));
     }
 
+    @Test
+    @TestSecurity(
+            user = "user",
+            roles = {"USER"})
+    void getLocationById_ReturnsFullDetail() {
+        var location = eventLocationRepository.findAll().firstResult();
+
+        given().when()
+                .get("/api/user/locations/" + location.getId())
+                .then()
+                .statusCode(200)
+                .body("name", is("My Test Location"))
+                .body("address", is("123 Test St"));
+    }
+
+    @Test
+    @TestSecurity(
+            user = "user",
+            roles = {"USER"})
+    void getLocationById_NotFound_Returns404() {
+        given().when()
+                .get("/api/user/locations/00000000-0000-0000-0000-000000000999")
+                .then()
+                .statusCode(404);
+    }
+
     @Transactional
     void clearUserLocationsForTest() {
         // Reverse order respecting FKs
