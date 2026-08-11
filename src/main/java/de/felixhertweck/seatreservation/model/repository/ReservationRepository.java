@@ -21,7 +21,9 @@ package de.felixhertweck.seatreservation.model.repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import de.felixhertweck.seatreservation.model.entity.CheckInToken;
@@ -86,6 +88,30 @@ public class ReservationRepository implements PanacheRepositoryBase<Reservation,
                         "select r from Reservation r left join fetch r.seat where r.event.id in ?1",
                         eventIds)
                 .list();
+    }
+
+    /**
+     * Retrieves reserved seat counts aggregated by event ID for a collection of event IDs.
+     *
+     * @param eventIds collection of event IDs
+     * @return map of event ID to reserved seat count
+     */
+    public Map<UUID, Integer> getReservedSeatCountsByEventIds(Collection<UUID> eventIds) {
+        if (eventIds == null || eventIds.isEmpty()) {
+            return Map.of();
+        }
+        List<Object[]> results =
+                getEntityManager()
+                        .createQuery(
+                                "SELECT r.event.id, COUNT(r) FROM Reservation r WHERE r.event.id IN"
+                                    + " ?1 AND r.status ="
+                                    + " de.felixhertweck.seatreservation.model.entity.ReservationStatus.RESERVED"
+                                    + " GROUP BY r.event.id",
+                                Object[].class)
+                        .setParameter(1, eventIds)
+                        .getResultList();
+        return results.stream()
+                .collect(Collectors.toMap(row -> (UUID) row[0], row -> ((Long) row[1]).intValue()));
     }
 
     /**

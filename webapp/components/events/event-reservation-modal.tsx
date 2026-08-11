@@ -29,7 +29,7 @@ import type {
   SeatDto,
   UserEventLocationResponseDto,
 } from "@/api";
-import { getApiUserEventsQueryKey } from "@/api/@tanstack/react-query.gen";
+import { getApiUserEventsByIdQueryKey } from "@/api/@tanstack/react-query.gen";
 import { useT } from "@/lib/i18n/hooks";
 import { findSeatStatus } from "@/lib/reservationSeat";
 import { useSeatCart } from "@/hooks/use-seat-cart";
@@ -121,13 +121,15 @@ export function EventReservationModal({
         toast.info(t("eventReservationModal.cart.expired.title"), {
           description: t("eventReservationModal.cart.expired.description"),
         });
-        queryClient.invalidateQueries({
-          queryKey: getApiUserEventsQueryKey(),
-        });
+        if (event.id) {
+          queryClient.invalidateQueries({
+            queryKey: getApiUserEventsByIdQueryKey({ path: { id: event.id } }),
+          });
+        }
       }, delayMs);
       expiryTimersRef.current.set(seatId, timer);
     },
-    [t, queryClient, clearExpiryTimer],
+    [t, queryClient, clearExpiryTimer, event.id],
   );
 
   const seats: SeatDto[] = useMemo(

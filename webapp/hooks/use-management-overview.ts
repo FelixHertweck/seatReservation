@@ -79,7 +79,9 @@ export function useManagementOverview(): ManagementOverview {
         ? locationById.get(event.eventLocationId)
         : undefined;
       const reservedCount =
-        event.seatStatuses?.filter((s) => s.status === "RESERVED").length ?? 0;
+        event.reservedCount ??
+        event.seatStatuses?.filter((s) => s.status === "RESERVED").length ??
+        0;
       return {
         event,
         location,
@@ -128,7 +130,9 @@ export function useManagementOverview(): ManagementOverview {
     const occupancyReserved = futureEvents.reduce(
       (sum, e) =>
         sum +
-        (e.seatStatuses?.filter((s) => s.status === "RESERVED").length ?? 0),
+        (e.reservedCount ??
+          e.seatStatuses?.filter((s) => s.status === "RESERVED").length ??
+          0),
       0,
     );
     const occupancyCapacity = futureEvents.reduce((sum, e) => {

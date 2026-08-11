@@ -28,6 +28,20 @@ import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
+/**
+ * Response DTO for event details in user-facing reservation API views.
+ *
+ * @param id event ID
+ * @param name event name
+ * @param description event description
+ * @param startTime event start time
+ * @param endTime event end time
+ * @param bookingDeadline deadline for making bookings
+ * @param bookingStartTime start time for making bookings
+ * @param seatStatuses detailed seat statuses, present on detail requests
+ * @param locationId ID of associated location
+ * @param reservationsAllowed reservations allowed for current user
+ */
 @RegisterForReflection
 public record UserEventResponseDTO(
         UUID id,
@@ -42,11 +56,12 @@ public record UserEventResponseDTO(
         Integer reservationsAllowed) {
 
     /**
+     * Constructs UserEventResponseDTO for a given event, reservations allowed count, and
+     * reservations list.
+     *
      * @param event the event to map
      * @param reservationsAllowed the reservations-allowed count to embed
-     * @param reservations the event's reservations, pre-fetched by the caller (e.g. via a single
-     *     bulk query for all events in a result set) instead of via the lazy {@code
-     *     event.getReservations()} collection
+     * @param reservations the event's reservations, or null if seat statuses are omitted
      */
     public UserEventResponseDTO(
             Event event, Integer reservationsAllowed, List<Reservation> reservations) {

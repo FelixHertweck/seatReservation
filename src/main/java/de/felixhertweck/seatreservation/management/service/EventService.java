@@ -41,6 +41,7 @@ import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
+import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.ManagerResolutionUtils;
@@ -56,6 +57,8 @@ public class EventService {
     @Inject EventLocationRepository eventLocationRepository;
 
     @Inject UserRepository userRepository;
+
+    @Inject ReservationRepository reservationRepository;
 
     @Inject NotificationService notificationService;
 
@@ -415,7 +418,14 @@ public class EventService {
             LOG.debugf("User is MANAGER, listing events for manager ID: %s", manager.id());
             events = eventRepository.findByManager(userRepository.getReference(manager.id()));
         }
-        return events.stream().map(EventResponseDTO::new).collect(Collectors.toList());
+
+        List<UUID> eventIds = events.stream().map(Event::getId).toList();
+        Map<UUID, Integer> reservedCounts =
+                reservationRepository.getReservedSeatCountsByEventIds(eventIds);
+
+        return events.stream()
+                .map(e -> new EventResponseDTO(e, reservedCounts.getOrDefault(e.getId(), 0), null))
+                .toList();
     }
 
     /**
