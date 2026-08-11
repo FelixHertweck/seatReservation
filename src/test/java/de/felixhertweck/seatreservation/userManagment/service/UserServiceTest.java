@@ -73,7 +73,6 @@ import de.felixhertweck.seatreservation.userManagment.exceptions.VerificationCod
 import de.felixhertweck.seatreservation.userManagment.exceptions.VerifyTokenExpiredException;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import io.quarkus.elytron.security.common.BcryptUtil;
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -993,9 +992,7 @@ public class UserServiceTest {
                         Collections.emptySet());
         existingUser.id = id(1);
 
-        PanacheQuery<User> mockQuery = Mockito.mock(PanacheQuery.class);
-        when(mockQuery.list()).thenReturn(List.of(existingUser));
-        when(userRepository.find("id in ?1", List.of(id(1)))).thenReturn(mockQuery);
+        when(userRepository.findByIds(List.of(id(1)))).thenReturn(List.of(existingUser));
         when(userRepository.delete("id in ?1", List.of(id(1)))).thenReturn(1L);
 
         // the caller has a different id
@@ -1008,9 +1005,7 @@ public class UserServiceTest {
 
     @Test
     void deleteUser_UserNotFoundException() throws UserNotFoundException {
-        PanacheQuery<User> mockQuery = Mockito.mock(PanacheQuery.class);
-        when(mockQuery.list()).thenReturn(Collections.emptyList());
-        when(userRepository.find("id in ?1", List.of(id(1)))).thenReturn(mockQuery);
+        when(userRepository.findByIds(List.of(id(1)))).thenReturn(Collections.emptyList());
 
         AuthenticatedUser caller = new AuthenticatedUser(id(2), Set.of(Roles.ADMIN));
 
@@ -1035,9 +1030,7 @@ public class UserServiceTest {
                         Collections.emptySet());
         existingUser.id = id(1);
 
-        PanacheQuery<User> mockQuery = Mockito.mock(PanacheQuery.class);
-        when(mockQuery.list()).thenReturn(List.of(existingUser));
-        when(userRepository.find("id in ?1", List.of(id(1)))).thenReturn(mockQuery);
+        when(userRepository.findByIds(List.of(id(1)))).thenReturn(List.of(existingUser));
 
         AuthenticatedUser caller = new AuthenticatedUser(id(1), Set.of(Roles.ADMIN));
 
@@ -1061,9 +1054,7 @@ public class UserServiceTest {
                         Collections.emptySet());
         boxofficeUser.id = id(5);
 
-        PanacheQuery<User> mockQuery = Mockito.mock(PanacheQuery.class);
-        when(mockQuery.list()).thenReturn(List.of(boxofficeUser));
-        when(userRepository.find("id in ?1", List.of(id(5)))).thenReturn(mockQuery);
+        when(userRepository.findByIds(List.of(id(5)))).thenReturn(List.of(boxofficeUser));
 
         // Caller is a different admin, not deleting themselves -- only the reserved-username
         // guard should fire here.

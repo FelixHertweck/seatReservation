@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.model.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -69,5 +70,19 @@ public class EventLocationRepository implements PanacheRepositoryBase<EventLocat
                         userId)
                 .firstResultOptional()
                 .isPresent();
+    }
+
+    /**
+     * Finds event locations by their IDs, eagerly fetching each location's creator.
+     *
+     * @param ids collection of event location IDs
+     * @return list of matching event locations with creator pre-fetched
+     */
+    public List<EventLocation> findByIdsWithManager(Collection<UUID> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return find("from EventLocation el left join fetch el.createdBy where el.id in ?1", ids)
+                .list();
     }
 }

@@ -385,13 +385,7 @@ public class EventLocationService {
                 "Attempting to delete event locations with IDs: %s for manager ID: %s",
                 ids, manager.id());
 
-        List<EventLocation> fetchedLocations =
-                eventLocationRepository
-                        .find(
-                                "from EventLocation el left join fetch el.createdBy where el.id in"
-                                        + " ?1",
-                                ids)
-                        .list();
+        List<EventLocation> fetchedLocations = eventLocationRepository.findByIdsWithManager(ids);
 
         Map<UUID, EventLocation> locationMap =
                 fetchedLocations.stream()

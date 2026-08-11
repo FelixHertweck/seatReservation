@@ -83,16 +83,8 @@ public class EventService {
         // Bulk-load every relevant event's reservations in one query instead of relying on the
         // lazy event.getReservations() collection (which would run one query per event).
         Map<UUID, List<Reservation>> reservationsByEvent =
-                events.isEmpty()
-                        ? Map.of()
-                        : reservationRepository
-                                .find(
-                                        "select r from Reservation r left join fetch r.seat where"
-                                                + " r.event.id in ?1",
-                                        events.keySet())
-                                .list()
-                                .stream()
-                                .collect(Collectors.groupingBy(r -> r.getEvent().getId()));
+                reservationRepository.findByEventIdsWithSeat(events.keySet()).stream()
+                        .collect(Collectors.groupingBy(r -> r.getEvent().getId()));
 
         List<UserEventResponseDTO> result =
                 events.values().stream()

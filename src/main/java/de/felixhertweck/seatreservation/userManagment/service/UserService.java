@@ -545,7 +545,7 @@ public class UserService {
         LOG.debugf("Attempting to batch delete users with IDs: %s.", ids);
 
         // Fetch all users in a single query
-        List<User> users = userRepository.find("id in ?1", ids).list();
+        List<User> users = userRepository.findByIds(ids);
 
         // Map users by ID for quick lookup and to preserve iterative validation behavior
         Map<UUID, User> userMap = users.stream().collect(Collectors.toMap(u -> u.id, u -> u));

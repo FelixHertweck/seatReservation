@@ -24,13 +24,13 @@ import static de.felixhertweck.seatreservation.testutil.TestIds.id;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import jakarta.inject.Inject;
-import jakarta.persistence.NoResultException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -42,7 +42,6 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -69,7 +68,6 @@ import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.reservation.service.CheckInTokenService;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -218,25 +216,12 @@ public class ReservationServiceTest {
         allowance = new EventUserAllowance(regularUser, event, 1);
     }
 
-    private void mockSeatFind(Set<UUID> seatIds, List<Seat> seats) {
-        @SuppressWarnings("unchecked")
-        PanacheQuery<Seat> seatQuery = mock(PanacheQuery.class);
-        when(seatQuery.list()).thenReturn(seats);
-        when(seatRepository.find("id in ?1", seatIds)).thenReturn(seatQuery);
+    private void mockSeatFind(Collection<UUID> seatIds, List<Seat> seats) {
+        when(seatRepository.findByIds(seatIds.stream().toList())).thenReturn(seats);
     }
 
-    private void mockSeatFind(List<UUID> seatIds, List<Seat> seats) {
-        @SuppressWarnings("unchecked")
-        PanacheQuery<Seat> seatQuery = mock(PanacheQuery.class);
-        when(seatQuery.list()).thenReturn(seats);
-        when(seatRepository.find("id in ?1", seatIds)).thenReturn(seatQuery);
-    }
-
-    private void mockReservationFind(List<UUID> ids, List<Reservation> reservations) {
-        @SuppressWarnings("unchecked")
-        PanacheQuery<Reservation> reservationQuery = mock(PanacheQuery.class);
-        when(reservationQuery.list()).thenReturn(reservations);
-        when(reservationRepository.find("id in ?1", ids)).thenReturn(reservationQuery);
+    private void mockReservationFind(Collection<UUID> ids, List<Reservation> reservations) {
+        when(reservationRepository.findByIds(ids.stream().toList())).thenReturn(reservations);
     }
 
     @Test
@@ -249,11 +234,8 @@ public class ReservationServiceTest {
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
         mockSeatFind(dto.getSeatIds(), List.of(seat));
-        @SuppressWarnings("unchecked")
-        PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
-        when(allowanceQuery.singleResult()).thenReturn(allowance);
-        when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", regularUser, event))
-                .thenReturn(allowanceQuery);
+        when(eventUserAllowanceRepository.findByUserAndEvent(regularUser, event))
+                .thenReturn(Optional.of(allowance));
         doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
 
         doAnswer(
@@ -347,11 +329,8 @@ public class ReservationServiceTest {
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
         mockSeatFind(dto.getSeatIds(), List.of(seat));
-        @SuppressWarnings("unchecked")
-        PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
-        when(allowanceQuery.singleResult()).thenReturn(allowance);
-        when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", regularUser, event))
-                .thenReturn(allowanceQuery);
+        when(eventUserAllowanceRepository.findByUserAndEvent(regularUser, event))
+                .thenReturn(Optional.of(allowance));
         doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
 
         Set<ReservationResponseDTO> created =
@@ -390,11 +369,8 @@ public class ReservationServiceTest {
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
         mockSeatFind(dto.getSeatIds(), List.of(seat));
-        @SuppressWarnings("unchecked")
-        PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
-        when(allowanceQuery.singleResult()).thenThrow(new NoResultException());
-        when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", regularUser, event))
-                .thenReturn(allowanceQuery);
+        when(eventUserAllowanceRepository.findByUserAndEvent(regularUser, event))
+                .thenReturn(Optional.empty());
 
         assertThrows(
                 IllegalArgumentException.class,
@@ -412,11 +388,8 @@ public class ReservationServiceTest {
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
         mockSeatFind(dto.getSeatIds(), List.of(seat));
-        @SuppressWarnings("unchecked")
-        PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
-        when(allowanceQuery.singleResult()).thenReturn(allowance);
-        when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", regularUser, event))
-                .thenReturn(allowanceQuery);
+        when(eventUserAllowanceRepository.findByUserAndEvent(regularUser, event))
+                .thenReturn(Optional.of(allowance));
 
         assertThrows(
                 IllegalArgumentException.class,
@@ -464,11 +437,8 @@ public class ReservationServiceTest {
     @Test
     void deleteReservation_Success_AsAdmin() {
         mockReservationFind(List.of(reservation.id), List.of(reservation));
-        @SuppressWarnings("unchecked")
-        PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
-        when(allowanceQuery.firstResultOptional()).thenReturn(Optional.empty());
-        when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", regularUser, event))
-                .thenReturn(allowanceQuery);
+        when(eventUserAllowanceRepository.findByUserAndEvent(regularUser, event))
+                .thenReturn(Optional.empty());
 
         reservationService.deleteReservation(List.of(reservation.id), adminUser);
 
@@ -478,11 +448,8 @@ public class ReservationServiceTest {
     @Test
     void deleteReservation_Success_AsManager() {
         mockReservationFind(List.of(reservation.id), List.of(reservation));
-        @SuppressWarnings("unchecked")
-        PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
-        when(allowanceQuery.firstResultOptional()).thenReturn(Optional.empty());
-        when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", regularUser, event))
-                .thenReturn(allowanceQuery);
+        when(eventUserAllowanceRepository.findByUserAndEvent(regularUser, event))
+                .thenReturn(Optional.empty());
 
         reservationService.deleteReservation(List.of(reservation.id), managerUser);
 
@@ -659,11 +626,8 @@ public class ReservationServiceTest {
     @Test
     void deleteReservation_IOExceptionOnEmailSend_ContinuesGracefully() throws IOException {
         mockReservationFind(List.of(reservation.id), List.of(reservation));
-        @SuppressWarnings("unchecked")
-        PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
-        when(allowanceQuery.firstResultOptional()).thenReturn(Optional.empty());
-        when(eventUserAllowanceRepository.find("user = ?1 and event = ?2", regularUser, event))
-                .thenReturn(allowanceQuery);
+        when(eventUserAllowanceRepository.findByUserAndEvent(regularUser, event))
+                .thenReturn(Optional.empty());
 
         doThrow(new IOException("Test exception"))
                 .when(emailService)
@@ -690,13 +654,7 @@ public class ReservationServiceTest {
 
     @Test
     void findAllReservations_Success_AsManager() {
-        @SuppressWarnings("unchecked")
-        PanacheQuery<Reservation> reservationQuery = mock(PanacheQuery.class);
-        when(reservationQuery.list()).thenReturn(List.of(reservation));
-        when(reservationRepository.find(
-                        "SELECT r FROM Reservation r JOIN r.event e JOIN e.managers m WHERE m = ?1",
-                        managerUser))
-                .thenReturn(reservationQuery);
+        when(reservationRepository.findByManager(managerUser)).thenReturn(List.of(reservation));
 
         var result = reservationService.findAllReservations(managerAuth);
 
@@ -707,13 +665,7 @@ public class ReservationServiceTest {
 
     @Test
     void findAllReservations_Success_NoAllowedEventsForManager() {
-        @SuppressWarnings("unchecked")
-        PanacheQuery<Reservation> reservationQuery = mock(PanacheQuery.class);
-        when(reservationQuery.list()).thenReturn(Collections.emptyList());
-        when(reservationRepository.find(
-                        "SELECT r FROM Reservation r JOIN r.event e JOIN e.managers m WHERE m = ?1",
-                        managerUser))
-                .thenReturn(reservationQuery);
+        when(reservationRepository.findByManager(managerUser)).thenReturn(Collections.emptyList());
 
         var result = reservationService.findAllReservations(managerAuth);
 
@@ -723,13 +675,7 @@ public class ReservationServiceTest {
 
     @Test
     void findAllReservations_ForbiddenException_OtherRoles() {
-        @SuppressWarnings("unchecked")
-        PanacheQuery<Reservation> reservationQuery = mock(PanacheQuery.class);
-        when(reservationQuery.list()).thenReturn(Collections.emptyList());
-        when(reservationRepository.find(
-                        "SELECT r FROM Reservation r JOIN r.event e JOIN e.managers m WHERE m = ?1",
-                        regularUser))
-                .thenReturn(reservationQuery);
+        when(reservationRepository.findByManager(regularUser)).thenReturn(Collections.emptyList());
 
         var result = reservationService.findAllReservations(regularAuth);
         assertTrue(result.isEmpty());

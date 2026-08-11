@@ -19,6 +19,7 @@
  */
 package de.felixhertweck.seatreservation.model.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -32,6 +33,61 @@ import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
 @ApplicationScoped
 public class ReservationRepository implements PanacheRepositoryBase<Reservation, UUID> {
+    /**
+     * Finds all reservations for events managed by a specific user.
+     *
+     * @param manager the manager user to search for
+     * @return a list of reservations for events managed by the specified user
+     */
+    public List<Reservation> findByManager(User manager) {
+        return find(
+                        "SELECT r FROM Reservation r JOIN r.event e JOIN e.managers m WHERE m ="
+                                + " ?1",
+                        manager)
+                .list();
+    }
+
+    /**
+     * Finds all reservations for a specific event.
+     *
+     * @param event the event to search for
+     * @return a list of reservations for the specified event
+     */
+    public List<Reservation> findByEvent(Event event) {
+        return find("event", event).list();
+    }
+
+    /**
+     * Finds reservations by their IDs.
+     *
+     * @param ids the reservation IDs to search for
+     * @return a list of reservations matching the IDs
+     */
+    @Override
+    public List<Reservation> findByIds(List<?> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return find("id in ?1", ids).list();
+    }
+
+    /**
+     * Finds all reservations for a collection of event IDs, eagerly fetching each reservation's
+     * seat.
+     *
+     * @param eventIds the collection of event IDs to search for
+     * @return a list of reservations with seat pre-fetched
+     */
+    public List<Reservation> findByEventIdsWithSeat(Collection<UUID> eventIds) {
+        if (eventIds == null || eventIds.isEmpty()) {
+            return List.of();
+        }
+        return find(
+                        "select r from Reservation r left join fetch r.seat where r.event.id in ?1",
+                        eventIds)
+                .list();
+    }
+
     /**
      * Finds all reservations for a given user that are not blocked.
      *

@@ -24,6 +24,7 @@ import static de.felixhertweck.seatreservation.testutil.TestIds.id;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -41,7 +42,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -70,7 +70,6 @@ import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableEx
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatBlockedException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatPendingException;
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -160,10 +159,8 @@ class ReservationServiceTest {
         allowance.setReservationsAllowedCount(2);
     }
 
-    private void mockSeatFind(Set<UUID> seatIds, List<Seat> seats) {
-        PanacheQuery<Seat> seatQueryMock = mock(PanacheQuery.class);
-        when(seatRepository.find("id in ?1", seatIds)).thenReturn(seatQueryMock);
-        when(seatQueryMock.list()).thenReturn(seats);
+    private void mockSeatFind(Collection<UUID> seatIds, List<Seat> seats) {
+        when(seatRepository.findByIds(seatIds.stream().toList())).thenReturn(seats);
     }
 
     @Test
@@ -454,9 +451,7 @@ class ReservationServiceTest {
 
     @Test
     void deleteReservationForUser_Success() {
-        PanacheQuery<Reservation> queryMock = mock(PanacheQuery.class);
-        when(reservationRepository.find("id in ?1", List.of(id(1)))).thenReturn(queryMock);
-        when(queryMock.list()).thenReturn(List.of(reservation));
+        when(reservationRepository.findByIds(List.of(id(1)))).thenReturn(List.of(reservation));
 
         when(eventUserAllowanceRepository.findByUserAndEventId(currentUser, event.id))
                 .thenReturn(Optional.of(allowance));
@@ -471,9 +466,7 @@ class ReservationServiceTest {
 
     @Test
     void deleteReservationForUser_IOException_EmailServiceFailure() throws IOException {
-        PanacheQuery<Reservation> queryMock = mock(PanacheQuery.class);
-        when(reservationRepository.find("id in ?1", List.of(id(1)))).thenReturn(queryMock);
-        when(queryMock.list()).thenReturn(List.of(reservation));
+        when(reservationRepository.findByIds(List.of(id(1)))).thenReturn(List.of(reservation));
 
         when(eventUserAllowanceRepository.findByUserAndEventId(currentUser, event.id))
                 .thenReturn(Optional.of(allowance));
@@ -491,9 +484,7 @@ class ReservationServiceTest {
 
     @Test
     void deleteReservationForUser_Success_NoAllowanceExists() {
-        PanacheQuery<Reservation> queryMock = mock(PanacheQuery.class);
-        when(reservationRepository.find("id in ?1", List.of(id(1)))).thenReturn(queryMock);
-        when(queryMock.list()).thenReturn(List.of(reservation));
+        when(reservationRepository.findByIds(List.of(id(1)))).thenReturn(List.of(reservation));
 
         when(eventUserAllowanceRepository.findByUserAndEventId(currentUser, event.id))
                 .thenReturn(Optional.empty());
@@ -505,9 +496,7 @@ class ReservationServiceTest {
 
     @Test
     void deleteReservationForUser_NotFoundException() {
-        PanacheQuery<Reservation> queryMock = mock(PanacheQuery.class);
-        when(reservationRepository.find("id in ?1", List.of(id(1)))).thenReturn(queryMock);
-        when(queryMock.list()).thenReturn(Collections.emptyList());
+        when(reservationRepository.findByIds(List.of(id(1)))).thenReturn(Collections.emptyList());
 
         assertThrows(
                 ReservationNotFoundException.class,
@@ -516,9 +505,7 @@ class ReservationServiceTest {
 
     @Test
     void deleteReservationForUser_ForbiddenException_NotOwner() {
-        PanacheQuery<Reservation> queryMock = mock(PanacheQuery.class);
-        when(reservationRepository.find("id in ?1", List.of(id(1)))).thenReturn(queryMock);
-        when(queryMock.list()).thenReturn(List.of(reservation));
+        when(reservationRepository.findByIds(List.of(id(1)))).thenReturn(List.of(reservation));
 
         assertThrows(
                 SecurityException.class,

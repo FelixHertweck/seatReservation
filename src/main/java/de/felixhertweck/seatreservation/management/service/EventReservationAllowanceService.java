@@ -87,7 +87,7 @@ public class EventReservationAllowanceService {
         Set<EventUserAllowancesDto> resultAllowances = new HashSet<>();
 
         Map<UUID, User> userMap =
-                userRepository.find("id in ?1", dto.getUserIds()).list().stream()
+                userRepository.findByIds(dto.getUserIds().stream().toList()).stream()
                         .collect(Collectors.toMap(u -> u.id, u -> u));
 
         Map<UUID, EventUserAllowance> allowanceByUserId =

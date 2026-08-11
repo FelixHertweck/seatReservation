@@ -33,7 +33,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 
@@ -101,11 +100,7 @@ public class ReservationService {
         }
         List<ReservationResponseDTO> result =
                 reservationRepository
-                        .find(
-                                "SELECT r FROM Reservation r JOIN r.event e JOIN e.managers m WHERE"
-                                        + " m = ?1",
-                                userRepository.getReference(currentUser.id()))
-                        .list()
+                        .findByManager(userRepository.getReference(currentUser.id()))
                         .stream()
                         .map(ReservationResponseDTO::new)
                         .toList();
@@ -200,7 +195,7 @@ public class ReservationService {
         }
 
         List<ReservationResponseDTO> result =
-                reservationRepository.find("event", event).list().stream()
+                reservationRepository.findByEvent(event).stream()
                         .map(ReservationResponseDTO::new)
                         .toList();
         LOG.debugf(
@@ -268,25 +263,24 @@ public class ReservationService {
         List<Reservation> existingReservations = new ArrayList<>();
 
         Map<UUID, Seat> seatMap =
-                seatRepository.find(ID_IN_QUERY, dto.getSeatIds()).list().stream()
+                seatRepository.findByIds(dto.getSeatIds().stream().toList()).stream()
                         .collect(Collectors.toMap(s -> s.id, s -> s, (s1, s2) -> s1));
 
         EventUserAllowance allowance = null;
         if (dto.isDeductAllowance()) {
-            try {
-                allowance =
-                        eventUserAllowanceRepository
-                                .find("user = ?1 and event = ?2", targetUser, event)
-                                .singleResult();
-            } catch (NoResultException e) {
-                LOG.warnf(
-                        e,
-                        "User ID %s has no reservation allowance for event ID %s.",
-                        targetUser.getId(),
-                        event.getId());
-                throw new IllegalArgumentException(
-                        "User has no reservation allowance for this event.");
-            }
+            allowance =
+                    eventUserAllowanceRepository
+                            .findByUserAndEvent(targetUser, event)
+                            .orElseThrow(
+                                    () -> {
+                                        LOG.warnf(
+                                                "User ID %s has no reservation allowance for event"
+                                                        + " ID %s.",
+                                                targetUser.getId(), event.getId());
+                                        return new IllegalArgumentException(
+                                                "User has no reservation allowance for this"
+                                                        + " event.");
+                                    });
         }
         de.felixhertweck.seatreservation.model.entity.CheckInToken checkInToken =
                 checkInTokenService.getOrCreateForUser(targetUser, event);
@@ -383,7 +377,7 @@ public class ReservationService {
 
         List<Reservation> deletedReservations = new ArrayList<>();
 
-        List<Reservation> foundReservations = reservationRepository.find(ID_IN_QUERY, ids).list();
+        List<Reservation> foundReservations = reservationRepository.findByIds(ids);
         Map<UUID, Reservation> foundReservationMap =
                 foundReservations.stream()
                         .collect(Collectors.toMap(r -> r.id, r -> r, (r1, r2) -> r1));
@@ -564,7 +558,7 @@ public class ReservationService {
         }
 
         Map<UUID, Seat> seatMap =
-                seatRepository.find(ID_IN_QUERY, seatIds).list().stream()
+                seatRepository.findByIds(seatIds).stream()
                         .collect(Collectors.toMap(s -> s.id, s -> s, (s1, s2) -> s1));
 
         List<Seat> seats = new ArrayList<>();
@@ -736,7 +730,7 @@ public class ReservationService {
      * @return A list of Reservation entities belonging to the event
      */
     public List<Reservation> findByEvent(Event event) {
-        return reservationRepository.find("event", event).list();
+        return reservationRepository.findByEvent(event);
     }
 
     /**
