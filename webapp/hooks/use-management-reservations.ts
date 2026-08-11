@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useMutation,
-  useQueries,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { useT } from "@/lib/i18n/hooks";
@@ -65,22 +60,12 @@ export function useManagementReservations(eventId: string | null) {
     enabled: !!locationId,
   });
 
-  // Broad seats across every location - the reused ReservationFormModal /
-  // BlockSeatsModal each have their own internal event picker, so they need
-  // seats for whichever location that picker resolves to, not just the one
-  // currently selected on this page.
-  const seatsQueries = useQueries({
-    queries: (locations ?? [])
-      .filter((l) => l.id)
-      .map((l) => ({
-        ...getApiManagerSeatsOptions({ query: { eventLocationId: l.id! } }),
-      })),
+  const { data: seats, isLoading: seatsLoading } = useQuery({
+    ...getApiManagerSeatsOptions({
+      query: { eventLocationId: locationId ?? "" },
+    }),
+    enabled: !!locationId,
   });
-  const seats = seatsQueries.flatMap((q) => q.data ?? []);
-  // While locations are still loading, seatsQueries is empty and `.some`
-  // would report `false` even though nothing has actually loaded yet.
-  const seatsLoading =
-    locationsLoading || seatsQueries.some((q) => q.isLoading);
 
   const { data: reservations, isLoading: reservationsLoading } = useQuery({
     ...getApiManagerReservationsEventByIdOptions({
@@ -199,12 +184,12 @@ export function useManagementReservations(eventId: string | null) {
     events: events ?? [],
     locations: locations ?? [],
     users: users ?? [],
-    seats,
+    seats: seats ?? [],
     areas: areas ?? [],
     markers: markers ?? [],
     reservations: reservations ?? [],
     isLoading: eventsLoading || locationsLoading || usersLoading,
-    isSeatsLoading: seatsLoading,
+    isSeatsLoading: !!locationId && seatsLoading,
     isReservationsLoading: reservationsLoading,
     createReservation,
     blockSeats,

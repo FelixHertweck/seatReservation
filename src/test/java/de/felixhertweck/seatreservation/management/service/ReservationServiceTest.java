@@ -33,10 +33,8 @@ import java.util.UUID;
 import jakarta.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doAnswer;
@@ -638,47 +636,6 @@ public class ReservationServiceTest {
         verify(reservationRepository, times(1)).delete(reservation);
         verify(emailService, times(1))
                 .sendUpdateReservationConfirmation(any(), any(), any(), any());
-    }
-
-    @Test
-    void findAllReservations_Success_AsAdmin() {
-        when(reservationRepository.listAll()).thenReturn(List.of(reservation));
-
-        var result = reservationService.findAllReservations(adminAuth);
-
-        assertNotNull(result);
-        assertFalse(result.isEmpty());
-        assertEquals(1, result.size());
-        verify(reservationRepository).listAll();
-    }
-
-    @Test
-    void findAllReservations_Success_AsManager() {
-        when(reservationRepository.findByManager(managerUser)).thenReturn(List.of(reservation));
-
-        var result = reservationService.findAllReservations(managerAuth);
-
-        assertNotNull(result);
-        assertFalse(result.isEmpty());
-        assertEquals(1, result.size());
-    }
-
-    @Test
-    void findAllReservations_Success_NoAllowedEventsForManager() {
-        when(reservationRepository.findByManager(managerUser)).thenReturn(Collections.emptyList());
-
-        var result = reservationService.findAllReservations(managerAuth);
-
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void findAllReservations_ForbiddenException_OtherRoles() {
-        when(reservationRepository.findByManager(regularUser)).thenReturn(Collections.emptyList());
-
-        var result = reservationService.findAllReservations(regularAuth);
-        assertTrue(result.isEmpty());
     }
 
     @Test

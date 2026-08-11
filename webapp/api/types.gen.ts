@@ -249,6 +249,82 @@ export type MakerRequestDto = {
 };
 
 /**
+ * Aggregated data for the manager dashboard overview
+ */
+export type ManagementOverviewDto = {
+    /**
+     * Overview statistics
+     */
+    stats: ManagementOverviewStatsDto;
+    /**
+     * List of upcoming events
+     */
+    upcomingEvents: Array<UpcomingEventDto>;
+    /**
+     * List of events with upcoming booking deadlines
+     */
+    deadlineWarnings: Array<UpcomingEventDto>;
+};
+
+/**
+ * Aggregate stats for the manager dashboard overview
+ */
+export type ManagementOverviewStatsDto = {
+    /**
+     * Total number of managed events
+     */
+    eventsCount?: bigint;
+    /**
+     * Total number of upcoming managed events
+     */
+    upcomingEventsCount?: bigint;
+    /**
+     * Total number of events with open booking
+     */
+    bookingOpenCount?: bigint;
+    /**
+     * Total number of reservations across all managed events
+     */
+    reservationsCount?: bigint;
+    /**
+     * Number of RESERVED reservations
+     */
+    reservationsReserved?: bigint;
+    /**
+     * Number of BLOCKED reservations
+     */
+    reservationsBlocked?: bigint;
+    /**
+     * Number of PENDING reservations
+     */
+    reservationsPending?: bigint;
+    /**
+     * Occupancy percentage across upcoming events
+     */
+    occupancyPercent?: number;
+    /**
+     * Total reserved seats across upcoming events
+     */
+    occupancyReserved?: bigint;
+    /**
+     * Total seat capacity across upcoming events
+     */
+    occupancyCapacity?: bigint;
+    /**
+     * Contingent usage percentage across allowances
+     */
+    contingentUsagePercent?: number;
+    /**
+     * Total contingent seats used
+     */
+    contingentUsed?: bigint;
+    /**
+     * Total contingent seats granted
+     */
+    contingentGranted?: bigint;
+};
+
+/**
  * Request DTO for confirming a password reset
  */
 export type PasswordResetConfirmDto = {
@@ -473,6 +549,40 @@ export type TwoFactorVerifyRequestDto = {
 };
 
 export type Uuid = string;
+
+/**
+ * Summary of an upcoming event for the manager dashboard overview
+ */
+export type UpcomingEventDto = {
+    /**
+     * Unique identifier of the event
+     */
+    id: Uuid;
+    /**
+     * Name of the event
+     */
+    name: string;
+    /**
+     * Start time of the event
+     */
+    startTime?: Instant;
+    /**
+     * Booking deadline for the event
+     */
+    bookingDeadline?: Instant;
+    /**
+     * Name of the event location
+     */
+    locationName?: string;
+    /**
+     * Number of reserved seats for this event
+     */
+    reservedCount?: number;
+    /**
+     * Total capacity (seat count) of the event location
+     */
+    capacity?: number;
+};
 
 export type UserDto = {
     id?: Uuid;
@@ -2063,6 +2173,33 @@ export type PutApiManagerMarkersByIdResponses = {
 
 export type PutApiManagerMarkersByIdResponse = PutApiManagerMarkersByIdResponses[keyof PutApiManagerMarkersByIdResponses];
 
+export type GetApiManagerOverviewData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/manager/overview';
+};
+
+export type GetApiManagerOverviewErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Forbidden: Only MANAGER or ADMIN roles can access this resource
+     */
+    403: unknown;
+};
+
+export type GetApiManagerOverviewResponses = {
+    /**
+     * OK
+     */
+    200: ManagementOverviewDto;
+};
+
+export type GetApiManagerOverviewResponse = GetApiManagerOverviewResponses[keyof GetApiManagerOverviewResponses];
+
 export type DeleteApiManagerReservationAllowanceData = {
     body?: never;
     path?: never;
@@ -2307,33 +2444,6 @@ export type DeleteApiManagerReservationsResponses = {
 };
 
 export type DeleteApiManagerReservationsResponse = DeleteApiManagerReservationsResponses[keyof DeleteApiManagerReservationsResponses];
-
-export type GetApiManagerReservationsData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/manager/reservations';
-};
-
-export type GetApiManagerReservationsErrors = {
-    /**
-     * Unauthorized
-     */
-    401: unknown;
-    /**
-     * Forbidden: Only MANAGER or ADMIN roles can access this resource
-     */
-    403: unknown;
-};
-
-export type GetApiManagerReservationsResponses = {
-    /**
-     * OK
-     */
-    200: Array<ReservationResponseDto>;
-};
-
-export type GetApiManagerReservationsResponse = GetApiManagerReservationsResponses[keyof GetApiManagerReservationsResponses];
 
 export type PostApiManagerReservationsData = {
     body: ReservationRequestDto;

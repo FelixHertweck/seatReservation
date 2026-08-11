@@ -159,10 +159,7 @@ export default function ManagementReservationsPage() {
     () => seats.filter((s) => s.locationId === location?.id),
     [seats, location?.id],
   );
-  const seatById = useMemo(
-    () => new Map(seats.map((s) => [s.id, s])),
-    [seats],
-  );
+  const seatById = useMemo(() => new Map(seats.map((s) => [s.id, s])), [seats]);
   const seatStatuses = useMemo(
     () =>
       reservations.map((r) => ({
@@ -178,8 +175,7 @@ export default function ManagementReservationsPage() {
     return reservations.filter((r) => {
       const username = r.user?.username?.toLowerCase() ?? "";
       const s = r.seatId ? seatById.get(r.seatId) : undefined;
-      const seat =
-        `${s?.seatNumber ?? ""} ${s?.seatRow ?? ""}`.toLowerCase();
+      const seat = `${s?.seatNumber ?? ""} ${s?.seatRow ?? ""}`.toLowerCase();
       return username.includes(query) || seat.includes(query);
     });
   }, [reservations, searchQuery, seatById]);
@@ -193,7 +189,9 @@ export default function ManagementReservationsPage() {
           reservation.eventId?.toString() === eventId &&
           reservation.status === "RESERVED",
       )
-      .map((reservation) => (reservation.seatId ? seatById.get(reservation.seatId) : undefined))
+      .map((reservation) =>
+        reservation.seatId ? seatById.get(reservation.seatId) : undefined,
+      )
       .filter((seat): seat is SeatDto => seat !== undefined);
   }, [mode, reserveUserId, eventId, reservations, seatById]);
 
