@@ -7,7 +7,8 @@ import {
   getApiUserEventsOptions,
   postApiUserReservationsMutation,
   getApiUserEventsQueryKey,
-  getApiManagerEventsByIdOptions,
+  getApiUserEventsByIdOptions,
+  getApiUserEventsByIdQueryKey,
   getApiUserReservationsQueryKey,
   getApiUserLocationsOptions,
 } from "@/api/@tanstack/react-query.gen";
@@ -69,6 +70,9 @@ export function useEvents(): UseEventsReturn {
         queryClient.invalidateQueries({
           queryKey: getApiUserEventsQueryKey(),
         });
+        queryClient.invalidateQueries({
+          queryKey: getApiUserEventsByIdQueryKey({ path: { id: eventId } }),
+        });
         return t("reservation.create.success.title");
       },
       error: t("reservation.create.error.title"),
@@ -78,7 +82,7 @@ export function useEvents(): UseEventsReturn {
 
   const getEventById = (eventId: string) => {
     return queryClient.fetchQuery({
-      ...getApiManagerEventsByIdOptions({
+      ...getApiUserEventsByIdOptions({
         path: { id: eventId },
       }),
     });

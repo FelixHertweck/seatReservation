@@ -181,7 +181,7 @@ class EventServiceTest {
     }
 
     @Test
-    void getEventsForCurrentUser_MergesPendingSeatStatusesFromCart() {
+    void getEventByIdForCurrentUser_MergesPendingSeatStatusesFromCart() {
         UUID pendingSeatId = id(10);
         when(eventUserAllowanceRepository.findByUserWithEvent(user))
                 .thenReturn(List.of(allowance1));
@@ -190,10 +190,10 @@ class EventServiceTest {
         when(seatCartService.findPendingSeatIds(event1.id, user.id))
                 .thenReturn(Set.of(pendingSeatId));
 
-        List<UserEventResponseDTO> result = eventService.getEventsForCurrentUser(user);
+        UserEventResponseDTO dto = eventService.getEventByIdForCurrentUser(event1.id, user);
 
-        assertEquals(1, result.size());
-        UserEventResponseDTO dto = result.getFirst();
+        assertNotNull(dto);
+        assertEquals(event1.id, dto.id());
         assertNotNull(dto.seatStatuses());
         assertTrue(
                 dto.seatStatuses().stream()
@@ -204,28 +204,19 @@ class EventServiceTest {
     }
 
     @Test
-    void getEventsForCurrentUser_NoCartHolds_SeatStatusesUnchanged() {
+    void getEventsForCurrentUser_OmitsSeatStatusesInList() {
         when(eventUserAllowanceRepository.findByUserWithEvent(user))
                 .thenReturn(List.of(allowance1));
         when(reservationRepository.findByUserWithEvent(user)).thenReturn(Collections.emptyList());
-        mockReservationsByEventQuery(Set.of(event1.id), List.of());
-        when(seatCartService.findPendingSeatIds(event1.id, user.id))
-                .thenReturn(Collections.emptySet());
 
         List<UserEventResponseDTO> result = eventService.getEventsForCurrentUser(user);
 
         assertEquals(1, result.size());
-        // Event.reservations defaults to an empty list (never null), so seatStatuses() is an
-        // empty list rather than null when there are no reservations or cart holds.
-        assertTrue(result.getFirst().seatStatuses().isEmpty());
+        assertNull(result.getFirst().seatStatuses());
     }
 
     @Test
-    void getEventsForCurrentUser_PassesCurrentUserIdToExcludeOwnHoldsFromPending() {
-        // SeatCartService.findPendingSeatIds is responsible for excluding the requesting user's
-        // own cart holds - EventService must pass the current user's ID through so that a seat
-        // the user themselves is holding never shows up as PENDING in their own event list (it
-        // would otherwise make the seat look blocked/unselectable to the very user holding it).
+    void getEventByIdForCurrentUser_PassesCurrentUserIdToExcludeOwnHoldsFromPending() {
         when(eventUserAllowanceRepository.findByUserWithEvent(user))
                 .thenReturn(List.of(allowance1));
         when(reservationRepository.findByUserWithEvent(user)).thenReturn(Collections.emptyList());
@@ -233,7 +224,7 @@ class EventServiceTest {
         when(seatCartService.findPendingSeatIds(event1.id, user.id))
                 .thenReturn(Collections.emptySet());
 
-        eventService.getEventsForCurrentUser(user);
+        eventService.getEventByIdForCurrentUser(event1.id, user);
 
         verify(seatCartService, times(1)).findPendingSeatIds(event1.id, user.id);
     }

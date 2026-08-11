@@ -31,6 +31,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.dto.SeatStatusDTO;
+import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
@@ -51,9 +52,13 @@ public class EventService {
     @Inject SeatCartService seatCartService;
 
     /**
+     * Retrieves lightweight event metadata summaries for all events accessible to the current user.
+     * Seat statuses are excluded.
+     *
      * @param user a reference to the current user (id only, e.g. from {@code
      *     UserSecurityContext#getCurrentUserReference()}); only used as a foreign-key query
      *     parameter, never dereferenced beyond its ID
+     * @return list of UserEventResponseDTO containing event metadata
      */
     @Transactional
     public List<UserEventResponseDTO> getEventsForCurrentUser(User user) {
@@ -80,12 +85,6 @@ public class EventService {
             reservationsAllowedByEvent.putIfAbsent(event.getId(), 0);
         }
 
-        // Bulk-load every relevant event's reservations in one query instead of relying on the
-        // lazy event.getReservations() collection (which would run one query per event).
-        Map<UUID, List<Reservation>> reservationsByEvent =
-                reservationRepository.findByEventIdsWithSeat(events.keySet()).stream()
-                        .collect(Collectors.groupingBy(r -> r.getEvent().getId()));
-
         List<UserEventResponseDTO> result =
                 events.values().stream()
                         .map(
@@ -93,13 +92,52 @@ public class EventService {
                                         new UserEventResponseDTO(
                                                 event,
                                                 reservationsAllowedByEvent.get(event.getId()),
-                                                reservationsByEvent.getOrDefault(
-                                                        event.getId(), List.of())))
-                        .map(dto -> withPendingSeatStatuses(dto, user.id))
+                                                null))
                         .toList();
 
         LOG.debugf("Returning %d events for user ID: %s", result.size(), user.id);
         return result;
+    }
+
+    /**
+     * Retrieves detail for a single event by ID, including seat statuses and live Redis pending
+     * cart holds.
+     *
+     * @param eventId the event ID
+     * @param user reference to current user
+     * @return the UserEventResponseDTO including seatStatuses
+     * @throws EventNotFoundException if the event is not found or not accessible by user
+     */
+    @Transactional
+    public UserEventResponseDTO getEventByIdForCurrentUser(UUID eventId, User user)
+            throws EventNotFoundException {
+        LOG.debugf("Retrieving event detail for event ID %s, user ID %s", eventId, user.id);
+        List<UserEventResponseDTO> userEvents = getEventsForCurrentUser(user);
+        UserEventResponseDTO userEvent =
+                userEvents.stream()
+                        .filter(e -> e.id().equals(eventId))
+                        .findFirst()
+                        .orElseThrow(
+                                () ->
+                                        new EventNotFoundException(
+                                                "Event with id " + eventId + " not found"));
+
+        List<Reservation> reservations =
+                reservationRepository.findByEventIdsWithSeat(Set.of(eventId));
+        UserEventResponseDTO dtoWithStatuses =
+                new UserEventResponseDTO(
+                        userEvent.id(),
+                        userEvent.name(),
+                        userEvent.description(),
+                        userEvent.startTime(),
+                        userEvent.endTime(),
+                        userEvent.bookingDeadline(),
+                        userEvent.bookingStartTime(),
+                        reservations.stream().map(SeatStatusDTO::new).toList(),
+                        userEvent.locationId(),
+                        userEvent.reservationsAllowed());
+
+        return withPendingSeatStatuses(dtoWithStatuses, user.id);
     }
 
     /**

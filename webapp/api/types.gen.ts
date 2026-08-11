@@ -183,6 +183,7 @@ export type EventResponseDto = {
     createdByUserId?: Uuid;
     managerIds?: Array<string>;
     supervisorIds?: Array<string>;
+    reservedCount?: number;
 };
 
 export type EventUserAllowanceUpdateDto = {
@@ -3093,6 +3094,39 @@ export type GetApiUserEventsResponses = {
 };
 
 export type GetApiUserEventsResponse = GetApiUserEventsResponses[keyof GetApiUserEventsResponses];
+
+export type GetApiUserEventsByIdData = {
+    body?: never;
+    path: {
+        id: Uuid;
+    };
+    query?: never;
+    url: '/api/user/events/{id}';
+};
+
+export type GetApiUserEventsByIdErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Forbidden: User does not have access to this event
+     */
+    403: unknown;
+    /**
+     * Not Found: Event not found
+     */
+    404: unknown;
+};
+
+export type GetApiUserEventsByIdResponses = {
+    /**
+     * OK
+     */
+    200: UserEventResponseDto;
+};
+
+export type GetApiUserEventsByIdResponse = GetApiUserEventsByIdResponses[keyof GetApiUserEventsByIdResponses];
 
 export type GetApiUserLocationsData = {
     body?: never;

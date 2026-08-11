@@ -156,6 +156,14 @@ export default function ManagementReservationsPage() {
     () => seats.filter((s) => s.locationId === location?.id),
     [seats, location?.id],
   );
+  const seatStatuses = useMemo(
+    () =>
+      reservations.map((r) => ({
+        seatId: r.seat?.id,
+        status: r.status,
+      })),
+    [reservations],
+  );
 
   const filteredReservations = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -466,7 +474,7 @@ export default function ManagementReservationsPage() {
                 <SeatMap
                   readonly={!isInteractive}
                   seats={eventSeats}
-                  seatStatuses={event?.seatStatuses ?? []}
+                  seatStatuses={seatStatuses}
                   markers={markers}
                   areas={areas}
                   selectedSeats={isInteractive ? selectedSeats : []}

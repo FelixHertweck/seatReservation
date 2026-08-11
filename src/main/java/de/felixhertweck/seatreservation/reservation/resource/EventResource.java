@@ -20,10 +20,12 @@
 package de.felixhertweck.seatreservation.reservation.resource;
 
 import java.util.List;
+import java.util.UUID;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
@@ -49,6 +51,11 @@ public class EventResource {
 
     @Inject UserSecurityContext userSecurityContext;
 
+    /**
+     * Retrieves lightweight event metadata summaries for all events accessible to the current user.
+     *
+     * @return list of event response DTOs
+     */
     @GET
     @APIResponse(
             responseCode = "200",
@@ -69,5 +76,28 @@ public class EventResource {
         List<UserEventResponseDTO> events = eventService.getEventsForCurrentUser(currentUser);
         LOG.debugf("Returning %d events.", events.size());
         return events;
+    }
+
+    /**
+     * Retrieves full details for a single event including seat statuses and live Redis cart holds.
+     *
+     * @param id the event ID
+     * @return single event detail response DTO
+     */
+    @GET
+    @Path("/{id}")
+    @APIResponse(
+            responseCode = "200",
+            description = "OK",
+            content = @Content(schema = @Schema(implementation = UserEventResponseDTO.class)))
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: User does not have access to this event")
+    @APIResponse(responseCode = "404", description = "Not Found: Event not found")
+    public UserEventResponseDTO getEventById(@PathParam("id") UUID id) {
+        User currentUser = userSecurityContext.getCurrentUserReference();
+        LOG.debugf("Received GET request to /api/user/events/%s", id);
+        return eventService.getEventByIdForCurrentUser(id, currentUser);
     }
 }

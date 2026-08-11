@@ -6,7 +6,7 @@ import { useT } from "@/lib/i18n/hooks";
 import {
   postApiUserSeatcartByEventIdBySeatIdMutation,
   deleteApiUserSeatcartByEventIdBySeatIdMutation,
-  getApiUserEventsQueryKey,
+  getApiUserEventsByIdQueryKey,
 } from "@/api/@tanstack/react-query.gen";
 import type { SeatCartEntryDto } from "@/api";
 import { ErrorWithResponse } from "@/components/init-query-client";
@@ -37,7 +37,9 @@ export function useSeatCart(): UseSeatCartReturn {
       // Someone else already holds this seat (already reserved, blocked, or in their
       // own cart) - refresh once so the seat map reflects the current state instead
       // of letting the user keep retrying against stale data.
-      queryClient.invalidateQueries({ queryKey: getApiUserEventsQueryKey() });
+      queryClient.invalidateQueries({
+        queryKey: getApiUserEventsByIdQueryKey({ path: { id: eventId } }),
+      });
       if ((error as ErrorWithResponse)?.response?.status === 409) {
         toast.error(t("eventReservationModal.cart.conflict.title"), {
           description: t("eventReservationModal.cart.conflict.description"),
@@ -55,7 +57,9 @@ export function useSeatCart(): UseSeatCartReturn {
       await removeMutation.mutateAsync({ path: { eventId, seatId } });
     } catch (error) {
       // Mirror addSeatToCart: resync on any failure so the UI doesn't stay stale.
-      queryClient.invalidateQueries({ queryKey: getApiUserEventsQueryKey() });
+      queryClient.invalidateQueries({
+        queryKey: getApiUserEventsByIdQueryKey({ path: { id: eventId } }),
+      });
       throw error;
     }
   };

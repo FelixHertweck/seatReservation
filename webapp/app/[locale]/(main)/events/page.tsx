@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { useT } from "@/lib/i18n/hooks";
 import { useEvents } from "@/hooks/use-events";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
@@ -10,6 +11,10 @@ import { EventReservationModal } from "@/components/events/event-reservation-mod
 import { EventCard } from "@/components/events/event-card";
 import { useReservations } from "@/hooks/use-reservations";
 import { PageHeader } from "@/components/page-header";
+import {
+  getApiUserEventsByIdOptions,
+  getApiUserLocationsByIdOptions,
+} from "@/api/@tanstack/react-query.gen";
 
 export default function EventsPage() {
   const t = useT();
@@ -25,18 +30,12 @@ export default function EventsPage() {
   const { isLoading: reservationsLoading, reservations } = useReservations();
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [eventSearchQuery, setEventSearchQuery] = useState<string>("");
-  // "onlyUpcoming" defaults to on (present + true) so past events are hidden
-  // out of the box, and the filter badge correctly counts it as 1 active
-  // filter from the start rather than treating the default as "no filter".
   const [filters, setFilters] = useState<Record<string, unknown>>({
     onlyUpcoming: true,
   });
-  // Computed once on mount rather than read at render time (Date.now() is
-  // impure) - "past" only needs to be accurate as of page load here.
   const [now] = useState(() => Date.now());
 
-  // Deep link from the "My Reservations" tab (or a shared link): open the
-  // matching event's reservation modal once the events have loaded.
+  // Open modal if eventId is in URL query parameters on initial load
   useEffect(() => {
     if (eventsLoading) return;
     const eventId = searchParams.get("eventId");
@@ -47,18 +46,36 @@ export default function EventsPage() {
     } else {
       router.replace("/events");
     }
-    // Only run this once the initial deep link has been resolved - further
-    // selection changes are driven by clicks, not the URL.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventsLoading]);
 
-  // Derived from the live query data (rather than a snapshot captured on click) so that
-  // seatStatuses - e.g. a seat another user just put on PENDING hold - stay up to date
-  // while the reservation modal is open.
-  const selectedEvent = useMemo(
-    () => events.find((event) => event.id === selectedEventId) ?? null,
-    [events, selectedEventId],
-  );
+  const { data: selectedEventDetail } = useQuery({
+    ...getApiUserEventsByIdOptions({
+      path: { id: selectedEventId ?? "" },
+    }),
+    enabled: !!selectedEventId,
+    refetchInterval: 5000,
+  });
+
+  const selectedEvent = useMemo(() => {
+    if (!selectedEventId) return null;
+    const base = events.find((event) => event.id === selectedEventId);
+    if (!base) return null;
+    return selectedEventDetail ?? base;
+  }, [events, selectedEventId, selectedEventDetail]);
+
+  const { data: selectedLocationDetail } = useQuery({
+    ...getApiUserLocationsByIdOptions({
+      path: { id: selectedEvent?.locationId ?? "" },
+    }),
+    enabled: !!selectedEvent?.locationId,
+  });
+
+  const selectedLocation = useMemo(() => {
+    if (!selectedEvent?.locationId) return null;
+    const base = locations.find((l) => l.id === selectedEvent.locationId);
+    return selectedLocationDetail ?? base ?? null;
+  }, [locations, selectedEvent?.locationId, selectedLocationDetail]);
 
   const locationOptions = useMemo(
     () =>
@@ -81,9 +98,6 @@ export default function EventsPage() {
     if (!events) return [];
 
     const locationId = filters.locationId as string | undefined;
-    // Absent only once the user has explicitly switched it off (see
-    // handleFilterChange in SearchAndFilter, which deletes false values) -
-    // any other state means the default "on" still applies.
     const onlyUpcoming = filters.onlyUpcoming === true;
     const filtered = events.filter((event) => {
       const matchesQuery =
@@ -191,7 +205,7 @@ export default function EventsPage() {
       {selectedEvent && (
         <EventReservationModal
           event={selectedEvent}
-          location={getLocation(selectedEvent.locationId)}
+          location={selectedLocation ?? getLocation(selectedEvent.locationId)}
           userReservations={getReservationsForEvent(selectedEvent.id)}
           onClose={closeModal}
           onReserve={createReservation}
