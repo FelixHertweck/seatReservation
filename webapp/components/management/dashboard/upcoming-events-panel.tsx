@@ -44,29 +44,29 @@ export function UpcomingEventsPanel({
       </p>
     );
   } else {
-    content = events.map(({ event, location, reservedCount, capacity }) => {
-      const start = formatDateTime(event.startTime);
+    content = events.map((item) => {
+      const start = formatDateTime(item.startTime);
       return (
         <Link
-          key={event.id}
-          href={`/management/reservations?eventId=${event.id}`}
+          key={item.id}
+          href={`/management/reservations?eventId=${item.id}`}
           className="flex items-center justify-between gap-3 rounded-md px-2 py-2 -mx-2 transition-colors hover:bg-accent/40"
         >
           <div className="flex min-w-0 items-center gap-3">
             <CalendarDays className="h-4 w-4 shrink-0 text-muted-foreground" />
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium">{event.name}</p>
+              <p className="truncate text-sm font-medium">{item.name}</p>
               <p className="truncate text-xs text-muted-foreground">
-                {location?.name ?? "—"}
+                {item.locationName ?? "—"}
                 {start && ` · ${start.date} ${start.time}`}
               </p>
             </div>
           </div>
-          {capacity > 0 && (
+          {(item.capacity ?? 0) > 0 && (
             <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
               {t("management.overview.panels.upcomingEvents.occupancy", {
-                reserved: reservedCount,
-                capacity,
+                reserved: item.reservedCount ?? 0,
+                capacity: item.capacity ?? 0,
               })}
             </span>
           )}

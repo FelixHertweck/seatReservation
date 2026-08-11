@@ -45,7 +45,6 @@ import de.felixhertweck.seatreservation.management.dto.ReservationResponseDTO;
 import de.felixhertweck.seatreservation.management.service.ReservationService;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
-import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.UserSecurityContext;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -64,30 +63,6 @@ public class ReservationResource {
     @Inject ReservationService reservationService;
 
     @Inject UserSecurityContext userSecurityContext;
-
-    @GET
-    @APIResponse(
-            responseCode = "200",
-            description = "OK",
-            content =
-                    @Content(
-                            schema =
-                                    @Schema(
-                                            type = SchemaType.ARRAY,
-                                            implementation = ReservationResponseDTO.class)))
-    @APIResponse(responseCode = "401", description = "Unauthorized")
-    @APIResponse(
-            responseCode = "403",
-            description = "Forbidden: Only MANAGER or ADMIN roles can access this resource")
-    public List<ReservationResponseDTO> getAllReservations() {
-        LOG.debugf("Received GET request to /api/manager/reservations to get all reservations.");
-        AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
-        List<ReservationResponseDTO> result = reservationService.findAllReservations(currentUser);
-        LOG.debugf(
-                "Successfully responded to GET /api/manager/reservations with %d reservations.",
-                result.size());
-        return result;
-    }
 
     @GET
     @Path("/{id}")

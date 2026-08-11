@@ -65,10 +65,7 @@ export function SeatMapModal({
     new Set(),
   );
 
-  const seatById = useMemo(
-    () => new Map(seats.map((s) => [s.id, s])),
-    [seats],
-  );
+  const seatById = useMemo(() => new Map(seats.map((s) => [s.id, s])), [seats]);
 
   const sortedReservations = useMemo(
     () =>
@@ -344,8 +341,7 @@ export function SeatMapModal({
           .map((r) => {
             const s = r.seatId ? seatById.get(r.seatId) : undefined;
             return (
-              (s?.seatNumber ?? "") +
-              (s?.seatRow ? " (" + s.seatRow + ")" : "")
+              (s?.seatNumber ?? "") + (s?.seatRow ? " (" + s.seatRow + ")" : "")
             );
           })}
       />

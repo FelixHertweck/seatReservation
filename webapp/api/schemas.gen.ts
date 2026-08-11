@@ -877,6 +877,109 @@ export const MakerRequestDTOSchema = {
     }
 } as const;
 
+export const ManagementOverviewDTOSchema = {
+    description: 'Aggregated data for the manager dashboard overview',
+    type: 'object',
+    required: [
+        'stats',
+        'upcomingEvents',
+        'deadlineWarnings'
+    ],
+    properties: {
+        stats: {
+            description: 'Overview statistics',
+            type: 'object',
+            $ref: '#/components/schemas/ManagementOverviewStatsDTO'
+        },
+        upcomingEvents: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/UpcomingEventDTO'
+            },
+            description: 'List of upcoming events'
+        },
+        deadlineWarnings: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/UpcomingEventDTO'
+            },
+            description: 'List of events with upcoming booking deadlines'
+        }
+    }
+} as const;
+
+export const ManagementOverviewStatsDTOSchema = {
+    type: 'object',
+    description: 'Aggregate stats for the manager dashboard overview',
+    properties: {
+        eventsCount: {
+            type: 'integer',
+            format: 'int64',
+            description: 'Total number of managed events'
+        },
+        upcomingEventsCount: {
+            type: 'integer',
+            format: 'int64',
+            description: 'Total number of upcoming managed events'
+        },
+        bookingOpenCount: {
+            type: 'integer',
+            format: 'int64',
+            description: 'Total number of events with open booking'
+        },
+        reservationsCount: {
+            type: 'integer',
+            format: 'int64',
+            description: 'Total number of reservations across all managed events'
+        },
+        reservationsReserved: {
+            type: 'integer',
+            format: 'int64',
+            description: 'Number of RESERVED reservations'
+        },
+        reservationsBlocked: {
+            type: 'integer',
+            format: 'int64',
+            description: 'Number of BLOCKED reservations'
+        },
+        reservationsPending: {
+            type: 'integer',
+            format: 'int64',
+            description: 'Number of PENDING reservations'
+        },
+        occupancyPercent: {
+            type: 'integer',
+            format: 'int32',
+            description: 'Occupancy percentage across upcoming events'
+        },
+        occupancyReserved: {
+            type: 'integer',
+            format: 'int64',
+            description: 'Total reserved seats across upcoming events'
+        },
+        occupancyCapacity: {
+            type: 'integer',
+            format: 'int64',
+            description: 'Total seat capacity across upcoming events'
+        },
+        contingentUsagePercent: {
+            type: 'integer',
+            format: 'int32',
+            description: 'Contingent usage percentage across allowances'
+        },
+        contingentUsed: {
+            type: 'integer',
+            format: 'int64',
+            description: 'Total contingent seats used'
+        },
+        contingentGranted: {
+            type: 'integer',
+            format: 'int64',
+            description: 'Total contingent seats granted'
+        }
+    }
+} as const;
+
 export const PasswordResetConfirmDTOSchema = {
     description: 'Request DTO for confirming a password reset',
     type: 'object',
@@ -1432,6 +1535,50 @@ export const UUIDSchema = {
     type: 'string',
     format: 'uuid',
     pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+} as const;
+
+export const UpcomingEventDTOSchema = {
+    type: 'object',
+    description: 'Summary of an upcoming event for the manager dashboard overview',
+    required: [
+        'id',
+        'name'
+    ],
+    properties: {
+        id: {
+            description: 'Unique identifier of the event',
+            type: 'string',
+            $ref: '#/components/schemas/UUID'
+        },
+        name: {
+            type: 'string',
+            description: 'Name of the event'
+        },
+        startTime: {
+            description: 'Start time of the event',
+            type: 'string',
+            $ref: '#/components/schemas/Instant'
+        },
+        bookingDeadline: {
+            description: 'Booking deadline for the event',
+            type: 'string',
+            $ref: '#/components/schemas/Instant'
+        },
+        locationName: {
+            type: 'string',
+            description: 'Name of the event location'
+        },
+        reservedCount: {
+            type: 'integer',
+            format: 'int32',
+            description: 'Number of reserved seats for this event'
+        },
+        capacity: {
+            type: 'integer',
+            format: 'int32',
+            description: 'Total capacity (seat count) of the event location'
+        }
+    }
 } as const;
 
 export const UserDTOSchema = {

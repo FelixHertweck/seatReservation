@@ -159,60 +159,6 @@ public class ReservationResourceTest {
 
     @Test
     @TestSecurity(
-            user = "testUser",
-            roles = {"USER"})
-    void testGetAllReservationsForbidden() {
-        given().when().get("/api/manager/reservations").then().statusCode(403);
-    }
-
-    @Test
-    void testGetAllReservationsUnauthorized() {
-        given().when().get("/api/manager/reservations").then().statusCode(401);
-    }
-
-    @Test
-    @TestSecurity(
-            user = "manager",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000002",
-                            type = ClaimType.STRING))
-    void testGetAllReservations() {
-        given().when()
-                .get("/api/manager/reservations")
-                .then()
-                .statusCode(200)
-                .body("size()", is(1));
-    }
-
-    @Test
-    @TestSecurity(
-            user = "supervisor",
-            roles = {"MANAGER"})
-    @JwtSecurity(
-            claims =
-                    @Claim(
-                            key = "uid",
-                            value = "00000000-0000-0000-0000-000000000004",
-                            type = ClaimType.STRING))
-    void testGetAllReservationsAsCoManager() {
-        // "supervisor" (fixed seed UUID ...0004) stands in as a co-manager of testEvent, not its
-        // creator ("manager") - this endpoint needs the uid JWT claim, which only seeded users have
-        // a compile-time-known value for.
-        addEventManager(testEvent, "supervisor");
-
-        given().when()
-                .get("/api/manager/reservations")
-                .then()
-                .statusCode(200)
-                .body("size()", is(1));
-    }
-
-    @Test
-    @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
     void testGetReservationById() {
@@ -368,7 +314,7 @@ public class ReservationResourceTest {
 
         // Verify all were deleted
         given().when()
-                .get("/api/manager/reservations")
+                .get("/api/manager/reservations/event/" + testEvent.id)
                 .then()
                 .statusCode(200)
                 .body("size()", is(0));

@@ -57,7 +57,6 @@ import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.reservation.service.CheckInTokenService;
 import de.felixhertweck.seatreservation.supervisor.service.BoxOfficeService;
-import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.ReservationExporter;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
@@ -79,34 +78,6 @@ public class ReservationService {
     @Inject EmailService emailService;
 
     @Inject CheckInTokenService checkInTokenService;
-
-    /**
-     * Retrieves all reservations. Access is restricted based on user roles: - ADMIN: Returns all
-     * reservations. - MANAGER: Returns reservations only for events the manager is allowed to
-     * manage. - Other roles: Throws ForbiddenException.
-     *
-     * @return A list of Reservation entities.
-     * @throws SecurityException If the current user does not have the necessary permissions.
-     * @throws UserNotFoundException If the current user cannot be found.
-     */
-    public List<ReservationResponseDTO> findAllReservations(AuthenticatedUser currentUser)
-            throws SecurityException, UserNotFoundException {
-        LOG.debugf("Attempting to retrieve all reservations for user ID: %s", currentUser.id());
-        if (currentUser.isAdmin()) {
-            LOG.debug("User is ADMIN, listing all reservations.");
-            return reservationRepository.listAll().stream()
-                    .map(ReservationResponseDTO::new)
-                    .toList();
-        }
-        List<ReservationResponseDTO> result =
-                reservationRepository
-                        .findByManager(userRepository.getReference(currentUser.id()))
-                        .stream()
-                        .map(ReservationResponseDTO::new)
-                        .toList();
-        LOG.debugf("Retrieved %d reservations for manager ID: %s", result.size(), currentUser.id());
-        return result;
-    }
 
     /**
      * Retrieves a reservation by its ID. Access is restricted based on user roles: - ADMIN: Returns

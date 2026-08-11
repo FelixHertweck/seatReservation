@@ -137,16 +137,15 @@ export function EventReservationModal({
     [location?.seats],
   );
 
-  const seatById = useMemo(
-    () => new Map(seats.map((s) => [s.id, s])),
-    [seats],
-  );
+  const seatById = useMemo(() => new Map(seats.map((s) => [s.id, s])), [seats]);
 
   const userReservedSeats = useMemo(
     () =>
       userReservations
         .filter((reservation) => reservation.eventId === event.id)
-        .map((reservation) => (reservation.seatId ? seatById.get(reservation.seatId) : undefined))
+        .map((reservation) =>
+          reservation.seatId ? seatById.get(reservation.seatId) : undefined,
+        )
         .filter((seat): seat is SeatDto => seat !== null && seat !== undefined),
     [userReservations, event.id, seatById],
   );

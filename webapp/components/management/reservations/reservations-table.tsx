@@ -16,7 +16,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ReservationStatus, type ReservationResponseDto, type SeatDto } from "@/api";
+import {
+  ReservationStatus,
+  type ReservationResponseDto,
+  type SeatDto,
+} from "@/api";
 import {
   SEAT_STATUS_BG,
   SEAT_STATUS_LABEL_KEY,
@@ -60,10 +64,7 @@ export function ReservationsTable({
     new Set(),
   );
 
-  const seatById = useMemo(
-    () => new Map(seats.map((s) => [s.id, s])),
-    [seats],
-  );
+  const seatById = useMemo(() => new Map(seats.map((s) => [s.id, s])), [seats]);
 
   if (isLoading) {
     return (
@@ -259,9 +260,7 @@ export function ReservationsTable({
                         {reservation.user?.username ?? "—"}
                       </TableCell>
                       <TableCell>
-                        {seat
-                          ? `${seat.seatNumber} (${seat.seatRow})`
-                          : "—"}
+                        {seat ? `${seat.seatNumber} (${seat.seatRow})` : "—"}
                       </TableCell>
                       <TableCell>
                         {(() => {
