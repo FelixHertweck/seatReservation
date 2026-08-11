@@ -37,7 +37,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -61,7 +60,6 @@ import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -250,10 +248,8 @@ public class EventServiceTest {
 
         when(eventLocationRepository.findByIdOptional(eventLocation.id))
                 .thenReturn(Optional.of(eventLocation));
-        PanacheQuery<User> supervisorQuery = Mockito.mock(PanacheQuery.class);
-        when(supervisorQuery.list()).thenReturn(List.of(supervisorUser));
-        when(userRepository.find("id in ?1", Set.of(supervisorUser.id)))
-                .thenReturn(supervisorQuery);
+        when(userRepository.findByIds(List.of(supervisorUser.id)))
+                .thenReturn(List.of(supervisorUser));
         doAnswer(
                         invocation -> {
                             Event event = invocation.getArgument(0);
@@ -359,9 +355,7 @@ public class EventServiceTest {
                 .thenReturn(Optional.of(existingEvent));
         when(eventLocationRepository.findByIdOptional(eventLocation.id))
                 .thenReturn(Optional.of(eventLocation));
-        PanacheQuery<User> supervisorQuery = Mockito.mock(PanacheQuery.class);
-        when(supervisorQuery.list()).thenReturn(List.of(regularUser));
-        when(userRepository.find("id in ?1", Set.of(regularUser.id))).thenReturn(supervisorQuery);
+        when(userRepository.findByIds(List.of(regularUser.id))).thenReturn(List.of(regularUser));
 
         EventResponseDTO updatedEvent =
                 eventService.updateEvent(existingEvent.id, dto, managerUser);
@@ -518,10 +512,8 @@ public class EventServiceTest {
 
         when(eventRepository.findByIdOptional(existingEvent.id))
                 .thenReturn(Optional.of(existingEvent));
-        @SuppressWarnings("unchecked")
-        PanacheQuery<User> mockUserQuery = mock(PanacheQuery.class);
-        when(userRepository.find("id in ?1", dto.getUserIds())).thenReturn(mockUserQuery);
-        when(mockUserQuery.list()).thenReturn(List.of(regularUser));
+        when(userRepository.findByIds(dto.getUserIds().stream().toList()))
+                .thenReturn(List.of(regularUser));
         // Mocking the batch allowance lookup to report no existing allowance
         when(eventUserAllowanceRepository.findByEventAndUserIds(existingEvent, dto.getUserIds()))
                 .thenReturn(List.of());
@@ -549,10 +541,8 @@ public class EventServiceTest {
 
         when(eventRepository.findByIdOptional(existingEvent.id))
                 .thenReturn(Optional.of(existingEvent));
-        @SuppressWarnings("unchecked")
-        PanacheQuery<User> mockUserQuery = mock(PanacheQuery.class);
-        when(userRepository.find("id in ?1", dto.getUserIds())).thenReturn(mockUserQuery);
-        when(mockUserQuery.list()).thenReturn(List.of(regularUser));
+        when(userRepository.findByIds(dto.getUserIds().stream().toList()))
+                .thenReturn(List.of(regularUser));
         when(eventUserAllowanceRepository.findByEventAndUserIds(existingEvent, dto.getUserIds()))
                 .thenReturn(List.of(existingAllowance));
         doNothing().when(eventUserAllowanceRepository).persist(any(EventUserAllowance.class));
@@ -574,10 +564,8 @@ public class EventServiceTest {
 
         when(eventRepository.findByIdOptional(existingEvent.id))
                 .thenReturn(Optional.of(existingEvent));
-        @SuppressWarnings("unchecked")
-        PanacheQuery<User> mockUserQuery = mock(PanacheQuery.class);
-        when(userRepository.find("id in ?1", dto.getUserIds())).thenReturn(mockUserQuery);
-        when(mockUserQuery.list()).thenReturn(List.of(regularUser));
+        when(userRepository.findByIds(dto.getUserIds().stream().toList()))
+                .thenReturn(List.of(regularUser));
         when(eventUserAllowanceRepository.findByEventAndUserIds(existingEvent, dto.getUserIds()))
                 .thenReturn(List.of());
 
@@ -616,10 +604,7 @@ public class EventServiceTest {
 
         when(eventRepository.findByIdOptional(existingEvent.id))
                 .thenReturn(Optional.of(existingEvent));
-        @SuppressWarnings("unchecked")
-        PanacheQuery<User> mockUserQuery = mock(PanacheQuery.class);
-        when(userRepository.find("id in ?1", dto.getUserIds())).thenReturn(mockUserQuery);
-        when(mockUserQuery.list()).thenReturn(List.of());
+        when(userRepository.findByIds(dto.getUserIds().stream().toList())).thenReturn(List.of());
         when(eventUserAllowanceRepository.findByEventAndUserIds(existingEvent, dto.getUserIds()))
                 .thenReturn(List.of());
 
@@ -942,9 +927,7 @@ public class EventServiceTest {
         event2.setName("Event 2");
         event2.setReminderSendDate(start.plusSeconds(7200)); // 2 hours after start
 
-        when(eventRepository.find("reminderSendDate BETWEEN ?1 AND ?2", start, end))
-                .thenReturn(mock(PanacheQuery.class));
-        when(eventRepository.find("reminderSendDate BETWEEN ?1 AND ?2", start, end).list())
+        when(eventRepository.findByReminderSendDateBetween(start, end))
                 .thenReturn(List.of(event1, event2));
 
         List<Event> events = eventService.findEventsWithReminderDateBetween(start, end);
@@ -1127,7 +1110,6 @@ public class EventServiceTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     void createEvent_WithManagers_Success() {
         User extraManager =
                 new User(
@@ -1155,9 +1137,7 @@ public class EventServiceTest {
 
         when(eventLocationRepository.findByIdOptional(eventLocation.id))
                 .thenReturn(Optional.of(eventLocation));
-        PanacheQuery<User> panacheQuery = mock(PanacheQuery.class);
-        when(panacheQuery.list()).thenReturn(List.of(extraManager));
-        when(userRepository.find("id in ?1", Set.of(extraManager.id))).thenReturn(panacheQuery);
+        when(userRepository.findByIds(List.of(extraManager.id))).thenReturn(List.of(extraManager));
 
         EventResponseDTO createdEvent = eventService.createEvent(dto, managerUser);
         assertNotNull(createdEvent);
@@ -1166,7 +1146,6 @@ public class EventServiceTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     void createEvent_WithNonManagerUser_ThrowsException() {
         EventRequestDTO dto = new EventRequestDTO();
         dto.setName("Multi Manager Event");
@@ -1180,9 +1159,7 @@ public class EventServiceTest {
 
         when(eventLocationRepository.findByIdOptional(eventLocation.id))
                 .thenReturn(Optional.of(eventLocation));
-        PanacheQuery<User> panacheQuery = mock(PanacheQuery.class);
-        when(panacheQuery.list()).thenReturn(List.of(regularUser));
-        when(userRepository.find("id in ?1", Set.of(regularUser.id))).thenReturn(panacheQuery);
+        when(userRepository.findByIds(List.of(regularUser.id))).thenReturn(List.of(regularUser));
 
         assertThrows(
                 IllegalArgumentException.class, () -> eventService.createEvent(dto, managerUser));
@@ -1207,9 +1184,7 @@ public class EventServiceTest {
 
         when(eventRepository.findByIdOptional(existingEvent.id))
                 .thenReturn(Optional.of(existingEvent));
-        PanacheQuery<User> newManagerQuery = mock(PanacheQuery.class);
-        when(newManagerQuery.list()).thenReturn(List.of(newManager));
-        when(userRepository.find("id in ?1", Set.of(newManager.id))).thenReturn(newManagerQuery);
+        when(userRepository.findByIds(List.of(newManager.id))).thenReturn(List.of(newManager));
 
         EventResponseDTO result =
                 eventService.addManager(existingEvent.id, newManager.id, managerUser);
@@ -1221,9 +1196,7 @@ public class EventServiceTest {
     void addManager_RejectsUserWithoutManagerRole() {
         when(eventRepository.findByIdOptional(existingEvent.id))
                 .thenReturn(Optional.of(existingEvent));
-        PanacheQuery<User> regularUserQuery = mock(PanacheQuery.class);
-        when(regularUserQuery.list()).thenReturn(List.of(regularUser));
-        when(userRepository.find("id in ?1", Set.of(regularUser.id))).thenReturn(regularUserQuery);
+        when(userRepository.findByIds(List.of(regularUser.id))).thenReturn(List.of(regularUser));
 
         assertThrows(
                 IllegalArgumentException.class,

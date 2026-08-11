@@ -356,7 +356,7 @@ public class EventService {
             // empty set when no supervisors are provided
             return supervisors;
         }
-        List<User> foundSupervisors = userRepository.find("id in ?1", supervisorIds).list();
+        List<User> foundSupervisors = userRepository.findByIds(supervisorIds.stream().toList());
         supervisors.addAll(foundSupervisors);
 
         if (supervisors.size() != supervisorIds.size()) {
@@ -381,7 +381,7 @@ public class EventService {
      * @return A list of Events that occur within the specified time range.
      */
     public List<Event> findEventsBetweenDates(Instant start, Instant end) {
-        return eventRepository.find("startTime BETWEEN ?1 AND ?2", start, end).list();
+        return eventRepository.findBetweenStartTimes(start, end);
     }
 
     /**
@@ -393,7 +393,7 @@ public class EventService {
      * @return A list of Events that have a reminder send date within the specified time range.
      */
     public List<Event> findEventsWithReminderDateBetween(Instant start, Instant end) {
-        return eventRepository.find("reminderSendDate BETWEEN ?1 AND ?2", start, end).list();
+        return eventRepository.findByReminderSendDateBetween(start, end);
     }
 
     /**
@@ -456,10 +456,7 @@ public class EventService {
                 "Attempting to delete events with IDs: %s for user ID: %s (ID: %s)",
                 ids, currentUser.id, currentUser.getId());
 
-        List<Event> fetchedEvents =
-                eventRepository
-                        .find("from Event e left join fetch e.managers where e.id in ?1", ids)
-                        .list();
+        List<Event> fetchedEvents = eventRepository.findByIdsWithManager(ids);
 
         Map<UUID, Event> eventMap =
                 fetchedEvents.stream()

@@ -19,6 +19,8 @@
  */
 package de.felixhertweck.seatreservation.model.repository;
 
+import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -30,6 +32,41 @@ import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
 @ApplicationScoped
 public class EventRepository implements PanacheRepositoryBase<Event, UUID> {
+
+    /**
+     * Finds events with start times between the specified start and end timestamps.
+     *
+     * @param start start timestamp
+     * @param end end timestamp
+     * @return list of events starting within the range
+     */
+    public List<Event> findBetweenStartTimes(Instant start, Instant end) {
+        return find("startTime BETWEEN ?1 AND ?2", start, end).list();
+    }
+
+    /**
+     * Finds events with reminder send dates between the specified start and end timestamps.
+     *
+     * @param start start timestamp
+     * @param end end timestamp
+     * @return list of events with reminder dates within the range
+     */
+    public List<Event> findByReminderSendDateBetween(Instant start, Instant end) {
+        return find("reminderSendDate BETWEEN ?1 AND ?2", start, end).list();
+    }
+
+    /**
+     * Finds events by their IDs, eagerly fetching each event's managers.
+     *
+     * @param ids collection of event IDs
+     * @return list of matching events with managers pre-fetched
+     */
+    public List<Event> findByIdsWithManager(Collection<UUID> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return find("from Event e left join fetch e.managers where e.id in ?1", ids).list();
+    }
 
     /**
      * Finds all events managed by a specific user.

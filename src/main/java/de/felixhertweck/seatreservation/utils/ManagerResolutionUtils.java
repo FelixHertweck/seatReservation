@@ -57,7 +57,7 @@ public final class ManagerResolutionUtils {
         if (managerIds == null || managerIds.isEmpty()) {
             return managers;
         }
-        List<User> foundManagers = userRepository.find("id in ?1", managerIds).list();
+        List<User> foundManagers = userRepository.findByIds(List.copyOf(managerIds));
         managers.addAll(foundManagers);
 
         if (managers.size() != managerIds.size()) {

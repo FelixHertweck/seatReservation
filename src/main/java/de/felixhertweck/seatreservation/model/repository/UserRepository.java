@@ -111,6 +111,20 @@ public class UserRepository implements PanacheRepositoryBase<User, UUID> {
     }
 
     /**
+     * Finds users by their IDs.
+     *
+     * @param ids the user IDs to find
+     * @return the matching users
+     */
+    @Override
+    public List<User> findByIds(List<?> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return find("id in ?1", ids).list();
+    }
+
+    /**
      * Finds which of the given usernames already exist, used to batch-check duplicates for a bulk
      * user import instead of querying once per username.
      *

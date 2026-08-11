@@ -28,7 +28,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import jakarta.inject.Inject;
-import jakarta.persistence.NoResultException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -38,7 +37,6 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -50,7 +48,6 @@ import de.felixhertweck.seatreservation.email.service.EmailService.BoxOfficeConf
 import de.felixhertweck.seatreservation.model.entity.BoxOfficeGuestInfo;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
-import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationLiveStatus;
 import de.felixhertweck.seatreservation.model.entity.Roles;
@@ -69,7 +66,6 @@ import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeReservationRespo
 import de.felixhertweck.seatreservation.supervisor.exception.BookingDeadlineNotPassedException;
 import de.felixhertweck.seatreservation.userManagment.service.UserService;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -129,10 +125,7 @@ class BoxOfficeServiceTest {
         when(eventRepository.isUserSupervisor(EVENT_ID, SUPERVISOR_ID)).thenReturn(true);
         when(eventRepository.findById(EVENT_ID)).thenReturn(pastDeadlineEvent);
 
-        @SuppressWarnings("unchecked")
-        PanacheQuery<Seat> seatQuery = mock(PanacheQuery.class);
-        when(seatQuery.list()).thenReturn(List.of(seat));
-        when(seatRepository.find("id in ?1", Set.of(SEAT_ID))).thenReturn(seatQuery);
+        when(seatRepository.findByIds(Set.of(SEAT_ID).stream().toList())).thenReturn(List.of(seat));
 
         when(reservationRepository.findByEventIdAndSeatIds(eq(EVENT_ID), anyList()))
                 .thenReturn(Collections.emptyList());
@@ -237,12 +230,8 @@ class BoxOfficeServiceTest {
 
     @Test
     void reserveForKnownUser_deductAllowanceWithoutAllowance_throwsIllegalArgumentException() {
-        @SuppressWarnings("unchecked")
-        PanacheQuery<EventUserAllowance> allowanceQuery = mock(PanacheQuery.class);
-        when(allowanceQuery.singleResult()).thenThrow(new NoResultException());
-        when(eventUserAllowanceRepository.find(
-                        "user = ?1 and event = ?2", targetUser, pastDeadlineEvent))
-                .thenReturn(allowanceQuery);
+        when(eventUserAllowanceRepository.findByUserAndEvent(targetUser, pastDeadlineEvent))
+                .thenReturn(Optional.empty());
 
         BoxOfficeReservationRequestDTO dto = knownUserRequest(false);
         dto.setDeductAllowance(true);

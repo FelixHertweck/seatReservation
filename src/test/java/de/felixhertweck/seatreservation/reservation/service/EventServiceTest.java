@@ -28,9 +28,6 @@ import java.util.UUID;
 import jakarta.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -44,7 +41,6 @@ import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.reservation.dto.UserEventResponseDTO;
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -104,11 +100,8 @@ class EventServiceTest {
      * for all relevant events (replacing the old per-event lazy {@code event.getReservations()}
      * load), so tests don't NPE on the unstubbed {@code find(...)} call.
      */
-    @SuppressWarnings("unchecked")
     private void mockReservationsByEventQuery(Set<UUID> eventIds, List<Reservation> result) {
-        PanacheQuery<Reservation> query = mock(PanacheQuery.class);
-        when(reservationRepository.find(anyString(), (Object[]) any())).thenReturn(query);
-        when(query.list()).thenReturn(result);
+        when(reservationRepository.findByEventIdsWithSeat(eventIds)).thenReturn(result);
     }
 
     @Test

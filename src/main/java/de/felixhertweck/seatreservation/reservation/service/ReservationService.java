@@ -176,7 +176,7 @@ public class ReservationService {
         LOG.debugf("Event ID: %s found for reservation.", event.id);
 
         // Validate the seatIds, ensure they exist
-        List<Seat> foundSeats = seatRepository.find(ID_IN_QUERY, dto.getSeatIds()).list();
+        List<Seat> foundSeats = seatRepository.findByIds(dto.getSeatIds().stream().toList());
         Map<UUID, Seat> foundSeatMap =
                 foundSeats.stream().collect(Collectors.toMap(s -> s.id, s -> s, (s1, s2) -> s1));
 
@@ -364,7 +364,7 @@ public class ReservationService {
                     "At least one reservation ID must be provided for deletion");
         }
 
-        List<Reservation> foundReservations = reservationRepository.find(ID_IN_QUERY, ids).list();
+        List<Reservation> foundReservations = reservationRepository.findByIds(ids);
         Map<UUID, Reservation> foundReservationMap =
                 foundReservations.stream()
                         .collect(Collectors.toMap(r -> r.id, r -> r, (r1, r2) -> r1));

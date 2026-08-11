@@ -72,6 +72,20 @@ public class SeatRepository implements PanacheRepositoryBase<Seat, UUID> {
     }
 
     /**
+     * Finds seats by their IDs.
+     *
+     * @param ids the seat IDs to find
+     * @return the matching seats
+     */
+    @Override
+    public List<Seat> findByIds(List<?> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return find("id in ?1", ids).list();
+    }
+
+    /**
      * Finds seats by their IDs, eagerly fetching each one's area and entrance. Used to batch-load
      * the seats referenced by a set of reservations instead of relying on lazy per-seat loads (e.g.
      * when rendering reservation emails).

@@ -28,7 +28,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 
@@ -217,7 +216,7 @@ public class BoxOfficeService {
         }
 
         Map<UUID, Seat> seatMap =
-                seatRepository.find("id in ?1", seatIds).list().stream()
+                seatRepository.findByIds(seatIds.stream().toList()).stream()
                         .collect(Collectors.toMap(s -> s.id, s -> s, (s1, s2) -> s1));
 
         // Proactive conflict check (mirrors management.service.ReservationService.blockSeats) so
@@ -234,15 +233,14 @@ public class BoxOfficeService {
 
         EventUserAllowance allowance = null;
         if (deductAllowance) {
-            try {
-                allowance =
-                        eventUserAllowanceRepository
-                                .find("user = ?1 and event = ?2", reservationOwner, event)
-                                .singleResult();
-            } catch (NoResultException e) {
-                throw new IllegalArgumentException(
-                        "User has no reservation allowance for this event.");
-            }
+            allowance =
+                    eventUserAllowanceRepository
+                            .findByUserAndEvent(reservationOwner, event)
+                            .orElseThrow(
+                                    () ->
+                                            new IllegalArgumentException(
+                                                    "User has no reservation allowance for this"
+                                                            + " event."));
         }
 
         List<Reservation> newReservations = new ArrayList<>();

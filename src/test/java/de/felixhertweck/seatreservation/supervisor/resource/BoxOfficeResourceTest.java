@@ -34,7 +34,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -56,7 +55,6 @@ import de.felixhertweck.seatreservation.reservation.service.CheckInTokenService;
 import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeGuestReservationRequestDTO;
 import de.felixhertweck.seatreservation.supervisor.dto.BoxOfficeReservationRequestDTO;
 import de.felixhertweck.seatreservation.supervisor.service.LiveViewService;
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
@@ -124,9 +122,7 @@ class BoxOfficeResourceTest {
         when(eventRepository.isUserSupervisor(id(11), id(1))).thenReturn(true);
         when(eventRepository.isUserSupervisor(id(10), id(6))).thenReturn(false);
 
-        PanacheQuery<Seat> seatQuery = (PanacheQuery<Seat>) mock(PanacheQuery.class);
-        when(seatQuery.list()).thenReturn(List.of(seat));
-        when(seatRepository.find("id in ?1", Set.of(id(1)))).thenReturn(seatQuery);
+        when(seatRepository.findByIds(Set.of(id(1)).stream().toList())).thenReturn(List.of(seat));
 
         when(reservationRepository.findByEventIdAndSeatIds(eq(id(10)), anyList()))
                 .thenReturn(Collections.emptyList());

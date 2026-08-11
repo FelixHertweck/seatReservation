@@ -34,7 +34,6 @@ import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -85,12 +84,8 @@ public class EventServiceDeleteEventTest {
         event2.setName("Event 2");
         event2.setManager(managerUser);
 
-        PanacheQuery<Event> queryMock = mock(PanacheQuery.class);
-        when(queryMock.list()).thenReturn(List.of(event1, event2));
-        when(eventRepository.find(
-                        eq("from Event e left join fetch e.managers where e.id in ?1"),
-                        eq(List.of(id(101), id(102)))))
-                .thenReturn(queryMock);
+        when(eventRepository.findByIdsWithManager(eq(List.of(id(101), id(102)))))
+                .thenReturn(List.of(event1, event2));
         stubIsUserManager(event1, event2);
 
         eventService.deleteEvent(List.of(id(101), id(102)), managerUser);
@@ -109,12 +104,8 @@ public class EventServiceDeleteEventTest {
         event1.setManager(managerUser);
         event1.getManagers().add(coManagerUser);
 
-        PanacheQuery<Event> queryMock = mock(PanacheQuery.class);
-        when(queryMock.list()).thenReturn(List.of(event1));
-        when(eventRepository.find(
-                        eq("from Event e left join fetch e.managers where e.id in ?1"),
-                        eq(List.of(id(101)))))
-                .thenReturn(queryMock);
+        when(eventRepository.findByIdsWithManager(eq(List.of(id(101)))))
+                .thenReturn(List.of(event1));
         stubIsUserManager(event1);
 
         eventService.deleteEvent(List.of(id(101)), coManagerUser);
@@ -129,12 +120,8 @@ public class EventServiceDeleteEventTest {
         event1.setName("Event 1");
         event1.setManager(managerUser);
 
-        PanacheQuery<Event> queryMock = mock(PanacheQuery.class);
-        when(queryMock.list()).thenReturn(List.of(event1));
-        when(eventRepository.find(
-                        eq("from Event e left join fetch e.managers where e.id in ?1"),
-                        eq(List.of(id(101), id(999)))))
-                .thenReturn(queryMock);
+        when(eventRepository.findByIdsWithManager(eq(List.of(id(101), id(999)))))
+                .thenReturn(List.of(event1));
         stubIsUserManager(event1);
 
         assertThrows(
@@ -151,12 +138,8 @@ public class EventServiceDeleteEventTest {
         event1.setName("Event 1");
         event1.setManager(managerUser);
 
-        PanacheQuery<Event> queryMock = mock(PanacheQuery.class);
-        when(queryMock.list()).thenReturn(List.of(event1));
-        when(eventRepository.find(
-                        eq("from Event e left join fetch e.managers where e.id in ?1"),
-                        eq(List.of(id(101)))))
-                .thenReturn(queryMock);
+        when(eventRepository.findByIdsWithManager(eq(List.of(id(101)))))
+                .thenReturn(List.of(event1));
 
         assertThrows(
                 SecurityException.class,
