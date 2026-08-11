@@ -55,7 +55,15 @@ public class Event extends AbstractEntity {
     private Set<EventUserAllowance> userAllowances = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private User manager;
+    @JoinColumn(name = "created_by_user_id")
+    private User createdBy;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "event_managers",
+            joinColumns = @JoinColumn(name = "event_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id"))
+    private Set<User> managers = new HashSet<>();
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reservation> reservations = new ArrayList<>();
@@ -80,9 +88,35 @@ public class Event extends AbstractEntity {
             Instant bookingDeadline,
             Instant bookingStartTime,
             EventLocation location,
-            User manager,
+            User creator,
             Instant reminderSendDate,
             Set<User> supervisors) {
+        this(
+                name,
+                description,
+                startTime,
+                endTime,
+                bookingDeadline,
+                bookingStartTime,
+                location,
+                creator,
+                reminderSendDate,
+                supervisors,
+                null);
+    }
+
+    public Event(
+            String name,
+            String description,
+            Instant startTime,
+            Instant endTime,
+            Instant bookingDeadline,
+            Instant bookingStartTime,
+            EventLocation location,
+            User creator,
+            Instant reminderSendDate,
+            Set<User> supervisors,
+            Set<User> additionalManagers) {
         this.name = name;
         this.description = description;
         this.startTime = startTime;
@@ -90,10 +124,17 @@ public class Event extends AbstractEntity {
         this.bookingDeadline = bookingDeadline;
         this.bookingStartTime = bookingStartTime;
         this.event_location = location;
-        this.manager = manager;
+        this.createdBy = creator;
         this.reminderSendDate = reminderSendDate;
         this.reminderSent = false;
-        this.supervisors = supervisors;
+        this.supervisors = supervisors != null ? supervisors : new HashSet<>();
+        this.managers = new HashSet<>();
+        if (creator != null) {
+            this.managers.add(creator);
+        }
+        if (additionalManagers != null) {
+            this.managers.addAll(additionalManagers);
+        }
     }
 
     public String getName() {
@@ -178,12 +219,35 @@ public class Event extends AbstractEntity {
         return userAllowances;
     }
 
+    public User getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
+    }
+
     public User getManager() {
-        return manager;
+        if (createdBy != null) {
+            return createdBy;
+        }
+        return managers != null && !managers.isEmpty() ? managers.iterator().next() : null;
     }
 
     public void setManager(User manager) {
-        this.manager = manager;
+        this.createdBy = manager;
+        this.managers = new HashSet<>();
+        if (manager != null) {
+            this.managers.add(manager);
+        }
+    }
+
+    public Set<User> getManagers() {
+        return managers;
+    }
+
+    public void setManagers(Set<User> managers) {
+        this.managers = managers;
     }
 
     public List<Reservation> getReservations() {
@@ -228,7 +292,7 @@ public class Event extends AbstractEntity {
                 && Objects.equals(reminderSent, event.reminderSent)
                 && Objects.equals(event_location, event.event_location)
                 && Objects.equals(userAllowances, event.userAllowances)
-                && Objects.equals(manager, event.manager)
+                && Objects.equals(createdBy, event.createdBy)
                 && Objects.equals(reservations, event.reservations);
     }
 
@@ -248,7 +312,7 @@ public class Event extends AbstractEntity {
                 reminderSent,
                 event_location,
                 userAllowances,
-                manager,
+                createdBy,
                 reservations);
     }
 
@@ -277,8 +341,8 @@ public class Event extends AbstractEntity {
                 + event_location
                 + ", userAllowances="
                 + userAllowances
-                + ", manager="
-                + manager
+                + ", createdBy="
+                + createdBy
                 + ", reservations="
                 + reservations
                 + '}';

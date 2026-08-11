@@ -43,6 +43,7 @@ import de.felixhertweck.seatreservation.model.repository.EventLocationRepository
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
+import de.felixhertweck.seatreservation.utils.ManagerResolutionUtils;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
@@ -93,6 +94,9 @@ public class EventService {
         validateEventTiming(dto);
 
         Set<User> supervisors = getSupervisorsFromIds(dto.getSupervisorIds());
+        Set<User> additionalManagers =
+                ManagerResolutionUtils.resolveManagers(
+                        userRepository, dto.getManagerIds(), "event");
 
         Event event =
                 new Event(
@@ -105,13 +109,19 @@ public class EventService {
                         location,
                         manager,
                         dto.getReminderSendDate(),
-                        supervisors);
+                        supervisors,
+                        additionalManagers);
         eventRepository.persist(event);
         LOG.infof("Event ID: %s created successfully.", event.getId());
         LOG.debugf(
                 "Event '%s' (ID: %s) created successfully by manager: %s (ID: %s) with %d"
-                        + " assigned supervisors",
-                event.getName(), event.getId(), manager.id, manager.getId(), supervisors.size());
+                        + " assigned supervisors and %d managers",
+                event.getName(),
+                event.getId(),
+                manager.id,
+                manager.getId(),
+                supervisors.size(),
+                event.getManagers().size());
 
         // Schedule reminder if reminder date is set
         if (event.getReminderSendDate() != null) {
@@ -123,7 +133,7 @@ public class EventService {
 
     /**
      * Updates an existing Event. Access control: The update is only allowed if the currently
-     * authenticated user is the manager of the Event or has the ADMIN role.
+     * authenticated user is a manager of the Event or has the ADMIN role.
      *
      * @param id The ID of the Event to be updated.
      * @param dto The DTO containing the updated details of the Event.
@@ -150,13 +160,13 @@ public class EventService {
                                             "Event with id " + id + " not found");
                                 });
 
-        // Access control: Checks if the current user is the manager of the event
+        // Access control: Checks if the current user is a manager of the event
         // or if the user has the ADMIN role.
-        if (!event.getManager().equals(manager) && !manager.getRoles().contains(Roles.ADMIN)) {
+        if (!isAuthorizedManager(manager, event)) {
             LOG.warnf(
                     "user ID: %s (ID: %s) is not authorized to update event with ID %s.",
                     manager.id, manager.getId(), id);
-            throw new SecurityException("User is not the manager of this event");
+            throw new SecurityException("User is not a manager of this event");
         }
 
         EventLocation location =
@@ -176,6 +186,19 @@ public class EventService {
         validateEventTiming(dto);
 
         Set<User> supervisors = getSupervisorsFromIds(dto.getSupervisorIds());
+
+        if (dto.getManagerIds() != null) {
+            Set<User> newManagers =
+                    ManagerResolutionUtils.resolveManagers(
+                            userRepository, dto.getManagerIds(), "event");
+            if (event.getCreatedBy() != null) {
+                newManagers.add(event.getCreatedBy());
+            }
+            if (!manager.getRoles().contains(Roles.ADMIN)) {
+                newManagers.add(manager);
+            }
+            event.setManagers(newManagers);
+        }
 
         int oldSupervisorCount = event.getSupervisors() == null ? 0 : event.getSupervisors().size();
         int newSupervisorCount = supervisors == null ? 0 : supervisors.size();
@@ -226,6 +249,97 @@ public class EventService {
         }
 
         return new EventResponseDTO(event);
+    }
+
+    /** Adds a manager to an event. */
+    @Transactional
+    public EventResponseDTO addManager(UUID eventId, UUID newManagerId, User currentUser)
+            throws EventNotFoundException, SecurityException, IllegalArgumentException {
+        if (currentUser == null) {
+            throw new SecurityException("User is not authorized to add a manager to this event");
+        }
+        Event event = getEventById(eventId);
+        if (!isAuthorizedManager(currentUser, event)) {
+            LOG.warnf(
+                    "User ID %s is not authorized to add manager to event ID %s",
+                    currentUser.id, eventId);
+            throw new SecurityException("User is not authorized to add a manager to this event");
+        }
+        User newManager =
+                ManagerResolutionUtils.resolveManagers(
+                                userRepository, Set.of(newManagerId), "event")
+                        .iterator()
+                        .next();
+        event.getManagers().add(newManager);
+        eventRepository.persist(event);
+        LOG.infof("Added manager %s to event %s", newManagerId, eventId);
+        return new EventResponseDTO(event);
+    }
+
+    /** Removes a manager from an event. */
+    @Transactional
+    public EventResponseDTO removeManager(UUID eventId, UUID managerToRemoveId, User currentUser)
+            throws EventNotFoundException, SecurityException, IllegalArgumentException {
+        if (currentUser == null) {
+            throw new SecurityException(
+                    "User is not authorized to remove a manager from this event");
+        }
+        Event event = getEventById(eventId);
+        if (!isAuthorizedManager(currentUser, event)) {
+            LOG.warnf(
+                    "User ID %s is not authorized to remove manager from event ID %s",
+                    currentUser.id, eventId);
+            throw new SecurityException(
+                    "User is not authorized to remove a manager from this event");
+        }
+        if (managerToRemoveId.equals(currentUser.getId())) {
+            LOG.warnf(
+                    "User ID %s attempted to remove themselves from event ID %s",
+                    currentUser.id, eventId);
+            throw new IllegalArgumentException("Manager cannot remove themselves from the event");
+        }
+        if (event.getCreatedBy() != null
+                && managerToRemoveId.equals(event.getCreatedBy().getId())) {
+            LOG.warnf(
+                    "Attempted to remove primary creator %s from event ID %s",
+                    managerToRemoveId, eventId);
+            throw new IllegalArgumentException("The event creator cannot be removed as manager");
+        }
+        if (event.getManagers().size() <= 1) {
+            throw new IllegalArgumentException("An event must have at least one manager");
+        }
+        User managerToRemove =
+                userRepository
+                        .findByIdOptional(managerToRemoveId)
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "User with id "
+                                                        + managerToRemoveId
+                                                        + " not found"));
+        event.getManagers().remove(managerToRemove);
+        eventRepository.persist(event);
+        LOG.infof("Removed manager %s from event %s", managerToRemoveId, eventId);
+        return new EventResponseDTO(event);
+    }
+
+    /** Checks if a user is a manager for an event. */
+    public boolean isEventManager(User user, Event event) {
+        if (user == null || event == null) {
+            return false;
+        }
+        return eventRepository.isUserManager(event.getId(), user.getId());
+    }
+
+    /**
+     * True if {@code user} is a manager of {@code event} or holds the ADMIN role. Null-safe, unlike
+     * inlining {@code !isEventManager(user, event) && !user.getRoles().contains(ADMIN)} at call
+     * sites, which dereferences {@code user} unconditionally once {@code isEventManager} returns
+     * {@code false} for a {@code null} user.
+     */
+    private boolean isAuthorizedManager(User user, Event event) {
+        return isEventManager(user, event)
+                || (user != null && user.getRoles().contains(Roles.ADMIN));
     }
 
     /**
@@ -306,9 +420,8 @@ public class EventService {
 
     /**
      * Deletes an event. Access control: The deletion is only allowed if the currently authenticated
-     * user is the manager of the Event or has the ADMIN role. Deleting an event will also delete
-     * all associated user allowances and reservations due to cascading settings in the Event
-     * entity.
+     * user is a manager of the Event or has the ADMIN role. Deleting an event will also delete all
+     * associated user allowances and reservations due to cascading settings in the Event entity.
      *
      * <p>Known limitation: this cascading delete of {@code EventUserAllowance} happens directly
      * through JPA/Hibernate and never calls {@link
@@ -345,7 +458,7 @@ public class EventService {
 
         List<Event> fetchedEvents =
                 eventRepository
-                        .find("from Event e left join fetch e.manager where e.id in ?1", ids)
+                        .find("from Event e left join fetch e.managers where e.id in ?1", ids)
                         .list();
 
         Map<UUID, Event> eventMap =
@@ -362,8 +475,7 @@ public class EventService {
                 throw new EventNotFoundException("Event with id " + id + " not found");
             }
 
-            if (!event.getManager().equals(currentUser)
-                    && !currentUser.getRoles().contains(Roles.ADMIN)) {
+            if (!isAuthorizedManager(currentUser, event)) {
                 LOG.warnf(
                         "user ID: %s (ID: %s) is not authorized to delete event with ID %s.",
                         currentUser.id, currentUser.getId(), id);
@@ -396,19 +508,17 @@ public class EventService {
 
     private Event getEventById(UUID id) throws EventNotFoundException {
         LOG.debugf("Attempting to find event by ID: %s", id);
-        return eventRepository
-                .findByIdOptional(id)
-                .orElseThrow(
-                        () -> {
-                            LOG.warnf("Event with ID %s not found.", id);
-                            return new EventNotFoundException("Event with id " + id + " not found");
-                        });
+        Event event = eventRepository.findByIdOptional(id).orElse(null);
+        if (event == null) {
+            LOG.warnf("Event with ID %s not found.", id);
+            throw new EventNotFoundException("Event with id " + id + " not found");
+        }
+        return event;
     }
 
     /**
      * Retrieves a specific Event by its ID for a manager. Access control: The event is only
-     * returned if the currently authenticated user is the manager of the Event or has the ADMIN
-     * role.
+     * returned if the currently authenticated user is a manager of the Event or has the ADMIN role.
      *
      * @param id The ID of the Event to be retrieved.
      * @param manager The currently authenticated user.
@@ -422,7 +532,7 @@ public class EventService {
                 "Attempting to retrieve event with ID: %s for manager: %s (ID: %s)",
                 id, manager.id, manager.getId());
         Event event = getEventById(id);
-        if (!event.getManager().equals(manager) && !manager.getRoles().contains(Roles.ADMIN)) {
+        if (!isAuthorizedManager(manager, event)) {
             LOG.warnf(
                     "user ID: %s (ID: %s) is not authorized to view event with ID %s.",
                     manager.id, manager.getId(), id);

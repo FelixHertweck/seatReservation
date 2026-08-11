@@ -802,6 +802,9 @@
     "supervisorsSectionTitle": "Supervisors",
     "supervisorsLabel": "Supervisors",
     "supervisorsPlaceholder": "Search users to add as supervisors",
+    "managersSectionTitle": "Additional Managers",
+    "managersLabel": "Managers",
+    "managersPlaceholder": "Search users to add as managers",
     "cancelButton": "Cancel",
     "savingButton": "Saving...",
     "createButton": "Create",
@@ -1292,6 +1295,9 @@
         "addressPlaceholder": "Street, city",
         "capacityLabel": "Capacity",
         "capacityPlaceholder": "e.g. 240",
+        "managersSectionTitle": "Additional Managers",
+        "managersLabel": "Managers",
+        "managersPlaceholder": "Search users to add as managers",
         "submitButton": "Create & open editor",
         "submitting": "Creating...",
         "cancelButton": "Cancel"
@@ -1332,6 +1338,9 @@
         "addressMapPlaceholder": "Enter an address above to preview it on the map",
         "locating": "Locating…",
         "addressNotFound": "Address not found",
+        "managersSectionTitle": "Additional Managers",
+        "managersLabel": "Managers",
+        "managersPlaceholder": "Search users to add as managers",
         "saveButton": "Apply"
       },
       "selection": {
@@ -1458,6 +1467,7 @@
       "occupancy": "{{reserved}}/{{capacity}} reserved",
       "bookingWindow": "Booking {{start}} – {{deadline}}",
       "supervisorsCount": "{{count}} supervisors",
+      "managersCount": "{{count}} managers",
       "editButton": "Edit",
       "deleteConfirm": "Delete event \"{{name}}\"?",
       "viewReservations": "Reservations",

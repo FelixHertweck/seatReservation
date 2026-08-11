@@ -107,7 +107,7 @@ public class SeatRepository implements PanacheRepositoryBase<Seat, UUID> {
         return find(
                         "select s from Seat s"
                                 + " join fetch s.location l"
-                                + " join fetch l.manager"
+                                + " join fetch l.createdBy"
                                 + " where s.id in ?1",
                         ids)
                 .list();

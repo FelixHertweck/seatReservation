@@ -463,6 +463,15 @@ export const EventLocationRequestDTOSchema = {
             items: {
                 $ref: '#/components/schemas/ImportSeatDto'
             }
+        },
+        managerIds: {
+            type: 'array',
+            uniqueItems: true,
+            items: {
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+            }
         }
     }
 } as const;
@@ -481,6 +490,14 @@ export const EventLocationResponseDTOSchema = {
         },
         manager: {
             $ref: '#/components/schemas/LimitedUserInfoDTO'
+        },
+        managerIds: {
+            type: 'array',
+            items: {
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+            }
         },
         seatIds: {
             type: 'array',
@@ -517,6 +534,15 @@ export const EventLocationUpdateDTOSchema = {
         },
         address: {
             type: 'string'
+        },
+        managerIds: {
+            type: 'array',
+            uniqueItems: true,
+            items: {
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+            }
         }
     }
 } as const;
@@ -558,6 +584,15 @@ export const EventRequestDTOSchema = {
             $ref: '#/components/schemas/UUID'
         },
         supervisorIds: {
+            type: 'array',
+            uniqueItems: true,
+            items: {
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+            }
+        },
+        managerIds: {
             type: 'array',
             uniqueItems: true,
             items: {
@@ -616,8 +651,16 @@ export const EventResponseDTOSchema = {
         eventLocationId: {
             $ref: '#/components/schemas/UUID'
         },
-        managerId: {
+        createdByUserId: {
             $ref: '#/components/schemas/UUID'
+        },
+        managerIds: {
+            type: 'array',
+            items: {
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+            }
         },
         supervisorIds: {
             type: 'array',

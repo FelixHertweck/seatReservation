@@ -23,6 +23,7 @@ import static de.felixhertweck.seatreservation.testutil.TestIds.id;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
@@ -49,6 +50,7 @@ public class EventServiceDeleteEventTest {
     User adminUser;
     User managerUser;
     User otherUser;
+    User coManagerUser;
 
     @BeforeEach
     void setUp() {
@@ -65,6 +67,10 @@ public class EventServiceDeleteEventTest {
         otherUser = new User();
         otherUser.id = id(3);
         otherUser.setRoles(Set.of(Roles.USER));
+
+        coManagerUser = new User();
+        coManagerUser.id = id(4);
+        coManagerUser.setRoles(Set.of(Roles.USER));
     }
 
     @Test
@@ -82,14 +88,38 @@ public class EventServiceDeleteEventTest {
         PanacheQuery<Event> queryMock = mock(PanacheQuery.class);
         when(queryMock.list()).thenReturn(List.of(event1, event2));
         when(eventRepository.find(
-                        eq("from Event e left join fetch e.manager where e.id in ?1"),
+                        eq("from Event e left join fetch e.managers where e.id in ?1"),
                         eq(List.of(id(101), id(102)))))
                 .thenReturn(queryMock);
+        stubIsUserManager(event1, event2);
 
         eventService.deleteEvent(List.of(id(101), id(102)), managerUser);
 
         verify(eventRepository, times(1)).delete(event1);
         verify(eventRepository, times(1)).delete(event2);
+    }
+
+    @Test
+    void deleteEvent_Success_AsCoManager() {
+        // coManagerUser is added as a co-manager, not via setManager (which would make it the sole
+        // creator) - proves deletion isn't limited to whoever created the event.
+        Event event1 = new Event();
+        event1.id = id(101);
+        event1.setName("Event 1");
+        event1.setManager(managerUser);
+        event1.getManagers().add(coManagerUser);
+
+        PanacheQuery<Event> queryMock = mock(PanacheQuery.class);
+        when(queryMock.list()).thenReturn(List.of(event1));
+        when(eventRepository.find(
+                        eq("from Event e left join fetch e.managers where e.id in ?1"),
+                        eq(List.of(id(101)))))
+                .thenReturn(queryMock);
+        stubIsUserManager(event1);
+
+        eventService.deleteEvent(List.of(id(101)), coManagerUser);
+
+        verify(eventRepository, times(1)).delete(event1);
     }
 
     @Test
@@ -102,9 +132,10 @@ public class EventServiceDeleteEventTest {
         PanacheQuery<Event> queryMock = mock(PanacheQuery.class);
         when(queryMock.list()).thenReturn(List.of(event1));
         when(eventRepository.find(
-                        eq("from Event e left join fetch e.manager where e.id in ?1"),
+                        eq("from Event e left join fetch e.managers where e.id in ?1"),
                         eq(List.of(id(101), id(999)))))
                 .thenReturn(queryMock);
+        stubIsUserManager(event1);
 
         assertThrows(
                 EventNotFoundException.class,
@@ -123,7 +154,7 @@ public class EventServiceDeleteEventTest {
         PanacheQuery<Event> queryMock = mock(PanacheQuery.class);
         when(queryMock.list()).thenReturn(List.of(event1));
         when(eventRepository.find(
-                        eq("from Event e left join fetch e.manager where e.id in ?1"),
+                        eq("from Event e left join fetch e.managers where e.id in ?1"),
                         eq(List.of(id(101)))))
                 .thenReturn(queryMock);
 
@@ -132,5 +163,22 @@ public class EventServiceDeleteEventTest {
                 () -> eventService.deleteEvent(List.of(id(101)), otherUser));
 
         verify(eventRepository, never()).delete(any());
+    }
+
+    private void stubIsUserManager(Event... events) {
+        when(eventRepository.isUserManager(any(UUID.class), any(UUID.class)))
+                .thenAnswer(
+                        invocation -> {
+                            UUID eventId = invocation.getArgument(0);
+                            UUID userId = invocation.getArgument(1);
+                            for (Event event : events) {
+                                if (event.getId().equals(eventId)) {
+                                    return event.getManagers() != null
+                                            && event.getManagers().stream()
+                                                    .anyMatch(u -> u.id.equals(userId));
+                                }
+                            }
+                            return false;
+                        });
     }
 }

@@ -335,7 +335,9 @@ public class SeatService {
             return seat; // Admin can access any seat
         }
 
-        if (!seat.getLocation().getManager().getId().equals(currentUser.id())) {
+        try {
+            eventLocationAccessService.requireAccess(seat.getLocation(), currentUser);
+        } catch (SecurityException e) {
             LOG.warnf(
                     "user ID: %s does not have permission to access seat ID %s.",
                     currentUser.id(), id);

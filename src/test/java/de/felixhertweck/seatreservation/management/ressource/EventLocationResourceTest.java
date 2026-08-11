@@ -28,6 +28,7 @@ import jakarta.transaction.Transactional;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 
+import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.repository.CheckInTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenRepository;
@@ -85,12 +86,36 @@ public class EventLocationResourceTest {
         eventLocationRepository.deleteAll();
 
         var user = userRepository.findByUsernameOptional("manager").orElseThrow();
+
         testLocation = new EventLocation();
         testLocation.setName("Test Location");
         testLocation.setAddress("Test Address");
         testLocation.setManager(user);
         testLocation.setSeats(new ArrayList<>()); // Initialize seats list
         eventLocationRepository.persist(testLocation);
+    }
+
+    @Transactional
+    void addDirectLocationManager(EventLocation location, String username) {
+        var extraManager = userRepository.findByUsernameOptional(username).orElseThrow();
+        var managed = eventLocationRepository.findById(location.getId());
+        managed.getManagers().add(extraManager);
+        eventLocationRepository.persist(managed);
+    }
+
+    /**
+     * Creates an event at {@code location} managed by {@code username}, without adding that user to
+     * the location's own manager set - the only path to the location is via this event.
+     */
+    @Transactional
+    void addEventManagedBy(EventLocation location, String username) {
+        var extraManager = userRepository.findByUsernameOptional(username).orElseThrow();
+        var managed = eventLocationRepository.findById(location.getId());
+        var event = new Event();
+        event.setName("Event at " + managed.getName());
+        event.setEventLocation(managed);
+        event.setManager(extraManager);
+        eventRepository.persist(event);
     }
 
     @AfterEach
@@ -137,6 +162,125 @@ public class EventLocationResourceTest {
                 .statusCode(200)
                 .body("size()", is(1));
     }
+
+    // The tests below use "supervisor" (fixed seed UUID ...0004) as a stand-in identity for a
+    // second/co-manager, since @JwtSecurity's uid claim must be a compile-time constant and only
+    // the seeded users have a known UUID - dynamically created users get a fresh generated UUID at
+    // persist time. @TestSecurity fully overrides the security identity's roles for the request, so
+    // "supervisor" acting with the MANAGER role here does not require any DB role change.
+
+    @Test
+    @TestSecurity(
+            user = "supervisor",
+            roles = {"MANAGER"})
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000004",
+                            type = ClaimType.STRING))
+    void testGetEventLocationsByCurrentManager_IncludesLocationSharedDirectly() {
+        addDirectLocationManager(testLocation, "supervisor");
+
+        given().when()
+                .get("/api/manager/eventlocations")
+                .then()
+                .statusCode(200)
+                .body("size()", is(1));
+    }
+
+    @Test
+    @TestSecurity(
+            user = "supervisor",
+            roles = {"MANAGER"})
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000004",
+                            type = ClaimType.STRING))
+    void testUpdateEventLocationAsDirectCoManager() {
+        addDirectLocationManager(testLocation, "supervisor");
+
+        given().contentType("application/json")
+                .body("{\"name\":\"Updated Location\",\"address\":\"456 Main St\"}")
+                .when()
+                .put("/api/manager/eventlocations/" + testLocation.getId())
+                .then()
+                .statusCode(200)
+                .body("name", is("Updated Location"));
+    }
+
+    @Test
+    @TestSecurity(
+            user = "supervisor",
+            roles = {"MANAGER"})
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000004",
+                            type = ClaimType.STRING))
+    void testDeleteEventLocationAsDirectCoManager() {
+        addDirectLocationManager(testLocation, "supervisor");
+
+        given().when()
+                .queryParam("ids", testLocation.getId())
+                .delete("/api/manager/eventlocations")
+                .then()
+                .statusCode(204);
+    }
+
+    @Test
+    @TestSecurity(
+            user = "supervisor",
+            roles = {"MANAGER"})
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000004",
+                            type = ClaimType.STRING))
+    void testGetEventLocationsByCurrentManager_IncludesLocationViaManagedEvent() {
+        // supervisor is never added to testLocation's own manager set - the only route to the
+        // location is via an event they manage there.
+        addEventManagedBy(testLocation, "supervisor");
+
+        given().when()
+                .get("/api/manager/eventlocations")
+                .then()
+                .statusCode(200)
+                .body("size()", is(1));
+    }
+
+    @Test
+    @TestSecurity(
+            user = "supervisor",
+            roles = {"MANAGER"})
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000004",
+                            type = ClaimType.STRING))
+    void testUpdateEventLocationAsManagerViaEvent() {
+        addEventManagedBy(testLocation, "supervisor");
+
+        given().contentType("application/json")
+                .body("{\"name\":\"Updated Location\",\"address\":\"456 Main St\"}")
+                .when()
+                .put("/api/manager/eventlocations/" + testLocation.getId())
+                .then()
+                .statusCode(200)
+                .body("name", is("Updated Location"));
+    }
+
+    // No "delete location as manager-via-event" test: EventLocationService.deleteEventLocation
+    // has no guard against deleting a location that still has events at it
+    // (events.event_location_id
+    // has no ON DELETE clause), so that call fails on the FK constraint regardless of who's asking
+    // -
+    // an unrelated pre-existing gap, not something to encode as expected behavior here.
 
     @Test
     @TestSecurity(

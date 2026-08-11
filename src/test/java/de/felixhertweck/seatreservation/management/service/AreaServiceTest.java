@@ -142,6 +142,11 @@ public class AreaServiceTest {
                 .thenReturn(Optional.of(otherLocation));
         when(eventLocationRepository.findByIdOptional(secondOwnedLocation.id))
                 .thenReturn(Optional.of(secondOwnedLocation));
+
+        when(eventLocationRepository.isUserManager(eventLocation.id, managerUser.id))
+                .thenReturn(true);
+        when(eventLocationRepository.isUserManager(secondOwnedLocation.id, managerUser.id))
+                .thenReturn(true);
     }
 
     @Test

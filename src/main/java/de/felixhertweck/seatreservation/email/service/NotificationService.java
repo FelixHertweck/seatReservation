@@ -321,16 +321,15 @@ public class NotificationService {
         LOG.debugf("Cancelled reminder job for event ID: %s", eventId);
     }
 
-    /** Sends daily reservation CSVs to event managers for events happening today. */
+    /**
+     * Sends daily reservation CSVs to event managers for events happening today. Loads events in a
+     * short transaction, then sends emails outside of it so a slow mail send can't hold a DB
+     * transaction open.
+     */
     @Scheduled(cron = "0 0 8 * * ?")
     public void sendDailyReservationCsvToManagers() {
         LOG.info("Starting scheduled CSV export task for event managers.");
-        LocalDate today = LocalDate.now(ZoneId.systemDefault());
-        Instant startOfToday = today.atStartOfDay(ZoneId.systemDefault()).toInstant();
-        Instant endOfToday =
-                today.atTime(23, 59, 59, 999_999_999).atZone(ZoneId.systemDefault()).toInstant();
-
-        List<Event> eventsToday = eventService.findEventsBetweenDates(startOfToday, endOfToday);
+        List<Event> eventsToday = self.loadTodaysEventsWithManagers();
         LOG.debugf("Found %d events for today.", eventsToday.size());
 
         for (Event event : eventsToday) {
@@ -338,12 +337,13 @@ public class NotificationService {
 
             try {
                 // Get the event manager/owner
-                User manager = event.getManager();
-                if (manager != null) {
-                    LOG.debugf(
-                            "Sending CSV export to manager: %s for event: %s",
-                            manager.id, event.getName());
-                    emailService.sendEventReservationsCsvToManager(manager, event);
+                if (event.getManagers() != null && !event.getManagers().isEmpty()) {
+                    for (User manager : event.getManagers()) {
+                        LOG.debugf(
+                                "Sending CSV export to manager: %s for event: %s",
+                                manager.id, event.getName());
+                        self.sendReservationsCsvToManager(manager, event);
+                    }
                 } else {
                     LOG.warnf("No manager found for event: %s (ID: %s)", event.getName(), event.id);
                 }
@@ -355,5 +355,44 @@ public class NotificationService {
             }
         }
         LOG.info("Finished scheduled CSV export task for event managers.");
+    }
+
+    /**
+     * Loads today's events in a short transaction, eagerly initializing the lazy {@code managers}
+     * collection (and the event location name) so the caller can safely read them after the
+     * transaction has closed.
+     *
+     * @return the events happening today
+     */
+    @Transactional
+    public List<Event> loadTodaysEventsWithManagers() {
+        LocalDate today = LocalDate.now(ZoneId.systemDefault());
+        Instant startOfToday = today.atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Instant endOfToday =
+                today.atTime(23, 59, 59, 999_999_999).atZone(ZoneId.systemDefault()).toInstant();
+
+        List<Event> eventsToday = eventService.findEventsBetweenDates(startOfToday, endOfToday);
+        eventsToday.forEach(
+                event -> {
+                    Hibernate.initialize(event.getManagers());
+                    if (event.getEventLocation() != null) {
+                        event.getEventLocation().getName();
+                    }
+                });
+        return eventsToday;
+    }
+
+    /**
+     * Sends a single CSV export email outside of a database transaction, so the (potentially slow)
+     * mail send doesn't hold a transaction open. Uses @ActivateRequestContext to allow the CSV
+     * export query to still run.
+     *
+     * @param manager the manager to email
+     * @param event the event whose reservations to export
+     */
+    @ActivateRequestContext
+    public void sendReservationsCsvToManager(User manager, Event event)
+            throws EventNotFoundException, SecurityException, IOException {
+        emailService.sendEventReservationsCsvToManager(manager, event);
     }
 }

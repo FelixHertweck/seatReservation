@@ -192,6 +192,9 @@ public class SeatServiceTest {
                 .thenReturn(Optional.of(entranceC));
         when(eventLocationEntranceRepository.findByIdOptional(entranceInOtherLocation.id))
                 .thenReturn(Optional.of(entranceInOtherLocation));
+
+        when(eventLocationRepository.isUserManager(eventLocation.id, managerUser.id))
+                .thenReturn(true);
     }
 
     @Test

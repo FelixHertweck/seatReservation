@@ -134,6 +134,7 @@ export type EventLocationRequestDto = {
     markers?: Array<ImportMarkerDto>;
     areas?: Array<ImportAreaDto>;
     seats?: Array<ImportSeatDto>;
+    managerIds?: Array<string>;
 };
 
 export type EventLocationResponseDto = {
@@ -141,6 +142,7 @@ export type EventLocationResponseDto = {
     name?: string;
     address?: string;
     manager?: LimitedUserInfoDto;
+    managerIds?: Array<string>;
     seatIds?: Array<string>;
     markers?: Array<EventLocationMakerDto>;
     areas?: Array<AreaDto>;
@@ -149,6 +151,7 @@ export type EventLocationResponseDto = {
 export type EventLocationUpdateDto = {
     name: string;
     address: string;
+    managerIds?: Array<string>;
 };
 
 export type EventRequestDto = {
@@ -161,6 +164,7 @@ export type EventRequestDto = {
     reminderSendDate?: Instant;
     eventLocationId: Uuid;
     supervisorIds?: Array<string>;
+    managerIds?: Array<string>;
 };
 
 export type EventResponseDto = {
@@ -176,7 +180,8 @@ export type EventResponseDto = {
     seatStatuses?: Array<SeatStatusDto>;
     eventUserAllowancesIds?: Array<string>;
     eventLocationId?: Uuid;
-    managerId?: Uuid;
+    createdByUserId?: Uuid;
+    managerIds?: Array<string>;
     supervisorIds?: Array<string>;
 };
 
@@ -1808,6 +1813,74 @@ export type PutApiManagerEventsByIdResponses = {
 };
 
 export type PutApiManagerEventsByIdResponse = PutApiManagerEventsByIdResponses[keyof PutApiManagerEventsByIdResponses];
+
+export type DeleteApiManagerEventsByIdManagersByUserIdData = {
+    body?: never;
+    path: {
+        id: Uuid;
+        userId: Uuid;
+    };
+    query?: never;
+    url: '/api/manager/events/{id}/managers/{userId}';
+};
+
+export type DeleteApiManagerEventsByIdManagersByUserIdErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Forbidden
+     */
+    403: unknown;
+    /**
+     * Not Found
+     */
+    404: unknown;
+};
+
+export type DeleteApiManagerEventsByIdManagersByUserIdResponses = {
+    /**
+     * OK
+     */
+    200: EventResponseDto;
+};
+
+export type DeleteApiManagerEventsByIdManagersByUserIdResponse = DeleteApiManagerEventsByIdManagersByUserIdResponses[keyof DeleteApiManagerEventsByIdManagersByUserIdResponses];
+
+export type PostApiManagerEventsByIdManagersByUserIdData = {
+    body?: never;
+    path: {
+        id: Uuid;
+        userId: Uuid;
+    };
+    query?: never;
+    url: '/api/manager/events/{id}/managers/{userId}';
+};
+
+export type PostApiManagerEventsByIdManagersByUserIdErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Forbidden
+     */
+    403: unknown;
+    /**
+     * Not Found
+     */
+    404: unknown;
+};
+
+export type PostApiManagerEventsByIdManagersByUserIdResponses = {
+    /**
+     * OK
+     */
+    200: EventResponseDto;
+};
+
+export type PostApiManagerEventsByIdManagersByUserIdResponse = PostApiManagerEventsByIdManagersByUserIdResponses[keyof PostApiManagerEventsByIdManagersByUserIdResponses];
 
 export type DeleteApiManagerMarkersData = {
     body?: never;

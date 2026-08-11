@@ -408,6 +408,15 @@
             "items" : {
               "$ref" : "#/components/schemas/ImportSeatDto"
             }
+          },
+          "managerIds" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+            }
           }
         }
       },
@@ -425,6 +434,14 @@
           },
           "manager" : {
             "$ref" : "#/components/schemas/LimitedUserInfoDTO"
+          },
+          "managerIds" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+            }
           },
           "seatIds" : {
             "type" : "array",
@@ -457,6 +474,15 @@
           },
           "address" : {
             "type" : "string"
+          },
+          "managerIds" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+            }
           }
         }
       },
@@ -489,6 +515,15 @@
             "$ref" : "#/components/schemas/UUID"
           },
           "supervisorIds" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+            }
+          },
+          "managerIds" : {
             "type" : "array",
             "uniqueItems" : true,
             "items" : {
@@ -546,8 +581,16 @@
           "eventLocationId" : {
             "$ref" : "#/components/schemas/UUID"
           },
-          "managerId" : {
+          "createdByUserId" : {
             "$ref" : "#/components/schemas/UUID"
+          },
+          "managerIds" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+            }
           },
           "supervisorIds" : {
             "type" : "array",
@@ -2957,6 +3000,94 @@
           }
         },
         "summary" : "Get Event By Id",
+        "tags" : [ "Event Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
+        } ]
+      }
+    },
+    "/api/manager/events/{id}/managers/{userId}" : {
+      "delete" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
+        }, {
+          "name" : "userId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EventResponseDTO"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "description" : "Not Found"
+          }
+        },
+        "summary" : "Remove Manager",
+        "tags" : [ "Event Resource" ],
+        "security" : [ {
+          "SecurityScheme" : [ "MANAGER", "ADMIN" ]
+        } ]
+      },
+      "post" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
+        }, {
+          "name" : "userId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EventResponseDTO"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "403" : {
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "description" : "Not Found"
+          }
+        },
+        "summary" : "Add Manager",
         "tags" : [ "Event Resource" ],
         "security" : [ {
           "SecurityScheme" : [ "MANAGER", "ADMIN" ]

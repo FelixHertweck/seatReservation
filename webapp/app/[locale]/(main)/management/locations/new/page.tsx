@@ -5,22 +5,26 @@ import type React from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { Users } from "lucide-react";
+
 import { useT } from "@/lib/i18n/hooks";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/custom-ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/custom-ui/label";
+import { UserMultiSelect } from "@/components/common/user-multi-select";
 import { useManagementLocations } from "@/hooks/use-management-locations";
 
 export default function NewLocationPage() {
   const t = useT();
   const router = useRouter();
-  const { createLocation } = useManagementLocations();
+  const { createLocation, users } = useManagementLocations();
 
   const [formData, setFormData] = useState({
     name: "",
     address: "",
+    managerIds: [] as string[],
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -31,6 +35,7 @@ export default function NewLocationPage() {
       const location = await createLocation({
         name: formData.name,
         address: formData.address,
+        managerIds: formData.managerIds,
       });
       router.replace(`/management/locations/${location.id}`);
     } finally {
@@ -72,6 +77,22 @@ export default function NewLocationPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, address: e.target.value })
                 }
+              />
+            </div>
+
+            <div className="space-y-2 border-t pt-4">
+              <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Users className="h-4 w-4" />
+                {t("management.locations.form.managersSectionTitle")}
+              </h3>
+              <UserMultiSelect
+                users={users}
+                selectedUserIds={formData.managerIds}
+                onSelectionChange={(sel) =>
+                  setFormData((prev) => ({ ...prev, managerIds: sel }))
+                }
+                label={t("management.locations.form.managersLabel")}
+                placeholder={t("management.locations.form.managersPlaceholder")}
               />
             </div>
 

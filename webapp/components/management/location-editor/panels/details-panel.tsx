@@ -1,17 +1,19 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { Loader2, MapPinOff } from "lucide-react";
+import { Loader2, MapPinOff, Users } from "lucide-react";
 
 import { useT } from "@/lib/i18n/hooks";
 import { Label } from "@/components/custom-ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/custom-ui/button";
 import { Skeleton } from "@/components/custom-ui/skeleton";
+import { UserMultiSelect } from "@/components/common/user-multi-select";
 import { useSyncedField } from "@/components/management/location-editor/use-synced-field";
 import { useGeocode } from "@/hooks/use-geocode";
 import type { useLocationEditorSave } from "@/components/management/location-editor/use-location-editor-save";
 import type { LocationMeta } from "@/components/management/location-editor/types";
+import type { UserDto } from "@/api";
 
 const AddressMap = dynamic(
   () => import("@/components/management/location-editor/address-map"),
@@ -49,28 +51,42 @@ function AddressMapPlaceholder({
 interface DetailsPanelProps {
   meta: LocationMeta;
   autosave: ReturnType<typeof useLocationEditorSave>;
+  users: UserDto[];
   onSaved?: () => void;
 }
 
-export function DetailsPanel({ meta, autosave, onSaved }: DetailsPanelProps) {
+export function DetailsPanel({
+  meta,
+  autosave,
+  users,
+  onSaved,
+}: DetailsPanelProps) {
   const t = useT();
   const [name, setName] = useSyncedField(meta.name);
   const [address, setAddress] = useSyncedField(meta.address);
+  const [managerIds, setManagerIds] = useSyncedField(meta.managerIds);
   const {
     result: geocoded,
     isLoading: isGeocoding,
     notFound,
   } = useGeocode(address);
 
-  const isDirty = name !== meta.name || address !== meta.address;
+  const managerIdsChanged =
+    managerIds.length !== meta.managerIds.length ||
+    managerIds.some((id) => !meta.managerIds.includes(id));
+
+  const isDirty =
+    name !== meta.name || address !== meta.address || managerIdsChanged;
 
   const handleSave = () => {
     const changes: Partial<{
       name: string;
       address: string;
+      managerIds: string[];
     }> = {};
     if (name !== meta.name) changes.name = name;
     if (address !== meta.address) changes.address = address;
+    if (managerIdsChanged) changes.managerIds = managerIds;
     if (Object.keys(changes).length > 0) {
       autosave.updateMeta(changes);
     }
@@ -118,6 +134,22 @@ export function DetailsPanel({ meta, autosave, onSaved }: DetailsPanelProps) {
             />
           </div>
         )}
+      </div>
+
+      <div className="space-y-1.5 border-t pt-3">
+        <h3 className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+          <Users className="h-4 w-4" />
+          {t("management.locationEditor.details.managersSectionTitle")}
+        </h3>
+        <UserMultiSelect
+          users={users}
+          selectedUserIds={managerIds}
+          onSelectionChange={setManagerIds}
+          label={t("management.locationEditor.details.managersLabel")}
+          placeholder={t(
+            "management.locationEditor.details.managersPlaceholder",
+          )}
+        />
       </div>
 
       <Button

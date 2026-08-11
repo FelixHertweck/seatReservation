@@ -194,6 +194,16 @@ public class EventUserAllowanceRepository
     }
 
     /**
+     * Finds all event user allowances for events managed by a specific user.
+     *
+     * @param manager the manager to search for
+     * @return a list of event user allowances for events managed by the specified user
+     */
+    public List<EventUserAllowance> findByEventManager(User manager) {
+        return find("?1 MEMBER OF event.managers", manager).list();
+    }
+
+    /**
      * Finds event user allowances by their IDs, eagerly fetching each one's event and that event's
      * manager. Used to batch the ownership check for bulk operations (e.g. deletion) instead of
      * querying once per ID.
@@ -206,9 +216,9 @@ public class EventUserAllowanceRepository
             return List.of();
         }
         return find(
-                        "select a from EventUserAllowance a"
+                        "select distinct a from EventUserAllowance a"
                                 + " join fetch a.event e"
-                                + " join fetch e.manager"
+                                + " left join fetch e.managers"
                                 + " where a.id in ?1",
                         ids)
                 .list();

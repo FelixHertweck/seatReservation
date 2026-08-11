@@ -30,12 +30,44 @@ import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 @ApplicationScoped
 public class EventLocationRepository implements PanacheRepositoryBase<EventLocation, UUID> {
     /**
-     * Finds all event locations managed by a specific user.
+     * Finds all event locations a user manages - either directly (as the location's creator or a
+     * user it was explicitly shared with) or indirectly, by managing an event held at that
+     * location.
      *
      * @param manager the manager user to search for
      * @return a list of event locations managed by the specified user
      */
     public List<EventLocation> findByManager(User manager) {
-        return find("manager", manager).list();
+        return find(
+                        "SELECT DISTINCT el FROM EventLocation el WHERE el.createdBy = ?1 OR ?1"
+                                + " MEMBER OF el.managers OR EXISTS (SELECT 1 FROM Event ev WHERE"
+                                + " ev.event_location = el AND ?1 MEMBER OF ev.managers)",
+                        manager)
+                .list();
+    }
+
+    /**
+     * Checks whether a user manages a given event location - either directly (as the location's
+     * creator or a user it was explicitly shared with) or indirectly, by managing an event held at
+     * that location.
+     *
+     * @param locationId the event location ID to check
+     * @param userId the user ID to check
+     * @return true if the user manages the location, false otherwise
+     */
+    public boolean isUserManager(UUID locationId, UUID userId) {
+        if (locationId == null || userId == null) {
+            return false;
+        }
+        return find(
+                        "SELECT el FROM EventLocation el WHERE el.id = ?1 AND (el.createdBy.id ="
+                                + " ?2 OR EXISTS (SELECT 1 FROM EventLocation el2 JOIN"
+                                + " el2.managers m WHERE el2 = el AND m.id = ?2) OR EXISTS (SELECT"
+                                + " 1 FROM Event ev JOIN ev.managers m WHERE ev.event_location = el"
+                                + " AND m.id = ?2))",
+                        locationId,
+                        userId)
+                .firstResultOptional()
+                .isPresent();
     }
 }

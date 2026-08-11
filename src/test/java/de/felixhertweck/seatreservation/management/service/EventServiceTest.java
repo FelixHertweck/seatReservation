@@ -83,10 +83,12 @@ public class EventServiceTest {
 
     private User adminUser;
     private User managerUser;
+    private User coManagerUser;
     private User supervisorUser;
     private User regularUser;
     private AuthenticatedUser adminAuth;
     private AuthenticatedUser managerAuth;
+    private AuthenticatedUser coManagerAuth;
     private AuthenticatedUser regularAuth;
     private EventLocation eventLocation;
     private Event existingEvent;
@@ -126,6 +128,19 @@ public class EventServiceTest {
                         Set.of(Roles.MANAGER),
                         Set.of());
         managerUser.id = id(3);
+        coManagerUser =
+                new User(
+                        "comanager",
+                        "comanager@example.com",
+                        true,
+                        false,
+                        "hash",
+                        "salt",
+                        "Co",
+                        "Manager",
+                        Set.of(Roles.MANAGER),
+                        Set.of());
+        coManagerUser.id = id(8);
         supervisorUser =
                 new User(
                         "supervisor",
@@ -155,8 +170,10 @@ public class EventServiceTest {
 
         adminAuth = new AuthenticatedUser(adminUser.id, adminUser.getRoles());
         managerAuth = new AuthenticatedUser(managerUser.id, managerUser.getRoles());
+        coManagerAuth = new AuthenticatedUser(coManagerUser.id, coManagerUser.getRoles());
         regularAuth = new AuthenticatedUser(regularUser.id, regularUser.getRoles());
         when(userRepository.getReference(managerUser.id)).thenReturn(managerUser);
+        when(userRepository.getReference(coManagerUser.id)).thenReturn(coManagerUser);
 
         eventLocation = new EventLocation("Stadthalle", "Hauptstraße 1", managerUser);
         eventLocation.id = id(1);
@@ -174,6 +191,19 @@ public class EventServiceTest {
                         Instant.now().plusSeconds(Duration.ofHours(13).toSeconds()),
                         Set.of(supervisorUser));
         existingEvent.id = id(1);
+
+        when(eventRepository.isUserManager(any(UUID.class), any(UUID.class)))
+                .thenAnswer(
+                        invocation -> {
+                            UUID eventId = invocation.getArgument(0);
+                            UUID userId = invocation.getArgument(1);
+                            if (existingEvent != null && existingEvent.id.equals(eventId)) {
+                                return existingEvent.getManagers() != null
+                                        && existingEvent.getManagers().stream()
+                                                .anyMatch(u -> u.id != null && u.id.equals(userId));
+                            }
+                            return false;
+                        });
     }
 
     @Test
@@ -278,6 +308,34 @@ public class EventServiceTest {
 
         EventResponseDTO updatedEvent =
                 eventService.updateEvent(existingEvent.id, dto, managerUser);
+
+        assertNotNull(updatedEvent);
+        assertEquals("Updated Event", updatedEvent.name());
+        verify(eventRepository, times(1)).persist(existingEvent);
+    }
+
+    @Test
+    void updateEvent_Success_AsCoManager() throws EventNotFoundException {
+        // coManagerUser is a co-manager, not the event's creator - proves access isn't limited to
+        // whoever created the event.
+        existingEvent.getManagers().add(coManagerUser);
+
+        EventRequestDTO dto = new EventRequestDTO();
+        dto.setName("Updated Event");
+        dto.setDescription("Updated Description");
+        dto.setStartTime(Instant.now().plusSeconds(Duration.ofDays(10).toSeconds()));
+        dto.setEndTime(Instant.now().plusSeconds(Duration.ofDays(11).toSeconds()));
+        dto.setBookingStartTime(Instant.now().plusSeconds(Duration.ofDays(8).toSeconds()));
+        dto.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(9).toSeconds()));
+        dto.setEventLocationId(eventLocation.id);
+
+        when(eventRepository.findByIdOptional(existingEvent.id))
+                .thenReturn(Optional.of(existingEvent));
+        when(eventLocationRepository.findByIdOptional(eventLocation.id))
+                .thenReturn(Optional.of(eventLocation));
+
+        EventResponseDTO updatedEvent =
+                eventService.updateEvent(existingEvent.id, dto, coManagerUser);
 
         assertNotNull(updatedEvent);
         assertEquals("Updated Event", updatedEvent.name());
@@ -625,6 +683,30 @@ public class EventServiceTest {
     }
 
     @Test
+    void updateReservationAllowance_Success_AsCoManager()
+            throws EventNotFoundException, SecurityException {
+        // coManagerUser is a co-manager, not the event's creator.
+        existingEvent.getManagers().add(coManagerUser);
+
+        EventUserAllowance existingAllowance =
+                new EventUserAllowance(regularUser, existingEvent, 5);
+        existingAllowance.id = id(1);
+        EventUserAllowanceUpdateDto dto =
+                new EventUserAllowanceUpdateDto(
+                        existingAllowance.id, existingEvent.id, regularUser.id, 10);
+
+        when(eventUserAllowanceRepository.findByIdOptional(existingAllowance.id))
+                .thenReturn(Optional.of(existingAllowance));
+
+        EventUserAllowancesDto result =
+                eventReservationAllowanceService.updateReservationAllowance(dto, coManagerUser);
+
+        assertNotNull(result);
+        assertEquals(10, result.reservationsAllowedCount());
+        verify(eventUserAllowanceRepository, times(1)).persist(existingAllowance);
+    }
+
+    @Test
     void updateReservationAllowance_Success_AsAdmin()
             throws EventNotFoundException, SecurityException {
         EventUserAllowance existingAllowance =
@@ -701,6 +783,28 @@ public class EventServiceTest {
     }
 
     @Test
+    void getReservationAllowanceById_Success_AsCoManager() {
+        // coManagerUser is a co-manager, not the event's creator.
+        existingEvent.getManagers().add(coManagerUser);
+
+        EventUserAllowance allowance = new EventUserAllowance(regularUser, existingEvent, 5);
+        allowance.id = id(1);
+
+        when(eventUserAllowanceRepository.findByIdOptional(allowance.id))
+                .thenReturn(Optional.of(allowance));
+
+        EventUserAllowancesDto result =
+                eventReservationAllowanceService.getReservationAllowanceById(
+                        allowance.id, coManagerUser);
+
+        assertNotNull(result);
+        assertEquals(regularUser.id, result.userId());
+        assertEquals(existingEvent.id, result.eventId());
+        assertEquals(5, result.reservationsAllowedCount());
+        assertEquals(allowance.id, result.id());
+    }
+
+    @Test
     void getReservationAllowanceById_Success_AsAdmin() {
         EventUserAllowance allowance = new EventUserAllowance(regularUser, existingEvent, 5);
         allowance.id = id(1);
@@ -730,6 +834,27 @@ public class EventServiceTest {
                 () ->
                         eventReservationAllowanceService.getReservationAllowanceById(
                                 allowance.id, regularUser));
+    }
+
+    @Test
+    void getReservationAllowances_Success_AsCoManager() {
+        // coManagerUser is a co-manager, not the event's creator - the "list my allowances"
+        // endpoint must include allowances for events reached only through co-management.
+        existingEvent.getManagers().add(coManagerUser);
+
+        EventUserAllowance allowance = new EventUserAllowance(regularUser, existingEvent, 5);
+        allowance.id = id(1);
+
+        when(eventUserAllowanceRepository.findByEventManager(coManagerUser))
+                .thenReturn(List.of(allowance));
+
+        List<EventUserAllowancesDto> result =
+                eventReservationAllowanceService.getReservationAllowances(coManagerAuth);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(allowance.id, result.get(0).id());
+        assertEquals(existingEvent.id, result.get(0).eventId());
     }
 
     @Test
@@ -999,5 +1124,137 @@ public class EventServiceTest {
         // Should cancel old reminder and schedule new one
         verify(notificationService, times(1)).cancelEventReminder(existingEvent.id);
         verify(notificationService, times(1)).scheduleEventReminder(any(Event.class));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void createEvent_WithManagers_Success() {
+        User extraManager =
+                new User(
+                        "extra",
+                        "extra@example.com",
+                        true,
+                        false,
+                        "h",
+                        "s",
+                        "Ex",
+                        "Tra",
+                        Set.of(Roles.MANAGER),
+                        Set.of());
+        extraManager.id = id(5);
+
+        EventRequestDTO dto = new EventRequestDTO();
+        dto.setName("Multi Manager Event");
+        dto.setDescription("Description");
+        dto.setStartTime(Instant.now().plusSeconds(Duration.ofDays(5).toSeconds()));
+        dto.setEndTime(Instant.now().plusSeconds(Duration.ofDays(6).toSeconds()));
+        dto.setBookingStartTime(Instant.now().plusSeconds(Duration.ofDays(3).toSeconds()));
+        dto.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(4).toSeconds()));
+        dto.setEventLocationId(eventLocation.id);
+        dto.setManagerIds(Set.of(extraManager.id));
+
+        when(eventLocationRepository.findByIdOptional(eventLocation.id))
+                .thenReturn(Optional.of(eventLocation));
+        PanacheQuery<User> panacheQuery = mock(PanacheQuery.class);
+        when(panacheQuery.list()).thenReturn(List.of(extraManager));
+        when(userRepository.find("id in ?1", Set.of(extraManager.id))).thenReturn(panacheQuery);
+
+        EventResponseDTO createdEvent = eventService.createEvent(dto, managerUser);
+        assertNotNull(createdEvent);
+        assertTrue(createdEvent.managerIds().contains(managerUser.id));
+        assertTrue(createdEvent.managerIds().contains(extraManager.id));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void createEvent_WithNonManagerUser_ThrowsException() {
+        EventRequestDTO dto = new EventRequestDTO();
+        dto.setName("Multi Manager Event");
+        dto.setDescription("Description");
+        dto.setStartTime(Instant.now().plusSeconds(Duration.ofDays(5).toSeconds()));
+        dto.setEndTime(Instant.now().plusSeconds(Duration.ofDays(6).toSeconds()));
+        dto.setBookingStartTime(Instant.now().plusSeconds(Duration.ofDays(3).toSeconds()));
+        dto.setBookingDeadline(Instant.now().plusSeconds(Duration.ofDays(4).toSeconds()));
+        dto.setEventLocationId(eventLocation.id);
+        dto.setManagerIds(Set.of(regularUser.id));
+
+        when(eventLocationRepository.findByIdOptional(eventLocation.id))
+                .thenReturn(Optional.of(eventLocation));
+        PanacheQuery<User> panacheQuery = mock(PanacheQuery.class);
+        when(panacheQuery.list()).thenReturn(List.of(regularUser));
+        when(userRepository.find("id in ?1", Set.of(regularUser.id))).thenReturn(panacheQuery);
+
+        assertThrows(
+                IllegalArgumentException.class, () -> eventService.createEvent(dto, managerUser));
+        verify(eventRepository, never()).persist(any(Event.class));
+    }
+
+    @Test
+    void addManager_Success() {
+        User newManager =
+                new User(
+                        "newmgr",
+                        "newmgr@example.com",
+                        true,
+                        false,
+                        "h",
+                        "s",
+                        "New",
+                        "Mgr",
+                        Set.of(Roles.MANAGER),
+                        Set.of());
+        newManager.id = id(6);
+
+        when(eventRepository.findByIdOptional(existingEvent.id))
+                .thenReturn(Optional.of(existingEvent));
+        PanacheQuery<User> newManagerQuery = mock(PanacheQuery.class);
+        when(newManagerQuery.list()).thenReturn(List.of(newManager));
+        when(userRepository.find("id in ?1", Set.of(newManager.id))).thenReturn(newManagerQuery);
+
+        EventResponseDTO result =
+                eventService.addManager(existingEvent.id, newManager.id, managerUser);
+        assertNotNull(result);
+        assertTrue(result.managerIds().contains(newManager.id));
+    }
+
+    @Test
+    void addManager_RejectsUserWithoutManagerRole() {
+        when(eventRepository.findByIdOptional(existingEvent.id))
+                .thenReturn(Optional.of(existingEvent));
+        PanacheQuery<User> regularUserQuery = mock(PanacheQuery.class);
+        when(regularUserQuery.list()).thenReturn(List.of(regularUser));
+        when(userRepository.find("id in ?1", Set.of(regularUser.id))).thenReturn(regularUserQuery);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> eventService.addManager(existingEvent.id, regularUser.id, managerUser));
+        verify(eventRepository, never()).persist(any(Event.class));
+    }
+
+    @Test
+    void removeManager_Success() {
+        User coManager =
+                new User(
+                        "comgr",
+                        "comgr@example.com",
+                        true,
+                        false,
+                        "h",
+                        "s",
+                        "Co",
+                        "Mgr",
+                        Set.of(Roles.MANAGER),
+                        Set.of());
+        coManager.id = id(7);
+        existingEvent.getManagers().add(coManager);
+
+        when(eventRepository.findByIdOptional(existingEvent.id))
+                .thenReturn(Optional.of(existingEvent));
+        when(userRepository.findByIdOptional(coManager.id)).thenReturn(Optional.of(coManager));
+
+        EventResponseDTO result =
+                eventService.removeManager(existingEvent.id, coManager.id, managerUser);
+        assertNotNull(result);
+        assertTrue(!result.managerIds().contains(coManager.id));
     }
 }

@@ -35,6 +35,7 @@ import de.felixhertweck.seatreservation.model.entity.EventLocationEntrance;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.repository.CheckInTokenRepository;
+import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationEntranceRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
@@ -66,6 +67,7 @@ public class SeatResourceTest {
     @Inject ReservationRepository reservationRepository;
 
     @Inject CheckInTokenRepository checkInTokenRepository;
+    @Inject EmailSeatMapTokenRepository emailSeatMapTokenRepository;
 
     private Seat testSeat;
     private EventLocation testLocation;
@@ -80,6 +82,10 @@ public class SeatResourceTest {
     @Transactional
     @SuppressWarnings("unused")
     void setUp() {
+        // Defensively clear any leftover tokens from a previous run's failed teardown - they'd
+        // otherwise block this run's own eventRepository.deleteAll() via the FK to events.
+        emailSeatMapTokenRepository.deleteAll();
+
         var manager = userRepository.findByUsernameOptional("manager").orElseThrow();
 
         testLocation = new EventLocation();
@@ -125,6 +131,7 @@ public class SeatResourceTest {
     @SuppressWarnings("unused")
     void tearDown() {
         // It's safer to delete all created entities to clean up the state
+        emailSeatMapTokenRepository.deleteAll();
         reservationRepository.deleteAll();
         checkInTokenRepository.deleteAll();
         seatRepository.deleteAll();

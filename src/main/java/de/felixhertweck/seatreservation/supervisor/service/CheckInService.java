@@ -394,12 +394,7 @@ public class CheckInService {
         // If user is a supervisor for the event
         if (eventRepository.isUserSupervisor(eventId, user.id())) return true;
         // If user is manager for the event
-        Event event = eventRepository.findById(eventId);
-        if (event != null
-                && event.getManager() != null
-                && Objects.equals(event.getManager().id, user.id())) {
-            return true;
-        }
+        if (eventRepository.isUserManager(eventId, user.id())) return true;
         // If user is admin
         return user.isAdmin();
     }

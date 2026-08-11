@@ -152,6 +152,9 @@ public class EventLocationServiceTest {
 
         existingLocation = new EventLocation("Stadthalle", "Hauptstraße 1", managerUser);
         existingLocation.id = id(1);
+
+        when(eventLocationRepository.isUserManager(existingLocation.id, managerUser.id))
+                .thenReturn(true);
     }
 
     @Test
@@ -240,6 +243,54 @@ public class EventLocationServiceTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
+    void createEventLocation_WithManagers_Success() {
+        EventLocationRequestDTO dto = new EventLocationRequestDTO();
+        dto.setName("New Hall");
+        dto.setAddress("New Street 1");
+        dto.setManagerIds(Set.of(otherManagerUser.id));
+
+        io.quarkus.hibernate.orm.panache.PanacheQuery<User> panacheQuery =
+                Mockito.mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
+        when(panacheQuery.list()).thenReturn(List.of(otherManagerUser));
+        when(userRepository.find("id in ?1", Set.of(otherManagerUser.id))).thenReturn(panacheQuery);
+        doAnswer(
+                        invocation -> {
+                            EventLocation loc = invocation.getArgument(0);
+                            loc.id = id(10);
+                            return null;
+                        })
+                .when(eventLocationRepository)
+                .persist(any(EventLocation.class));
+
+        EventLocationResponseDTO createdLocation =
+                eventLocationService.createEventLocation(dto, managerAuth);
+
+        assertNotNull(createdLocation);
+        assertTrue(createdLocation.managerIds().contains(managerUser.id));
+        assertTrue(createdLocation.managerIds().contains(otherManagerUser.id));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void createEventLocation_WithNonManagerUser_ThrowsException() {
+        EventLocationRequestDTO dto = new EventLocationRequestDTO();
+        dto.setName("New Hall");
+        dto.setAddress("New Street 1");
+        dto.setManagerIds(Set.of(regularUser.id));
+
+        io.quarkus.hibernate.orm.panache.PanacheQuery<User> panacheQuery =
+                Mockito.mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
+        when(panacheQuery.list()).thenReturn(List.of(regularUser));
+        when(userRepository.find("id in ?1", Set.of(regularUser.id))).thenReturn(panacheQuery);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> eventLocationService.createEventLocation(dto, managerAuth));
+        verify(eventLocationRepository, never()).persist(any(EventLocation.class));
+    }
+
+    @Test
     void updateEventLocation_Success_AsManager() {
         EventLocationUpdateDTO dto = new EventLocationUpdateDTO();
         dto.setName("Updated Hall");
@@ -291,6 +342,27 @@ public class EventLocationServiceTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
+    void updateEventLocation_WithNonManagerUser_ThrowsException() {
+        EventLocationUpdateDTO dto = new EventLocationUpdateDTO();
+        dto.setName("Updated Hall");
+        dto.setAddress("Updated Street 1");
+        dto.setManagerIds(Set.of(regularUser.id));
+
+        when(eventLocationRepository.findByIdOptional(id(1)))
+                .thenReturn(Optional.of(existingLocation));
+        io.quarkus.hibernate.orm.panache.PanacheQuery<User> panacheQuery =
+                Mockito.mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
+        when(panacheQuery.list()).thenReturn(List.of(regularUser));
+        when(userRepository.find("id in ?1", Set.of(regularUser.id))).thenReturn(panacheQuery);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> eventLocationService.updateEventLocation(id(1), dto, managerAuth));
+        verify(eventLocationRepository, never()).persist(any(EventLocation.class));
+    }
+
+    @Test
     void updateEventLocation_ForbiddenException_NotManagerOrAdmin() {
         EventLocationUpdateDTO dto = new EventLocationUpdateDTO();
         dto.setName("Updated Hall");
@@ -327,7 +399,7 @@ public class EventLocationServiceTest {
                 Mockito.mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
         when(queryMock.list()).thenReturn(List.of(existingLocation));
         when(eventLocationRepository.find(
-                        "from EventLocation el left join fetch el.manager where el.id in ?1",
+                        "from EventLocation el left join fetch el.createdBy where el.id in ?1",
                         List.of(id(1))))
                 .thenReturn(queryMock);
         doNothing().when(eventLocationRepository).delete(any(EventLocation.class));
@@ -344,7 +416,7 @@ public class EventLocationServiceTest {
                 Mockito.mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
         when(queryMock.list()).thenReturn(Collections.emptyList());
         when(eventLocationRepository.find(
-                        "from EventLocation el left join fetch el.manager where el.id in ?1",
+                        "from EventLocation el left join fetch el.createdBy where el.id in ?1",
                         List.of(id(99))))
                 .thenReturn(queryMock);
 
@@ -361,7 +433,7 @@ public class EventLocationServiceTest {
                 Mockito.mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
         when(queryMock.list()).thenReturn(List.of(existingLocation));
         when(eventLocationRepository.find(
-                        "from EventLocation el left join fetch el.manager where el.id in ?1",
+                        "from EventLocation el left join fetch el.createdBy where el.id in ?1",
                         List.of(id(1))))
                 .thenReturn(queryMock);
         doNothing().when(eventLocationRepository).delete(any(EventLocation.class));
@@ -378,7 +450,7 @@ public class EventLocationServiceTest {
                 Mockito.mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
         when(queryMock.list()).thenReturn(List.of(existingLocation));
         when(eventLocationRepository.find(
-                        "from EventLocation el left join fetch el.manager where el.id in ?1",
+                        "from EventLocation el left join fetch el.createdBy where el.id in ?1",
                         List.of(id(1))))
                 .thenReturn(queryMock);
 
@@ -395,7 +467,7 @@ public class EventLocationServiceTest {
                 Mockito.mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
         when(queryMock.list()).thenReturn(List.of(existingLocation));
         when(eventLocationRepository.find(
-                        "from EventLocation el left join fetch el.manager where el.id in ?1",
+                        "from EventLocation el left join fetch el.createdBy where el.id in ?1",
                         List.of(id(1))))
                 .thenReturn(queryMock);
 
@@ -434,7 +506,7 @@ public class EventLocationServiceTest {
                 Mockito.mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
         when(queryMock.list()).thenReturn(List.of(existingLocation));
         when(eventLocationRepository.find(
-                        "from EventLocation el left join fetch el.manager where el.id in ?1",
+                        "from EventLocation el left join fetch el.createdBy where el.id in ?1",
                         List.of(id(1), id(2))))
                 .thenReturn(queryMock);
 
@@ -456,7 +528,7 @@ public class EventLocationServiceTest {
                 Mockito.mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
         when(queryMock.list()).thenReturn(List.of(existingLocation, unauthorizedLocation));
         when(eventLocationRepository.find(
-                        "from EventLocation el left join fetch el.manager where el.id in ?1",
+                        "from EventLocation el left join fetch el.createdBy where el.id in ?1",
                         List.of(id(1), id(2))))
                 .thenReturn(queryMock);
 

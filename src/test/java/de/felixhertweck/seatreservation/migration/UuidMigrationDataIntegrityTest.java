@@ -148,7 +148,7 @@ VALUES (80,1,50,70,'RESERVED','CODE1','NO_SHOW')
                             SELECT el.name AS location_name, mgr.username AS manager
                             FROM events e
                             JOIN eventlocations el ON e.event_location_id = el.id
-                            JOIN users mgr ON e.manager_id = mgr.id
+                            JOIN users mgr ON e.created_by_user_id = mgr.id
                             """)) {
                 assertTrue(rs.next());
                 assertEquals("City Hall", rs.getString("location_name"));

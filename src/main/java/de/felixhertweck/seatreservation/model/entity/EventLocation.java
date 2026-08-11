@@ -20,8 +20,10 @@
 package de.felixhertweck.seatreservation.model.entity;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import jakarta.persistence.*;
 
 import org.hibernate.annotations.BatchSize;
@@ -34,12 +36,20 @@ public class EventLocation extends AbstractEntity {
     private String address;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private User manager;
+    @JoinColumn(name = "created_by_user_id")
+    private User createdBy;
 
-    // All four collections are lazy bags. Hibernate cannot join-fetch more than one bag in a
-    // single query (MultipleBagFetchException), so @BatchSize is what keeps listing several
-    // locations from degenerating into one query per location per collection: the collections of
-    // up to BATCH_SIZE locations are loaded in a single IN-query each.
+    // Direct managers, independent of any event. Access via a shared event is computed
+    // dynamically (see EventLocationRepository.isUserManager), not duplicated here.
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "location_managers",
+            joinColumns = @JoinColumn(name = "event_location_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id"))
+    private Set<User> managers = new HashSet<>();
+
+    // Lazy bags; Hibernate can't join-fetch more than one per query (MultipleBagFetchException),
+    // so @BatchSize batches their loads across locations instead.
     private static final int BATCH_SIZE = 32;
 
     @OneToMany(mappedBy = "location", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -63,14 +73,16 @@ public class EventLocation extends AbstractEntity {
     public EventLocation(String name, String address, User manager) {
         this.name = name;
         this.address = address;
-        this.manager = manager;
+        this.createdBy = manager;
+        this.managers = new HashSet<>();
+        if (manager != null) {
+            this.managers.add(manager);
+        }
     }
 
     public EventLocation(
             String name, String address, User manager, List<EventLocationMarker> markers) {
-        this.name = name;
-        this.address = address;
-        this.manager = manager;
+        this(name, address, manager);
         this.markers = markers != null ? new ArrayList<>(markers) : new ArrayList<>();
     }
 
@@ -90,12 +102,24 @@ public class EventLocation extends AbstractEntity {
         this.address = address;
     }
 
-    public User getManager() {
-        return manager;
+    public User getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
     }
 
     public void setManager(User manager) {
-        this.manager = manager;
+        this.createdBy = manager;
+    }
+
+    public Set<User> getManagers() {
+        return managers;
+    }
+
+    public void setManagers(Set<User> managers) {
+        this.managers = managers;
     }
 
     public List<Seat> getSeats() {
@@ -140,7 +164,7 @@ public class EventLocation extends AbstractEntity {
         }
         return Objects.equals(name, that.name)
                 && Objects.equals(address, that.address)
-                && Objects.equals(manager, that.manager)
+                && Objects.equals(createdBy, that.createdBy)
                 && Objects.equals(seats, that.seats);
     }
 
@@ -149,7 +173,7 @@ public class EventLocation extends AbstractEntity {
         if (id != null) {
             return Objects.hash(id);
         }
-        return Objects.hash(name, address, manager, seats);
+        return Objects.hash(name, address, createdBy, seats);
     }
 
     @Override
@@ -159,8 +183,8 @@ public class EventLocation extends AbstractEntity {
                 + id
                 + ", seats="
                 + seats
-                + ", manager="
-                + manager
+                + ", createdBy="
+                + createdBy
                 + ", address='"
                 + address
                 + '\''

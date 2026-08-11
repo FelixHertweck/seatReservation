@@ -24,6 +24,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/custom-ui/tabs";
 import { DetailsDialog } from "@/components/management/location-editor/details-dialog";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 import type { useLocationEditorSave } from "@/components/management/location-editor/use-location-editor-save";
+import type { UserDto } from "@/api";
 import {
   hasUnsavedChanges,
   type EditorTab,
@@ -33,6 +34,7 @@ import {
 interface EditorToolbarProps {
   state: LocationEditorState;
   autosave: ReturnType<typeof useLocationEditorSave>;
+  users: UserDto[];
   tab: EditorTab;
   onTabChange: (tab: EditorTab) => void;
   canUndo: boolean;
@@ -44,6 +46,7 @@ interface EditorToolbarProps {
 export function EditorToolbar({
   state,
   autosave,
+  users,
   tab,
   onTabChange,
   canUndo,
@@ -112,6 +115,7 @@ export function EditorToolbar({
         onOpenChange={setIsDetailsOpen}
         meta={state.meta}
         autosave={autosave}
+        users={users}
       />
 
       <Tabs value={tab} onValueChange={(v) => onTabChange(v as EditorTab)}>
