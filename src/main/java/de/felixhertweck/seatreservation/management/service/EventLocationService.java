@@ -98,8 +98,22 @@ public class EventLocationService {
         LOG.debugf(
                 "Retrieved %d event locations for manager ID: %s",
                 eventLocations.size(), manager.id());
+        if (eventLocations.isEmpty()) {
+            return List.of();
+        }
+        List<UUID> ids = eventLocations.stream().map(EventLocation::getId).toList();
+        Map<UUID, Integer> seatCounts = eventLocationRepository.getSeatCountsByLocationIds(ids);
+        Map<UUID, Integer> markerCounts = eventLocationRepository.getMarkerCountsByLocationIds(ids);
+        Map<UUID, Integer> areaCounts = eventLocationRepository.getAreaCountsByLocationIds(ids);
+
         return eventLocations.stream()
-                .map(EventLocationResponseDTO::new)
+                .map(
+                        loc ->
+                                new EventLocationResponseDTO(
+                                        loc,
+                                        seatCounts.getOrDefault(loc.getId(), 0),
+                                        markerCounts.getOrDefault(loc.getId(), 0),
+                                        areaCounts.getOrDefault(loc.getId(), 0)))
                 .collect(Collectors.toList());
     }
 

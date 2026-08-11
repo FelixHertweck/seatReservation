@@ -20,15 +20,18 @@
 package de.felixhertweck.seatreservation.reservation.resource;
 
 import java.util.List;
+import java.util.UUID;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.reservation.dto.UserEventLocationResponseDTO;
+import de.felixhertweck.seatreservation.reservation.dto.UserEventLocationSummaryDTO;
 import de.felixhertweck.seatreservation.reservation.service.EventLocationService;
 import io.quarkus.security.identity.SecurityIdentity;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -47,6 +50,11 @@ public class EventLocationResource {
 
     @Inject SecurityIdentity securityIdentity;
 
+    /**
+     * Retrieves lightweight summaries of all event locations accessible to the current user.
+     *
+     * @return list of event location summaries
+     */
     @GET
     @APIResponse(
             responseCode = "200",
@@ -56,18 +64,42 @@ public class EventLocationResource {
                             schema =
                                     @Schema(
                                             type = SchemaType.ARRAY,
-                                            implementation = UserEventLocationResponseDTO.class)))
+                                            implementation = UserEventLocationSummaryDTO.class)))
     @APIResponse(responseCode = "401", description = "Unauthorized")
     @APIResponse(
             responseCode = "403",
             description = "Forbidden: Only authenticated users can access this resource")
     @APIResponse(responseCode = "404", description = "Not Found: User not found")
-    public List<UserEventLocationResponseDTO> getLocations() {
+    public List<UserEventLocationSummaryDTO> getLocations() {
         String username = securityIdentity.getPrincipal().getName();
         LOG.debug("Received GET request to /api/user/locations.");
-        List<UserEventLocationResponseDTO> locations =
+        List<UserEventLocationSummaryDTO> locations =
                 eventLocationService.getLocationsForCurrentUser(username);
         LOG.debugf("Returning %d locations for user: %s", locations.size(), username);
         return locations;
+    }
+
+    /**
+     * Retrieves full structural details (seats, markers, areas) for a single event location by ID.
+     *
+     * @param id the event location ID
+     * @return full event location detail DTO
+     */
+    @GET
+    @Path("/{id}")
+    @APIResponse(
+            responseCode = "200",
+            description = "OK",
+            content =
+                    @Content(schema = @Schema(implementation = UserEventLocationResponseDTO.class)))
+    @APIResponse(responseCode = "401", description = "Unauthorized")
+    @APIResponse(
+            responseCode = "403",
+            description = "Forbidden: User does not have access to this location")
+    @APIResponse(responseCode = "404", description = "Not Found: Location not found")
+    public UserEventLocationResponseDTO getLocationById(@PathParam("id") UUID id) {
+        String username = securityIdentity.getPrincipal().getName();
+        LOG.debugf("Received GET request to /api/user/locations/%s", id);
+        return eventLocationService.getLocationByIdForCurrentUser(id, username);
     }
 }

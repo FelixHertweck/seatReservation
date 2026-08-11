@@ -19,30 +19,28 @@
  */
 package de.felixhertweck.seatreservation.reservation.dto;
 
-import java.util.List;
 import java.util.UUID;
 
-import de.felixhertweck.seatreservation.common.dto.AreaDTO;
-import de.felixhertweck.seatreservation.common.dto.EventLocationMakerDTO;
-import de.felixhertweck.seatreservation.common.dto.SeatDTO;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
+/**
+ * Lightweight summary DTO for user-facing event location list views, excluding structural seat map
+ * details.
+ *
+ * @param id location ID
+ * @param name location name
+ * @param address location address
+ */
 @RegisterForReflection
-public record UserEventLocationResponseDTO(
-        UUID id,
-        String name,
-        String address,
-        List<SeatDTO> seats,
-        List<EventLocationMakerDTO> markers,
-        List<AreaDTO> areas) {
-    public UserEventLocationResponseDTO(EventLocation eventLocation) {
-        this(
-                eventLocation.getId(),
-                eventLocation.getName(),
-                eventLocation.getAddress(),
-                eventLocation.getSeats().stream().map(SeatDTO::new).toList(),
-                eventLocation.getMarkers().stream().map(EventLocationMakerDTO::new).toList(),
-                AreaDTO.fromEventLocation(eventLocation));
+public record UserEventLocationSummaryDTO(UUID id, String name, String address) {
+
+    /**
+     * Constructs a summary DTO from an EventLocation entity.
+     *
+     * @param eventLocation the event location entity
+     */
+    public UserEventLocationSummaryDTO(EventLocation eventLocation) {
+        this(eventLocation.getId(), eventLocation.getName(), eventLocation.getAddress());
     }
 }

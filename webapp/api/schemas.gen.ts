@@ -488,7 +488,7 @@ export const EventLocationResponseDTOSchema = {
         address: {
             type: 'string'
         },
-        manager: {
+        createdBy: {
             $ref: '#/components/schemas/LimitedUserInfoDTO'
         },
         managerIds: {
@@ -499,25 +499,17 @@ export const EventLocationResponseDTOSchema = {
                 pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
             }
         },
-        seatIds: {
-            type: 'array',
-            items: {
-                type: 'string',
-                format: 'uuid',
-                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
-            }
+        seatCount: {
+            type: 'integer',
+            format: 'int32'
         },
-        markers: {
-            type: 'array',
-            items: {
-                $ref: '#/components/schemas/EventLocationMakerDTO'
-            }
+        markerCount: {
+            type: 'integer',
+            format: 'int32'
         },
-        areas: {
-            type: 'array',
-            items: {
-                $ref: '#/components/schemas/AreaDTO'
-            }
+        areaCount: {
+            type: 'integer',
+            format: 'int32'
         }
     }
 } as const;
@@ -1491,9 +1483,6 @@ export const UserEventLocationResponseDTOSchema = {
         address: {
             type: 'string'
         },
-        manager: {
-            $ref: '#/components/schemas/LimitedUserInfoDTO'
-        },
         seats: {
             type: 'array',
             items: {
@@ -1511,6 +1500,21 @@ export const UserEventLocationResponseDTOSchema = {
             items: {
                 $ref: '#/components/schemas/AreaDTO'
             }
+        }
+    }
+} as const;
+
+export const UserEventLocationSummaryDTOSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            $ref: '#/components/schemas/UUID'
+        },
+        name: {
+            type: 'string'
+        },
+        address: {
+            type: 'string'
         }
     }
 } as const;

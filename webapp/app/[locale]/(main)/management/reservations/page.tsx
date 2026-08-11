@@ -94,6 +94,8 @@ export default function ManagementReservationsPage() {
     locations,
     users,
     seats,
+    areas,
+    markers,
     reservations,
     isLoading,
     isSeatsLoading,
@@ -448,7 +450,7 @@ export default function ManagementReservationsPage() {
           >
             <SeatmapLegend
               layout="bar"
-              areas={location?.areas ?? []}
+              areas={areas}
               showSelected={isInteractive}
               showUserReserved={mode === "reserve"}
               userReservedLabel={
@@ -465,8 +467,8 @@ export default function ManagementReservationsPage() {
                   readonly={!isInteractive}
                   seats={eventSeats}
                   seatStatuses={event?.seatStatuses ?? []}
-                  markers={location?.markers ?? []}
-                  areas={location?.areas ?? []}
+                  markers={markers}
+                  areas={areas}
                   selectedSeats={isInteractive ? selectedSeats : []}
                   userReservedSeats={userReservedSeats}
                   highlightedSeatId={!isInteractive ? highlightedSeatId : null}

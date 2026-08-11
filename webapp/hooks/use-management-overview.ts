@@ -84,7 +84,7 @@ export function useManagementOverview(): ManagementOverview {
         event,
         location,
         reservedCount,
-        capacity: location?.seatIds?.length ?? 0,
+        capacity: location?.seatCount ?? 0,
       };
     };
 
@@ -135,7 +135,7 @@ export function useManagementOverview(): ManagementOverview {
       const location = e.eventLocationId
         ? locationById.get(e.eventLocationId)
         : undefined;
-      return sum + (location?.seatIds?.length ?? 0);
+      return sum + (location?.seatCount ?? 0);
     }, 0);
     const occupancyPercent =
       occupancyCapacity > 0

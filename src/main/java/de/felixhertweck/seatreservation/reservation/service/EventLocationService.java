@@ -22,17 +22,21 @@ package de.felixhertweck.seatreservation.reservation.service;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
+import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.reservation.dto.UserEventLocationResponseDTO;
+import de.felixhertweck.seatreservation.reservation.dto.UserEventLocationSummaryDTO;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
@@ -40,6 +44,7 @@ public class EventLocationService {
     private static final Logger LOG = Logger.getLogger(EventLocationService.class);
 
     @Inject UserRepository userRepository;
+    @Inject EventLocationRepository eventLocationRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
     @Inject ReservationRepository reservationRepository;
 
@@ -51,7 +56,7 @@ public class EventLocationService {
      * @return a list of event locations the user is allowed to access
      * @throws UserNotFoundException if the user with the specified username is not found
      */
-    public List<UserEventLocationResponseDTO> getLocationsForCurrentUser(String username)
+    public List<UserEventLocationSummaryDTO> getLocationsForCurrentUser(String username)
             throws UserNotFoundException {
         LOG.debug("Stub: Retrieving event locations for user.");
         User user = userRepository.findByUsername(username);
@@ -76,6 +81,44 @@ public class EventLocationService {
                         .map(reservation -> reservation.getEvent().getEventLocation())
                         .collect(Collectors.toSet()));
 
-        return locations.stream().map(UserEventLocationResponseDTO::new).toList();
+        return locations.stream().map(UserEventLocationSummaryDTO::new).toList();
+    }
+
+    /**
+     * Retrieves detail for a single event location by ID if the specified user has access to it.
+     *
+     * @param locationId the ID of the event location to retrieve
+     * @param username the username of the requesting user
+     * @return the detail DTO of the event location
+     * @throws UserNotFoundException if the user is not found
+     * @throws EventLocationNotFoundException if the event location is not found
+     * @throws SecurityException if the user is not authorized to access the location
+     */
+    public UserEventLocationResponseDTO getLocationByIdForCurrentUser(
+            UUID locationId, String username)
+            throws UserNotFoundException, EventLocationNotFoundException, SecurityException {
+        List<UserEventLocationSummaryDTO> allowedLocations = getLocationsForCurrentUser(username);
+        boolean hasAccess = allowedLocations.stream().anyMatch(loc -> loc.id().equals(locationId));
+
+        if (!hasAccess) {
+            EventLocation loc = eventLocationRepository.findByIdOptional(locationId).orElse(null);
+            if (loc == null) {
+                throw new EventLocationNotFoundException(
+                        "EventLocation with id " + locationId + " not found");
+            }
+            throw new SecurityException("User is not authorized to access this location");
+        }
+
+        EventLocation location =
+                eventLocationRepository
+                        .findByIdOptional(locationId)
+                        .orElseThrow(
+                                () ->
+                                        new EventLocationNotFoundException(
+                                                "EventLocation with id "
+                                                        + locationId
+                                                        + " not found"));
+
+        return new UserEventLocationResponseDTO(location);
     }
 }
