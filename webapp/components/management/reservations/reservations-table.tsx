@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, Mail, Trash2 } from "lucide-react";
 import { useT } from "@/lib/i18n/hooks";
 import { cn, formatDateTime } from "@/lib/utils";
@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ReservationStatus, type ReservationResponseDto } from "@/api";
+import { ReservationStatus, type ReservationResponseDto, type SeatDto } from "@/api";
 import {
   SEAT_STATUS_BG,
   SEAT_STATUS_LABEL_KEY,
@@ -26,6 +26,7 @@ import {
 
 interface ReservationsTableProps {
   reservations: ReservationResponseDto[];
+  seats?: SeatDto[];
   isLoading: boolean;
   selectedIds: Set<string>;
   onSelectedIdsChange: (next: Set<string>) => void;
@@ -42,6 +43,7 @@ const UNKNOWN_USER_KEY = "—";
 
 export function ReservationsTable({
   reservations,
+  seats = [],
   isLoading,
   selectedIds,
   onSelectedIdsChange,
@@ -56,6 +58,11 @@ export function ReservationsTable({
   const t = useT();
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
     new Set(),
+  );
+
+  const seatById = useMemo(
+    () => new Map(seats.map((s) => [s.id, s])),
+    [seats],
   );
 
   if (isLoading) {
@@ -229,7 +236,8 @@ export function ReservationsTable({
                 groupReservations.map((reservation) => {
                   const date = formatDateTime(reservation.reservationDateTime);
                   const id = reservation.id ?? "";
-                  const seatId = reservation.seat?.id;
+                  const seatId = reservation.seatId;
+                  const seat = seatId ? seatById.get(seatId) : undefined;
                   const isHighlighted =
                     !!seatId && seatId === highlightedSeatId;
                   return (
@@ -251,8 +259,9 @@ export function ReservationsTable({
                         {reservation.user?.username ?? "—"}
                       </TableCell>
                       <TableCell>
-                        {reservation.seat?.seatNumber} (
-                        {reservation.seat?.seatRow})
+                        {seat
+                          ? `${seat.seatNumber} (${seat.seatRow})`
+                          : "—"}
                       </TableCell>
                       <TableCell>
                         {(() => {
