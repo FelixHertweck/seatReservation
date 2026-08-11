@@ -8,6 +8,7 @@ export const AdminUserCreationDtoSchema = {
         'firstname',
         'lastname',
         'sendEmailVerification',
+        'emailVerified',
         'roles',
         'tags'
     ],
@@ -29,6 +30,9 @@ export const AdminUserCreationDtoSchema = {
             type: 'string'
         },
         sendEmailVerification: {
+            type: 'boolean'
+        },
+        emailVerified: {
             type: 'boolean'
         },
         roles: {

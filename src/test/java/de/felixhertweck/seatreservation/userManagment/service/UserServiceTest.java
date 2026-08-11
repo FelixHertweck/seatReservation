@@ -1656,6 +1656,7 @@ public class UserServiceTest {
                         "user1",
                         "user1@example.com",
                         false,
+                        false,
                         "pass1",
                         "First1",
                         "Last1",
@@ -1665,6 +1666,7 @@ public class UserServiceTest {
                 new AdminUserCreationDto(
                         "user2",
                         "user2@example.com",
+                        false,
                         false,
                         "pass2",
                         "First2",
@@ -1724,6 +1726,7 @@ public class UserServiceTest {
                         "",
                         "invalid@example.com",
                         false,
+                        false,
                         "pass",
                         "Invalid",
                         "User",
@@ -1744,6 +1747,7 @@ public class UserServiceTest {
                 new AdminUserCreationDto(
                         "existinguser",
                         "existing@example.com",
+                        false,
                         false,
                         "pass",
                         "Existing",
@@ -1784,6 +1788,7 @@ public class UserServiceTest {
                 new AdminUserCreationDto(
                         "user1",
                         "user1@example.com",
+                        false,
                         false,
                         "pass1",
                         "First1",

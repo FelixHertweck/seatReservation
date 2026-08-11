@@ -143,6 +143,7 @@ public class CSVToDto {
                         username,
                         email.isBlank() ? null : email,
                         Boolean.FALSE,
+                        Boolean.FALSE,
                         password,
                         firstname,
                         lastname,
