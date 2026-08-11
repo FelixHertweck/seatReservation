@@ -52,6 +52,35 @@ import de.felixhertweck.seatreservation.model.entity.User;
 public class ReservationExporter {
 
     private static final String TEMPLATE_PATH_RESERVED = "/export-template/reserved.pdf";
+
+    private static String escapeCsvField(String field) {
+        if (field == null || field.isEmpty()) {
+            return "";
+        }
+
+        String escaped = field;
+
+        // Check for CSV injection patterns
+        char firstChar = escaped.charAt(0);
+        if (firstChar == '='
+                || firstChar == '+'
+                || firstChar == '-'
+                || firstChar == '@'
+                || firstChar == '\t') {
+            escaped = "'" + escaped;
+        }
+
+        // Standard CSV escaping if field contains quotes, commas or newlines
+        if (escaped.contains(",")
+                || escaped.contains("\"")
+                || escaped.contains("\n")
+                || escaped.contains("\r")) {
+            escaped = escaped.replace("\"", "\"\"");
+            escaped = "\"" + escaped + "\"";
+        }
+        return escaped;
+    }
+
     private static final String TEMPLATE_PATH_BLOCKED = "/export-template/blocked.pdf";
 
     /**
@@ -77,22 +106,29 @@ public class ReservationExporter {
                 writer.write(
                         String.format(
                                 "%s,%s,%s,%s,%s,%s,%s,%s,%s\r\n",
-                                reservation.id,
-                                reservation.getStatus(),
-                                reservation.getSeat().getSeatNumber(),
-                                reservation.getSeat().getSeatRow(),
-                                reservation.getSeat().getEntrance() == null
-                                        ? ""
-                                        : reservation.getSeat().getEntrance().getName(),
-                                reservation.getSeat().getArea() == null
-                                        ? ""
-                                        : reservation.getSeat().getArea().getName(),
-                                reservation.getUser().getFirstname(),
-                                reservation.getUser().getLastname(),
-                                reservation
-                                        .getReservationDate()
-                                        .atZone(ZoneId.systemDefault())
-                                        .format(formatter)));
+                                escapeCsvField(
+                                        reservation.id != null ? reservation.id.toString() : ""),
+                                escapeCsvField(
+                                        reservation.getStatus() != null
+                                                ? reservation.getStatus().toString()
+                                                : ""),
+                                escapeCsvField(reservation.getSeat().getSeatNumber()),
+                                escapeCsvField(reservation.getSeat().getSeatRow()),
+                                escapeCsvField(
+                                        reservation.getSeat().getEntrance() == null
+                                                ? ""
+                                                : reservation.getSeat().getEntrance().getName()),
+                                escapeCsvField(
+                                        reservation.getSeat().getArea() == null
+                                                ? ""
+                                                : reservation.getSeat().getArea().getName()),
+                                escapeCsvField(reservation.getUser().getFirstname()),
+                                escapeCsvField(reservation.getUser().getLastname()),
+                                escapeCsvField(
+                                        reservation
+                                                .getReservationDate()
+                                                .atZone(ZoneId.systemDefault())
+                                                .format(formatter))));
             }
             writer.flush();
         }
