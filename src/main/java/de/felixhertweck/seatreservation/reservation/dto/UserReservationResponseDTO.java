@@ -22,24 +22,39 @@ package de.felixhertweck.seatreservation.reservation.dto;
 import java.time.Instant;
 import java.util.UUID;
 
-import de.felixhertweck.seatreservation.common.dto.SeatDTO;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
+/**
+ * Data transfer object representing a reservation response for user views.
+ *
+ * @param id unique identifier of the reservation
+ * @param userId identifier of the user who owns the reservation
+ * @param eventId identifier of the reserved event
+ * @param seatId identifier of the reserved seat
+ * @param reservationDateTime timestamp when the reservation was created
+ * @param checkInToken token used for check-in verification
+ */
 @RegisterForReflection
 public record UserReservationResponseDTO(
         UUID id,
         UUID userId,
         UUID eventId,
-        SeatDTO seat,
+        UUID seatId,
         Instant reservationDateTime,
         String checkInToken) {
+
+    /**
+     * Constructs a {@link UserReservationResponseDTO} from a {@link Reservation} entity.
+     *
+     * @param reservation the reservation entity
+     */
     public UserReservationResponseDTO(Reservation reservation) {
         this(
                 reservation.id,
                 reservation.getUser().id,
                 reservation.getEvent().id,
-                new SeatDTO(reservation.getSeat()),
+                reservation.getSeat() != null ? reservation.getSeat().getId() : null,
                 reservation.getReservationDate(),
                 reservation.getCheckInToken() != null
                         ? reservation.getCheckInToken().getToken()

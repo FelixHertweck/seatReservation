@@ -174,7 +174,7 @@ public class ReservationResourceTest {
                 .then()
                 .statusCode(200)
                 .body("$", hasSize(1))
-                .body("[0].seat.seatNumber", is("A1"));
+                .body("[0].seatId", is(testSeat1.id.toString()));
     }
 
     @Test
@@ -205,7 +205,7 @@ public class ReservationResourceTest {
                 .get("/api/user/reservations/" + testReservation.id)
                 .then()
                 .statusCode(200)
-                .body("seat.seatNumber", is("A1"));
+                .body("seatId", is(testSeat1.id.toString()));
     }
 
     @Test
@@ -242,7 +242,7 @@ public class ReservationResourceTest {
                 .then()
                 .statusCode(200)
                 .body("$", hasSize(1))
-                .body("[0].seat.seatNumber", is("A2"));
+                .body("[0].seatId", is(testSeat2.id.toString()));
     }
 
     @Test

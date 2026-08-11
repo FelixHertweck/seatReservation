@@ -65,38 +65,57 @@ export function SeatMapModal({
     new Set(),
   );
 
+  const seatById = useMemo(
+    () => new Map(seats.map((s) => [s.id, s])),
+    [seats],
+  );
+
   const sortedReservations = useMemo(
     () =>
       [...eventReservations].sort((a, b) => {
-        const rowCompare = (a.seat?.seatRow ?? "").localeCompare(
-          b.seat?.seatRow ?? "",
+        const seatA = a.seatId ? seatById.get(a.seatId) : undefined;
+        const seatB = b.seatId ? seatById.get(b.seatId) : undefined;
+        const rowCompare = (seatA?.seatRow ?? "").localeCompare(
+          seatB?.seatRow ?? "",
           undefined,
           { numeric: true, sensitivity: "base" },
         );
         if (rowCompare !== 0) return rowCompare;
-        return (a.seat?.seatNumber ?? "").localeCompare(
-          b.seat?.seatNumber ?? "",
+        return (seatA?.seatNumber ?? "").localeCompare(
+          seatB?.seatNumber ?? "",
           undefined,
           { numeric: true, sensitivity: "base" },
         );
       }),
-    [eventReservations],
+    [eventReservations, seatById],
   );
 
-  const reservedSeats = eventReservations
-    .map((res) => res.seat)
-    .filter(
-      (seat): seat is NonNullable<typeof seat> =>
-        seat !== null && seat !== undefined,
-    );
+  const reservedSeats = useMemo(
+    () =>
+      eventReservations
+        .map((res) => (res.seatId ? seatById.get(res.seatId) : undefined))
+        .filter(
+          (seat): seat is NonNullable<typeof seat> =>
+            seat !== null && seat !== undefined,
+        ),
+    [eventReservations, seatById],
+  );
 
-  const selectedSeats = eventReservations
-    .filter((res) => res.id && selectedReservations.has(res.id))
-    .map((res) => res.seat)
-    .filter(
-      (seat): seat is NonNullable<typeof seat> =>
-        seat !== null && seat !== undefined,
-    );
+  const selectedSeats = useMemo(
+    () =>
+      eventReservations
+        .filter((res) => res.id && selectedReservations.has(res.id))
+        .map((res) => (res.seatId ? seatById.get(res.seatId) : undefined))
+        .filter(
+          (seat): seat is NonNullable<typeof seat> =>
+            seat !== null && seat !== undefined,
+        ),
+    [eventReservations, selectedReservations, seatById],
+  );
+
+  const singleReservationSeat = reservation.seatId
+    ? seatById.get(reservation.seatId)
+    : undefined;
 
   const allSelected =
     eventReservations.length > 0 &&
@@ -165,9 +184,9 @@ export function SeatMapModal({
                       count: eventReservations.length,
                     })
                   : t("seatMapModal.singleSeatReserved", {
-                      seatNumber: reservation.seat?.seatNumber,
-                      x: reservation.seat?.coordinate?.xCoordinate,
-                      y: reservation.seat?.coordinate?.yCoordinate,
+                      seatNumber: singleReservationSeat?.seatNumber,
+                      x: singleReservationSeat?.coordinate?.xCoordinate,
+                      y: singleReservationSeat?.coordinate?.yCoordinate,
                     })}
             </DialogDescription>
           </DialogHeader>
@@ -240,7 +259,9 @@ export function SeatMapModal({
                       </div>
                       <div className="flex flex-col gap-1.5 px-4 pb-6 max-h-[60vh] overflow-y-auto">
                         {sortedReservations.map((res) => {
-                          const seat = res.seat;
+                          const seat = res.seatId
+                            ? seatById.get(res.seatId)
+                            : undefined;
                           const isSelected =
                             !!res.id && selectedReservations.has(res.id);
                           return (
@@ -320,11 +341,13 @@ export function SeatMapModal({
         selectedCount={selectedReservations.size}
         seats={eventReservations
           .filter((r) => r.id && selectedReservations.has(r.id))
-          .map(
-            (r) =>
-              r.seat?.seatNumber +
-              (r.seat?.seatRow ? " (" + r.seat.seatRow + ")" : ""),
-          )}
+          .map((r) => {
+            const s = r.seatId ? seatById.get(r.seatId) : undefined;
+            return (
+              (s?.seatNumber ?? "") +
+              (s?.seatRow ? " (" + s.seatRow + ")" : "")
+            );
+          })}
       />
     </>
   );

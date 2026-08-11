@@ -28,6 +28,7 @@ type ActionMode = "view" | "reserve" | "block";
 
 interface ReservationsViewPanelProps {
   reservations: ReservationResponseDto[];
+  seats?: SeatDto[];
   isReservationsLoading: boolean;
   selectedIds: Set<string>;
   onSelectedIdsChange: (ids: Set<string>) => void;
@@ -43,6 +44,7 @@ interface ReservationsViewPanelProps {
 
 function ReservationsViewPanel({
   reservations,
+  seats,
   isReservationsLoading,
   selectedIds,
   onSelectedIdsChange,
@@ -66,6 +68,7 @@ function ReservationsViewPanel({
         <CardContent className="p-0">
           <ReservationsTable
             reservations={reservations}
+            seats={seats}
             isLoading={isReservationsLoading}
             selectedIds={selectedIds}
             onSelectedIdsChange={onSelectedIdsChange}
@@ -156,10 +159,14 @@ export default function ManagementReservationsPage() {
     () => seats.filter((s) => s.locationId === location?.id),
     [seats, location?.id],
   );
+  const seatById = useMemo(
+    () => new Map(seats.map((s) => [s.id, s])),
+    [seats],
+  );
   const seatStatuses = useMemo(
     () =>
       reservations.map((r) => ({
-        seatId: r.seat?.id,
+        seatId: r.seatId,
         status: r.status,
       })),
     [reservations],
@@ -170,11 +177,12 @@ export default function ManagementReservationsPage() {
     if (!query) return reservations;
     return reservations.filter((r) => {
       const username = r.user?.username?.toLowerCase() ?? "";
+      const s = r.seatId ? seatById.get(r.seatId) : undefined;
       const seat =
-        `${r.seat?.seatNumber ?? ""} ${r.seat?.seatRow ?? ""}`.toLowerCase();
+        `${s?.seatNumber ?? ""} ${s?.seatRow ?? ""}`.toLowerCase();
       return username.includes(query) || seat.includes(query);
     });
-  }, [reservations, searchQuery]);
+  }, [reservations, searchQuery, seatById]);
 
   const userReservedSeats = useMemo(() => {
     if (mode !== "reserve" || !reserveUserId || !eventId) return [];
@@ -185,9 +193,9 @@ export default function ManagementReservationsPage() {
           reservation.eventId?.toString() === eventId &&
           reservation.status === "RESERVED",
       )
-      .map((reservation) => reservation.seat)
+      .map((reservation) => (reservation.seatId ? seatById.get(reservation.seatId) : undefined))
       .filter((seat): seat is SeatDto => seat !== undefined);
-  }, [mode, reserveUserId, eventId, reservations]);
+  }, [mode, reserveUserId, eventId, reservations, seatById]);
 
   const resetAction = () => {
     setMode("view");
@@ -334,6 +342,7 @@ export default function ManagementReservationsPage() {
     actionColumn = (
       <ReservationsViewPanel
         reservations={filteredReservations}
+        seats={seats}
         isReservationsLoading={isReservationsLoading}
         selectedIds={selectedIds}
         onSelectedIdsChange={setSelectedIds}

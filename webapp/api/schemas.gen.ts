@@ -1031,8 +1031,8 @@ export const ReservationResponseDTOSchema = {
         eventId: {
             $ref: '#/components/schemas/UUID'
         },
-        seat: {
-            $ref: '#/components/schemas/SeatDTO'
+        seatId: {
+            $ref: '#/components/schemas/UUID'
         },
         reservationDateTime: {
             $ref: '#/components/schemas/Instant'
@@ -1610,8 +1610,8 @@ export const UserReservationResponseDTOSchema = {
         eventId: {
             $ref: '#/components/schemas/UUID'
         },
-        seat: {
-            $ref: '#/components/schemas/SeatDTO'
+        seatId: {
+            $ref: '#/components/schemas/UUID'
         },
         reservationDateTime: {
             $ref: '#/components/schemas/Instant'

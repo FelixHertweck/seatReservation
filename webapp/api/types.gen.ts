@@ -321,7 +321,7 @@ export type ReservationResponseDto = {
     id?: Uuid;
     user?: UserDto;
     eventId?: Uuid;
-    seat?: SeatDto;
+    seatId?: Uuid;
     reservationDateTime?: Instant;
     status?: ReservationStatus;
     liveStatus?: ReservationLiveStatus;
@@ -527,7 +527,7 @@ export type UserReservationResponseDto = {
     id?: Uuid;
     userId?: Uuid;
     eventId?: Uuid;
-    seat?: SeatDto;
+    seatId?: Uuid;
     reservationDateTime?: Instant;
     checkInToken?: string;
 };
