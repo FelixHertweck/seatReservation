@@ -43,8 +43,8 @@ public record UserEventLocationResponseDTO(
                 eventLocation.getId(),
                 eventLocation.getName(),
                 eventLocation.getAddress(),
-                eventLocation.getManager() != null
-                        ? new LimitedUserInfoDTO(eventLocation.getManager())
+                eventLocation.getCreatedBy() != null
+                        ? new LimitedUserInfoDTO(eventLocation.getCreatedBy())
                         : null,
                 eventLocation.getSeats().stream().map(SeatDTO::new).toList(),
                 eventLocation.getMarkers().stream().map(EventLocationMakerDTO::new).toList(),

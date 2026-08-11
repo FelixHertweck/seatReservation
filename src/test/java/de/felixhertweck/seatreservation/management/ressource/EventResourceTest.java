@@ -106,6 +106,14 @@ public class EventResourceTest {
         eventUserAllowanceRepository.persist(allowance);
     }
 
+    @Transactional
+    void addEventManager(Event event, String username) {
+        var extraManager = userRepository.findByUsernameOptional(username).orElseThrow();
+        var managed = eventRepository.findById(event.getId());
+        managed.getManagers().add(extraManager);
+        eventRepository.persist(managed);
+    }
+
     @AfterEach
     @Transactional
     @SuppressWarnings("unused")
@@ -242,6 +250,31 @@ public class EventResourceTest {
 
     @Test
     @TestSecurity(
+            user = "manager2",
+            roles = {"MANAGER"})
+    void testUpdateEventAsCoManager() {
+        // manager2 is a co-manager, not the event's creator ("manager").
+        addEventManager(testEvent, "manager2");
+
+        given().contentType("application/json")
+                .body(
+                        Map.of(
+                                "name", "Updated Event",
+                                "description", "Description",
+                                "startTime", "2025-01-01T19:00:00Z",
+                                "endTime", "2025-01-01T21:00:00Z",
+                                "bookingDeadline", "2024-12-31T12:00:00Z",
+                                "bookingStartTime", "2024-12-30T12:00:00Z",
+                                "eventLocationId", testLocation.getId()))
+                .when()
+                .put("/api/manager/events/" + testEvent.getId())
+                .then()
+                .statusCode(200)
+                .body("name", is("Updated Event"));
+    }
+
+    @Test
+    @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
     void testUpdateEventInvalidData() {
@@ -308,6 +341,22 @@ public class EventResourceTest {
                 .delete("/api/manager/events")
                 .then()
                 .statusCode(403);
+    }
+
+    @Test
+    @TestSecurity(
+            user = "manager2",
+            roles = {"MANAGER"})
+    void testDeleteEventAsCoManager() {
+        // manager2 is a co-manager, not the event's creator ("manager") - proves deletion isn't
+        // limited to whoever created the event.
+        addEventManager(testEvent, "manager2");
+
+        given().when()
+                .queryParam("ids", testEvent.getId())
+                .delete("/api/manager/events")
+                .then()
+                .statusCode(204);
     }
 
     @Test

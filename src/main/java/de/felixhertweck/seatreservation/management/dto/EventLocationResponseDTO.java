@@ -35,6 +35,7 @@ public record EventLocationResponseDTO(
         String name,
         String address,
         LimitedUserInfoDTO manager,
+        List<UUID> managerIds,
         List<UUID> seatIds,
         List<EventLocationMakerDTO> markers,
         List<AreaDTO> areas) {
@@ -43,9 +44,12 @@ public record EventLocationResponseDTO(
                 eventLocation.getId(),
                 eventLocation.getName(),
                 eventLocation.getAddress(),
-                (eventLocation.getManager() != null
-                        ? new LimitedUserInfoDTO(eventLocation.getManager())
+                (eventLocation.getCreatedBy() != null
+                        ? new LimitedUserInfoDTO(eventLocation.getCreatedBy())
                         : null),
+                (eventLocation.getManagers() != null
+                        ? eventLocation.getManagers().stream().map(u -> u.id).toList()
+                        : List.of()),
                 (eventLocation.getSeats() != null
                         ? eventLocation.getSeats().stream().map(Seat::getId).toList()
                         : List.of()),

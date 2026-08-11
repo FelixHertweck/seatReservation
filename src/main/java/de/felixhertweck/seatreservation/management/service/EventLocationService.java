@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -42,10 +43,12 @@ import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
 import de.felixhertweck.seatreservation.model.entity.EventLocationEntrance;
 import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
 import de.felixhertweck.seatreservation.model.entity.Seat;
+import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
+import de.felixhertweck.seatreservation.utils.ManagerResolutionUtils;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
@@ -66,7 +69,8 @@ public class EventLocationService {
      * @throws SecurityException If the user is not authorized
      */
     private void validateManagerPermission(EventLocation location, AuthenticatedUser manager) {
-        if (!location.getManager().id.equals(manager.id()) && !manager.isAdmin()) {
+        if (!eventLocationRepository.isUserManager(location.getId(), manager.id())
+                && !manager.isAdmin()) {
             throw new SecurityException("User is not the manager of this location");
         }
     }
@@ -123,6 +127,10 @@ public class EventLocationService {
         EventLocation location =
                 new EventLocation(
                         dto.getName(), dto.getAddress(), userRepository.getReference(manager.id()));
+        location.getManagers()
+                .addAll(
+                        ManagerResolutionUtils.resolveManagers(
+                                userRepository, dto.getManagerIds(), "event location"));
         // Set markers after location is created to avoid circular dependency
         location.setMarkers(convertToMarkerEntities(dto.getmarkers(), location));
         Map<String, EventLocationArea> areasByName = new LinkedHashMap<>();
@@ -208,6 +216,19 @@ public class EventLocationService {
                 id, location.getName(), dto.getName(), location.getAddress(), dto.getAddress());
         location.setName(dto.getName());
         location.setAddress(dto.getAddress());
+
+        if (dto.getManagerIds() != null) {
+            Set<User> newManagers =
+                    ManagerResolutionUtils.resolveManagers(
+                            userRepository, dto.getManagerIds(), "event location");
+            if (location.getCreatedBy() != null) {
+                newManagers.add(location.getCreatedBy());
+            }
+            if (!manager.isAdmin()) {
+                newManagers.add(userRepository.getReference(manager.id()));
+            }
+            location.setManagers(newManagers);
+        }
 
         eventLocationRepository.persist(location);
         LOG.infof(
@@ -367,7 +388,7 @@ public class EventLocationService {
         List<EventLocation> fetchedLocations =
                 eventLocationRepository
                         .find(
-                                "from EventLocation el left join fetch el.manager where el.id in"
+                                "from EventLocation el left join fetch el.createdBy where el.id in"
                                         + " ?1",
                                 ids)
                         .list();

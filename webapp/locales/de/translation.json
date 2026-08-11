@@ -1296,6 +1296,9 @@
         "addressPlaceholder": "Straße, Ort",
         "capacityLabel": "Kapazität",
         "capacityPlaceholder": "z.B. 240",
+        "managersSectionTitle": "Weitere Manager",
+        "managersLabel": "Manager",
+        "managersPlaceholder": "Benutzer als Manager auswählen...",
         "submitButton": "Erstellen & Editor öffnen",
         "submitting": "Wird erstellt...",
         "cancelButton": "Abbrechen"
@@ -1336,6 +1339,9 @@
         "addressMapPlaceholder": "Adresse oben eingeben, um sie auf der Karte zu sehen",
         "locating": "Suche Adresse…",
         "addressNotFound": "Adresse nicht gefunden",
+        "managersSectionTitle": "Weitere Manager",
+        "managersLabel": "Manager",
+        "managersPlaceholder": "Benutzer als Manager auswählen...",
         "saveButton": "Übernehmen"
       },
       "selection": {

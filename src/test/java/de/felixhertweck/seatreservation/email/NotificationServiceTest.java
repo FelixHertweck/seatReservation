@@ -22,6 +22,7 @@ package de.felixhertweck.seatreservation.email;
 import static de.felixhertweck.seatreservation.testutil.TestIds.id;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -75,7 +76,7 @@ class NotificationServiceTest {
     private Reservation testReservation;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         testUser = new User();
         testUser.setUsername("testuser");
         testUser.setEmail("test@example.com");
@@ -88,6 +89,13 @@ class NotificationServiceTest {
         testReservation = new Reservation();
         testReservation.setUser(testUser);
         testReservation.setEvent(testEvent);
+
+        // sendDailyReservationCsvToManagers() calls its transactional/request-scoped steps via the
+        // CDI self-proxy so the @Transactional/@ActivateRequestContext interceptors apply; outside
+        // of CDI, wire it back to the same instance so those steps still run.
+        Field selfField = NotificationService.class.getDeclaredField("self");
+        selfField.setAccessible(true);
+        selfField.set(notificationService, notificationService);
     }
 
     // Note: The old periodic scheduling tests have been removed as the implementation

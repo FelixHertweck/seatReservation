@@ -52,7 +52,7 @@ public class EventLocationAreaRepository implements PanacheRepositoryBase<EventL
         return find(
                         "select e from EventLocationArea e"
                                 + " join fetch e.eventLocation el"
-                                + " join fetch el.manager"
+                                + " join fetch el.createdBy"
                                 + " where e.id = ?1",
                         id)
                 .firstResultOptional();
@@ -70,7 +70,7 @@ public class EventLocationAreaRepository implements PanacheRepositoryBase<EventL
         return find(
                         "select e from EventLocationArea e"
                                 + " join fetch e.eventLocation el"
-                                + " join fetch el.manager"
+                                + " join fetch el.createdBy"
                                 + " where e.id in ?1",
                         ids)
                 .list();

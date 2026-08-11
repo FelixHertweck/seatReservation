@@ -11,6 +11,7 @@ export type AdminUserCreationDto = {
     firstname: string;
     lastname: string;
     sendEmailVerification: boolean;
+    emailVerified: boolean;
     roles: Array<string>;
     tags: Array<string>;
 };
@@ -133,6 +134,7 @@ export type EventLocationRequestDto = {
     markers?: Array<ImportMarkerDto>;
     areas?: Array<ImportAreaDto>;
     seats?: Array<ImportSeatDto>;
+    managerIds?: Array<string>;
 };
 
 export type EventLocationResponseDto = {
@@ -140,6 +142,7 @@ export type EventLocationResponseDto = {
     name?: string;
     address?: string;
     manager?: LimitedUserInfoDto;
+    managerIds?: Array<string>;
     seatIds?: Array<string>;
     markers?: Array<EventLocationMakerDto>;
     areas?: Array<AreaDto>;
@@ -148,6 +151,7 @@ export type EventLocationResponseDto = {
 export type EventLocationUpdateDto = {
     name: string;
     address: string;
+    managerIds?: Array<string>;
 };
 
 export type EventRequestDto = {

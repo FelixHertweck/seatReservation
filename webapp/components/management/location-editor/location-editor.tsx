@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import { useT } from "@/lib/i18n/hooks";
+import { getApiUsersManagerOptions } from "@/api/@tanstack/react-query.gen";
 import { useLocationEditorData } from "@/components/management/location-editor/use-location-editor-data";
 import { useLocationEditorState } from "@/components/management/location-editor/use-location-editor-state";
 import { useLocationEditorSave } from "@/components/management/location-editor/use-location-editor-save";
@@ -30,12 +32,14 @@ export function LocationEditor({ locationId }: { locationId: string }) {
   const t = useT();
   const { isReady, isError, isNotFound, buildInitialState } =
     useLocationEditorData(locationId);
+  const { data: users } = useQuery({ ...getApiUsersManagerOptions() });
 
   const editor = useLocationEditorState(
     emptyLocationEditorState({
       serverId: locationId,
       name: "",
       address: "",
+      managerIds: [],
     }),
   );
 
@@ -160,6 +164,7 @@ export function LocationEditor({ locationId }: { locationId: string }) {
         <EditorToolbar
           state={editor.state}
           autosave={autosave}
+          users={users ?? []}
           tab={tab}
           onTabChange={setTab}
           canUndo={editor.canUndo}

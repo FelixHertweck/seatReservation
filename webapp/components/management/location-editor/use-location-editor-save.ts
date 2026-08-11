@@ -493,6 +493,7 @@ export function useLocationEditorSave({
     const body: EventLocationUpdateDto = {
       name: meta.name,
       address: meta.address,
+      managerIds: meta.managerIds,
     };
     try {
       const data = await metaUpdate.mutateAsync({

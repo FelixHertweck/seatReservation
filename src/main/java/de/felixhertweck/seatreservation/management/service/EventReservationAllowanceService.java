@@ -269,7 +269,7 @@ public class EventReservationAllowanceService {
                 "Attempting to retrieve reservation allowances for event ID: %s by user ID: %s (ID:"
                         + " %s)",
                 eventId, currentUser.id, currentUser.getId());
-        Event event = getEventById(eventId);
+        getEventById(eventId);
         if (!eventRepository.isUserManager(eventId, currentUser.getId())
                 && !currentUser.getRoles().contains(Roles.ADMIN)) {
             LOG.warnf(

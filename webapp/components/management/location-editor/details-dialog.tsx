@@ -11,12 +11,14 @@ import { useT } from "@/lib/i18n/hooks";
 import { DetailsPanel } from "@/components/management/location-editor/panels/details-panel";
 import type { useLocationEditorSave } from "@/components/management/location-editor/use-location-editor-save";
 import type { LocationMeta } from "@/components/management/location-editor/types";
+import type { UserDto } from "@/api";
 
 interface DetailsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   meta: LocationMeta;
   autosave: ReturnType<typeof useLocationEditorSave>;
+  users: UserDto[];
 }
 
 export function DetailsDialog({
@@ -24,6 +26,7 @@ export function DetailsDialog({
   onOpenChange,
   meta,
   autosave,
+  users,
 }: DetailsDialogProps) {
   const t = useT();
 
@@ -41,6 +44,7 @@ export function DetailsDialog({
         <DetailsPanel
           meta={meta}
           autosave={autosave}
+          users={users}
           onSaved={() => onOpenChange(false)}
         />
       </DialogContent>

@@ -11,6 +11,7 @@ import {
   postApiManagerEventlocationsMutation,
   putApiManagerEventlocationsByIdMutation,
   deleteApiManagerEventlocationsMutation,
+  getApiUsersManagerOptions,
 } from "@/api/@tanstack/react-query.gen";
 import type { ErrorWithResponse } from "@/components/init-query-client";
 
@@ -18,8 +19,11 @@ export function useManagementLocations() {
   const t = useT();
   const queryClient = useQueryClient();
 
-  const { data: locations, isLoading } = useQuery({
+  const { data: locations, isLoading: locationsLoading } = useQuery({
     ...getApiManagerEventlocationsOptions(),
+  });
+  const { data: users, isLoading: usersLoading } = useQuery({
+    ...getApiUsersManagerOptions(),
   });
 
   const createLocationMutation = useMutation({
@@ -112,7 +116,8 @@ export function useManagementLocations() {
 
   return {
     locations: locations ?? [],
-    isLoading,
+    users: users ?? [],
+    isLoading: locationsLoading || usersLoading,
     createLocation,
     updateLocation,
     deleteLocation,

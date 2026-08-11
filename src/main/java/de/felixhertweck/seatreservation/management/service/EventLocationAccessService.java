@@ -76,9 +76,7 @@ public class EventLocationAccessService {
         if (user.isAdmin()) {
             return;
         }
-        // Compare by ID rather than by User#equals: the manager is a lazy association and its
-        // proxy's equals() semantics are not something the authorization check should depend on.
-        if (!eventLocation.getManager().getId().equals(user.id())) {
+        if (!eventLocationRepository.isUserManager(eventLocation.getId(), user.id())) {
             throw new SecurityException("Manager does not own this EventLocation");
         }
     }

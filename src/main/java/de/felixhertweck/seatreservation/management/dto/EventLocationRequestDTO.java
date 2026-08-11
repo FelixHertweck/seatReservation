@@ -20,6 +20,9 @@
 package de.felixhertweck.seatreservation.management.dto;
 
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
@@ -41,6 +44,9 @@ public class EventLocationRequestDTO {
 
     /** Optional seats to scaffold together with the location. */
     private List<@Valid ImportSeatDto> seats;
+
+    /** Optional additional managers, independent of any event. */
+    @Nullable private Set<UUID> managerIds;
 
     public String getName() {
         return name;
@@ -80,6 +86,14 @@ public class EventLocationRequestDTO {
 
     public void setSeats(List<ImportSeatDto> seats) {
         this.seats = seats;
+    }
+
+    public Set<UUID> getManagerIds() {
+        return managerIds;
+    }
+
+    public void setManagerIds(Set<UUID> managerIds) {
+        this.managerIds = managerIds;
     }
 
     public EventLocationRequestDTO() {}

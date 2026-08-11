@@ -54,6 +54,7 @@ export interface LocationMeta {
   serverId: string;
   name: string;
   address: string;
+  managerIds: string[];
 }
 
 export interface PendingDeletions {

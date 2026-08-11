@@ -50,7 +50,10 @@ INSERT INTO user_roles (user_id, role) VALUES ('00000000-0000-0000-0000-00000000
 INSERT INTO users (id, username, email, passwordHash, passwordSalt, firstname, lastname, emailVerified) VALUES ('00000000-0000-0000-0000-000000000005', 'boxoffice', NULL, NULL, NULL, NULL, NULL, false);
 
 -- Insert a minimal event location for tests
-INSERT INTO eventlocations (id, name, address, manager_id) VALUES ('00000000-0000-0000-0000-000000000001', 'Test Hall', 'Teststraße 1, 12345 Teststadt', '00000000-0000-0000-0000-000000000002');
+INSERT INTO eventlocations (id, name, address, created_by_user_id) VALUES ('00000000-0000-0000-0000-000000000001', 'Test Hall', 'Teststraße 1, 12345 Teststadt', '00000000-0000-0000-0000-000000000002');
+
+-- Assign manager user (id 2) as direct manager of the location (id 1)
+INSERT INTO location_managers (event_location_id, user_id) VALUES ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002');
 
 -- Insert a minimal event for tests
 INSERT INTO events (id, name, startTime, endTime, bookingStartTime, bookingDeadline, reminderSent, event_location_id, created_by_user_id) VALUES ('00000000-0000-0000-0000-000000000001', 'Test Concert', '2024-12-31 19:00:00', '2024-12-31 21:00:00', '2024-12-12 17:00:00', '2026-12-12 17:00:00', false, '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002');

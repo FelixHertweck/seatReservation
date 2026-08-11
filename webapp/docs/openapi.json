@@ -4,7 +4,7 @@
     "schemas" : {
       "AdminUserCreationDto" : {
         "type" : "object",
-        "required" : [ "username", "password", "firstname", "lastname", "sendEmailVerification", "roles", "tags" ],
+        "required" : [ "username", "password", "firstname", "lastname", "sendEmailVerification", "emailVerified", "roles", "tags" ],
         "properties" : {
           "username" : {
             "type" : "string",
@@ -23,6 +23,9 @@
             "type" : "string"
           },
           "sendEmailVerification" : {
+            "type" : "boolean"
+          },
+          "emailVerified" : {
             "type" : "boolean"
           },
           "roles" : {
@@ -405,6 +408,15 @@
             "items" : {
               "$ref" : "#/components/schemas/ImportSeatDto"
             }
+          },
+          "managerIds" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+            }
           }
         }
       },
@@ -422,6 +434,14 @@
           },
           "manager" : {
             "$ref" : "#/components/schemas/LimitedUserInfoDTO"
+          },
+          "managerIds" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+            }
           },
           "seatIds" : {
             "type" : "array",
@@ -454,6 +474,15 @@
           },
           "address" : {
             "type" : "string"
+          },
+          "managerIds" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "type" : "string",
+              "format" : "uuid",
+              "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+            }
           }
         }
       },

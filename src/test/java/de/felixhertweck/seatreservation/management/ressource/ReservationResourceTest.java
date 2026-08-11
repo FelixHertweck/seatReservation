@@ -22,6 +22,7 @@ package de.felixhertweck.seatreservation.management.ressource;
 import static de.felixhertweck.seatreservation.testutil.TestIds.id;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -38,6 +39,7 @@ import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.CheckInTokenRepository;
+import de.felixhertweck.seatreservation.model.repository.EmailSeatMapTokenRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationEntranceRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
@@ -69,6 +71,7 @@ public class ReservationResourceTest {
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
 
     @Inject CheckInTokenRepository checkInTokenRepository;
+    @Inject EmailSeatMapTokenRepository emailSeatMapTokenRepository;
 
     private Reservation testReservation;
     private Event testEvent;
@@ -80,8 +83,25 @@ public class ReservationResourceTest {
     @Transactional
     @SuppressWarnings("unused")
     void setUp() {
+        // Defensively clear any leftover tokens from a previous run's failed teardown - they'd
+        // otherwise block this run's own eventRepository.deleteAll() via the FK to events.
+        emailSeatMapTokenRepository.deleteAll();
+
         var manager = userRepository.findByUsernameOptional("manager").orElseThrow();
         testUser = userRepository.findByUsernameOptional("user").orElseThrow();
+        userRepository
+                .findByUsernameOptional("manager2")
+                .orElseGet(
+                        () -> {
+                            var u = new User();
+                            u.setUsername("manager2");
+                            u.setPasswordHash("password");
+                            u.setRoles(Set.of("MANAGER"));
+                            u.setEmail("manager2@example.com");
+                            u.setTags(Collections.emptySet());
+                            userRepository.persist(u);
+                            return u;
+                        });
 
         var testLocation = new EventLocation();
         testLocation.setName("Test Location");
@@ -113,10 +133,19 @@ public class ReservationResourceTest {
         eventUserAllowanceRepository.persist(allowance);
     }
 
+    @Transactional
+    void addEventManager(Event event, String username) {
+        var extraManager = userRepository.findByUsernameOptional(username).orElseThrow();
+        var managed = eventRepository.findById(event.getId());
+        managed.getManagers().add(extraManager);
+        eventRepository.persist(managed);
+    }
+
     @AfterEach
     @Transactional
     @SuppressWarnings("unused")
     void tearDown() {
+        emailSeatMapTokenRepository.deleteAll();
         reservationRepository.deleteAll();
         checkInTokenRepository.deleteAll();
         eventUserAllowanceRepository.deleteAll();
@@ -125,6 +154,7 @@ public class ReservationResourceTest {
         eventLocationAreaRepository.deleteAll();
         eventLocationEntranceRepository.deleteAll();
         eventLocationRepository.deleteAll();
+        userRepository.delete("username", "manager2");
     }
 
     @Test
@@ -151,6 +181,29 @@ public class ReservationResourceTest {
                             value = "00000000-0000-0000-0000-000000000002",
                             type = ClaimType.STRING))
     void testGetAllReservations() {
+        given().when()
+                .get("/api/manager/reservations")
+                .then()
+                .statusCode(200)
+                .body("size()", is(1));
+    }
+
+    @Test
+    @TestSecurity(
+            user = "supervisor",
+            roles = {"MANAGER"})
+    @JwtSecurity(
+            claims =
+                    @Claim(
+                            key = "uid",
+                            value = "00000000-0000-0000-0000-000000000004",
+                            type = ClaimType.STRING))
+    void testGetAllReservationsAsCoManager() {
+        // "supervisor" (fixed seed UUID ...0004) stands in as a co-manager of testEvent, not its
+        // creator ("manager") - this endpoint needs the uid JWT claim, which only seeded users have
+        // a compile-time-known value for.
+        addEventManager(testEvent, "supervisor");
+
         given().when()
                 .get("/api/manager/reservations")
                 .then()
@@ -202,6 +255,31 @@ public class ReservationResourceTest {
 
     @Test
     @TestSecurity(
+            user = "manager2",
+            roles = {"MANAGER"})
+    void testCreateReservationAsCoManager() {
+        // manager2 is a co-manager of testEvent, not its creator ("manager").
+        addEventManager(testEvent, "manager2");
+
+        given().contentType("application/json")
+                .body(
+                        Map.of(
+                                "eventId",
+                                testEvent.id,
+                                "seatIds",
+                                Set.of(anotherSeat.id),
+                                "userId",
+                                testUser.id,
+                                "deductAllowance",
+                                false))
+                .when()
+                .post("/api/manager/reservations")
+                .then()
+                .statusCode(200);
+    }
+
+    @Test
+    @TestSecurity(
             user = "manager",
             roles = {"MANAGER"})
     void testCreateReservationInvalidData() {
@@ -218,6 +296,21 @@ public class ReservationResourceTest {
             user = "manager",
             roles = {"MANAGER"})
     void testDeleteReservation() {
+        given().when()
+                .queryParam("ids", testReservation.id)
+                .delete("/api/manager/reservations")
+                .then()
+                .statusCode(204);
+    }
+
+    @Test
+    @TestSecurity(
+            user = "manager2",
+            roles = {"MANAGER"})
+    void testDeleteReservationAsCoManager() {
+        // manager2 is a co-manager of testEvent, not its creator ("manager").
+        addEventManager(testEvent, "manager2");
+
         given().when()
                 .queryParam("ids", testReservation.id)
                 .delete("/api/manager/reservations")
@@ -328,6 +421,21 @@ public class ReservationResourceTest {
             user = "manager",
             roles = {"MANAGER"})
     void testGetReservationsByEventId() {
+        given().when()
+                .get("/api/manager/reservations/event/" + testEvent.id)
+                .then()
+                .statusCode(200)
+                .body("size()", is(1));
+    }
+
+    @Test
+    @TestSecurity(
+            user = "manager2",
+            roles = {"MANAGER"})
+    void testGetReservationsByEventIdAsCoManager() {
+        // manager2 is a co-manager of testEvent, not its creator ("manager").
+        addEventManager(testEvent, "manager2");
+
         given().when()
                 .get("/api/manager/reservations/event/" + testEvent.id)
                 .then()

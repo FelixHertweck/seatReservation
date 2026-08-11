@@ -19,6 +19,9 @@
  */
 package de.felixhertweck.seatreservation.management.dto;
 
+import java.util.Set;
+import java.util.UUID;
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
@@ -35,6 +38,9 @@ public class EventLocationUpdateDTO {
 
     @NotNull(message = "Address must not be null")
     private String address;
+
+    /** Optional additional managers, independent of any event. Null leaves managers unchanged. */
+    @Nullable private Set<UUID> managerIds;
 
     public EventLocationUpdateDTO() {}
 
@@ -57,5 +63,13 @@ public class EventLocationUpdateDTO {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public Set<UUID> getManagerIds() {
+        return managerIds;
+    }
+
+    public void setManagerIds(Set<UUID> managerIds) {
+        this.managerIds = managerIds;
     }
 }

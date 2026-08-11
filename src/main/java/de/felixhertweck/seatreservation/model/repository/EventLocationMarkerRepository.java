@@ -53,7 +53,7 @@ public class EventLocationMarkerRepository
         return find(
                         "select e from EventLocationMarker e"
                                 + " join fetch e.eventLocation el"
-                                + " join fetch el.manager"
+                                + " join fetch el.createdBy"
                                 + " where e.id = ?1",
                         id)
                 .firstResultOptional();
@@ -71,7 +71,7 @@ public class EventLocationMarkerRepository
         return find(
                         "select e from EventLocationMarker e"
                                 + " join fetch e.eventLocation el"
-                                + " join fetch el.manager"
+                                + " join fetch el.createdBy"
                                 + " where e.id in ?1",
                         ids)
                 .list();

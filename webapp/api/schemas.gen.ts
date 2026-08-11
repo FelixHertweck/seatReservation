@@ -8,6 +8,7 @@ export const AdminUserCreationDtoSchema = {
         'firstname',
         'lastname',
         'sendEmailVerification',
+        'emailVerified',
         'roles',
         'tags'
     ],
@@ -29,6 +30,9 @@ export const AdminUserCreationDtoSchema = {
             type: 'string'
         },
         sendEmailVerification: {
+            type: 'boolean'
+        },
+        emailVerified: {
             type: 'boolean'
         },
         roles: {
@@ -459,6 +463,15 @@ export const EventLocationRequestDTOSchema = {
             items: {
                 $ref: '#/components/schemas/ImportSeatDto'
             }
+        },
+        managerIds: {
+            type: 'array',
+            uniqueItems: true,
+            items: {
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+            }
         }
     }
 } as const;
@@ -477,6 +490,14 @@ export const EventLocationResponseDTOSchema = {
         },
         manager: {
             $ref: '#/components/schemas/LimitedUserInfoDTO'
+        },
+        managerIds: {
+            type: 'array',
+            items: {
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+            }
         },
         seatIds: {
             type: 'array',
@@ -513,6 +534,15 @@ export const EventLocationUpdateDTOSchema = {
         },
         address: {
             type: 'string'
+        },
+        managerIds: {
+            type: 'array',
+            uniqueItems: true,
+            items: {
+                type: 'string',
+                format: 'uuid',
+                pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+            }
         }
     }
 } as const;

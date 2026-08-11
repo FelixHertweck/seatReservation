@@ -133,6 +133,9 @@ public class MarkerServiceTest {
                 .thenReturn(Optional.of(eventLocation));
         when(eventLocationRepository.findByIdOptional(otherLocation.id))
                 .thenReturn(Optional.of(otherLocation));
+
+        when(eventLocationRepository.isUserManager(eventLocation.id, managerUser.id))
+                .thenReturn(true);
     }
 
     @Test
