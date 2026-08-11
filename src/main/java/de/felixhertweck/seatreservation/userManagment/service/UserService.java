@@ -109,6 +109,7 @@ public class UserService {
                             adminUser.getRoles(),
                             false,
                             false,
+                            Boolean.TRUE.equals(adminUser.getEmailVerified()),
                             knownExistingUsernames);
             importedUsers.add(user);
         }
@@ -151,7 +152,8 @@ public class UserService {
             boolean sendEmailVerification,
             boolean allowNoPassword)
             throws InvalidUserException, DuplicateUserException {
-        return createUser(userCreationDTO, roles, sendEmailVerification, allowNoPassword, null);
+        return createUser(
+                userCreationDTO, roles, sendEmailVerification, allowNoPassword, false, null);
     }
 
     /**
@@ -163,6 +165,9 @@ public class UserService {
      * @param allowNoPassword when {@code true}, the user may be created without a password (e.g. a
      *     passkey-only account); the stored password hash is {@code null} and password login is
      *     unavailable for this user until a password is set
+     * @param markEmailAsVerified when {@code true}, the new user's email is marked as verified
+     *     immediately (e.g. an admin creating a pre-verified account); {@code
+     *     sendEmailVerification} is ignored in that case since there is nothing left to verify
      * @param knownExistingUsernames when non-{@code null}, the duplicate-username check is done
      *     against this in-memory set instead of a per-call database query; used by {@link
      *     #importUsers} to check all usernames of a batch in a single upfront query. The newly
@@ -176,6 +181,7 @@ public class UserService {
             Set<String> roles,
             boolean sendEmailVerification,
             boolean allowNoPassword,
+            boolean markEmailAsVerified,
             Set<String> knownExistingUsernames)
             throws InvalidUserException, DuplicateUserException {
         if (userCreationDTO == null) {
@@ -244,7 +250,7 @@ public class UserService {
                 new User(
                         userCreationDTO.getUsername(),
                         email,
-                        false,
+                        markEmailAsVerified,
                         false,
                         passwordHash,
                         salt,
@@ -267,7 +273,7 @@ public class UserService {
             knownExistingUsernames.add(user.getUsername());
         }
 
-        if (sendEmailVerification) {
+        if (sendEmailVerification && !markEmailAsVerified) {
             if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
                 LOG.errorf(
                         "Email verification requested for user %s, but no email address is set.",

@@ -307,6 +307,26 @@ public class UserServiceTest {
     }
 
     @Test
+    void createUser_Success_MarkEmailAsVerified_SkipsVerificationEmail() throws IOException {
+        UserCreationDTO dto =
+                new UserCreationDTO(
+                        "testuser", "test@example.com", "password", "John", "Doe", null);
+        when(userRepository.findByUsernameOptional(anyString())).thenReturn(Optional.empty());
+        when(userRepository.isPersistent(any(User.class))).thenReturn(true);
+
+        UserDTO createdUser =
+                userService.createUser(dto, Set.of(Roles.USER), true, false, true, null);
+
+        assertNotNull(createdUser);
+        assertEquals("testuser", createdUser.username());
+        assertTrue(createdUser.emailVerified());
+        verify(userRepository, times(1)).persist(any(User.class));
+        verify(emailService, never()).createEmailVerification(any(User.class));
+        verify(emailService, never())
+                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
+    }
+
+    @Test
     void createUser_InternalServerErrorException_EmailSendFailure() throws IOException {
         UserCreationDTO dto =
                 new UserCreationDTO(
@@ -1656,6 +1676,7 @@ public class UserServiceTest {
                         "user1",
                         "user1@example.com",
                         false,
+                        false,
                         "pass1",
                         "First1",
                         "Last1",
@@ -1665,6 +1686,7 @@ public class UserServiceTest {
                 new AdminUserCreationDto(
                         "user2",
                         "user2@example.com",
+                        false,
                         false,
                         "pass2",
                         "First2",
@@ -1724,6 +1746,7 @@ public class UserServiceTest {
                         "",
                         "invalid@example.com",
                         false,
+                        false,
                         "pass",
                         "Invalid",
                         "User",
@@ -1744,6 +1767,7 @@ public class UserServiceTest {
                 new AdminUserCreationDto(
                         "existinguser",
                         "existing@example.com",
+                        false,
                         false,
                         "pass",
                         "Existing",
@@ -1784,6 +1808,7 @@ public class UserServiceTest {
                 new AdminUserCreationDto(
                         "user1",
                         "user1@example.com",
+                        false,
                         false,
                         "pass1",
                         "First1",

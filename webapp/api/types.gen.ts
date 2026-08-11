@@ -11,6 +11,7 @@ export type AdminUserCreationDto = {
     firstname: string;
     lastname: string;
     sendEmailVerification: boolean;
+    emailVerified: boolean;
     roles: Array<string>;
     tags: Array<string>;
 };

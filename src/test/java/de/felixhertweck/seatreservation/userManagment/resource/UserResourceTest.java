@@ -66,6 +66,7 @@ public class UserResourceTest {
                         "testuser1",
                         "test1@example.com",
                         false,
+                        false,
                         "password",
                         "John",
                         "Doe",
@@ -75,6 +76,7 @@ public class UserResourceTest {
                 new AdminUserCreationDto(
                         "testuser2",
                         "test2@example.com",
+                        false,
                         false,
                         "password",
                         "Jane",
@@ -100,6 +102,7 @@ public class UserResourceTest {
                         "testuser1",
                         "test1@example.com",
                         false,
+                        false,
                         "password",
                         "John",
                         "Doe",
@@ -121,6 +124,7 @@ public class UserResourceTest {
                 new AdminUserCreationDto(
                         "testuser1",
                         "test1@example.com",
+                        false,
                         false,
                         "password",
                         "John",
@@ -146,6 +150,7 @@ public class UserResourceTest {
                         "",
                         "test1@example.com",
                         false,
+                        false,
                         "password",
                         "John",
                         "Doe",
@@ -169,6 +174,7 @@ public class UserResourceTest {
                         "existinguser",
                         "existing@example.com",
                         false,
+                        false,
                         "password",
                         "John",
                         "Doe",
@@ -178,6 +184,7 @@ public class UserResourceTest {
                 new AdminUserCreationDto(
                         "existinguser",
                         "existing2@example.com",
+                        false,
                         false,
                         "password",
                         "Jane",
@@ -190,6 +197,7 @@ public class UserResourceTest {
                         new AdminUserCreationDto(
                                 "existinguser",
                                 "existing@example.com",
+                                false,
                                 false,
                                 "password",
                                 "John",
