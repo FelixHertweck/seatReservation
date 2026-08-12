@@ -19,8 +19,10 @@
  */
 package de.felixhertweck.seatreservation.management.service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -45,6 +47,8 @@ public class MarkerService {
 
     @Inject EventLocationAccessService eventLocationAccessService;
 
+    @Inject SeatmapCacheService seatmapCacheService;
+
     /**
      * Finds all markers of an event location, verifying the manager owns that location.
      *
@@ -54,11 +58,8 @@ public class MarkerService {
      */
     public List<EventLocationMakerDTO> findMarkersByLocation(
             UUID eventLocationId, AuthenticatedUser manager) {
-        EventLocation eventLocation =
-                eventLocationAccessService.findOwnedEventLocation(eventLocationId, manager);
-        return markerRepository.findByEventLocation(eventLocation).stream()
-                .map(EventLocationMakerDTO::new)
-                .toList();
+        eventLocationAccessService.findOwnedEventLocation(eventLocationId, manager);
+        return seatmapCacheService.getMarkersByLocation(eventLocationId);
     }
 
     /**
@@ -95,6 +96,8 @@ public class MarkerService {
                         dto.getCoordinate().yCoordinate());
         marker.setEventLocation(eventLocation);
         markerRepository.persist(marker);
+        seatmapCacheService.runAfterSuccessfulCommit(
+                () -> seatmapCacheService.invalidateMarkers(eventLocation.getId()));
         LOG.infof(
                 "Marker ID: %s created successfully for event location ID %s",
                 marker.id, eventLocation.getId());
@@ -113,6 +116,7 @@ public class MarkerService {
     public EventLocationMakerDTO updateMarker(
             UUID id, MakerRequestDTO dto, AuthenticatedUser manager) {
         EventLocationMarker marker = findMarkerEntityById(id, manager);
+        UUID oldLocationId = marker.getEventLocation().getId();
         EventLocation newEventLocation =
                 eventLocationAccessService.findOwnedEventLocation(
                         dto.getEventLocationId(), manager);
@@ -124,6 +128,14 @@ public class MarkerService {
         marker.setCoordinate(dto.getCoordinate().toEntity());
         marker.setEventLocation(newEventLocation);
         markerRepository.persist(marker);
+        UUID newLocationId = newEventLocation.getId();
+        seatmapCacheService.runAfterSuccessfulCommit(
+                () -> {
+                    seatmapCacheService.invalidateMarkers(oldLocationId);
+                    if (!oldLocationId.equals(newLocationId)) {
+                        seatmapCacheService.invalidateMarkers(newLocationId);
+                    }
+                });
         LOG.infof("Marker ID: %s updated successfully", marker.id);
         return new EventLocationMakerDTO(marker);
     }
@@ -145,6 +157,7 @@ public class MarkerService {
                 markerRepository.findByIdsWithEventLocation(ids).stream()
                         .collect(Collectors.toMap(m -> m.id, m -> m));
 
+        Set<UUID> locationIdsToInvalidate = new HashSet<>();
         for (UUID id : ids) {
             EventLocationMarker marker = markerMap.get(id);
             if (marker == null) {
@@ -152,7 +165,12 @@ public class MarkerService {
             }
             eventLocationAccessService.requireAccess(marker.getEventLocation(), manager);
             markerRepository.delete(marker);
+            locationIdsToInvalidate.add(marker.getEventLocation().getId());
             LOG.infof("Marker ID: %s deleted successfully", id);
+        }
+        if (!locationIdsToInvalidate.isEmpty()) {
+            seatmapCacheService.runAfterSuccessfulCommit(
+                    () -> locationIdsToInvalidate.forEach(seatmapCacheService::invalidateMarkers));
         }
     }
 

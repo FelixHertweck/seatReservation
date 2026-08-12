@@ -51,6 +51,8 @@ public class EntranceService {
 
     @Inject SeatRepository seatRepository;
 
+    @Inject SeatmapCacheService seatmapCacheService;
+
     /**
      * Finds all entrances of an event location, verifying the manager owns that location.
      *
@@ -60,11 +62,8 @@ public class EntranceService {
      */
     public List<EntranceResponseDTO> findEntrancesByLocation(
             UUID eventLocationId, AuthenticatedUser manager) {
-        EventLocation eventLocation =
-                eventLocationAccessService.findOwnedEventLocation(eventLocationId, manager);
-        return entranceRepository.findByEventLocation(eventLocation).stream()
-                .map(EntranceResponseDTO::new)
-                .toList();
+        eventLocationAccessService.findOwnedEventLocation(eventLocationId, manager);
+        return seatmapCacheService.getEntrancesByLocation(eventLocationId);
     }
 
     /**
@@ -97,6 +96,8 @@ public class EntranceService {
         EventLocationEntrance entrance = new EventLocationEntrance(dto.getName().trim());
         entrance.setEventLocation(eventLocation);
         entranceRepository.persist(entrance);
+        seatmapCacheService.runAfterSuccessfulCommit(
+                () -> seatmapCacheService.invalidateEntrances(eventLocation.getId()));
         LOG.infof(
                 "Entrance ID: %s created successfully for event location ID %s",
                 entrance.id, eventLocation.getId());
@@ -117,6 +118,7 @@ public class EntranceService {
     public EntranceResponseDTO updateEntrance(
             UUID id, EntranceRequestDTO dto, AuthenticatedUser manager) {
         EventLocationEntrance entrance = findEntranceEntityById(id, manager);
+        UUID oldLocationId = entrance.getEventLocation().getId();
         EventLocation newEventLocation =
                 eventLocationAccessService.findOwnedEventLocation(
                         dto.getEventLocationId(), manager);
@@ -139,6 +141,16 @@ public class EntranceService {
         entrance.setName(dto.getName().trim());
         entrance.setEventLocation(newEventLocation);
         entranceRepository.persist(entrance);
+        UUID newLocationId = newEventLocation.getId();
+        seatmapCacheService.runAfterSuccessfulCommit(
+                () -> {
+                    seatmapCacheService.invalidateEntrances(oldLocationId);
+                    // SeatDTO denormalizes the entrance name.
+                    seatmapCacheService.invalidateSeats(oldLocationId);
+                    if (!oldLocationId.equals(newLocationId)) {
+                        seatmapCacheService.invalidateEntrances(newLocationId);
+                    }
+                });
         LOG.infof("Entrance ID: %s updated successfully", entrance.id);
         return new EntranceResponseDTO(entrance);
     }
@@ -161,6 +173,7 @@ public class EntranceService {
                         .collect(Collectors.toMap(e -> e.id, e -> e));
         Set<UUID> usedEntranceIds = new HashSet<>(seatRepository.findUsedEntranceIds(ids));
 
+        Set<UUID> locationIdsToInvalidate = new HashSet<>();
         for (UUID id : ids) {
             EventLocationEntrance entrance = entranceMap.get(id);
             if (entrance == null) {
@@ -172,7 +185,14 @@ public class EntranceService {
                         "Entrance with id " + id + " is still referenced by at least one seat");
             }
             entranceRepository.delete(entrance);
+            locationIdsToInvalidate.add(entrance.getEventLocation().getId());
             LOG.infof("Entrance ID: %s deleted successfully", id);
+        }
+        if (!locationIdsToInvalidate.isEmpty()) {
+            seatmapCacheService.runAfterSuccessfulCommit(
+                    () ->
+                            locationIdsToInvalidate.forEach(
+                                    seatmapCacheService::invalidateEntrances));
         }
     }
 

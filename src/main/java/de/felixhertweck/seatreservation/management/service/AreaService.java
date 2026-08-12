@@ -53,6 +53,8 @@ public class AreaService {
 
     @Inject SeatRepository seatRepository;
 
+    @Inject SeatmapCacheService seatmapCacheService;
+
     /**
      * Finds all areas of an event location, verifying the manager owns that location.
      *
@@ -62,11 +64,8 @@ public class AreaService {
      */
     public List<AreaResponseDTO> findAreasByLocation(
             UUID eventLocationId, AuthenticatedUser manager) {
-        EventLocation eventLocation =
-                eventLocationAccessService.findOwnedEventLocation(eventLocationId, manager);
-        return areaRepository.findByEventLocation(eventLocation).stream()
-                .map(AreaResponseDTO::new)
-                .toList();
+        eventLocationAccessService.findOwnedEventLocation(eventLocationId, manager);
+        return seatmapCacheService.getAreasByLocation(eventLocationId);
     }
 
     /**
@@ -105,6 +104,8 @@ public class AreaService {
                                 .map(CoordinateDTO::toEntity)
                                 .collect(Collectors.toCollection(ArrayList::new)));
         areaRepository.persist(area);
+        seatmapCacheService.runAfterSuccessfulCommit(
+                () -> seatmapCacheService.invalidateAreas(eventLocation.getId()));
         LOG.infof(
                 "Area ID: %s created successfully for event location ID %s",
                 area.id, eventLocation.getId());
@@ -124,6 +125,7 @@ public class AreaService {
     @Transactional
     public AreaResponseDTO updateArea(UUID id, AreaRequestDTO dto, AuthenticatedUser manager) {
         EventLocationArea area = findAreaEntityById(id, manager);
+        UUID oldLocationId = area.getEventLocation().getId();
         EventLocation newEventLocation =
                 eventLocationAccessService.findOwnedEventLocation(
                         dto.getEventLocationId(), manager);
@@ -151,6 +153,16 @@ public class AreaService {
                                 .map(CoordinateDTO::toEntity)
                                 .collect(Collectors.toCollection(ArrayList::new)));
         areaRepository.persist(area);
+        UUID newLocationId = newEventLocation.getId();
+        seatmapCacheService.runAfterSuccessfulCommit(
+                () -> {
+                    seatmapCacheService.invalidateAreas(oldLocationId);
+                    // SeatDTO denormalizes the area name.
+                    seatmapCacheService.invalidateSeats(oldLocationId);
+                    if (!oldLocationId.equals(newLocationId)) {
+                        seatmapCacheService.invalidateAreas(newLocationId);
+                    }
+                });
         LOG.infof("Area ID: %s updated successfully", area.id);
         return new AreaResponseDTO(area);
     }
@@ -173,6 +185,7 @@ public class AreaService {
                         .collect(Collectors.toMap(a -> a.id, a -> a));
         Set<UUID> usedAreaIds = new HashSet<>(seatRepository.findUsedAreaIds(ids));
 
+        Set<UUID> locationIdsToInvalidate = new HashSet<>();
         for (UUID id : ids) {
             EventLocationArea area = areaMap.get(id);
             if (area == null) {
@@ -184,7 +197,12 @@ public class AreaService {
                         "Area with id " + id + " is still referenced by at least one seat");
             }
             areaRepository.delete(area);
+            locationIdsToInvalidate.add(area.getEventLocation().getId());
             LOG.infof("Area ID: %s deleted successfully", id);
+        }
+        if (!locationIdsToInvalidate.isEmpty()) {
+            seatmapCacheService.runAfterSuccessfulCommit(
+                    () -> locationIdsToInvalidate.forEach(seatmapCacheService::invalidateAreas));
         }
     }
 

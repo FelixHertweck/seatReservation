@@ -19,8 +19,10 @@
  */
 package de.felixhertweck.seatreservation.management.service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -52,6 +54,8 @@ public class SeatService {
     @Inject EventLocationAreaRepository eventLocationAreaRepository;
 
     @Inject EventLocationEntranceRepository eventLocationEntranceRepository;
+
+    @Inject SeatmapCacheService seatmapCacheService;
 
     /**
      * Creates a new seat for the specified event location by a manager.
@@ -96,6 +100,8 @@ public class SeatService {
                         resolveEntrance(dto.getEntranceId(), eventLocation),
                         resolveArea(dto.getAreaId(), eventLocation));
         seatRepository.persist(seat);
+        seatmapCacheService.runAfterSuccessfulCommit(
+                () -> seatmapCacheService.invalidateSeats(eventLocation.getId()));
         LOG.infof(
                 "Seat ID: %s created successfully for event location ID %s",
                 seat.id, eventLocation.getId());
@@ -118,12 +124,8 @@ public class SeatService {
         LOG.debugf(
                 "Attempting to retrieve seats for event location ID: %s for manager ID: %s",
                 eventLocationId, manager.id());
-        EventLocation eventLocation =
-                eventLocationAccessService.findOwnedEventLocation(eventLocationId, manager);
-        List<SeatDTO> result =
-                seatRepository.findByEventLocation(eventLocation).stream()
-                        .map(SeatDTO::new)
-                        .toList();
+        eventLocationAccessService.findOwnedEventLocation(eventLocationId, manager);
+        List<SeatDTO> result = seatmapCacheService.getSeatsByLocation(eventLocationId);
         LOG.debugf(
                 "Retrieved %d seats for event location ID: %s for manager ID: %s",
                 result.size(), eventLocationId, manager.id());
@@ -164,6 +166,7 @@ public class SeatService {
             throws SeatNotFoundException, SecurityException, IllegalArgumentException {
         LOG.debugf("Attempting to update seat with ID: %s for manager ID: %s", id, manager.id());
         Seat seat = findSeatEntityById(id, manager);
+        UUID oldLocationId = seat.getLocation().getId();
 
         EventLocation newEventLocation =
                 eventLocationAccessService.findOwnedEventLocation(
@@ -204,6 +207,15 @@ public class SeatService {
         seat.setArea(resolveArea(dto.getAreaId(), newEventLocation));
 
         seatRepository.persist(seat);
+
+        UUID newLocationId = newEventLocation.getId();
+        seatmapCacheService.runAfterSuccessfulCommit(
+                () -> {
+                    seatmapCacheService.invalidateSeats(oldLocationId);
+                    if (!oldLocationId.equals(newLocationId)) {
+                        seatmapCacheService.invalidateSeats(newLocationId);
+                    }
+                });
 
         LOG.infof("Seat ID: %s updated successfully", seat.id);
         LOG.debugf("Seat with ID %s updated successfully by manager ID: %s", id, manager.id());
@@ -290,6 +302,7 @@ public class SeatService {
                 seatRepository.findByIdsWithLocation(ids).stream()
                         .collect(Collectors.toMap(s -> s.id, s -> s));
 
+        Set<UUID> locationIdsToInvalidate = new HashSet<>();
         for (UUID id : ids) {
             Seat seat = seatMap.get(id);
             if (seat == null) {
@@ -298,7 +311,12 @@ public class SeatService {
             }
             eventLocationAccessService.requireAccess(seat.getLocation(), manager);
             seatRepository.delete(seat);
+            locationIdsToInvalidate.add(seat.getLocation().getId());
             LOG.infof("Seat ID: %s deleted successfully", seat.id);
+        }
+        if (!locationIdsToInvalidate.isEmpty()) {
+            seatmapCacheService.runAfterSuccessfulCommit(
+                    () -> locationIdsToInvalidate.forEach(seatmapCacheService::invalidateSeats));
         }
         LOG.debugf("Seats with IDs %s deleted successfully by manager ID: %s", ids, manager.id());
     }
