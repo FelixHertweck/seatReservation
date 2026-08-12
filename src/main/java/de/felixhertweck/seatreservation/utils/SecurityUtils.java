@@ -34,6 +34,8 @@
  */
 package de.felixhertweck.seatreservation.utils;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.security.SecureRandom;
 
 /**
@@ -91,5 +93,19 @@ public final class SecurityUtils {
      */
     public static long nextLong() {
         return SECURE_RANDOM.nextLong();
+    }
+
+    /**
+     * Compares two strings for equality in constant time, to avoid leaking timing information about
+     * where a secret comparison (2FA code, token, etc.) first diverges from the input.
+     *
+     * @return true if both strings are non-null and equal
+     */
+    public static boolean constantTimeEquals(String a, String b) {
+        if (a == null || b == null) {
+            return false;
+        }
+        return MessageDigest.isEqual(
+                a.getBytes(StandardCharsets.UTF_8), b.getBytes(StandardCharsets.UTF_8));
     }
 }
