@@ -152,6 +152,65 @@ class ReservationExporterTest {
     }
 
     @Test
+    void exportReservationsToCsv_fieldStartingWithFormulaChar_isEscapedWithLeadingApostrophe()
+            throws IOException {
+        Reservation reservation =
+                createReservation(
+                        id(1),
+                        "A1",
+                        "1",
+                        "=cmd|'/C calc'!A0",
+                        "Mustermann",
+                        ReservationStatus.RESERVED);
+        byte[] csvBytes =
+                ReservationExporter.exportReservationsToCsv(List.of(reservation)).toByteArray();
+        String csv = new String(csvBytes);
+        assertTrue(csv.contains("'=cmd|'/C calc'!A0"), csv);
+    }
+
+    @Test
+    void exportReservationsToCsv_fieldWithLeadingNonBreakingSpace_isEscapedWithLeadingApostrophe()
+            throws IOException {
+        // U+00A0 (NO-BREAK SPACE) is trimmed by Excel/LibreOffice before evaluating a leading
+        // formula-trigger character, so it must be treated like ordinary whitespace here.
+        Reservation reservation =
+                createReservation(
+                        id(1),
+                        "A1",
+                        "1",
+                        " =cmd|'/C calc'!A0",
+                        "Mustermann",
+                        ReservationStatus.RESERVED);
+        byte[] csvBytes =
+                ReservationExporter.exportReservationsToCsv(List.of(reservation)).toByteArray();
+        String csv = new String(csvBytes);
+        assertTrue(csv.contains("' =cmd|'/C calc'!A0"), csv);
+    }
+
+    @Test
+    void exportReservationsToCsv_fieldWithoutFormulaTrigger_isNotEscaped() throws IOException {
+        Reservation reservation =
+                createReservation(
+                        id(1), "A1", "1", "Max", "Mustermann", ReservationStatus.RESERVED);
+        byte[] csvBytes =
+                ReservationExporter.exportReservationsToCsv(List.of(reservation)).toByteArray();
+        String csv = new String(csvBytes);
+        assertTrue(csv.contains(",Max,"), csv);
+        assertTrue(!csv.contains("'Max"), csv);
+    }
+
+    @Test
+    void exportReservationsToCsv_fieldWithComma_isQuoted() throws IOException {
+        Reservation reservation =
+                createReservation(
+                        id(1), "A1", "1", "Max,Junior", "Mustermann", ReservationStatus.RESERVED);
+        byte[] csvBytes =
+                ReservationExporter.exportReservationsToCsv(List.of(reservation)).toByteArray();
+        String csv = new String(csvBytes);
+        assertTrue(csv.contains("\"Max,Junior\""), csv);
+    }
+
+    @Test
     void exportReservationsToPdf_withBlockedReservation_createsValidPdf() throws IOException {
         Reservation r1 = createReservation(id(1), "C1", "3", null, null, ReservationStatus.BLOCKED);
         byte[] pdfBytes =
