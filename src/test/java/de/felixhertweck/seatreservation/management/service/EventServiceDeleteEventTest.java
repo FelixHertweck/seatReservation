@@ -55,6 +55,10 @@ public class EventServiceDeleteEventTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
+        EventAccessService eventAccessService = new EventAccessService();
+        eventAccessService.eventRepository = eventRepository;
+        eventService.eventAccessService = eventAccessService;
+
         adminUser = new User();
         adminUser.id = id(1);
         adminUser.setRoles(Set.of(Roles.ADMIN));

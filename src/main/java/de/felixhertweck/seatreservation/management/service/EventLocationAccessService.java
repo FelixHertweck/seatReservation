@@ -27,6 +27,7 @@ import de.felixhertweck.seatreservation.management.exception.EventLocationNotFou
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
+import org.jboss.logging.Logger;
 
 /**
  * Central ownership check for event locations, shared by the area, entrance, marker and seat
@@ -34,6 +35,8 @@ import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
  */
 @ApplicationScoped
 public class EventLocationAccessService {
+
+    private static final Logger LOG = Logger.getLogger(EventLocationAccessService.class);
 
     @Inject EventLocationRepository eventLocationRepository;
 
@@ -73,10 +76,15 @@ public class EventLocationAccessService {
      * @throws SecurityException if the user neither is an ADMIN nor manages the location
      */
     public void requireAccess(EventLocation eventLocation, AuthenticatedUser user) {
-        if (user.isAdmin()) {
-            return;
-        }
-        if (!eventLocationRepository.isUserManager(eventLocation.getId(), user.id())) {
+        if (eventLocation == null
+                || user == null
+                || (!user.isAdmin()
+                        && !eventLocationRepository.isUserManager(
+                                eventLocation.getId(), user.id()))) {
+            LOG.warnf(
+                    "User %s is not authorized to manage event location %s",
+                    user == null ? null : user.id(),
+                    eventLocation == null ? null : eventLocation.getId());
             throw new SecurityException("Manager does not own this EventLocation");
         }
     }

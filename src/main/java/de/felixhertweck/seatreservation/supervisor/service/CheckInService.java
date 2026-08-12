@@ -73,6 +73,8 @@ public class CheckInService {
 
     @Inject LiveViewService webSocketService;
 
+    @Inject EventAuthorizationService eventAuthorizationService;
+
     /**
      * Validates and processes check-in/cancel requests based on a check-in token.
      *
@@ -93,7 +95,8 @@ public class CheckInService {
                 "Getting reservation infos for targetUser %s, event %s with check-in token %s.",
                 userId, eventId, checkInToken);
 
-        if (currentUser != null && !isAuthorizedForEvent(currentUser, eventId)) {
+        if (currentUser != null
+                && !eventAuthorizationService.isAuthorizedForEvent(currentUser, eventId)) {
             throw new SecurityException("User is not authorized to access event " + eventId);
         }
         assertBookingDeadlinePassed(loadEvent(eventId));
@@ -151,7 +154,8 @@ public class CheckInService {
     public void processCheckIn(CheckInProcessRequestDTO requestDTO, AuthenticatedUser currentUser)
             throws CheckInException {
         UUID eventId = requestDTO.eventId;
-        if (currentUser != null && !isAuthorizedForEvent(currentUser, eventId)) {
+        if (currentUser != null
+                && !eventAuthorizationService.isAuthorizedForEvent(currentUser, eventId)) {
             throw new SecurityException("User is not authorized to access event " + eventId);
         }
         assertBookingDeadlinePassed(loadEvent(eventId));
@@ -300,7 +304,8 @@ public class CheckInService {
     @Transactional
     public List<String> getUsernamesWithReservations(AuthenticatedUser currentUser, UUID eventId) {
         LOG.debugf("Retrieving usernames with reservations for event %s.", eventId);
-        if (currentUser != null && !isAuthorizedForEvent(currentUser, eventId)) {
+        if (currentUser != null
+                && !eventAuthorizationService.isAuthorizedForEvent(currentUser, eventId)) {
             throw new SecurityException("User is not authorized to access event " + eventId);
         }
         return reservationRepository.findDistinctUsernamesByEventId(eventId);
@@ -346,8 +351,10 @@ public class CheckInService {
                                                 || authorizationCache.computeIfAbsent(
                                                         r.getEvent().getId(),
                                                         eventId ->
-                                                                isAuthorizedForEvent(
-                                                                        currentUser, eventId)))
+                                                                eventAuthorizationService
+                                                                        .isAuthorizedForEvent(
+                                                                                currentUser,
+                                                                                eventId)))
                         .map(SupervisorReservationResponseDTO::new)
                         .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
         LOG.debugf(
@@ -387,15 +394,5 @@ public class CheckInService {
             throw new BookingDeadlineNotPassedException(
                     "Check-in is only available after the event's booking deadline has passed.");
         }
-    }
-
-    private boolean isAuthorizedForEvent(AuthenticatedUser user, UUID eventId) {
-        if (user == null || eventId == null) return false;
-        // If user is a supervisor for the event
-        if (eventRepository.isUserSupervisor(eventId, user.id())) return true;
-        // If user is manager for the event
-        if (eventRepository.isUserManager(eventId, user.id())) return true;
-        // If user is admin
-        return user.isAdmin();
     }
 }

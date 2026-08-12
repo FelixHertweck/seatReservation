@@ -62,6 +62,8 @@ public class LiveViewService {
 
     @Inject BoxOfficeGuestInfoRepository boxOfficeGuestInfoRepository;
 
+    @Inject EventAuthorizationService eventAuthorizationService;
+
     // Map: eventId -> List of WebSocket Connections
     private final Map<UUID, List<WebSocketConnection>> eventSubscriptions =
             new ConcurrentHashMap<>();
@@ -103,7 +105,7 @@ public class LiveViewService {
             String eventIdStr, WebSocketConnection connection, AuthenticatedUser currentUser)
             throws InvalidEventIdException {
         UUID eventId = parseEventId(eventIdStr);
-        if (!isAuthorizedForEvent(currentUser, eventId)) {
+        if (!eventAuthorizationService.isAuthorizedForEvent(currentUser, eventId)) {
             throw new SecurityException("User is not authorized to access event " + eventId);
         }
         assertBookingDeadlinePassed(eventRepository.findById(eventId));
@@ -128,7 +130,7 @@ public class LiveViewService {
             String eventIdStr, WebSocketConnection connection, AuthenticatedUser currentUser)
             throws InvalidEventIdException {
         UUID eventId = parseEventId(eventIdStr);
-        if (!isAuthorizedForEvent(currentUser, eventId)) {
+        if (!eventAuthorizationService.isAuthorizedForEvent(currentUser, eventId)) {
             throw new SecurityException("User is not authorized to access event " + eventId);
         }
         unregisterConnection(eventId, connection);
@@ -210,13 +212,6 @@ public class LiveViewService {
                     "Live view is only available after the event's booking deadline has"
                             + " passed.");
         }
-    }
-
-    private boolean isAuthorizedForEvent(AuthenticatedUser user, UUID eventId) {
-        if (user == null || eventId == null) return false;
-        if (eventRepository.isUserSupervisor(eventId, user.id())) return true;
-        if (eventRepository.isUserManager(eventId, user.id())) return true;
-        return user.isAdmin();
     }
 
     /**
