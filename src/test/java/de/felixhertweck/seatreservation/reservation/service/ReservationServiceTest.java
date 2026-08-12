@@ -21,7 +21,6 @@ package de.felixhertweck.seatreservation.reservation.service;
 
 import static de.felixhertweck.seatreservation.testutil.TestIds.id;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
@@ -462,24 +461,6 @@ class ReservationServiceTest {
                 () -> reservationService.deleteReservationForUser(List.of(id(1)), currentUser));
         verify(eventUserAllowanceRepository, times(1)).persist(allowance);
         assertEquals(3, allowance.getReservationsAllowedCount());
-    }
-
-    @Test
-    void deleteReservationForUser_IOException_EmailServiceFailure() throws IOException {
-        when(reservationRepository.findByIds(List.of(id(1)))).thenReturn(List.of(reservation));
-
-        when(eventUserAllowanceRepository.findByUserAndEventId(currentUser, event.id))
-                .thenReturn(Optional.of(allowance));
-        when(eventUserAllowanceRepository.findByUserAndEventId(currentUser, event.id))
-                .thenReturn(Optional.of(allowance));
-
-        org.mockito.Mockito.doThrow(new IOException("Simulated IO Exception"))
-                .when(emailService)
-                .sendUpdateReservationConfirmation(any(), any(), any());
-
-        assertDoesNotThrow(
-                () -> reservationService.deleteReservationForUser(List.of(id(1)), currentUser));
-        verify(eventUserAllowanceRepository, times(1)).persist(allowance);
     }
 
     @Test

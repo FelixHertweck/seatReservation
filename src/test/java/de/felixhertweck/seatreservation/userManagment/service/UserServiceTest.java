@@ -44,7 +44,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -322,42 +321,6 @@ public class UserServiceTest {
         verify(userRepository, times(1)).persist(any(User.class));
         verify(emailService, never()).createEmailVerification(any(User.class));
         verify(emailService, never())
-                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
-    }
-
-    @Test
-    void createUser_InternalServerErrorException_EmailSendFailure() throws IOException {
-        UserCreationDTO dto =
-                new UserCreationDTO(
-                        "testuser", "test@example.com", "password", "John", "Doe", null);
-        when(userRepository.findByUsernameOptional(anyString())).thenReturn(Optional.empty());
-        when(userRepository.isPersistent(any(User.class))).thenReturn(true);
-        when(emailService.createEmailVerification(any(User.class)))
-                .thenReturn(
-                        new EmailVerification(
-                                new User(
-                                        "mock",
-                                        "mock@example.com",
-                                        true,
-                                        false,
-                                        "hash",
-                                        "salt",
-                                        "Mock",
-                                        "User",
-                                        Set.of(),
-                                        Set.of()),
-                                "token",
-                                Instant.now()));
-        doThrow(new IOException("Email send failed"))
-                .when(emailService)
-                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
-
-        assertThrows(
-                RuntimeException.class,
-                () -> userService.createUser(dto, Set.of(Roles.USER), true));
-        verify(userRepository, times(1)).persist(any(User.class));
-        verify(emailService, times(1)).createEmailVerification(any(User.class));
-        verify(emailService, times(1))
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
     }
 
@@ -833,62 +796,6 @@ public class UserServiceTest {
         assertNotNull(updatedUser);
         assertEquals("duplicate@example.com", updatedUser.email());
         verify(userRepository, times(1)).persist(existingUser);
-        verify(emailService, times(1)).createEmailVerification(any(User.class));
-        verify(emailService, times(1))
-                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
-    }
-
-    @Test
-    void updateUser_InternalServerErrorException_EmailSendFailure() throws IOException {
-        User existingUser =
-                new User(
-                        "testuser",
-                        "old@example.com",
-                        true,
-                        false,
-                        "oldhash",
-                        "salt",
-                        "John",
-                        "Doe",
-                        Collections.singleton(Roles.USER),
-                        Collections.emptySet());
-        existingUser.id = id(1);
-        AdminUserUpdateDTO dto =
-                new AdminUserUpdateDTO(
-                        null,
-                        null,
-                        null,
-                        "new@example.com",
-                        true,
-                        false,
-                        Collections.singleton(Roles.USER),
-                        Collections.emptySet());
-
-        when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existingUser));
-        when(emailVerificationRepository.findByUserIdOptional(any(UUID.class)))
-                .thenReturn(Optional.empty());
-        when(emailService.createEmailVerification(any(User.class)))
-                .thenReturn(
-                        new EmailVerification(
-                                new User(
-                                        "mock",
-                                        "mock@example.com",
-                                        true,
-                                        false,
-                                        "hash",
-                                        "salt",
-                                        "Mock",
-                                        "User",
-                                        Collections.emptySet(),
-                                        Collections.emptySet()),
-                                "token",
-                                Instant.now()));
-        doThrow(new IOException("Email send failed"))
-                .when(emailService)
-                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
-
-        AuthenticatedUser caller = new AuthenticatedUser(id(2), Set.of(Roles.ADMIN));
-        assertThrows(RuntimeException.class, () -> userService.updateUser(id(1), dto, caller));
         verify(emailService, times(1)).createEmailVerification(any(User.class));
         verify(emailService, times(1))
                 .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
@@ -1577,89 +1484,6 @@ public class UserServiceTest {
     }
 
     @Test
-    void updateUserProfile_InternalServerErrorException_EmailSendFailure() throws IOException {
-        User existingUser =
-                new User(
-                        "testuser",
-                        "old@example.com",
-                        true,
-                        false,
-                        "oldhash",
-                        "salt",
-                        "John",
-                        "Doe",
-                        Collections.singleton(Roles.USER),
-                        Collections.emptySet());
-        final UserProfileUpdateDTO dto =
-                new UserProfileUpdateDTO(null, null, null, "new@example.com", null, null);
-
-        when(userRepository.findByUsernameOptional("testuser"))
-                .thenReturn(Optional.of(existingUser));
-        when(userRepository.findByUsername("testuser"))
-                .thenReturn(existingUser); // Mock findByUsername
-        when(emailVerificationRepository.findByUserIdOptional(any(UUID.class)))
-                .thenReturn(Optional.empty());
-        when(emailService.createEmailVerification(any(User.class)))
-                .thenReturn(
-                        new EmailVerification(
-                                new User(
-                                        "mock",
-                                        "mock@example.com",
-                                        true,
-                                        false,
-                                        "hash",
-                                        "salt",
-                                        "Mock",
-                                        "User",
-                                        Collections.emptySet(),
-                                        Collections.emptySet()),
-                                "token",
-                                Instant.now()));
-        doThrow(new IOException("Email send failed"))
-                .when(emailService)
-                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
-
-        assertThrows(RuntimeException.class, () -> userService.updateUserProfile("testuser", dto));
-        verify(emailService, times(1)).createEmailVerification(any(User.class));
-        verify(emailService, times(1))
-                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
-    }
-
-    @Test
-    void updateUserProfile_InternalServerErrorException_PasswordChangeEmailSendFailure()
-            throws IOException {
-        User existingUser =
-                new User(
-                        "testuser",
-                        "old@example.com",
-                        true,
-                        false,
-                        "oldhash",
-                        "salt",
-                        "John",
-                        "Doe",
-                        Collections.singleton(Roles.USER),
-                        Collections.emptySet());
-        final UserProfileUpdateDTO dto =
-                new UserProfileUpdateDTO(
-                        "John",
-                        "Doe",
-                        "newpassword",
-                        "old@example.com",
-                        Collections.emptySet(),
-                        null);
-
-        when(userRepository.findByUsernameOptional("testuser"))
-                .thenReturn(Optional.of(existingUser));
-        doThrow(new IOException("Password changed email send failed"))
-                .when(emailService)
-                .sendPasswordChangedNotification(any(User.class));
-
-        assertThrows(RuntimeException.class, () -> userService.updateUserProfile("testuser", dto));
-        verify(emailService, times(1)).sendPasswordChangedNotification(existingUser);
-    }
-
-    @Test
     void importUsers_Success() throws InvalidUserException, DuplicateUserException, IOException {
         Set<AdminUserCreationDto> dtos = new HashSet<>();
         AdminUserCreationDto dto1 =
@@ -1825,9 +1649,6 @@ public class UserServiceTest {
                                         Collections.emptySet()),
                                 "token",
                                 Instant.now()));
-        doThrow(new IOException("Email send failed"))
-                .when(emailService)
-                .sendEmailConfirmation(any(User.class), any(EmailVerification.class));
 
         assertDoesNotThrow(() -> userService.importUsers(dtos));
         verify(userRepository, times(1)).persist(any(User.class));

@@ -19,7 +19,6 @@
  */
 package de.felixhertweck.seatreservation.security.service;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -304,12 +303,8 @@ public class AuthService {
         // Flush immediately so a unique-constraint collision surfaces here, not on commit.
         passwordResetTokenRepository.persistAndFlush(resetToken);
 
-        try {
-            emailService.sendPasswordResetEmail(user, resetToken);
-            LOG.infof("Password reset email sent to user %s.", user.getUsername());
-        } catch (IOException e) {
-            LOG.errorf(e, "Failed to send password reset email to user %s", user.getUsername());
-        }
+        emailService.sendPasswordResetEmail(user, resetToken);
+        LOG.infof("Password reset email sent to user %s.", user.getUsername());
     }
 
     /**
@@ -352,13 +347,9 @@ public class AuthService {
             return;
         }
 
-        try {
-            emailService.sendUsernameRecoveryEmail(
-                    requestDTO.getEmail(), users.stream().map(User::getUsername).toList());
-            LOG.info("Username recovery email sent.");
-        } catch (IOException e) {
-            LOG.error("Failed to send username recovery email.", e);
-        }
+        emailService.sendUsernameRecoveryEmail(
+                requestDTO.getEmail(), users.stream().map(User::getUsername).toList());
+        LOG.info("Username recovery email sent.");
     }
 
     private void sleepRemaining(long startNanos, long minMillis) {
@@ -413,11 +404,7 @@ public class AuthService {
         // session issued under the old password must not remain valid.
         tokenService.logoutAllDevices(user);
 
-        try {
-            emailService.sendPasswordChangedNotification(user);
-        } catch (IOException e) {
-            LOG.errorf(e, "Failed to send password changed notification to %s", user.getEmail());
-        }
+        emailService.sendPasswordChangedNotification(user);
 
         LOG.infof("Password successfully reset for user %s.", user.getUsername());
     }

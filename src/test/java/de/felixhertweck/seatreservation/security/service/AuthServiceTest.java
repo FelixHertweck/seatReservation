@@ -36,7 +36,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -427,25 +426,6 @@ public class AuthServiceTest {
                 "Expected requestUsernameRecovery to enforce a minimum response time, took only "
                         + elapsedMillis
                         + "ms");
-    }
-
-    @Test
-    void testRequestUsernameRecovery_EmailServiceThrowsIOException_DoesNotPropagate()
-            throws IOException {
-        String email = "test@example.com";
-        User user = new User();
-        user.setUsername("testuser");
-        user.setEmail(email);
-
-        when(userRepository.findAllByEmail(email)).thenReturn(List.of(user));
-        doThrow(new IOException("template not found"))
-                .when(emailService)
-                .sendUsernameRecoveryEmail(anyString(), anyList());
-
-        UsernameRecoveryRequestDTO requestDTO = new UsernameRecoveryRequestDTO();
-        requestDTO.setEmail(email);
-
-        assertDoesNotThrow(() -> authService.requestUsernameRecovery(requestDTO));
     }
 
     @Test

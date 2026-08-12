@@ -44,7 +44,7 @@ import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
 import de.felixhertweck.seatreservation.email.service.EmailService;
-import de.felixhertweck.seatreservation.email.service.EmailService.BoxOfficeConfirmationContent;
+import de.felixhertweck.seatreservation.email.service.ReservationEmailContent.BoxOfficeConfirmationContent;
 import de.felixhertweck.seatreservation.model.entity.BoxOfficeGuestInfo;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
