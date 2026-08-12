@@ -24,13 +24,13 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/custom-ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/custom-ui/skeleton";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { PaginationWrapper } from "@/components/common/pagination-wrapper";
 import { useSortableData } from "@/lib/table-sorting";
 import { useManagementLocations } from "@/hooks/use-management-locations";
 import { LocationImportModal } from "@/components/management/location-import-modal";
 import { LocationCardMapBackground } from "@/components/management/location-card-map-background";
+import { LocationCardSkeleton } from "@/components/management/location-card-skeleton";
 
 export default function ManagementLocationsPage() {
   const t = useT();
@@ -161,7 +161,7 @@ export default function ManagementLocationsPage() {
       {isLoading && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }, (_, i) => (
-            <Skeleton key={i} className="h-48 rounded-lg" />
+            <LocationCardSkeleton key={i} />
           ))}
         </div>
       )}

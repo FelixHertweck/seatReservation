@@ -15,6 +15,7 @@ import { SeatMapEditor } from "@/components/management/location-editor/seat-map-
 import { EditorSidePanel } from "@/components/management/location-editor/editor-side-panel";
 import { JsonView } from "@/components/management/location-editor/json-view";
 import { PreviewView } from "@/components/management/location-editor/preview-view";
+import { LocationEditorSkeleton } from "@/components/management/location-editor/location-editor-skeleton";
 import {
   emptyLocationEditorState,
   hasUnsavedChanges,
@@ -26,7 +27,7 @@ import type {
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/custom-ui/button";
 import Link from "next/link";
-import { ArrowLeft, AlertCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, AlertCircle } from "lucide-react";
 
 export function LocationEditor({ locationId }: { locationId: string }) {
   const t = useT();
@@ -138,13 +139,8 @@ export function LocationEditor({ locationId }: { locationId: string }) {
     return (
       <>
         <PageHeader title={t("management.locationEditor.title")} />
-        <div
-          ref={fillRef}
-          className="flex items-center justify-center text-muted-foreground"
-          style={{ height }}
-        >
-          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-          {t("common.loading")}
+        <div ref={fillRef} style={{ height }}>
+          <LocationEditorSkeleton />
         </div>
       </>
     );

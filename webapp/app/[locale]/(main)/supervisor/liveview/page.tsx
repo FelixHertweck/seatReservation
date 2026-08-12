@@ -23,7 +23,7 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { PageHeader } from "@/components/page-header";
-import { Skeleton } from "@/components/custom-ui/skeleton";
+import { SeatMapSkeleton } from "@/components/common/seat-map-skeleton";
 import SeatmapLegend from "@/components/common/seatmap-legend";
 import { useFillHeight } from "@/hooks/use-fill-height";
 import { LiveviewConnectionBadge } from "@/components/liveview/liveview-status";
@@ -39,12 +39,9 @@ function LiveViewPageContent() {
 
   const handleReservationClick = (seatId: string) => {
     setHighlightedSeatId((prev) => (prev === seatId ? null : seatId));
-    // Close the drawer so the highlighted seat on the map is actually visible.
     if (isMobile) setIsDrawerOpen(false);
   };
 
-  // The previously highlighted seat ID belongs to the event/location being
-  // left behind, so it can't carry over to the newly selected one.
   const handleEventSelect = (eventId: string) => {
     selectEvent(eventId);
     setHighlightedSeatId(null);
@@ -55,13 +52,8 @@ function LiveViewPageContent() {
 
   const { events, isLoadingEvents } = useCheckin();
 
-  // Read via an effect rather than at render time (Date.now() is impure) -- refreshed
-  // periodically so an event crossing its booking deadline while this page stays open
-  // becomes available without a manual reload.
   const [now, setNow] = useState<number | null>(null);
   useEffect(() => {
-    // Ticking clock synced from an external source (the system clock), so the
-    // initial read + periodic refresh both belong here rather than in render.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setNow(Date.now());
     const interval = setInterval(() => setNow(Date.now()), 60_000);
@@ -74,22 +66,16 @@ function LiveViewPageContent() {
       (e) => !!e.bookingDeadline && new Date(e.bookingDeadline).getTime() < now,
     );
   }, [events, now]);
-  const selectedEvent = useMemo(
-    () => (events ?? []).find((e) => e.id === selectedEventId),
-    [events, selectedEventId],
-  );
-  // Derived from the plain REST event list rather than the live-view websocket's own
-  // `event` field: that connection is itself gated behind the booking deadline on the
-  // backend now, so relying on it here would be circular -- it would never populate
-  // (and the reconnect budget would run out) before we already know the deadline passed.
+
+  const selectedEvent = useMemo(() => {
+    return (events ?? []).find((e) => e.id === selectedEventId);
+  }, [events, selectedEventId]);
+
   const isDeadlinePassed = useMemo(() => {
     if (now === null || !selectedEvent?.bookingDeadline) return false;
     return new Date(selectedEvent.bookingDeadline).getTime() < now;
   }, [selectedEvent, now]);
 
-  // Only open the live-view websocket once the deadline has passed -- the backend
-  // rejects the connection until then, so connecting earlier would just burn through
-  // useWebSocket's limited reconnect attempts for nothing.
   const {
     isConnected,
     isConnecting,
@@ -169,7 +155,7 @@ function LiveViewPageContent() {
               showLiveStatus
             />
             {!location ? (
-              <Skeleton className="flex-1 rounded-lg" />
+              <SeatMapSkeleton showLegend={false} />
             ) : (
               <div className="min-h-0 flex-1">
                 <SeatMap

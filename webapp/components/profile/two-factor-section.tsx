@@ -82,8 +82,6 @@ export function TwoFactorSection() {
 
   const isEmailVerified = !!user?.emailVerified;
 
-  // Setup Modal -- TOTP only. EMAIL needs no setup step: once the account email is verified,
-  // enabling it is a single direct call (see handleEnableEmail).
   const [isSetupOpen, setIsSetupOpen] = useState(false);
   const [totpSetupData, setTotpSetupData] = useState<TwoFactorSetupDto | null>(
     null,
@@ -93,16 +91,11 @@ export function TwoFactorSection() {
   const [isSecretVisible, setIsSecretVisible] = useState(false);
   const [totpSetupStep, setTotpSetupStep] = useState<TotpSetupStep>(1);
 
-  // Backup codes modal after regeneration
   const [newBackupCodes, setNewBackupCodes] = useState<string[] | null>(null);
 
-  // Regenerate confirmation -- requires proving current possession of 2FA, same as disabling a
-  // factor, since minting a fresh set of backup codes is just as much a takeover as that is.
   const [isRegenerateConfirmOpen, setIsRegenerateConfirmOpen] = useState(false);
   const [regenerateCode, setRegenerateCode] = useState("");
 
-  // Disable confirmation -- scoped to a single factor at a time (TOTP and EMAIL are
-  // independent, so each has its own Disable action).
   const [isDisableConfirmOpen, setIsDisableConfirmOpen] = useState(false);
   const [disableMethod, setDisableMethod] = useState<TwoFactorMethod>("TOTP");
   const [disableCode, setDisableCode] = useState("");
@@ -145,8 +138,6 @@ export function TwoFactorSection() {
     }
   };
 
-  // Email possession was already proven via account email verification, so this is a single
-  // direct call -- no separate 2FA setup code needed.
   const handleEnableEmail = async () => {
     try {
       const result = await enableTwoFactor("EMAIL");
@@ -176,8 +167,6 @@ export function TwoFactorSection() {
   };
 
   const handleDisableConfirm = async (e: React.MouseEvent) => {
-    // AlertDialogAction closes the dialog on click by default; keep it open until we know the
-    // code was actually accepted, so the user can see the error and retry.
     e.preventDefault();
     if (!disableCode.trim()) return;
 
@@ -196,8 +185,6 @@ export function TwoFactorSection() {
   };
 
   const handleRegenerateConfirm = async (e: React.MouseEvent) => {
-    // AlertDialogAction closes the dialog on click by default; keep it open until we know the
-    // code was actually accepted, so the user can see the error and retry.
     e.preventDefault();
     if (!regenerateCode.trim()) return;
 

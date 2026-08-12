@@ -21,7 +21,6 @@ export interface ErrorWithResponse extends Error {
   };
 }
 
-// Promise cache for token refresh to prevent multiple simultaneous refresh calls
 let refreshPromise: Promise<Response> | null = null;
 
 const refreshToken = async (): Promise<Response> => {
@@ -33,7 +32,6 @@ const refreshToken = async (): Promise<Response> => {
     method: "POST",
     credentials: "include",
   }).finally(() => {
-    // Clear the promise after it resolves/rejects so next refresh can be triggered
     refreshPromise = null;
   });
 
@@ -56,8 +54,6 @@ export default function InitQueryClient({
     baseUrl: `/`,
     throwOnError: true,
     fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
-      // Clone the request before the first attempt if it's a Request object
-      // This is necessary because Request bodies can only be read once
       let clonedRequest: Request | undefined;
       if (input instanceof Request) {
         clonedRequest = input.clone();
@@ -71,10 +67,8 @@ export default function InitQueryClient({
         refreshTokenExpiration !== null &&
         refreshTokenExpiration.getTime() > new Date().getTime()
       ) {
-        // Refresh token (uses cached promise if multiple requests fail simultaneously)
         const refreshResponse = await refreshToken();
         if (refreshResponse.ok) {
-          // Retry original request using the cloned request or original parameters
           if (clonedRequest) {
             response = await fetch(clonedRequest);
           } else {
@@ -110,7 +104,6 @@ export default function InitQueryClient({
     queryCache: new QueryCache({
       onError: (error) => {
         const status = (error as ErrorWithResponse)?.response?.status;
-        // 401s are handled by the login-required popup above, not a toast.
         if (status === 401) return;
         const description = (error as ErrorWithResponse)?.response?.description;
         const message =
@@ -118,9 +111,6 @@ export default function InitQueryClient({
           (status === 403
             ? t("common.error.forbidden")
             : t("common.error.default"));
-        // Same id for identical status+message so simultaneous queries that
-        // fail the same way (e.g. several parallel requests all getting a
-        // 403) collapse into a single toast instead of stacking.
         toast.error(message, { id: `query-error-${status}-${message}` });
       },
     }),

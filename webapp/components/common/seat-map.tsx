@@ -25,6 +25,7 @@ import {
   boundaryToPixelPolygon,
 } from "@/components/common/seat-map-geometry";
 import { useMapViewport } from "@/components/common/use-map-viewport";
+import { Skeleton } from "@/components/custom-ui/skeleton";
 
 interface SeatMapProps {
   seats: SeatDto[];
@@ -36,6 +37,7 @@ interface SeatMapProps {
   highlightedSeatId?: string | null;
   onSeatSelect: (seat: SeatDto) => void;
   readonly?: boolean;
+  isLoading?: boolean;
 }
 
 const SeatComponent = React.memo(
@@ -311,6 +313,7 @@ export function SeatMap({
   highlightedSeatId = null,
   onSeatSelect,
   readonly = false,
+  isLoading = false,
 }: SeatMapProps): ReactElement {
   const t = useT();
 
@@ -323,6 +326,17 @@ export function SeatMap({
     renderedMarkers,
     areaZones,
   } = useMemo(() => {
+    if (isLoading) {
+      return {
+        maxX: 14,
+        maxY: 12,
+        seatPositionMap: new Map<string, SeatDto>(),
+        selectedSeatIds: new Set<string>(),
+        userReservedSeatIds: new Set<string>(),
+        renderedMarkers: [],
+        areaZones: [],
+      };
+    }
     const seatMaxX = Math.max(
       ...seats.map((s) => s.coordinate?.xCoordinate || 0),
     );
@@ -459,7 +473,7 @@ export function SeatMap({
       renderedMarkers,
       areaZones,
     };
-  }, [seats, selectedSeats, userReservedSeats, markers, areas]);
+  }, [seats, selectedSeats, userReservedSeats, markers, areas, isLoading]);
 
   const {
     zoom,
@@ -572,6 +586,21 @@ export function SeatMap({
   );
 
   const gridItems = useMemo(() => {
+    if (isLoading) {
+      return Array.from({ length: maxX * maxY }).map((_, index) => (
+        <div
+          key={`skel-${index}`}
+          className="w-8 h-8 flex items-center justify-center"
+        >
+          <Skeleton
+            className="w-full h-full rounded-full opacity-40"
+            style={{
+              animationDelay: `${(index % maxX) * 35 + Math.floor(index / maxX) * 45}ms`,
+            }}
+          />
+        </div>
+      ));
+    }
     return gridStructure.map(
       ({ key, seat, seatColor, clickable, highlighted }) => (
         <SeatComponent
@@ -585,7 +614,14 @@ export function SeatMap({
         />
       ),
     );
-  }, [gridStructure, displayFlags.showSeatNumber, onSeatSelect]);
+  }, [
+    isLoading,
+    maxX,
+    maxY,
+    gridStructure,
+    displayFlags.showSeatNumber,
+    onSeatSelect,
+  ]);
 
   return (
     <div className="relative w-full h-full rounded-lg overflow-hidden">
@@ -631,7 +667,12 @@ export function SeatMap({
           }}
         >
           <div
-            className="border-2 border rounded-lg mb-0 bg-seatmap"
+            className={cn(
+              "border-2 border rounded-lg mb-0 bg-seatmap transition-opacity duration-300",
+              isLoading
+                ? "opacity-0 pointer-events-none border-transparent bg-transparent"
+                : "opacity-100",
+            )}
             style={{
               width: `${mapPxSize(maxX)}px`,
               height: "120px",
