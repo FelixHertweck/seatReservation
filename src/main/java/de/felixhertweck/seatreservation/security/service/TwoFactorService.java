@@ -20,9 +20,7 @@
 package de.felixhertweck.seatreservation.security.service;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
-import java.security.MessageDigest;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -33,6 +31,8 @@ import java.util.UUID;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
@@ -74,6 +74,20 @@ public class TwoFactorService {
     @Inject TwoFactorAttemptRepository twoFactorAttemptRepository;
     @Inject EmailService emailService;
     @Inject EmailCooldownService emailCooldownService;
+    @Inject @Any Instance<SecondFactor> secondFactors;
+
+    public Iterable<SecondFactor> getSecondFactors() {
+        return secondFactors;
+    }
+
+    public Optional<SecondFactor> getSecondFactor(TwoFactorMethod method) {
+        for (SecondFactor sf : getSecondFactors()) {
+            if (sf.method() == method) {
+                return Optional.of(sf);
+            }
+        }
+        return Optional.empty();
+    }
 
     @ConfigProperty(name = "two-factor.max-failed-attempts", defaultValue = "5")
     int maxFailedAttempts;
@@ -212,21 +226,6 @@ public class TwoFactorService {
         return Optional.empty();
     }
 
-    private boolean verifySetupEmailCode(User user, String code) {
-        List<TwoFactorChallenge> challenges =
-                challengeRepository.list("user = ?1 and used = false", user);
-        for (TwoFactorChallenge ch : challenges) {
-            if (ch.getEmailCode() != null
-                    && constantTimeEquals(ch.getEmailCode(), code.trim())
-                    && ch.getExpiresAt().isAfter(Instant.now())) {
-                ch.setUsed(true);
-                challengeRepository.persist(ch);
-                return true;
-            }
-        }
-        return false;
-    }
-
     @Transactional
     public void updateSettings(User user, Boolean passkeyEnabled) {
         if (passkeyEnabled != null) {
@@ -249,22 +248,12 @@ public class TwoFactorService {
      */
     @Transactional
     public boolean disableTwoFactor(User user, TwoFactorMethod method, String code) {
-        boolean targetCurrentlyEnabled =
-                (method == TwoFactorMethod.TOTP && user.isTotpEnabled())
-                        || (method == TwoFactorMethod.EMAIL && user.isEmailEnabled());
-
-        if (targetCurrentlyEnabled) {
+        Optional<SecondFactor> targetFactor = getSecondFactor(method);
+        if (targetFactor.isPresent() && targetFactor.get().isEnabledFor(user)) {
             if (!verifyCurrentTwoFactorCode(user, code)) {
                 return false;
             }
-
-            if (method == TwoFactorMethod.TOTP) {
-                user.setTotpEnabled(false);
-                user.setTotpSecret(null);
-                user.setLastTotpStep(null);
-            } else if (method == TwoFactorMethod.EMAIL) {
-                user.setEmailEnabled(false);
-            }
+            targetFactor.get().disable(user);
         }
 
         boolean stillEnabled = user.isTotpEnabled() || user.isEmailEnabled();
@@ -298,11 +287,11 @@ public class TwoFactorService {
 
         boolean verified = false;
         if (code != null && !code.isBlank()) {
-            if (user.isTotpEnabled() && user.getTotpSecret() != null) {
-                verified = verifyTotpCode(user, code);
-            }
-            if (!verified && user.isEmailEnabled()) {
-                verified = verifySetupEmailCode(user, code);
+            for (SecondFactor factor : getSecondFactors()) {
+                if (factor.isEnabledFor(user) && factor.verify(user, code)) {
+                    verified = true;
+                    break;
+                }
             }
             if (!verified) {
                 verified = verifyAndConsumeBackupCode(user, code);
@@ -470,10 +459,11 @@ public class TwoFactorService {
             }
         }
 
-        if (!verified && user.isEmailEnabled() && challenge.getEmailCode() != null) {
-            if (constantTimeEquals(challenge.getEmailCode(), code.trim())) {
-                verified = true;
-            }
+        if (!verified
+                && user.isEmailEnabled()
+                && challenge.getEmailCode() != null
+                && SecurityUtils.constantTimeEquals(challenge.getEmailCode(), code.trim())) {
+            verified = true;
         }
 
         if (!verified) {
@@ -550,7 +540,7 @@ public class TwoFactorService {
                 String candidate =
                         totp.generateOneTimePasswordString(
                                 key, Instant.ofEpochSecond(step * stepSeconds));
-                if (constantTimeEquals(trimmedCode, candidate)) {
+                if (SecurityUtils.constantTimeEquals(trimmedCode, candidate)) {
                     user.setLastTotpStep(step);
                     return true;
                 }
@@ -603,14 +593,6 @@ public class TwoFactorService {
 
     private String normalizeCode(String code) {
         return code.replaceAll("[^a-zA-Z0-9]", "").toUpperCase();
-    }
-
-    private static boolean constantTimeEquals(String a, String b) {
-        if (a == null || b == null) {
-            return false;
-        }
-        return MessageDigest.isEqual(
-                a.getBytes(StandardCharsets.UTF_8), b.getBytes(StandardCharsets.UTF_8));
     }
 
     public static String encodeBase32(byte[] bytes) {

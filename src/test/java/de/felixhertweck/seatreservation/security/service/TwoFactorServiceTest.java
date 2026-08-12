@@ -23,6 +23,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import jakarta.enterprise.inject.Instance;
 import jakarta.persistence.EntityManager;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -91,6 +92,16 @@ public class TwoFactorServiceTest {
         twoFactorService.maxFailedAttempts = 5;
         twoFactorService.lockoutDurationSeconds = 300;
         when(emailCooldownService.checkAndRecord(any(), any())).thenReturn(Optional.empty());
+
+        TotpSecondFactor totp = new TotpSecondFactor();
+        totp.twoFactorService = twoFactorService;
+        EmailSecondFactor email = new EmailSecondFactor();
+        email.challengeRepository = challengeRepository;
+        List<SecondFactor> factors = List.of(totp, email);
+        @SuppressWarnings("unchecked")
+        Instance<SecondFactor> secondFactorsInstance = Mockito.mock(Instance.class);
+        when(secondFactorsInstance.iterator()).thenAnswer(inv -> factors.iterator());
+        twoFactorService.secondFactors = secondFactorsInstance;
     }
 
     /** Generates a currently-valid TOTP code for the given raw secret bytes. */
