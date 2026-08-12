@@ -62,6 +62,8 @@ public class EventService {
 
     @Inject NotificationService notificationService;
 
+    @Inject EventAccessService eventAccessService;
+
     /**
      * Creates a new Event and assigns the currently authenticated manager as its creator. Access
      * control: The currently authenticated user is automatically set as the manager of the Event.
@@ -165,12 +167,7 @@ public class EventService {
 
         // Access control: Checks if the current user is a manager of the event
         // or if the user has the ADMIN role.
-        if (!isAuthorizedManager(manager, event)) {
-            LOG.warnf(
-                    "user ID: %s (ID: %s) is not authorized to update event with ID %s.",
-                    manager.id, manager.getId(), id);
-            throw new SecurityException("User is not a manager of this event");
-        }
+        eventAccessService.requireAccess(event, AuthenticatedUser.of(manager));
 
         EventLocation location =
                 eventLocationRepository
@@ -262,12 +259,7 @@ public class EventService {
             throw new SecurityException("User is not authorized to add a manager to this event");
         }
         Event event = getEventById(eventId);
-        if (!isAuthorizedManager(currentUser, event)) {
-            LOG.warnf(
-                    "User ID %s is not authorized to add manager to event ID %s",
-                    currentUser.id, eventId);
-            throw new SecurityException("User is not authorized to add a manager to this event");
-        }
+        eventAccessService.requireAccess(event, AuthenticatedUser.of(currentUser));
         User newManager =
                 ManagerResolutionUtils.resolveManagers(
                                 userRepository, Set.of(newManagerId), "event")
@@ -288,13 +280,7 @@ public class EventService {
                     "User is not authorized to remove a manager from this event");
         }
         Event event = getEventById(eventId);
-        if (!isAuthorizedManager(currentUser, event)) {
-            LOG.warnf(
-                    "User ID %s is not authorized to remove manager from event ID %s",
-                    currentUser.id, eventId);
-            throw new SecurityException(
-                    "User is not authorized to remove a manager from this event");
-        }
+        eventAccessService.requireAccess(event, AuthenticatedUser.of(currentUser));
         if (managerToRemoveId.equals(currentUser.getId())) {
             LOG.warnf(
                     "User ID %s attempted to remove themselves from event ID %s",
@@ -324,25 +310,6 @@ public class EventService {
         eventRepository.persist(event);
         LOG.infof("Removed manager %s from event %s", managerToRemoveId, eventId);
         return new EventResponseDTO(event);
-    }
-
-    /** Checks if a user is a manager for an event. */
-    public boolean isEventManager(User user, Event event) {
-        if (user == null || event == null) {
-            return false;
-        }
-        return eventRepository.isUserManager(event.getId(), user.getId());
-    }
-
-    /**
-     * True if {@code user} is a manager of {@code event} or holds the ADMIN role. Null-safe, unlike
-     * inlining {@code !isEventManager(user, event) && !user.getRoles().contains(ADMIN)} at call
-     * sites, which dereferences {@code user} unconditionally once {@code isEventManager} returns
-     * {@code false} for a {@code null} user.
-     */
-    private boolean isAuthorizedManager(User user, Event event) {
-        return isEventManager(user, event)
-                || (user != null && user.getRoles().contains(Roles.ADMIN));
     }
 
     /**
@@ -482,12 +449,7 @@ public class EventService {
                 throw new EventNotFoundException("Event with id " + id + " not found");
             }
 
-            if (!isAuthorizedManager(currentUser, event)) {
-                LOG.warnf(
-                        "user ID: %s (ID: %s) is not authorized to delete event with ID %s.",
-                        currentUser.id, currentUser.getId(), id);
-                throw new SecurityException("User is not authorized to delete this event");
-            }
+            eventAccessService.requireAccess(event, AuthenticatedUser.of(currentUser));
 
             eventsToDelete.add(event);
         }
@@ -539,12 +501,7 @@ public class EventService {
                 "Attempting to retrieve event with ID: %s for manager: %s (ID: %s)",
                 id, manager.id, manager.getId());
         Event event = getEventById(id);
-        if (!isAuthorizedManager(manager, event)) {
-            LOG.warnf(
-                    "user ID: %s (ID: %s) is not authorized to view event with ID %s.",
-                    manager.id, manager.getId(), id);
-            throw new SecurityException("User is not authorized to view this event");
-        }
+        eventAccessService.requireAccess(event, AuthenticatedUser.of(manager));
         LOG.debugf(
                 "Successfully retrieved event with ID %s for manager: %s (ID: %s)",
                 id, manager.id, manager.getId());

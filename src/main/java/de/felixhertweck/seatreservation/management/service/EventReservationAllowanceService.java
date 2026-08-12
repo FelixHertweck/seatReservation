@@ -36,7 +36,6 @@ import de.felixhertweck.seatreservation.management.dto.EventUserAllowancesCreate
 import de.felixhertweck.seatreservation.management.dto.EventUserAllowancesDto;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
-import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
@@ -53,6 +52,8 @@ public class EventReservationAllowanceService {
     @Inject UserRepository userRepository;
 
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
+
+    @Inject EventAccessService eventAccessService;
 
     /**
      * Sets the reservation allowance for a user for a specific event. Access control: The manger
@@ -76,13 +77,7 @@ public class EventReservationAllowanceService {
                 manager.id());
         Event event = getEventById(dto.getEventId());
 
-        if (!eventRepository.isUserManager(dto.getEventId(), manager.id()) && !manager.isAdmin()) {
-            LOG.warnf(
-                    "manager ID: %s is not authorized to set reservation allowance for event ID"
-                            + " %s.",
-                    manager.id(), dto.getEventId());
-            throw new SecurityException("User is not the manager of this event");
-        }
+        eventAccessService.requireAccess(event, manager);
 
         Set<EventUserAllowancesDto> resultAllowances = new HashSet<>();
 
@@ -158,14 +153,7 @@ public class EventReservationAllowanceService {
                                     return new EventNotFoundException("Allowance not found");
                                 });
 
-        if (!eventRepository.isUserManager(allowance.getEvent().getId(), manager.getId())
-                && !manager.getRoles().contains(Roles.ADMIN)) {
-            LOG.warnf(
-                    "user ID: %s (ID: %s) is not authorized to update reservation allowance with ID"
-                            + " %s.",
-                    manager.id, manager.getId(), dto.id());
-            throw new SecurityException("User is not authorized to update this allowance");
-        }
+        eventAccessService.requireAccess(allowance.getEvent(), AuthenticatedUser.of(manager));
 
         allowance.setReservationsAllowedCount(dto.reservationsAllowedCount());
         eventUserAllowanceRepository.persist(allowance);
@@ -205,14 +193,7 @@ public class EventReservationAllowanceService {
                                     return new EventNotFoundException("Allowance not found");
                                 });
 
-        if (!eventRepository.isUserManager(allowance.getEvent().getId(), manager.getId())
-                && !manager.getRoles().contains(Roles.ADMIN)) {
-            LOG.warnf(
-                    "user ID: %s (ID: %s) is not authorized to view reservation allowance with ID"
-                            + " %s.",
-                    manager.id, manager.getId(), id);
-            throw new SecurityException("User is not authorized to view this allowance");
-        }
+        eventAccessService.requireAccess(allowance.getEvent(), AuthenticatedUser.of(manager));
         LOG.debugf(
                 "Successfully retrieved reservation allowance with ID %s for manager: %s (ID: %s)",
                 id, manager.id, manager.getId());
@@ -269,14 +250,8 @@ public class EventReservationAllowanceService {
                 "Attempting to retrieve reservation allowances for event ID: %s by user ID: %s (ID:"
                         + " %s)",
                 eventId, currentUser.id, currentUser.getId());
-        getEventById(eventId);
-        if (!eventRepository.isUserManager(eventId, currentUser.getId())
-                && !currentUser.getRoles().contains(Roles.ADMIN)) {
-            LOG.warnf(
-                    "user ID: %s (ID: %s) is not authorized to view allowances for event ID %s.",
-                    currentUser.id, currentUser.getId(), eventId);
-            throw new SecurityException("User is not authorized to view allowances for this event");
-        }
+        Event event = getEventById(eventId);
+        eventAccessService.requireAccess(event, AuthenticatedUser.of(currentUser));
         List<EventUserAllowancesDto> result =
                 eventUserAllowanceRepository.findByEventId(eventId).stream()
                         .map(EventUserAllowancesDto::new)
@@ -327,14 +302,8 @@ public class EventReservationAllowanceService {
                 throw new EventNotFoundException("Allowance not found");
             }
 
-            if (!eventRepository.isUserManager(allowance.getEvent().getId(), currentUser.getId())
-                    && !currentUser.getRoles().contains(Roles.ADMIN)) {
-                LOG.warnf(
-                        "user ID: %s (ID: %s) is not authorized to delete reservation allowance"
-                                + " with ID %s.",
-                        currentUser.id, currentUser.getId(), id);
-                throw new SecurityException("User is not authorized to delete this allowance");
-            }
+            eventAccessService.requireAccess(
+                    allowance.getEvent(), AuthenticatedUser.of(currentUser));
 
             eventUserAllowanceRepository.delete(allowance);
 

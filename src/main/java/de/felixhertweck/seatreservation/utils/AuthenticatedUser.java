@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import de.felixhertweck.seatreservation.model.entity.Roles;
+import de.felixhertweck.seatreservation.model.entity.User;
 
 /**
  * Identity and roles of the authenticated caller, derived directly from the validated JWT (id and
@@ -31,6 +32,11 @@ import de.felixhertweck.seatreservation.model.entity.Roles;
  * UserSecurityContext#getCurrentUser()}) when other fields are required.
  */
 public record AuthenticatedUser(UUID id, Set<String> roles) {
+
+    /** Derives an {@link AuthenticatedUser} view from an already-fetched {@link User} entity. */
+    public static AuthenticatedUser of(User user) {
+        return new AuthenticatedUser(user.getId(), user.getRoles());
+    }
 
     public boolean isAdmin() {
         return roles != null && roles.contains(Roles.ADMIN);

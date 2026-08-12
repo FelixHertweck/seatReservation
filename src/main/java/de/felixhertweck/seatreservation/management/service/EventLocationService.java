@@ -59,21 +59,7 @@ public class EventLocationService {
     @Inject EventLocationRepository eventLocationRepository;
     @Inject SeatRepository seatRepository;
     @Inject UserRepository userRepository;
-
-    /**
-     * Validates that the user has permission to manage the given event location. Permission is
-     * granted if the user is the manager of the location or has ADMIN role.
-     *
-     * @param location The event location to check permissions for
-     * @param manager The user attempting the operation
-     * @throws SecurityException If the user is not authorized
-     */
-    private void validateManagerPermission(EventLocation location, AuthenticatedUser manager) {
-        if (!eventLocationRepository.isUserManager(location.getId(), manager.id())
-                && !manager.isAdmin()) {
-            throw new SecurityException("User is not the manager of this location");
-        }
-    }
+    @Inject EventLocationAccessService eventLocationAccessService;
 
     /**
      * Retrieves a list of EventLocations belonging to the currently authenticated manager. If the
@@ -216,14 +202,7 @@ public class EventLocationService {
                                             "EventLocation with id " + id + " not found");
                                 });
 
-        try {
-            validateManagerPermission(location, manager);
-        } catch (SecurityException e) {
-            LOG.warnf(
-                    "manager ID: %s is not authorized to update event location with ID %s.",
-                    manager.id(), id);
-            throw e;
-        }
+        eventLocationAccessService.requireAccess(location, manager);
 
         LOG.debugf(
                 "Updating event location ID %s: name='%s' -> '%s', address='%s' -> '%s'",
@@ -416,14 +395,7 @@ public class EventLocationService {
                         "EventLocation with id " + id + " not found");
             }
 
-            try {
-                validateManagerPermission(location, manager);
-            } catch (SecurityException e) {
-                LOG.warnf(
-                        "manager ID: %s is not authorized to delete event location with ID %s.",
-                        manager.id(), id);
-                throw e;
-            }
+            eventLocationAccessService.requireAccess(location, manager);
 
             locationsToDelete.add(location);
         }

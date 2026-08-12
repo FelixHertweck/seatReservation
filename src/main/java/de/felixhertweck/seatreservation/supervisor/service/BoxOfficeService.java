@@ -82,6 +82,8 @@ public class BoxOfficeService {
 
     @Inject BoxOfficeGuestInfoRepository boxOfficeGuestInfoRepository;
 
+    @Inject EventAuthorizationService eventAuthorizationService;
+
     /**
      * Returns all users a box office reservation can be created for, excluding the shared {@code
      * boxoffice} system account itself.
@@ -100,7 +102,7 @@ public class BoxOfficeService {
     public BoxOfficeReservationResponseDTO reserveForKnownUser(
             BoxOfficeReservationRequestDTO dto, AuthenticatedUser currentUser) {
         Event event = loadEvent(dto.getEventId());
-        assertAuthorizedForEvent(currentUser, dto.getEventId());
+        eventAuthorizationService.assertAuthorizedForEvent(currentUser, dto.getEventId());
         assertBookingDeadlinePassed(event);
 
         User targetUser =
@@ -155,7 +157,7 @@ public class BoxOfficeService {
     public BoxOfficeReservationResponseDTO reserveForGuest(
             BoxOfficeGuestReservationRequestDTO dto, AuthenticatedUser currentUser) {
         Event event = loadEvent(dto.getEventId());
-        assertAuthorizedForEvent(currentUser, dto.getEventId());
+        eventAuthorizationService.assertAuthorizedForEvent(currentUser, dto.getEventId());
         assertBookingDeadlinePassed(event);
 
         User boxofficeUser = userRepository.findByUsername(BOXOFFICE_USERNAME);
@@ -322,20 +324,5 @@ public class BoxOfficeService {
                     "Box office reservations are only available after the event's booking"
                             + " deadline has passed.");
         }
-    }
-
-    /** Mirrors CheckInService/LiveViewService's private isAuthorizedForEvent check. */
-    private void assertAuthorizedForEvent(AuthenticatedUser user, UUID eventId) {
-        if (user != null && isAuthorizedForEvent(user, eventId)) {
-            return;
-        }
-        throw new SecurityException("User is not authorized to access event " + eventId);
-    }
-
-    private boolean isAuthorizedForEvent(AuthenticatedUser user, UUID eventId) {
-        if (user == null || eventId == null) return false;
-        if (eventRepository.isUserSupervisor(eventId, user.id())) return true;
-        if (eventRepository.isUserManager(eventId, user.id())) return true;
-        return user.isAdmin();
     }
 }

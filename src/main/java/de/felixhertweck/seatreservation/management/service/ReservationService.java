@@ -47,7 +47,6 @@ import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
 import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.ReservationStatus;
-import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
@@ -57,6 +56,7 @@ import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.reservation.service.CheckInTokenService;
 import de.felixhertweck.seatreservation.supervisor.service.BoxOfficeService;
+import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import de.felixhertweck.seatreservation.utils.ReservationExporter;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
@@ -78,6 +78,8 @@ public class ReservationService {
     @Inject EmailService emailService;
 
     @Inject CheckInTokenService checkInTokenService;
+
+    @Inject EventAccessService eventAccessService;
 
     /**
      * Retrieves a reservation by its ID. Access is restricted based on user roles: - ADMIN: Returns
@@ -107,17 +109,11 @@ public class ReservationService {
                                             "Reservation with id " + id + " not found");
                                 });
 
-        // Admins können jede Reservierung sehen
-        if (currentUser.getRoles().contains(Roles.ADMIN)) {
+        // Admins and managers of the reservation's event can see it.
+        if (eventAccessService.isManager(
+                reservation.getEvent(), AuthenticatedUser.of(currentUser))) {
             LOG.debugf(
-                    "Successfully retrieved reservation with ID %s for ADMIN user ID: %s (ID: %s)",
-                    id, currentUser.id, currentUser.getId());
-            return new ReservationResponseDTO(reservation);
-        }
-
-        if (isManagerAllowedToAccessEvent(currentUser, reservation.getEvent())) {
-            LOG.debugf(
-                    "Successfully retrieved reservation with ID %s for manager: %s (ID: %s)",
+                    "Successfully retrieved reservation with ID %s for user ID: %s (ID: %s)",
                     id, currentUser.id, currentUser.getId());
             return new ReservationResponseDTO(reservation);
         }
@@ -156,8 +152,7 @@ public class ReservationService {
                                             "Event with id " + eventId + " not found");
                                 });
 
-        if (!currentUser.getRoles().contains(Roles.ADMIN)
-                && !isManagerAllowedToAccessEvent(currentUser, event)) {
+        if (!eventAccessService.isManager(event, AuthenticatedUser.of(currentUser))) {
             LOG.warnf(
                     "user ID: %s (ID: %s) is not allowed to access event ID %s for retrieving"
                             + " reservations.",
@@ -223,8 +218,7 @@ public class ReservationService {
                                             "Event with id " + dto.getEventId() + " not found");
                                 });
 
-        if (!isManagerAllowedToAccessEvent(managerUser, event)
-                && !managerUser.getRoles().contains(Roles.ADMIN)) {
+        if (!eventAccessService.isManager(event, AuthenticatedUser.of(managerUser))) {
             LOG.warnf(
                     "user ID: %s (ID: %s) is not allowed to access this reservation for creation.",
                     targetUser.id, targetUser.getId());
@@ -363,8 +357,8 @@ public class ReservationService {
                 throw new ReservationNotFoundException("Reservation with id " + id + " not found");
             }
 
-            if (!managerUser.getRoles().contains(Roles.ADMIN)
-                    && !isManagerAllowedToAccessEvent(managerUser, reservation.getEvent())) {
+            if (!eventAccessService.isManager(
+                    reservation.getEvent(), AuthenticatedUser.of(managerUser))) {
                 LOG.warnf(
                         "user ID: %s (ID: %s) is not allowed to delete reservation with ID %s.",
                         managerUser.id, managerUser.getId(), id);
@@ -465,31 +459,6 @@ public class ReservationService {
     }
 
     /**
-     * Checks if a manager is allowed to access a specific event. A manager is allowed if they have
-     * an EventUserAllowance for that event.
-     *
-     * @param manager The User entity representing the manager.
-     * @param event The Event entity to check access for.
-     * @return true if the manager is allowed to access the event, false otherwise.
-     */
-    public boolean isManagerAllowedToAccessEvent(User manager, Event event) {
-        LOG.debugf(
-                "Checking if manager %s (ID: %s) is allowed to access event ID %s.",
-                manager.id, manager.getId(), event.getId());
-        boolean isAllowed = eventRepository.isUserManager(event.getId(), manager.getId());
-        if (isAllowed) {
-            LOG.debugf(
-                    "Manager %s (ID: %s) is allowed to access event ID %s.",
-                    manager.id, manager.getId(), event.getId());
-        } else {
-            LOG.debugf(
-                    "Manager %s (ID: %s) is NOT allowed to access event ID %s.",
-                    manager.id, manager.getId(), event.getId());
-        }
-        return isAllowed;
-    }
-
-    /**
      * Blocks seats for an event. Access is restricted based on user roles: - ADMIN: Allows blocking
      * seats for any event. - MANAGER: Allows blocking seats only for events the manager is allowed
      * to manage. - Other roles: Throws SecurityException.
@@ -520,8 +489,7 @@ public class ReservationService {
                                             "Event with id " + eventId + " not found");
                                 });
 
-        if (!isManagerAllowedToAccessEvent(currentUser, event)
-                && !currentUser.getRoles().contains(Roles.ADMIN)) {
+        if (!eventAccessService.isManager(event, AuthenticatedUser.of(currentUser))) {
             LOG.warnf(
                     "user ID: %s (ID: %s) is not allowed to block seats for event ID %s.",
                     currentUser.id, currentUser.getId(), eventId);
@@ -666,8 +634,7 @@ public class ReservationService {
                                             "Event with id " + eventId + " not found");
                                 });
 
-        if (!eventRepository.isUserManager(event.getId(), currentUser.getId())
-                && !currentUser.getRoles().contains(Roles.ADMIN)) {
+        if (!eventAccessService.isManager(event, AuthenticatedUser.of(currentUser))) {
             LOG.warnf(
                     "user ID: %s (ID: %s) is not authorized to export reservations for event ID"
                             + " %s.",
@@ -730,8 +697,7 @@ public class ReservationService {
                                         new EventNotFoundException(
                                                 "Event with id " + eventId + " not found"));
 
-        if (!currentUser.getRoles().contains(Roles.ADMIN)
-                && !isManagerAllowedToAccessEvent(currentUser, event)) {
+        if (!eventAccessService.isManager(event, AuthenticatedUser.of(currentUser))) {
             throw new SecurityException("You are not allowed to access this event.");
         }
 
