@@ -37,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
@@ -48,6 +49,8 @@ import com.google.zxing.WriterException;
 import de.felixhertweck.seatreservation.email.queue.EmailDispatcher;
 import de.felixhertweck.seatreservation.email.service.EmailSeatMapService;
 import de.felixhertweck.seatreservation.email.service.EmailService;
+import de.felixhertweck.seatreservation.email.service.ReservationEmailContent;
+import de.felixhertweck.seatreservation.management.service.ReservationService;
 import de.felixhertweck.seatreservation.model.entity.CheckInToken;
 import de.felixhertweck.seatreservation.model.entity.EmailVerification;
 import de.felixhertweck.seatreservation.model.entity.Event;
@@ -58,6 +61,7 @@ import de.felixhertweck.seatreservation.model.entity.Reservation;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EmailVerificationRepository;
+import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.utils.QRCodeImage;
 import io.quarkus.mailer.Mail;
@@ -77,6 +81,8 @@ class EmailServiceTest {
     @InjectMock EmailVerificationRepository emailVerificationRepository;
     @InjectMock SeatRepository seatRepository;
     @InjectMock EmailSeatMapService emailSeatMapService;
+    @InjectMock ReservationRepository reservationRepository;
+    @InjectMock ReservationService reservationService;
 
     @Inject EmailService emailService;
 
@@ -338,7 +344,7 @@ class EmailServiceTest {
 
         when(seatRepository.findByIdsWithAreaAndEntrance(any())).thenReturn(List.of(seat));
 
-        EmailService.BoxOfficeConfirmationContent content =
+        ReservationEmailContent.BoxOfficeConfirmationContent content =
                 emailService.sendBoxOfficeConfirmation(
                         boxofficeUser, reservations, "Jane Doe", "guest@example.com", true);
         emailDispatcher.drainQueue();
@@ -373,7 +379,7 @@ class EmailServiceTest {
 
         when(seatRepository.findByIdsWithAreaAndEntrance(any())).thenReturn(List.of(seat));
 
-        EmailService.BoxOfficeConfirmationContent content =
+        ReservationEmailContent.BoxOfficeConfirmationContent content =
                 emailService.sendBoxOfficeConfirmation(
                         targetUser, reservations, "Test User", null, false);
         emailDispatcher.drainQueue();
@@ -405,7 +411,7 @@ class EmailServiceTest {
         // boxofficeUser has no email and no additionalMailAddress is given (guest didn't type
         // one) -- no valid recipient exists, so the confirmation must still render (for print)
         // without queuing an email.
-        EmailService.BoxOfficeConfirmationContent content =
+        ReservationEmailContent.BoxOfficeConfirmationContent content =
                 emailService.sendBoxOfficeConfirmation(
                         boxofficeUser, reservations, "Jane Doe", null, true);
         emailDispatcher.drainQueue();
@@ -514,5 +520,143 @@ class EmailServiceTest {
         assertTrue(sentMail.getHtml().contains("You have still reserved the following seats:"));
         assertTrue(sentMail.getHtml().contains("Your Check-in QR Code"));
         assertEquals(2, sentMail.getAttachments().size(), "Should attach seatmap and qrcode PNGs");
+    }
+
+    @Test
+    void sendReservationConfirmation_Success() {
+        User user = createTestUser();
+        EventLocation location = createTestEventLocation();
+        Event event = createTestEvent(location);
+        Seat seat = createTestSeat(location, "A1");
+        seat.setSeatRow("1");
+        Reservation reservation = createTestReservation(user, event, seat);
+        List<Reservation> reservations = List.of(reservation);
+
+        when(seatRepository.findByIdsWithAreaAndEntrance(any())).thenReturn(List.of(seat));
+        when(reservationRepository.findByUserAndEvent(user, event)).thenReturn(reservations);
+        when(emailSeatMapService.createEmailSeatMapToken(any(), any(), any()))
+                .thenReturn("test-confirmation-token");
+        when(emailSeatMapService.getPngImage(anyString()))
+                .thenReturn(Optional.of(new byte[] {1, 2, 3}));
+
+        String expectedQrContent = user.id + ";" + event.id + ";CODE123";
+        try (MockedStatic<QRCodeImage> qrCodeImageMock = Mockito.mockStatic(QRCodeImage.class)) {
+            qrCodeImageMock
+                    .when(() -> QRCodeImage.generateQrCodeImage(anyString(), anyInt(), anyInt()))
+                    .thenReturn(new byte[] {9, 9, 9});
+
+            boolean sent = emailService.sendReservationConfirmation(user, reservations);
+            assertTrue(sent, "Confirmation should be enqueued for a valid recipient");
+
+            qrCodeImageMock.verify(
+                    () ->
+                            QRCodeImage.generateQrCodeImage(
+                                    eq(expectedQrContent), anyInt(), anyInt()));
+        }
+        emailDispatcher.drainQueue();
+
+        List<Mail> sentMails = mailbox.getMailsSentTo(user.getEmail());
+        assertEquals(1, sentMails.size());
+
+        Mail sentMail = sentMails.getFirst();
+        assertEquals("Your Reservation Confirmation", sentMail.getSubject());
+        assertTrue(sentMail.getHtml().contains(event.getName()));
+        assertTrue(sentMail.getHtml().contains("<li>A1 (1) - Parkett</li>"));
+        assertFalse(
+                sentMail.getHtml().contains("You have already reserved the following seats:"),
+                "No 'already reserved' section should render when there are no other reservations");
+        assertTrue(
+                sentMail.getHtml()
+                        .contains(
+                                "http://localhost:8080/email/seatmap?token=test-confirmation-token"));
+        assertEquals(2, sentMail.getAttachments().size(), "Should attach seatmap and qrcode PNGs");
+    }
+
+    @Test
+    void sendReservationConfirmation_WithExistingReservation_ListsSeparately() {
+        User user = createTestUser();
+        EventLocation location = createTestEventLocation();
+        Event event = createTestEvent(location);
+        Seat newSeat = createTestSeat(location, "A1");
+        newSeat.setSeatRow("1");
+        Seat existingSeat = createTestSeat(location, "B2");
+        existingSeat.id = id(1001);
+        existingSeat.setSeatRow("2");
+
+        Reservation newReservation = createTestReservation(user, event, newSeat);
+        Reservation existingReservation = createTestReservation(user, event, existingSeat);
+        existingReservation.id = id(10001);
+
+        when(seatRepository.findByIdsWithAreaAndEntrance(any()))
+                .thenReturn(List.of(newSeat, existingSeat));
+        when(reservationRepository.findByUserAndEvent(user, event))
+                .thenReturn(List.of(newReservation, existingReservation));
+        when(emailSeatMapService.createEmailSeatMapToken(any(), any(), any()))
+                .thenReturn("test-confirmation-token");
+        when(emailSeatMapService.getPngImage(anyString())).thenReturn(Optional.of(new byte[0]));
+
+        emailService.sendReservationConfirmation(user, List.of(newReservation));
+        emailDispatcher.drainQueue();
+
+        Mail sentMail = mailbox.getMailsSentTo(user.getEmail()).getFirst();
+        assertTrue(sentMail.getHtml().contains("You have already reserved the following seats:"));
+        assertTrue(sentMail.getHtml().contains("<li>A1 (1) - Parkett</li>"));
+        assertTrue(sentMail.getHtml().contains("<li>B2 (2) - Parkett</li>"));
+    }
+
+    @Test
+    void getReservationConfirmationDisplayContent_EmbedsImagesAsDataUri() {
+        User user = createTestUser();
+        EventLocation location = createTestEventLocation();
+        Event event = createTestEvent(location);
+        Seat seat = createTestSeat(location, "A1");
+        List<Reservation> reservations = List.of(createTestReservation(user, event, seat));
+
+        when(seatRepository.findByIdsWithAreaAndEntrance(any())).thenReturn(List.of(seat));
+        when(reservationRepository.findByUserAndEvent(user, event)).thenReturn(reservations);
+        when(emailSeatMapService.createEmailSeatMapToken(any(), any(), any()))
+                .thenReturn("test-display-token");
+        when(emailSeatMapService.getPngImage(anyString()))
+                .thenReturn(Optional.of(new byte[] {1, 2, 3}));
+
+        String displayContent =
+                emailService.getReservationConfirmationDisplayContent(user, reservations);
+
+        assertFalse(displayContent.contains("cid:seatmap-image"));
+        assertFalse(displayContent.contains("cid:qrcode-image"));
+        assertTrue(displayContent.contains("data:image/png;base64,"));
+        assertEquals(
+                "Your Reservation Confirmation", emailService.getReservationConfirmationSubject());
+    }
+
+    @Test
+    void sendEventReservationsCsvToManager_Success() throws Exception {
+        User manager = createTestUser();
+        manager.setUsername("manager1");
+        EventLocation location = createTestEventLocation();
+        Event event = createTestEvent(location);
+
+        byte[] csvData = "seat,row\nA1,1\n".getBytes();
+        when(reservationService.exportReservationsToCsv(event.id, manager)).thenReturn(csvData);
+
+        emailService.sendEventReservationsCsvToManager(manager, event);
+        emailDispatcher.drainQueue();
+
+        List<Mail> sentMails = mailbox.getMailsSentTo(manager.getEmail());
+        assertEquals(1, sentMails.size());
+
+        Mail sentMail = sentMails.getFirst();
+        assertEquals(
+                "Reservation overview for your event:" + event.getName(), sentMail.getSubject());
+        assertTrue(
+                sentMail.getHtml().contains(manager.getFirstname() + " " + manager.getLastname()));
+        assertTrue(sentMail.getHtml().contains(event.getName()));
+        assertTrue(sentMail.getHtml().contains(event.getEventLocation().getName()));
+
+        assertEquals(1, sentMail.getAttachments().size());
+        var attachment = sentMail.getAttachments().getFirst();
+        assertEquals("reservations_" + event.id + ".csv", attachment.getName());
+        assertEquals("text/csv", attachment.getContentType());
+        assertFalse(attachment.isInlineAttachment());
     }
 }

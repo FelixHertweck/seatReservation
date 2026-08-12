@@ -281,24 +281,13 @@ public class UserService {
                 throw new SendEmailException(
                         "Email verification requested, but user has no email address.");
             }
-            try {
-                LOG.debugf("Attempting to send email confirmation to %s", user.getEmail());
+            LOG.debugf("Attempting to send email confirmation to %s", user.getEmail());
 
-                emailVerificationRepository.deleteByUserId(user.id);
+            emailVerificationRepository.deleteByUserId(user.id);
 
-                EmailVerification emailVerification = emailService.createEmailVerification(user);
-                emailService.sendEmailConfirmation(user, emailVerification);
-                user.setEmailVerificationSent(true);
-            } catch (IOException e) {
-                LOG.errorf(
-                        e,
-                        "Failed to send email confirmation to %s for user ID %s: %s",
-                        user.getEmail(),
-                        user.id,
-                        e.getMessage());
-                throw new SendEmailException(
-                        "Failed to send email confirmation: " + e.getMessage());
-            }
+            EmailVerification emailVerification = emailService.createEmailVerification(user);
+            emailService.sendEmailConfirmation(user, emailVerification);
+            user.setEmailVerificationSent(true);
         } else {
             LOG.debug("Skipping email verification as per the flag.");
         }
@@ -344,27 +333,16 @@ public class UserService {
                     && !email.trim().isEmpty()
                     && !markEmailAsVerified
                     && sendEmailVerification) {
-                try {
-                    LOG.debugf(
-                            "Sending email confirmation to %s for user ID %s due to email change.",
-                            existingUser.getEmail(), existingUser.id);
-                    EmailVerification emailVerification =
-                            emailService.createEmailVerification(existingUser);
-                    emailService.sendEmailConfirmation(existingUser, emailVerification);
-                    existingUser.setEmailVerificationSent(true);
-                    LOG.debugf(
-                            "Email confirmation sent to %s for user ID: %s",
-                            existingUser.getEmail(), existingUser.id);
-                } catch (IOException e) {
-                    LOG.errorf(
-                            e,
-                            "Failed to send email confirmation to %s for user ID %s: %s",
-                            existingUser.getEmail(),
-                            existingUser.id,
-                            e.getMessage());
-                    throw new SendEmailException(
-                            "Failed to send email confirmation: " + e.getMessage());
-                }
+                LOG.debugf(
+                        "Sending email confirmation to %s for user ID %s due to email change.",
+                        existingUser.getEmail(), existingUser.id);
+                EmailVerification emailVerification =
+                        emailService.createEmailVerification(existingUser);
+                emailService.sendEmailConfirmation(existingUser, emailVerification);
+                existingUser.setEmailVerificationSent(true);
+                LOG.debugf(
+                        "Email confirmation sent to %s for user ID: %s",
+                        existingUser.getEmail(), existingUser.id);
             }
         } else if (email != null
                 && !email.trim().isEmpty()
@@ -416,25 +394,13 @@ public class UserService {
                     BcryptUtil.bcryptHash(
                             password + newSalt)); // Hash the new password with new salt
             // Send password changed notification email
-            try {
-                LOG.debugf(
-                        "Sending password changed notification to %s for user ID %s.",
-                        existingUser.getEmail(), existingUser.id);
-                emailService.sendPasswordChangedNotification(existingUser);
-                LOG.debugf(
-                        "Password changed notification sent to %s for user ID: %s",
-                        existingUser.getEmail(), existingUser.id);
-            } catch (IOException e) {
-                LOG.errorf(
-                        e,
-                        "Failed to send password changed notification email to %s for user ID %s:"
-                                + " %s",
-                        existingUser.getEmail(),
-                        existingUser.id,
-                        e.getMessage());
-                throw new SendEmailException(
-                        "Failed to send password changed notification email: " + e.getMessage());
-            }
+            LOG.debugf(
+                    "Sending password changed notification to %s for user ID %s.",
+                    existingUser.getEmail(), existingUser.id);
+            emailService.sendPasswordChangedNotification(existingUser);
+            LOG.debugf(
+                    "Password changed notification sent to %s for user ID: %s",
+                    existingUser.getEmail(), existingUser.id);
         }
 
         // Update tags if changed

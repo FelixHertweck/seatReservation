@@ -302,7 +302,7 @@ public class ReservationService {
             LOG.debugf(
                     "Reservation confirmation email sent to user ID %s for reservation ID %s.",
                     targetUser.getId(), existingReservations.getFirst().getEvent().id);
-        } catch (IOException | PersistenceException | IllegalStateException e) {
+        } catch (PersistenceException | IllegalStateException e) {
             LOG.errorf(
                     e,
                     "Failed to send reservation confirmation email to user ID %s for reservation ID"
@@ -430,28 +430,13 @@ public class ReservationService {
                 List<Reservation> activeReservations =
                         reservationRepository.findByUserAndEvent(user, event);
 
-                try {
-                    emailService.sendUpdateReservationConfirmation(
-                            user, reservations, activeReservations, managerUser.getEmail());
-                    LOG.debugf(
-                            "Sent reservation deletion confirmation for user ID: %s"
-                                    + " (ID: %s) and event %s (ID: %s) with %d"
-                                    + " deleted reservations.",
-                            user.id,
-                            user.getId(),
-                            event.getName(),
-                            event.getId(),
-                            reservations.size());
-                } catch (IOException e) {
-                    LOG.errorf(
-                            e,
-                            "Failed to send reservation deletion confirmation for"
-                                    + " user ID: %s (ID: %s) and event ID: %s (ID: %s).",
-                            user.id,
-                            user.getId(),
-                            event.id,
-                            event.getId());
-                }
+                emailService.sendUpdateReservationConfirmation(
+                        user, reservations, activeReservations, managerUser.getEmail());
+                LOG.debugf(
+                        "Sent reservation deletion confirmation for user ID: %s"
+                                + " (ID: %s) and event %s (ID: %s) with %d"
+                                + " deleted reservations.",
+                        user.id, user.getId(), event.getName(), event.getId(), reservations.size());
             }
         }
 

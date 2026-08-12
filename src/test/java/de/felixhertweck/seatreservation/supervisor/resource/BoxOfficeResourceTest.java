@@ -39,7 +39,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.email.service.EmailService;
-import de.felixhertweck.seatreservation.email.service.EmailService.BoxOfficeConfirmationContent;
+import de.felixhertweck.seatreservation.email.service.ReservationEmailContent.BoxOfficeConfirmationContent;
 import de.felixhertweck.seatreservation.model.entity.CheckInToken;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;

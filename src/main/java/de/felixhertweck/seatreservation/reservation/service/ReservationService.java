@@ -325,7 +325,7 @@ public class ReservationService {
             LOG.debugf(
                     "Reservation confirmation email sent to %s for user ID: %s.",
                     currentUser.id, currentUser.id);
-        } catch (IOException | PersistenceException | IllegalStateException e) {
+        } catch (PersistenceException | IllegalStateException e) {
             // Log the exception, but don't let it fail the transaction
             LOG.error("Failed to send reservation confirmation email", e);
         }
@@ -433,16 +433,8 @@ public class ReservationService {
             List<Reservation> activeReservations =
                     reservationRepository.findByUserAndEventId(currentUser, entry.getKey());
 
-            try {
-                emailService.sendUpdateReservationConfirmation(
-                        currentUser, entry.getValue(), activeReservations);
-            } catch (IOException e) {
-                LOG.errorf(
-                        "Failed to send reservation update confirmation for user ID: %s (ID: %s)"
-                                + " and reservations %s.",
-                        currentUser.id, currentUser.getId(), entry.getValue());
-                return;
-            }
+            emailService.sendUpdateReservationConfirmation(
+                    currentUser, entry.getValue(), activeReservations);
 
             LOG.debugf(
                     "Sent reservation update confirmation for user ID: %s (ID: %s) and reservations"
