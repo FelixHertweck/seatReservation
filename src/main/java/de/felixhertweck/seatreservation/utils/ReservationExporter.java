@@ -61,12 +61,17 @@ public class ReservationExporter {
         String escaped = field;
 
         // Check for CSV injection patterns
-        char firstChar = escaped.charAt(0);
-        if (firstChar == '='
-                || firstChar == '+'
-                || firstChar == '-'
-                || firstChar == '@'
-                || firstChar == '\t') {
+        int index = 0;
+        while (index < escaped.length() && isSpreadsheetTrimmable(escaped.charAt(index))) {
+            index++;
+        }
+        if (index < escaped.length()) {
+            char firstNonWs = escaped.charAt(index);
+            if (firstNonWs == '=' || firstNonWs == '+' || firstNonWs == '-' || firstNonWs == '@') {
+                escaped = "'" + escaped;
+            }
+        }
+        if (!escaped.startsWith("'") && escaped.charAt(0) == '\t') {
             escaped = "'" + escaped;
         }
 
@@ -79,6 +84,17 @@ public class ReservationExporter {
             escaped = "\"" + escaped + "\"";
         }
         return escaped;
+    }
+
+    /**
+     * Whether a character is whitespace that spreadsheet applications (Excel, LibreOffice) trim or
+     * ignore when deciding if a cell value starts with a formula trigger. This is broader than
+     * {@link Character#isWhitespace(char)}, which excludes non-breaking space variants (e.g.
+     * U+00A0, U+2007, U+202F) that would otherwise let a CSV injection payload slip past the
+     * leading-whitespace check below.
+     */
+    private static boolean isSpreadsheetTrimmable(char c) {
+        return Character.isWhitespace(c) || Character.isSpaceChar(c);
     }
 
     private static final String TEMPLATE_PATH_BLOCKED = "/export-template/blocked.pdf";
