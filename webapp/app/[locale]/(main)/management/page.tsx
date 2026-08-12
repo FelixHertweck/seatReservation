@@ -15,7 +15,7 @@ import { UpcomingEventsPanel } from "@/components/management/dashboard/upcoming-
 import { QuickActions } from "@/components/management/dashboard/quick-actions";
 import { DeadlinesPanel } from "@/components/management/dashboard/deadlines-panel";
 import { useManagementOverview } from "@/hooks/use-management-overview";
-import { Skeleton } from "@/components/custom-ui/skeleton";
+import { OverviewSkeleton } from "@/components/management/dashboard/overview-skeleton";
 
 export default function ManagementOverviewPage() {
   const t = useT();
@@ -30,11 +30,7 @@ export default function ManagementOverviewPage() {
       />
 
       {isLoading ? (
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {Array.from({ length: 4 }, (_, i) => (
-            <Skeleton key={i} className="h-24 rounded-lg" />
-          ))}
-        </div>
+        <OverviewSkeleton />
       ) : (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <StatCard

@@ -978,6 +978,8 @@
     "next": "Weiter",
     "back": "Zurück",
     "loading": "Wird geladen...",
+    "loadingSeatMap": "Sitzplan wird geladen...",
+    "liveSyncing": "Live-Synchronisierung...",
     "moreActions": "Weitere Aktionen",
     "eventSelector": {
       "placeholder": "Wähle ein Event...",

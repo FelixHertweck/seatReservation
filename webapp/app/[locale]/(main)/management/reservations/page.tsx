@@ -9,11 +9,11 @@ import { sanitizeFileName } from "@/lib/utils/filename";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/custom-ui/button";
-import { Skeleton } from "@/components/custom-ui/skeleton";
 import EventSelector from "@/components/common/supervisor/event-selector";
 import { OverflowActionBar } from "@/components/common/overflow-action-bar";
 import { SearchAndFilter } from "@/components/common/search-and-filter";
 import { SeatMap } from "@/components/common/seat-map";
+import { SeatMapSkeleton } from "@/components/common/seat-map-skeleton";
 import SeatmapLegend from "@/components/common/seatmap-legend";
 import { ReservationActionPanel } from "@/components/management/reservations/reservation-action-panel";
 import { ReservationConfirmationModal } from "@/components/management/reservations/reservation-confirmation-modal";
@@ -475,7 +475,7 @@ export default function ManagementReservationsPage() {
               }
             />
             {isSeatsLoading ? (
-              <Skeleton className="flex-1 rounded-lg" />
+              <SeatMapSkeleton showLegend={false} />
             ) : (
               <div className="min-h-0 flex-1">
                 <SeatMap

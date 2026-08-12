@@ -10,32 +10,11 @@ import {
 
 interface SeatmapLegendProps {
   areas?: AreaDto[];
-  // Every swatch below is gated by whether its category can structurally occur for the data
-  // this particular page shows - NOT by whether it currently happens to occur. A category
-  // that could appear (e.g. "Blocked" on a location with no blocked seats yet) still needs
-  // to show, so viewers learn what the color means before they ever encounter it; only
-  // categories that can never occur here (e.g. "Pending" on a page whose data never carries
-  // cart-hold info) should be omitted.
-
-  // Blue "Selected" - shown on any map where the viewer can mark seats as selected/chosen,
-  // whether by clicking the map itself or via an external control (e.g. checkboxes).
   showSelected?: boolean;
-  // Yellow "My reservation" - highlights seats already reserved by a specific user.
   showUserReserved?: boolean;
-  // Overrides the label of the "my reserved" swatch. Useful when the yellow
-  // status doesn't mean "reserved by me" (e.g. the manager's reservation
-  // form, where it highlights seats already reserved by the user being
-  // booked for).
   userReservedLabel?: string;
-  // Amber "Selected by another user" - only possible for data sourced from the cart-aware
-  // user booking endpoints (event-reservation-modal, reservation-modal); never appears for
-  // supervisor or management data, which don't track Redis cart holds at all.
   showPending?: boolean;
-  // Checked-in/Cancelled/No-show - only possible when the underlying data is
-  // SupervisorSeatStatusDto (box office, live view); management/booking data never carries
-  // a liveStatus field, so these can never occur there.
   showLiveStatus?: boolean;
-  // "card": boxed, vertical list (liveview sidebar). "bar": compact, wraps horizontally (dialogs).
   layout?: "card" | "bar";
   className?: string;
 }
@@ -114,7 +93,7 @@ export default function SeatmapLegend({
     return (
       <div
         className={cn(
-          "flex flex-wrap gap-2 md:gap-4 text-sm border-b pb-1",
+          "flex flex-wrap items-center gap-2 md:gap-4 text-sm border-b pb-2 min-h-[34px]",
           className,
         )}
       >

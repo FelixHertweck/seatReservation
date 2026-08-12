@@ -470,6 +470,8 @@
     "next": "Next",
     "back": "Back",
     "loading": "Loading...",
+    "loadingSeatMap": "Loading seat map...",
+    "liveSyncing": "Live syncing...",
     "moreActions": "More actions",
     "eventSelector": {
       "placeholder": "Choose an event...",

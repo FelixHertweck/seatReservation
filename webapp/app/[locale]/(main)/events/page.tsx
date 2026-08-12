@@ -49,12 +49,16 @@ export default function EventsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventsLoading]);
 
-  const { data: selectedEventDetail } = useQuery({
+  const {
+    data: selectedEventDetail,
+    isLoading: isEventDetailLoading,
+    isFetching: isEventFetching,
+  } = useQuery({
     ...getApiUserEventsByIdOptions({
       path: { id: selectedEventId ?? "" },
     }),
     enabled: !!selectedEventId,
-    refetchInterval: 5000,
+    refetchInterval: 20000,
   });
 
   const selectedEvent = useMemo(() => {
@@ -64,7 +68,11 @@ export default function EventsPage() {
     return selectedEventDetail ?? base;
   }, [events, selectedEventId, selectedEventDetail]);
 
-  const { data: selectedLocationDetail } = useQuery({
+  const {
+    data: selectedLocationDetail,
+    isLoading: isLocationLoading,
+    isFetching: isLocationFetching,
+  } = useQuery({
     ...getApiUserLocationsByIdOptions({
       path: { id: selectedEvent?.locationId ?? "" },
     }),
@@ -207,6 +215,9 @@ export default function EventsPage() {
           event={selectedEvent}
           location={selectedLocation ?? getLocation(selectedEvent.locationId)}
           userReservations={getReservationsForEvent(selectedEvent.id)}
+          isLocationLoading={isLocationLoading}
+          isEventLoading={isEventDetailLoading}
+          isFetching={isEventFetching || isLocationFetching}
           onClose={closeModal}
           onReserve={createReservation}
         />

@@ -7,7 +7,7 @@ import { cn, formatDateTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/custom-ui/button";
-import { Skeleton } from "@/components/custom-ui/skeleton";
+import { ReservationsTableSkeleton } from "@/components/management/reservations/reservations-table-skeleton";
 import {
   Table,
   TableBody,
@@ -67,13 +67,7 @@ export function ReservationsTable({
   const seatById = useMemo(() => new Map(seats.map((s) => [s.id, s])), [seats]);
 
   if (isLoading) {
-    return (
-      <div className="space-y-2 p-4">
-        {Array.from({ length: 5 }, (_, i) => (
-          <Skeleton key={i} className="h-8 w-full" />
-        ))}
-      </div>
-    );
+    return <ReservationsTableSkeleton rowCount={6} />;
   }
 
   if (reservations.length === 0) {
