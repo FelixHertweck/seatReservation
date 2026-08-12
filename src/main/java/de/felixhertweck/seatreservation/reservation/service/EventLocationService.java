@@ -23,7 +23,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -70,16 +69,10 @@ public class EventLocationService {
         Set<EventLocation> locations = new HashSet<>();
 
         // Get all locations from allowances
-        locations.addAll(
-                eventUserAllowanceRepository.findByUserWithEventAndLocation(user).stream()
-                        .map(allowance -> allowance.getEvent().getEventLocation())
-                        .collect(Collectors.toSet()));
+        locations.addAll(eventUserAllowanceRepository.findDistinctEventLocationsByUser(user));
 
         // Get all locations from reservations
-        locations.addAll(
-                reservationRepository.findByUserWithEventAndLocation(user).stream()
-                        .map(reservation -> reservation.getEvent().getEventLocation())
-                        .collect(Collectors.toSet()));
+        locations.addAll(reservationRepository.findDistinctEventLocationsByUser(user));
 
         return locations.stream().map(UserEventLocationSummaryDTO::new).toList();
     }
