@@ -20,6 +20,7 @@
 package de.felixhertweck.seatreservation.management.service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +66,7 @@ public class EventLocationService {
     @Inject UserRepository userRepository;
     @Inject EventLocationAccessService eventLocationAccessService;
     @Inject jakarta.enterprise.event.Event<EventUpdatedEvent> eventUpdatedBus;
+    @Inject SeatmapCacheService seatmapCacheService;
 
     /**
      * Retrieves a list of EventLocations belonging to the currently authenticated manager. If the
@@ -420,8 +422,16 @@ public class EventLocationService {
             locationsToDelete.add(location);
         }
 
+        Set<UUID> locationIdsToInvalidate = new HashSet<>();
         for (EventLocation location : locationsToDelete) {
             eventLocationRepository.delete(location);
+            locationIdsToInvalidate.add(location.getId());
+        }
+        if (!locationIdsToInvalidate.isEmpty()) {
+            seatmapCacheService.runAfterSuccessfulCommit(
+                    () ->
+                            locationIdsToInvalidate.forEach(
+                                    seatmapCacheService::invalidateAllGeometryForLocation));
         }
         LOG.infof("Event locations %s deleted successfully by manager ID: %s", ids, manager.id());
     }
