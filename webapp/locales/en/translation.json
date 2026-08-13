@@ -695,7 +695,7 @@
     "positionLabel": "Position",
     "rowLabel": "Row",
     "seatLabel": "Seat",
-    "showQRCodeButton": "QR Code",
+    "showQRCodeButton": "My Tickets",
     "cancelButton": "Cancel",
     "seatsDrawerTitle": "Seats",
     "manageSeatButton": "Manage Seats",
@@ -734,6 +734,7 @@
     "noCheckInCode": "No check-in code is available for this reservation",
     "googleWalletButton": "Add to Google Wallet",
     "appleWalletButton": "Add to Apple Wallet",
+    "genericWalletButton": "Add to Wallet",
     "walletError": "Error creating wallet pass",
     "trademarkNotice": "Google Wallet is a trademark of Google LLC. Apple Wallet is a trademark of Apple Inc."
   },

@@ -10,6 +10,7 @@ import {
   ArrowRight,
   MapPinned,
   Users,
+  Edit,
 } from "lucide-react";
 
 import { useT } from "@/lib/i18n/hooks";
@@ -29,18 +30,22 @@ import { PaginationWrapper } from "@/components/common/pagination-wrapper";
 import { useSortableData } from "@/lib/table-sorting";
 import { useManagementLocations } from "@/hooks/use-management-locations";
 import { LocationImportModal } from "@/components/management/location-import-modal";
+import { LocationFormModal } from "@/components/management/location-form-modal";
 import { LocationCardMapBackground } from "@/components/management/location-card-map-background";
 import { LocationCardSkeleton } from "@/components/management/location-card-skeleton";
+import type { EventLocationResponseDto } from "@/api";
 
 export default function ManagementLocationsPage() {
   const t = useT();
   const router = useRouter();
-  const { locations, isLoading, createLocation, deleteLocation } =
+  const { locations, users, isLoading, createLocation, updateLocation, deleteLocation } =
     useManagementLocations();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<Record<string, unknown>>({});
   const [isImportOpen, setIsImportOpen] = useState(false);
+  const [selectedLocationForEdit, setSelectedLocationForEdit] =
+    useState<EventLocationResponseDto | null>(null);
 
   const managerOptions = useMemo(() => {
     const managers = new Map<string, string>();
@@ -245,6 +250,14 @@ export default function ManagementLocationsPage() {
                         </Link>
                       </Button>
                       <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setSelectedLocationForEdit(location)}
+                        title={t("management.locations.editButton")}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
                         variant="destructive"
                         size="icon"
                         onClick={() =>
@@ -269,6 +282,19 @@ export default function ManagementLocationsPage() {
           isOpen={isImportOpen}
           onClose={() => setIsImportOpen(false)}
           onImportLocation={handleImport}
+        />
+      )}
+
+      {selectedLocationForEdit && (
+        <LocationFormModal
+          location={selectedLocationForEdit}
+          users={users}
+          onSubmit={async (data) => {
+            if (selectedLocationForEdit.id) {
+              await updateLocation(selectedLocationForEdit.id, data);
+            }
+          }}
+          onClose={() => setSelectedLocationForEdit(null)}
         />
       )}
     </div>

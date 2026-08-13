@@ -533,7 +533,7 @@
     "positionLabel": "Position",
     "rowLabel": "Reihe",
     "seatLabel": "Platz",
-    "showQRCodeButton": "QR-Code",
+    "showQRCodeButton": "Meine Tickets",
     "cancelButton": "Abbrechen",
     "seatsDrawerTitle": "Plätze",
     "manageSeatButton": "Bearbeiten",
@@ -572,6 +572,7 @@
     "noCheckInCode": "Für diese Reservierung ist kein Check-in-Code verfügbar",
     "googleWalletButton": "In Google Wallet speichern",
     "appleWalletButton": "Zu Apple Wallet hinzufügen",
+    "genericWalletButton": "Zu Wallet hinzufügen",
     "walletError": "Fehler beim Erstellen des Wallet-Passes",
     "trademarkNotice": "Google Wallet ist eine Marke von Google LLC. Apple Wallet ist eine Marke von Apple Inc."
   },
@@ -1296,6 +1297,10 @@
       "deleteSuccess": "Location gelöscht.",
       "deleteError": "Location konnte nicht gelöscht werden.",
       "openEditor": "Editor öffnen",
+      "editLocation": "Location bearbeiten",
+      "editDescription": "Bearbeiten Sie die Details der Location.",
+      "editButton": "Bearbeiten",
+      "saveButton": "Speichern",
       "form": {
         "nameLabel": "Name",
         "namePlaceholder": "z.B. Stadthalle",
