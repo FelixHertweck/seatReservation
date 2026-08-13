@@ -219,7 +219,11 @@ export default function EventsPage() {
           isEventLoading={isEventDetailLoading}
           isFetching={isEventFetching || isLocationFetching}
           onClose={closeModal}
-          onReserve={createReservation}
+          onReserve={async (eventId, seatIds) => {
+            const res = await createReservation(eventId, seatIds);
+            router.push(`/events/reservations?eventId=${eventId}`);
+            return res;
+          }}
         />
       )}
     </div>
