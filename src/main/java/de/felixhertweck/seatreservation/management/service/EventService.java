@@ -32,7 +32,9 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.events.EventUpdatedEvent;
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.email.service.NotificationService;
 import de.felixhertweck.seatreservation.management.dto.EventRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventResponseDTO;
@@ -75,12 +77,12 @@ public class EventService {
      *
      * @param dto The DTO containing the details of the Event to be created.
      * @param manager The currently authenticated user.
-     * @throws IllegalArgumentException If the EventLocation or any supervisor user is not found.
+     * @throws ValidationException If the EventLocation or any supervisor user is not found.
      * @return A DTO representing the newly created Event.
      */
     @Transactional
     public EventResponseDTO createEvent(EventRequestDTO dto, User manager)
-            throws IllegalArgumentException {
+            throws ValidationException {
         LOG.debugf(
                 "Attempting to create event with name: %s for manager: %s (ID: %s)",
                 dto.getName(), manager.id, manager.getId());
@@ -93,7 +95,7 @@ public class EventService {
                                             "EventLocation with id %s not found for event"
                                                     + " creation.",
                                             dto.getEventLocationId());
-                                    return new IllegalArgumentException(
+                                    return new ValidationException(
                                             "EventLocation with id "
                                                     + dto.getEventLocationId()
                                                     + " not found");
@@ -147,11 +149,11 @@ public class EventService {
      * @param dto The DTO containing the updated details of the Event.
      * @return A DTO representing the updated Event.
      * @throws EventNotFoundException If the Event with the specified ID is not found.
-     * @throws SecurityException If the user is not authorized to update the Event.
+     * @throws AccessDeniedException If the user is not authorized to update the Event.
      */
     @Transactional
     public EventResponseDTO updateEvent(UUID id, EventRequestDTO dto, User manager)
-            throws EventNotFoundException, IllegalArgumentException {
+            throws EventNotFoundException, ValidationException {
         LOG.debugf(
                 "Attempting to update event with ID: %s for manager: %s (ID: %s)",
                 id, manager.id, manager.getId());
@@ -180,7 +182,7 @@ public class EventService {
                                     LOG.warnf(
                                             "EventLocation with id %s not found for event update.",
                                             dto.getEventLocationId());
-                                    return new IllegalArgumentException(
+                                    return new ValidationException(
                                             "EventLocation with id "
                                                     + dto.getEventLocationId()
                                                     + " not found");
@@ -266,9 +268,10 @@ public class EventService {
     /** Adds a manager to an event. */
     @Transactional
     public EventResponseDTO addManager(UUID eventId, UUID newManagerId, User currentUser)
-            throws EventNotFoundException, SecurityException, IllegalArgumentException {
+            throws EventNotFoundException, AccessDeniedException, ValidationException {
         if (currentUser == null) {
-            throw new SecurityException("User is not authorized to add a manager to this event");
+            throw new AccessDeniedException(
+                    "User is not authorized to add a manager to this event");
         }
         Event event = getEventById(eventId);
         eventAccessService.requireAccess(event, AuthenticatedUser.of(currentUser));
@@ -286,9 +289,9 @@ public class EventService {
     /** Removes a manager from an event. */
     @Transactional
     public EventResponseDTO removeManager(UUID eventId, UUID managerToRemoveId, User currentUser)
-            throws EventNotFoundException, SecurityException, IllegalArgumentException {
+            throws EventNotFoundException, AccessDeniedException, ValidationException {
         if (currentUser == null) {
-            throw new SecurityException(
+            throw new AccessDeniedException(
                     "User is not authorized to remove a manager from this event");
         }
         Event event = getEventById(eventId);
@@ -297,24 +300,24 @@ public class EventService {
             LOG.warnf(
                     "User ID %s attempted to remove themselves from event ID %s",
                     currentUser.id, eventId);
-            throw new IllegalArgumentException("Manager cannot remove themselves from the event");
+            throw new ValidationException("Manager cannot remove themselves from the event");
         }
         if (event.getCreatedBy() != null
                 && managerToRemoveId.equals(event.getCreatedBy().getId())) {
             LOG.warnf(
                     "Attempted to remove primary creator %s from event ID %s",
                     managerToRemoveId, eventId);
-            throw new IllegalArgumentException("The event creator cannot be removed as manager");
+            throw new ValidationException("The event creator cannot be removed as manager");
         }
         if (event.getManagers().size() <= 1) {
-            throw new IllegalArgumentException("An event must have at least one manager");
+            throw new ValidationException("An event must have at least one manager");
         }
         User managerToRemove =
                 userRepository
                         .findByIdOptional(managerToRemoveId)
                         .orElseThrow(
                                 () ->
-                                        new IllegalArgumentException(
+                                        new ValidationException(
                                                 "User with id "
                                                         + managerToRemoveId
                                                         + " not found"));
@@ -329,10 +332,9 @@ public class EventService {
      *
      * @param supervisorIds Set of supervisor user IDs
      * @return Set of User entities
-     * @throws IllegalArgumentException if any supervisor ID is invalid
+     * @throws ValidationException if any supervisor ID is invalid
      */
-    private Set<User> getSupervisorsFromIds(Set<UUID> supervisorIds)
-            throws IllegalArgumentException {
+    private Set<User> getSupervisorsFromIds(Set<UUID> supervisorIds) throws ValidationException {
         Set<User> supervisors = new HashSet<>();
         if (supervisorIds == null || supervisorIds.isEmpty()) {
             // empty set when no supervisors are provided
@@ -347,8 +349,7 @@ public class EventService {
             for (UUID supervisorId : supervisorIds) {
                 if (!foundIds.contains(supervisorId)) {
                     LOG.warnf("User with id %s not found for event creation.", supervisorId);
-                    throw new IllegalArgumentException(
-                            "User with id " + supervisorId + " not found");
+                    throw new ValidationException("User with id " + supervisorId + " not found");
                 }
             }
         }
@@ -428,17 +429,17 @@ public class EventService {
      * @param ids The IDs of the Events to be deleted.
      * @param currentUser The currently authenticated user.
      * @throws EventNotFoundException If the Event with the specified ID is not found.
-     * @throws SecurityException If the user is not authorized to delete the Event.
-     * @throws IllegalArgumentException If no IDs are provided.
+     * @throws AccessDeniedException If the user is not authorized to delete the Event.
+     * @throws ValidationException If no IDs are provided.
      */
     @Transactional
     public void deleteEvent(List<UUID> ids, User currentUser)
-            throws EventNotFoundException, SecurityException, IllegalArgumentException {
+            throws EventNotFoundException, AccessDeniedException, ValidationException {
         if (ids == null || ids.isEmpty()) {
             LOG.warnf(
                     "No events to delete for user ID: %s (ID: %s)",
                     currentUser.id, currentUser.getId());
-            throw new IllegalArgumentException("No event IDs provided for deletion.");
+            throw new ValidationException("No event IDs provided for deletion.");
         }
 
         LOG.debugf(
@@ -505,10 +506,10 @@ public class EventService {
      * @param manager The currently authenticated user.
      * @return A DTO representing the retrieved Event.
      * @throws EventNotFoundException If the Event with the specified ID is not found.
-     * @throws SecurityException If the user is not authorized to view the Event.
+     * @throws AccessDeniedException If the user is not authorized to view the Event.
      */
     public EventResponseDTO getEventByIdForManager(UUID id, User manager)
-            throws EventNotFoundException, SecurityException {
+            throws EventNotFoundException, AccessDeniedException {
         LOG.debugf(
                 "Attempting to retrieve event with ID: %s for manager: %s (ID: %s)",
                 id, manager.id, manager.getId());
@@ -536,26 +537,24 @@ public class EventService {
      * Validates event timing constraints.
      *
      * @param dto The event request DTO containing the timing information
-     * @throws IllegalArgumentException if timing constraints are violated
+     * @throws ValidationException if timing constraints are violated
      */
     private void validateEventTiming(EventRequestDTO dto) {
         if (!dto.getStartTime().isBefore(dto.getEndTime())) {
-            throw new IllegalArgumentException("Start time must be before end time");
+            throw new ValidationException("Start time must be before end time");
         }
 
         if (!dto.getBookingDeadline().isBefore(dto.getEndTime())) {
-            throw new IllegalArgumentException("Booking deadline must be before end time");
+            throw new ValidationException("Booking deadline must be before end time");
         }
 
         if (!dto.getBookingStartTime().isBefore(dto.getBookingDeadline())) {
-            throw new IllegalArgumentException(
-                    "Booking start time must be before booking deadline");
+            throw new ValidationException("Booking start time must be before booking deadline");
         }
 
         if (dto.getReminderSendDate() != null
                 && !dto.getReminderSendDate().isBefore(dto.getStartTime())) {
-            throw new IllegalArgumentException(
-                    "Reminder send date must be before event start time");
+            throw new ValidationException("Reminder send date must be before event start time");
         }
     }
 }

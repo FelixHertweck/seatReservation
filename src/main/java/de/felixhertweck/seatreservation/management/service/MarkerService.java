@@ -30,6 +30,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.dto.EventLocationMakerDTO;
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.management.dto.MakerRequestDTO;
 import de.felixhertweck.seatreservation.management.exception.MarkerNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
@@ -86,7 +87,7 @@ public class MarkerService {
                 eventLocationAccessService.findOwnedEventLocation(
                         dto.getEventLocationId(), manager);
         if (dto.getLabel() == null || dto.getLabel().trim().isEmpty()) {
-            throw new IllegalArgumentException("Marker label cannot be empty");
+            throw new ValidationException("Marker label cannot be empty");
         }
 
         EventLocationMarker marker =
@@ -121,7 +122,7 @@ public class MarkerService {
                 eventLocationAccessService.findOwnedEventLocation(
                         dto.getEventLocationId(), manager);
         if (dto.getLabel() == null || dto.getLabel().trim().isEmpty()) {
-            throw new IllegalArgumentException("Marker label cannot be empty");
+            throw new ValidationException("Marker label cannot be empty");
         }
 
         marker.setLabel(dto.getLabel());
@@ -150,7 +151,7 @@ public class MarkerService {
     @Transactional
     public void deleteMarkers(List<UUID> ids, AuthenticatedUser manager) {
         if (ids == null || ids.isEmpty()) {
-            throw new IllegalArgumentException("No marker IDs provided for deletion");
+            throw new ValidationException("No marker IDs provided for deletion");
         }
 
         Map<UUID, EventLocationMarker> markerMap =

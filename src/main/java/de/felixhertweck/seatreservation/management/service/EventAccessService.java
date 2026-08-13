@@ -23,6 +23,7 @@ import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
@@ -51,7 +52,7 @@ public class EventAccessService {
      * @param user the user attempting to access the event
      * @return the event entity
      * @throws EventNotFoundException if no such event exists
-     * @throws SecurityException if the user neither is an ADMIN nor manages the event
+     * @throws AccessDeniedException if the user neither is an ADMIN nor manages the event
      */
     public Event findOwnedEvent(UUID eventId, AuthenticatedUser user) {
         Event event =
@@ -70,14 +71,14 @@ public class EventAccessService {
      *
      * @param event the event to check
      * @param user the user attempting to access the event
-     * @throws SecurityException if the user neither is an ADMIN nor manages the event
+     * @throws AccessDeniedException if the user neither is an ADMIN nor manages the event
      */
     public void requireAccess(Event event, AuthenticatedUser user) {
         if (!isManager(event, user)) {
             LOG.warnf(
                     "User %s is not authorized to manage event %s",
                     user == null ? null : user.id(), event == null ? null : event.getId());
-            throw new SecurityException("User is not a manager of this event");
+            throw new AccessDeniedException("User is not a manager of this event");
         }
     }
 

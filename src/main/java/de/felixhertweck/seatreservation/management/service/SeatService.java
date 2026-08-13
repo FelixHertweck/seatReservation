@@ -30,6 +30,8 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.dto.SeatDTO;
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.management.dto.SeatRequestDTO;
 import de.felixhertweck.seatreservation.management.exception.SeatNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
@@ -63,12 +65,12 @@ public class SeatService {
      * @param dto the seat request DTO containing seat details
      * @param manager the manager attempting to create the seat
      * @return the created seat DTO
-     * @throws IllegalArgumentException if the event location is not found or seat data is invalid
-     * @throws SecurityException if the manager does not own the event location
+     * @throws ValidationException if the event location is not found or seat data is invalid
+     * @throws AccessDeniedException if the manager does not own the event location
      */
     @Transactional
     public SeatDTO createSeatManager(SeatRequestDTO dto, AuthenticatedUser manager)
-            throws IllegalArgumentException, SecurityException {
+            throws ValidationException, AccessDeniedException {
         LOG.debugf(
                 "Attempting to create seat with number: %s for event location ID: %s by manager"
                         + " ID: %s",
@@ -81,13 +83,13 @@ public class SeatService {
             LOG.warnf(
                     "Invalid seat data: seat number is empty for event location ID %s.",
                     eventLocation.getId());
-            throw new IllegalArgumentException("Seat number cannot be empty");
+            throw new ValidationException("Seat number cannot be empty");
         }
         if (dto.getSeatRow() == null || dto.getSeatRow().trim().isEmpty()) {
             LOG.warnf(
                     "Invalid seat data: seat row is empty for event location ID %s.",
                     eventLocation.getId());
-            throw new IllegalArgumentException("Seat row cannot be empty");
+            throw new ValidationException("Seat row cannot be empty");
         }
 
         Seat seat =
@@ -140,10 +142,10 @@ public class SeatService {
      * @param manager the manager attempting to access the seat
      * @return the seat DTO
      * @throws SeatNotFoundException if the seat is not found
-     * @throws SecurityException if the manager does not have permission to access the seat
+     * @throws AccessDeniedException if the manager does not have permission to access the seat
      */
     public SeatDTO findSeatByIdForManager(UUID id, AuthenticatedUser manager)
-            throws SeatNotFoundException, SecurityException {
+            throws SeatNotFoundException, AccessDeniedException {
         LOG.debugf("Attempting to retrieve seat with ID: %s for manager ID: %s", id, manager.id());
         Seat seat = findSeatEntityById(id, manager); // This already checks for ownership
         LOG.debugf("Successfully retrieved seat with ID %s for manager ID: %s", id, manager.id());
@@ -158,12 +160,12 @@ public class SeatService {
      * @param manager the manager attempting to update the seat
      * @return the updated seat DTO
      * @throws SeatNotFoundException if the seat is not found
-     * @throws SecurityException if the manager does not own the seat or the new event location
-     * @throws IllegalArgumentException if the event location is not found or seat data is invalid
+     * @throws AccessDeniedException if the manager does not own the seat or the new event location
+     * @throws ValidationException if the event location is not found or seat data is invalid
      */
     @Transactional
     public SeatDTO updateSeatForManager(UUID id, SeatRequestDTO dto, AuthenticatedUser manager)
-            throws SeatNotFoundException, SecurityException, IllegalArgumentException {
+            throws SeatNotFoundException, AccessDeniedException, ValidationException {
         LOG.debugf("Attempting to update seat with ID: %s for manager ID: %s", id, manager.id());
         Seat seat = findSeatEntityById(id, manager);
         UUID oldLocationId = seat.getLocation().getId();
@@ -174,11 +176,11 @@ public class SeatService {
 
         if (dto.getSeatNumber() == null || dto.getSeatNumber().trim().isEmpty()) {
             LOG.warnf("Invalid seat data: seat number is empty for seat ID %s.", id);
-            throw new IllegalArgumentException("Seat number cannot be empty");
+            throw new ValidationException("Seat number cannot be empty");
         }
         if (dto.getSeatRow() == null || dto.getSeatRow().trim().isEmpty()) {
             LOG.warnf("Invalid seat data: seat row is empty for seat ID %s.", id);
-            throw new IllegalArgumentException("Seat row cannot be empty");
+            throw new ValidationException("Seat row cannot be empty");
         }
 
         LOG.debugf(
@@ -230,7 +232,7 @@ public class SeatService {
      * @param areaId The area id; {@code null} resolves to no area
      * @param eventLocation The event location the area must belong to
      * @return The resolved area, or {@code null} if {@code areaId} is {@code null}
-     * @throws IllegalArgumentException if the area does not exist or belongs to another location
+     * @throws ValidationException if the area does not exist or belongs to another location
      */
     private EventLocationArea resolveArea(UUID areaId, EventLocation eventLocation) {
         if (areaId == null) {
@@ -241,10 +243,10 @@ public class SeatService {
                         .findByIdOptional(areaId)
                         .orElseThrow(
                                 () ->
-                                        new IllegalArgumentException(
+                                        new ValidationException(
                                                 "Area with id " + areaId + " not found"));
         if (!area.getEventLocation().getId().equals(eventLocation.getId())) {
-            throw new IllegalArgumentException(
+            throw new ValidationException(
                     "Area with id " + areaId + " does not belong to this EventLocation");
         }
         return area;
@@ -258,8 +260,7 @@ public class SeatService {
      * @param entranceId The entrance id; {@code null} resolves to no entrance
      * @param eventLocation The event location the entrance must belong to
      * @return The resolved entrance, or {@code null} if {@code entranceId} is {@code null}
-     * @throws IllegalArgumentException if the entrance does not exist or belongs to another
-     *     location
+     * @throws ValidationException if the entrance does not exist or belongs to another location
      */
     private EventLocationEntrance resolveEntrance(UUID entranceId, EventLocation eventLocation) {
         if (entranceId == null) {
@@ -270,10 +271,10 @@ public class SeatService {
                         .findByIdOptional(entranceId)
                         .orElseThrow(
                                 () ->
-                                        new IllegalArgumentException(
+                                        new ValidationException(
                                                 "Entrance with id " + entranceId + " not found"));
         if (!entrance.getEventLocation().getId().equals(eventLocation.getId())) {
-            throw new IllegalArgumentException(
+            throw new ValidationException(
                     "Entrance with id " + entranceId + " does not belong to this EventLocation");
         }
         return entrance;
@@ -285,15 +286,15 @@ public class SeatService {
      *
      * @param ids list of seat IDs to delete
      * @param manager the manager attempting to delete the seats
-     * @throws SecurityException if the manager does not own any of the seats
-     * @throws IllegalArgumentException if the ids list is null or empty
+     * @throws AccessDeniedException if the manager does not own any of the seats
+     * @throws ValidationException if the ids list is null or empty
      */
     @Transactional
     public void deleteSeatForManager(List<UUID> ids, AuthenticatedUser manager)
-            throws SecurityException, IllegalArgumentException {
+            throws AccessDeniedException, ValidationException {
         if (ids == null || ids.isEmpty()) {
             LOG.warnf("No seat IDs provided for deletion by manager ID: %s", manager.id());
-            throw new IllegalArgumentException("No seat IDs provided for deletion");
+            throw new ValidationException("No seat IDs provided for deletion");
         }
 
         LOG.debugf("Attempting to delete seats with IDs: %s for manager ID: %s", ids, manager.id());
@@ -329,10 +330,10 @@ public class SeatService {
      * @param currentUser the user attempting to access the seat
      * @return the seat entity
      * @throws SeatNotFoundException if the seat is not found
-     * @throws SecurityException if the user does not have permission to access the seat
+     * @throws AccessDeniedException if the user does not have permission to access the seat
      */
     public Seat findSeatEntityById(UUID id, AuthenticatedUser currentUser)
-            throws SeatNotFoundException, SecurityException {
+            throws SeatNotFoundException, AccessDeniedException {
         LOG.debugf(
                 "Attempting to find seat entity by ID: %s for user ID: %s", id, currentUser.id());
         // Check if user has access to linked location
@@ -355,11 +356,11 @@ public class SeatService {
 
         try {
             eventLocationAccessService.requireAccess(seat.getLocation(), currentUser);
-        } catch (SecurityException e) {
+        } catch (AccessDeniedException e) {
             LOG.warnf(
                     "user ID: %s does not have permission to access seat ID %s.",
                     currentUser.id(), id);
-            throw new SecurityException("You do not have permission to access this seat");
+            throw new AccessDeniedException("You do not have permission to access this seat");
         }
         LOG.debugf("user ID: %s has permission to access seat ID %s.", currentUser.id(), id);
         return seat;

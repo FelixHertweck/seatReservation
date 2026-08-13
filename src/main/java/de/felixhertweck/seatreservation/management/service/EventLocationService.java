@@ -33,6 +33,8 @@ import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
 import de.felixhertweck.seatreservation.common.events.EventUpdatedEvent;
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.management.dto.EventLocationRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationResponseDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationUpdateDTO;
@@ -118,8 +120,7 @@ public class EventLocationService {
      */
     @Transactional
     public EventLocationResponseDTO createEventLocation(
-            EventLocationRequestDTO dto, AuthenticatedUser manager)
-            throws IllegalArgumentException {
+            EventLocationRequestDTO dto, AuthenticatedUser manager) throws ValidationException {
         LOG.debugf(
                 "Attempting to create event location with name: %s, address: %s for manager ID: %s",
                 dto.getName(), dto.getAddress(), manager.id());
@@ -128,7 +129,7 @@ public class EventLocationService {
                 || dto.getAddress() == null
                 || dto.getAddress().trim().isEmpty()) {
             LOG.warnf("Invalid EventLocation data provided by manager ID: %s", manager.id());
-            throw new IllegalArgumentException("Invalid EventLocation data provided.");
+            throw new ValidationException("Invalid EventLocation data provided.");
         }
 
         EventLocation location =
@@ -186,13 +187,13 @@ public class EventLocationService {
      * @param id The ID of the EventLocation to be updated.
      * @param dto The DTO containing the updated details of the EventLocation.
      * @return A DTO representing the updated EventLocation.
-     * @throws IllegalArgumentException If the EventLocation with the specified ID is not found.
-     * @throws SecurityException If the user is not authorized to update the EventLocation.
+     * @throws ValidationException If the EventLocation with the specified ID is not found.
+     * @throws AccessDeniedException If the user is not authorized to update the EventLocation.
      */
     @Transactional
     public EventLocationResponseDTO updateEventLocation(
             UUID id, EventLocationUpdateDTO dto, AuthenticatedUser manager)
-            throws IllegalArgumentException, SecurityException {
+            throws ValidationException, AccessDeniedException {
         LOG.debugf(
                 "Attempting to update event location with ID: %s for manager ID: %s",
                 id, manager.id());
@@ -385,15 +386,15 @@ public class EventLocationService {
      * the manager of the EventLocation or has the ADMIN role.
      *
      * @param ids The IDs of the EventLocations to be deleted.
-     * @throws IllegalArgumentException If the EventLocation with the specified ID is not found.
-     * @throws SecurityException If the user is not authorized to delete the EventLocation.
+     * @throws ValidationException If the EventLocation with the specified ID is not found.
+     * @throws AccessDeniedException If the user is not authorized to delete the EventLocation.
      */
     @Transactional
     public void deleteEventLocation(List<UUID> ids, AuthenticatedUser manager)
-            throws IllegalArgumentException, SecurityException {
+            throws ValidationException, AccessDeniedException {
         if (ids == null || ids.isEmpty()) {
             LOG.warnf("No event locations to delete for manager ID: %s", manager.id());
-            throw new IllegalArgumentException("No event location IDs provided for deletion.");
+            throw new ValidationException("No event location IDs provided for deletion.");
         }
 
         LOG.debugf(

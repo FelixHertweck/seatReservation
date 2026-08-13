@@ -37,6 +37,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.management.dto.AreaRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.AreaResponseDTO;
 import de.felixhertweck.seatreservation.management.exception.AreaInUseException;
@@ -176,7 +178,7 @@ public class AreaServiceTest {
     void createArea_Forbidden_NotManagerOfLocation() {
         AreaRequestDTO dto = new AreaRequestDTO(eventLocation.id, "Balkon", List.of());
 
-        assertThrows(SecurityException.class, () -> areaService.createArea(dto, regularAuth));
+        assertThrows(AccessDeniedException.class, () -> areaService.createArea(dto, regularAuth));
         verify(areaRepository, never()).persist(any(EventLocationArea.class));
     }
 
@@ -184,8 +186,7 @@ public class AreaServiceTest {
     void createArea_InvalidInput_EmptyName() {
         AreaRequestDTO dto = new AreaRequestDTO(eventLocation.id, "  ", List.of());
 
-        assertThrows(
-                IllegalArgumentException.class, () -> areaService.createArea(dto, managerAuth));
+        assertThrows(ValidationException.class, () -> areaService.createArea(dto, managerAuth));
         verify(areaRepository, never()).persist(any(EventLocationArea.class));
     }
 
@@ -222,7 +223,7 @@ public class AreaServiceTest {
     @Test
     void findAreasByLocation_Forbidden_NotOwner() {
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> areaService.findAreasByLocation(otherLocation.id, managerAuth));
     }
 
@@ -265,7 +266,7 @@ public class AreaServiceTest {
                 .thenReturn(Optional.of(areaInOtherLocation));
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> areaService.findAreaByIdForManager(areaInOtherLocation.id, managerAuth));
     }
 
@@ -300,7 +301,7 @@ public class AreaServiceTest {
         AreaRequestDTO dto = new AreaRequestDTO(otherLocation.id, "Loge", List.of());
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> areaService.updateArea(existingArea.id, dto, managerAuth));
     }
 
@@ -311,7 +312,7 @@ public class AreaServiceTest {
         AreaRequestDTO dto = new AreaRequestDTO(eventLocation.id, "  ", List.of());
 
         assertThrows(
-                IllegalArgumentException.class,
+                ValidationException.class,
                 () -> areaService.updateArea(existingArea.id, dto, managerAuth));
         verify(areaRepository, never()).persist(any(EventLocationArea.class));
     }
@@ -371,8 +372,7 @@ public class AreaServiceTest {
     @Test
     void deleteAreas_InvalidInput_EmptyIds() {
         assertThrows(
-                IllegalArgumentException.class,
-                () -> areaService.deleteAreas(List.of(), managerAuth));
+                ValidationException.class, () -> areaService.deleteAreas(List.of(), managerAuth));
         verify(areaRepository, never()).delete(any(EventLocationArea.class));
     }
 
@@ -405,7 +405,7 @@ public class AreaServiceTest {
                 .thenReturn(List.of(areaInOtherLocation));
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> areaService.deleteAreas(List.of(areaInOtherLocation.id), managerAuth));
     }
 

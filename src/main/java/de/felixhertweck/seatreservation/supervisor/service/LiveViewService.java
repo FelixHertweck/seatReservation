@@ -33,6 +33,7 @@ import jakarta.inject.Inject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.model.entity.BoxOfficeGuestInfo;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
@@ -106,7 +107,7 @@ public class LiveViewService {
             throws InvalidEventIdException {
         UUID eventId = parseEventId(eventIdStr);
         if (!eventAuthorizationService.isAuthorizedForEvent(currentUser, eventId)) {
-            throw new SecurityException("User is not authorized to access event " + eventId);
+            throw new AccessDeniedException("User is not authorized to access event " + eventId);
         }
         assertBookingDeadlinePassed(eventRepository.findById(eventId));
         registerConnection(eventId, connection);
@@ -131,7 +132,7 @@ public class LiveViewService {
             throws InvalidEventIdException {
         UUID eventId = parseEventId(eventIdStr);
         if (!eventAuthorizationService.isAuthorizedForEvent(currentUser, eventId)) {
-            throw new SecurityException("User is not authorized to access event " + eventId);
+            throw new AccessDeniedException("User is not authorized to access event " + eventId);
         }
         unregisterConnection(eventId, connection);
     }

@@ -37,6 +37,7 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 
 import de.felixhertweck.seatreservation.common.dto.EventLocationMakerDTO;
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.management.dto.MakerRequestDTO;
 import de.felixhertweck.seatreservation.management.service.MarkerService;
 import de.felixhertweck.seatreservation.model.entity.Roles;
@@ -96,7 +97,7 @@ public class MarkerResource {
         LOG.debugf(
                 "Received GET request to /api/manager/markers?eventLocationId=%s", eventLocationId);
         if (eventLocationId == null) {
-            throw new IllegalArgumentException("eventLocationId query parameter is required");
+            throw new ValidationException("eventLocationId query parameter is required");
         }
         AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         return markerService.findMarkersByLocation(eventLocationId, currentUser);

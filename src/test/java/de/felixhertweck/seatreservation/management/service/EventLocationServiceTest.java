@@ -41,6 +41,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.management.dto.EventLocationRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationResponseDTO;
 import de.felixhertweck.seatreservation.management.dto.EventLocationUpdateDTO;
@@ -239,7 +241,7 @@ public class EventLocationServiceTest {
         dto.setAddress("Some Address");
 
         assertThrows(
-                IllegalArgumentException.class,
+                ValidationException.class,
                 () -> eventLocationService.createEventLocation(dto, managerAuth));
         verify(eventLocationRepository, never()).persist(any(EventLocation.class));
     }
@@ -280,7 +282,7 @@ public class EventLocationServiceTest {
         when(userRepository.findByIds(List.of(regularUser.id))).thenReturn(List.of(regularUser));
 
         assertThrows(
-                IllegalArgumentException.class,
+                ValidationException.class,
                 () -> eventLocationService.createEventLocation(dto, managerAuth));
         verify(eventLocationRepository, never()).persist(any(EventLocation.class));
     }
@@ -349,7 +351,7 @@ public class EventLocationServiceTest {
         when(userRepository.findByIds(List.of(regularUser.id))).thenReturn(List.of(regularUser));
 
         assertThrows(
-                IllegalArgumentException.class,
+                ValidationException.class,
                 () -> eventLocationService.updateEventLocation(id(1), dto, managerAuth));
         verify(eventLocationRepository, never()).persist(any(EventLocation.class));
     }
@@ -364,7 +366,7 @@ public class EventLocationServiceTest {
                 .thenReturn(Optional.of(existingLocation));
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> eventLocationService.updateEventLocation(id(1), dto, regularAuth));
         verify(eventLocationRepository, never()).persist(any(EventLocation.class));
     }
@@ -379,7 +381,7 @@ public class EventLocationServiceTest {
                 .thenReturn(Optional.of(existingLocation));
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> eventLocationService.updateEventLocation(id(1), dto, otherManagerAuth));
         verify(eventLocationRepository, never()).persist(any(EventLocation.class));
     }
@@ -427,7 +429,7 @@ public class EventLocationServiceTest {
                 .thenReturn(List.of(existingLocation));
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> eventLocationService.deleteEventLocation(List.of(id(1)), regularAuth));
         verify(eventLocationRepository, never()).delete(any(EventLocation.class));
     }
@@ -439,7 +441,7 @@ public class EventLocationServiceTest {
                 .thenReturn(List.of(existingLocation));
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> eventLocationService.deleteEventLocation(List.of(id(1)), otherManagerAuth));
         verify(eventLocationRepository, never()).delete(any(EventLocation.class));
     }
@@ -447,7 +449,7 @@ public class EventLocationServiceTest {
     @Test
     void deleteEventLocation_NullIds_ThrowsIllegalArgumentException() {
         assertThrows(
-                IllegalArgumentException.class,
+                ValidationException.class,
                 () -> eventLocationService.deleteEventLocation(null, managerAuth));
         verify(eventLocationRepository, never()).delete(any(EventLocation.class));
     }
@@ -455,7 +457,7 @@ public class EventLocationServiceTest {
     @Test
     void deleteEventLocation_EmptyIds_ThrowsIllegalArgumentException() {
         assertThrows(
-                IllegalArgumentException.class,
+                ValidationException.class,
                 () ->
                         eventLocationService.deleteEventLocation(
                                 Collections.emptyList(), managerAuth));
@@ -490,7 +492,7 @@ public class EventLocationServiceTest {
                 .thenReturn(List.of(existingLocation, unauthorizedLocation));
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> eventLocationService.deleteEventLocation(List.of(id(1), id(2)), managerAuth));
 
         verify(eventLocationRepository, never()).delete(any(EventLocation.class));
@@ -503,7 +505,7 @@ public class EventLocationServiceTest {
         dto.setAddress("Some Address");
 
         assertThrows(
-                IllegalArgumentException.class,
+                ValidationException.class,
                 () -> eventLocationService.createEventLocation(dto, managerAuth));
         verify(eventLocationRepository, never()).persist(any(EventLocation.class));
     }
@@ -515,7 +517,7 @@ public class EventLocationServiceTest {
         dto.setAddress(null); // Null address
 
         assertThrows(
-                IllegalArgumentException.class,
+                ValidationException.class,
                 () -> eventLocationService.createEventLocation(dto, managerAuth));
         verify(eventLocationRepository, never()).persist(any(EventLocation.class));
     }
@@ -527,7 +529,7 @@ public class EventLocationServiceTest {
         dto.setAddress("  "); // Empty or blank address
 
         assertThrows(
-                IllegalArgumentException.class,
+                ValidationException.class,
                 () -> eventLocationService.createEventLocation(dto, managerAuth));
         verify(eventLocationRepository, never()).persist(any(EventLocation.class));
     }

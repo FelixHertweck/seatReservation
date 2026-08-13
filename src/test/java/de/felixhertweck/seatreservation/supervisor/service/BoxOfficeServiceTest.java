@@ -43,6 +43,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.email.service.EmailService;
 import de.felixhertweck.seatreservation.email.service.ReservationEmailContent.BoxOfficeConfirmationContent;
 import de.felixhertweck.seatreservation.model.entity.BoxOfficeGuestInfo;
@@ -208,7 +210,7 @@ class BoxOfficeServiceTest {
         when(eventRepository.isUserSupervisor(EVENT_ID, id(99))).thenReturn(false);
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> boxOfficeService.reserveForKnownUser(knownUserRequest(false), unrelated));
         verify(reservationRepository, never()).persistAll(anyList());
     }
@@ -221,7 +223,7 @@ class BoxOfficeServiceTest {
                 .thenReturn(List.of(existing));
 
         assertThrows(
-                IllegalStateException.class,
+                ValidationException.class,
                 () ->
                         boxOfficeService.reserveForKnownUser(
                                 knownUserRequest(false), supervisorAuth()));
@@ -237,7 +239,7 @@ class BoxOfficeServiceTest {
         dto.setDeductAllowance(true);
 
         assertThrows(
-                IllegalArgumentException.class,
+                ValidationException.class,
                 () -> boxOfficeService.reserveForKnownUser(dto, supervisorAuth()));
         verify(reservationRepository, never()).persistAll(anyList());
     }
@@ -356,7 +358,7 @@ class BoxOfficeServiceTest {
                 .thenReturn(List.of(existing));
 
         assertThrows(
-                IllegalStateException.class,
+                ValidationException.class,
                 () ->
                         boxOfficeService.reserveForGuest(
                                 guestRequest(null, false), supervisorAuth()));

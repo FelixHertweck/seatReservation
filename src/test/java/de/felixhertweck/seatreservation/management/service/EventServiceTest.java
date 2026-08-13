@@ -42,8 +42,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.email.service.NotificationService;
 import de.felixhertweck.seatreservation.management.dto.EventRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.EventResponseDTO;
@@ -285,8 +287,7 @@ public class EventServiceTest {
         when(eventLocationRepository.findByIdOptional(any(UUID.class)))
                 .thenReturn(Optional.empty());
 
-        assertThrows(
-                IllegalArgumentException.class, () -> eventService.createEvent(dto, managerUser));
+        assertThrows(ValidationException.class, () -> eventService.createEvent(dto, managerUser));
         verify(eventRepository, never()).persist(any(Event.class));
     }
 
@@ -435,7 +436,7 @@ public class EventServiceTest {
                 .thenReturn(Optional.of(eventLocation));
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> eventService.updateEvent(existingEvent.id, dto, regularUser));
         verify(eventRepository, never()).persist(any(Event.class));
     }
@@ -456,7 +457,7 @@ public class EventServiceTest {
                 .thenReturn(Optional.empty());
 
         assertThrows(
-                IllegalArgumentException.class,
+                ValidationException.class,
                 () -> eventService.updateEvent(existingEvent.id, dto, managerUser));
         verify(eventRepository, never()).persist(any(Event.class));
     }
@@ -635,7 +636,7 @@ public class EventServiceTest {
         when(userRepository.findByIdOptional(regularUser.id)).thenReturn(Optional.of(regularUser));
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () ->
                         eventReservationAllowanceService.setReservationsAllowedForUser(
                                 dto, regularAuth));
@@ -750,7 +751,7 @@ public class EventServiceTest {
                 .thenReturn(Optional.of(existingAllowance));
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () ->
                         eventReservationAllowanceService.updateReservationAllowance(
                                 dto, regularUser));
@@ -824,7 +825,7 @@ public class EventServiceTest {
                 .thenReturn(Optional.of(allowance));
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () ->
                         eventReservationAllowanceService.getReservationAllowanceById(
                                 allowance.id, regularUser));
@@ -1170,8 +1171,7 @@ public class EventServiceTest {
                 .thenReturn(Optional.of(eventLocation));
         when(userRepository.findByIds(List.of(regularUser.id))).thenReturn(List.of(regularUser));
 
-        assertThrows(
-                IllegalArgumentException.class, () -> eventService.createEvent(dto, managerUser));
+        assertThrows(ValidationException.class, () -> eventService.createEvent(dto, managerUser));
         verify(eventRepository, never()).persist(any(Event.class));
     }
 
@@ -1208,7 +1208,7 @@ public class EventServiceTest {
         when(userRepository.findByIds(List.of(regularUser.id))).thenReturn(List.of(regularUser));
 
         assertThrows(
-                IllegalArgumentException.class,
+                ValidationException.class,
                 () -> eventService.addManager(existingEvent.id, regularUser.id, managerUser));
         verify(eventRepository, never()).persist(any(Event.class));
     }

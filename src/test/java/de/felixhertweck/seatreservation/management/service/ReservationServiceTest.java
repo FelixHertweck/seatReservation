@@ -43,7 +43,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.ReservationNotFoundException;
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.email.service.EmailService;
 import de.felixhertweck.seatreservation.management.dto.ReservationRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.ReservationResponseDTO;
@@ -351,7 +353,7 @@ public class ReservationServiceTest {
         mockSeatFind(dto.getSeatIds(), List.of(seat));
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> reservationService.createReservations(dto, regularUser));
     }
 
@@ -369,7 +371,7 @@ public class ReservationServiceTest {
                 .thenReturn(Optional.empty());
 
         assertThrows(
-                IllegalArgumentException.class,
+                ValidationException.class,
                 () -> reservationService.createReservations(dto, adminUser));
     }
 
@@ -388,7 +390,7 @@ public class ReservationServiceTest {
                 .thenReturn(Optional.of(allowance));
 
         assertThrows(
-                IllegalArgumentException.class,
+                ValidationException.class,
                 () -> reservationService.createReservations(dto, managerUser));
     }
 
@@ -426,7 +428,7 @@ public class ReservationServiceTest {
         reservation.getEvent().setManager(otherManager);
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> reservationService.findReservationById(reservation.id, managerUser));
     }
 
@@ -457,7 +459,7 @@ public class ReservationServiceTest {
         mockReservationFind(List.of(reservation.id), List.of(reservation));
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> reservationService.deleteReservation(List.of(reservation.id), regularUser));
         verify(reservationRepository, never()).delete(any(Reservation.class));
     }
@@ -637,7 +639,7 @@ public class ReservationServiceTest {
         reservation.getEvent().setManager(otherManager);
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> reservationService.deleteReservation(List.of(reservation.id), managerUser));
     }
 
@@ -658,7 +660,7 @@ public class ReservationServiceTest {
         when(eventRepository.findByIdOptional(event.id)).thenReturn(Optional.of(event));
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> reservationService.blockSeats(event.id, List.of(seat.id), regularUser));
     }
 
@@ -670,7 +672,7 @@ public class ReservationServiceTest {
                 .thenReturn(List.of(reservation));
 
         assertThrows(
-                IllegalStateException.class,
+                ValidationException.class,
                 () -> reservationService.blockSeats(event.id, List.of(seat.id), managerUser));
     }
 
@@ -680,7 +682,7 @@ public class ReservationServiceTest {
         event.setManager(new User()); // Different manager
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> reservationService.exportReservationsToPdf(event.id, managerUser));
     }
 

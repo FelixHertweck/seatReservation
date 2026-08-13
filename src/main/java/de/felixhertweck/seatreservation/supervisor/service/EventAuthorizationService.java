@@ -23,6 +23,7 @@ import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.model.repository.EventRepository;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 
@@ -62,12 +63,12 @@ public class EventAuthorizationService {
      *
      * @param user the user attempting access
      * @param eventId the event ID
-     * @throws SecurityException if the user is neither a supervisor/manager of the event nor an
+     * @throws AccessDeniedException if the user is neither a supervisor/manager of the event nor an
      *     ADMIN
      */
     public void assertAuthorizedForEvent(AuthenticatedUser user, UUID eventId) {
         if (!isAuthorizedForEvent(user, eventId)) {
-            throw new SecurityException("User is not authorized to access event " + eventId);
+            throw new AccessDeniedException("User is not authorized to access event " + eventId);
         }
     }
 }

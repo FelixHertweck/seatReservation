@@ -41,6 +41,8 @@ import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
 import de.felixhertweck.seatreservation.common.dto.SeatDTO;
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.management.dto.SeatRequestDTO;
 import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
 import de.felixhertweck.seatreservation.management.exception.SeatNotFoundException;
@@ -267,7 +269,7 @@ public class SeatServiceTest {
                 .thenReturn(Optional.of(eventLocation));
 
         assertThrows(
-                SecurityException.class, () -> seatService.createSeatManager(dto, regularAuth));
+                AccessDeniedException.class, () -> seatService.createSeatManager(dto, regularAuth));
         verify(seatRepository, never()).persist(any(Seat.class));
     }
 
@@ -281,15 +283,13 @@ public class SeatServiceTest {
         when(eventLocationRepository.findByIdOptional(eventLocation.id))
                 .thenReturn(Optional.of(eventLocation));
         assertThrows(
-                IllegalArgumentException.class,
-                () -> seatService.createSeatManager(dto, managerAuth));
+                ValidationException.class, () -> seatService.createSeatManager(dto, managerAuth));
         verify(seatRepository, never()).persist(any(Seat.class));
 
         dto.setSeatNumber("C3");
         dto.setCoordinate(new CoordinateDTO(1, -1)); // Negative coordinate
         assertThrows(
-                IllegalArgumentException.class,
-                () -> seatService.createSeatManager(dto, managerAuth));
+                ValidationException.class, () -> seatService.createSeatManager(dto, managerAuth));
         verify(seatRepository, never()).persist(any(Seat.class));
     }
 
@@ -303,8 +303,7 @@ public class SeatServiceTest {
         when(eventLocationAreaRepository.findByIdOptional(id(999))).thenReturn(Optional.empty());
 
         assertThrows(
-                IllegalArgumentException.class,
-                () -> seatService.createSeatManager(dto, managerAuth));
+                ValidationException.class, () -> seatService.createSeatManager(dto, managerAuth));
         verify(seatRepository, never()).persist(any(Seat.class));
     }
 
@@ -318,8 +317,7 @@ public class SeatServiceTest {
                 .thenReturn(Optional.of(eventLocation));
 
         assertThrows(
-                IllegalArgumentException.class,
-                () -> seatService.createSeatManager(dto, managerAuth));
+                ValidationException.class, () -> seatService.createSeatManager(dto, managerAuth));
         verify(seatRepository, never()).persist(any(Seat.class));
     }
 
@@ -334,8 +332,7 @@ public class SeatServiceTest {
                 .thenReturn(Optional.empty());
 
         assertThrows(
-                IllegalArgumentException.class,
-                () -> seatService.createSeatManager(dto, managerAuth));
+                ValidationException.class, () -> seatService.createSeatManager(dto, managerAuth));
         verify(seatRepository, never()).persist(any(Seat.class));
     }
 
@@ -349,8 +346,7 @@ public class SeatServiceTest {
                 .thenReturn(Optional.of(eventLocation));
 
         assertThrows(
-                IllegalArgumentException.class,
-                () -> seatService.createSeatManager(dto, managerAuth));
+                ValidationException.class, () -> seatService.createSeatManager(dto, managerAuth));
         verify(seatRepository, never()).persist(any(Seat.class));
     }
 
@@ -397,7 +393,7 @@ public class SeatServiceTest {
                 .thenReturn(Optional.of(otherLocation));
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> seatService.findSeatsForManagerByLocation(otherLocation.id, managerAuth));
     }
 
@@ -458,7 +454,7 @@ public class SeatServiceTest {
         when(seatRepository.findByIdOptional(seatInOtherLocation.id))
                 .thenReturn(Optional.of(seatInOtherLocation));
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> seatService.findSeatByIdForManager(seatInOtherLocation.id, managerAuth));
     }
 
@@ -531,7 +527,7 @@ public class SeatServiceTest {
                 .thenReturn(Optional.of(eventLocation));
 
         assertThrows(
-                IllegalArgumentException.class,
+                ValidationException.class,
                 () -> seatService.updateSeatForManager(existingSeat.id, dto, managerAuth));
         verify(seatRepository, never()).persist(any(Seat.class));
     }
@@ -551,7 +547,7 @@ public class SeatServiceTest {
                 .thenReturn(Optional.of(eventLocation));
 
         assertThrows(
-                IllegalArgumentException.class,
+                ValidationException.class,
                 () -> seatService.updateSeatForManager(existingSeat.id, dto, managerAuth));
         verify(seatRepository, never()).persist(any(Seat.class));
     }
@@ -609,21 +605,21 @@ public class SeatServiceTest {
                 .thenReturn(Optional.of(eventLocation));
 
         assertThrows(
-                IllegalArgumentException.class,
+                ValidationException.class,
                 () -> seatService.updateSeatForManager(existingSeat.id, dto, managerAuth));
         verify(seatRepository, never()).persist(any(Seat.class));
 
         dto.setSeatNumber("A1");
         dto.setCoordinate(new CoordinateDTO(1, -1)); // Invalid coordinate
         assertThrows(
-                IllegalArgumentException.class,
+                ValidationException.class,
                 () -> seatService.updateSeatForManager(existingSeat.id, dto, managerAuth));
         verify(seatRepository, never()).persist(any(Seat.class));
 
         dto.setCoordinate(new CoordinateDTO(1, 1));
         dto.setSeatRow(""); // Invalid seat row
         assertThrows(
-                IllegalArgumentException.class,
+                ValidationException.class,
                 () -> seatService.updateSeatForManager(existingSeat.id, dto, managerAuth));
         verify(seatRepository, never()).persist(any(Seat.class));
     }
@@ -665,7 +661,7 @@ public class SeatServiceTest {
     @Test
     void deleteSeat_InvalidInput_EmptyIds() {
         assertThrows(
-                IllegalArgumentException.class,
+                ValidationException.class,
                 () -> seatService.deleteSeatForManager(List.of(), managerAuth));
         verify(seatRepository, never()).delete(any(Seat.class));
     }
@@ -688,7 +684,7 @@ public class SeatServiceTest {
                 .thenReturn(Optional.of(otherLocation));
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> seatService.updateSeatForManager(seatInOtherLocation.id, dto, managerAuth));
         verify(seatRepository, never()).persist(any(Seat.class));
     }
@@ -710,7 +706,7 @@ public class SeatServiceTest {
                 .thenReturn(Optional.of(newOtherLocation));
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> seatService.updateSeatForManager(existingSeat.id, dto, managerAuth));
         verify(seatRepository, never()).persist(any(Seat.class));
     }
@@ -758,7 +754,7 @@ public class SeatServiceTest {
                 .thenReturn(List.of(seatInOtherLocation));
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () ->
                         seatService.deleteSeatForManager(
                                 List.of(seatInOtherLocation.id), managerAuth));
@@ -781,7 +777,7 @@ public class SeatServiceTest {
                 .thenReturn(Optional.of(existingSeat));
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> seatService.findSeatEntityById(existingSeat.id, regularAuth));
     }
 }

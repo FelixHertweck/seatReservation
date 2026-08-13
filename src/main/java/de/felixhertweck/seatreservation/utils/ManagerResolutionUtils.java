@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
@@ -49,7 +50,7 @@ public final class ManagerResolutionUtils {
      * @param context short label identifying the assignment target for log/error messages, e.g.
      *     "event" or "event location"
      * @return Set of User entities
-     * @throws IllegalArgumentException if any manager ID is invalid or the user lacks MANAGER/ADMIN
+     * @throws ValidationException if any manager ID is invalid or the user lacks MANAGER/ADMIN
      */
     public static Set<User> resolveManagers(
             UserRepository userRepository, Set<UUID> managerIds, String context) {
@@ -67,7 +68,7 @@ public final class ManagerResolutionUtils {
                     LOG.warnf(
                             "User with id %s not found for %s manager assignment.",
                             managerId, context);
-                    throw new IllegalArgumentException("User with id " + managerId + " not found");
+                    throw new ValidationException("User with id " + managerId + " not found");
                 }
             }
         }
@@ -78,7 +79,7 @@ public final class ManagerResolutionUtils {
                 LOG.warnf(
                         "User with id %s lacks MANAGER/ADMIN role for %s manager assignment.",
                         candidate.id, context);
-                throw new IllegalArgumentException(
+                throw new ValidationException(
                         "User with id "
                                 + candidate.id
                                 + " must have the MANAGER or ADMIN role to be assigned as a"

@@ -36,6 +36,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.management.dto.AreaRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.AreaResponseDTO;
 import de.felixhertweck.seatreservation.management.service.AreaService;
@@ -96,7 +97,7 @@ public class AreaResource {
         LOG.debugf(
                 "Received GET request to /api/manager/areas?eventLocationId=%s", eventLocationId);
         if (eventLocationId == null) {
-            throw new IllegalArgumentException("eventLocationId query parameter is required");
+            throw new ValidationException("eventLocationId query parameter is required");
         }
         AuthenticatedUser currentUser = userSecurityContext.getAuthenticatedUser();
         return areaService.findAreasByLocation(eventLocationId, currentUser);

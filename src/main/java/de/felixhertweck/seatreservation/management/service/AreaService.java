@@ -31,6 +31,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.management.dto.AreaRequestDTO;
 import de.felixhertweck.seatreservation.management.dto.AreaResponseDTO;
 import de.felixhertweck.seatreservation.management.exception.AreaInUseException;
@@ -92,7 +93,7 @@ public class AreaService {
                 eventLocationAccessService.findOwnedEventLocation(
                         dto.getEventLocationId(), manager);
         if (dto.getName() == null || dto.getName().trim().isEmpty()) {
-            throw new IllegalArgumentException("Area name cannot be empty");
+            throw new ValidationException("Area name cannot be empty");
         }
 
         EventLocationArea area = new EventLocationArea(dto.getName().trim());
@@ -130,7 +131,7 @@ public class AreaService {
                 eventLocationAccessService.findOwnedEventLocation(
                         dto.getEventLocationId(), manager);
         if (dto.getName() == null || dto.getName().trim().isEmpty()) {
-            throw new IllegalArgumentException("Area name cannot be empty");
+            throw new ValidationException("Area name cannot be empty");
         }
 
         // Seats may only reference an area of their own event location (see
@@ -177,7 +178,7 @@ public class AreaService {
     @Transactional
     public void deleteAreas(List<UUID> ids, AuthenticatedUser manager) {
         if (ids == null || ids.isEmpty()) {
-            throw new IllegalArgumentException("No area IDs provided for deletion");
+            throw new ValidationException("No area IDs provided for deletion");
         }
 
         Map<UUID, EventLocationArea> areaMap =

@@ -38,6 +38,8 @@ import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
 import de.felixhertweck.seatreservation.common.dto.EventLocationMakerDTO;
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.management.dto.MakerRequestDTO;
 import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
 import de.felixhertweck.seatreservation.management.exception.MarkerNotFoundException;
@@ -156,7 +158,8 @@ public class MarkerServiceTest {
         MakerRequestDTO dto =
                 new MakerRequestDTO(eventLocation.id, "Stage", new CoordinateDTO(5, 5));
 
-        assertThrows(SecurityException.class, () -> markerService.createMarker(dto, regularAuth));
+        assertThrows(
+                AccessDeniedException.class, () -> markerService.createMarker(dto, regularAuth));
         verify(markerRepository, never()).persist(any(EventLocationMarker.class));
     }
 
@@ -164,8 +167,7 @@ public class MarkerServiceTest {
     void createMarker_InvalidInput_EmptyLabel() {
         MakerRequestDTO dto = new MakerRequestDTO(eventLocation.id, "  ", new CoordinateDTO(5, 5));
 
-        assertThrows(
-                IllegalArgumentException.class, () -> markerService.createMarker(dto, managerAuth));
+        assertThrows(ValidationException.class, () -> markerService.createMarker(dto, managerAuth));
         verify(markerRepository, never()).persist(any(EventLocationMarker.class));
     }
 
@@ -194,7 +196,7 @@ public class MarkerServiceTest {
     @Test
     void findMarkersByLocation_Forbidden_NotOwner() {
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> markerService.findMarkersByLocation(otherLocation.id, managerAuth));
     }
 
@@ -263,7 +265,7 @@ public class MarkerServiceTest {
                 new MakerRequestDTO(otherLocation.id, "Updated", new CoordinateDTO(1, 1));
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> markerService.updateMarker(existingMarker.id, dto, managerAuth));
     }
 
@@ -274,7 +276,7 @@ public class MarkerServiceTest {
         MakerRequestDTO dto = new MakerRequestDTO(eventLocation.id, "  ", new CoordinateDTO(1, 1));
 
         assertThrows(
-                IllegalArgumentException.class,
+                ValidationException.class,
                 () -> markerService.updateMarker(existingMarker.id, dto, managerAuth));
         verify(markerRepository, never()).persist(any(EventLocationMarker.class));
     }
@@ -282,7 +284,7 @@ public class MarkerServiceTest {
     @Test
     void deleteMarkers_InvalidInput_EmptyIds() {
         assertThrows(
-                IllegalArgumentException.class,
+                ValidationException.class,
                 () -> markerService.deleteMarkers(List.of(), managerAuth));
         verify(markerRepository, never()).delete(any(EventLocationMarker.class));
     }
@@ -315,7 +317,7 @@ public class MarkerServiceTest {
                 .thenReturn(List.of(markerInOtherLocation));
 
         assertThrows(
-                SecurityException.class,
+                AccessDeniedException.class,
                 () -> markerService.deleteMarkers(List.of(markerInOtherLocation.id), managerAuth));
     }
 }

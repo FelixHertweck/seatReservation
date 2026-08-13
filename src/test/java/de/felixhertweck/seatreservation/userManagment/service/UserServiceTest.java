@@ -51,9 +51,11 @@ import static org.mockito.Mockito.when;
 
 import de.felixhertweck.seatreservation.common.dto.LimitedUserInfoDTO;
 import de.felixhertweck.seatreservation.common.dto.UserDTO;
+import de.felixhertweck.seatreservation.common.exception.AccessDeniedException;
 import de.felixhertweck.seatreservation.common.exception.DuplicateUserException;
 import de.felixhertweck.seatreservation.common.exception.InvalidUserException;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.email.service.EmailService;
 import de.felixhertweck.seatreservation.model.entity.EmailVerification;
 import de.felixhertweck.seatreservation.model.entity.Roles;
@@ -941,7 +943,8 @@ public class UserServiceTest {
 
         AuthenticatedUser caller = new AuthenticatedUser(id(1), Set.of(Roles.ADMIN));
 
-        assertThrows(SecurityException.class, () -> userService.deleteUser(List.of(id(1)), caller));
+        assertThrows(
+                AccessDeniedException.class, () -> userService.deleteUser(List.of(id(1)), caller));
         verify(userRepository, never()).delete(any(User.class));
     }
 
@@ -967,7 +970,8 @@ public class UserServiceTest {
         // guard should fire here.
         AuthenticatedUser caller = new AuthenticatedUser(id(1), Set.of(Roles.ADMIN));
 
-        assertThrows(SecurityException.class, () -> userService.deleteUser(List.of(id(5)), caller));
+        assertThrows(
+                AccessDeniedException.class, () -> userService.deleteUser(List.of(id(5)), caller));
         verify(userRepository, never()).delete(any(User.class));
     }
 
@@ -1692,26 +1696,26 @@ public class UserServiceTest {
 
     @Test
     void verifyEmailWithCode_BadRequestException_NullCode() {
-        assertThrows(IllegalArgumentException.class, () -> userService.verifyEmailWithCode(null));
+        assertThrows(ValidationException.class, () -> userService.verifyEmailWithCode(null));
     }
 
     @Test
     void verifyEmailWithCode_BadRequestException_EmptyCode() {
-        assertThrows(IllegalArgumentException.class, () -> userService.verifyEmailWithCode(""));
+        assertThrows(ValidationException.class, () -> userService.verifyEmailWithCode(""));
     }
 
     @Test
     void verifyEmailWithCode_BadRequestException_InvalidFormat() {
         assertThrows(
-                IllegalArgumentException.class,
+                ValidationException.class,
                 () -> userService.verifyEmailWithCode("12345")); // 5 digits instead of 6
 
         assertThrows(
-                IllegalArgumentException.class,
+                ValidationException.class,
                 () -> userService.verifyEmailWithCode("abcdef")); // letters instead of digits
 
         assertThrows(
-                IllegalArgumentException.class,
+                ValidationException.class,
                 () -> userService.verifyEmailWithCode("1234567")); // 7 digits instead of 6
     }
 
@@ -1815,7 +1819,7 @@ public class UserServiceTest {
 
         AuthenticatedUser caller = new AuthenticatedUser(id(1), Set.of(Roles.ADMIN));
 
-        assertThrows(SecurityException.class, () -> userService.updateUser(id(1), dto, caller));
+        assertThrows(AccessDeniedException.class, () -> userService.updateUser(id(1), dto, caller));
     }
 
     @Test
@@ -1848,7 +1852,7 @@ public class UserServiceTest {
 
         AuthenticatedUser caller = new AuthenticatedUser(id(1), Set.of(Roles.ADMIN));
 
-        assertThrows(SecurityException.class, () -> userService.updateUser(id(1), dto, caller));
+        assertThrows(AccessDeniedException.class, () -> userService.updateUser(id(1), dto, caller));
 
         verify(emailService, never()).sendPasswordChangedNotification(any(User.class));
         verify(userRepository, never()).persist(any(User.class));
@@ -1878,7 +1882,7 @@ public class UserServiceTest {
 
         AuthenticatedUser caller = new AuthenticatedUser(id(2), Set.of(Roles.ADMIN));
 
-        assertThrows(SecurityException.class, () -> userService.updateUser(id(1), dto, caller));
+        assertThrows(AccessDeniedException.class, () -> userService.updateUser(id(1), dto, caller));
 
         verify(userRepository, never()).persist(any(User.class));
         assertTrue(existingUser.getRoles().isEmpty());
@@ -1912,7 +1916,7 @@ public class UserServiceTest {
 
         when(userRepository.findByIdOptional(id(1))).thenReturn(Optional.of(existingUser));
 
-        assertThrows(SecurityException.class, () -> userService.updateUser(id(1), dto, null));
+        assertThrows(AccessDeniedException.class, () -> userService.updateUser(id(1), dto, null));
 
         verify(userRepository, never()).persist(any(User.class));
     }

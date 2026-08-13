@@ -44,6 +44,7 @@ import jakarta.ws.rs.core.Response;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.felixhertweck.seatreservation.common.exception.DuplicateUserException;
 import de.felixhertweck.seatreservation.common.exception.RegistrationDisabledException;
+import de.felixhertweck.seatreservation.common.exception.ValidationException;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.security.dto.TwoFactorRequiredDTO;
@@ -193,11 +194,11 @@ public class WebAuthnResource {
         JsonObject root = parseWebAuthnPayload(body);
         JsonObject registrationJson = root.getJsonObject("registration");
         if (registrationJson == null) {
-            throw new IllegalArgumentException("Missing registration details");
+            throw new ValidationException("Missing registration details");
         }
         JsonObject credential = root.getJsonObject("credential");
         if (credential == null) {
-            throw new IllegalArgumentException("Missing credential");
+            throw new ValidationException("Missing credential");
         }
 
         // Deserialize the profile fields through the CDI (XSS-sanitizing) mapper, then validate.
@@ -207,12 +208,12 @@ public class WebAuthnResource {
                     objectMapper.readValue(
                             registrationJson.encode(), WebAuthnRegistrationStartDTO.class);
         } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
-            throw new IllegalArgumentException("Invalid registration details", e);
+            throw new ValidationException("Invalid registration details", e);
         }
         Set<ConstraintViolation<WebAuthnRegistrationStartDTO>> violations =
                 validator.validate(registration);
         if (!violations.isEmpty()) {
-            throw new IllegalArgumentException(violations.iterator().next().getMessage());
+            throw new ValidationException(violations.iterator().next().getMessage());
         }
 
         RoutingContext ctx = currentVertxRequest.getCurrent();
@@ -368,7 +369,7 @@ public class WebAuthnResource {
             return webAuthnSecurity.register(username, credential, ctx).await().indefinitely();
         } catch (RuntimeException e) {
             LOG.debugf("Passkey registration verification failed: %s", e.getMessage());
-            throw new IllegalArgumentException("Passkey registration failed: " + e.getMessage(), e);
+            throw new ValidationException("Passkey registration failed", e);
         }
     }
 
@@ -392,12 +393,12 @@ public class WebAuthnResource {
      */
     private JsonObject parseWebAuthnPayload(String body) {
         if (body == null || body.isBlank()) {
-            throw new IllegalArgumentException("Missing request body");
+            throw new ValidationException("Missing request body");
         }
         try {
             return new JsonObject(RAW_JSON_MAPPER.readValue(body, java.util.Map.class));
         } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
-            throw new IllegalArgumentException("Invalid JSON body", e);
+            throw new ValidationException("Invalid JSON body", e);
         }
     }
 
