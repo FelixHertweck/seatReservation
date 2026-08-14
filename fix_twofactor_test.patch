@@ -1,0 +1,10 @@
+--- src/test/java/de/felixhertweck/seatreservation/GlobalExceptionHandlerTest.java
++++ src/test/java/de/felixhertweck/seatreservation/GlobalExceptionHandlerTest.java
+@@ -369,6 +369,6 @@
+         ErrorResponseDTO errorResponse = (ErrorResponseDTO) response.getEntity();
+         assertEquals(
+-                "Bad Request",
++                "A valid 2FA code is required to regenerate backup codes.",
+                 errorResponse.getMessage());
+     }
+ }

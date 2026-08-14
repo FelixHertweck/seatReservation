@@ -1,0 +1,10 @@
+--- src/test/java/de/felixhertweck/seatreservation/GlobalExceptionHandlerTest.java
++++ src/test/java/de/felixhertweck/seatreservation/GlobalExceptionHandlerTest.java
+@@ -41,6 +41,7 @@
+ import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
+ import de.felixhertweck.seatreservation.reservation.exception.SeatBlockedException;
+ import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
++import de.felixhertweck.seatreservation.security.exceptions.InvalidTwoFactorCodeException;
+ import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
+ import de.felixhertweck.seatreservation.security.service.TokenService;
+ import de.felixhertweck.seatreservation.userManagment.exceptions.VerificationCodeNotFoundException;

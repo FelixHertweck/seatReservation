@@ -41,6 +41,7 @@ import de.felixhertweck.seatreservation.reservation.exception.NoSeatsAvailableEx
 import de.felixhertweck.seatreservation.reservation.exception.SeatAlreadyReservedException;
 import de.felixhertweck.seatreservation.reservation.exception.SeatBlockedException;
 import de.felixhertweck.seatreservation.security.exceptions.AuthenticationFailedException;
+import de.felixhertweck.seatreservation.security.exceptions.InvalidTwoFactorCodeException;
 import de.felixhertweck.seatreservation.security.exceptions.JwtInvalidException;
 import de.felixhertweck.seatreservation.security.service.TokenService;
 import de.felixhertweck.seatreservation.userManagment.exceptions.VerificationCodeNotFoundException;
@@ -354,5 +355,20 @@ class GlobalExceptionHandlerTest {
         assertTrue(response.getEntity() instanceof ErrorResponseDTO);
         ErrorResponseDTO errorResponse = (ErrorResponseDTO) response.getEntity();
         assertEquals("Bad Request", errorResponse.getMessage());
+    }
+
+    @Test
+    void testInvalidTwoFactorCodeException() {
+        InvalidTwoFactorCodeException exception =
+                new InvalidTwoFactorCodeException(
+                        "A valid 2FA code is required to regenerate backup codes.");
+        Response response = exceptionHandler.toResponse(exception);
+
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+        assertTrue(response.getEntity() instanceof ErrorResponseDTO);
+        ErrorResponseDTO errorResponse = (ErrorResponseDTO) response.getEntity();
+        assertEquals(
+                "A valid 2FA code is required to regenerate backup codes.",
+                errorResponse.getMessage());
     }
 }

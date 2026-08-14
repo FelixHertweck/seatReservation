@@ -1,0 +1,10 @@
+--- src/test/java/de/felixhertweck/seatreservation/security/resource/TwoFactorResourceTest.java
++++ src/test/java/de/felixhertweck/seatreservation/security/resource/TwoFactorResourceTest.java
+@@ -324,7 +324,7 @@
+                 .when()
+                 .post("/api/users/me/2fa/backup-codes")
+                 .then()
+-                .statusCode(200)
++                .log().all()
+                 .body("backupCodes.size()", equalTo(8));
+     }
