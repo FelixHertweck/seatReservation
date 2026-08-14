@@ -12,19 +12,25 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { UserReservationResponseDto } from "@/api";
+import type {
+  UserEventLocationResponseDto,
+  UserEventResponseDto,
+  UserReservationResponseDto,
+} from "@/api";
 import { useT } from "@/lib/i18n/hooks";
 import { useState } from "react";
 import { QRCodeModal } from "./qr-code-modal";
 import { useAuth } from "@/hooks/use-auth";
 
 interface ReservationCardProps {
-  reservations: UserReservationResponseDto[];
-  eventName?: string;
-  locationName?: string;
-  bookingDeadline?: Date;
-  onViewSeats: (reservation: UserReservationResponseDto) => void;
-  viewEventHref?: string;
+  readonly reservations: UserReservationResponseDto[];
+  readonly eventName?: string;
+  readonly locationName?: string;
+  readonly bookingDeadline?: Date;
+  readonly onViewSeats: (reservation: UserReservationResponseDto) => void;
+  readonly viewEventHref?: string;
+  readonly event?: UserEventResponseDto | null;
+  readonly location?: UserEventLocationResponseDto | null;
 }
 
 export function ReservationCard({
@@ -34,6 +40,8 @@ export function ReservationCard({
   bookingDeadline,
   onViewSeats,
   viewEventHref,
+  event,
+  location,
 }: ReservationCardProps) {
   const t = useT();
   const { user } = useAuth();
@@ -136,6 +144,9 @@ export function ReservationCard({
         onClose={() => setQrCodeModalOpen(false)}
         reservations={reservations}
         eventName={eventName}
+        locationName={locationName}
+        event={event}
+        location={location}
         userId={user?.id}
       />
     </>

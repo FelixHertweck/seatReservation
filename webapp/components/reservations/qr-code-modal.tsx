@@ -8,15 +8,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/custom-ui/dialog";
+import { Button } from "@/components/custom-ui/button";
 import { useT } from "@/lib/i18n/hooks";
 import { sanitizeFileName } from "@/lib/utils/filename";
-import { Loader2, Wallet } from "lucide-react";
+import { Download, Loader2, Share2, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import QRCode from "qrcode";
 import {
   getApiUserWalletReservationsByIdByProvider,
   getApiUserWalletConfig,
+  type UserEventLocationResponseDto,
+  type UserEventResponseDto,
   type UserReservationResponseDto,
   type WalletConfigDto,
 } from "@/api";
@@ -24,11 +27,274 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 
 interface QRCodeModalProps {
-  isOpen: boolean;
-  eventName: string | undefined;
-  onClose: () => void;
-  reservations: UserReservationResponseDto[];
-  userId: string | undefined;
+  readonly isOpen: boolean;
+  readonly eventName: string | undefined;
+  readonly onClose: () => void;
+  readonly reservations: readonly UserReservationResponseDto[];
+  readonly userId: string | undefined;
+  readonly event?: UserEventResponseDto | null;
+  readonly location?: UserEventLocationResponseDto | null;
+  readonly locationName?: string;
+}
+
+function formatEventDateTime(
+  event: UserEventResponseDto | null | undefined,
+  locale: string,
+): string | null {
+  if (!event?.startTime) return null;
+  const start = new Date(event.startTime);
+  const dateLocale = locale === "de" ? "de-DE" : "en-US";
+  const formattedDate = start.toLocaleDateString(dateLocale, {
+    weekday: "short",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+  const formattedStartTime = start.toLocaleTimeString(dateLocale, {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  if (event.endTime) {
+    const end = new Date(event.endTime);
+    const formattedEndTime = end.toLocaleTimeString(dateLocale, {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    return `📅 ${formattedDate}, ${formattedStartTime} - ${formattedEndTime}`;
+  }
+  return `📅 ${formattedDate}, ${formattedStartTime}`;
+}
+
+function formatSeatLabels(
+  location: UserEventLocationResponseDto | null | undefined,
+  reservations: readonly UserReservationResponseDto[],
+  t: (key: string, options?: Record<string, unknown>) => string,
+): string | null {
+  if (!reservations.length) return null;
+  if (!location?.seats) {
+    return `🪑 ${reservations.length} ${
+      reservations.length === 1
+        ? t("reservationCard.seatSingular")
+        : t("reservationCard.seatPlural")
+    }`;
+  }
+
+  const seatById = new Map(location.seats.map((s) => [s.id, s]));
+  const seatLabels = reservations
+    .map((r) => (r.seatId ? seatById.get(r.seatId) : undefined))
+    .filter((s): s is NonNullable<typeof s> => Boolean(s))
+    .map((s) => {
+      if (s.seatRow && s.seatNumber) {
+        return t("qrCodeModal.shareRow", {
+          row: s.seatRow,
+          seat: s.seatNumber,
+        });
+      }
+      if (s.seatNumber) {
+        return t("qrCodeModal.shareSeat", {
+          seat: s.seatNumber,
+        });
+      }
+      return null;
+    })
+    .filter((label): label is string => Boolean(label));
+
+  if (seatLabels.length > 0) {
+    return `🪑 ${seatLabels.join("; ")}`;
+  }
+  return `🪑 ${reservations.length} ${
+    reservations.length === 1
+      ? t("reservationCard.seatSingular")
+      : t("reservationCard.seatPlural")
+  }`;
+}
+
+function buildShareText({
+  eventName,
+  event,
+  location,
+  locationName,
+  reservations,
+  checkInToken,
+  eventId,
+  locale,
+  t,
+}: {
+  eventName?: string;
+  event?: UserEventResponseDto | null;
+  location?: UserEventLocationResponseDto | null;
+  locationName?: string;
+  reservations: readonly UserReservationResponseDto[];
+  checkInToken?: string;
+  eventId?: string;
+  locale: string;
+  t: (key: string, options?: Record<string, unknown>) => string;
+}): string {
+  const lines: string[] = [];
+  const name = eventName || event?.name || t("reservationCard.unknownEvent");
+  lines.push(`🎟️ ${name}`);
+
+  const dateTimeLine = formatEventDateTime(event, locale);
+  if (dateTimeLine) {
+    lines.push(dateTimeLine);
+  }
+
+  const locName = locationName || location?.name;
+  if (locName) {
+    if (location?.address) {
+      lines.push(`📍 ${locName} (${location.address})`);
+    } else {
+      lines.push(`📍 ${locName}`);
+    }
+  }
+
+  const seatLine = formatSeatLabels(location, reservations, t);
+  if (seatLine) {
+    lines.push(seatLine);
+  }
+
+  if (checkInToken) {
+    lines.push(`🔑 ${t("qrCodeModal.reservationCode")}: ${checkInToken}`);
+  }
+
+  const targetEventId = eventId || event?.id;
+  if (typeof window !== "undefined" && targetEventId) {
+    const eventUrl = `${window.location.origin}/events?eventId=${targetEventId}`;
+    lines.push(`🔗 ${eventUrl}`);
+  }
+
+  return lines.join("\n");
+}
+
+async function createFileFromDataUrl(
+  dataUrl: string,
+  fileName: string,
+): Promise<File | null> {
+  try {
+    const res = await fetch(dataUrl);
+    const blob = await res.blob();
+    return new File(
+      [blob],
+      `${sanitizeFileName(fileName || "ticket")}-qr.png`,
+      {
+        type: "image/png",
+      },
+    );
+  } catch (err) {
+    console.warn("Could not create File from QR code Data URL:", err);
+    return null;
+  }
+}
+
+async function executeShare({
+  shareTitle,
+  shareText,
+  shareUrl,
+  qrCodeDataUrl,
+  fileNamePrefix,
+  onFallbackClipboard,
+}: {
+  shareTitle: string;
+  shareText: string;
+  shareUrl?: string;
+  qrCodeDataUrl: string;
+  fileNamePrefix: string;
+  onFallbackClipboard: () => void;
+}) {
+  const fallbackToClipboard = async () => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      await navigator.clipboard.writeText(shareText);
+      onFallbackClipboard();
+    }
+  };
+
+  try {
+    const file = await createFileFromDataUrl(qrCodeDataUrl, fileNamePrefix);
+
+    if (file && typeof navigator !== "undefined") {
+      const dataWithFiles = {
+        title: shareTitle,
+        text: shareText,
+        ...(shareUrl ? { url: shareUrl } : {}),
+        files: [file],
+      };
+      if (navigator.canShare?.(dataWithFiles)) {
+        await navigator.share(dataWithFiles);
+        return;
+      }
+    }
+
+    if (typeof navigator !== "undefined" && navigator.share) {
+      const textShareData = {
+        title: shareTitle,
+        text: shareText,
+        ...(shareUrl ? { url: shareUrl } : {}),
+      };
+      if (!navigator.canShare || navigator.canShare(textShareData)) {
+        await navigator.share(textShareData);
+        return;
+      }
+
+      await navigator.share({
+        title: shareTitle,
+        text: shareText,
+      });
+      return;
+    }
+
+    await fallbackToClipboard();
+  } catch (err: unknown) {
+    if (err instanceof Error && err.name === "AbortError") {
+      return;
+    }
+    console.error("Error sharing ticket:", err);
+    try {
+      await fallbackToClipboard();
+    } catch (clipErr) {
+      console.error("Error copying to clipboard:", clipErr);
+    }
+  }
+}
+
+function QRCodeDisplay({
+  hasCheckInToken,
+  qrCodeDataUrl,
+  noCheckInCodeText,
+  generatingQRCodeText,
+}: {
+  readonly hasCheckInToken: boolean;
+  readonly qrCodeDataUrl: string;
+  readonly noCheckInCodeText: string;
+  readonly generatingQRCodeText: string;
+}) {
+  if (!hasCheckInToken) {
+    return (
+      <div className="flex items-center justify-center w-full h-32">
+        <p className="text-sm text-muted-foreground">{noCheckInCodeText}</p>
+      </div>
+    );
+  }
+
+  if (qrCodeDataUrl) {
+    return (
+      <div className="flex flex-col items-center gap-4">
+        <Image
+          src={qrCodeDataUrl}
+          alt="Reservation QR Code"
+          width={288}
+          height={288}
+          className="border-4 border-gray-300 rounded-lg p-2 bg-white"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-center w-full h-32">
+      <p className="text-sm text-muted-foreground">{generatingQRCodeText}</p>
+    </div>
+  );
 }
 
 export function QRCodeModal({
@@ -37,6 +303,9 @@ export function QRCodeModal({
   onClose,
   reservations,
   userId,
+  event,
+  location,
+  locationName,
 }: QRCodeModalProps) {
   const t = useT();
   const params = useParams();
@@ -123,6 +392,58 @@ export function QRCodeModal({
     "GOOGLE" | "APPLE" | "GENERIC_PKPASS" | null
   >(null);
 
+  const handleDownloadQRCode = () => {
+    if (!qrCodeDataUrl) return;
+
+    const link = document.createElement("a");
+    link.href = qrCodeDataUrl;
+    const fileName = `${sanitizeFileName(eventName || "ticket")}-qr-code.png`;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    toast.success(t("qrCodeModal.downloadStarted"), {
+      description: t("qrCodeModal.qrCodeDownloading"),
+    });
+  };
+
+  const handleShare = async () => {
+    if (!qrCodeDataUrl) return;
+
+    const name = eventName || event?.name || t("reservationCard.unknownEvent");
+    const targetEventId = firstReservation?.eventId || event?.id;
+    const shareUrl =
+      typeof window !== "undefined" && targetEventId
+        ? `${window.location.origin}/events?eventId=${targetEventId}`
+        : undefined;
+
+    const shareText = buildShareText({
+      eventName,
+      event,
+      location,
+      locationName,
+      reservations,
+      checkInToken: firstReservation?.checkInToken,
+      eventId: targetEventId,
+      locale,
+      t,
+    });
+
+    await executeShare({
+      shareTitle: `${name} - Ticket`,
+      shareText,
+      shareUrl,
+      qrCodeDataUrl,
+      fileNamePrefix: name,
+      onFallbackClipboard: () => {
+        toast.success(t("qrCodeModal.copiedToClipboard"), {
+          description: t("qrCodeModal.shareFallbackDescription"),
+        });
+      },
+    });
+  };
+
   const handleWalletPass = async (
     provider: "GOOGLE" | "APPLE" | "GENERIC_PKPASS",
   ) => {
@@ -157,7 +478,7 @@ export function QRCodeModal({
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
+        a.remove();
       }
     } catch (error) {
       console.error(`Error adding to ${provider} wallet:`, error);
@@ -176,32 +497,36 @@ export function QRCodeModal({
         </DialogHeader>
 
         <div className="flex flex-col items-center justify-center gap-6 py-6">
-          {!hasCheckInToken ? (
-            <div className="flex items-center justify-center w-full h-32">
-              <p className="text-sm text-muted-foreground">
-                {t("qrCodeModal.noCheckInCode")}
-              </p>
-            </div>
-          ) : qrCodeDataUrl ? (
-            <div className="flex flex-col items-center gap-4">
-              <Image
-                src={qrCodeDataUrl}
-                alt="Reservation QR Code"
-                width={288}
-                height={288}
-                className="border-4 border-gray-300 rounded-lg p-2 bg-white"
-              />
-            </div>
-          ) : (
-            <div className="flex items-center justify-center w-full h-32">
-              <p className="text-sm text-muted-foreground">
-                {t("qrCodeModal.generatingQRCode")}
-              </p>
-            </div>
-          )}
+          <QRCodeDisplay
+            hasCheckInToken={hasCheckInToken}
+            qrCodeDataUrl={qrCodeDataUrl}
+            noCheckInCodeText={t("qrCodeModal.noCheckInCode")}
+            generatingQRCodeText={t("qrCodeModal.generatingQRCode")}
+          />
         </div>
 
         <DialogFooter className="flex-col sm:flex-col gap-2">
+          {hasCheckInToken && qrCodeDataUrl && (
+            <div className="flex flex-col sm:flex-row gap-2 w-full">
+              <Button
+                variant="outline"
+                onClick={handleDownloadQRCode}
+                className="flex-1"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                {t("qrCodeModal.downloadButton")}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleShare}
+                className="flex-1"
+              >
+                <Share2 className="mr-2 h-4 w-4" />
+                {t("qrCodeModal.shareButton")}
+              </Button>
+            </div>
+          )}
+
           {hasCheckInToken &&
             (walletConfig?.googleEnabled ||
               walletConfig?.appleEnabled ||
