@@ -38,14 +38,34 @@ import type { EventLocationResponseDto } from "@/api";
 export default function ManagementLocationsPage() {
   const t = useT();
   const router = useRouter();
-  const { locations, users, isLoading, createLocation, updateLocation, deleteLocation } =
-    useManagementLocations();
+  const {
+    locations,
+    users,
+    isLoading,
+    createLocation,
+    updateLocation,
+    deleteLocation,
+  } = useManagementLocations();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<Record<string, unknown>>({});
   const [isImportOpen, setIsImportOpen] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const [selectedLocationForEdit, setSelectedLocationForEdit] =
     useState<EventLocationResponseDto | null>(null);
+
+  const handleCreate = () => {
+    setSelectedLocationForEdit(null);
+    setIsCreating(true);
+    setIsFormOpen(true);
+  };
+
+  const handleEdit = (location: EventLocationResponseDto) => {
+    setSelectedLocationForEdit(location);
+    setIsCreating(false);
+    setIsFormOpen(true);
+  };
 
   const managerOptions = useMemo(() => {
     const managers = new Map<string, string>();
@@ -118,16 +138,14 @@ export default function ManagementLocationsPage() {
               </span>
             </Button>
 
-            <Button asChild>
-              <Link
-                href="/management/locations/new"
-                aria-label={t("management.locations.newLocation")}
-              >
-                <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">
-                  {t("management.locations.newLocation")}
-                </span>
-              </Link>
+            <Button
+              onClick={handleCreate}
+              aria-label={t("management.locations.newLocation")}
+            >
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">
+                {t("management.locations.newLocation")}
+              </span>
             </Button>
           </>
         }
@@ -252,7 +270,7 @@ export default function ManagementLocationsPage() {
                       <Button
                         variant="outline"
                         size="icon"
-                        onClick={() => setSelectedLocationForEdit(location)}
+                        onClick={() => handleEdit(location)}
                         title={t("management.locations.editButton")}
                       >
                         <Edit className="h-4 w-4" />
@@ -285,16 +303,26 @@ export default function ManagementLocationsPage() {
         />
       )}
 
-      {selectedLocationForEdit && (
+      {isFormOpen && (
         <LocationFormModal
           location={selectedLocationForEdit}
+          isCreating={isCreating}
           users={users}
           onSubmit={async (data) => {
-            if (selectedLocationForEdit.id) {
+            if (isCreating) {
+              const created = await createLocation(data);
+              setIsFormOpen(false);
+              router.push(`/management/locations/${created.id}`);
+            } else if (selectedLocationForEdit?.id) {
               await updateLocation(selectedLocationForEdit.id, data);
+              setIsFormOpen(false);
+              setSelectedLocationForEdit(null);
             }
           }}
-          onClose={() => setSelectedLocationForEdit(null)}
+          onClose={() => {
+            setIsFormOpen(false);
+            setSelectedLocationForEdit(null);
+          }}
         />
       )}
     </div>
