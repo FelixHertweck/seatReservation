@@ -48,11 +48,17 @@ import de.felixhertweck.seatreservation.model.entity.EventLocationEntrance;
 import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
 import de.felixhertweck.seatreservation.model.entity.Roles;
 import de.felixhertweck.seatreservation.model.entity.Seat;
+import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationEntranceRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationMarkerRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
+import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
+import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
 import de.felixhertweck.seatreservation.model.repository.SeatRepository;
+import de.felixhertweck.seatreservation.model.repository.UserRepository;
+import de.felixhertweck.seatreservation.reservation.dto.UserEventLocationResponseDTO;
+import de.felixhertweck.seatreservation.reservation.service.EventLocationService;
 import de.felixhertweck.seatreservation.utils.AuthenticatedUser;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -67,12 +73,16 @@ public class SeatmapCacheServiceTest {
     @InjectMock EventLocationAreaRepository areaRepository;
     @InjectMock EventLocationMarkerRepository markerRepository;
     @InjectMock EventLocationEntranceRepository entranceRepository;
+    @InjectMock UserRepository userRepository;
+    @InjectMock EventUserAllowanceRepository eventUserAllowanceRepository;
+    @InjectMock ReservationRepository reservationRepository;
 
     @Inject SeatService seatService;
     @Inject AreaService areaService;
     @Inject MarkerService markerService;
     @Inject EntranceService entranceService;
     @Inject SeatmapCacheService seatmapCacheService;
+    @Inject EventLocationService reservationEventLocationService;
 
     private EventLocation location;
     private EventLocation otherLocation;
@@ -80,6 +90,7 @@ public class SeatmapCacheServiceTest {
     private AuthenticatedUser unauthorizedUserAuth;
     private UUID locationId;
     private UUID otherLocationId;
+    private String customerUsername;
 
     @BeforeEach
     void setUp() {
@@ -88,7 +99,10 @@ public class SeatmapCacheServiceTest {
                 eventLocationRepository,
                 areaRepository,
                 markerRepository,
-                entranceRepository);
+                entranceRepository,
+                userRepository,
+                eventUserAllowanceRepository,
+                reservationRepository);
 
         locationId = UUID.randomUUID();
         location = new EventLocation("Main Hall", "Main St", null);
@@ -113,6 +127,16 @@ public class SeatmapCacheServiceTest {
         when(eventLocationRepository.findByIdOptional(otherLocationId))
                 .thenReturn(Optional.of(otherLocation));
         when(eventLocationRepository.isUserManager(otherLocationId, managerId)).thenReturn(true);
+
+        customerUsername = "customerUser";
+        User customerUser = new User();
+        customerUser.id = UUID.randomUUID();
+        customerUser.setUsername(customerUsername);
+        when(userRepository.findByUsername(customerUsername)).thenReturn(customerUser);
+        when(eventUserAllowanceRepository.findDistinctEventLocationsByUser(customerUser))
+                .thenReturn(List.of(location));
+        when(reservationRepository.findDistinctEventLocationsByUser(customerUser))
+                .thenReturn(List.of());
     }
 
     @Test
@@ -413,5 +437,52 @@ public class SeatmapCacheServiceTest {
 
         verify(seatRepository, times(2)).findByEventLocation(location);
         verify(seatRepository, times(2)).findByEventLocation(otherLocation);
+    }
+
+    @Test
+    void testCrossPathCacheSharing_ManagerAndCustomerShareCache() {
+        Seat seat = new Seat("A1", "", location);
+        seat.id = UUID.randomUUID();
+        when(seatRepository.findByEventLocation(location)).thenReturn(List.of(seat));
+
+        // Call 1: Manager path
+        List<SeatDTO> managerSeats =
+                seatService.findSeatsForManagerByLocation(locationId, managerAuth);
+        assertEquals(1, managerSeats.size());
+
+        // Call 2: Customer path
+        UserEventLocationResponseDTO customerLocation =
+                reservationEventLocationService.getLocationByIdForCurrentUser(
+                        locationId, customerUsername);
+        assertEquals(1, customerLocation.seats().size());
+
+        // Repository findByEventLocation should only have been called once
+        verify(seatRepository, times(1)).findByEventLocation(location);
+    }
+
+    @Test
+    void testCustomerPathCacheInvalidation_ManagerWriteInvalidatesCustomerRead() {
+        Seat seat1 = new Seat("A1", "", location);
+        seat1.id = UUID.randomUUID();
+        when(seatRepository.findByEventLocation(location)).thenReturn(List.of(seat1));
+
+        // Populate cache via customer path
+        UserEventLocationResponseDTO initialLocation =
+                reservationEventLocationService.getLocationByIdForCurrentUser(
+                        locationId, customerUsername);
+        assertEquals(1, initialLocation.seats().size());
+        verify(seatRepository, times(1)).findByEventLocation(location);
+
+        // Manager invalidates cache (e.g. manager write operation)
+        seatmapCacheService.invalidateSeats(locationId);
+
+        // Call customer path again
+        UserEventLocationResponseDTO updatedLocation =
+                reservationEventLocationService.getLocationByIdForCurrentUser(
+                        locationId, customerUsername);
+        assertEquals(1, updatedLocation.seats().size());
+
+        // Repository should be queried a second time
+        verify(seatRepository, times(2)).findByEventLocation(location);
     }
 }

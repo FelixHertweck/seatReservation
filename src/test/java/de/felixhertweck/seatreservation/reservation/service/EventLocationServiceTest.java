@@ -21,7 +21,6 @@ package de.felixhertweck.seatreservation.reservation.service;
 
 import static de.felixhertweck.seatreservation.testutil.TestIds.id;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -35,9 +34,12 @@ import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventLocationArea;
 import de.felixhertweck.seatreservation.model.entity.Seat;
 import de.felixhertweck.seatreservation.model.entity.User;
+import de.felixhertweck.seatreservation.model.repository.EventLocationAreaRepository;
+import de.felixhertweck.seatreservation.model.repository.EventLocationMarkerRepository;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
 import de.felixhertweck.seatreservation.model.repository.EventUserAllowanceRepository;
 import de.felixhertweck.seatreservation.model.repository.ReservationRepository;
+import de.felixhertweck.seatreservation.model.repository.SeatRepository;
 import de.felixhertweck.seatreservation.model.repository.UserRepository;
 import de.felixhertweck.seatreservation.reservation.dto.UserEventLocationResponseDTO;
 import de.felixhertweck.seatreservation.reservation.dto.UserEventLocationSummaryDTO;
@@ -58,6 +60,12 @@ class EventLocationServiceTest {
     @InjectMock EventUserAllowanceRepository eventUserAllowanceRepository;
 
     @InjectMock ReservationRepository reservationRepository;
+
+    @InjectMock SeatRepository seatRepository;
+
+    @InjectMock EventLocationAreaRepository areaRepository;
+
+    @InjectMock EventLocationMarkerRepository markerRepository;
 
     private User user;
     private EventLocation locationA;
@@ -227,15 +235,13 @@ class EventLocationServiceTest {
         // Location A has two seats sharing an area, exposed via the allowance
         var parkett = new EventLocationArea("Parkett");
         parkett.id = id(1);
+        parkett.setEventLocation(locationA);
         var seat1 = new Seat("S1", "Row 1", locationA);
         seat1.id = id(1);
         seat1.setArea(parkett);
         var seat2 = new Seat("S2", "Row 1", locationA);
         seat2.id = id(2);
         seat2.setArea(parkett);
-        locationA.setSeats(List.of(seat1, seat2));
-        parkett.setEventLocation(locationA);
-        locationA.setAreas(new ArrayList<>(List.of(parkett)));
 
         when(userRepository.findByUsername("testuser")).thenReturn(user);
         when(eventUserAllowanceRepository.findDistinctEventLocationsByUser(user))
@@ -244,6 +250,10 @@ class EventLocationServiceTest {
                 .thenReturn(Collections.emptyList());
         when(eventLocationRepository.findByIdOptional(locationA.id))
                 .thenReturn(Optional.of(locationA));
+
+        when(seatRepository.findByEventLocation(locationA)).thenReturn(List.of(seat1, seat2));
+        when(areaRepository.findByEventLocation(locationA)).thenReturn(List.of(parkett));
+        when(markerRepository.findByEventLocation(locationA)).thenReturn(List.of());
 
         UserEventLocationResponseDTO locationDto =
                 eventLocationService.getLocationByIdForCurrentUser(locationA.id, "testuser");

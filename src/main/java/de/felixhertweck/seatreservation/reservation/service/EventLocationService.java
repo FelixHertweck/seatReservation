@@ -19,15 +19,24 @@
  */
 package de.felixhertweck.seatreservation.reservation.service;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import de.felixhertweck.seatreservation.common.dto.AreaDTO;
+import de.felixhertweck.seatreservation.common.dto.CoordinateDTO;
+import de.felixhertweck.seatreservation.common.dto.EventLocationMakerDTO;
+import de.felixhertweck.seatreservation.common.dto.SeatDTO;
 import de.felixhertweck.seatreservation.common.exception.UserNotFoundException;
+import de.felixhertweck.seatreservation.management.dto.AreaResponseDTO;
 import de.felixhertweck.seatreservation.management.exception.EventLocationNotFoundException;
+import de.felixhertweck.seatreservation.management.service.SeatmapCacheService;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.User;
 import de.felixhertweck.seatreservation.model.repository.EventLocationRepository;
@@ -46,6 +55,7 @@ public class EventLocationService {
     @Inject EventLocationRepository eventLocationRepository;
     @Inject EventUserAllowanceRepository eventUserAllowanceRepository;
     @Inject ReservationRepository reservationRepository;
+    @Inject SeatmapCacheService seatmapCacheService;
 
     /**
      * Retrieves all event locations for which the specified user has event allowances or active
@@ -112,6 +122,44 @@ public class EventLocationService {
                                                         + locationId
                                                         + " not found"));
 
-        return new UserEventLocationResponseDTO(location);
+        List<SeatDTO> seats = seatmapCacheService.getSeatsByLocation(locationId);
+        List<EventLocationMakerDTO> markers = seatmapCacheService.getMarkersByLocation(locationId);
+        List<AreaResponseDTO> areaResponses = seatmapCacheService.getAreasByLocation(locationId);
+        List<AreaDTO> areas = buildAreaDtos(areaResponses, seats);
+
+        return new UserEventLocationResponseDTO(
+                location.getId(), location.getName(), location.getAddress(), seats, markers, areas);
+    }
+
+    private List<AreaDTO> buildAreaDtos(List<AreaResponseDTO> areaResponses, List<SeatDTO> seats) {
+        if (areaResponses == null || areaResponses.isEmpty()) {
+            return List.of();
+        }
+
+        Map<UUID, List<UUID>> seatIdsByAreaId = new LinkedHashMap<>();
+        if (seats != null) {
+            for (SeatDTO seat : seats) {
+                if (seat.areaId() != null) {
+                    seatIdsByAreaId
+                            .computeIfAbsent(seat.areaId(), key -> new ArrayList<>())
+                            .add(seat.id());
+                }
+            }
+        }
+
+        return areaResponses.stream()
+                .map(
+                        area -> {
+                            List<CoordinateDTO> boundary =
+                                    (area.boundary() == null || area.boundary().isEmpty())
+                                            ? null
+                                            : area.boundary();
+                            return new AreaDTO(
+                                    area.id(),
+                                    area.name(),
+                                    seatIdsByAreaId.getOrDefault(area.id(), List.of()),
+                                    boundary);
+                        })
+                .toList();
     }
 }

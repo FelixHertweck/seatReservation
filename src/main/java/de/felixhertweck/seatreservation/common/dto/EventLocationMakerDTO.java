@@ -22,11 +22,18 @@ package de.felixhertweck.seatreservation.common.dto;
 import java.util.UUID;
 
 import de.felixhertweck.seatreservation.model.entity.EventLocationMarker;
+import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
+/**
+ * Server-generated projection, never bound directly from client input (that goes through {@code
+ * MakerRequestDTO}, which is sanitized). {@code label} is marked {@code @NoHtmlSanitize} since this
+ * DTO is also deserialized on every Redis cache hit ({@code SeatmapCacheService}), where
+ * re-sanitizing already-clean data would be pure overhead on the hottest read path.
+ */
 @RegisterForReflection
 public record EventLocationMakerDTO(
-        UUID id, String label, CoordinateDTO coordinate, UUID eventLocationId) {
+        UUID id, @NoHtmlSanitize String label, CoordinateDTO coordinate, UUID eventLocationId) {
     public EventLocationMakerDTO(EventLocationMarker maker) {
         this(
                 maker.id,

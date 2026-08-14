@@ -22,10 +22,17 @@ package de.felixhertweck.seatreservation.management.dto;
 import java.util.UUID;
 
 import de.felixhertweck.seatreservation.model.entity.EventLocationEntrance;
+import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
+/**
+ * Server-generated projection, never bound directly from client input (that goes through {@code
+ * EntranceRequestDTO}, which is sanitized). {@code name} is marked {@code @NoHtmlSanitize} since
+ * this DTO is also deserialized on every Redis cache hit ({@code SeatmapCacheService}), where
+ * re-sanitizing already-clean data would be pure overhead on the hottest read path.
+ */
 @RegisterForReflection
-public record EntranceResponseDTO(UUID id, String name, UUID eventLocationId) {
+public record EntranceResponseDTO(UUID id, @NoHtmlSanitize String name, UUID eventLocationId) {
     public EntranceResponseDTO(EventLocationEntrance entrance) {
         this(entrance.id, entrance.getName(), entrance.getEventLocation().getId());
     }
