@@ -23,6 +23,7 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import de.felixhertweck.seatreservation.model.entity.Seat;
+import de.felixhertweck.seatreservation.sanitization.NoHtmlSanitize;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 /**
@@ -32,17 +33,22 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
  * {@code entranceId}/{@code areaId} (the FK). The names are deliberately kept: the seat map and the
  * ticket/email rendering label seats without having to resolve the ids, while the ids are what the
  * management forms submit back. Do not drop the names without adapting those consumers.
+ *
+ * <p>String fields are marked {@code @NoHtmlSanitize}: this is a server-generated projection, never
+ * bound directly from client input (that goes through {@code SeatRequestDTO}, which is sanitized).
+ * It is, however, deserialized on every Redis cache hit ({@code SeatmapCacheService}), so
+ * re-sanitizing here would be pure overhead on the hottest read path.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @RegisterForReflection
 public record SeatDTO(
         UUID id,
-        String seatNumber,
-        String seatRow,
+        @NoHtmlSanitize String seatNumber,
+        @NoHtmlSanitize String seatRow,
         UUID locationId,
         CoordinateDTO coordinate,
-        String entrance,
-        String area,
+        @NoHtmlSanitize String entrance,
+        @NoHtmlSanitize String area,
         UUID entranceId,
         UUID areaId) {
     public SeatDTO(Seat seat) {

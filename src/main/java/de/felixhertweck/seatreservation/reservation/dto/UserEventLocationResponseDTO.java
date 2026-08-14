@@ -25,7 +25,6 @@ import java.util.UUID;
 import de.felixhertweck.seatreservation.common.dto.AreaDTO;
 import de.felixhertweck.seatreservation.common.dto.EventLocationMakerDTO;
 import de.felixhertweck.seatreservation.common.dto.SeatDTO;
-import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
@@ -35,14 +34,4 @@ public record UserEventLocationResponseDTO(
         String address,
         List<SeatDTO> seats,
         List<EventLocationMakerDTO> markers,
-        List<AreaDTO> areas) {
-    public UserEventLocationResponseDTO(EventLocation eventLocation) {
-        this(
-                eventLocation.getId(),
-                eventLocation.getName(),
-                eventLocation.getAddress(),
-                eventLocation.getSeats().stream().map(SeatDTO::new).toList(),
-                eventLocation.getMarkers().stream().map(EventLocationMakerDTO::new).toList(),
-                AreaDTO.fromEventLocation(eventLocation));
-    }
-}
+        List<AreaDTO> areas) {}
