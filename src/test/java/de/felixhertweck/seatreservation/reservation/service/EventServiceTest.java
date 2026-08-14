@@ -23,6 +23,7 @@ import static de.felixhertweck.seatreservation.testutil.TestIds.id;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import jakarta.inject.Inject;
@@ -32,6 +33,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import de.felixhertweck.seatreservation.common.exception.EventNotFoundException;
 import de.felixhertweck.seatreservation.model.entity.Event;
 import de.felixhertweck.seatreservation.model.entity.EventLocation;
 import de.felixhertweck.seatreservation.model.entity.EventUserAllowance;
@@ -183,9 +185,8 @@ class EventServiceTest {
     @Test
     void getEventByIdForCurrentUser_MergesPendingSeatStatusesFromCart() {
         UUID pendingSeatId = id(10);
-        when(eventUserAllowanceRepository.findByUserWithEvent(user))
-                .thenReturn(List.of(allowance1));
-        when(reservationRepository.findByUserWithEvent(user)).thenReturn(Collections.emptyList());
+        when(eventUserAllowanceRepository.findByUserAndEventId(user, event1.id))
+                .thenReturn(Optional.of(allowance1));
         mockReservationsByEventQuery(Set.of(event1.id), List.of());
         when(seatCartService.findPendingSeatIds(event1.id, user.id))
                 .thenReturn(Set.of(pendingSeatId));
@@ -217,9 +218,8 @@ class EventServiceTest {
 
     @Test
     void getEventByIdForCurrentUser_PassesCurrentUserIdToExcludeOwnHoldsFromPending() {
-        when(eventUserAllowanceRepository.findByUserWithEvent(user))
-                .thenReturn(List.of(allowance1));
-        when(reservationRepository.findByUserWithEvent(user)).thenReturn(Collections.emptyList());
+        when(eventUserAllowanceRepository.findByUserAndEventId(user, event1.id))
+                .thenReturn(Optional.of(allowance1));
         mockReservationsByEventQuery(Set.of(event1.id), List.of());
         when(seatCartService.findPendingSeatIds(event1.id, user.id))
                 .thenReturn(Collections.emptySet());
@@ -227,6 +227,53 @@ class EventServiceTest {
         eventService.getEventByIdForCurrentUser(event1.id, user);
 
         verify(seatCartService, times(1)).findPendingSeatIds(event1.id, user.id);
+    }
+
+    @Test
+    void getEventByIdForCurrentUser_FallbackToReservationIfNoAllowance() {
+        when(eventUserAllowanceRepository.findByUserAndEventId(user, event1.id))
+                .thenReturn(Optional.empty());
+        when(reservationRepository.findByUserAndEventId(user, event1.id))
+                .thenReturn(List.of(reservation1));
+        mockReservationsByEventQuery(Set.of(event1.id), List.of());
+        when(seatCartService.findPendingSeatIds(event1.id, user.id))
+                .thenReturn(Collections.emptySet());
+
+        UserEventResponseDTO dto = eventService.getEventByIdForCurrentUser(event1.id, user);
+
+        assertNotNull(dto);
+        assertEquals(event1.id, dto.id());
+        assertEquals(0, dto.reservationsAllowed());
+    }
+
+    @Test
+    void getEventByIdForCurrentUser_ThrowsExceptionIfNotFound() {
+        when(eventUserAllowanceRepository.findByUserAndEventId(user, event1.id))
+                .thenReturn(Optional.empty());
+        when(reservationRepository.findByUserAndEventId(user, event1.id))
+                .thenReturn(Collections.emptyList());
+
+        assertThrows(
+                EventNotFoundException.class,
+                () -> {
+                    eventService.getEventByIdForCurrentUser(event1.id, user);
+                });
+    }
+
+    @Test
+    void getEventByIdForCurrentUser_ThrowsExceptionIfOnlyBlockedReservationExists() {
+        reservation1.setStatus(ReservationStatus.BLOCKED);
+
+        when(eventUserAllowanceRepository.findByUserAndEventId(user, event1.id))
+                .thenReturn(Optional.empty());
+        when(reservationRepository.findByUserAndEventId(user, event1.id))
+                .thenReturn(List.of(reservation1));
+
+        assertThrows(
+                EventNotFoundException.class,
+                () -> {
+                    eventService.getEventByIdForCurrentUser(event1.id, user);
+                });
     }
 
     @Test
