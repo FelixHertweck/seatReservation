@@ -12,7 +12,11 @@ const Label = React.forwardRef<
   React.ComponentRef<typeof BaseLabel>,
   React.ComponentPropsWithoutRef<typeof BaseLabel>
 >(({ className, ...props }, ref) => (
-  <BaseLabel ref={ref} className={cn("leading-tight", className)} {...props} />
+  <BaseLabel
+    ref={ref}
+    className={cn("inline-block text-sm font-medium leading-normal", className)}
+    {...props}
+  />
 ));
 Label.displayName = "Label";
 

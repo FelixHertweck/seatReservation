@@ -157,14 +157,14 @@ export function SelectionPanel({
     const allSeats = selectedSeatIds.length === ids.length;
 
     return (
-      <div className="space-y-3">
+      <div className="space-y-4">
         <p className="text-sm">
           {t("management.locationEditor.selection.multiple", {
             count: selection.size,
           })}
         </p>
         {allSeats && state.areas.some((a) => a.serverId) && (
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label>{t("management.locationEditor.seats.areaLabel")}</Label>
             <Select
               value={NONE}
@@ -207,12 +207,12 @@ export function SelectionPanel({
 
   if (seat) {
     return (
-      <div className="space-y-3">
+      <div className="space-y-4">
         <p className="text-xs font-medium text-muted-foreground">
           {t("management.locationEditor.selection.seat")}
         </p>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="space-y-1.5">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
             <Label>
               {t("management.locationEditor.seats.seatNumberLabel")}
             </Label>
@@ -225,7 +225,7 @@ export function SelectionPanel({
               }
             />
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label>{t("management.locationEditor.seats.seatRowLabel")}</Label>
             <Input
               value={seatRow}
@@ -237,8 +237,8 @@ export function SelectionPanel({
             />
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="space-y-1.5">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
             <Label>{t("management.locationEditor.seats.xLabel")}</Label>
             <Input
               type="number"
@@ -248,7 +248,7 @@ export function SelectionPanel({
               onBlur={commitPosition}
             />
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label>{t("management.locationEditor.seats.yLabel")}</Label>
             <Input
               type="number"
@@ -265,7 +265,7 @@ export function SelectionPanel({
           </p>
         )}
 
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label>{t("management.locationEditor.seats.entranceLabel")}</Label>
           <Select
             value={seat.entranceRef ?? NONE}
@@ -293,7 +293,7 @@ export function SelectionPanel({
           </Select>
         </div>
 
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label>{t("management.locationEditor.seats.areaLabel")}</Label>
           <Select
             value={seat.areaRef ?? NONE}
@@ -331,11 +331,11 @@ export function SelectionPanel({
 
   if (marker) {
     return (
-      <div className="space-y-3">
+      <div className="space-y-4">
         <p className="text-xs font-medium text-muted-foreground">
           {t("management.locationEditor.selection.marker")}
         </p>
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label>{t("management.locationEditor.markers.labelLabel")}</Label>
           <Input
             value={markerLabel}
@@ -346,8 +346,8 @@ export function SelectionPanel({
             }
           />
         </div>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="space-y-1.5">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
             <Label>{t("management.locationEditor.seats.xLabel")}</Label>
             <Input
               type="number"
@@ -357,7 +357,7 @@ export function SelectionPanel({
               onBlur={commitPosition}
             />
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label>{t("management.locationEditor.seats.yLabel")}</Label>
             <Input
               type="number"
@@ -384,11 +384,11 @@ export function SelectionPanel({
   if (selectedArea) {
     const referencedCount = seatCountForArea(selectedArea.localId);
     return (
-      <div className="space-y-3">
+      <div className="space-y-4">
         <p className="text-xs font-medium text-muted-foreground">
           {t("management.locationEditor.selection.area")}
         </p>
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label>{t("management.locationEditor.areas.nameLabel")}</Label>
           <Input
             value={areaName}

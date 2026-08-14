@@ -199,7 +199,7 @@ export function EventReservationModal({
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent
-        className="flex flex-col sm:w-[95vw] sm:max-w-none sm:max-h-[90vh] sm:h-[85vh]"
+        className="flex flex-col sm:flex sm:flex-col w-full sm:w-[95vw] max-w-full sm:max-w-7xl max-h-full sm:max-h-[90vh] h-full sm:h-[85vh] overflow-hidden p-3 md:p-6"
         onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
@@ -213,7 +213,7 @@ export function EventReservationModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 flex flex-col min-h-0 min-w-0 max-w-full overflow-hidden">
           <SeatmapLegend
             layout="bar"
             areas={location?.areas ?? []}
@@ -222,7 +222,7 @@ export function EventReservationModal({
             showPending
           />
 
-          <div className="flex-1 min-h-0 relative flex flex-col">
+          <div className="flex-1 min-h-0 min-w-0 max-w-full relative flex flex-col overflow-hidden">
             {isFetching && location?.seats && (
               <LiveSyncBadge className="absolute top-2 left-2 z-20 pointer-events-none" />
             )}

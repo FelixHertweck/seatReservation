@@ -47,8 +47,8 @@ export function EntranceAddDialog({
             {t("management.locationEditor.entrances.dialogDescription")}
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-3">
-          <div className="space-y-1.5">
+        <div className="space-y-4">
+          <div className="space-y-2">
             <Label>{t("management.locationEditor.entrances.nameLabel")}</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} />
           </div>

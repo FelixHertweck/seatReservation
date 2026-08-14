@@ -164,7 +164,7 @@ export function SeatMapModal({
     <>
       <Dialog open onOpenChange={onClose}>
         <DialogContent
-          className="flex flex-col sm:max-w-[95vw] sm:w-[1200px] sm:max-h-[90vh] sm:h-[85vh]"
+          className="flex flex-col sm:flex sm:flex-col w-full sm:w-[95vw] max-w-full sm:max-w-7xl max-h-full sm:max-h-[90vh] h-full sm:h-[85vh] overflow-hidden p-3 md:p-6"
           onInteractOutside={(e) => e.preventDefault()}
         >
           <DialogHeader>
@@ -193,7 +193,7 @@ export function SeatMapModal({
               <p>{t("seatMapModal.loadingText")}</p>
             </div>
           ) : (
-            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+            <div className="flex-1 flex flex-col min-h-0 min-w-0 max-w-full overflow-hidden">
               <SeatmapLegend
                 layout="bar"
                 areas={areas}
@@ -201,7 +201,7 @@ export function SeatMapModal({
                 showUserReserved
                 showPending
               />
-              <div className="flex-1 min-h-0 min-w-0">
+              <div className="flex-1 min-h-0 min-w-0 max-w-full relative flex flex-col overflow-hidden">
                 <SeatMap
                   seats={seats}
                   seatStatuses={seatStatuses}

@@ -63,20 +63,20 @@ function SingleSeatForm({
   };
 
   return (
-    <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-2">
-        <div className="space-y-1.5">
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-2">
           <Label>{t("management.locationEditor.seats.seatNumberLabel")}</Label>
           <Input
             value={seatNumber}
             onChange={(e) => setSeatNumber(e.target.value)}
           />
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label>{t("management.locationEditor.seats.seatRowLabel")}</Label>
           <Input value={seatRow} onChange={(e) => setSeatRow(e.target.value)} />
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label>{t("management.locationEditor.seats.xLabel")}</Label>
           <Input
             type="number"
@@ -85,7 +85,7 @@ function SingleSeatForm({
             onChange={(e) => setX(e.target.value)}
           />
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label>{t("management.locationEditor.seats.yLabel")}</Label>
           <Input
             type="number"

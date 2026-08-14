@@ -29,9 +29,15 @@ function LegendSwatch({
   bar: boolean;
 }) {
   return (
-    <div className="flex items-center gap-2">
-      <div className={cn("w-4 h-4 rounded", color)} />
-      <span className={bar ? "text-sm" : undefined}>{label}</span>
+    <div className="flex items-center gap-1.5 shrink-0">
+      <div
+        className={cn("w-3.5 h-3.5 sm:w-4 sm:h-4 rounded shrink-0", color)}
+      />
+      <span
+        className={bar ? "text-xs sm:text-sm whitespace-nowrap" : undefined}
+      >
+        {label}
+      </span>
     </div>
   );
 }
@@ -76,15 +82,22 @@ export default function SeatmapLegend({
   const areaSwatches = areas.map((area, index) => {
     const color = getAreaColor(index);
     return (
-      <div key={area.name ?? index} className="flex items-center gap-2">
+      <div
+        key={area.name ?? index}
+        className="flex items-center gap-1.5 shrink-0"
+      >
         <div
           className={cn(
-            "w-4 h-4 rounded-sm border-2 border-dashed",
+            "w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-sm border-2 border-dashed shrink-0",
             color.fill,
             color.border,
           )}
         ></div>
-        <span className={bar ? undefined : "text-sm"}>{area.name}</span>
+        <span
+          className={bar ? "text-xs sm:text-sm whitespace-nowrap" : "text-sm"}
+        >
+          {area.name}
+        </span>
       </div>
     );
   });
@@ -93,14 +106,14 @@ export default function SeatmapLegend({
     return (
       <div
         className={cn(
-          "flex flex-wrap items-center gap-2 md:gap-4 text-sm border-b pb-2 min-h-[34px]",
+          "flex flex-wrap items-center gap-x-3 gap-y-1.5 sm:gap-x-4 sm:gap-y-2 text-xs sm:text-sm border-b pb-2 min-h-[34px] min-w-0 max-w-full overflow-x-auto",
           className,
         )}
       >
         {swatches}
         {areas.length > 0 && (
           <>
-            <div className="w-px self-stretch bg-border hidden sm:block" />
+            <div className="w-px self-stretch bg-border hidden sm:block shrink-0" />
             {areaSwatches}
           </>
         )}

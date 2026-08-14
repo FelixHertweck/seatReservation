@@ -63,13 +63,13 @@ export function MarkerAddDialog({
             {t("management.locationEditor.markers.dialogDescription")}
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-3">
-          <div className="grid grid-cols-3 gap-2">
-            <div className="col-span-1 space-y-1.5">
+        <div className="space-y-4">
+          <div className="grid grid-cols-3 gap-3">
+            <div className="col-span-1 space-y-2">
               <Label>{t("management.locationEditor.markers.labelLabel")}</Label>
               <Input value={label} onChange={(e) => setLabel(e.target.value)} />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label>{t("management.locationEditor.seats.xLabel")}</Label>
               <Input
                 type="number"
@@ -78,7 +78,7 @@ export function MarkerAddDialog({
                 onChange={(e) => setX(e.target.value)}
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label>{t("management.locationEditor.seats.yLabel")}</Label>
               <Input
                 type="number"
